@@ -63,13 +63,13 @@ export default function DataTable<T>({
                 onChange={(e) => setSearch(e.target.value)}
                 className="border p-1 mb-2"
             />
-            <table className="min-w-full border">
+            <table className="min-w-100 border">
                 <thead>
-                    <tr className="bg-gray-50">
+                    <tr className="bg-light">
                         {columns.map((col) => (
                             <th
                                 key={String(col.accessor)}
-                                className="p-2 text-left cursor-pointer"
+                                className="p-2 text-start"
                                 onClick={() => toggleSort(col.accessor)}
                             >
                                 {col.header}
@@ -82,7 +82,7 @@ export default function DataTable<T>({
                 </thead>
                 <tbody>
                     {paginated.map((row, i) => (
-                        <tr key={i} className="border-t">
+                        <tr key={i} className="border-top">
                             {columns.map((col) => (
                                 <td key={String(col.accessor)} className="p-2">
                                     {String(row[col.accessor])}
@@ -95,7 +95,7 @@ export default function DataTable<T>({
                     ))}
                 </tbody>
             </table>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2 d-flex align-items-center gap-2">
                 <button
                     disabled={page === 0}
                     onClick={() => setPage((p) => Math.max(p - 1, 0))}

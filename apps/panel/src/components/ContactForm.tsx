@@ -102,13 +102,13 @@ export default function ContactForm() {
     };
 
     return (
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+        <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
             <input
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Your name"
-                className="w-full border p-2 rounded"
+                className="w-100 border p-2 rounded"
             />
             <input
                 name="email"
@@ -116,10 +116,10 @@ export default function ContactForm() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Your email"
-                className="w-full border p-2 rounded"
+                className="w-100 border p-2 rounded"
             />
             {emailError && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-danger small">
                     {emailError}
                 </p>
             )}
@@ -128,26 +128,23 @@ export default function ContactForm() {
                 value={form.message}
                 onChange={handleChange}
                 placeholder="Message"
-                className="w-full border p-2 rounded"
+                className="w-100 border p-2 rounded"
                 rows={4}
             />
             {error && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-danger small">
                     {error}
                 </p>
             )}
             {submitError && (
-                <p
-                    data-testid="form-error-alert"
-                    className="text-red-600 text-sm"
-                >
+                <p data-testid="form-error-alert" className="text-danger small">
                     {submitError}
                 </p>
             )}
             {submitted && (
                 <p
                     data-testid="form-success-message"
-                    className="text-green-600 text-sm"
+                    className="text-success small"
                 >
                     formularz został wysłany
                 </p>
@@ -155,7 +152,7 @@ export default function ContactForm() {
             <button
                 type="submit"
                 disabled={!isValid}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded"
             >
                 Send
             </button>

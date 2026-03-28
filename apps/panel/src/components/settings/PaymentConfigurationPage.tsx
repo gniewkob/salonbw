@@ -108,7 +108,7 @@ export default function PaymentConfigurationPage() {
         >
             <div className="settings-payment-page">
                 <PanelActionBar
-                    className="mt-0 border-t-0 pt-0"
+                    className="mt-0 border-top-0 pt-0"
                     primary={
                         <button
                             type="button"
@@ -130,11 +130,11 @@ export default function PaymentConfigurationPage() {
                 />
 
                 <section
-                    className="settings-payment-page__blank flex flex-col items-center"
+                    className="settings-payment-page__blank d-flex flex-column align-items-center"
                     aria-label="Moment Pay activation"
                 >
                     <div
-                        className="settings-payment-page__art flex items-center justify-center"
+                        className="settings-payment-page__art d-flex align-items-center justify-content-center"
                         aria-hidden="true"
                     >
                         <div className="settings-payment-page__art-shadow" />

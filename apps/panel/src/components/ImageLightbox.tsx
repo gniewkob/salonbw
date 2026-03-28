@@ -128,13 +128,13 @@ export default function ImageLightbox(props: Props) {
         <div
             role="dialog"
             aria-modal
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+            className="position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center bg-dark/70"
             onClick={handleClose}
             onKeyDown={onKeyDown}
             ref={containerRef}
         >
             <div
-                className="relative w-[90vw] h-[90vh]"
+                className="position-relative w-[90vw] h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
             >
                 <Image
@@ -147,7 +147,7 @@ export default function ImageLightbox(props: Props) {
             </div>
             {showHint && (
                 <div
-                    className="absolute top-12 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full"
+                    className="position-absolute top-12 left-1/2 -translate-x-1/2 bg-dark/70 text-white small px-3 py-1 rounded-circle"
                     role="status"
                     aria-live="polite"
                     onAnimationEnd={() => setShowHint(false)}
@@ -160,7 +160,7 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label="Previous image"
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-2xl"
+                        className="position-absolute left-3 top-1/2 -translate-y-1/2 text-white fs-3"
                         onClick={(props as CarouselProps).onPrev}
                     >
                         ‹
@@ -168,7 +168,7 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label="Next image"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white text-2xl"
+                        className="position-absolute right-3 top-1/2 -translate-y-1/2 text-white fs-3"
                         onClick={(props as CarouselProps).onNext}
                     >
                         ›
@@ -178,7 +178,7 @@ export default function ImageLightbox(props: Props) {
             <button
                 type="button"
                 aria-label="Close"
-                className="absolute top-3 right-3 text-white text-2xl"
+                className="position-absolute top-3 right-3 text-white fs-3"
                 onClick={handleClose}
                 ref={closeRef}
             >
@@ -188,7 +188,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Share image"
                 title="Share image"
-                className="absolute top-3 right-12 text-white text-xl"
+                className="position-absolute top-3 right-12 text-white fs-5"
                 onClick={(e) => {
                     e.stopPropagation();
                     void onShare();
@@ -200,7 +200,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Download image"
                 title="Download image"
-                className="absolute top-3 right-24 text-white text-xl"
+                className="position-absolute top-3 right-24 text-white fs-5"
                 onClick={(e) => {
                     e.stopPropagation();
                     onDownload();

@@ -78,53 +78,49 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
-                <span className="ml-3 text-gray-600">Ładowanie alertów...</span>
+            <div className="d-flex align-items-center justify-content-center py-5">
+                <div className="rounded-circle h-8 w-8 border-bottom-2 border-teal-500"></div>
+                <span className="ms-2 text-muted">Ładowanie alertów...</span>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
+        <div className="gap-3">
             {/* Stock Summary Cards */}
             {summary && (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <div className="text-2xl font-bold text-gray-800">
+                <div className="-cols-2 gap-3">
+                    <div className="bg-white rounded-3 shadow p-3">
+                        <div className="fs-3 fw-bold text-dark">
                             {summary.totalProducts}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="small text-muted">
                             Wszystkie produkty
                         </div>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <div className="text-2xl font-bold text-green-600">
+                    <div className="bg-white rounded-3 shadow p-3">
+                        <div className="fs-3 fw-bold text-success">
                             {summary.healthyStockCount}
                         </div>
-                        <div className="text-sm text-gray-500">
-                            Prawidłowy stan
-                        </div>
+                        <div className="small text-muted">Prawidłowy stan</div>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <div className="text-2xl font-bold text-yellow-600">
+                    <div className="bg-white rounded-3 shadow p-3">
+                        <div className="fs-3 fw-bold text-warning">
                             {summary.lowStockCount}
                         </div>
-                        <div className="text-sm text-gray-500">Niski stan</div>
+                        <div className="small text-muted">Niski stan</div>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <div className="text-2xl font-bold text-red-600">
+                    <div className="bg-white rounded-3 shadow p-3">
+                        <div className="fs-3 fw-bold text-danger">
                             {summary.outOfStockCount}
                         </div>
-                        <div className="text-sm text-gray-500">
-                            Brak na stanie
-                        </div>
+                        <div className="small text-muted">Brak na stanie</div>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <div className="text-2xl font-bold text-gray-800">
+                    <div className="bg-white rounded-3 shadow p-3">
+                        <div className="fs-3 fw-bold text-dark">
                             {summary.trackedProducts}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="small text-muted">
                             Śledzone produkty
                         </div>
                     </div>
@@ -133,48 +129,48 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
 
             {/* Alerts Summary */}
             {alerts?.summary && (
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                <div className="bg-white rounded-3 shadow p-4">
+                    <h3 className="fs-5 fw-semibold text-dark mb-3">
                         Podsumowanie alertów
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="-cols-2 gap-3 mb-3">
                         <div
-                            className={`rounded-lg p-3 border ${PRIORITY_COLORS.critical}`}
+                            className={`rounded-3 p-2 border ${PRIORITY_COLORS.critical}`}
                         >
-                            <div className="text-2xl font-bold">
+                            <div className="fs-3 fw-bold">
                                 {alerts.summary.criticalCount}
                             </div>
-                            <div className="text-sm">Krytyczne</div>
+                            <div className="small">Krytyczne</div>
                         </div>
                         <div
-                            className={`rounded-lg p-3 border ${PRIORITY_COLORS.high}`}
+                            className={`rounded-3 p-2 border ${PRIORITY_COLORS.high}`}
                         >
-                            <div className="text-2xl font-bold">
+                            <div className="fs-3 fw-bold">
                                 {alerts.summary.highCount}
                             </div>
-                            <div className="text-sm">Wysokie</div>
+                            <div className="small">Wysokie</div>
                         </div>
                         <div
-                            className={`rounded-lg p-3 border ${PRIORITY_COLORS.medium}`}
+                            className={`rounded-3 p-2 border ${PRIORITY_COLORS.medium}`}
                         >
-                            <div className="text-2xl font-bold">
+                            <div className="fs-3 fw-bold">
                                 {alerts.summary.mediumCount}
                             </div>
-                            <div className="text-sm">Średnie</div>
+                            <div className="small">Średnie</div>
                         </div>
                         <div
-                            className={`rounded-lg p-3 border ${PRIORITY_COLORS.low}`}
+                            className={`rounded-3 p-2 border ${PRIORITY_COLORS.low}`}
                         >
-                            <div className="text-2xl font-bold">
+                            <div className="fs-3 fw-bold">
                                 {alerts.summary.lowCount}
                             </div>
-                            <div className="text-sm">Niskie</div>
+                            <div className="small">Niskie</div>
                         </div>
                     </div>
                     {alerts.summary.estimatedTotalReorderCost && (
-                        <p className="text-sm text-gray-600">
+                        <p className="small text-muted">
                             Szacowany koszt uzupełnienia:{' '}
-                            <span className="font-semibold">
+                            <span className="fw-semibold">
                                 {alerts.summary.estimatedTotalReorderCost.toFixed(
                                     2,
                                 )}{' '}
@@ -186,11 +182,11 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
             )}
 
             {/* Filters */}
-            <div className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4">
+            <div className="bg-white rounded-3 shadow p-3 d-flex flex-wrap gap-3">
                 <div>
                     <label
                         htmlFor="filter-type"
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                        className="d-block small fw-medium text-body mb-1"
                     >
                         Typ produktu
                     </label>
@@ -200,7 +196,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                         onChange={(e) =>
                             setFilterType(e.target.value as ProductType | 'all')
                         }
-                        className="rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                        className="rounded-3 border-secondary border-opacity-50 shadow-sm"
                     >
                         <option value="all">Wszystkie</option>
                         <option value="product">Produkty</option>
@@ -211,7 +207,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                 <div>
                     <label
                         htmlFor="filter-priority"
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                        className="d-block small fw-medium text-body mb-1"
                     >
                         Priorytet
                     </label>
@@ -223,7 +219,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                                 e.target.value as StockAlertPriority | 'all',
                             )
                         }
-                        className="rounded-lg border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                        className="rounded-3 border-secondary border-opacity-50 shadow-sm"
                     >
                         <option value="all">Wszystkie</option>
                         <option value="critical">Krytyczny</option>
@@ -236,24 +232,24 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
 
             {/* Reorder Suggestions grouped by Supplier */}
             {Object.values(groupedBySupplier).length > 0 ? (
-                <div className="space-y-6">
+                <div className="gap-3">
                     {Object.values(groupedBySupplier).map((group) => (
                         <div
                             key={group.supplierId ?? 'no-supplier'}
-                            className="bg-white rounded-lg shadow overflow-hidden"
+                            className="bg-white rounded-3 shadow overflow-d-none"
                         >
-                            <div className="px-4 py-3 bg-gray-50 border-b flex items-center justify-between">
+                            <div className="px-3 py-2 bg-light border-bottom d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h4 className="font-semibold text-gray-800">
+                                    <h4 className="fw-semibold text-dark">
                                         {group.supplierName}
                                     </h4>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="small text-muted">
                                         {group.suggestions.length} produktów do
                                         zamówienia
                                         {group.totalCost > 0 && (
-                                            <span className="ml-2">
+                                            <span className="ms-2">
                                                 • Szacowany koszt:{' '}
-                                                <span className="font-medium">
+                                                <span className="fw-medium">
                                                     {group.totalCost.toFixed(2)}{' '}
                                                     PLN
                                                 </span>
@@ -267,65 +263,65 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                                         onClick={() =>
                                             onCreateDelivery(group.suggestions)
                                         }
-                                        className="px-3 py-1.5 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                                        className="px-3 py-1 small bg-teal-600 text-white rounded-3"
                                     >
                                         Utwórz dostawę
                                     </button>
                                 )}
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-100">
+                                    <thead className="bg-light">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 Produkt
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 SKU
                                             </th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-center small fw-medium text-muted text-uppercase">
                                                 Stan
                                             </th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-center small fw-medium text-muted text-uppercase">
                                                 Min.
                                             </th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-center small fw-medium text-muted text-uppercase">
                                                 Do zamówienia
                                             </th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                                                 Koszt
                                             </th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-3 py-2 text-center small fw-medium text-muted text-uppercase">
                                                 Priorytet
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white">
                                         {group.suggestions.map((suggestion) => (
                                             <tr
                                                 key={suggestion.productId}
-                                                className="hover:bg-gray-50"
+                                                className=""
                                             >
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <div className="font-medium text-gray-900">
+                                                <td className="px-3 py-2 text-nowrap">
+                                                    <div className="fw-medium text-dark">
                                                         {suggestion.productName}
                                                     </div>
                                                     {suggestion.brand && (
-                                                        <div className="text-sm text-gray-500">
+                                                        <div className="small text-muted">
                                                             {suggestion.brand}
                                                         </div>
                                                     )}
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                <td className="px-3 py-2 text-nowrap small text-muted">
                                                     {suggestion.sku ?? '-'}
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                <td className="px-3 py-2 text-nowrap text-center">
                                                     <span
-                                                        className={`font-semibold ${
+                                                        className={`fw-semibold ${
                                                             suggestion.currentStock ===
                                                             0
-                                                                ? 'text-red-600'
-                                                                : 'text-yellow-600'
+                                                                ? 'text-danger'
+                                                                : 'text-warning'
                                                         }`}
                                                     >
                                                         {
@@ -333,24 +329,24 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                                                         }
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-center text-gray-600">
+                                                <td className="px-3 py-2 text-nowrap text-center text-muted">
                                                     {suggestion.minQuantity}
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-center">
-                                                    <span className="font-semibold text-teal-600">
+                                                <td className="px-3 py-2 text-nowrap text-center">
+                                                    <span className="fw-semibold text-teal-600">
                                                         {
                                                             suggestion.suggestedOrderQuantity
                                                         }
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
+                                                <td className="px-3 py-2 text-nowrap text-end text-muted">
                                                     {suggestion.estimatedCost
                                                         ? `${suggestion.estimatedCost.toFixed(2)} PLN`
                                                         : '-'}
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                <td className="px-3 py-2 text-nowrap text-center">
                                                     <span
-                                                        className={`px-2 py-1 text-xs rounded-full border ${
+                                                        className={`px-2 py-1 small rounded-circle border ${
                                                             PRIORITY_COLORS[
                                                                 suggestion
                                                                     .priority
@@ -374,9 +370,9 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="bg-white rounded-3 shadow p-5 text-center">
                     <svg
-                        className="mx-auto h-12 w-12 text-green-400 mb-4"
+                        className="mx-auto h-12 w-12 text-success mb-3"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -388,10 +384,10 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                     </svg>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <h3 className="fs-5 fw-medium text-dark mb-2">
                         Brak produktów do uzupełnienia
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-muted">
                         Wszystkie śledzone produkty mają wystarczający stan
                         magazynowy.
                     </p>

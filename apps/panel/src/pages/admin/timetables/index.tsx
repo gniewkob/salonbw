@@ -115,12 +115,12 @@ export default function AdminTimetablesPage() {
 
     if (!user || user.role !== 'admin') {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="d-flex align-items-center justify-content-center bg-light">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                    <h1 className="fs-3 fw-bold text-dark mb-2">
                         Brak dostępu
                     </h1>
-                    <p className="text-gray-600">
+                    <p className="text-muted">
                         Ta strona jest dostępna tylko dla administratorów.
                     </p>
                 </div>
@@ -129,28 +129,28 @@ export default function AdminTimetablesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="bg-light">
             <Topbar />
-            <div className="flex">
+            <div className="d-flex">
                 <AdminSidebarMenu />
 
-                <main className="flex-1 p-6">
+                <main className="flex-fill p-4">
                     {/* Header */}
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-gray-800">
+                    <div className="mb-4">
+                        <h1 className="fs-3 fw-bold text-dark">
                             Grafiki pracy
                         </h1>
-                        <p className="text-gray-600 mt-1">
+                        <p className="text-muted mt-1">
                             Zarządzaj harmonogramami pracowników
                         </p>
                     </div>
 
                     {/* Employee selector */}
-                    <div className="mb-6 bg-white rounded-lg shadow p-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="mb-4 bg-white rounded-3 shadow p-3">
+                        <label className="d-block small fw-medium text-body mb-2">
                             Wybierz pracownika
                         </label>
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="d-flex gap-2 flex-wrap">
                             {employees.map((emp) => (
                                 <button
                                     key={emp.id}
@@ -158,10 +158,10 @@ export default function AdminTimetablesPage() {
                                     onClick={() =>
                                         setSelectedEmployeeId(emp.id)
                                     }
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    className={`px-3 py-2 rounded-3 small fw-medium ${
                                         selectedEmployeeId === emp.id
-                                            ? 'bg-primary-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            ? 'bg-primary bg-opacity-10 text-white'
+                                            : 'bg-light text-body bg-opacity-25'
                                     }`}
                                 >
                                     {emp.name}
@@ -171,14 +171,14 @@ export default function AdminTimetablesPage() {
                     </div>
 
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                            <span className="ml-3 text-gray-600">
+                        <div className="d-flex align-items-center justify-content-center py-5">
+                            <div className="rounded-circle h-8 w-8 border-bottom-2 border-primary"></div>
+                            <span className="ms-2 text-muted">
                                 Ładowanie...
                             </span>
                         </div>
                     ) : selectedEmployeeId ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="-cols-1 gap-4">
                             {/* Weekly schedule editor */}
                             <TimetableEditor
                                 timetable={activeTimetable}
@@ -190,9 +190,9 @@ export default function AdminTimetablesPage() {
                             />
 
                             {/* Exceptions section */}
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-800">
+                            <div className="bg-white rounded-3 shadow p-4">
+                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                    <h3 className="fs-5 fw-semibold text-dark">
                                         Wyjątki i nieobecności
                                     </h3>
                                     <button
@@ -202,7 +202,7 @@ export default function AdminTimetablesPage() {
                                             setExceptionModalOpen(true);
                                         }}
                                         disabled={!activeTimetable}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="d-flex align-items-center gap-2 px-3 py-1 bg-primary bg-opacity-10 text-white small rounded-3 bg-opacity-10 disabled:"
                                     >
                                         <svg
                                             className="w-4 h-4"
@@ -222,7 +222,7 @@ export default function AdminTimetablesPage() {
                                 </div>
 
                                 {!activeTimetable ? (
-                                    <div className="text-center py-8 text-gray-500">
+                                    <div className="text-center py-4 text-muted">
                                         Najpierw zapisz grafik tygodniowy, aby
                                         móc dodawać wyjątki.
                                     </div>
@@ -241,7 +241,7 @@ export default function AdminTimetablesPage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-5 text-muted">
                             Wybierz pracownika, aby zarządzać jego grafikiem.
                         </div>
                     )}

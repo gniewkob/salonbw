@@ -134,12 +134,12 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-white rounded-3 shadow p-4">
+            <h3 className="fs-5 fw-semibold text-dark mb-3">
                 Grafik tygodniowy
             </h3>
 
-            <div className="space-y-4">
+            <div className="gap-2">
                 {([0, 1, 2, 3, 4, 5, 6] as DayOfWeek[]).map((day) => {
                     const slot = getSlotForDay(day);
                     const breakSlot = getBreakForDay(day);
@@ -148,22 +148,22 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                     return (
                         <div
                             key={day}
-                            className={`flex items-center gap-4 p-4 rounded-lg border ${
+                            className={`d-flex align-items-center gap-3 p-3 rounded-3 border ${
                                 isWorking
-                                    ? 'bg-white border-gray-200'
-                                    : 'bg-gray-50 border-gray-100'
+                                    ? 'bg-white border-secondary border-opacity-25'
+                                    : 'bg-light border-secondary border-opacity-10'
                             }`}
                         >
                             {/* Day toggle */}
-                            <label className="flex items-center gap-3 w-40">
+                            <label className="d-flex align-items-center gap-2 w-40">
                                 <input
                                     type="checkbox"
                                     checked={isWorking}
                                     onChange={() => toggleDay(day)}
-                                    className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
+                                    className="w-5 h-5 text-primary rounded focus:"
                                 />
                                 <span
-                                    className={`font-medium ${isWorking ? 'text-gray-800' : 'text-gray-400'}`}
+                                    className={`fw-medium ${isWorking ? 'text-dark' : 'text-secondary'}`}
                                 >
                                     {DAY_NAMES[day]}
                                 </span>
@@ -172,8 +172,8 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                             {isWorking && slot && (
                                 <>
                                     {/* Work hours */}
-                                    <div className="flex items-center gap-2">
-                                        <label className="text-sm text-gray-600">
+                                    <div className="d-flex align-items-center gap-2">
+                                        <label className="small text-muted">
                                             Od:
                                         </label>
                                         <input
@@ -186,9 +186,9 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small focus:"
                                         />
-                                        <label className="text-sm text-gray-600">
+                                        <label className="small text-muted">
                                             Do:
                                         </label>
                                         <input
@@ -201,26 +201,26 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small focus:"
                                         />
                                     </div>
 
                                     {/* Break toggle */}
-                                    <div className="flex items-center gap-2 ml-4">
-                                        <label className="flex items-center gap-2 text-sm text-gray-600">
+                                    <div className="d-flex align-items-center gap-2 ms-3">
+                                        <label className="d-flex align-items-center gap-2 small text-muted">
                                             <input
                                                 type="checkbox"
                                                 checked={!!breakSlot}
                                                 onChange={() =>
                                                     toggleBreak(day)
                                                 }
-                                                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-400"
+                                                className="w-4 h-4 text-warning rounded"
                                             />
                                             Przerwa
                                         </label>
 
                                         {breakSlot && (
-                                            <div className="flex items-center gap-2 ml-2">
+                                            <div className="d-flex align-items-center gap-2 ms-2">
                                                 <input
                                                     type="time"
                                                     value={breakSlot.startTime}
@@ -231,9 +231,9 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="px-2 py-1 border border-orange-200 rounded text-sm focus:ring-2 focus:ring-orange-400"
+                                                    className="px-2 py-1 border border-orange-200 rounded small"
                                                 />
-                                                <span className="text-gray-400">
+                                                <span className="text-secondary">
                                                     -
                                                 </span>
                                                 <input
@@ -246,7 +246,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="px-2 py-1 border border-orange-200 rounded text-sm focus:ring-2 focus:ring-orange-400"
+                                                    className="px-2 py-1 border border-orange-200 rounded small"
                                                 />
                                             </div>
                                         )}
@@ -255,7 +255,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                             )}
 
                             {!isWorking && (
-                                <span className="text-sm text-gray-400 italic">
+                                <span className="small text-secondary fst-italic">
                                     Dzień wolny
                                 </span>
                             )}
@@ -264,14 +264,14 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                 })}
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-4 d-flex justify-content-end">
                 <button
                     type="button"
                     onClick={() => {
                         void handleSave();
                     }}
                     disabled={saving}
-                    className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10 disabled:"
                 >
                     {saving ? 'Zapisywanie...' : 'Zapisz grafik'}
                 </button>

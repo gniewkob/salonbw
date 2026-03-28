@@ -171,7 +171,7 @@ export default function GiftCardsManagementPage() {
 
     const STATUS_COLORS: Record<GiftCardStatus, string> = {
         active: 'bg-green-100 text-green-700',
-        used: 'bg-gray-100 text-gray-700',
+        used: 'bg-secondary bg-opacity-10 text-body',
         expired: 'bg-yellow-100 text-yellow-700',
         cancelled: 'bg-red-100 text-red-700',
     };
@@ -216,23 +216,23 @@ export default function GiftCardsManagementPage() {
                             { label: 'Bony i Karnety' },
                         ]}
                     />
-                    <div className="min-h-screen bg-gray-50">
-                        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                            <div className="flex items-center justify-between mb-8">
+                    <div className="bg-light">
+                        <div className="max-w-7xl mx-auto py-4 px-3">
+                            <div className="d-flex align-items-center justify-content-between mb-4">
                                 <div>
-                                    <h1 className="text-2xl font-bold text-gray-900">
+                                    <h1 className="fs-3 fw-bold text-dark">
                                         Karty Podarunkowe
                                     </h1>
-                                    <p className="mt-1 text-sm text-gray-500">
+                                    <p className="mt-1 small text-muted">
                                         Sprzedawaj i zarządzaj kartami
                                         podarunkowymi
                                     </p>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="d-flex gap-2">
                                     <button
                                         type="button"
                                         onClick={handleOpenRedeemModal}
-                                        className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                                        className="d-flex align-items-center gap-2 px-3 py-2 bg-white text-body border border-secondary border-opacity-50 rounded-3 fw-medium"
                                     >
                                         <svg
                                             className="w-5 h-5"
@@ -252,7 +252,7 @@ export default function GiftCardsManagementPage() {
                                     <button
                                         type="button"
                                         onClick={handleOpenCreateModal}
-                                        className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                                        className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
                                     >
                                         <svg
                                             className="w-5 h-5"
@@ -274,44 +274,44 @@ export default function GiftCardsManagementPage() {
 
                             {/* Stats Cards */}
                             {stats && (
-                                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-                                    <div className="bg-white rounded-xl shadow-sm p-6">
-                                        <p className="text-sm text-gray-500">
+                                <div className="-cols-1 gap-3 mb-4">
+                                    <div className="bg-white rounded-4 shadow-sm p-4">
+                                        <p className="small text-muted">
                                             Wszystkie karty
                                         </p>
-                                        <p className="text-2xl font-bold text-gray-900">
+                                        <p className="fs-3 fw-bold text-dark">
                                             {stats.totalCards}
                                         </p>
                                     </div>
-                                    <div className="bg-white rounded-xl shadow-sm p-6">
-                                        <p className="text-sm text-gray-500">
+                                    <div className="bg-white rounded-4 shadow-sm p-4">
+                                        <p className="small text-muted">
                                             Aktywne karty
                                         </p>
-                                        <p className="text-2xl font-bold text-green-600">
+                                        <p className="fs-3 fw-bold text-success">
                                             {stats.activeCards}
                                         </p>
                                     </div>
-                                    <div className="bg-white rounded-xl shadow-sm p-6">
-                                        <p className="text-sm text-gray-500">
+                                    <div className="bg-white rounded-4 shadow-sm p-4">
+                                        <p className="small text-muted">
                                             Łączna wartość
                                         </p>
-                                        <p className="text-2xl font-bold text-gray-900">
+                                        <p className="fs-3 fw-bold text-dark">
                                             {formatCurrency(stats.totalValue)}
                                         </p>
                                     </div>
-                                    <div className="bg-white rounded-xl shadow-sm p-6">
-                                        <p className="text-sm text-gray-500">
+                                    <div className="bg-white rounded-4 shadow-sm p-4">
+                                        <p className="small text-muted">
                                             Wykorzystano
                                         </p>
-                                        <p className="text-2xl font-bold text-blue-600">
+                                        <p className="fs-3 fw-bold text-primary">
                                             {formatCurrency(stats.usedValue)}
                                         </p>
                                     </div>
-                                    <div className="bg-white rounded-xl shadow-sm p-6">
-                                        <p className="text-sm text-gray-500">
+                                    <div className="bg-white rounded-4 shadow-sm p-4">
+                                        <p className="small text-muted">
                                             Do wykorzystania
                                         </p>
-                                        <p className="text-2xl font-bold text-primary-600">
+                                        <p className="fs-3 fw-bold text-primary">
                                             {formatCurrency(
                                                 stats.outstandingValue,
                                             )}
@@ -321,10 +321,10 @@ export default function GiftCardsManagementPage() {
                             )}
 
                             {/* Filters */}
-                            <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-                                <div className="flex flex-wrap gap-4">
-                                    <div className="flex-1 min-w-[200px]">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <div className="bg-white rounded-4 shadow-sm p-3 mb-4">
+                                <div className="d-flex flex-wrap gap-3">
+                                    <div className="flex-fill min-w-[200px]">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Szukaj po kodzie
                                         </label>
                                         <input
@@ -336,11 +336,11 @@ export default function GiftCardsManagementPage() {
                                                 )
                                             }
                                             placeholder="np. XXXX-XXXX-XXXX"
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         />
                                     </div>
                                     <div className="w-48">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Status
                                         </label>
                                         <select
@@ -354,7 +354,7 @@ export default function GiftCardsManagementPage() {
                                                         | '',
                                                 )
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         >
                                             <option value="">Wszystkie</option>
                                             <option value="active">
@@ -375,40 +375,40 @@ export default function GiftCardsManagementPage() {
                             </div>
 
                             {/* Cards Table */}
-                            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-4 shadow-sm overflow-d-none">
                                 {isLoading ? (
-                                    <div className="p-8 text-center text-gray-500">
+                                    <div className="p-4 text-center text-muted">
                                         Ładowanie...
                                     </div>
                                 ) : cardsData?.data.length === 0 ? (
-                                    <div className="p-8 text-center text-gray-500">
+                                    <div className="p-4 text-center text-muted">
                                         Brak kart podarunkowych
                                     </div>
                                 ) : (
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                    <table className="min-w-100">
+                                        <thead className="bg-light">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Kod
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Wartość / Saldo
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Status
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Odbiorca
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Ważna do
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-2 text-end small fw-medium text-muted text-uppercase">
                                                     Akcje
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
+                                        <tbody className="bg-white">
                                             {cardsData?.data.map((card) => {
                                                 const progressStyle: React.CSSProperties =
                                                     {
@@ -417,9 +417,9 @@ export default function GiftCardsManagementPage() {
                                                 return (
                                                     <tr
                                                         key={card.id}
-                                                        className="hover:bg-gray-50"
+                                                        className=""
                                                     >
-                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                        <td className="px-4 py-3 text-nowrap">
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
@@ -427,20 +427,20 @@ export default function GiftCardsManagementPage() {
                                                                         card,
                                                                     )
                                                                 }
-                                                                className="font-mono text-sm text-primary-600 hover:text-primary-700 font-medium"
+                                                                className="font-mono small text-primary fw-medium"
                                                             >
                                                                 {card.code}
                                                             </button>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="text-sm">
-                                                                <span className="font-medium">
+                                                        <td className="px-4 py-3 text-nowrap">
+                                                            <div className="small">
+                                                                <span className="fw-medium">
                                                                     {formatCurrency(
                                                                         card.currentBalance,
                                                                         card.currency,
                                                                     )}
                                                                 </span>
-                                                                <span className="text-gray-400">
+                                                                <span className="text-secondary">
                                                                     {' '}
                                                                     /{' '}
                                                                     {formatCurrency(
@@ -451,9 +451,9 @@ export default function GiftCardsManagementPage() {
                                                             </div>
                                                             {card.currentBalance <
                                                                 card.initialValue && (
-                                                                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                                                <div className="w-100 bg-secondary bg-opacity-25 rounded-circle h-1.5 mt-1">
                                                                     <div
-                                                                        className="bg-primary-600 h-1.5 rounded-full"
+                                                                        className="bg-primary bg-opacity-10 h-1.5 rounded-circle"
                                                                         style={
                                                                             progressStyle
                                                                         }
@@ -461,9 +461,9 @@ export default function GiftCardsManagementPage() {
                                                                 </div>
                                                             )}
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                        <td className="px-4 py-3 text-nowrap">
                                                             <span
-                                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[card.status]}`}
+                                                                className={`inline-d-flex px-2 py-1 small fw-semibold rounded-circle ${STATUS_COLORS[card.status]}`}
                                                             >
                                                                 {
                                                                     STATUS_LABELS[
@@ -473,13 +473,13 @@ export default function GiftCardsManagementPage() {
                                                                 }
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                        <td className="px-4 py-3 text-nowrap small text-body">
                                                             {card.recipientName ||
                                                                 card.recipient
                                                                     ?.name ||
                                                                 '-'}
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                        <td className="px-4 py-3 text-nowrap small text-body">
                                                             {format(
                                                                 new Date(
                                                                     card.validUntil,
@@ -488,8 +488,8 @@ export default function GiftCardsManagementPage() {
                                                                 { locale: pl },
                                                             )}
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                            <div className="flex justify-end gap-2">
+                                                        <td className="px-4 py-3 text-nowrap text-end small fw-medium">
+                                                            <div className="d-flex justify-content-end gap-2">
                                                                 {card.status ===
                                                                     'active' && (
                                                                     <>
@@ -500,7 +500,7 @@ export default function GiftCardsManagementPage() {
                                                                                     card,
                                                                                 )
                                                                             }
-                                                                            className="text-gray-600 hover:text-gray-900"
+                                                                            className="text-muted"
                                                                             title="Edytuj"
                                                                         >
                                                                             <svg
@@ -528,7 +528,7 @@ export default function GiftCardsManagementPage() {
                                                                                         card,
                                                                                     )
                                                                                 }
-                                                                                className="text-blue-600 hover:text-blue-900"
+                                                                                className="text-primary"
                                                                                 title="Korekta salda"
                                                                             >
                                                                                 <svg
@@ -557,7 +557,7 @@ export default function GiftCardsManagementPage() {
                                                                                         card,
                                                                                     )
                                                                                 }
-                                                                                className="text-red-600 hover:text-red-900"
+                                                                                className="text-danger"
                                                                                 title="Anuluj"
                                                                             >
                                                                                 <svg
@@ -590,12 +590,12 @@ export default function GiftCardsManagementPage() {
 
                                 {/* Pagination */}
                                 {cardsData && cardsData.total > 20 && (
-                                    <div className="bg-white px-4 py-3 border-t flex items-center justify-between">
-                                        <div className="text-sm text-gray-700">
+                                    <div className="bg-white px-3 py-2 border-top d-flex align-items-center justify-content-between">
+                                        <div className="small text-body">
                                             Strona {page} z{' '}
                                             {Math.ceil(cardsData.total / 20)}
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="d-flex gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -604,7 +604,7 @@ export default function GiftCardsManagementPage() {
                                                     )
                                                 }
                                                 disabled={page === 1}
-                                                className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                                                className="px-3 py-1 border rounded small"
                                             >
                                                 Poprzednia
                                             </button>
@@ -619,7 +619,7 @@ export default function GiftCardsManagementPage() {
                                                         cardsData.total / 20,
                                                     )
                                                 }
-                                                className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                                                className="px-3 py-1 border rounded small"
                                             >
                                                 Następna
                                             </button>
@@ -631,21 +631,21 @@ export default function GiftCardsManagementPage() {
 
                         {/* Create Modal */}
                         {modalType === 'create' && (
-                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
                                     <form
                                         onSubmit={(event) => {
                                             void handleCreate(event);
                                         }}
                                     >
-                                        <div className="px-6 py-4 border-b">
-                                            <h2 className="text-lg font-semibold">
+                                        <div className="px-4 py-3 border-bottom">
+                                            <h2 className="fs-5 fw-semibold">
                                                 Sprzedaj kartę podarunkową
                                             </h2>
                                         </div>
-                                        <div className="px-6 py-4 space-y-4">
+                                        <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Wartość karty (PLN) *
                                                 </label>
                                                 <input
@@ -667,12 +667,12 @@ export default function GiftCardsManagementPage() {
                                                                 ),
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="-cols-2 gap-3">
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    <label className="d-block small fw-medium text-body mb-1">
                                                         Ważna od *
                                                     </label>
                                                     <input
@@ -692,11 +692,11 @@ export default function GiftCardsManagementPage() {
                                                                 }),
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    <label className="d-block small fw-medium text-body mb-1">
                                                         Ważna do *
                                                     </label>
                                                     <input
@@ -716,12 +716,12 @@ export default function GiftCardsManagementPage() {
                                                                 }),
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                                     />
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Nazwa odbiorcy
                                                 </label>
                                                 <input
@@ -739,11 +739,11 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Email odbiorcy
                                                 </label>
                                                 <input
@@ -761,11 +761,11 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Wiadomość (życzenia)
                                                 </label>
                                                 <textarea
@@ -780,18 +780,18 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                     placeholder="Wszystkiego najlepszego z okazji urodzin!"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="px-6 py-4 border-t flex justify-end gap-3">
+                                        <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     setModalType(null)
                                                 }
-                                                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                                className="px-3 py-2 border rounded-3"
                                             >
                                                 Anuluj
                                             </button>
@@ -800,7 +800,7 @@ export default function GiftCardsManagementPage() {
                                                 disabled={
                                                     createGiftCard.isPending
                                                 }
-                                                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                                                className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                             >
                                                 {createGiftCard.isPending
                                                     ? 'Tworzenie...'
@@ -814,21 +814,21 @@ export default function GiftCardsManagementPage() {
 
                         {/* Edit Modal */}
                         {modalType === 'edit' && selectedCard && (
-                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
                                     <form
                                         onSubmit={(event) => {
                                             void handleUpdate(event);
                                         }}
                                     >
-                                        <div className="px-6 py-4 border-b">
-                                            <h2 className="text-lg font-semibold">
+                                        <div className="px-4 py-3 border-bottom">
+                                            <h2 className="fs-5 fw-semibold">
                                                 Edytuj kartę {selectedCard.code}
                                             </h2>
                                         </div>
-                                        <div className="px-6 py-4 space-y-4">
+                                        <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Ważna do
                                                 </label>
                                                 <input
@@ -845,11 +845,11 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Nazwa odbiorcy
                                                 </label>
                                                 <input
@@ -867,11 +867,11 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Email odbiorcy
                                                 </label>
                                                 <input
@@ -889,11 +889,11 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Wiadomość
                                                 </label>
                                                 <textarea
@@ -910,11 +910,11 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Notatki wewnętrzne
                                                 </label>
                                                 <textarea
@@ -929,17 +929,17 @@ export default function GiftCardsManagementPage() {
                                                                 .value,
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="px-6 py-4 border-t flex justify-end gap-3">
+                                        <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     setModalType(null)
                                                 }
-                                                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                                className="px-3 py-2 border rounded-3"
                                             >
                                                 Anuluj
                                             </button>
@@ -948,7 +948,7 @@ export default function GiftCardsManagementPage() {
                                                 disabled={
                                                     updateGiftCard.isPending
                                                 }
-                                                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                                                className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                             >
                                                 {updateGiftCard.isPending
                                                     ? 'Zapisywanie...'
@@ -962,21 +962,21 @@ export default function GiftCardsManagementPage() {
 
                         {/* Redeem Modal */}
                         {modalType === 'redeem' && (
-                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
                                     <form
                                         onSubmit={(event) => {
                                             void handleRedeem(event);
                                         }}
                                     >
-                                        <div className="px-6 py-4 border-b">
-                                            <h2 className="text-lg font-semibold">
+                                        <div className="px-4 py-3 border-bottom">
+                                            <h2 className="fs-5 fw-semibold">
                                                 Zrealizuj kartę podarunkową
                                             </h2>
                                         </div>
-                                        <div className="px-6 py-4 space-y-4">
+                                        <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Kod karty *
                                                 </label>
                                                 <input
@@ -990,11 +990,11 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="XXXX-XXXX-XXXX"
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 font-mono"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus: font-mono"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Kwota do pobrania (PLN) *
                                                 </label>
                                                 <input
@@ -1013,11 +1013,11 @@ export default function GiftCardsManagementPage() {
                                                             ),
                                                         }))
                                                     }
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Notatka
                                                 </label>
                                                 <input
@@ -1031,17 +1031,17 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="np. wizyta #123"
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="px-6 py-4 border-t flex justify-end gap-3">
+                                        <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     setModalType(null)
                                                 }
-                                                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                                className="px-3 py-2 border rounded-3"
                                             >
                                                 Anuluj
                                             </button>
@@ -1050,7 +1050,7 @@ export default function GiftCardsManagementPage() {
                                                 disabled={
                                                     redeemGiftCard.isPending
                                                 }
-                                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                                                className="px-3 py-2 bg-success bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                             >
                                                 {redeemGiftCard.isPending
                                                     ? 'Realizowanie...'
@@ -1064,25 +1064,25 @@ export default function GiftCardsManagementPage() {
 
                         {/* Adjust Balance Modal */}
                         {modalType === 'adjust' && selectedCard && (
-                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
                                     <form
                                         onSubmit={(event) => {
                                             void handleAdjust(event);
                                         }}
                                     >
-                                        <div className="px-6 py-4 border-b">
-                                            <h2 className="text-lg font-semibold">
+                                        <div className="px-4 py-3 border-bottom">
+                                            <h2 className="fs-5 fw-semibold">
                                                 Korekta salda karty{' '}
                                                 {selectedCard.code}
                                             </h2>
                                         </div>
-                                        <div className="px-6 py-4 space-y-4">
-                                            <div className="bg-gray-50 rounded-lg p-4">
-                                                <p className="text-sm text-gray-600">
+                                        <div className="px-4 py-3 gap-2">
+                                            <div className="bg-light rounded-3 p-3">
+                                                <p className="small text-muted">
                                                     Aktualne saldo:
                                                 </p>
-                                                <p className="text-xl font-bold">
+                                                <p className="fs-5 fw-bold">
                                                     {formatCurrency(
                                                         selectedCard.currentBalance,
                                                         selectedCard.currency,
@@ -1090,7 +1090,7 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Kwota korekty (PLN) *
                                                 </label>
                                                 <input
@@ -1107,9 +1107,9 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="Dodatnia = doładowanie, ujemna = obciążenie"
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="small text-muted mt-1">
                                                     Nowe saldo:{' '}
                                                     {formatCurrency(
                                                         selectedCard.currentBalance +
@@ -1119,7 +1119,7 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="d-block small fw-medium text-body mb-1">
                                                     Powód korekty *
                                                 </label>
                                                 <input
@@ -1134,17 +1134,17 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="np. Zwrot za anulowaną wizytę"
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="px-6 py-4 border-t flex justify-end gap-3">
+                                        <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     setModalType(null)
                                                 }
-                                                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                                className="px-3 py-2 border rounded-3"
                                             >
                                                 Anuluj
                                             </button>
@@ -1153,7 +1153,7 @@ export default function GiftCardsManagementPage() {
                                                 disabled={
                                                     adjustBalance.isPending
                                                 }
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                                className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                             >
                                                 {adjustBalance.isPending
                                                     ? 'Zapisywanie...'
@@ -1167,10 +1167,10 @@ export default function GiftCardsManagementPage() {
 
                         {/* Details Modal */}
                         {modalType === 'details' && selectedCard && (
-                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-                                    <div className="px-6 py-4 border-b flex justify-between items-center">
-                                        <h2 className="text-lg font-semibold">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
+                                    <div className="px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
+                                        <h2 className="fs-5 fw-semibold">
                                             Szczegóły karty {selectedCard.code}
                                         </h2>
                                         <button
@@ -1178,7 +1178,7 @@ export default function GiftCardsManagementPage() {
                                             title="Zamknij"
                                             aria-label="Zamknij okno"
                                             onClick={() => setModalType(null)}
-                                            className="text-gray-400 hover:text-gray-600"
+                                            className="text-secondary"
                                         >
                                             <svg
                                                 className="w-6 h-6"
@@ -1195,22 +1195,22 @@ export default function GiftCardsManagementPage() {
                                             </svg>
                                         </button>
                                     </div>
-                                    <div className="px-6 py-4">
-                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div className="px-4 py-3">
+                                        <div className="-cols-2 gap-3 mb-4">
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Kod karty
                                                 </p>
-                                                <p className="font-mono text-lg font-bold">
+                                                <p className="font-mono fs-5 fw-bold">
                                                     {selectedCard.code}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Status
                                                 </p>
                                                 <span
-                                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[selectedCard.status]}`}
+                                                    className={`inline-d-flex px-2 py-1 small fw-semibold rounded-circle ${STATUS_COLORS[selectedCard.status]}`}
                                                 >
                                                     {
                                                         STATUS_LABELS[
@@ -1220,10 +1220,10 @@ export default function GiftCardsManagementPage() {
                                                 </span>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Wartość początkowa
                                                 </p>
-                                                <p className="font-medium">
+                                                <p className="fw-medium">
                                                     {formatCurrency(
                                                         selectedCard.initialValue,
                                                         selectedCard.currency,
@@ -1231,10 +1231,10 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Aktualne saldo
                                                 </p>
-                                                <p className="font-medium text-primary-600">
+                                                <p className="fw-medium text-primary">
                                                     {formatCurrency(
                                                         selectedCard.currentBalance,
                                                         selectedCard.currency,
@@ -1242,10 +1242,10 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Ważna od
                                                 </p>
-                                                <p className="font-medium">
+                                                <p className="fw-medium">
                                                     {format(
                                                         new Date(
                                                             selectedCard.validFrom,
@@ -1256,10 +1256,10 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Ważna do
                                                 </p>
-                                                <p className="font-medium">
+                                                <p className="fw-medium">
                                                     {format(
                                                         new Date(
                                                             selectedCard.validUntil,
@@ -1271,10 +1271,10 @@ export default function GiftCardsManagementPage() {
                                             </div>
                                             {selectedCard.recipientName && (
                                                 <div>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="small text-muted">
                                                         Odbiorca
                                                     </p>
-                                                    <p className="font-medium">
+                                                    <p className="fw-medium">
                                                         {
                                                             selectedCard.recipientName
                                                         }
@@ -1283,10 +1283,10 @@ export default function GiftCardsManagementPage() {
                                             )}
                                             {selectedCard.recipientEmail && (
                                                 <div>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="small text-muted">
                                                         Email odbiorcy
                                                     </p>
-                                                    <p className="font-medium">
+                                                    <p className="fw-medium">
                                                         {
                                                             selectedCard.recipientEmail
                                                         }
@@ -1294,11 +1294,11 @@ export default function GiftCardsManagementPage() {
                                                 </div>
                                             )}
                                             {selectedCard.message && (
-                                                <div className="col-span-2">
-                                                    <p className="text-sm text-gray-500">
+                                                <div className="">
+                                                    <p className="small text-muted">
                                                         Wiadomość
                                                     </p>
-                                                    <p className="font-medium italic">
+                                                    <p className="fw-medium fst-italic">
                                                         &quot;
                                                         {selectedCard.message}
                                                         &quot;
@@ -1306,19 +1306,19 @@ export default function GiftCardsManagementPage() {
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Sprzedawca
                                                 </p>
-                                                <p className="font-medium">
+                                                <p className="fw-medium">
                                                     {selectedCard.soldBy
                                                         ?.name ?? '-'}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     Data sprzedaży
                                                 </p>
-                                                <p className="font-medium">
+                                                <p className="fw-medium">
                                                     {selectedCard.soldAt
                                                         ? format(
                                                               new Date(
@@ -1333,36 +1333,36 @@ export default function GiftCardsManagementPage() {
                                         </div>
 
                                         <div>
-                                            <h3 className="font-semibold mb-3">
+                                            <h3 className="fw-semibold mb-2">
                                                 Historia transakcji
                                             </h3>
                                             {transactions?.length === 0 ? (
-                                                <p className="text-gray-500 text-sm">
+                                                <p className="text-muted small">
                                                     Brak transakcji
                                                 </p>
                                             ) : (
-                                                <div className="border rounded-lg overflow-hidden">
-                                                    <table className="min-w-full divide-y divide-gray-200">
-                                                        <thead className="bg-gray-50">
+                                                <div className="border rounded-3 overflow-d-none">
+                                                    <table className="min-w-100">
+                                                        <thead className="bg-light">
                                                             <tr>
-                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                                     Data
                                                                 </th>
-                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                                     Typ
                                                                 </th>
-                                                                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                                                                <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                                                                     Kwota
                                                                 </th>
-                                                                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                                                                <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                                                                     Saldo
                                                                 </th>
-                                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                                     Wykonawca
                                                                 </th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody className="divide-y divide-gray-200">
+                                                        <tbody className="">
                                                             {transactions?.map(
                                                                 (tx) => (
                                                                     <tr
@@ -1370,7 +1370,7 @@ export default function GiftCardsManagementPage() {
                                                                             tx.id
                                                                         }
                                                                     >
-                                                                        <td className="px-4 py-2 text-sm">
+                                                                        <td className="px-3 py-2 small">
                                                                             {format(
                                                                                 new Date(
                                                                                     tx.createdAt,
@@ -1381,7 +1381,7 @@ export default function GiftCardsManagementPage() {
                                                                                 },
                                                                             )}
                                                                         </td>
-                                                                        <td className="px-4 py-2 text-sm">
+                                                                        <td className="px-3 py-2 small">
                                                                             {
                                                                                 TRANSACTION_TYPE_LABELS[
                                                                                     tx
@@ -1390,7 +1390,7 @@ export default function GiftCardsManagementPage() {
                                                                             }
                                                                         </td>
                                                                         <td
-                                                                            className={`px-4 py-2 text-sm text-right font-medium ${tx.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                                            className={`px-3 py-2 small text-end fw-medium ${tx.amount >= 0 ? 'text-success' : 'text-danger'}`}
                                                                         >
                                                                             {tx.amount >=
                                                                             0
@@ -1401,13 +1401,13 @@ export default function GiftCardsManagementPage() {
                                                                                 selectedCard.currency,
                                                                             )}
                                                                         </td>
-                                                                        <td className="px-4 py-2 text-sm text-right">
+                                                                        <td className="px-3 py-2 small text-end">
                                                                             {formatCurrency(
                                                                                 tx.balanceAfter,
                                                                                 selectedCard.currency,
                                                                             )}
                                                                         </td>
-                                                                        <td className="px-4 py-2 text-sm">
+                                                                        <td className="px-3 py-2 small">
                                                                             {tx
                                                                                 .performedBy
                                                                                 ?.name ??

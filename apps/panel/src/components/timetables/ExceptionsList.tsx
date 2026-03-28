@@ -16,7 +16,11 @@ const EXCEPTION_STYLES: Record<
     ExceptionType,
     { bg: string; text: string; label: string }
 > = {
-    day_off: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Dzień wolny' },
+    day_off: {
+        bg: 'bg-secondary bg-opacity-10',
+        text: 'text-body',
+        label: 'Dzień wolny',
+    },
     vacation: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Urlop' },
     sick_leave: { bg: 'bg-red-100', text: 'text-red-700', label: 'L4' },
     training: {
@@ -29,7 +33,11 @@ const EXCEPTION_STYLES: Record<
         text: 'text-yellow-700',
         label: 'Zmienione godziny',
     },
-    other: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Inne' },
+    other: {
+        bg: 'bg-secondary bg-opacity-10',
+        text: 'text-muted',
+        label: 'Inne',
+    },
 };
 
 export default function ExceptionsList({
@@ -41,14 +49,14 @@ export default function ExceptionsList({
 }: Props) {
     if (exceptions.length === 0) {
         return (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-4 text-muted">
                 Brak zaplanowanych wyjątków
             </div>
         );
     }
 
     return (
-        <div className="space-y-2">
+        <div className="gap-2">
             {exceptions.map((exception) => {
                 const style = EXCEPTION_STYLES[exception.type];
                 const dateStr = format(
@@ -62,29 +70,29 @@ export default function ExceptionsList({
                 return (
                     <div
                         key={exception.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                        className={`d-flex align-items-center justify-content-between p-2 rounded-3 border ${
                             exception.isPending
-                                ? 'border-yellow-300 bg-yellow-50'
-                                : 'border-gray-200 bg-white'
+                                ? 'border-yellow-300 bg-warning bg-opacity-10'
+                                : 'border-secondary border-opacity-25 bg-white'
                         }`}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="d-flex align-items-center gap-2">
                             <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${style.bg} ${style.text}`}
+                                className={`px-2 py-1 rounded small fw-medium ${style.bg} ${style.text}`}
                             >
                                 {style.label}
                             </span>
                             <div>
-                                <div className="font-medium text-gray-800">
+                                <div className="fw-medium text-dark">
                                     {exception.title || dateStr}
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="small text-muted">
                                     {exception.title && dateStr}
                                     {exception.type === 'custom_hours' &&
                                         !exception.isAllDay &&
                                         exception.customStartTime &&
                                         exception.customEndTime && (
-                                            <span className="ml-2">
+                                            <span className="ms-2">
                                                 {exception.customStartTime} -{' '}
                                                 {exception.customEndTime}
                                             </span>
@@ -92,20 +100,20 @@ export default function ExceptionsList({
                                 </div>
                             </div>
                             {exception.isPending && (
-                                <span className="px-2 py-0.5 bg-yellow-200 text-yellow-800 rounded text-xs">
+                                <span className="px-2 py-0.5 bg-warning bg-opacity-10 text-warning rounded small">
                                     Oczekuje na zatwierdzenie
                                 </span>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="d-flex align-items-center gap-2">
                             {exception.isPending && canApprove && onApprove && (
                                 <button
                                     type="button"
                                     onClick={() => {
                                         void onApprove(exception.id);
                                     }}
-                                    className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                                    className="px-3 py-1 small bg-success bg-opacity-10 text-success rounded bg-opacity-10"
                                 >
                                     Zatwierdź
                                 </button>
@@ -114,7 +122,7 @@ export default function ExceptionsList({
                                 <button
                                     type="button"
                                     onClick={() => onEdit(exception)}
-                                    className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                                    className="p-1 text-muted rounded"
                                     title="Edytuj"
                                 >
                                     <svg
@@ -138,7 +146,7 @@ export default function ExceptionsList({
                                     onClick={() => {
                                         void onDelete(exception.id);
                                     }}
-                                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                    className="p-1 text-danger bg-opacity-10 rounded"
                                     title="Usuń"
                                 >
                                     <svg

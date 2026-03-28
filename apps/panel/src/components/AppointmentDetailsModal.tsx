@@ -25,16 +25,16 @@ export default function AppointmentDetailsModal({
     const date = new Date(a.startTime).toLocaleString();
     return (
         <Modal open={open} onClose={onClose}>
-            <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Appointment #{a.id}</h3>
-                <div className="text-sm text-gray-600">{date}</div>
+            <div className="gap-2">
+                <h3 className="fs-5 fw-semibold">Appointment #{a.id}</h3>
+                <div className="small text-muted">{date}</div>
                 <div>Client: {a.client?.name ?? '-'}</div>
                 <div>Service: {a.service?.name ?? '-'}</div>
                 <div>
                     Employee: {a.employee?.fullName ?? a.employee?.name ?? '-'}
                 </div>
                 <div>Status: {a.paymentStatus ?? 'scheduled'}</div>
-                <div className="flex gap-2 justify-end pt-2">
+                <div className="d-flex gap-2 justify-content-end pt-2">
                     <button className="border px-2 py-1" onClick={onClose}>
                         Close
                     </button>

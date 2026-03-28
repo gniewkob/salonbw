@@ -132,11 +132,11 @@ export default function NewsletterEditorModal({
         if (channel !== 'email' || !content) return null;
         return (
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="d-block small fw-medium text-body mb-2">
                     Podgląd HTML
                 </label>
                 <div
-                    className="bg-white border rounded-lg p-4 max-h-64 overflow-auto prose prose-sm"
+                    className="bg-white border rounded-3 p-3 max-h-64 overflow-auto prose prose-sm"
                     // eslint-disable-next-line react/no-danger
                     dangerouslySetInnerHTML={{ __html: content }}
                 />
@@ -145,16 +145,16 @@ export default function NewsletterEditorModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
+        <div className="position-fixed top-0 start-0 bottom-0 end-0 overflow-y-auto">
+            <div className="d-flex min-h-100 align-items-center justify-content-center p-3">
                 <div
-                    className="fixed inset-0 bg-black/50"
+                    className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50"
                     onClick={onClose}
                     aria-hidden
                 />
-                <div className="relative bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                    <div className="px-6 py-4 border-b flex items-center justify-between">
-                        <h2 className="text-xl font-semibold text-gray-800">
+                <div className="position-relative bg-white rounded-4 shadow-lg w-100 max-w-4xl max-h-[90vh] overflow-d-none d-flex flex-column">
+                    <div className="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+                        <h2 className="fs-5 fw-semibold text-dark">
                             {newsletter
                                 ? 'Edytuj newsletter'
                                 : 'Nowy newsletter'}
@@ -162,10 +162,10 @@ export default function NewsletterEditorModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 rounded-3"
                         >
                             <svg
-                                className="w-5 h-5 text-gray-500"
+                                className="w-5 h-5 text-muted"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -185,15 +185,15 @@ export default function NewsletterEditorModal({
                         onSubmit={(event) => {
                             void handleSubmit(event);
                         }}
-                        className="flex-1 overflow-y-auto p-6"
+                        className="flex-fill overflow-y-auto p-4"
                     >
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="-cols-2 gap-4">
                             {/* Left column - Newsletter details */}
-                            <div className="space-y-4">
+                            <div className="gap-2">
                                 <div>
                                     <label
                                         htmlFor="nl-name"
-                                        className="block text-sm font-medium text-gray-700 mb-1"
+                                        className="d-block small fw-medium text-body mb-1"
                                     >
                                         Nazwa (wewnętrzna)
                                     </label>
@@ -204,7 +204,7 @@ export default function NewsletterEditorModal({
                                         onChange={(e) =>
                                             setName(e.target.value)
                                         }
-                                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus:"
                                         placeholder="np. Newsletter Styczniowy 2026"
                                         required
                                     />
@@ -213,7 +213,7 @@ export default function NewsletterEditorModal({
                                 <div>
                                     <label
                                         htmlFor="nl-subject"
-                                        className="block text-sm font-medium text-gray-700 mb-1"
+                                        className="d-block small fw-medium text-body mb-1"
                                     >
                                         Temat wiadomości
                                     </label>
@@ -224,7 +224,7 @@ export default function NewsletterEditorModal({
                                         onChange={(e) =>
                                             setSubject(e.target.value)
                                         }
-                                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus:"
                                         placeholder="np. Nowości w naszym salonie!"
                                         required
                                     />
@@ -233,7 +233,7 @@ export default function NewsletterEditorModal({
                                 <div>
                                     <label
                                         htmlFor="nl-channel"
-                                        className="block text-sm font-medium text-gray-700 mb-1"
+                                        className="d-block small fw-medium text-body mb-1"
                                     >
                                         Kanał
                                     </label>
@@ -246,7 +246,7 @@ export default function NewsletterEditorModal({
                                                     .value as NewsletterChannel,
                                             )
                                         }
-                                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus:"
                                     >
                                         <option value="email">Email</option>
                                         <option value="sms">SMS</option>
@@ -255,10 +255,10 @@ export default function NewsletterEditorModal({
 
                                 {/* Variables */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="d-block small fw-medium text-body mb-2">
                                         Zmienne
                                     </label>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="d-flex flex-wrap gap-2">
                                         {VARIABLES.map((v) => (
                                             <button
                                                 key={v.key}
@@ -266,7 +266,7 @@ export default function NewsletterEditorModal({
                                                 onClick={() =>
                                                     insertVariable(v.key)
                                                 }
-                                                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                                                className="px-2 py-1 small bg-light text-body rounded bg-opacity-25"
                                                 title={v.label}
                                             >
                                                 {v.key}
@@ -279,7 +279,7 @@ export default function NewsletterEditorModal({
                                 <div>
                                     <label
                                         htmlFor="nl-content"
-                                        className="block text-sm font-medium text-gray-700 mb-1"
+                                        className="d-block small fw-medium text-body mb-1"
                                     >
                                         Treść{' '}
                                         {channel === 'email'
@@ -294,7 +294,7 @@ export default function NewsletterEditorModal({
                                             setContent(e.target.value)
                                         }
                                         rows={12}
-                                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 font-mono text-sm"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus: font-mono small"
                                         placeholder={
                                             channel === 'email'
                                                 ? '<h1>Witaj {{client_name}}!</h1>\n<p>Mamy dla Ciebie świetne nowości...</p>'
@@ -306,13 +306,13 @@ export default function NewsletterEditorModal({
                             </div>
 
                             {/* Right column - Recipients */}
-                            <div className="space-y-4">
+                            <div className="gap-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="d-block small fw-medium text-body mb-2">
                                         Odbiorcy
                                     </label>
-                                    <div className="flex gap-4 mb-4">
-                                        <label className="flex items-center">
+                                    <div className="d-flex gap-3 mb-3">
+                                        <label className="d-flex align-items-center">
                                             <input
                                                 type="radio"
                                                 name="filterMode"
@@ -323,11 +323,11 @@ export default function NewsletterEditorModal({
                                                 onChange={() =>
                                                     setFilterMode('filter')
                                                 }
-                                                className="mr-2"
+                                                className="me-2"
                                             />
                                             Filtruj klientów
                                         </label>
-                                        <label className="flex items-center">
+                                        <label className="d-flex align-items-center">
                                             <input
                                                 type="radio"
                                                 name="filterMode"
@@ -338,7 +338,7 @@ export default function NewsletterEditorModal({
                                                 onChange={() =>
                                                     setFilterMode('manual')
                                                 }
-                                                className="mr-2"
+                                                className="me-2"
                                             />
                                             Wybierz ręcznie
                                         </label>
@@ -346,9 +346,9 @@ export default function NewsletterEditorModal({
                                 </div>
 
                                 {filterMode === 'filter' ? (
-                                    <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                                        <div className="flex items-center gap-4">
-                                            <label className="flex items-center">
+                                    <div className="bg-light rounded-3 p-3 gap-2">
+                                        <div className="d-flex align-items-center gap-3">
+                                            <label className="d-flex align-items-center">
                                                 <input
                                                     type="checkbox"
                                                     checked={
@@ -364,11 +364,11 @@ export default function NewsletterEditorModal({
                                                                 undefined,
                                                         })
                                                     }
-                                                    className="mr-2"
+                                                    className="me-2"
                                                 />
                                                 Tylko ze zgodą email
                                             </label>
-                                            <label className="flex items-center">
+                                            <label className="d-flex align-items-center">
                                                 <input
                                                     type="checkbox"
                                                     checked={
@@ -384,7 +384,7 @@ export default function NewsletterEditorModal({
                                                                 undefined,
                                                         })
                                                     }
-                                                    className="mr-2"
+                                                    className="me-2"
                                                 />
                                                 Tylko ze zgodą SMS
                                             </label>
@@ -393,7 +393,7 @@ export default function NewsletterEditorModal({
                                         <div>
                                             <label
                                                 htmlFor="filter-gender"
-                                                className="block text-sm text-gray-600 mb-1"
+                                                className="d-block small text-muted mb-1"
                                             >
                                                 Płeć
                                             </label>
@@ -414,7 +414,7 @@ export default function NewsletterEditorModal({
                                                             | undefined,
                                                     })
                                                 }
-                                                className="w-full rounded-lg border-gray-300 shadow-sm text-sm"
+                                                className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm small"
                                             >
                                                 <option value="">
                                                     Wszystkie
@@ -428,11 +428,11 @@ export default function NewsletterEditorModal({
                                             </select>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="-cols-2 gap-3">
                                             <div>
                                                 <label
                                                     htmlFor="filter-age-min"
-                                                    className="block text-sm text-gray-600 mb-1"
+                                                    className="d-block small text-muted mb-1"
                                                 >
                                                     Wiek min.
                                                 </label>
@@ -455,14 +455,14 @@ export default function NewsletterEditorModal({
                                                                 : undefined,
                                                         })
                                                     }
-                                                    className="w-full rounded-lg border-gray-300 shadow-sm text-sm"
+                                                    className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm small"
                                                     min={0}
                                                 />
                                             </div>
                                             <div>
                                                 <label
                                                     htmlFor="filter-age-max"
-                                                    className="block text-sm text-gray-600 mb-1"
+                                                    className="d-block small text-muted mb-1"
                                                 >
                                                     Wiek max.
                                                 </label>
@@ -485,7 +485,7 @@ export default function NewsletterEditorModal({
                                                                 : undefined,
                                                         })
                                                     }
-                                                    className="w-full rounded-lg border-gray-300 shadow-sm text-sm"
+                                                    className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm small"
                                                     min={0}
                                                 />
                                             </div>
@@ -496,14 +496,14 @@ export default function NewsletterEditorModal({
                                             onClick={() => {
                                                 void handlePreviewRecipients();
                                             }}
-                                            className="w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className="w-100 px-3 py-2 small bg-white border border-secondary border-opacity-50 rounded-3"
                                         >
                                             Podgląd odbiorców
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="bg-gray-50 rounded-lg p-4">
-                                        <p className="text-sm text-gray-600 mb-2">
+                                    <div className="bg-light rounded-3 p-3">
+                                        <p className="small text-muted mb-2">
                                             Wprowadź ID klientów (oddzielone
                                             przecinkami):
                                         </p>
@@ -525,7 +525,7 @@ export default function NewsletterEditorModal({
                                                 )
                                             }
                                             rows={4}
-                                            className="w-full rounded-lg border-gray-300 shadow-sm text-sm"
+                                            className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm small"
                                             placeholder="np. 1, 5, 12, 34"
                                         />
                                         <button
@@ -533,7 +533,7 @@ export default function NewsletterEditorModal({
                                             onClick={() => {
                                                 void handlePreviewRecipients();
                                             }}
-                                            className="w-full mt-2 px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className="w-100 mt-2 px-3 py-2 small bg-white border border-secondary border-opacity-50 rounded-3"
                                         >
                                             Podgląd odbiorców
                                         </button>
@@ -541,11 +541,11 @@ export default function NewsletterEditorModal({
                                 )}
 
                                 {previewCount !== null && (
-                                    <div className="bg-primary-50 text-primary-700 rounded-lg p-4 text-center">
-                                        <span className="text-2xl font-bold">
+                                    <div className="bg-primary bg-opacity-10 text-primary rounded-3 p-3 text-center">
+                                        <span className="fs-3 fw-bold">
                                             {previewCount}
                                         </span>
-                                        <p className="text-sm">
+                                        <p className="small">
                                             odbiorców spełnia kryteria
                                         </p>
                                     </div>
@@ -556,11 +556,11 @@ export default function NewsletterEditorModal({
                         </div>
                     </form>
 
-                    <div className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
+                    <div className="px-4 py-3 border-top bg-light d-flex justify-content-end gap-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                            className="px-3 py-2 text-body bg-opacity-25 rounded-3"
                         >
                             Anuluj
                         </button>
@@ -568,7 +568,7 @@ export default function NewsletterEditorModal({
                             type="submit"
                             form="newsletter-form"
                             disabled={saving || !name || !subject || !content}
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10 disabled:"
                         >
                             {saving ? 'Zapisywanie...' : 'Zapisz'}
                         </button>

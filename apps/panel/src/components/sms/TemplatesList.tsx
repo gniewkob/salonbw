@@ -26,7 +26,7 @@ const TYPE_COLORS: Record<TemplateType, string> = {
     birthday_wish: 'bg-pink-100 text-pink-700',
     follow_up: 'bg-purple-100 text-purple-700',
     marketing: 'bg-yellow-100 text-yellow-700',
-    custom: 'bg-gray-100 text-gray-700',
+    custom: 'bg-secondary bg-opacity-10 text-body',
 };
 
 export default function TemplatesList({
@@ -37,57 +37,57 @@ export default function TemplatesList({
 }: Props) {
     if (templates.length === 0) {
         return (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-5 text-muted">
                 Brak szablonów wiadomości
             </div>
         );
     }
 
     return (
-        <div className="space-y-3">
+        <div className="gap-2">
             {templates.map((template) => (
                 <div
                     key={template.id}
-                    className={`bg-white border rounded-lg p-4 ${
-                        !template.isActive ? 'opacity-60' : ''
+                    className={`bg-white border rounded-3 p-3 ${
+                        !template.isActive ? 'opacity-50' : ''
                     }`}
                 >
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+                    <div className="d-flex align-items-start justify-content-between">
+                        <div className="flex-fill">
+                            <div className="d-flex align-items-center gap-2 mb-2">
                                 <span
-                                    className={`px-2 py-0.5 rounded text-xs font-medium ${TYPE_COLORS[template.type]}`}
+                                    className={`px-2 py-0.5 rounded small fw-medium ${TYPE_COLORS[template.type]}`}
                                 >
                                     {TYPE_LABELS[template.type]}
                                 </span>
-                                <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 uppercase">
+                                <span className="px-2 py-0.5 rounded small bg-light text-muted text-uppercase">
                                     {template.channel}
                                 </span>
                                 {template.isDefault && (
-                                    <span className="px-2 py-0.5 rounded text-xs bg-primary-100 text-primary-700">
+                                    <span className="px-2 py-0.5 rounded small bg-primary bg-opacity-10 text-primary">
                                         Domyślny
                                     </span>
                                 )}
                                 {!template.isActive && (
-                                    <span className="px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-500">
+                                    <span className="px-2 py-0.5 rounded small bg-secondary bg-opacity-25 text-muted">
                                         Nieaktywny
                                     </span>
                                 )}
                             </div>
-                            <h4 className="font-medium text-gray-800">
+                            <h4 className="fw-medium text-dark">
                                 {template.name}
                             </h4>
-                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            <p className="small text-muted mt-1 line-clamp-2">
                                 {template.content}
                             </p>
                             {template.availableVariables &&
                                 template.availableVariables.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1">
+                                    <div className="mt-2 d-flex flex-wrap gap-1">
                                         {template.availableVariables.map(
                                             (v) => (
                                                 <code
                                                     key={v}
-                                                    className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
+                                                    className="px-1.5 py-0.5 bg-light text-muted small rounded"
                                                 >
                                                     {`{{${v}}}`}
                                                 </code>
@@ -97,14 +97,14 @@ export default function TemplatesList({
                                 )}
                         </div>
 
-                        <div className="flex items-center gap-2 ml-4">
+                        <div className="d-flex align-items-center gap-2 ms-3">
                             {!template.isDefault && onSetDefault && (
                                 <button
                                     type="button"
                                     onClick={() => {
                                         void onSetDefault(template.id);
                                     }}
-                                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                                    className="p-1 text-secondary bg-opacity-10 rounded"
                                     title="Ustaw jako domyślny"
                                 >
                                     <svg
@@ -126,7 +126,7 @@ export default function TemplatesList({
                                 <button
                                     type="button"
                                     onClick={() => onEdit(template)}
-                                    className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                                    className="p-1 text-muted rounded"
                                     title="Edytuj"
                                 >
                                     <svg
@@ -150,7 +150,7 @@ export default function TemplatesList({
                                     onClick={() => {
                                         void onDelete(template.id);
                                     }}
-                                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                    className="p-1 text-danger bg-opacity-10 rounded"
                                     title="Usuń"
                                 >
                                     <svg

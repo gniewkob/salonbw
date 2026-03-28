@@ -12,12 +12,12 @@ export default function PanelModal({
     maxWidthClassName = 'max-w-md',
 }: PanelModalProps) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center bg-dark bg-opacity-50">
             <div
-                className={`w-full rounded-lg bg-white shadow-xl ${maxWidthClassName}`.trim()}
+                className={`w-100 rounded-3 bg-white shadow-xl ${maxWidthClassName}`.trim()}
             >
-                <div className="p-6">
-                    <h2 className="mb-4 text-xl font-semibold">{title}</h2>
+                <div className="p-4">
+                    <h2 className="mb-3 fs-5 fw-semibold">{title}</h2>
                     {children}
                 </div>
             </div>

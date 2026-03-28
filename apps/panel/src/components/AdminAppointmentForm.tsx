@@ -58,9 +58,9 @@ export default function AdminAppointmentForm({
     };
 
     return (
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+        <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
             <select
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={clientId}
                 onChange={(e) => setClientId(Number(e.target.value))}
             >
@@ -71,7 +71,7 @@ export default function AdminAppointmentForm({
                 ))}
             </select>
             <select
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(Number(e.target.value))}
             >
@@ -82,7 +82,7 @@ export default function AdminAppointmentForm({
                 ))}
             </select>
             <select
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={serviceId}
                 onChange={(e) => setServiceId(Number(e.target.value))}
             >
@@ -96,14 +96,14 @@ export default function AdminAppointmentForm({
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
             />
             {error && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-danger small">
                     {error}
                 </p>
             )}
-            <div className="flex gap-2 justify-end">
+            <div className="d-flex gap-2 justify-content-end">
                 <button
                     type="button"
                     onClick={onCancel}

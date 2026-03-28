@@ -55,8 +55,8 @@ export default function CompanySettingsPage() {
 
     if (!user || user.role !== 'admin') {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-gray-500">Brak dostępu</p>
+            <div className="d-d-flex align-align-items-center justify-content-center">
+                <p className="text-muted">Brak dostępu</p>
             </div>
         );
     }
@@ -103,21 +103,19 @@ export default function CompanySettingsPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Ustawienia firmy
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-500">
+        <div className="bg-light">
+            <div className="mx-auto py-3 px-3">
+                <div className="mb-3">
+                    <h1 className="fs-3 fw-bold text-dark">Ustawienia firmy</h1>
+                    <p className="mt-1 small text-muted">
                         Zarządzaj danymi swojego salonu
                     </p>
                 </div>
 
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-                        <span className="ml-3 text-gray-600">
+                    <div className="d-d-flex align-align-items-center justify-content-center py-3">
+                        <div className="spinner-border spinner-border-sm text-primary"></div>
+                        <span className="ms-2 text-muted">
                             Ładowanie ustawień...
                         </span>
                     </div>
@@ -128,17 +126,17 @@ export default function CompanySettingsPage() {
                         }}
                     >
                         {/* Tabs */}
-                        <div className="border-b border-gray-200 mb-6">
-                            <nav className="-mb-px flex gap-4 overflow-x-auto">
+                        <div className="border-bottom mb-3">
+                            <nav className="-mb-px d-d-flex gap-3 overflow-auto">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.key}
                                         type="button"
                                         onClick={() => setActiveTab(tab.key)}
-                                        className={`py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                                        className={`py-2 px-1 border-bottom border border-2 fw-medium small text-nowrap ${
                                             activeTab === tab.key
-                                                ? 'border-primary-500 text-primary-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                ? 'border-primary text-primary'
+                                                : 'border-transparent text-muted border-opacity-50'
                                         }`}
                                     >
                                         {tab.label}
@@ -147,12 +145,12 @@ export default function CompanySettingsPage() {
                             </nav>
                         </div>
 
-                        <div className="bg-white rounded-lg shadow p-6">
+                        <div className="bg-white rounded-3 shadow p-3">
                             {activeTab === 'company' && (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="">
+                                    <div className="row g-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Nazwa firmy *
                                             </label>
                                             <input
@@ -163,11 +161,11 @@ export default function CompanySettingsPage() {
                                                 }
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Nazwa wyświetlana
                                             </label>
                                             <input
@@ -178,11 +176,11 @@ export default function CompanySettingsPage() {
                                                 }
                                                 onChange={handleChange}
                                                 placeholder="Opcjonalna krótsza nazwa"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 NIP
                                             </label>
                                             <input
@@ -192,11 +190,11 @@ export default function CompanySettingsPage() {
                                                 onChange={handleChange}
                                                 placeholder="1234567890"
                                                 maxLength={10}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 REGON
                                             </label>
                                             <input
@@ -206,13 +204,13 @@ export default function CompanySettingsPage() {
                                                 onChange={handleChange}
                                                 placeholder="123456789"
                                                 maxLength={14}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Logo URL
                                         </label>
                                         <input
@@ -221,16 +219,16 @@ export default function CompanySettingsPage() {
                                             value={formData.logoUrl ?? ''}
                                             onChange={handleChange}
                                             placeholder="https://..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="row g-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Kolor główny
                                             </label>
-                                            <div className="flex gap-2">
+                                            <div className="d-d-flex gap-2">
                                                 <input
                                                     type="color"
                                                     name="primaryColor"
@@ -239,7 +237,7 @@ export default function CompanySettingsPage() {
                                                         '#25B4C1'
                                                     }
                                                     onChange={handleChange}
-                                                    className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                                                    className="form-control form-control-color"
                                                 />
                                                 <input
                                                     type="text"
@@ -254,12 +252,12 @@ export default function CompanySettingsPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                    className="form-control flex-fill"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Waluta
                                             </label>
                                             <select
@@ -268,7 +266,7 @@ export default function CompanySettingsPage() {
                                                     formData.currency ?? 'PLN'
                                                 }
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             >
                                                 <option value="PLN">
                                                     PLN (zł)
@@ -285,7 +283,7 @@ export default function CompanySettingsPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Strefa czasowa
                                             </label>
                                             <select
@@ -295,7 +293,7 @@ export default function CompanySettingsPage() {
                                                     'Europe/Warsaw'
                                                 }
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             >
                                                 <option value="Europe/Warsaw">
                                                     Europa/Warszawa
@@ -316,10 +314,10 @@ export default function CompanySettingsPage() {
                             )}
 
                             {activeTab === 'address' && (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <div className="">
+                                    <div className="row g-4">
+                                        <div className="col-12">
+                                            <label className="form-label">
                                                 Ulica
                                             </label>
                                             <input
@@ -327,11 +325,11 @@ export default function CompanySettingsPage() {
                                                 name="street"
                                                 value={formData.street ?? ''}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Numer budynku
                                             </label>
                                             <input
@@ -342,11 +340,11 @@ export default function CompanySettingsPage() {
                                                     ''
                                                 }
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Numer lokalu
                                             </label>
                                             <input
@@ -357,11 +355,11 @@ export default function CompanySettingsPage() {
                                                     ''
                                                 }
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Kod pocztowy
                                             </label>
                                             <input
@@ -372,11 +370,11 @@ export default function CompanySettingsPage() {
                                                 }
                                                 onChange={handleChange}
                                                 placeholder="00-000"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Miasto
                                             </label>
                                             <input
@@ -384,11 +382,11 @@ export default function CompanySettingsPage() {
                                                 name="city"
                                                 value={formData.city ?? ''}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Kraj
                                             </label>
                                             <input
@@ -396,7 +394,7 @@ export default function CompanySettingsPage() {
                                                 name="country"
                                                 value={formData.country ?? ''}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                     </div>
@@ -404,10 +402,10 @@ export default function CompanySettingsPage() {
                             )}
 
                             {activeTab === 'contact' && (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="">
+                                    <div className="row g-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Telefon główny
                                             </label>
                                             <input
@@ -416,11 +414,11 @@ export default function CompanySettingsPage() {
                                                 value={formData.phone ?? ''}
                                                 onChange={handleChange}
                                                 placeholder="+48 123 456 789"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Telefon dodatkowy
                                             </label>
                                             <input
@@ -431,11 +429,11 @@ export default function CompanySettingsPage() {
                                                     ''
                                                 }
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Email
                                             </label>
                                             <input
@@ -443,11 +441,11 @@ export default function CompanySettingsPage() {
                                                 name="email"
                                                 value={formData.email ?? ''}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Strona internetowa
                                             </label>
                                             <input
@@ -456,7 +454,7 @@ export default function CompanySettingsPage() {
                                                 value={formData.website ?? ''}
                                                 onChange={handleChange}
                                                 placeholder="https://..."
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                     </div>
@@ -464,9 +462,9 @@ export default function CompanySettingsPage() {
                             )}
 
                             {activeTab === 'social' && (
-                                <div className="space-y-6">
+                                <div className="">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Facebook
                                         </label>
                                         <input
@@ -475,11 +473,11 @@ export default function CompanySettingsPage() {
                                             value={formData.facebookUrl ?? ''}
                                             onChange={handleChange}
                                             placeholder="https://facebook.com/..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Instagram
                                         </label>
                                         <input
@@ -488,11 +486,11 @@ export default function CompanySettingsPage() {
                                             value={formData.instagramUrl ?? ''}
                                             onChange={handleChange}
                                             placeholder="https://instagram.com/..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             TikTok
                                         </label>
                                         <input
@@ -501,15 +499,15 @@ export default function CompanySettingsPage() {
                                             value={formData.tiktokUrl ?? ''}
                                             onChange={handleChange}
                                             placeholder="https://tiktok.com/@..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'tax' && (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3">
+                                <div className="">
+                                    <div className="d-d-flex align-align-items-center gap-2">
                                         <input
                                             type="checkbox"
                                             id="isVatPayer"
@@ -518,19 +516,19 @@ export default function CompanySettingsPage() {
                                                 formData.isVatPayer ?? true
                                             }
                                             onChange={handleChange}
-                                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus: border-secondary border-opacity-50 rounded"
                                         />
                                         <label
                                             htmlFor="isVatPayer"
-                                            className="text-sm text-gray-700"
+                                            className="small text-body"
                                         >
                                             Firma jest płatnikiem VAT
                                         </label>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="row g-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Domyślna stawka VAT (%)
                                             </label>
                                             <input
@@ -544,11 +542,11 @@ export default function CompanySettingsPage() {
                                                 min={0}
                                                 max={100}
                                                 step={0.01}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="form-label">
                                                 Termin płatności faktur (dni)
                                             </label>
                                             <input
@@ -561,13 +559,13 @@ export default function CompanySettingsPage() {
                                                 onChange={handleChange}
                                                 min={1}
                                                 max={90}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                                className="form-control"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Stopka paragonu
                                         </label>
                                         <textarea
@@ -576,12 +574,12 @@ export default function CompanySettingsPage() {
                                             onChange={handleChange}
                                             rows={3}
                                             placeholder="Dodatkowy tekst na paragonie..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Uwagi na fakturze
                                         </label>
                                         <textarea
@@ -590,19 +588,19 @@ export default function CompanySettingsPage() {
                                             onChange={handleChange}
                                             rows={3}
                                             placeholder="Domyślne uwagi na fakturach..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'gdpr' && (
-                                <div className="space-y-6">
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                        <h3 className="text-sm font-medium text-blue-800">
+                                <div className="">
+                                    <div className="bg-primary bg-opacity-10 border border-primary rounded-3 p-3">
+                                        <h3 className="small fw-medium text-primary">
                                             Ochrona danych osobowych (RODO)
                                         </h3>
-                                        <p className="text-sm text-blue-700 mt-1">
+                                        <p className="small text-primary mt-1">
                                             Skonfiguruj ustawienia związane z
                                             przetwarzaniem danych osobowych
                                             klientów zgodnie z przepisami RODO.
@@ -610,7 +608,7 @@ export default function CompanySettingsPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Okres przechowywania danych (dni)
                                         </label>
                                         <input
@@ -622,9 +620,9 @@ export default function CompanySettingsPage() {
                                             }
                                             onChange={handleChange}
                                             min={30}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="small text-muted mt-1">
                                             Domyślnie 1095 dni (3 lata). Dane
                                             klientów będą automatycznie
                                             anonimizowane po tym okresie.
@@ -632,7 +630,7 @@ export default function CompanySettingsPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="form-label">
                                             Tekst zgody RODO
                                         </label>
                                         <textarea
@@ -643,7 +641,7 @@ export default function CompanySettingsPage() {
                                             onChange={handleChange}
                                             rows={5}
                                             placeholder="Wyrażam zgodę na przetwarzanie moich danych osobowych..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="form-control"
                                         />
                                     </div>
                                 </div>
@@ -651,11 +649,11 @@ export default function CompanySettingsPage() {
                         </div>
 
                         {/* Save button */}
-                        <div className="mt-6 flex justify-end gap-4">
+                        <div className="mt-3 d-flex justify-content-end gap-3">
                             {saved && (
-                                <span className="flex items-center text-green-600 text-sm">
+                                <span className="d-flex align-items-center text-success small">
                                     <svg
-                                        className="w-5 h-5 mr-1"
+                                        className="w-5 h-5 me-1"
                                         fill="currentColor"
                                         viewBox="0 0 20 20"
                                     >
@@ -671,10 +669,10 @@ export default function CompanySettingsPage() {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10 disabled: d-d-flex align-align-items-center gap-2"
                             >
                                 {saving && (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <div className="rounded-circle h-4 w-4 border-bottom-2 border-white"></div>
                                 )}
                                 Zapisz zmiany
                             </button>

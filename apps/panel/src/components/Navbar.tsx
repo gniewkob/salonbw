@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navbar() {
     const { role, initialized } = useAuth();
-    const linkClass = 'transition duration-150 hover:text-blue-700';
+    const linkClass = ' ';
 
     // During SSR and initial hydration, treat role as null to avoid mismatch
     const effectiveRole = initialized ? role : null;
@@ -14,15 +14,15 @@ export default function Navbar() {
     return (
         <nav
             aria-label="Main navigation"
-            className="flex justify-between items-center p-4 bg-gray-100 shadow-md"
+            className="d-flex justify-content-between align-items-center p-3 bg-light shadow"
         >
             <Link
                 href={'/' as Route}
-                className={`font-bold text-xl mr-4 ${linkClass}`}
+                className={`fw-bold fs-5 me-3 ${linkClass}`}
             >
                 SalonBW Panel
             </Link>
-            <ul className="flex space-x-4">
+            <ul className="d-flex gap-2">
                 {dashboardRoute ? (
                     <li>
                         <Link href={dashboardRoute} className={linkClass}>

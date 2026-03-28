@@ -45,18 +45,18 @@ export default function AutomaticRulesList({
 }: Props) {
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-                <span className="ml-3 text-gray-600">Ładowanie reguł...</span>
+            <div className="d-flex align-items-center justify-content-center py-5">
+                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <span className="ms-2 text-muted">Ładowanie reguł...</span>
             </div>
         );
     }
 
     if (rules.length === 0) {
         return (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-5 text-muted">
                 <svg
-                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                    className="mx-auto h-12 w-12 text-secondary mb-3"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -68,8 +68,8 @@ export default function AutomaticRulesList({
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                     />
                 </svg>
-                <p className="font-medium">Brak skonfigurowanych reguł</p>
-                <p className="text-sm mt-1">
+                <p className="fw-medium">Brak skonfigurowanych reguł</p>
+                <p className="small mt-1">
                     Utwórz regułę, aby automatycznie wysyłać wiadomości
                 </p>
             </div>
@@ -77,41 +77,41 @@ export default function AutomaticRulesList({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="gap-2">
             {rules.map((rule) => (
                 <div
                     key={rule.id}
-                    className={`border rounded-lg p-4 ${
+                    className={`border rounded-3 p-3 ${
                         rule.isActive
-                            ? 'bg-white border-gray-200'
-                            : 'bg-gray-50 border-gray-200 opacity-70'
+                            ? 'bg-white border-secondary border-opacity-25'
+                            : 'bg-light border-secondary border-opacity-25 opacity-70'
                     }`}
                 >
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                                <h3 className="font-medium text-gray-900">
+                    <div className="d-flex align-items-start justify-content-between">
+                        <div className="flex-fill">
+                            <div className="d-flex align-items-center gap-2">
+                                <h3 className="fw-medium text-dark">
                                     {rule.name}
                                 </h3>
                                 <span
-                                    className={`px-2 py-0.5 text-xs rounded-full ${
+                                    className={`px-2 py-0.5 small rounded-circle ${
                                         TRIGGER_COLORS[rule.trigger]
                                     }`}
                                 >
                                     {TRIGGER_LABELS[rule.trigger]}
                                 </span>
                                 {!rule.isActive && (
-                                    <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                                    <span className="px-2 py-0.5 small rounded-circle bg-secondary bg-opacity-25 text-muted">
                                         Nieaktywna
                                     </span>
                                 )}
                             </div>
                             {rule.description && (
-                                <p className="text-sm text-gray-500 mt-1">
+                                <p className="small text-muted mt-1">
                                     {rule.description}
                                 </p>
                             )}
-                            <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+                            <div className="d-flex flex-wrap gap-3 mt-2 small text-muted">
                                 {rule.offsetHours !== 0 && (
                                     <span>
                                         {rule.offsetHours < 0
@@ -142,13 +142,13 @@ export default function AutomaticRulesList({
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="d-flex align-items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => {
                                     void onProcess(rule.id);
                                 }}
-                                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                className="p-2 text-secondary bg-opacity-10 rounded-3"
                                 title="Uruchom teraz"
                             >
                                 <svg
@@ -176,10 +176,10 @@ export default function AutomaticRulesList({
                                 onClick={() => {
                                     void onToggle(rule.id);
                                 }}
-                                className={`p-2 rounded-lg transition-colors ${
+                                className={`p-2 rounded-3 ${
                                     rule.isActive
-                                        ? 'text-green-600 hover:bg-green-50'
-                                        : 'text-gray-400 hover:bg-gray-100'
+                                        ? 'text-success bg-opacity-10'
+                                        : 'text-secondary '
                                 }`}
                                 title={rule.isActive ? 'Wyłącz' : 'Włącz'}
                             >
@@ -209,7 +209,7 @@ export default function AutomaticRulesList({
                             <button
                                 type="button"
                                 onClick={() => onEdit(rule)}
-                                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                className="p-2 text-secondary bg-opacity-10 rounded-3"
                                 title="Edytuj"
                             >
                                 <svg
@@ -231,7 +231,7 @@ export default function AutomaticRulesList({
                                 onClick={() => {
                                     void onDelete(rule.id);
                                 }}
-                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-2 text-secondary bg-opacity-10 rounded-3"
                                 title="Usuń"
                             >
                                 <svg

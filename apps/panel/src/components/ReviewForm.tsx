@@ -60,19 +60,19 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
     };
 
     return (
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+        <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
             <input
                 name="appointmentId"
                 value={form.appointmentId}
                 onChange={handleChange}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Appointment"
             />
             {initial?.employee && (
                 <input
                     value={initial.employee.fullName}
                     readOnly
-                    className="border p-1 w-full bg-gray-100"
+                    className="border p-1 w-100 bg-light"
                     placeholder="Employee"
                 />
             )}
@@ -80,7 +80,7 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                 <input
                     value={(initial.author ?? initial.client)?.name ?? ''}
                     readOnly
-                    className="border p-1 w-full bg-gray-100"
+                    className="border p-1 w-100 bg-light"
                     placeholder="Author"
                 />
             )}
@@ -88,22 +88,22 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                 name="rating"
                 value={form.rating}
                 onChange={handleChange}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Rating"
             />
             <textarea
                 name="comment"
                 value={form.comment}
                 onChange={handleChange}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Comment"
             />
             {error && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-danger small">
                     {error}
                 </p>
             )}
-            <div className="flex gap-2 justify-end">
+            <div className="d-flex gap-2 justify-content-end">
                 <button
                     type="button"
                     onClick={onCancel}

@@ -18,19 +18,19 @@ export default function ClientsSidebar() {
     ];
 
     return (
-        <div className="flex flex-col h-full bg-gray-50/50 border-r border-gray-200">
-            <div className="p-4 border-b border-gray-200">
-                <button className="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded shadow-sm flex items-center justify-center gap-2 transition-colors">
-                    <PlusIcon className="w-4 h-4" />
+        <div className="d-flex flex-column h-100 bg-light border-end">
+            <div className="p-3 border-bottom">
+                <button className="w-100 btn btn-primary btn-sm d-flex align-items-center justify-content-center gap-2">
+                    <PlusIcon style={{ width: 16, height: 16 }} />
                     Dodaj klienta
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-4">
-                <div className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="flex-fill overflow-y-auto py-3">
+                <div className="px-3 mb-2 small fw-semibold text-secondary text-uppercase">
                     Grupy klientów
                 </div>
-                <nav className="space-y-1 px-2">
+                <nav className="gap-1 px-2">
                     {navItems.map((item) => (
                         <Link
                             key={item.id}
@@ -38,18 +38,21 @@ export default function ClientsSidebar() {
                                 pathname: '/customers',
                                 query: { ...router.query, group: item.id },
                             }}
-                            className={`
-                                flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors
-                                ${
-                                    group === item.id ||
-                                    (!group && item.id === 'all')
-                                        ? 'bg-white text-sky-700 shadow-sm ring-1 ring-gray-200'
-                                        : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
-                                }
-                            `}
+                            className={`d-flex align-items-center gap-2 px-3 py-2 small fw-medium rounded-2 ${
+                                group === item.id ||
+                                (!group && item.id === 'all')
+                                    ? 'bg-white text-primary shadow-sm'
+                                    : 'text-muted'
+                            }`}
                         >
                             <item.icon
-                                className={`w-5 h-5 ${group === item.id || (!group && item.id === 'all') ? 'text-sky-600' : 'text-gray-400'}`}
+                                style={{ width: 20, height: 20 }}
+                                className={
+                                    group === item.id ||
+                                    (!group && item.id === 'all')
+                                        ? 'text-primary'
+                                        : 'text-secondary'
+                                }
                             />
                             {item.label}
                         </Link>

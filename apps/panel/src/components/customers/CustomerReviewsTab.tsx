@@ -68,12 +68,12 @@ const sourceConfig: Record<
 
 function StarRating({ rating }: { rating: number }) {
     return (
-        <div className="flex items-center gap-0.5">
+        <div className="d-flex align-items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((star) => (
                 <span
                     key={star}
-                    className={`text-lg ${
-                        star <= rating ? 'text-yellow-400' : 'text-gray-300'
+                    className={`fs-5 ${
+                        star <= rating ? 'text-warning' : 'text-secondary'
                     }`}
                 >
                     ★
@@ -103,8 +103,8 @@ export default function CustomerReviewsTab({ customerId }: Props) {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">Ładowanie opinii...</div>
+            <div className="d-flex align-items-center justify-content-center py-5">
+                <div className="text-muted">Ładowanie opinii...</div>
             </div>
         );
     }
@@ -131,8 +131,8 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                     <div className="salonbw-widget__content">
                         {/* Source Filter */}
                         {reviews.length > 0 && (
-                            <div className="mb-20 border-bottom-eee pb-10">
-                                <div className="btn-group">
+                            <div className="mb-5 border-bottom-eee pb-10">
+                                <div className="btn-">
                                     <button
                                         onClick={() => setFilterSource('all')}
                                         className={`btn btn-xs ${filterSource === 'all' ? 'btn-primary' : 'btn-default'}`}
@@ -176,7 +176,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                             key={review.id}
                                             className="py-15 border-bottom-f0"
                                         >
-                                            <div className="flex-between mb-8">
+                                            <div className="flex-between mb-4">
                                                 <div className="flex-center gap-10">
                                                     <StarRating
                                                         rating={review.rating}
@@ -198,7 +198,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
 
                                             {(review.serviceName ||
                                                 review.employeeName) && (
-                                                <div className="fz-12 text-555 mb-8 fw-600">
+                                                <div className="fz-12 text-555 mb-4 fw-600">
                                                     {review.serviceName}
                                                     {review.serviceName &&
                                                         review.employeeName &&
@@ -215,14 +215,14 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                             )}
 
                                             {review.content && (
-                                                <div className="fz-13 text-333 lh-14 italic">
+                                                <div className="fz-13 text-333 lh-14 fst-italic">
                                                     &quot;{review.content}&quot;
                                                 </div>
                                             )}
 
                                             {review.reply && (
-                                                <div className="salonbw-panel-sub mt-12 p-10 bg-fcfc">
-                                                    <div className="flex-between mb-5">
+                                                <div className="salonbw-panel-sub mt-5 p-4 bg-fcfc">
+                                                    <div className="flex-between mb-3">
                                                         <span className="fz-11 fw-700 text-777">
                                                             Odpowiedź:{' '}
                                                             {
@@ -249,8 +249,8 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                             </div>
                         ) : (
                             <div className="text-center text-muted py-60-0">
-                                <div className="fz-32 mb-10">💬</div>
-                                <p className="fz-14 mb-5">
+                                <div className="fz-32 mb-4">💬</div>
+                                <p className="fz-14 mb-3">
                                     {filterSource === 'all'
                                         ? 'Brak opinii od tego klienta.'
                                         : `Brak opinii z platformy "${sourceConfig[filterSource as ReviewSource].label}".`}

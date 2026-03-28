@@ -26,13 +26,13 @@ const STATUS_LABELS: Record<NewsletterStatus, string> = {
 };
 
 const STATUS_COLORS: Record<NewsletterStatus, string> = {
-    draft: 'bg-gray-100 text-gray-700',
+    draft: 'bg-secondary bg-opacity-10 text-body',
     scheduled: 'bg-blue-100 text-blue-700',
     sending: 'bg-yellow-100 text-yellow-700',
     sent: 'bg-green-100 text-green-700',
     partial_failure: 'bg-orange-100 text-orange-700',
     failed: 'bg-red-100 text-red-700',
-    cancelled: 'bg-gray-200 text-gray-600',
+    cancelled: 'bg-secondary bg-opacity-25 text-muted',
 };
 
 export default function NewslettersList({
@@ -47,9 +47,9 @@ export default function NewslettersList({
 }: Props) {
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-                <span className="ml-3 text-gray-600">
+            <div className="d-flex align-items-center justify-content-center py-5">
+                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <span className="ms-2 text-muted">
                     Ładowanie newsletterów...
                 </span>
             </div>
@@ -58,9 +58,9 @@ export default function NewslettersList({
 
     if (newsletters.length === 0) {
         return (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-5 text-muted">
                 <svg
-                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                    className="mx-auto h-12 w-12 text-secondary mb-3"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -72,8 +72,8 @@ export default function NewslettersList({
                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                 </svg>
-                <p className="font-medium">Brak newsletterów</p>
-                <p className="text-sm mt-1">
+                <p className="fw-medium">Brak newsletterów</p>
+                <p className="small mt-1">
                     Utwórz pierwszy newsletter, aby rozpocząć wysyłkę
                 </p>
             </div>
@@ -81,35 +81,35 @@ export default function NewslettersList({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="gap-2">
             {newsletters.map((newsletter) => (
                 <div
                     key={newsletter.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="bg-white border border-secondary border-opacity-25 rounded-3 p-3 -shadow"
                 >
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                                <h3 className="font-semibold text-gray-900">
+                    <div className="d-flex align-items-start justify-content-between">
+                        <div className="flex-fill">
+                            <div className="d-flex align-items-center gap-2">
+                                <h3 className="fw-semibold text-dark">
                                     {newsletter.name}
                                 </h3>
                                 <span
-                                    className={`px-2 py-0.5 text-xs rounded-full ${
+                                    className={`px-2 py-0.5 small rounded-circle ${
                                         STATUS_COLORS[newsletter.status]
                                     }`}
                                 >
                                     {STATUS_LABELS[newsletter.status]}
                                 </span>
-                                <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                                <span className="px-2 py-0.5 small rounded-circle bg-light text-muted">
                                     {newsletter.channel === 'email'
                                         ? 'Email'
                                         : 'SMS'}
                                 </span>
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="small text-muted mt-1">
                                 {newsletter.subject}
                             </p>
-                            <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+                            <div className="d-flex flex-wrap gap-3 mt-2 small text-muted">
                                 {newsletter.status === 'sent' ||
                                 newsletter.status === 'partial_failure' ? (
                                     <>
@@ -157,7 +157,7 @@ export default function NewslettersList({
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="d-flex align-items-center gap-1">
                             {newsletter.status === 'draft' && (
                                 <>
                                     <button
@@ -165,7 +165,7 @@ export default function NewslettersList({
                                         onClick={() => {
                                             void onSend(newsletter.id);
                                         }}
-                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                        className="p-2 text-success bg-opacity-10 rounded-3"
                                         title="Wyślij"
                                     >
                                         <svg
@@ -185,7 +185,7 @@ export default function NewslettersList({
                                     <button
                                         type="button"
                                         onClick={() => onEdit(newsletter)}
-                                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                        className="p-2 text-secondary bg-opacity-10 rounded-3"
                                         title="Edytuj"
                                     >
                                         <svg
@@ -211,7 +211,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onCancel(newsletter.id);
                                     }}
-                                    className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                                    className="p-2 text-warning bg-opacity-10 rounded-3"
                                     title="Anuluj"
                                 >
                                     <svg
@@ -235,7 +235,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onViewRecipients(newsletter.id);
                                     }}
-                                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                    className="p-2 text-secondary bg-opacity-10 rounded-3"
                                     title="Odbiorcy"
                                 >
                                     <svg
@@ -258,7 +258,7 @@ export default function NewslettersList({
                                 onClick={() => {
                                     void onDuplicate(newsletter.id);
                                 }}
-                                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                className="p-2 text-secondary bg-opacity-10 rounded-3"
                                 title="Duplikuj"
                             >
                                 <svg
@@ -281,7 +281,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onDelete(newsletter.id);
                                     }}
-                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 text-secondary bg-opacity-10 rounded-3"
                                     title="Usuń"
                                 >
                                     <svg

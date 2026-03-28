@@ -13,9 +13,9 @@ const TIME_BLOCK_COLORS: Record<
     { bg: string; border: string; text: string }
 > = {
     break: {
-        bg: 'bg-gray-100',
+        bg: 'bg-secondary bg-opacity-10',
         border: 'border-gray-300',
-        text: 'text-gray-600',
+        text: 'text-muted',
     },
     vacation: {
         bg: 'bg-green-100',
@@ -76,8 +76,8 @@ export default function EventCard({
             }}
             onDragStart={() => onDragStart?.(event)}
             className={`
-                rounded-md px-2 py-1 text-xs cursor-pointer transition-shadow
-                hover:shadow-md
+                rounded-md px-2 py-1 small cursor-pointer transition-shadow
+                
                 ${
                     isTimeBlock
                         ? `${blockColors?.bg} ${blockColors?.border} border`
@@ -94,27 +94,27 @@ export default function EventCard({
                     : undefined
             }
         >
-            <div className="flex items-start justify-between gap-1">
-                <div className="flex-1 min-w-0">
+            <div className="d-flex align-items-start justify-content-between gap-1">
+                <div className="flex-fill min-w-0">
                     <div
-                        className={`font-medium truncate ${isTimeBlock ? blockColors?.text : ''}`}
+                        className={`fw-medium text-truncate ${isTimeBlock ? blockColors?.text : ''}`}
                     >
                         {event.title}
                     </div>
                     {!isTimeBlock && event.clientName && (
-                        <div className="text-gray-600 truncate">
+                        <div className="text-muted text-truncate">
                             {event.clientName}
                         </div>
                     )}
                     <div
-                        className={`text-gray-500 ${isTimeBlock ? blockColors?.text : ''}`}
+                        className={`text-muted ${isTimeBlock ? blockColors?.text : ''}`}
                     >
                         {event.allDay ? 'Cały dzień' : timeStr}
                     </div>
                 </div>
                 {isTimeBlock && event.blockType && (
                     <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${blockColors?.text} ${blockColors?.bg}`}
+                        className={`px-1.5 py-0.5 rounded text-[10px] fw-medium ${blockColors?.text} ${blockColors?.bg}`}
                     >
                         {getBlockTypeLabel(event.blockType)}
                     </span>

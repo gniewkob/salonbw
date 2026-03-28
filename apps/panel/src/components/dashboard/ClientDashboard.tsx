@@ -5,19 +5,19 @@ export default function ClientDashboard() {
     const { data, loading, error } = useClientDashboard();
 
     if (loading) {
-        return <div className="p-4">Loading dashboard...</div>;
+        return <div className="p-3">Loading dashboard...</div>;
     }
 
     if (error) {
         return (
-            <div className="p-4 text-red-600">
+            <div className="p-3 text-danger">
                 Error loading dashboard: {error.message}
             </div>
         );
     }
 
     if (!data) {
-        return <div className="p-4">No data available</div>;
+        return <div className="p-3">No data available</div>;
     }
 
     const formatDate = (dateStr: string) => {
@@ -33,35 +33,33 @@ export default function ClientDashboard() {
     };
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Your Dashboard</h1>
+        <div className="gap-3">
+            <h1 className="fs-3 fw-bold">Your Dashboard</h1>
 
             {/* Upcoming Appointment */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                    Upcoming Appointment
-                </h2>
+            <section className="bg-white rounded-3 shadow p-4">
+                <h2 className="fs-5 fw-semibold mb-3">Upcoming Appointment</h2>
                 {data.upcomingAppointment ? (
-                    <div className="border-l-4 border-blue-500 pl-4">
-                        <p className="text-lg font-medium">
+                    <div className="border-start-4 border-primary ps-3">
+                        <p className="fs-5 fw-medium">
                             {data.upcomingAppointment.serviceName}
                         </p>
-                        <p className="text-gray-600">
+                        <p className="text-muted">
                             {formatDate(data.upcomingAppointment.startTime)}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="small text-muted">
                             with {data.upcomingAppointment.employeeName}
                         </p>
                     </div>
                 ) : (
-                    <p className="text-gray-500">
+                    <p className="text-muted">
                         No upcoming appointments scheduled
                     </p>
                 )}
             </section>
 
             {/* Stats */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <section className="-cols-1 gap-3">
                 <StatsWidget
                     title="Completed Appointments"
                     value={data.completedCount}
@@ -75,19 +73,19 @@ export default function ClientDashboard() {
             </section>
 
             {/* Service History */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold mb-4">
+            <section className="bg-white rounded-3 shadow p-4">
+                <h2 className="fs-5 fw-semibold mb-3">
                     Your Favorite Services
                 </h2>
                 {data.serviceHistory.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul className="gap-2">
                         {data.serviceHistory.slice(0, 5).map((service) => (
                             <li
                                 key={service.id}
-                                className="flex justify-between items-center py-2 border-b last:border-0"
+                                className="d-flex justify-content-between align-items-center py-2 border-bottom last:border-0"
                             >
                                 <span>{service.name}</span>
-                                <span className="text-gray-500 text-sm">
+                                <span className="text-muted small">
                                     {service.count}{' '}
                                     {service.count === 1 ? 'visit' : 'visits'}
                                 </span>
@@ -95,28 +93,26 @@ export default function ClientDashboard() {
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-gray-500">No service history yet</p>
+                    <p className="text-muted">No service history yet</p>
                 )}
             </section>
 
             {/* Recent Appointments */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                    Recent Appointments
-                </h2>
+            <section className="bg-white rounded-3 shadow p-4">
+                <h2 className="fs-5 fw-semibold mb-3">Recent Appointments</h2>
                 {data.recentAppointments.length > 0 ? (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-100 small">
                             <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-2">Service</th>
-                                    <th className="text-left py-2">Date</th>
-                                    <th className="text-left py-2">Status</th>
+                                <tr className="border-bottom">
+                                    <th className="text-start py-2">Service</th>
+                                    <th className="text-start py-2">Date</th>
+                                    <th className="text-start py-2">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {data.recentAppointments.map((apt) => (
-                                    <tr key={apt.id} className="border-b">
+                                    <tr key={apt.id} className="border-bottom">
                                         <td className="py-2">
                                             {apt.serviceName}
                                         </td>
@@ -127,13 +123,13 @@ export default function ClientDashboard() {
                                         </td>
                                         <td className="py-2">
                                             <span
-                                                className={`px-2 py-1 rounded text-xs ${
+                                                className={`px-2 py-1 rounded small ${
                                                     apt.status === 'completed'
-                                                        ? 'bg-green-100 text-green-800'
+                                                        ? 'bg-success bg-opacity-10 text-success'
                                                         : apt.status ===
                                                             'cancelled'
-                                                          ? 'bg-red-100 text-red-800'
-                                                          : 'bg-blue-100 text-blue-800'
+                                                          ? 'bg-danger bg-opacity-10 text-danger'
+                                                          : 'bg-primary bg-opacity-10 text-primary'
                                                 }`}
                                             >
                                                 {apt.status}
@@ -145,7 +141,7 @@ export default function ClientDashboard() {
                         </table>
                     </div>
                 ) : (
-                    <p className="text-gray-500">No appointments yet</p>
+                    <p className="text-muted">No appointments yet</p>
                 )}
             </section>
         </div>

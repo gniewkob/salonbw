@@ -35,8 +35,8 @@ export default function BranchesManagementPage() {
 
     if (!user || user.role !== 'admin') {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-gray-500">Brak dostępu</p>
+            <div className="d-flex align-items-center justify-content-center">
+                <p className="text-muted">Brak dostępu</p>
             </div>
         );
     }
@@ -121,7 +121,7 @@ export default function BranchesManagementPage() {
 
     const STATUS_COLORS: Record<string, string> = {
         active: 'bg-green-100 text-green-700',
-        inactive: 'bg-gray-100 text-gray-700',
+        inactive: 'bg-secondary bg-opacity-10 text-body',
         suspended: 'bg-red-100 text-red-700',
     };
 
@@ -132,21 +132,21 @@ export default function BranchesManagementPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between mb-8">
+        <div className="bg-light">
+            <div className="max-w-7xl mx-auto py-4 px-3">
+                <div className="d-flex align-items-center justify-content-between mb-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className="fs-3 fw-bold text-dark">
                             Salony (Multi-location)
                         </h1>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 small text-muted">
                             Zarządzaj wieloma lokalizacjami swojego salonu
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                        className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
                     >
                         <svg
                             className="w-5 h-5"
@@ -166,8 +166,8 @@ export default function BranchesManagementPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b border-gray-200 mb-6">
-                    <nav className="-mb-px flex gap-6">
+                <div className="border-bottom border-secondary border-opacity-25 mb-4">
+                    <nav className="-mb-px d-flex gap-4">
                         {[
                             { key: 'branches', label: 'Salony' },
                             { key: 'members', label: 'Pracownicy w salonach' },
@@ -176,10 +176,10 @@ export default function BranchesManagementPage() {
                                 key={tab.key}
                                 type="button"
                                 onClick={() => setActiveTab(tab.key as Tab)}
-                                className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                className={`py-2 px-1 border-bottom-2 fw-medium small ${
                                     activeTab === tab.key
-                                        ? 'border-primary-500 text-primary-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-primary text-primary'
+                                        : 'border-transparent text-muted border-opacity-50'
                                 }`}
                             >
                                 {tab.label}
@@ -189,53 +189,53 @@ export default function BranchesManagementPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-                        <span className="ml-3 text-gray-600">Ładowanie...</span>
+                    <div className="d-flex align-items-center justify-content-center py-5">
+                        <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                        <span className="ms-2 text-muted">Ładowanie...</span>
                     </div>
                 ) : activeTab === 'branches' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="-cols-1 gap-4">
                         {branches?.map((branch) => {
                             return (
                                 <div
                                     key={branch.id}
-                                    className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                                    className="bg-white rounded-3 shadow-sm border border-secondary border-opacity-25 overflow-d-none -shadow"
                                 >
                                     {branch.coverImageUrl && (
-                                        <div className="h-32 overflow-hidden relative">
+                                        <div className="h-32 overflow-d-none position-relative">
                                             <img
                                                 src={branch.coverImageUrl}
                                                 alt={`Okładka salonu ${branch.name}`}
-                                                className="w-full h-full object-cover"
+                                                className="w-100 h-100 object-cover"
                                             />
                                         </div>
                                     )}
-                                    <div className="p-4">
-                                        <div className="flex items-start justify-between">
+                                    <div className="p-3">
+                                        <div className="d-flex align-items-start justify-content-between">
                                             <div>
-                                                <h3 className="font-semibold text-gray-900">
+                                                <h3 className="fw-semibold text-dark">
                                                     {branch.name}
                                                 </h3>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="small text-muted">
                                                     {branch.city}
                                                 </p>
                                             </div>
                                             <span
-                                                className={`px-2 py-0.5 text-xs rounded-full ${STATUS_COLORS[branch.status]}`}
+                                                className={`px-2 py-0.5 small rounded-circle ${STATUS_COLORS[branch.status]}`}
                                             >
                                                 {STATUS_LABELS[branch.status]}
                                             </span>
                                         </div>
 
                                         {branch.description && (
-                                            <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                                            <p className="small text-muted mt-2 line-clamp-2">
                                                 {branch.description}
                                             </p>
                                         )}
 
-                                        <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+                                        <div className="mt-3 d-flex align-items-center gap-3 small text-muted">
                                             {branch.phone && (
-                                                <span className="flex items-center gap-1">
+                                                <span className="d-flex align-items-center gap-1">
                                                     <svg
                                                         className="w-4 h-4"
                                                         fill="none"
@@ -253,19 +253,19 @@ export default function BranchesManagementPage() {
                                                 </span>
                                             )}
                                             {branch.onlineBookingEnabled && (
-                                                <span className="text-green-600">
+                                                <span className="text-success">
                                                     Rezerwacje online
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div className="mt-4 flex items-center gap-2 border-t pt-4">
+                                        <div className="mt-3 d-flex align-items-center gap-2 border-top pt-3">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     handleOpenModal(branch)
                                                 }
-                                                className="flex-1 px-3 py-2 text-sm text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                                className="flex-fill px-3 py-2 small text-primary bg-opacity-10 rounded-3"
                                             >
                                                 Edytuj
                                             </button>
@@ -274,7 +274,7 @@ export default function BranchesManagementPage() {
                                                 onClick={() =>
                                                     setSelectedBranch(branch)
                                                 }
-                                                className="flex-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                                className="flex-fill px-3 py-2 small text-muted rounded-3"
                                             >
                                                 Pracownicy
                                             </button>
@@ -284,7 +284,7 @@ export default function BranchesManagementPage() {
                                                 onClick={() => {
                                                     void handleDelete(branch);
                                                 }}
-                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="p-2 text-secondary bg-opacity-10 rounded-3"
                                             >
                                                 <svg
                                                     className="w-5 h-5"
@@ -307,9 +307,9 @@ export default function BranchesManagementPage() {
                         })}
 
                         {branches?.length === 0 && (
-                            <div className="col-span-full text-center py-12 text-gray-500">
+                            <div className="text-center py-5 text-muted">
                                 <svg
-                                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                                    className="mx-auto h-12 w-12 text-secondary mb-3"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -321,17 +321,17 @@ export default function BranchesManagementPage() {
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                                     />
                                 </svg>
-                                <p className="font-medium">Brak salonów</p>
-                                <p className="text-sm mt-1">
+                                <p className="fw-medium">Brak salonów</p>
+                                <p className="small mt-1">
                                     Dodaj pierwszy salon, aby rozpocząć
                                 </p>
                             </div>
                         )}
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <div className="bg-white rounded-3 shadow p-4">
+                        <div className="mb-3">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Wybierz salon
                             </label>
                             <select
@@ -344,7 +344,7 @@ export default function BranchesManagementPage() {
                                     );
                                     setSelectedBranch(branch ?? null);
                                 }}
-                                className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                             >
                                 <option value="">Wybierz salon...</option>
                                 {branches?.map((b) => (
@@ -356,40 +356,40 @@ export default function BranchesManagementPage() {
                         </div>
 
                         {selectedBranch && members ? (
-                            <div className="mt-6">
-                                <h3 className="font-medium text-gray-900 mb-4">
+                            <div className="mt-4">
+                                <h3 className="fw-medium text-dark mb-3">
                                     Pracownicy salonu: {selectedBranch.name}
                                 </h3>
                                 <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                    <table className="min-w-100">
+                                        <thead className="bg-light">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Pracownik
                                                 </th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Rola
                                                 </th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Status
                                                 </th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                                                     Opcje
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
+                                        <tbody className="bg-white">
                                             {members.map((member) => (
                                                 <tr key={member.id}>
-                                                    <td className="px-4 py-3">
+                                                    <td className="px-3 py-2">
                                                         <div>
-                                                            <div className="font-medium text-gray-900">
+                                                            <div className="fw-medium text-dark">
                                                                 {
                                                                     member.user
                                                                         .name
                                                                 }
                                                             </div>
-                                                            <div className="text-sm text-gray-500">
+                                                            <div className="small text-muted">
                                                                 {
                                                                     member.user
                                                                         .email
@@ -397,27 +397,27 @@ export default function BranchesManagementPage() {
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">
+                                                    <td className="px-3 py-2 small text-body">
                                                         {member.branchRole}
                                                     </td>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex gap-2">
+                                                    <td className="px-3 py-2">
+                                                        <div className="d-flex gap-2">
                                                             {member.isPrimary && (
-                                                                <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                                <span className="px-2 py-0.5 small bg-primary bg-opacity-10 text-primary rounded-circle">
                                                                     Główny
                                                                 </span>
                                                             )}
                                                             {member.canManage && (
-                                                                <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">
+                                                                <span className="px-2 py-0.5 small bg-info bg-opacity-10 text-info rounded-circle">
                                                                     Manager
                                                                 </span>
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3">
+                                                    <td className="px-3 py-2">
                                                         <button
                                                             type="button"
-                                                            className="text-sm text-primary-600 hover:underline"
+                                                            className="small text-primary"
                                                         >
                                                             Edytuj
                                                         </button>
@@ -429,7 +429,7 @@ export default function BranchesManagementPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-4 text-muted">
                                 Wybierz salon, aby zobaczyć listę pracowników
                             </div>
                         )}
@@ -439,14 +439,14 @@ export default function BranchesManagementPage() {
 
             {/* Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen px-4">
+                <div className="position-fixed top-0 start-0 bottom-0 end-0 overflow-y-auto">
+                    <div className="d-flex align-items-center justify-content-center px-3">
                         <div
-                            className="fixed inset-0 bg-black/50"
+                            className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50"
                             onClick={() => setModalOpen(false)}
                         />
-                        <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        <div className="position-relative bg-white rounded-3 shadow-lg w-100 p-4">
+                            <h2 className="fs-5 fw-semibold text-dark mb-3">
                                 {editingBranch ? 'Edytuj salon' : 'Nowy salon'}
                             </h2>
 
@@ -454,10 +454,10 @@ export default function BranchesManagementPage() {
                                 onSubmit={(event) => {
                                     void handleSubmit(event);
                                 }}
-                                className="space-y-4"
+                                className="gap-2"
                             >
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Nazwa salonu *
                                     </label>
                                     <input
@@ -468,13 +468,13 @@ export default function BranchesManagementPage() {
                                         value={formData.name}
                                         onChange={handleChange}
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Miasto
                                         </label>
                                         <input
@@ -484,11 +484,11 @@ export default function BranchesManagementPage() {
                                             placeholder="Miasto"
                                             value={formData.city ?? ''}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Kod pocztowy
                                         </label>
                                         <input
@@ -498,14 +498,14 @@ export default function BranchesManagementPage() {
                                             value={formData.postalCode ?? ''}
                                             onChange={handleChange}
                                             placeholder="00-000"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <div className="-cols-3 gap-3">
+                                    <div className="">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Ulica
                                         </label>
                                         <input
@@ -515,11 +515,11 @@ export default function BranchesManagementPage() {
                                             placeholder="Ulica"
                                             value={formData.street ?? ''}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Nr
                                         </label>
                                         <input
@@ -531,14 +531,14 @@ export default function BranchesManagementPage() {
                                                 formData.buildingNumber ?? ''
                                             }
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Telefon
                                         </label>
                                         <input
@@ -548,11 +548,11 @@ export default function BranchesManagementPage() {
                                             placeholder="Telefon"
                                             value={formData.phone ?? ''}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Email
                                         </label>
                                         <input
@@ -562,13 +562,13 @@ export default function BranchesManagementPage() {
                                             placeholder="Email"
                                             value={formData.email ?? ''}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Opis
                                     </label>
                                     <textarea
@@ -578,15 +578,15 @@ export default function BranchesManagementPage() {
                                         value={formData.description ?? ''}
                                         onChange={handleChange}
                                         rows={3}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     />
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4">
+                                <div className="d-flex justify-content-end gap-2 pt-3">
                                     <button
                                         type="button"
                                         onClick={() => setModalOpen(false)}
-                                        className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                        className="px-3 py-2 text-body rounded-3"
                                     >
                                         Anuluj
                                     </button>
@@ -596,7 +596,7 @@ export default function BranchesManagementPage() {
                                             createBranch.isPending ||
                                             updateBranch.isPending
                                         }
-                                        className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50"
+                                        className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
                                     >
                                         {editingBranch ? 'Zapisz' : 'Dodaj'}
                                     </button>

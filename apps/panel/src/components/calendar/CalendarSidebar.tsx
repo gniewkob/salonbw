@@ -67,7 +67,7 @@ export default function CalendarSidebar({
     };
 
     return (
-        <div className="flex flex-col gap-4 p-4">
+        <div className="d-flex flex-column gap-3 p-3">
             <div className="salonbw-datepicker-container">
                 <DatePicker
                     selected={selectedDate}
@@ -79,29 +79,29 @@ export default function CalendarSidebar({
             </div>
 
             <div className="salonbw-sidebar-section">
-                <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-gray-500 uppercase">
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                    <h3 className="small fw-bold text-muted text-uppercase">
                         Pracownicy
                     </h3>
-                    <div className="flex gap-2">
+                    <div className="d-flex gap-2">
                         <button
                             type="button"
                             onClick={onSelectAll}
-                            className="text-xs text-sky-600 hover:text-sky-700"
+                            className="small text-sky-600"
                         >
                             Wszyscy
                         </button>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-secondary">|</span>
                         <button
                             type="button"
                             onClick={onClearAll}
-                            className="text-xs text-gray-500 hover:text-gray-700"
+                            className="small text-muted"
                         >
                             Wyczyść
                         </button>
                     </div>
                 </div>
-                <div className="space-y-1 max-h-64 overflow-y-auto">
+                <div className="gap-1 max-h-64 overflow-y-auto">
                     {employees.map((emp) => {
                         const colorStyle = {
                             backgroundColor: emp.color || '#ccc',
@@ -109,7 +109,7 @@ export default function CalendarSidebar({
                         return (
                             <label
                                 key={emp.id}
-                                className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
+                                className="d-flex align-items-center gap-2 small p-1 rounded"
                             >
                                 <input
                                     type="checkbox"
@@ -117,14 +117,14 @@ export default function CalendarSidebar({
                                         emp.id,
                                     )}
                                     onChange={() => onEmployeeToggle(emp.id)}
-                                    className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                    className="rounded border-secondary border-opacity-50 text-sky-600"
                                 />
-                                <div className="flex items-center gap-2">
+                                <div className="d-flex align-items-center gap-2">
                                     <div
-                                        className="w-3 h-3 rounded-full"
+                                        className="w-3 h-3 rounded-circle"
                                         style={colorStyle}
                                     />
-                                    <span className="text-gray-700">
+                                    <span className="text-body">
                                         {emp.name}
                                     </span>
                                 </div>

@@ -157,44 +157,42 @@ export default function FinalizationModal({
 
     return (
         <Modal open={open} onClose={handleClose}>
-            <div className="w-full max-w-lg">
-                <h2 className="text-xl font-semibold mb-4">
-                    Finalizacja wizyty
-                </h2>
+            <div className="w-100">
+                <h2 className="fs-5 fw-semibold mb-3">Finalizacja wizyty</h2>
 
                 {/* Client & Service Info */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                    <div className="text-sm text-gray-600">
-                        <span className="font-medium">
+                <div className="bg-light rounded-3 p-2 mb-3">
+                    <div className="small text-muted">
+                        <span className="fw-medium">
                             {appointment.client?.name}
                         </span>
                         <span className="mx-2">•</span>
                         <span>{appointment.service?.name}</span>
                     </div>
-                    <div className="text-lg font-semibold mt-1">
+                    <div className="fs-5 fw-semibold mt-1">
                         {summary.servicePrice.toFixed(2)} PLN
                     </div>
                 </div>
 
                 {/* Payment Method */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="mb-3">
+                    <label className="d-block small fw-medium text-body mb-2">
                         Metoda płatności
                     </label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="-cols-5 gap-2">
                         {PAYMENT_METHODS.map((method) => (
                             <button
                                 key={method.value}
                                 type="button"
                                 onClick={() => setPaymentMethod(method.value)}
-                                className={`flex flex-col items-center p-2 rounded-lg border-2 transition-colors ${
+                                className={`d-flex flex-column align-items-center p-2 rounded-3 border border-2 ${
                                     paymentMethod === method.value
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-primary bg-primary bg-opacity-10'
+                                        : 'border-secondary border-opacity-25 border-opacity-50'
                                 }`}
                             >
-                                <span className="text-xl">{method.icon}</span>
-                                <span className="text-xs mt-1">
+                                <span className="fs-5">{method.icon}</span>
+                                <span className="small mt-1">
                                     {method.label}
                                 </span>
                             </button>
@@ -203,9 +201,9 @@ export default function FinalizationModal({
                 </div>
 
                 {/* Discount & Tip */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="-cols-2 gap-3 mb-3">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Rabat (PLN)
                         </label>
                         <input
@@ -214,12 +212,12 @@ export default function FinalizationModal({
                             step="0.01"
                             value={discountPln}
                             onChange={(e) => setDiscountPln(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                             placeholder="0.00"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Napiwek (PLN)
                         </label>
                         <input
@@ -228,16 +226,16 @@ export default function FinalizationModal({
                             step="0.01"
                             value={tipPln}
                             onChange={(e) => setTipPln(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                             placeholder="0.00"
                         />
                     </div>
                 </div>
 
                 {/* Product Upselling */}
-                <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <label className="d-block small fw-medium text-body">
                             Sprzedaż produktów
                         </label>
                         <button
@@ -245,20 +243,20 @@ export default function FinalizationModal({
                             onClick={() =>
                                 setShowProductPicker(!showProductPicker)
                             }
-                            className="text-sm text-blue-600 hover:text-blue-800"
+                            className="small text-primary"
                         >
                             {showProductPicker ? 'Ukryj' : '+ Dodaj produkt'}
                         </button>
                     </div>
 
                     {showProductPicker && (
-                        <div className="border border-gray-200 rounded-lg p-2 mb-2 max-h-32 overflow-y-auto">
+                        <div className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 max-h-32 overflow-y-auto">
                             {products.length === 0 ? (
-                                <p className="text-sm text-gray-500 text-center py-2">
+                                <p className="small text-muted text-center py-2">
                                     Brak produktów
                                 </p>
                             ) : (
-                                <div className="space-y-1">
+                                <div className="gap-1">
                                     {products.map((product) => (
                                         <button
                                             key={product.id}
@@ -266,10 +264,10 @@ export default function FinalizationModal({
                                             onClick={() =>
                                                 addProduct(product.id)
                                             }
-                                            className="w-full text-left px-2 py-1 text-sm hover:bg-gray-100 rounded flex justify-between"
+                                            className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
                                         >
                                             <span>{product.name}</span>
-                                            <span className="text-gray-500">
+                                            <span className="text-muted">
                                                 {product.unitPrice.toFixed(2)}{' '}
                                                 PLN
                                             </span>
@@ -281,7 +279,7 @@ export default function FinalizationModal({
                     )}
 
                     {productSales.length > 0 && (
-                        <div className="space-y-2">
+                        <div className="gap-2">
                             {productSales.map((sale) => {
                                 const product = products.find(
                                     (p) => p.id === sale.productId,
@@ -289,12 +287,12 @@ export default function FinalizationModal({
                                 return (
                                     <div
                                         key={sale.productId}
-                                        className="flex items-center justify-between bg-gray-50 rounded px-2 py-1"
+                                        className="d-flex align-items-center justify-content-between bg-light rounded px-2 py-1"
                                     >
-                                        <span className="text-sm">
+                                        <span className="small">
                                             {product?.name}
                                         </span>
-                                        <div className="flex items-center gap-2">
+                                        <div className="d-flex align-items-center gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -303,11 +301,11 @@ export default function FinalizationModal({
                                                         sale.quantity - 1,
                                                     )
                                                 }
-                                                className="w-6 h-6 flex items-center justify-center rounded border hover:bg-gray-200"
+                                                className="w-6 h-6 d-flex align-items-center justify-content-center rounded border bg-opacity-25"
                                             >
                                                 -
                                             </button>
-                                            <span className="w-6 text-center text-sm">
+                                            <span className="w-6 text-center small">
                                                 {sale.quantity}
                                             </span>
                                             <button
@@ -318,7 +316,7 @@ export default function FinalizationModal({
                                                         sale.quantity + 1,
                                                     )
                                                 }
-                                                className="w-6 h-6 flex items-center justify-center rounded border hover:bg-gray-200"
+                                                className="w-6 h-6 d-flex align-items-center justify-content-center rounded border bg-opacity-25"
                                             >
                                                 +
                                             </button>
@@ -329,7 +327,7 @@ export default function FinalizationModal({
                                                         sale.productId,
                                                     )
                                                 }
-                                                className="text-red-500 hover:text-red-700 ml-1"
+                                                className="text-danger ms-1"
                                             >
                                                 ×
                                             </button>
@@ -342,28 +340,28 @@ export default function FinalizationModal({
                 </div>
 
                 {/* Note */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-3">
+                    <label className="d-block small fw-medium text-body mb-1">
                         Notatka (opcjonalnie)
                     </label>
                     <textarea
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                         rows={2}
                         placeholder="Dodatkowe uwagi..."
                     />
                 </div>
 
                 {/* Summary */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                    <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
+                <div className="bg-light rounded-3 p-2 mb-3">
+                    <div className="gap-1 small">
+                        <div className="d-flex justify-content-between">
                             <span>Usługa:</span>
                             <span>{summary.servicePrice.toFixed(2)} PLN</span>
                         </div>
                         {summary.productsTotal > 0 && (
-                            <div className="flex justify-between">
+                            <div className="d-flex justify-content-between">
                                 <span>Produkty:</span>
                                 <span>
                                     {summary.productsTotal.toFixed(2)} PLN
@@ -371,19 +369,19 @@ export default function FinalizationModal({
                             </div>
                         )}
                         {summary.discount > 0 && (
-                            <div className="flex justify-between text-green-600">
+                            <div className="d-flex justify-content-between text-success">
                                 <span>Rabat:</span>
                                 <span>-{summary.discount.toFixed(2)} PLN</span>
                             </div>
                         )}
                         {summary.tip > 0 && (
-                            <div className="flex justify-between text-blue-600">
+                            <div className="d-flex justify-content-between text-primary">
                                 <span>Napiwek:</span>
                                 <span>+{summary.tip.toFixed(2)} PLN</span>
                             </div>
                         )}
-                        <div className="border-t pt-1 mt-1">
-                            <div className="flex justify-between font-semibold text-lg">
+                        <div className="border-top pt-1 mt-1">
+                            <div className="d-flex justify-content-between fw-semibold fs-5">
                                 <span>Do zapłaty:</span>
                                 <span>{summary.grandTotal.toFixed(2)} PLN</span>
                             </div>
@@ -393,17 +391,17 @@ export default function FinalizationModal({
 
                 {/* Error */}
                 {finalizeMutation.isError && (
-                    <div className="bg-red-50 text-red-600 p-2 rounded mb-4 text-sm">
+                    <div className="bg-danger bg-opacity-10 text-danger p-2 rounded mb-3 small">
                         Wystąpił błąd podczas finalizacji wizyty
                     </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3">
+                <div className="d-flex gap-2">
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                        className="flex-fill px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                     >
                         Anuluj
                     </button>
@@ -411,7 +409,7 @@ export default function FinalizationModal({
                         type="button"
                         onClick={handleSubmit}
                         disabled={finalizeMutation.isPending}
-                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                        className="flex-fill px-3 py-2 bg-success bg-opacity-10 text-white rounded-2 bg-opacity-10"
                     >
                         {finalizeMutation.isPending
                             ? 'Zapisywanie...'

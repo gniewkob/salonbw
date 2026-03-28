@@ -29,7 +29,7 @@ const EXCEPTION_TYPES: {
     {
         value: 'day_off',
         label: 'Dzień wolny',
-        color: 'bg-gray-100 text-gray-700',
+        color: 'bg-secondary bg-opacity-10 text-body',
     },
     { value: 'vacation', label: 'Urlop', color: 'bg-blue-100 text-blue-700' },
     {
@@ -47,7 +47,11 @@ const EXCEPTION_TYPES: {
         label: 'Zmienione godziny',
         color: 'bg-yellow-100 text-yellow-700',
     },
-    { value: 'other', label: 'Inne', color: 'bg-gray-100 text-gray-600' },
+    {
+        value: 'other',
+        label: 'Inne',
+        color: 'bg-secondary bg-opacity-10 text-muted',
+    },
 ];
 
 export default function ExceptionModal({
@@ -112,14 +116,14 @@ export default function ExceptionModal({
                 }}
                 className="w-[480px]"
             >
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                <h2 className="fs-5 fw-semibold text-dark mb-4">
                     {exception ? 'Edytuj wyjątek' : 'Dodaj wyjątek'}
                 </h2>
 
-                <div className="space-y-4">
+                <div className="gap-2">
                     {/* Date */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Data
                         </label>
                         <input
@@ -128,17 +132,17 @@ export default function ExceptionModal({
                             onChange={(e) =>
                                 setForm({ ...form, date: e.target.value })
                             }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                             required
                         />
                     </div>
 
                     {/* Type */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="d-block small fw-medium text-body mb-2">
                             Typ
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="-cols-3 gap-2">
                             {EXCEPTION_TYPES.map((type) => (
                                 <button
                                     key={type.value}
@@ -146,10 +150,10 @@ export default function ExceptionModal({
                                     onClick={() =>
                                         setForm({ ...form, type: type.value })
                                     }
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    className={`px-3 py-2 rounded-3 small fw-medium  ${
                                         form.type === type.value
                                             ? `${type.color} ring-2 ring-offset-1 ring-primary-500`
-                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                            : 'bg-light text-muted '
                                     }`}
                                 >
                                     {type.label}
@@ -160,7 +164,7 @@ export default function ExceptionModal({
 
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Tytuł (opcjonalnie)
                         </label>
                         <input
@@ -170,14 +174,14 @@ export default function ExceptionModal({
                                 setForm({ ...form, title: e.target.value })
                             }
                             placeholder="np. Wizyta u lekarza"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                         />
                     </div>
 
                     {/* Custom hours toggle (only for custom_hours type) */}
                     {form.type === 'custom_hours' && (
                         <div>
-                            <label className="flex items-center gap-2">
+                            <label className="d-flex align-items-center gap-2">
                                 <input
                                     type="checkbox"
                                     checked={form.isAllDay}
@@ -187,9 +191,9 @@ export default function ExceptionModal({
                                             isAllDay: e.target.checked,
                                         })
                                     }
-                                    className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                                    className="w-4 h-4 text-primary rounded focus:"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="small text-body">
                                     Cały dzień wolny
                                 </span>
                             </label>
@@ -198,9 +202,9 @@ export default function ExceptionModal({
 
                     {/* Custom hours */}
                     {showCustomHours && (
-                        <div className="flex items-center gap-4">
+                        <div className="d-flex align-items-center gap-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Od
                                 </label>
                                 <input
@@ -212,11 +216,11 @@ export default function ExceptionModal({
                                             customStartTime: e.target.value,
                                         })
                                     }
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    className="px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Do
                                 </label>
                                 <input
@@ -228,7 +232,7 @@ export default function ExceptionModal({
                                             customEndTime: e.target.value,
                                         })
                                     }
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    className="px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                 />
                             </div>
                         </div>
@@ -236,7 +240,7 @@ export default function ExceptionModal({
 
                     {/* Reason */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Powód (opcjonalnie)
                         </label>
                         <textarea
@@ -246,23 +250,23 @@ export default function ExceptionModal({
                             }
                             rows={2}
                             placeholder="Dodatkowe informacje..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus: resize-none"
                         />
                     </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-4 d-flex justify-content-end gap-2">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="px-3 py-2 text-body bg-light rounded-3 bg-opacity-25"
                     >
                         Anuluj
                     </button>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+                        className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                     >
                         {saving ? 'Zapisywanie...' : 'Zapisz'}
                     </button>

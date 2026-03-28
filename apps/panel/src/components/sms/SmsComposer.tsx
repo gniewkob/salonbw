@@ -49,15 +49,15 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
     const smsCount = Math.ceil(charCount / 160) || 1;
 
     return (
-        <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-white rounded-3 shadow p-4">
+            <h3 className="fs-5 fw-semibold text-dark mb-3">
                 Wyślij wiadomość SMS
             </h3>
 
-            <div className="space-y-4">
+            <div className="gap-2">
                 {/* Recipient */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="d-block small fw-medium text-body mb-1">
                         Numer telefonu
                     </label>
                     <input
@@ -65,14 +65,14 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
                         placeholder="+48 123 456 789"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                     />
                 </div>
 
                 {/* Template selector */}
                 {templates.length > 0 && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Użyj szablonu (opcjonalnie)
                         </label>
                         <select
@@ -84,7 +84,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                                         : null,
                                 )
                             }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                         >
                             <option value="">-- Bez szablonu --</option>
                             {templates.map((t) => (
@@ -98,11 +98,11 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
 
                 {/* Content */}
                 <div>
-                    <div className="flex items-center justify-between mb-1">
-                        <label className="block text-sm font-medium text-gray-700">
+                    <div className="d-flex align-items-center justify-content-between mb-1">
+                        <label className="d-block small fw-medium text-body">
                             Treść wiadomości
                         </label>
-                        <span className="text-xs text-gray-500">
+                        <span className="small text-muted">
                             {charCount} znaków ({smsCount} SMS)
                         </span>
                     </div>
@@ -111,9 +111,9 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         onChange={(e) => setContent(e.target.value)}
                         rows={4}
                         placeholder="Wpisz treść wiadomości..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus: resize-none"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 small text-muted">
                         Zmienne typu {'{'}
                         {'{'} client_name {'}'}
                         {'}'} zostaną automatycznie zastąpione danymi klienta.
@@ -127,11 +127,11 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         void handleSend();
                     }}
                     disabled={sending || !recipient || !content}
-                    className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-100 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10 disabled: d-flex align-items-center justify-content-center gap-2"
                 >
                     {sending ? (
                         <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            <div className="rounded-circle h-4 w-4 border border-2 border-white border-top-transparent"></div>
                             Wysyłanie...
                         </>
                     ) : (
