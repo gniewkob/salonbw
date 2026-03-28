@@ -6,7 +6,6 @@ import type { Route } from 'next';
 import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import NewCustomerNav from '@/components/salonbw/navs/NewCustomerNav';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,7 +133,6 @@ export default function CustomerEditPage() {
             permission="nav:customers"
         >
             <SalonBWShell role={role}>
-                <SalonBWVendorCss />
                 <CustomerErrorBoundary
                     fallback={
                         <div className="show_customer" id="customers_main">

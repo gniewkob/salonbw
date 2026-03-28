@@ -1,6 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -274,7 +273,6 @@ export default function ClientsPage() {
             permission="nav:customers"
         >
             <SalonBWShell role={role}>
-                <SalonBWVendorCss />
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}
