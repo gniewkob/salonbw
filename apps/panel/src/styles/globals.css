@@ -1,5 +1,3 @@
-@import 'tailwindcss';
-
 :root {
     --background: #f5f5f5;
     --foreground: #333333;
@@ -19,921 +17,1611 @@ body {
     font-family: 'Open Sans', sans-serif;
 }
 
-@layer components {
-    .btn {
-        @apply inline-block px-4 py-2 rounded text-sm font-medium transition-colors cursor-pointer border border-transparent;
-    }
-
-    .btn-primary {
-        background: var(--salonbw-accent);
-        color: #fff;
-    }
-
-    .btn-primary:hover {
-        filter: brightness(0.95);
-    }
-
-    .btn-secondary {
-        @apply bg-gray-500 text-white hover:bg-gray-600;
-    }
-
-    .table {
-        @apply w-full border-collapse mb-5;
-    }
-
-    .table th {
-        @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700;
-    }
-
-    .table td {
-        @apply text-left p-3 border-b border-gray-200;
-    }
-
-    .table tr:hover {
-        @apply bg-gray-50;
-    }
-
-    /* SalonBW Status Badges */
-    .badge {
-        @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
-    }
-
-    .badge-success {
-        @apply bg-green-100 text-green-800;
-    }
-
-    .badge-warning {
-        @apply bg-yellow-100 text-yellow-800;
-    }
-
-    /* Mass Communication Styles */
-    .salonbw-mass-communication {
-        @apply max-w-3xl mx-auto;
-    }
-
-    .salonbw-mass-communication__section {
-        @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4;
-    }
-
-    .salonbw-mass-communication__section h3 {
-        @apply text-lg font-semibold text-gray-800 mb-4;
-    }
-
-    .salonbw-mass-communication__subsection {
-        @apply mt-4 pl-4 border-l-2 border-gray-200;
-    }
-
-    .salonbw-mass-communication__subsection h4 {
-        @apply text-sm font-medium text-gray-600 mb-3;
-    }
-
-    .salonbw-mass-communication__footer {
-        @apply flex justify-between items-center mt-6 pt-4 border-t border-gray-200;
-    }
-
-    /* Step indicator */
-    .salonbw-steps {
-        @apply flex items-center justify-center mb-8 py-4;
-    }
-
-    .salonbw-step {
-        @apply flex items-center gap-2;
-    }
-
-    .salonbw-step__number {
-        @apply w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold;
-    }
-
-    .salonbw-step.active .salonbw-step__number {
-        @apply bg-[#25B4C1] text-white;
-    }
-
-    .salonbw-step__label {
-        @apply text-sm text-gray-600 font-medium;
-    }
-
-    .salonbw-step.active .salonbw-step__label {
-        @apply text-gray-900;
-    }
-
-    .salonbw-step__divider {
-        @apply w-12 h-px bg-gray-300 mx-4;
-    }
-
-    /* Channel selector */
-    .salonbw-channel-selector {
-        @apply flex gap-4;
-    }
-
-    .salonbw-channel {
-        @apply flex items-center gap-2 p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-all hover:border-[#25B4C1];
-    }
-
-    .salonbw-channel input {
-        @apply hidden;
-    }
-
-    .salonbw-channel.active {
-        @apply border-[#25B4C1] bg-[#25B4C1]/5;
-    }
-
-    .salonbw-channel__icon {
-        @apply text-2xl;
-    }
-
-    /* Checkbox row */
-    .salonbw-checkbox-row {
-        @apply flex items-center gap-3 py-2 cursor-pointer;
-    }
-
-    .salonbw-checkbox-row input[type='checkbox'] {
-        @apply w-4 h-4 rounded border-gray-300 text-[#25B4C1] focus:ring-[#25B4C1];
-    }
-
-    .salonbw-group-dot {
-        @apply w-3 h-3 rounded-full inline-block;
-    }
-
-    /* Template list */
-    .salonbw-template-list {
-        @apply space-y-2;
-    }
-
-    .salonbw-template-item {
-        @apply p-4 border border-gray-200 rounded-lg cursor-pointer transition-all hover:border-[#25B4C1] hover:bg-gray-50;
-    }
-
-    .salonbw-template-item.active {
-        @apply border-[#25B4C1] bg-[#25B4C1]/5;
-    }
-
-    .salonbw-template-item__name {
-        @apply block font-medium text-gray-800 mb-1;
-    }
-
-    .salonbw-template-item__preview {
-        @apply block text-sm text-gray-500;
-    }
-
-    /* Form styles */
-    .salonbw-form-group {
-        @apply mb-4;
-    }
-
-    .salonbw-form-group label {
-        @apply block text-sm font-medium text-gray-700 mb-1;
-    }
-
-    .salonbw-input {
-        @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent;
-    }
-
-    .salonbw-textarea {
-        @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent resize-none;
-    }
-
-    .salonbw-char-count {
-        @apply block text-right text-xs text-gray-500 mt-1;
-    }
-
-    /* Variables help */
-    .salonbw-variables-help {
-        @apply bg-gray-50 p-4 rounded-lg mt-4;
-    }
-
-    .salonbw-variables-help h4 {
-        @apply text-sm font-medium text-gray-700 mb-2;
-    }
-
-    .salonbw-variables-help code {
-        @apply inline-block px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 mr-2 font-mono;
-    }
-
-    /* Send result */
-    .salonbw-mass-communication--success {
-        @apply text-center py-8;
-    }
-
-    .salonbw-send-result {
-        @apply max-w-md mx-auto;
-    }
-
-    .salonbw-send-result__icon {
-        @apply w-16 h-16 rounded-full bg-green-100 text-green-600 text-3xl flex items-center justify-center mx-auto mb-4;
-    }
-
-    .salonbw-send-result h3 {
-        @apply text-xl font-semibold text-gray-800 mb-6;
-    }
-
-    .salonbw-send-result__stats {
-        @apply flex justify-center gap-8 mb-8;
-    }
-
-    .salonbw-stat {
-        @apply text-center;
-    }
-
-    .salonbw-stat__value {
-        @apply block text-3xl font-bold mb-1;
-    }
-
-    .salonbw-stat--success .salonbw-stat__value {
-        @apply text-green-600;
-    }
-
-    .salonbw-stat--error .salonbw-stat__value {
-        @apply text-red-600;
-    }
-
-    .salonbw-stat__label {
-        @apply text-sm text-gray-600;
-    }
-
-    .salonbw-recipient-count {
-        @apply text-sm text-gray-600;
-    }
-
-    /* Button styles */
-    .salonbw-btn {
-        @apply px-4 py-2 rounded-md font-medium text-sm transition-colors cursor-pointer border-0;
-    }
-
-    .salonbw-btn--primary {
-        background: var(--salonbw-accent);
-        color: #fff;
-    }
-
-    .salonbw-btn--primary:hover {
-        filter: brightness(0.95);
-    }
-
-    .salonbw-btn--primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .salonbw-btn--light {
-        @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
-    }
-
-    .salonbw-btn--danger {
-        @apply bg-red-100 text-red-700 hover:bg-red-200;
-    }
-
-    .salonbw-btn--sm {
-        @apply px-3 py-1 text-xs;
-    }
-
-    .salonbw-btn--default {
-        @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50;
-    }
-
-    /* Template page styles */
-    .salonbw-page__toolbar {
-        @apply flex items-center mb-4;
-    }
-
-    .salonbw-label {
-        @apply text-sm text-gray-700;
-    }
-
-    .salonbw-select {
-        @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent;
-    }
-
-    .salonbw-table-wrap {
-        @apply overflow-x-auto;
-    }
-
-    .salonbw-table {
-        @apply w-full border-collapse;
-    }
-
-    .salonbw-table th {
-        @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm;
-    }
-
-    .salonbw-table td {
-        @apply text-left p-3 border-b border-gray-200 text-sm;
-    }
-
-    .salonbw-table tr:hover {
-        @apply bg-gray-50;
-    }
-
-    .salonbw-badge {
-        @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700;
-    }
-
-    .salonbw-badge--success {
-        @apply bg-green-100 text-green-800;
-    }
-
-    .salonbw-badge--inactive {
-        @apply bg-gray-200 text-gray-600;
-    }
-
-    .salonbw-badge--error {
-        @apply bg-red-100 text-red-800;
-    }
-
-    .salonbw-badge--sm {
-        @apply px-1.5 py-0.5 text-xs;
-    }
-
-    .salonbw-actions {
-        @apply flex gap-2;
-    }
-
-    .salonbw-muted {
-        @apply text-gray-500;
-    }
-
-    .salonbw-template-preview {
-        @apply max-w-xs text-gray-600;
-    }
-
-    .salonbw-empty {
-        @apply text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-200;
-    }
-
-    .salonbw-loading {
-        @apply text-center py-12 text-gray-500;
-    }
-
-    /* Modal styles */
-    .salonbw-modal-overlay {
-        @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4;
-    }
-
-    .salonbw-modal {
-        @apply bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
-    }
-
-    .salonbw-modal__header {
-        @apply flex justify-between items-center p-4 border-b border-gray-200;
-    }
-
-    .salonbw-modal__header h3 {
-        @apply text-lg font-semibold text-gray-800;
-    }
-
-    .salonbw-modal__close {
-        @apply text-2xl text-gray-400 hover:text-gray-600 cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100;
-    }
-
-    .salonbw-modal__body {
-        @apply p-4 space-y-4;
-    }
-
-    .salonbw-modal__footer {
-        @apply flex justify-end gap-2 p-4 border-t border-gray-200 bg-gray-50;
-    }
-
-    .salonbw-form-row {
-        @apply grid grid-cols-2 gap-4;
-    }
-
-    /* Reception View Styles */
-    .salonbw-reception-view {
-        @apply h-full overflow-auto;
-    }
-
-    .salonbw-reception-summary {
-        @apply flex gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200;
-    }
-
-    .salonbw-reception-summary__item {
-        @apply flex-1 text-center p-3 rounded-lg bg-gray-50;
-    }
-
-    .salonbw-reception-summary__item--scheduled {
-        @apply bg-blue-50;
-    }
-
-    .salonbw-reception-summary__item--confirmed {
-        @apply bg-purple-50;
-    }
-
-    .salonbw-reception-summary__item--in-progress {
-        @apply bg-yellow-50;
-    }
-
-    .salonbw-reception-summary__item--completed {
-        @apply bg-green-50;
-    }
-
-    .salonbw-reception-summary__value {
-        @apply block text-2xl font-bold text-gray-800;
-    }
-
-    .salonbw-reception-summary__label {
-        @apply block text-sm text-gray-500 mt-1;
-    }
-
-    .salonbw-reception-table-wrap {
-        @apply bg-white rounded-lg border border-gray-200 overflow-hidden;
-    }
-
-    .salonbw-reception-table {
-        @apply w-full border-collapse;
-    }
-
-    .salonbw-reception-table th {
-        @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm;
-    }
-
-    .salonbw-reception-table td {
-        @apply text-left p-3 border-b border-gray-200 text-sm;
-    }
-
-    .salonbw-reception-table tbody tr:hover {
-        @apply bg-gray-50;
-    }
-
-    .salonbw-reception-table tbody tr:last-child td {
-        @apply border-b-0;
-    }
-
-    .salonbw-reception-row--overdue {
-        @apply bg-red-50/50;
-    }
-
-    .salonbw-reception-row--overdue:hover {
-        @apply bg-red-50;
-    }
-
-    .salonbw-reception-row--processing {
-        @apply opacity-70;
-    }
-
-    .salonbw-reception-time {
-        @apply font-medium whitespace-nowrap;
-    }
-
-    .salonbw-reception-overdue-badge {
-        @apply block text-xs text-red-600 font-medium mt-1;
-    }
-
-    .salonbw-reception-client {
-        @apply min-w-[150px];
-    }
-
-    .salonbw-reception-phone {
-        @apply text-xs text-gray-500 mt-1;
-    }
-
-    .salonbw-reception-actions {
-        @apply flex gap-2 flex-wrap;
-    }
-
-    .salonbw-reception-no-actions {
-        @apply text-gray-400;
-    }
-
-    .salonbw-status-badge {
-        @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
-    }
-
-    .salonbw-status--scheduled {
-        @apply bg-blue-100 text-blue-800;
-    }
-
-    .salonbw-status--confirmed {
-        @apply bg-purple-100 text-purple-800;
-    }
-
-    .salonbw-status--in-progress {
-        @apply bg-yellow-100 text-yellow-800;
-    }
-
-    .salonbw-status--completed {
-        @apply bg-green-100 text-green-800;
-    }
-
-    .salonbw-status--cancelled {
-        @apply bg-gray-200 text-gray-600;
-    }
-
-    .salonbw-status--no-show {
-        @apply bg-red-100 text-red-800;
-    }
-
-    .salonbw-reception-empty {
-        @apply text-center py-16 bg-white rounded-lg border border-gray-200;
-    }
-
-    .salonbw-reception-empty__icon {
-        @apply text-5xl mb-4;
-    }
-
-    .salonbw-reception-empty h3 {
-        @apply text-lg font-medium text-gray-800 mb-2;
-    }
-
-    .salonbw-reception-empty p {
-        @apply text-gray-500;
-    }
-
-    /* Additional button styles */
-    .salonbw-btn--success {
-        @apply bg-green-500 text-white hover:bg-green-600;
-    }
-
-    .salonbw-btn--warning {
-        @apply bg-yellow-500 text-white hover:bg-yellow-600;
-    }
-
-    /* ============================================
-       VERSUM CALENDAR STYLES - Matching Original
-       ============================================ */
-
-    /* Calendar background - white like oryginalny shell panelu */
-    .fc {
-        --fc-border-color: #e5e7eb;
-        --fc-page-bg-color: #ffffff;
-        --fc-neutral-bg-color: #ffffff;
-    }
-
-    .fc-view-harness {
-        background: #ffffff !important;
-    }
-
-    .fc-timegrid-body {
-        background: #ffffff !important;
-    }
-
-    .fc-timegrid-slots {
-        background: #ffffff !important;
-    }
-
-    .fc-timegrid-slot {
-        background: #ffffff !important;
-        border-bottom: 1px solid #f3f4f6 !important;
-    }
-
-    .fc-timegrid-slot-lane {
-        background: #ffffff !important;
-    }
-
-    /* Header styling */
-    .fc-col-header-cell {
-        background: #f3f4f6 !important;
-        border-bottom: 2px solid #d1d5db !important;
-        padding: 8px 4px !important;
-    }
-
-    .fc-col-header-cell-cushion {
-        color: #374151 !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
-    }
-
-    /* Event styling - source-like gray blocks */
-    .fc-event {
-        border: none !important;
-        border-radius: 3px !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .fc-event-main {
-        padding: 4px 6px !important;
-    }
-
-    .fc-event-title {
-        font-weight: 500 !important;
-        font-size: 12px !important;
-        color: #1f2937 !important;
-    }
-
-    /* Time text in events */
-    .fc-event-time {
-        font-size: 11px !important;
-        color: #6b7280 !important;
-        font-weight: 500 !important;
-    }
-
-    /* Current time indicator */
-    .fc-timegrid-now-indicator-line {
-        border-color: #ef4444 !important;
-        border-width: 2px !important;
-    }
-
-    .fc-timegrid-now-indicator-arrow {
-        color: #ef4444 !important;
-    }
-
-    /* Day grid (month view) */
-    .fc-daygrid-day {
-        background: #ffffff !important;
-    }
-
-    .fc-daygrid-day.fc-day-today {
-        background: #fef3c7 !important;
-    }
-
-    .fc-daygrid-day-top {
-        padding: 4px !important;
-    }
-
-    .fc-daygrid-day-number {
-        font-size: 13px !important;
-        color: #374151 !important;
-        font-weight: 500 !important;
-    }
-
-    /* Week number column */
-    .fc-timegrid-axis {
-        background: #f3f4f6 !important;
-        font-weight: 600 !important;
-        color: #6b7280 !important;
-        font-size: 11px !important;
-    }
-
-    /* Toolbar buttons */
-    .fc-button {
-        background: #ffffff !important;
-        border: 1px solid #d1d5db !important;
-        color: #374151 !important;
-        font-weight: 500 !important;
-        text-transform: lowercase !important;
-        padding: 6px 12px !important;
-        box-shadow: none !important;
-    }
-
-    .fc-button:hover {
-        background: #f3f4f6 !important;
-        border-color: #9ca3af !important;
-    }
-
-    .fc-button-active {
-        background: #3b82f6 !important;
-        border-color: #3b82f6 !important;
-        color: #ffffff !important;
-    }
-
-    /* ============================================
-       HIDE FULLCALENDAR DEFAULT HEADER (źródłowy system używa custom)
-       ============================================ */
-
-    /* Hide FullCalendar's default toolbar - we use our custom SalonBW header */
-    .fc .fc-toolbar {
-        display: none !important;
-    }
-
-    /* Also hide the second toolbar if present */
-    .fc-toolbar.fc-header-toolbar {
-        display: none !important;
-    }
-
-    /* ============================================
-       EMPLOYEE LIST (SIDEBAR) - SalonBW Style
-       ============================================ */
-
-    .salonbw-employee-list {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        padding: 12px;
-    }
-
-    .salonbw-employee-list__header {
-        font-size: 11px;
-        font-weight: 700;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-
-    .salonbw-employee-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-
-    .salonbw-employee-item:hover {
-        background: #f3f4f6;
-    }
-
-    .salonbw-employee-item__checkbox {
-        width: 16px;
-        height: 16px;
-        border: 2px solid #d1d5db;
-        border-radius: 3px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
-    }
-
-    .salonbw-employee-item__checkbox.checked {
-        background: #3b82f6;
-        border-color: #3b82f6;
-    }
-
-    .salonbw-employee-item__color {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .salonbw-employee-item__name {
-        font-size: 13px;
-        color: #374151;
-        flex: 1;
-    }
-
-    /* ============================================
-       EVENT TOOLTIP (On Hover) - SalonBW Style
-       ============================================ */
-
-    .salonbw-event-tooltip {
-        position: absolute;
-        z-index: 1000;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        padding: 12px;
-        min-width: 220px;
-        pointer-events: none;
-    }
-
-    .salonbw-event-tooltip::before {
-        content: '';
-        position: absolute;
-        bottom: -6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-top: 6px solid #ffffff;
-    }
-
-    .salonbw-event-tooltip__time {
-        font-size: 12px;
-        color: #6b7280;
-        font-weight: 500;
-        margin-bottom: 4px;
-    }
-
-    .salonbw-event-tooltip__client {
-        font-size: 14px;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 2px;
-    }
-
-    .salonbw-event-tooltip__service {
-        font-size: 13px;
-        color: #4b5563;
-        margin-bottom: 4px;
-    }
-
-    .salonbw-event-tooltip__employee {
-        font-size: 12px;
-        color: #6b7280;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .salonbw-event-tooltip__price {
-        font-size: 13px;
-        font-weight: 600;
-        color: #059669;
-        margin-top: 6px;
-        padding-top: 6px;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .salonbw-event-tooltip__status {
-        display: inline-block;
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 12px;
-        margin-top: 6px;
-    }
-
-    .salonbw-event-tooltip__status--scheduled {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-
-    .salonbw-event-tooltip__status--confirmed {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .salonbw-event-tooltip__status--in-progress {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .salonbw-event-tooltip__status--completed {
-        background: #f3f4f6;
-        color: #4b5563;
-    }
+/* Mass Communication Styles */
+.salonbw-mass-communication {
+    max-width: 768px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* ============================================
-   MINI CALENDAR - React Datepicker Overrides
-   (Outside @layer for higher specificity)
-   ============================================ */
-
-.salonbw-mini-calendar {
-    background: #ffffff;
+.salonbw-mass-communication__section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     border: 1px solid #e5e7eb;
-    border-radius: 4px;
-    padding: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
 }
 
-.salonbw-mini-calendar .react-datepicker {
-    border: none;
-    font-family: 'Open Sans', sans-serif;
-    width: 100%;
-}
-
-.salonbw-mini-calendar .react-datepicker__header {
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    padding-top: 8px;
-}
-
-.salonbw-mini-calendar .react-datepicker__current-month {
-    font-size: 14px;
+.salonbw-mass-communication__section h3 {
+    font-size: 1.125rem;
     font-weight: 600;
-    color: #374151;
-    text-transform: uppercase;
+    color: #1f2937;
+    margin-bottom: 16px;
 }
 
-.salonbw-mini-calendar .react-datepicker__day-names {
+.salonbw-mass-communication__subsection {
+    margin-top: 16px;
+    padding-left: 16px;
+    border-left: 2px solid #e5e7eb;
+}
+
+.salonbw-mass-communication__subsection h4 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 12px;
+}
+
+.salonbw-mass-communication__footer {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Step indicator */
+.salonbw-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    padding: 16px 0;
+}
+
+.salonbw-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.salonbw-step__number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.salonbw-step.active .salonbw-step__number {
+    background: #25B4C1;
+    color: #fff;
+}
+
+.salonbw-step__label {
+    font-size: 0.875rem;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.salonbw-step.active .salonbw-step__label {
+    color: #111827;
+}
+
+.salonbw-step__divider {
+    width: 48px;
+    height: 1px;
+    background: #d1d5db;
+    margin: 0 16px;
+}
+
+/* Channel selector */
+.salonbw-channel-selector {
+    display: flex;
+    gap: 16px;
+}
+
+.salonbw-channel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.salonbw-channel:hover {
+    border-color: #25B4C1;
+}
+
+.salonbw-channel input {
+    display: none;
+}
+
+.salonbw-channel.active {
+    border-color: #25B4C1;
+    background: rgba(37, 180, 193, 0.05);
+}
+
+.salonbw-channel__icon {
+    font-size: 1.5rem;
+}
+
+/* Checkbox row */
+.salonbw-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    cursor: pointer;
+}
+
+.salonbw-checkbox-row input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border-color: #d1d5db;
+}
+
+.salonbw-group-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Template list */
+.salonbw-template-list {
+    /* space-y-2 equivalent: children get margin-bottom via adjacent selector */
+}
+
+.salonbw-template-list > * + * {
     margin-top: 8px;
 }
 
-.salonbw-mini-calendar .react-datepicker__day-name {
-    font-size: 11px;
-    color: #9ca3af;
-    text-transform: lowercase;
-    width: 28px;
-    flex: 1;
+.salonbw-template-item {
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
-.salonbw-mini-calendar .react-datepicker__month {
-    margin: 0.4em;
+.salonbw-template-item:hover {
+    border-color: #25B4C1;
+    background: #f9fafb;
 }
 
-.salonbw-mini-calendar .react-datepicker__week {
-    display: flex;
-    justify-content: space-around;
+.salonbw-template-item.active {
+    border-color: #25B4C1;
+    background: rgba(37,180,193,0.05);
 }
 
-.salonbw-mini-calendar .react-datepicker__day {
-    font-size: 12px;
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    border-radius: 3px;
+.salonbw-template-item__name {
+    display: block;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.salonbw-template-item__preview {
+    display: block;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* Form styles */
+.salonbw-form-group {
+    margin-bottom: 16px;
+}
+
+.salonbw-form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: #374151;
-    flex: 1;
+    margin-bottom: 4px;
+}
+
+.salonbw-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+.salonbw-input:focus {
+    outline: none;
+    border-color: #25B4C1;
+    box-shadow: 0 0 0 2px rgba(37,180,193,0.2);
+}
+
+.salonbw-input--sm {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+}
+
+.salonbw-input--small {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+}
+
+.salonbw-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    resize: none;
+}
+
+.salonbw-textarea:focus {
+    outline: none;
+    border-color: #25B4C1;
+    box-shadow: 0 0 0 2px rgba(37,180,193,0.2);
+}
+
+.salonbw-char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* Variables help */
+.salonbw-variables-help {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.salonbw-variables-help h4 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.salonbw-variables-help code {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #374151;
+    margin-right: 8px;
+    font-family: monospace;
+}
+
+/* Send result */
+.salonbw-mass-communication--success {
+    text-align: center;
+    padding: 32px 0;
+}
+
+.salonbw-send-result {
+    max-width: 448px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.salonbw-send-result__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+    font-size: 1.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.salonbw-send-result h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 24px;
+}
+
+.salonbw-send-result__stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.salonbw-stat {
     text-align: center;
 }
 
-.salonbw-mini-calendar .react-datepicker__day:hover {
+.salonbw-stat__value {
+    display: block;
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.salonbw-stat--success .salonbw-stat__value {
+    color: #16a34a;
+}
+
+.salonbw-stat--error .salonbw-stat__value {
+    color: #dc2626;
+}
+
+.salonbw-stat__label {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.salonbw-recipient-count {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+/* Button styles */
+.salonbw-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: 0;
+    display: inline-block;
+}
+
+.salonbw-btn--primary {
+    background: var(--salonbw-accent);
+    color: #fff;
+}
+
+.salonbw-btn--primary:hover {
+    filter: brightness(0.95);
+}
+
+.salonbw-btn--primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.salonbw-btn--light {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.salonbw-btn--light:hover {
+    background: #e5e7eb;
+}
+
+.salonbw-btn--danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.salonbw-btn--danger:hover {
+    background: #fecaca;
+}
+
+.salonbw-btn--sm {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+}
+
+.salonbw-btn--default {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.salonbw-btn--default:hover {
+    background: #f9fafb;
+}
+
+.salonbw-btn--success {
+    background: #22c55e;
+    color: #fff;
+}
+
+.salonbw-btn--success:hover {
+    background: #16a34a;
+}
+
+.salonbw-btn--warning {
+    background: #eab308;
+    color: #fff;
+}
+
+.salonbw-btn--warning:hover {
+    background: #ca8a04;
+}
+
+.salonbw-btn--add {
+    background: var(--salonbw-accent, #25b4c1);
+    color: #fff;
+}
+
+.salonbw-btn--link {
+    background: transparent;
+    border: 0;
+    color: var(--salonbw-accent, #25b4c1);
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.salonbw-btn--icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+/* Toolbar */
+.salonbw-page__toolbar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.salonbw-toolbar-btn {
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: #374151;
+}
+
+.salonbw-toolbar-btn:hover {
+    background: #f9fafb;
+}
+
+.salonbw-toolbar-search {
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    width: 200px;
+}
+
+/* Labels */
+.salonbw-label {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.salonbw-label-xs {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* Select */
+.salonbw-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+.salonbw-select:focus {
+    outline: none;
+    border-color: #25B4C1;
+    box-shadow: 0 0 0 2px rgba(37,180,193,0.2);
+}
+
+.salonbw-select--inline {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+/* Table */
+.salonbw-table-wrap {
+    overflow-x: auto;
+}
+
+.salonbw-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.salonbw-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.salonbw-table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+}
+
+.salonbw-table tr:hover {
+    background: #f9fafb;
+}
+
+/* Badge */
+.salonbw-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.salonbw-badge--success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.salonbw-badge--inactive {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.salonbw-badge--error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.salonbw-badge--sm {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}
+
+/* Actions */
+.salonbw-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Text utilities */
+.salonbw-muted {
+    color: #6b7280;
+}
+
+.salonbw-link {
+    color: var(--salonbw-accent, #25b4c1);
+    text-decoration: none;
+}
+
+.salonbw-link:hover {
+    text-decoration: underline;
+}
+
+.salonbw-blue {
+    color: #3b82f6;
+}
+
+.salonbw-blue-dark {
+    color: #1d4ed8;
+}
+
+/* Template preview */
+.salonbw-template-preview {
+    max-width: 320px;
+    color: #4b5563;
+}
+
+/* Empty / loading states */
+.salonbw-empty,
+.salonbw-empty-state {
+    text-align: center;
+    padding: 48px 0;
+    color: #6b7280;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.salonbw-loading {
+    text-align: center;
+    padding: 48px 0;
+    color: #6b7280;
+}
+
+/* Modal styles */
+.salonbw-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    padding: 16px;
+}
+
+.salonbw-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    max-width: 672px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.salonbw-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.salonbw-modal__header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.salonbw-modal__close {
+    font-size: 1.5rem;
+    color: #9ca3af;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.salonbw-modal__close:hover {
+    color: #4b5563;
     background: #f3f4f6;
 }
 
-.salonbw-mini-calendar .react-datepicker__day--selected {
-    background: #3b82f6 !important;
-    color: white !important;
+.salonbw-modal__body {
+    padding: 16px;
 }
 
-.salonbw-mini-calendar .react-datepicker__day--today {
-    border: 1px solid #3b82f6;
+.salonbw-modal__body > * + * {
+    margin-top: 16px;
+}
+
+.salonbw-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.salonbw-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Reception View Styles */
+.salonbw-reception-view {
+    height: 100%;
+    overflow: auto;
+}
+
+.salonbw-reception-summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.salonbw-reception-summary__item {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+.salonbw-reception-summary__item--scheduled {
+    background: #eff6ff;
+}
+
+.salonbw-reception-summary__item--confirmed {
+    background: #faf5ff;
+}
+
+.salonbw-reception-summary__item--in-progress {
+    background: #fefce8;
+}
+
+.salonbw-reception-summary__item--completed {
+    background: #f0fdf4;
+}
+
+.salonbw-reception-summary__value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.salonbw-reception-summary__label {
+    display: block;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.salonbw-reception-table-wrap {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.salonbw-reception-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.salonbw-reception-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.salonbw-reception-table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+}
+
+.salonbw-reception-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.salonbw-reception-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.salonbw-reception-row--overdue {
+    background: rgba(254,242,242,0.5);
+}
+
+.salonbw-reception-row--overdue:hover {
+    background: #fef2f2;
+}
+
+.salonbw-reception-row--processing {
+    opacity: 0.7;
+}
+
+.salonbw-reception-time {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.salonbw-reception-overdue-badge {
+    display: block;
+    font-size: 0.75rem;
+    color: #dc2626;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.salonbw-reception-client {
+    min-width: 150px;
+}
+
+.salonbw-reception-phone {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.salonbw-reception-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.salonbw-reception-no-actions {
+    color: #9ca3af;
+}
+
+.salonbw-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+}
+
+.salonbw-status--scheduled {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.salonbw-status--confirmed {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.salonbw-status--in-progress {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.salonbw-status--completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.salonbw-status--cancelled {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.salonbw-status--no-show {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.salonbw-reception-empty {
+    text-align: center;
+    padding: 64px 0;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.salonbw-reception-empty__icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.salonbw-reception-empty h3 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.salonbw-reception-empty p {
+    color: #6b7280;
+}
+
+/* Pagination */
+.salonbw-pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 16px;
+}
+
+/* List */
+.salonbw-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.salonbw-list-item {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-top: 0;
+}
+
+.salonbw-list-item:first-child {
+    border-top: 1px solid #ddd;
+    border-radius: 4px 4px 0 0;
+}
+
+.salonbw-list-item:last-child {
+    border-radius: 0 0 4px 4px;
+}
+
+/* Notes */
+.salonbw-notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Icon */
+.salonbw-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.salonbw-icon--plus::before {
+    content: '+';
+}
+
+.salonbw-icon--lg {
+    font-size: 1.25rem;
+}
+
+/* Icon button */
+.salonbw-icon-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: #6b7280;
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    font-size: 0.875rem;
+}
+
+.salonbw-icon-btn:hover {
+    background: #f3f4f6;
+}
+
+/* Alert */
+.salonbw-alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 16px;
+}
+
+.salonbw-alert-info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+/* Checkbox large */
+.salonbw-checkbox-large {
+    width: 20px;
+    height: 20px;
+}
+
+/* Checkbox */
+.salonbw-checkbox {
+    width: 16px;
+    height: 16px;
+}
+
+/* Color picker */
+.salonbw-color-picker {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Datepicker */
+.salonbw-datepicker-container {
+    position: relative;
+}
+
+.salonbw-datepicker {
+    padding: 6px 10px;
+    border: 1px solid #bfbfbf;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    color: #919191;
+    width: 210px;
+    height: 28px;
+}
+
+/* Extension grid */
+.salonbw-extension-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+/* Floating help */
+.salonbw-floating-help {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+}
+
+/* Section title */
+.salonbw-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+/* Sidebar */
+.salonbw-sidebar {
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.salonbw-sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.salonbw-sidebar__section {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.salonbw-sidebar__header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.salonbw-sidebar__search {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-bottom: 12px;
+}
+
+.salonbw-sidebar__nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.salonbw-sidebar__filters {
+    margin-top: 8px;
+}
+
+.salonbw-sidebar__content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.salonbw-sidebar__tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.salonbw-sidebar-open {
+    /* modifier when sidebar is open */
+}
+
+/* Panel sub section */
+.salonbw-panel-sub {
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.salonbw-panel-sub__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.salonbw-panel-sub__description {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.salonbw-panel-sub__meta {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+
+/* Breadcrumb */
+.salonbw-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+/* Employee filter */
+.salonbw-employee-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.salonbw-employee-filter__item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.salonbw-employee-filter__item:hover {
+    background: #f3f4f6;
+}
+
+.salonbw-employee-filter__color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.salonbw-employee-filter__name {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Widget (stats sub-panel) */
+.salonbw-widget {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.salonbw-widget__header {
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.salonbw-widget__content {
+    padding: 16px;
+}
+
+/* Dashboard layout */
+.salonbw-dashboard {
+    padding-bottom: 32px;
+}
+
+.salonbw-dashboard__loading,
+.salonbw-dashboard__empty {
+    padding: 64px 0;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.salonbw-dashboard__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.salonbw-dashboard__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.salonbw-dashboard__period {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.salonbw-dashboard__period-btn {
+    padding: 4px 12px;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    color: #4b5563;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.salonbw-dashboard__period-btn.active {
+    background: var(--salonbw-accent, #25b4c1);
+    color: #fff;
+}
+
+.salonbw-dashboard__period-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-left: auto;
+}
+
+/* Stats cards row */
+.salonbw-dashboard__stats {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 24px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.salonbw-stat-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.salonbw-stat-card__title {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.salonbw-stat-card__value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.salonbw-stat-card__change {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.salonbw-stat-card__change.positive {
+    color: #22c55e;
+}
+
+.salonbw-stat-card__chart {
+    height: 50px;
+    overflow: hidden;
+}
+
+/* Mini chart */
+.salonbw-mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 100%;
+}
+
+.salonbw-mini-chart__bar {
+    flex: 1;
+    border-radius: 2px;
+    background: var(--salonbw-accent, #25b4c1);
+}
+
+.salonbw-mini-chart__bar--blue {
+    background: #3b82f6;
+}
+
+.salonbw-mini-chart__bar--green {
+    background: #22c55e;
+}
+
+/* Dashboard bottom grid */
+.salonbw-dashboard__grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.salonbw-dashboard__section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.salonbw-dashboard__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.salonbw-dashboard__section-header h2 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.salonbw-dashboard__section-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.salonbw-dashboard__section-footer {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #25b4c1;
+    padding: 8px 0;
+    border-top: 1px solid #f3f4f6;
+    text-decoration: none;
+    margin-top: auto;
+}
+
+.salonbw-dashboard__section-footer:hover {
+    text-decoration: underline;
+}
+
+/* Activity list */
+.salonbw-activity-list,
+.salonbw-appointments-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.salonbw-activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.salonbw-activity-item--empty,
+.salonbw-appointment-item--empty {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.salonbw-activity-item__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #25b4c1;
+    color: #fff;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     font-weight: 600;
 }
 
-.salonbw-mini-calendar .react-datepicker__day--outside-month {
-    color: #d1d5db;
+.salonbw-activity-item__content {
+    flex: 1;
+    min-width: 0;
 }
 
-.salonbw-mini-calendar .react-datepicker__navigation {
-    top: 8px;
+.salonbw-activity-item__title {
+    font-size: 0.875rem;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.salonbw-mini-calendar .react-datepicker__navigation-icon::before {
-    border-color: #6b7280;
+.salonbw-activity-item__meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* Appointments list */
+.salonbw-appointment-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.salonbw-appointment-item__time {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    width: 48px;
+    flex-shrink: 0;
+}
+
+.salonbw-appointment-item__details {
+    flex: 1;
+    min-width: 0;
+}
+
+.salonbw-appointment-item__client {
+    font-size: 0.875rem;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.salonbw-appointment-item__service {
+    font-size: 0.75rem;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================
+   VERSUM CALENDAR STYLES - Matching Original
+   ============================================ */
+
+/* Calendar background - white like oryginalny shell panelu */
+.fc {
+    --fc-border-color: #e5e7eb;
+    --fc-page-bg-color: #ffffff;
+    --fc-neutral-bg-color: #ffffff;
+}
+
+.fc-view-harness {
+    background: #ffffff !important;
+}
+
+.fc-timegrid-body {
+    background: #ffffff !important;
+}
+
+.fc-timegrid-slots {
+    background: #ffffff !important;
+}
+
+.fc-timegrid-slot {
+    background: #ffffff !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.fc-timegrid-slot-lane {
+    background: #ffffff !important;
+}
+
+/* Header styling */
+.fc-col-header-cell {
+    background: #f3f4f6 !important;
+    border-bottom: 2px solid #d1d5db !important;
+    padding: 8px 4px !important;
+}
+
+.fc-col-header-cell-cushion {
+    color: #374151 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* Event styling - source-like gray blocks */
+.fc-event {
+    border: none !important;
+    border-radius: 3px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fc-event-main {
+    padding: 4px 6px !important;
+}
+
+.fc-event-title {
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    color: #1f2937 !important;
+}
+
+/* Time text in events */
+.fc-event-time {
+    font-size: 11px !important;
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+}
+
+/* Current time indicator */
+.fc-timegrid-now-indicator-line {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+
+.fc-timegrid-now-indicator-arrow {
+    color: #ef4444 !important;
+}
+
+/* Day grid (month view) */
+.fc-daygrid-day {
+    background: #ffffff !important;
+}
+
+.fc-daygrid-day.fc-day-today {
+    background: #fef3c7 !important;
+}
+
+.fc-daygrid-day-top {
+    padding: 4px !important;
+}
+
+.fc-daygrid-day-number {
+    font-size: 13px !important;
+    color: #374151 !important;
+    font-weight: 500 !important;
+}
+
+/* Week number column */
+.fc-timegrid-axis {
+    background: #f3f4f6 !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    font-size: 11px !important;
+}
+
+/* Toolbar buttons */
+.fc-button {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    font-weight: 500 !important;
+    text-transform: lowercase !important;
+    padding: 6px 12px !important;
+    box-shadow: none !important;
+}
+
+.fc-button:hover {
+    background: #f3f4f6 !important;
+    border-color: #9ca3af !important;
+}
+
+.fc-button-active {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+/* ============================================
+   HIDE FULLCALENDAR DEFAULT HEADER (źródłowy system używa custom)
+   ============================================ */
+
+/* Hide FullCalendar's default toolbar - we use our custom SalonBW header */
+.fc .fc-toolbar {
+    display: none !important;
+}
+
+/* Also hide the second toolbar if present */
+.fc-toolbar.fc-header-toolbar {
+    display: none !important;
 }
 
 /* ============================================
@@ -982,7 +1670,6 @@ body {
     border: none;
     border-radius: 3px;
     cursor: pointer;
-    transition: all 0.15s ease;
     padding: 0;
     margin: 0 auto;
 }
@@ -1003,398 +1690,4 @@ body {
 
 .salonbw-mini-cal__day--other-month {
     color: #d1d5db;
-}
-
-@layer components {
-    /* ============================================
-       VERSUM CALENDAR HEADER - 1:1 with Original
-       ============================================ */
-
-    .salonbw-calendar-page {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        background: #f5f5f5;
-    }
-
-    .salonbw-calendar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        background: #ffffff;
-        border-bottom: 1px solid #e5e7eb;
-        gap: 16px;
-    }
-
-    .salonbw-calendar-header__left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1;
-    }
-
-    .salonbw-calendar-header__nav-btn {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #ffffff;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        cursor: pointer;
-        font-family: 'versum';
-        font-size: 14px;
-        color: #374151;
-        transition: all 0.15s ease;
-    }
-
-    .salonbw-calendar-header__nav-btn:hover {
-        background: #f3f4f6;
-        border-color: #9ca3af;
-    }
-
-    .salonbw-calendar-header__today-btn {
-        padding: 6px 12px;
-        background: #ffffff;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #374151;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        text-transform: lowercase;
-    }
-
-    .salonbw-calendar-header__today-btn:hover {
-        background: #f3f4f6;
-        border-color: #9ca3af;
-    }
-
-    .salonbw-calendar-header__today-btn.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .salonbw-calendar-header__print-link {
-        margin-left: 12px;
-        font-size: 13px;
-        color: #3b82f6;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .salonbw-calendar-header__print-link:hover {
-        text-decoration: underline;
-    }
-
-    .salonbw-calendar-header__title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1f2937;
-        margin: 0;
-        text-align: center;
-        flex: 0 0 auto;
-    }
-
-    .salonbw-calendar-header__right {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        flex: 1;
-    }
-
-    .salonbw-calendar-header__view-switcher {
-        display: flex;
-        background: #f3f4f6;
-        border-radius: 4px;
-        padding: 2px;
-        gap: 2px;
-    }
-
-    .salonbw-calendar-header__view-btn {
-        padding: 6px 14px;
-        background: transparent;
-        border: none;
-        border-radius: 3px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #6b7280;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        text-transform: lowercase;
-    }
-
-    .salonbw-calendar-header__view-btn:hover {
-        color: #374151;
-    }
-
-    .salonbw-calendar-header__view-btn.active {
-        background: #3b82f6;
-        color: #ffffff;
-    }
-
-    .salonbw-calendar-content {
-        flex: 1;
-        overflow: hidden;
-        background: #ffffff;
-    }
-
-    /* Link utility */
-    .salonbw-link {
-        color: var(--salonbw-accent, #25b4c1);
-        text-decoration: none;
-    }
-
-    .salonbw-link:hover {
-        text-decoration: underline;
-    }
-
-    /* Text utilities */
-    .salonbw-text-success {
-        color: #22c55e;
-    }
-
-    .salonbw-text-muted {
-        @apply text-gray-400;
-    }
-
-    /* Widget (stats sub-panel) */
-    .salonbw-widget {
-        @apply bg-white border border-gray-200 rounded-lg overflow-hidden mb-4;
-    }
-
-    .salonbw-widget__header {
-        @apply px-4 py-3 bg-gray-50 border-b border-gray-200 text-sm font-semibold text-gray-700;
-    }
-
-    .salonbw-widget__content {
-        @apply p-4;
-    }
-
-    /* Excel export link area */
-    .salonbw-excel-export {
-        @apply flex items-center gap-2 mt-4;
-    }
-
-    /* Input modifiers */
-    .salonbw-input--sm {
-        @apply px-2 py-1 text-sm;
-    }
-
-    .salonbw-input--ghost {
-        @apply border-0 bg-transparent shadow-none focus:ring-0 px-0;
-    }
-
-    /* Icon button */
-    .salonbw-icon-btn {
-        @apply w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 cursor-pointer border-0 bg-transparent text-sm;
-    }
-
-    /* Dashboard layout */
-    .salonbw-dashboard {
-        @apply pb-8;
-    }
-
-    .salonbw-dashboard__loading,
-    .salonbw-dashboard__empty {
-        @apply py-16 text-center text-gray-500 text-sm;
-    }
-
-    .salonbw-dashboard__header {
-        @apply flex items-center justify-between mb-4;
-    }
-
-    .salonbw-dashboard__title {
-        @apply text-lg font-semibold text-gray-800;
-    }
-
-    .salonbw-dashboard__period {
-        @apply flex items-center gap-4 mb-5 pb-3 border-b border-gray-200;
-    }
-
-    .salonbw-dashboard__period-btn {
-        @apply px-3 py-1 text-sm rounded text-gray-600 bg-transparent border-0 cursor-pointer;
-    }
-
-    .salonbw-dashboard__period-btn.active {
-        background: var(--salonbw-accent, #25b4c1);
-        color: #fff;
-    }
-
-    .salonbw-dashboard__period-label {
-        @apply text-sm text-gray-500 ml-auto;
-    }
-
-    /* Stats cards row */
-    .salonbw-dashboard__stats {
-        @apply grid gap-4 mb-6;
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .salonbw-stat-card {
-        @apply bg-white border border-gray-200 rounded-lg p-4;
-    }
-
-    .salonbw-stat-card__title {
-        @apply text-xs text-gray-500 uppercase tracking-wide mb-2;
-    }
-
-    .salonbw-stat-card__value {
-        @apply flex items-center gap-2 text-2xl font-bold text-gray-800 mb-3;
-    }
-
-    .salonbw-stat-card__change {
-        @apply text-xs font-normal text-gray-400;
-    }
-
-    .salonbw-stat-card__change.positive {
-        color: #22c55e;
-    }
-
-    .salonbw-stat-card__chart {
-        height: 50px;
-        overflow: hidden;
-    }
-
-    .salonbw-stat-card__toggle {
-        @apply text-sm font-normal text-gray-400 border-0 bg-transparent cursor-pointer p-0;
-    }
-
-    .salonbw-mini-chart {
-        @apply flex items-end gap-px h-full;
-    }
-
-    .salonbw-mini-chart__bar {
-        @apply flex-1 rounded-sm;
-        background: var(--salonbw-accent, #25b4c1);
-    }
-
-    .salonbw-mini-chart__bar--blue {
-        background: #3b82f6;
-    }
-
-    .salonbw-mini-chart__bar--green {
-        background: #22c55e;
-    }
-
-    /* Dashboard bottom grid */
-    .salonbw-dashboard__grid {
-        @apply grid gap-4;
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .salonbw-dashboard__section {
-        @apply bg-white border border-gray-200 rounded-lg flex flex-col overflow-hidden;
-    }
-
-    .salonbw-dashboard__section-header {
-        @apply flex items-center justify-between px-4 py-3 border-b border-gray-100;
-    }
-
-    .salonbw-dashboard__section-header h2 {
-        @apply text-sm font-semibold text-gray-700;
-    }
-
-    .salonbw-dashboard__section-actions {
-        @apply flex gap-1;
-    }
-
-    .salonbw-dashboard__section-footer {
-        @apply block text-center text-xs text-[#25b4c1] py-2 border-t border-gray-100 no-underline hover:underline mt-auto;
-    }
-
-    /* Activity list */
-    .salonbw-activity-list,
-    .salonbw-appointments-list {
-        @apply flex-1 overflow-y-auto;
-    }
-
-    .salonbw-activity-item {
-        @apply flex items-start gap-3 px-4 py-3 border-b border-gray-50;
-    }
-
-    .salonbw-activity-item--empty,
-    .salonbw-appointment-item--empty {
-        @apply px-4 py-6 text-center text-sm text-gray-400;
-    }
-
-    .salonbw-activity-item__avatar {
-        @apply w-8 h-8 rounded-full bg-[#25b4c1] text-white text-xs flex items-center justify-center shrink-0 font-semibold;
-    }
-
-    .salonbw-activity-item__content {
-        @apply flex-1 min-w-0;
-    }
-
-    .salonbw-activity-item__title {
-        @apply text-sm text-gray-800 truncate;
-    }
-
-    .salonbw-activity-item__meta {
-        @apply text-xs text-gray-500 mt-0.5;
-    }
-
-    /* Appointments list */
-    .salonbw-appointment-item {
-        @apply flex items-center gap-3 px-4 py-3 border-b border-gray-50;
-    }
-
-    .salonbw-appointment-item__time {
-        @apply text-sm font-semibold text-gray-800 w-12 shrink-0;
-    }
-
-    .salonbw-appointment-item__details {
-        @apply flex-1 min-w-0;
-    }
-
-    .salonbw-appointment-item__client {
-        @apply text-sm text-gray-800 truncate;
-    }
-
-    .salonbw-appointment-item__service {
-        @apply text-xs text-gray-500 truncate;
-    }
-
-    /* Tasks widget */
-    .salonbw-tasks {
-        @apply flex-1 flex flex-col px-4 py-2;
-    }
-
-    .salonbw-tasks__input {
-        @apply mb-2;
-    }
-
-    .salonbw-tasks__empty {
-        @apply text-sm text-gray-400 text-center py-4;
-    }
-
-    /* Settings tile grid */
-    .salonbw-grid {
-        @apply grid gap-3 mb-6;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-
-    .salonbw-tile--clickable {
-        @apply flex flex-col items-center justify-center p-4 bg-white border border-gray-200 rounded-lg text-center no-underline text-gray-700 transition-colors;
-        min-height: 90px;
-    }
-
-    .salonbw-tile--clickable:hover {
-        @apply bg-gray-50 border-gray-300 text-gray-800;
-    }
-
-    .salonbw-tile__icon {
-        @apply text-2xl mb-1;
-    }
-
-    .salonbw-section {
-        @apply mt-6 mb-2;
-    }
-
-    .salonbw-section__title {
-        @apply text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3;
-    }
 }
