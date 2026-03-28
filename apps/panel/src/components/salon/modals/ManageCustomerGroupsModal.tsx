@@ -127,7 +127,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
 
                     <div className="modal-body modal-body-scroll">
                         <form onSubmit={(e) => void handleCreate(e)}>
-                            <div className="form-group">
+                            <div className="form-">
                                 <label
                                     className="control-label"
                                     htmlFor="new_group_name"
@@ -148,7 +148,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                     disabled={isBusy}
                                 />
                             </div>
-                            <div className="form-group">
+                            <div className="form-">
                                 <label
                                     className="control-label"
                                     htmlFor="new_group_desc"
@@ -169,7 +169,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                     disabled={isBusy}
                                 />
                             </div>
-                            <div className="form-group">
+                            <div className="form-">
                                 <label className="control-label">Kolor</label>
                                 <div className="salonbw-color-picker">
                                     {colorOptions.map((color) => {
@@ -194,7 +194,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                     })}
                                 </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="d-flex gap-2">
                                 <button
                                     type="submit"
                                     className="btn btn-primary btn-xs"
@@ -242,8 +242,8 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                             key={g.id}
                                             className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]"
                                         >
-                                            <div className="flex items-center justify-between gap-[10px] mb-2">
-                                                <div className="flex items-center gap-[10px]">
+                                            <div className="d-flex align-items-center justify-content-between gap-[10px] mb-2">
+                                                <div className="d-flex align-items-center gap-[10px]">
                                                     {(() => {
                                                         const colorDotStyle: React.CSSProperties =
                                                             {
@@ -270,7 +270,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                         #{g.id}
                                                     </strong>
                                                 </div>
-                                                <div className="btn-group">
+                                                <div className="btn-">
                                                     <button
                                                         type="button"
                                                         className="btn btn-default btn-xs"
@@ -301,7 +301,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 </div>
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-">
                                                 <label
                                                     className="control-label"
                                                     htmlFor={`group_name_${g.id}`}
@@ -326,7 +326,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 />
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-">
                                                 <label
                                                     className="control-label"
                                                     htmlFor={`group_desc_${g.id}`}
@@ -353,7 +353,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 />
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-">
                                                 <label className="control-label">
                                                     Kolor
                                                 </label>

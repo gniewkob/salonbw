@@ -99,21 +99,21 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="p-4 bg-white min-h-screen">
-            <button onClick={() => router.back()} className="mb-4">
+        <div className="p-3 bg-white">
+            <button onClick={() => router.back()} className="mb-3">
                 &larr; Back
             </button>
             <form
                 onSubmit={(e) => void handleSubmit(e)}
-                className="space-y-4 max-w-sm mx-auto"
+                className="gap-2 mx-auto"
                 noValidate
             >
-                <h1 className="text-2xl font-bold">Register</h1>
+                <h1 className="fs-3 fw-bold">Register</h1>
 
                 <div>
                     <input
-                        className={`border p-2 w-full rounded ${
-                            touched.name && errors.name ? 'border-red-500' : ''
+                        className={`border p-2 w-100 rounded ${
+                            touched.name && errors.name ? 'border-danger' : ''
                         }`}
                         placeholder="Name"
                         value={form.name}
@@ -121,18 +121,14 @@ export default function RegisterPage() {
                         onBlur={() => handleBlur('name')}
                     />
                     {touched.name && errors.name && (
-                        <p className="text-red-500 text-sm mt-1">
-                            {errors.name}
-                        </p>
+                        <p className="text-danger small mt-1">{errors.name}</p>
                     )}
                 </div>
 
                 <div>
                     <input
-                        className={`border p-2 w-full rounded ${
-                            touched.email && errors.email
-                                ? 'border-red-500'
-                                : ''
+                        className={`border p-2 w-100 rounded ${
+                            touched.email && errors.email ? 'border-danger' : ''
                         }`}
                         placeholder="Email"
                         type="email"
@@ -141,15 +137,13 @@ export default function RegisterPage() {
                         onBlur={() => handleBlur('email')}
                     />
                     {touched.email && errors.email && (
-                        <p className="text-red-500 text-sm mt-1">
-                            {errors.email}
-                        </p>
+                        <p className="text-danger small mt-1">{errors.email}</p>
                     )}
                 </div>
 
                 <div>
                     <input
-                        className="border p-2 w-full rounded"
+                        className="border p-2 w-100 rounded"
                         placeholder="Phone (optional)"
                         type="tel"
                         value={form.phone}
@@ -159,9 +153,9 @@ export default function RegisterPage() {
 
                 <div>
                     <input
-                        className={`border p-2 w-full rounded ${
+                        className={`border p-2 w-100 rounded ${
                             touched.password && errors.password
-                                ? 'border-red-500'
+                                ? 'border-danger'
                                 : ''
                         }`}
                         placeholder="Password"
@@ -173,30 +167,27 @@ export default function RegisterPage() {
                         onBlur={() => handleBlur('password')}
                     />
                     {touched.password && errors.password && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p className="text-danger small mt-1">
                             {errors.password}
                         </p>
                     )}
                 </div>
 
                 <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded w-full disabled:opacity-50"
+                    className="bg-primary bg-opacity-10 text-white px-3 py-2 rounded w-100"
                     type="submit"
                     disabled={submitting}
                 >
                     {submitting ? 'Registering...' : 'Register'}
                 </button>
                 {error && (
-                    <p role="alert" className="text-red-600 text-center">
+                    <p role="alert" className="text-danger text-center">
                         {error}
                     </p>
                 )}
-                <p className="text-center text-sm">
+                <p className="text-center small">
                     Already have an account?{' '}
-                    <Link
-                        href="/auth/login"
-                        className="text-blue-600 hover:underline"
-                    >
+                    <Link href="/auth/login" className="text-primary">
                         Login
                     </Link>
                 </p>

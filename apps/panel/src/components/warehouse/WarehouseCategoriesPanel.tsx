@@ -19,21 +19,17 @@ export default function WarehouseCategoriesPanel({
             <div key={category.id}>
                 <button
                     type="button"
-                    className={`w-full text-left text-sm ${
+                    className={`w-100 text-start small ${
                         depth === 0
-                            ? 'pl-2'
+                            ? 'ps-2'
                             : depth === 1
-                              ? 'pl-6'
+                              ? 'ps-4'
                               : depth === 2
                                 ? 'pl-10'
                                 : depth === 3
                                   ? 'pl-14'
                                   : 'pl-20'
-                    } ${
-                        isSelected
-                            ? 'font-semibold text-sky-600'
-                            : 'text-gray-700'
-                    }`}
+                    } ${isSelected ? 'fw-semibold text-sky-600' : 'text-body'}`}
                     onClick={() => onSelect(category.id)}
                 >
                     {category.name}
@@ -46,19 +42,19 @@ export default function WarehouseCategoriesPanel({
     };
 
     return (
-        <div className="space-y-2 pt-2">
+        <div className="gap-2 pt-2">
             <button
                 type="button"
-                className={`w-full rounded border px-2 py-1 text-left text-sm ${
+                className={`w-100 rounded border px-2 py-1 text-start small ${
                     !selectedCategoryId
-                        ? 'border-sky-400 bg-sky-50 font-semibold text-sky-600'
-                        : 'border-gray-200 text-gray-700'
+                        ? 'border-sky-400 bg-sky-50 fw-semibold text-sky-600'
+                        : 'border-secondary border-opacity-25 text-body'
                 }`}
                 onClick={() => onSelect(undefined)}
             >
                 Wszystkie produkty
             </button>
-            <div className="space-y-1">
+            <div className="gap-1">
                 {categories.map((category) => renderNode(category))}
             </div>
         </div>

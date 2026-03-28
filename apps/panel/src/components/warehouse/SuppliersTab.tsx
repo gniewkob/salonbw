@@ -112,26 +112,26 @@ export default function SuppliersTab() {
     return (
         <div>
             {error && !isModalOpen && (
-                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+                <div className="mb-3 p-2 bg-danger bg-opacity-10 text-danger small rounded-3 border border-danger">
                     {error}
                 </div>
             )}
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+                <div className="d-flex align-items-center gap-3">
+                    <label className="d-flex align-items-center gap-2 small text-muted">
                         <input
                             type="checkbox"
                             checked={showInactive}
                             onChange={(e) => setShowInactive(e.target.checked)}
-                            className="rounded border-gray-300"
+                            className="rounded border-secondary border-opacity-50"
                         />
                         Pokaż nieaktywnych
                     </label>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                    className="px-3 py-2 bg-teal-600 text-white rounded-3"
                 >
                     + Dodaj dostawcę
                 </button>
@@ -139,69 +139,64 @@ export default function SuppliersTab() {
 
             {/* Table */}
             {isLoading ? (
-                <div className="text-center py-8 text-gray-500">
-                    Ładowanie...
-                </div>
+                <div className="text-center py-4 text-muted">Ładowanie...</div>
             ) : suppliers.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-4 text-muted">
                     Brak dostawców. Dodaj pierwszego dostawcę.
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-100">
+                        <thead className="bg-light">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Nazwa
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Kontakt
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Telefon
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     NIP
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-end small fw-medium text-muted text-uppercase">
                                     Akcje
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white">
                             {suppliers.map((supplier) => (
-                                <tr
-                                    key={supplier.id}
-                                    className="hover:bg-gray-50"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="font-medium text-gray-900">
+                                <tr key={supplier.id} className="">
+                                    <td className="px-4 py-3 text-nowrap">
+                                        <div className="fw-medium text-dark">
                                             {supplier.name}
                                         </div>
                                         {supplier.email && (
-                                            <div className="text-sm text-gray-500">
+                                            <div className="small text-muted">
                                                 {supplier.email}
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-4 py-3 text-nowrap small text-muted">
                                         {supplier.contactPerson || '-'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-4 py-3 text-nowrap small text-muted">
                                         {supplier.phone || '-'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-4 py-3 text-nowrap small text-muted">
                                         {supplier.nip || '-'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-4 py-3 text-nowrap">
                                         <span
-                                            className={`px-2 py-1 text-xs rounded-full ${
+                                            className={`px-2 py-1 small rounded-circle ${
                                                 supplier.isActive
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-gray-100 text-gray-800'
+                                                    ? 'bg-success bg-opacity-10 text-success'
+                                                    : 'bg-light text-dark'
                                             }`}
                                         >
                                             {supplier.isActive
@@ -209,12 +204,12 @@ export default function SuppliersTab() {
                                                 : 'Nieaktywny'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                    <td className="px-4 py-3 text-nowrap text-end small">
                                         <button
                                             onClick={() =>
                                                 handleOpenModal(supplier)
                                             }
-                                            className="text-teal-600 hover:text-teal-900 mr-3"
+                                            className="text-teal-600 me-2"
                                         >
                                             Edytuj
                                         </button>
@@ -222,7 +217,7 @@ export default function SuppliersTab() {
                                             onClick={() => {
                                                 void handleDelete(supplier.id);
                                             }}
-                                            className="text-red-600 hover:text-red-900"
+                                            className="text-danger"
                                         >
                                             Usuń
                                         </button>
@@ -243,7 +238,7 @@ export default function SuppliersTab() {
                     maxWidthClassName="max-w-md max-h-[90vh] overflow-y-auto"
                 >
                     {error && (
-                        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        <div className="mb-3 rounded-3 border border-danger bg-danger bg-opacity-10 p-2 small text-danger">
                             {error}
                         </div>
                     )}
@@ -251,10 +246,10 @@ export default function SuppliersTab() {
                         onSubmit={(event) => {
                             void handleSubmit(event);
                         }}
-                        className="space-y-4"
+                        className="gap-2"
                     >
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Nazwa *
                             </label>
                             <input
@@ -267,11 +262,11 @@ export default function SuppliersTab() {
                                     })
                                 }
                                 required
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Osoba kontaktowa
                             </label>
                             <input
@@ -283,12 +278,12 @@ export default function SuppliersTab() {
                                         contactPerson: e.target.value,
                                     })
                                 }
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="-cols-2 gap-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Email
                                 </label>
                                 <input
@@ -300,11 +295,11 @@ export default function SuppliersTab() {
                                             email: e.target.value,
                                         })
                                     }
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Telefon
                                 </label>
                                 <input
@@ -316,12 +311,12 @@ export default function SuppliersTab() {
                                             phone: e.target.value,
                                         })
                                     }
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                    className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 NIP
                             </label>
                             <input
@@ -333,11 +328,11 @@ export default function SuppliersTab() {
                                         nip: e.target.value,
                                     })
                                 }
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Adres
                             </label>
                             <textarea
@@ -349,11 +344,11 @@ export default function SuppliersTab() {
                                     })
                                 }
                                 rows={2}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Notatki
                             </label>
                             <textarea
@@ -365,11 +360,11 @@ export default function SuppliersTab() {
                                     })
                                 }
                                 rows={2}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                             />
                         </div>
                         <div>
-                            <label className="flex items-center gap-2">
+                            <label className="d-flex align-items-center gap-2">
                                 <input
                                     type="checkbox"
                                     checked={formData.isActive}
@@ -379,18 +374,16 @@ export default function SuppliersTab() {
                                             isActive: e.target.checked,
                                         })
                                     }
-                                    className="rounded border-gray-300"
+                                    className="rounded border-secondary border-opacity-50"
                                 />
-                                <span className="text-sm text-gray-700">
-                                    Aktywny
-                                </span>
+                                <span className="small text-body">Aktywny</span>
                             </label>
                         </div>
-                        <div className="flex justify-end gap-3 pt-4">
+                        <div className="d-flex justify-content-end gap-2 pt-3">
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
-                                className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                                className="rounded-3 border border-secondary border-opacity-50 px-3 py-2 text-body"
                             >
                                 Anuluj
                             </button>
@@ -400,7 +393,7 @@ export default function SuppliersTab() {
                                     createSupplier.isPending ||
                                     updateSupplier.isPending
                                 }
-                                className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+                                className="rounded-3 bg-teal-600 px-3 py-2 text-white"
                             >
                                 {createSupplier.isPending ||
                                 updateSupplier.isPending

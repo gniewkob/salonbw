@@ -38,46 +38,46 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-white">
+        <div className="d-flex flex-column h-100 bg-white">
             {/* Aktywne filtry - jak w source UI */}
             {activeGroup && (
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">
+                <div className="px-3 py-2 bg-light border-bottom border-secondary border-opacity-25">
+                    <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                            <span className="small text-muted">
                                 wybrane kryteria wyszukiwania:
                             </span>
                         </div>
                         <button
                             onClick={clearGroupFilter}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-secondary"
                             title="Wyczyść filtry"
                         >
                             ✕
                         </button>
                     </div>
-                    <div className="mt-2 flex items-center gap-2">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-white border border-gray-200 text-gray-700">
+                    <div className="mt-2 d-flex align-items-center gap-2">
+                        <span className="inline-d-flex align-items-center px-3 py-1 rounded-circle small bg-white border border-secondary border-opacity-25 text-body">
                             należą do grup ({filteredCustomers.length})
-                            <span className="ml-2 font-medium">
+                            <span className="ms-2 fw-medium">
                                 {activeGroup.name}
                             </span>
                             <button
                                 onClick={clearGroupFilter}
-                                className="ml-2 text-gray-400 hover:text-red-500"
+                                className="ms-2 text-secondary"
                             >
                                 ✕
                             </button>
                         </span>
                     </div>
-                    <div className="mt-2 text-sm">
-                        <span className="text-gray-600">
+                    <div className="mt-2 small">
+                        <span className="text-muted">
                             Klientów spełniających kryteria:
                         </span>
-                        <span className="ml-1 font-semibold text-gray-900">
+                        <span className="ms-1 fw-semibold text-dark">
                             {filteredCustomers.length}
                         </span>
-                        <button className="ml-3 text-sky-600 hover:text-sky-800 text-xs">
+                        <button className="ms-2 text-sky-600 small">
                             utwórz grupę
                         </button>
                     </div>
@@ -85,99 +85,101 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
             )}
 
             {/* Toolbar */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-                <div className="relative max-w-md w-full">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            <div className="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary border-opacity-25 bg-white">
+                <div className="position-relative w-100">
+                    <div className="position-absolute inset-y-0 start-0 ps-3 d-flex align-items-center pointer-events-none">
+                        <MagnifyingGlassIcon className="h-5 w-5 text-secondary" />
                     </div>
                     <input
                         type="text"
                         placeholder="Szukaj klienta (imię, nazwisko, telefon)..."
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                        className="d-block w-100 pl-10 pe-3 py-2 border border-secondary border-opacity-50 rounded-2 leading-5 bg-white placeholder-gray-500 focus:outline- focus:"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="d-flex align-items-center gap-2 small text-muted">
                     <span>{filteredCustomers.length} klientów</span>
                 </div>
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-fill overflow-auto">
                 {loading ? (
-                    <div className="flex justify-center p-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
+                    <div className="d-flex justify-content-center p-4">
+                        <div className="rounded-circle h-8 w-8 border-bottom-2 border-sky-600"></div>
                     </div>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-100">
+                        <thead className="bg-light">
                             <tr>
                                 <th
                                     scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    className="px-4 py-2 text-start small fw-medium text-muted text-uppercase"
                                 >
                                     Klient
                                 </th>
                                 <th
                                     scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    className="px-4 py-2 text-start small fw-medium text-muted text-uppercase"
                                 >
                                     Kontakt
                                 </th>
                                 <th
                                     scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    className="px-4 py-2 text-start small fw-medium text-muted text-uppercase"
                                 >
                                     Ostatnia wizyta
                                 </th>
-                                <th scope="col" className="relative px-6 py-3">
-                                    <span className="sr-only">Akcje</span>
+                                <th
+                                    scope="col"
+                                    className="position-relative px-4 py-2"
+                                >
+                                    <span className="visually-hidden">
+                                        Akcje
+                                    </span>
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white">
                             {filteredCustomers.map((customer) => (
-                                <tr
-                                    key={customer.id}
-                                    className="hover:bg-gray-50 transition-colors"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10">
-                                                <div className="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 font-semibold">
+                                <tr key={customer.id} className="">
+                                    <td className="px-4 py-3 text-nowrap">
+                                        <div className="d-flex align-items-center">
+                                            <div className="flex-flex-shrink-0 h-10 w-10">
+                                                <div className="h-10 w-10 rounded-circle bg-sky-100 d-flex align-items-center justify-content-center text-sky-700 fw-semibold">
                                                     {customer.firstName?.[0]}
                                                     {customer.lastName?.[0]}
                                                 </div>
                                             </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">
+                                            <div className="ms-3">
+                                                <div className="small fw-medium text-dark">
                                                     {customer.fullName}
                                                 </div>
-                                                <div className="text-xs text-gray-500">
+                                                <div className="small text-muted">
                                                     Dodano: 2024-01-01
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center text-sm text-gray-900">
-                                            <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
+                                    <td className="px-4 py-3 text-nowrap">
+                                        <div className="d-flex align-items-center small text-dark">
+                                            <PhoneIcon className="h-4 w-4 text-secondary me-2" />
                                             {customer.phone || '-'}
                                         </div>
-                                        <div className="text-sm text-gray-500">
+                                        <div className="small text-muted">
                                             {customer.email}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <td className="px-4 py-3 text-nowrap">
+                                        <span className="px-2 inline-d-flex small leading-5 fw-semibold rounded-circle bg-success bg-opacity-10 text-success">
                                             3 dni temu
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-4 py-3 text-nowrap text-end small fw-medium">
                                         <a
                                             href={`/customers/${customer.id}`}
-                                            className="text-sky-600 hover:text-sky-900"
+                                            className="text-sky-600"
                                         >
                                             Edytuj
                                         </a>

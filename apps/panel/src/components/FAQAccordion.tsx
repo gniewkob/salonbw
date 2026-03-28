@@ -14,18 +14,18 @@ export default function FAQAccordion({ items }: { items: FAQItem[] }) {
     };
 
     return (
-        <div className="space-y-2">
+        <div className="gap-2">
             {items.map((item, i) => (
                 <div key={i} className="border rounded">
                     <button
                         type="button"
                         onClick={() => toggle(i)}
-                        className="w-full p-2 text-left font-medium"
+                        className="w-100 p-2 text-start fw-medium"
                     >
                         {item.question}
                     </button>
                     {open === i && (
-                        <div className="p-2 border-t">{item.answer}</div>
+                        <div className="p-2 border-top">{item.answer}</div>
                     )}
                 </div>
             ))}

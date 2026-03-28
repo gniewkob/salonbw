@@ -118,14 +118,14 @@ export default function TemplateModal({
                 }}
                 className="w-[560px]"
             >
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                <h2 className="fs-5 fw-semibold text-dark mb-4">
                     {template ? 'Edytuj szablon' : 'Nowy szablon'}
                 </h2>
 
-                <div className="space-y-4">
+                <div className="gap-2">
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Nazwa szablonu
                         </label>
                         <input
@@ -134,15 +134,15 @@ export default function TemplateModal({
                             onChange={(e) =>
                                 setForm({ ...form, name: e.target.value })
                             }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                             required
                         />
                     </div>
 
                     {/* Type & Channel */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="-cols-2 gap-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Typ
                             </label>
                             <select
@@ -153,7 +153,7 @@ export default function TemplateModal({
                                         type: e.target.value as TemplateType,
                                     })
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                             >
                                 {TEMPLATE_TYPES.map((t) => (
                                     <option key={t.value} value={t.value}>
@@ -163,7 +163,7 @@ export default function TemplateModal({
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Kanał
                             </label>
                             <select
@@ -175,7 +175,7 @@ export default function TemplateModal({
                                             .value as MessageChannel,
                                     })
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                             >
                                 {CHANNELS.map((c) => (
                                     <option key={c.value} value={c.value}>
@@ -189,7 +189,7 @@ export default function TemplateModal({
                     {/* Subject (for email) */}
                     {form.channel === 'email' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="d-block small fw-medium text-body mb-1">
                                 Temat
                             </label>
                             <input
@@ -201,19 +201,19 @@ export default function TemplateModal({
                                         subject: e.target.value,
                                     })
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                             />
                         </div>
                     )}
 
                     {/* Content */}
                     <div>
-                        <div className="flex items-center justify-between mb-1">
-                            <label className="block text-sm font-medium text-gray-700">
+                        <div className="d-flex align-items-center justify-content-between mb-1">
+                            <label className="d-block small fw-medium text-body">
                                 Treść wiadomości
                             </label>
                             {form.channel === 'sms' && (
-                                <span className="text-xs text-gray-500">
+                                <span className="small text-muted">
                                     {charCount} znaków ({smsCount} SMS)
                                 </span>
                             )}
@@ -224,23 +224,23 @@ export default function TemplateModal({
                                 setForm({ ...form, content: e.target.value })
                             }
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus: resize-none"
                             required
                         />
                     </div>
 
                     {/* Variables */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="d-block small fw-medium text-body mb-2">
                             Dostępne zmienne
                         </label>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="d-flex flex-wrap gap-2">
                             {AVAILABLE_VARIABLES.map((v) => (
                                 <button
                                     key={v.key}
                                     type="button"
                                     onClick={() => insertVariable(v.key)}
-                                    className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded hover:bg-gray-200 transition-colors"
+                                    className="px-2 py-1 bg-light text-body small rounded bg-opacity-25"
                                     title={`Wstaw {{${v.key}}}`}
                                 >
                                     {v.label}
@@ -251,7 +251,7 @@ export default function TemplateModal({
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="d-block small fw-medium text-body mb-1">
                             Opis (opcjonalnie)
                         </label>
                         <input
@@ -264,38 +264,36 @@ export default function TemplateModal({
                                 })
                             }
                             placeholder="Krótki opis szablonu..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                         />
                     </div>
 
                     {/* Active */}
-                    <label className="flex items-center gap-2">
+                    <label className="d-flex align-items-center gap-2">
                         <input
                             type="checkbox"
                             checked={form.isActive}
                             onChange={(e) =>
                                 setForm({ ...form, isActive: e.target.checked })
                             }
-                            className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                            className="w-4 h-4 text-primary rounded focus:"
                         />
-                        <span className="text-sm text-gray-700">
-                            Szablon aktywny
-                        </span>
+                        <span className="small text-body">Szablon aktywny</span>
                     </label>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-4 d-flex justify-content-end gap-2">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="px-3 py-2 text-body bg-light rounded-3 bg-opacity-25"
                     >
                         Anuluj
                     </button>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+                        className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                     >
                         {saving ? 'Zapisywanie...' : 'Zapisz'}
                     </button>

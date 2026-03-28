@@ -155,16 +155,16 @@ export default function AutomaticRuleModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
+        <div className="position-fixed top-0 start-0 bottom-0 end-0 overflow-y-auto">
+            <div className="d-flex min-h-100 align-items-center justify-content-center p-3">
                 <div
-                    className="fixed inset-0 bg-black/30"
+                    className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/30"
                     onClick={onClose}
                 ></div>
 
-                <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-xl">
-                    <div className="flex items-center justify-between p-4 border-b">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                <div className="position-relative w-100 bg-white rounded-4 shadow-lg">
+                    <div className="d-flex align-items-center justify-content-between p-3 border-bottom">
+                        <h2 className="fs-5 fw-semibold text-dark">
                             {rule
                                 ? 'Edytuj regułę'
                                 : 'Nowa reguła automatyczna'}
@@ -172,7 +172,7 @@ export default function AutomaticRuleModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+                            className="p-2 text-secondary rounded-3"
                         >
                             <svg
                                 className="w-5 h-5"
@@ -195,11 +195,11 @@ export default function AutomaticRuleModal({
                             void handleSubmit(event);
                         }}
                     >
-                        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div className="p-3 gap-2 max-h-[60vh] overflow-y-auto">
                             {/* Basic Info */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Nazwa reguły *
                                     </label>
                                     <input
@@ -211,12 +211,12 @@ export default function AutomaticRuleModal({
                                                 name: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Typ wyzwalacza *
                                     </label>
                                     <select
@@ -228,7 +228,7 @@ export default function AutomaticRuleModal({
                                                     .value as AutomaticMessageTrigger,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     >
                                         {TRIGGER_OPTIONS.map((opt) => (
                                             <option
@@ -243,7 +243,7 @@ export default function AutomaticRuleModal({
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Opis (opcjonalny)
                                 </label>
                                 <input
@@ -255,15 +255,15 @@ export default function AutomaticRuleModal({
                                             description: e.target.value,
                                         }))
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     placeholder="Krótki opis reguły..."
                                 />
                             </div>
 
                             {/* Timing */}
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="-cols-3 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Kanał
                                     </label>
                                     <select
@@ -275,7 +275,7 @@ export default function AutomaticRuleModal({
                                                     .value as AutomaticMessageChannel,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     >
                                         {CHANNEL_OPTIONS.map((opt) => (
                                             <option
@@ -290,7 +290,7 @@ export default function AutomaticRuleModal({
 
                                 {needsOffset && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Godziny przed/po
                                         </label>
                                         <input
@@ -305,11 +305,11 @@ export default function AutomaticRuleModal({
                                                     ),
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                             min={-168}
                                             max={168}
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="small text-muted mt-1">
                                             Ujemne = przed, dodatnie = po
                                         </p>
                                     </div>
@@ -317,7 +317,7 @@ export default function AutomaticRuleModal({
 
                                 {needsInactivityDays && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Dni nieaktywności
                                         </label>
                                         <input
@@ -332,7 +332,7 @@ export default function AutomaticRuleModal({
                                                     ),
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                             min={1}
                                             max={365}
                                         />
@@ -341,9 +341,9 @@ export default function AutomaticRuleModal({
                             </div>
 
                             {/* Send Window */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Okno wysyłki od
                                     </label>
                                     <input
@@ -359,11 +359,11 @@ export default function AutomaticRuleModal({
                                                     e.target.value + ':00',
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Okno wysyłki do
                                     </label>
                                     <input
@@ -379,14 +379,14 @@ export default function AutomaticRuleModal({
                                                     e.target.value + ':00',
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     />
                                 </div>
                             </div>
 
                             {/* Message Content */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Treść wiadomości *
                                 </label>
                                 <textarea
@@ -397,16 +397,16 @@ export default function AutomaticRuleModal({
                                             content: e.target.value,
                                         }))
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
                                     rows={4}
                                     required
                                     placeholder="Wpisz treść wiadomości..."
                                 />
                                 <div className="mt-2">
-                                    <p className="text-xs text-gray-500 mb-1">
+                                    <p className="small text-muted mb-1">
                                         Dostępne zmienne (kliknij, aby wstawić):
                                     </p>
-                                    <div className="flex flex-wrap gap-1">
+                                    <div className="d-flex flex-wrap gap-1">
                                         {DEFAULT_VARIABLES.map((v) => (
                                             <button
                                                 key={v.key}
@@ -414,7 +414,7 @@ export default function AutomaticRuleModal({
                                                 onClick={() =>
                                                     insertVariable(v.key)
                                                 }
-                                                className="px-2 py-0.5 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition-colors"
+                                                className="px-2 py-0.5 small bg-light bg-opacity-25 rounded text-body"
                                                 title={v.desc}
                                             >
                                                 {`{{${v.key}}}`}
@@ -425,8 +425,8 @@ export default function AutomaticRuleModal({
                             </div>
 
                             {/* Options */}
-                            <div className="flex flex-wrap gap-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="d-flex flex-wrap gap-3">
+                                <label className="d-flex align-items-center gap-2">
                                     <input
                                         type="checkbox"
                                         checked={formData.requireSmsConsent}
@@ -437,13 +437,13 @@ export default function AutomaticRuleModal({
                                                     e.target.checked,
                                             }))
                                         }
-                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded focus:"
                                     />
-                                    <span className="text-sm text-gray-700">
+                                    <span className="small text-body">
                                         Wymagaj zgody SMS
                                     </span>
                                 </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
+                                <label className="d-flex align-items-center gap-2">
                                     <input
                                         type="checkbox"
                                         checked={formData.isActive}
@@ -453,27 +453,27 @@ export default function AutomaticRuleModal({
                                                 isActive: e.target.checked,
                                             }))
                                         }
-                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded focus:"
                                     />
-                                    <span className="text-sm text-gray-700">
+                                    <span className="small text-body">
                                         Aktywna
                                     </span>
                                 </label>
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 p-4 border-t bg-gray-50">
+                        <div className="d-flex justify-content-end gap-2 p-3 border-top bg-light">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="px-3 py-2 text-body rounded-3"
                             >
                                 Anuluj
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                                className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                             >
                                 {loading
                                     ? 'Zapisywanie...'

@@ -15,12 +15,12 @@ export default function BookNowFab() {
     if (hidden) return null;
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 md:hidden">
+        <div className="position-fixed bottom-4 right-4">
             <Link
                 href={'/appointments' as Route}
                 prefetch={false}
                 onClick={() => trackEvent('begin_checkout', { cta: 'fab' })}
-                className="px-4 py-3 rounded-full shadow-lg bg-blue-600 text-white font-semibold"
+                className="px-3 py-2 rounded-circle shadow-lg bg-primary bg-opacity-10 text-white fw-semibold"
                 aria-label="Book an appointment"
             >
                 Book Now

@@ -80,8 +80,8 @@ export default function CustomerSummaryTab({
         <div className="row">
             <div className="col-sm-12">
                 {/* KPI Tiles */}
-                <div className="row mb-20 ml-0 mr-0">
-                    <div className="col-xs-6 col-sm-3 px-5">
+                <div className="row mb-5 ml-0 mr-0">
+                    <div className="col-xs-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">Wizyty</div>
                             <div className="salonbw-tile__value">
@@ -91,7 +91,7 @@ export default function CustomerSummaryTab({
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-6 col-sm-3 px-5">
+                    <div className="col-xs-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">Wydano</div>
                             <div className="salonbw-tile__value text-accent">
@@ -101,7 +101,7 @@ export default function CustomerSummaryTab({
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-6 col-sm-3 px-5">
+                    <div className="col-xs-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">
                                 Średnia wartość
@@ -113,7 +113,7 @@ export default function CustomerSummaryTab({
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-6 col-sm-3 px-5">
+                    <div className="col-xs-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">
                                 Ostatnia wizyta
@@ -142,7 +142,7 @@ export default function CustomerSummaryTab({
                                             (service) => (
                                                 <li
                                                     key={service.serviceId}
-                                                    className="flex-between border-bottom py-5"
+                                                    className="flex-between border-bottom py-3"
                                                 >
                                                     <span>
                                                         {service.serviceName}
@@ -182,7 +182,7 @@ export default function CustomerSummaryTab({
                                             <tr>
                                                 <th>Data</th>
                                                 <th>Usługa</th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Cena
                                                 </th>
                                             </tr>
@@ -203,7 +203,7 @@ export default function CustomerSummaryTab({
                                                             }
                                                         </small>
                                                     </td>
-                                                    <td className="text-right">
+                                                    <td className="text-end">
                                                         {formatCurrency(
                                                             visit.price,
                                                         )}
@@ -224,7 +224,7 @@ export default function CustomerSummaryTab({
                                 Informacje kontaktowe
                             </div>
                             <div className="salonbw-widget__content form-horizontal">
-                                <div className="form-group">
+                                <div className="form-">
                                     <label className="control-label">
                                         Telefon
                                     </label>
@@ -232,7 +232,7 @@ export default function CustomerSummaryTab({
                                         {customer.phone || '-'}
                                     </div>
                                 </div>
-                                <div className="form-group">
+                                <div className="form-">
                                     <label className="control-label">
                                         E-mail
                                     </label>
@@ -240,7 +240,7 @@ export default function CustomerSummaryTab({
                                         {customer.email || '-'}
                                     </div>
                                 </div>
-                                <div className="form-group">
+                                <div className="form-">
                                     <label className="control-label">
                                         Adres
                                     </label>
@@ -254,7 +254,7 @@ export default function CustomerSummaryTab({
                                             .join(', ') || '-'}
                                     </div>
                                 </div>
-                                <div className="form-group">
+                                <div className="form-">
                                     <label className="control-label">
                                         Klient od
                                     </label>
@@ -264,14 +264,14 @@ export default function CustomerSummaryTab({
                                 </div>
 
                                 {/* Grupy klienta - jak w source UI */}
-                                <div className="form-group">
+                                <div className="form-">
                                     <label className="control-label">
                                         należy do grup
                                     </label>
                                     <div className="control-content">
                                         {customer.groups &&
                                         customer.groups.length > 0 ? (
-                                            <div className="flex flex-wrap gap-4">
+                                            <div className="d-flex flex-wrap gap-3">
                                                 {customer.groups.map(
                                                     (group) => {
                                                         const badgeStyle = {
@@ -294,13 +294,13 @@ export default function CustomerSummaryTab({
                                                         return (
                                                             <span
                                                                 key={group.id}
-                                                                className="inline-flex items-center px-8 py-2 rounded text-xs font-medium border group"
+                                                                className="inline-d-flex align-items-center px-4 py-2 rounded small fw-medium border"
                                                                 {...{
                                                                     style: badgeStyle,
                                                                 }}
                                                             >
                                                                 <span
-                                                                    className="w-6 h-6 rounded-full mr-4"
+                                                                    className="w-6 h-6 rounded-circle me-3"
                                                                     {...{
                                                                         style: badgeDotStyle,
                                                                     }}
@@ -312,7 +312,7 @@ export default function CustomerSummaryTab({
                                                                             group.id,
                                                                         );
                                                                     }}
-                                                                    className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity text-current hover:text-red-500"
+                                                                    className="ms-3 opacity-0 - -opacity text-current"
                                                                     title="Usuń z grupy"
                                                                     disabled={
                                                                         removeFromGroup.isPending
@@ -337,11 +337,9 @@ export default function CustomerSummaryTab({
                                                 onClick={() =>
                                                     setShowAddToGroupModal(true)
                                                 }
-                                                className="mt-8 text-salonbw-blue hover:text-salonbw-blue-dark text-xs flex items-center gap-4"
+                                                className="mt-4 text-salonbw-blue small d-flex align-items-center gap-3"
                                             >
-                                                <span className="text-sm">
-                                                    +
-                                                </span>
+                                                <span className="small">+</span>
                                                 dodaj do grupy
                                             </button>
                                         )}
@@ -365,7 +363,7 @@ export default function CustomerSummaryTab({
                                                         key={
                                                             employee.employeeId
                                                         }
-                                                        className="flex-between border-bottom py-5"
+                                                        className="flex-between border-bottom py-3"
                                                     >
                                                         <span>
                                                             {
@@ -409,7 +407,7 @@ export default function CustomerSummaryTab({
                                         Brak dostępnych grup
                                     </p>
                                 ) : (
-                                    <ul className="list-group">
+                                    <ul className="list-">
                                         {availableGroups.map((group) => {
                                             const badgeDotStyle = {
                                                 backgroundColor:
@@ -418,7 +416,7 @@ export default function CustomerSummaryTab({
                                             return (
                                                 <li
                                                     key={group.id}
-                                                    className="list-group-item cursor-pointer hover:bg-gray-50 flex items-center gap-8"
+                                                    className="list--item d-flex align-items-center gap-4"
                                                     onClick={() => {
                                                         void handleAddToGroup(
                                                             group.id,
@@ -426,16 +424,16 @@ export default function CustomerSummaryTab({
                                                     }}
                                                 >
                                                     <span
-                                                        className="w-12 h-12 rounded-full"
+                                                        className="w-12 h-12 rounded-circle"
                                                         {...{
                                                             style: badgeDotStyle,
                                                         }}
                                                     />
-                                                    <span className="flex-1">
+                                                    <span className="flex-fill">
                                                         {group.name}
                                                     </span>
                                                     {addToGroup.isPending && (
-                                                        <span className="text-muted text-xs">
+                                                        <span className="text-muted small">
                                                             dodawanie...
                                                         </span>
                                                     )}

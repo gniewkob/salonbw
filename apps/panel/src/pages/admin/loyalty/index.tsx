@@ -91,8 +91,8 @@ export default function LoyaltyManagementPage() {
 
     if (!user || user.role !== 'admin') {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-gray-500">Brak dostępu</p>
+            <div className="d-flex align-items-center justify-content-center">
+                <p className="text-muted">Brak dostępu</p>
             </div>
         );
     }
@@ -192,21 +192,21 @@ export default function LoyaltyManagementPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between mb-8">
+        <div className="bg-light">
+            <div className="max-w-7xl mx-auto py-4 px-3">
+                <div className="d-flex align-items-center justify-content-between mb-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className="fs-3 fw-bold text-dark">
                             Program Lojalnościowy
                         </h1>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 small text-muted">
                             Zarządzaj punktami i nagrodami dla klientów
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={() => setModalType('useCoupon')}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                        className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
                     >
                         <svg
                             className="w-5 h-5"
@@ -226,17 +226,17 @@ export default function LoyaltyManagementPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b border-gray-200 mb-6">
-                    <nav className="-mb-px flex space-x-8">
+                <div className="border-bottom border-secondary border-opacity-25 mb-4">
+                    <nav className="-mb-px d-flex space-x-8">
                         {TABS.map((tab) => (
                             <button
                                 key={tab.id}
                                 type="button"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                className={`py-3 px-1 border-bottom-2 fw-medium small ${
                                     activeTab === tab.id
-                                        ? 'border-primary-500 text-primary-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-primary text-primary'
+                                        : 'border-transparent text-muted border-opacity-50'
                                 }`}
                             >
                                 {tab.label}
@@ -247,49 +247,49 @@ export default function LoyaltyManagementPage() {
 
                 {/* Overview Tab */}
                 {activeTab === 'overview' && (
-                    <div className="space-y-6">
+                    <div className="gap-3">
                         {/* Stats Cards */}
                         {stats && (
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="bg-white rounded-xl shadow-sm p-6">
-                                    <p className="text-sm text-gray-500">
+                            <div className="-cols-1 gap-3">
+                                <div className="bg-white rounded-4 shadow-sm p-4">
+                                    <p className="small text-muted">
                                         Członkowie programu
                                     </p>
-                                    <p className="text-2xl font-bold text-gray-900">
+                                    <p className="fs-3 fw-bold text-dark">
                                         {stats.totalMembers}
                                     </p>
-                                    <p className="text-sm text-green-600">
+                                    <p className="small text-success">
                                         {stats.activeMembers} aktywnych
                                     </p>
                                 </div>
-                                <div className="bg-white rounded-xl shadow-sm p-6">
-                                    <p className="text-sm text-gray-500">
+                                <div className="bg-white rounded-4 shadow-sm p-4">
+                                    <p className="small text-muted">
                                         Wydane punkty
                                     </p>
-                                    <p className="text-2xl font-bold text-gray-900">
+                                    <p className="fs-3 fw-bold text-dark">
                                         {stats.totalPointsIssued.toLocaleString(
                                             'pl-PL',
                                         )}
                                     </p>
                                 </div>
-                                <div className="bg-white rounded-xl shadow-sm p-6">
-                                    <p className="text-sm text-gray-500">
+                                <div className="bg-white rounded-4 shadow-sm p-4">
+                                    <p className="small text-muted">
                                         Wykorzystane punkty
                                     </p>
-                                    <p className="text-2xl font-bold text-blue-600">
+                                    <p className="fs-3 fw-bold text-primary">
                                         {stats.totalPointsRedeemed.toLocaleString(
                                             'pl-PL',
                                         )}
                                     </p>
                                 </div>
-                                <div className="bg-white rounded-xl shadow-sm p-6">
-                                    <p className="text-sm text-gray-500">
+                                <div className="bg-white rounded-4 shadow-sm p-4">
+                                    <p className="small text-muted">
                                         Zaległe zobowiązanie
                                     </p>
-                                    <p className="text-2xl font-bold text-primary-600">
+                                    <p className="fs-3 fw-bold text-primary">
                                         {formatCurrency(stats.outstandingValue)}
                                     </p>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="small text-muted">
                                         {stats.outstandingPoints.toLocaleString(
                                             'pl-PL',
                                         )}{' '}
@@ -301,24 +301,24 @@ export default function LoyaltyManagementPage() {
 
                         {/* Program Info */}
                         {program && (
-                            <div className="bg-white rounded-xl shadow-sm p-6">
-                                <h2 className="text-lg font-semibold mb-4">
+                            <div className="bg-white rounded-4 shadow-sm p-4">
+                                <h2 className="fs-5 fw-semibold mb-3">
                                     Zasady programu
                                 </h2>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="-cols-2 gap-3">
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="small text-muted">
                                             Punkty za 1 PLN
                                         </p>
-                                        <p className="font-medium">
+                                        <p className="fw-medium">
                                             {program.pointsPerCurrency} pkt
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="small text-muted">
                                             Wartość 1 punktu
                                         </p>
-                                        <p className="font-medium">
+                                        <p className="fw-medium">
                                             {(
                                                 Number(
                                                     program.pointsValueCurrency,
@@ -328,18 +328,18 @@ export default function LoyaltyManagementPage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="small text-muted">
                                             Min. do wymiany
                                         </p>
-                                        <p className="font-medium">
+                                        <p className="fw-medium">
                                             {program.minPointsRedemption} pkt
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="small text-muted">
                                             Wygasanie punktów
                                         </p>
-                                        <p className="font-medium">
+                                        <p className="fw-medium">
                                             {program.pointsExpireMonths
                                                 ? `${program.pointsExpireMonths} mies.`
                                                 : 'Nie wygasają'}
@@ -351,13 +351,13 @@ export default function LoyaltyManagementPage() {
 
                         {/* Quick Stats */}
                         {stats && (
-                            <div className="bg-white rounded-xl shadow-sm p-6">
-                                <h2 className="text-lg font-semibold mb-4">
+                            <div className="bg-white rounded-4 shadow-sm p-4">
+                                <h2 className="fs-5 fw-semibold mb-3">
                                     Nagrody
                                 </h2>
-                                <p className="text-gray-600">
+                                <p className="text-muted">
                                     Zrealizowano{' '}
-                                    <span className="font-bold">
+                                    <span className="fw-bold">
                                         {stats.totalRewardsRedeemed}
                                     </span>{' '}
                                     nagród
@@ -370,11 +370,11 @@ export default function LoyaltyManagementPage() {
                 {/* Rewards Tab */}
                 {activeTab === 'rewards' && (
                     <div>
-                        <div className="flex justify-end mb-4">
+                        <div className="d-flex justify-content-end mb-3">
                             <button
                                 type="button"
                                 onClick={handleOpenCreateReward}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700"
+                                className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
                             >
                                 <svg
                                     className="w-5 h-5"
@@ -393,52 +393,49 @@ export default function LoyaltyManagementPage() {
                             </button>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-4 shadow-sm overflow-d-none">
                             {rewardsLoading ? (
-                                <div className="p-8 text-center text-gray-500">
+                                <div className="p-4 text-center text-muted">
                                     Ładowanie...
                                 </div>
                             ) : rewardsData?.data.length === 0 ? (
-                                <div className="p-8 text-center text-gray-500">
+                                <div className="p-4 text-center text-muted">
                                     Brak nagród w katalogu
                                 </div>
                             ) : (
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-100">
+                                    <thead className="bg-light">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 Nazwa
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 Typ
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 Koszt
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 Realizacje
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                                 Status
                                             </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-4 py-2 text-end small fw-medium text-muted text-uppercase">
                                                 Akcje
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-200">
+                                    <tbody className="">
                                         {rewardsData?.data.map((reward) => (
-                                            <tr
-                                                key={reward.id}
-                                                className="hover:bg-gray-50"
-                                            >
-                                                <td className="px-6 py-4">
+                                            <tr key={reward.id} className="">
+                                                <td className="px-4 py-3">
                                                     <div>
-                                                        <p className="font-medium text-gray-900">
+                                                        <p className="fw-medium text-dark">
                                                             {reward.name}
                                                         </p>
                                                         {reward.description && (
-                                                            <p className="text-sm text-gray-500">
+                                                            <p className="small text-muted">
                                                                 {
                                                                     reward.description
                                                                 }
@@ -446,27 +443,27 @@ export default function LoyaltyManagementPage() {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm">
+                                                <td className="px-4 py-3 small">
                                                     {
                                                         REWARD_TYPE_LABELS[
                                                             reward.type
                                                         ]
                                                     }
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-medium">
+                                                <td className="px-4 py-3 small fw-medium">
                                                     {reward.pointsCost} pkt
                                                 </td>
-                                                <td className="px-6 py-4 text-sm">
+                                                <td className="px-4 py-3 small">
                                                     {reward.currentRedemptions}
                                                     {reward.maxRedemptions &&
                                                         ` / ${reward.maxRedemptions}`}
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-3">
                                                     <span
-                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                        className={`inline-d-flex px-2 py-1 small fw-semibold rounded-circle ${
                                                             reward.isActive
-                                                                ? 'bg-green-100 text-green-700'
-                                                                : 'bg-gray-100 text-gray-700'
+                                                                ? 'bg-success bg-opacity-10 text-success'
+                                                                : 'bg-light text-body'
                                                         }`}
                                                     >
                                                         {reward.isActive
@@ -474,8 +471,8 @@ export default function LoyaltyManagementPage() {
                                                             : 'Nieaktywna'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex justify-end gap-2">
+                                                <td className="px-4 py-3 text-end">
+                                                    <div className="d-flex justify-content-end gap-2">
                                                         <button
                                                             type="button"
                                                             onClick={() =>
@@ -483,7 +480,7 @@ export default function LoyaltyManagementPage() {
                                                                     reward,
                                                                 )
                                                             }
-                                                            className="text-gray-600 hover:text-gray-900"
+                                                            className="text-muted"
                                                         >
                                                             <svg
                                                                 className="w-5 h-5"
@@ -508,7 +505,7 @@ export default function LoyaltyManagementPage() {
                                                                     reward,
                                                                 )
                                                             }
-                                                            className="text-red-600 hover:text-red-900"
+                                                            className="text-danger"
                                                         >
                                                             <svg
                                                                 className="w-5 h-5"
@@ -539,72 +536,69 @@ export default function LoyaltyManagementPage() {
 
                 {/* Transactions Tab */}
                 {activeTab === 'transactions' && (
-                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-4 shadow-sm overflow-d-none">
                         {transactionsLoading ? (
-                            <div className="p-8 text-center text-gray-500">
+                            <div className="p-4 text-center text-muted">
                                 Ładowanie...
                             </div>
                         ) : transactionsData?.data.length === 0 ? (
-                            <div className="p-8 text-center text-gray-500">
+                            <div className="p-4 text-center text-muted">
                                 Brak transakcji
                             </div>
                         ) : (
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-100">
+                                <thead className="bg-light">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                             Data
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                             Klient
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                             Typ
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                             Źródło
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                        <th className="px-4 py-2 text-end small fw-medium text-muted text-uppercase">
                                             Punkty
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                        <th className="px-4 py-2 text-end small fw-medium text-muted text-uppercase">
                                             Saldo
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200">
+                                <tbody className="">
                                     {transactionsData?.data.map((tx) => (
-                                        <tr
-                                            key={tx.id}
-                                            className="hover:bg-gray-50"
-                                        >
-                                            <td className="px-6 py-4 text-sm">
+                                        <tr key={tx.id} className="">
+                                            <td className="px-4 py-3 small">
                                                 {format(
                                                     new Date(tx.createdAt),
                                                     'd MMM yyyy HH:mm',
                                                     { locale: pl },
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-sm">
+                                            <td className="px-4 py-3 small">
                                                 {tx.user?.name ?? '-'}
                                             </td>
-                                            <td className="px-6 py-4 text-sm">
+                                            <td className="px-4 py-3 small">
                                                 {
                                                     TRANSACTION_TYPE_LABELS[
                                                         tx.type
                                                     ]
                                                 }
                                             </td>
-                                            <td className="px-6 py-4 text-sm">
+                                            <td className="px-4 py-3 small">
                                                 {SOURCE_LABELS[tx.source]}
                                             </td>
                                             <td
-                                                className={`px-6 py-4 text-sm text-right font-medium ${tx.points >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                className={`px-4 py-3 small text-end fw-medium ${tx.points >= 0 ? 'text-success' : 'text-danger'}`}
                                             >
                                                 {tx.points >= 0 ? '+' : ''}
                                                 {tx.points}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-right">
+                                            <td className="px-4 py-3 small text-end">
                                                 {tx.balanceAfter}
                                             </td>
                                         </tr>
@@ -614,19 +608,19 @@ export default function LoyaltyManagementPage() {
                         )}
 
                         {transactionsData && transactionsData.total > 20 && (
-                            <div className="px-4 py-3 border-t flex items-center justify-between">
-                                <div className="text-sm text-gray-700">
+                            <div className="px-3 py-2 border-top d-flex align-items-center justify-content-between">
+                                <div className="small text-body">
                                     Strona {page} z{' '}
                                     {Math.ceil(transactionsData.total / 20)}
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="d-flex gap-2">
                                     <button
                                         type="button"
                                         onClick={() =>
                                             setPage((p) => Math.max(1, p - 1))
                                         }
                                         disabled={page === 1}
-                                        className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                                        className="px-3 py-1 border rounded small"
                                     >
                                         Poprzednia
                                     </button>
@@ -639,7 +633,7 @@ export default function LoyaltyManagementPage() {
                                                 transactionsData.total / 20,
                                             )
                                         }
-                                        className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                                        className="px-3 py-1 border rounded small"
                                     >
                                         Następna
                                     </button>
@@ -651,19 +645,19 @@ export default function LoyaltyManagementPage() {
 
                 {/* Settings Tab */}
                 {activeTab === 'settings' && program && (
-                    <div className="bg-white rounded-xl shadow-sm p-6">
-                        <h2 className="text-lg font-semibold mb-6">
+                    <div className="bg-white rounded-4 shadow-sm p-4">
+                        <h2 className="fs-5 fw-semibold mb-4">
                             Ustawienia programu
                         </h2>
                         <form
                             onSubmit={(event) => {
                                 void handleUpdateSettings(event);
                             }}
-                            className="space-y-6 max-w-2xl"
+                            className="gap-3"
                         >
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Punkty za 1 PLN wydany
                                     </label>
                                     <input
@@ -679,11 +673,11 @@ export default function LoyaltyManagementPage() {
                                                 ),
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Wartość 1 punktu (PLN)
                                     </label>
                                     <input
@@ -701,14 +695,14 @@ export default function LoyaltyManagementPage() {
                                                 ),
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Min. punktów do wymiany
                                     </label>
                                     <input
@@ -725,11 +719,11 @@ export default function LoyaltyManagementPage() {
                                                 ),
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Wygasanie punktów (miesiące)
                                     </label>
                                     <input
@@ -748,16 +742,16 @@ export default function LoyaltyManagementPage() {
                                                     : undefined,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
                             </div>
 
-                            <div className="border-t pt-4">
-                                <h3 className="font-medium mb-3">Bonusy</h3>
-                                <div className="grid grid-cols-3 gap-4">
+                            <div className="border-top pt-3">
+                                <h3 className="fw-medium mb-2">Bonusy</h3>
+                                <div className="-cols-3 gap-3">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Za rejestrację
                                         </label>
                                         <input
@@ -774,11 +768,11 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Za polecenie
                                         </label>
                                         <input
@@ -795,11 +789,11 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Urodzinowy
                                         </label>
                                         <input
@@ -816,17 +810,17 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end">
+                            <div className="d-flex justify-content-end">
                                 <button
                                     type="submit"
                                     disabled={updateProgram.isPending}
-                                    className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                                    className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                 >
                                     {updateProgram.isPending
                                         ? 'Zapisywanie...'
@@ -840,23 +834,23 @@ export default function LoyaltyManagementPage() {
 
             {/* Create/Edit Reward Modal */}
             {(modalType === 'createReward' || modalType === 'editReward') && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                    <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
                         <form
                             onSubmit={(event) => {
                                 void handleSaveReward(event);
                             }}
                         >
-                            <div className="px-6 py-4 border-b">
-                                <h2 className="text-lg font-semibold">
+                            <div className="px-4 py-3 border-bottom">
+                                <h2 className="fs-5 fw-semibold">
                                     {selectedReward
                                         ? 'Edytuj nagrodę'
                                         : 'Dodaj nagrodę'}
                                 </h2>
                             </div>
-                            <div className="px-6 py-4 space-y-4">
+                            <div className="px-4 py-3 gap-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Nazwa *
                                     </label>
                                     <input
@@ -869,11 +863,11 @@ export default function LoyaltyManagementPage() {
                                                 name: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Opis
                                     </label>
                                     <textarea
@@ -885,12 +879,12 @@ export default function LoyaltyManagementPage() {
                                                 description: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Typ *
                                         </label>
                                         <select
@@ -902,7 +896,7 @@ export default function LoyaltyManagementPage() {
                                                         .value as RewardType,
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         >
                                             {Object.entries(
                                                 REWARD_TYPE_LABELS,
@@ -917,7 +911,7 @@ export default function LoyaltyManagementPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Koszt (punkty) *
                                         </label>
                                         <input
@@ -933,14 +927,14 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         />
                                     </div>
                                 </div>
                                 {rewardForm.type === 'discount' && (
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="d-block small fw-medium text-body mb-1">
                                                 Rabat %
                                             </label>
                                             <input
@@ -963,11 +957,11 @@ export default function LoyaltyManagementPage() {
                                                             : undefined,
                                                     }))
                                                 }
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                className="w-100 px-3 py-2 border rounded-3 focus:"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="d-block small fw-medium text-body mb-1">
                                                 lub Kwota (PLN)
                                             </label>
                                             <input
@@ -990,14 +984,14 @@ export default function LoyaltyManagementPage() {
                                                             : undefined,
                                                     }))
                                                 }
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                                className="w-100 px-3 py-2 border rounded-3 focus:"
                                             />
                                         </div>
                                     </div>
                                 )}
                                 {rewardForm.type === 'gift_card' && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="d-block small fw-medium text-body mb-1">
                                             Wartość karty (PLN)
                                         </label>
                                         <input
@@ -1016,12 +1010,12 @@ export default function LoyaltyManagementPage() {
                                                         : undefined,
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                            className="w-100 px-3 py-2 border rounded-3 focus:"
                                         />
                                     </div>
                                 )}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="d-block small fw-medium text-body mb-1">
                                         Max. realizacji (opcjonalnie)
                                     </label>
                                     <input
@@ -1037,15 +1031,15 @@ export default function LoyaltyManagementPage() {
                                             }))
                                         }
                                         placeholder="Bez limitu"
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                                        className="w-100 px-3 py-2 border rounded-3 focus:"
                                     />
                                 </div>
                             </div>
-                            <div className="px-6 py-4 border-t flex justify-end gap-3">
+                            <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setModalType(null)}
-                                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                    className="px-3 py-2 border rounded-3"
                                 >
                                     Anuluj
                                 </button>
@@ -1055,7 +1049,7 @@ export default function LoyaltyManagementPage() {
                                         createReward.isPending ||
                                         updateReward.isPending
                                     }
-                                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                                    className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                 >
                                     {createReward.isPending ||
                                     updateReward.isPending
@@ -1070,20 +1064,20 @@ export default function LoyaltyManagementPage() {
 
             {/* Use Coupon Modal */}
             {modalType === 'useCoupon' && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+                <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                    <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
                         <form
                             onSubmit={(event) => {
                                 void handleUseCoupon(event);
                             }}
                         >
-                            <div className="px-6 py-4 border-b">
-                                <h2 className="text-lg font-semibold">
+                            <div className="px-4 py-3 border-bottom">
+                                <h2 className="fs-5 fw-semibold">
                                     Zrealizuj kupon
                                 </h2>
                             </div>
-                            <div className="px-6 py-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <div className="px-4 py-3">
+                                <label className="d-block small fw-medium text-body mb-1">
                                     Kod kuponu *
                                 </label>
                                 <input
@@ -1096,21 +1090,21 @@ export default function LoyaltyManagementPage() {
                                         )
                                     }
                                     placeholder="VIP-XXXXXXXX"
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 font-mono"
+                                    className="w-100 px-3 py-2 border rounded-3 focus: font-mono"
                                 />
                             </div>
-                            <div className="px-6 py-4 border-t flex justify-end gap-3">
+                            <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setModalType(null)}
-                                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                    className="px-3 py-2 border rounded-3"
                                 >
                                     Anuluj
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={useCoupon.isPending}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                                    className="px-3 py-2 bg-success bg-opacity-10 text-white rounded-3 bg-opacity-10"
                                 >
                                     {useCoupon.isPending
                                         ? 'Realizowanie...'

@@ -64,16 +64,16 @@ export default function DateRangeSelector({
     };
 
     return (
-        <div className="flex flex-wrap items-center gap-2">
-            <div className="flex flex-wrap gap-1">
+        <div className="d-flex flex-wrap align-items-center gap-2">
+            <div className="d-flex flex-wrap gap-1">
                 {RANGE_OPTIONS.map((option) => (
                     <button
                         key={option.value}
                         onClick={() => handleRangeChange(option.value)}
-                        className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                        className={`px-3 py-1 small rounded-3 ${
                             value === option.value
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-primary bg-opacity-10 text-white'
+                                : 'bg-light text-body bg-opacity-25'
                         }`}
                     >
                         {option.label}
@@ -82,25 +82,25 @@ export default function DateRangeSelector({
             </div>
 
             {showCustom && (
-                <div className="flex items-center gap-2 ml-2">
+                <div className="d-flex align-items-center gap-2 ms-2">
                     <input
                         type="date"
                         aria-label="Data początkowa"
                         value={localFrom}
                         onChange={(e) => setLocalFrom(e.target.value)}
-                        className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3 focus:"
                     />
-                    <span className="text-gray-500">-</span>
+                    <span className="text-muted">-</span>
                     <input
                         type="date"
                         aria-label="Data końcowa"
                         value={localTo}
                         onChange={(e) => setLocalTo(e.target.value)}
-                        className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3 focus:"
                     />
                     <button
                         onClick={handleCustomApply}
-                        className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                        className="px-3 py-1 small bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                     >
                         Zastosuj
                     </button>

@@ -123,10 +123,10 @@ export default function SaleForm({
         };
 
     return (
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+        <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
             <select
                 data-testid="product-select"
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
                 onClick={handleSelectOption(setProductId)}
@@ -146,12 +146,12 @@ export default function SaleForm({
                 min={1}
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Quantity"
             />
             <select
                 data-testid="employee-select"
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
                 onClick={handleSelectOption(setEmployeeId)}
@@ -169,7 +169,7 @@ export default function SaleForm({
             </select>
             <select
                 data-testid="appointment-select"
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={appointmentId}
                 onChange={(e) => setAppointmentId(e.target.value)}
                 onClick={handleSelectOption(setAppointmentId)}
@@ -193,7 +193,7 @@ export default function SaleForm({
                 min={0}
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Unit price override"
             />
             <input
@@ -202,23 +202,23 @@ export default function SaleForm({
                 min={0}
                 value={discount}
                 onChange={(e) => setDiscount(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Discount"
             />
             <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Note"
                 maxLength={500}
                 rows={3}
             />
             {error && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-danger small">
                     {error}
                 </p>
             )}
-            <div className="flex gap-2 justify-end">
+            <div className="d-flex gap-2 justify-content-end">
                 <button
                     type="button"
                     onClick={onCancel}

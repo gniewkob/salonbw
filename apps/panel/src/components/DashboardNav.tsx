@@ -88,9 +88,9 @@ export default function DashboardNav() {
     ];
 
     return (
-        <aside className="w-48 bg-gray-200 p-4 space-y-2 border-r-2 border-gray-300">
-            <h2 className="font-bold mb-2">Menu</h2>
-            <nav className="space-y-1">
+        <aside className="w-48 bg-secondary bg-opacity-25 p-3 gap-2 border-end-2 border-secondary border-opacity-50">
+            <h2 className="fw-bold mb-2">Menu</h2>
+            <nav className="gap-1">
                 {links.map((l) => {
                     const isActive = router.pathname.startsWith(l.href);
                     return (
@@ -99,7 +99,7 @@ export default function DashboardNav() {
                             href={l.href}
                             prefetch={false}
                             aria-current={isActive ? 'page' : undefined}
-                            className={`block px-2 py-1 transition duration-150 hover:text-blue-700 ${isActive ? 'font-bold text-blue-600 border-l-4 border-blue-500 pl-2 bg-white' : ''}`}
+                            className={`d-block px-2 py-1 duration-150 ${isActive ? 'fw-bold text-primary border-start-4 border-primary ps-2 bg-white' : ''}`}
                             data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`}
                         >
                             {l.label}
@@ -107,7 +107,7 @@ export default function DashboardNav() {
                     );
                 })}
                 <button
-                    className="block text-left px-2 py-1 hover:underline"
+                    className="d-block text-start px-2 py-1"
                     onClick={() => {
                         void logout();
                     }}

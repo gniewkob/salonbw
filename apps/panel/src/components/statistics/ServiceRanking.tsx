@@ -10,15 +10,15 @@ interface Props {
 export default function ServiceRanking({ data, loading }: Props) {
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+            <div className="d-flex align-items-center justify-content-center py-4">
+                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
             </div>
         );
     }
 
     if (data.length === 0) {
         return (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-4 text-muted">
                 Brak danych dla wybranego okresu
             </div>
         );
@@ -29,73 +29,72 @@ export default function ServiceRanking({ data, loading }: Props) {
 
     return (
         <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <table className="min-w-100">
+                <thead className="bg-light">
                     <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                             Usługa
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
                             Kategoria
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                             Rezerwacje
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                             Przychód
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                             Śr. cena
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-end small fw-medium text-muted text-uppercase">
                             Śr. czas
                         </th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white">
                     {data.map((service) => {
                         const width = maxBookings
                             ? `${(service.bookingCount / maxBookings) * 100}%`
                             : '0%';
                         return (
-                            <tr
-                                key={service.serviceId}
-                                className="hover:bg-gray-50"
-                            >
-                                <td className="px-4 py-3">
-                                    <div className="font-medium text-gray-900">
+                            <tr key={service.serviceId} className="">
+                                <td className="px-3 py-2">
+                                    <div className="fw-medium text-dark">
                                         {service.serviceName}
                                     </div>
-                                    <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                                    <div className="mt-1 w-100 bg-secondary bg-opacity-25 rounded-circle h-1.5">
                                         <div
-                                            className="bg-primary-500 h-1.5 rounded-full"
+                                            className="bg-primary bg-opacity-10 h-1.5 rounded-circle"
                                             style={{ width }}
                                         />
                                     </div>
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap">
+                                <td className="px-3 py-2 text-nowrap">
                                     {service.categoryName ? (
-                                        <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                                        <span className="px-2 py-1 small rounded-circle bg-light text-muted">
                                             {service.categoryName}
                                         </span>
                                     ) : (
-                                        <span className="text-gray-400">-</span>
+                                        <span className="text-secondary">
+                                            -
+                                        </span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-right">
-                                    <span className="font-semibold text-gray-900">
+                                <td className="px-3 py-2 text-nowrap text-end">
+                                    <span className="fw-semibold text-dark">
                                         {service.bookingCount}
                                     </span>
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-right">
-                                    <span className="font-semibold text-gray-900">
+                                <td className="px-3 py-2 text-nowrap text-end">
+                                    <span className="fw-semibold text-dark">
                                         {service.revenue.toLocaleString(
                                             'pl-PL',
                                         )}{' '}
                                         PLN
                                     </span>
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
+                                <td className="px-3 py-2 text-nowrap text-end text-muted">
                                     {service.averagePrice.toLocaleString(
                                         'pl-PL',
                                         {
@@ -105,7 +104,7 @@ export default function ServiceRanking({ data, loading }: Props) {
                                     )}{' '}
                                     PLN
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
+                                <td className="px-3 py-2 text-nowrap text-end text-muted">
                                     {service.averageDuration} min
                                 </td>
                             </tr>

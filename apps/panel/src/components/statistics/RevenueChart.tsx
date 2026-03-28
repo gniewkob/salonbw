@@ -35,15 +35,15 @@ export default function RevenueChart({
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div className="d-flex align-items-center justify-content-center h-64 bg-light rounded-3">
+                <div className="rounded-circle h-8 w-8 border-bottom-2 border-primary"></div>
             </div>
         );
     }
 
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg text-gray-500">
+            <div className="d-flex align-items-center justify-content-center h-64 bg-light rounded-3 text-muted">
                 Brak danych dla wybranego okresu
             </div>
         );

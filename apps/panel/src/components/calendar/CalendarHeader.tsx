@@ -74,18 +74,18 @@ export default function CalendarHeader({
     };
 
     return (
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
-            <div className="flex items-center gap-4">
+        <div className="d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-25 bg-white px-3 py-2">
+            <div className="d-flex align-items-center gap-3">
                 <button
                     onClick={onTodayClick}
-                    className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded-2 border border-secondary border-opacity-50 bg-white px-3 py-1 small fw-medium text-body"
                 >
                     Dzisiaj
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="d-flex align-items-center gap-1">
                     <button
                         onClick={handlePrev}
-                        className="rounded-md p-1.5 text-gray-600 hover:bg-gray-100"
+                        className="rounded-2 p-1 text-muted"
                         aria-label="Poprzedni"
                     >
                         <svg
@@ -104,7 +104,7 @@ export default function CalendarHeader({
                     </button>
                     <button
                         onClick={handleNext}
-                        className="rounded-md p-1.5 text-gray-600 hover:bg-gray-100"
+                        className="rounded-2 p-1 text-muted"
                         aria-label="Następny"
                     >
                         <svg
@@ -122,46 +122,46 @@ export default function CalendarHeader({
                         </svg>
                     </button>
                 </div>
-                <div className="flex items-baseline gap-3">
-                    <h2 className="text-lg font-semibold text-gray-900 capitalize">
+                <div className="d-flex align-items-baseline gap-2">
+                    <h2 className="fs-5 fw-semibold text-dark text-capitalize">
                         {formatDateLabel()}
                     </h2>
                     {currentTime && (
-                        <span className="text-xl font-light text-primary">
+                        <span className="fs-5 fw-light text-primary">
                             {format(currentTime, 'HH:mm')}
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="flex items-center gap-2">
-                <div className="flex rounded-md border border-gray-300 bg-white">
+            <div className="d-flex align-items-center gap-2">
+                <div className="d-flex rounded-2 border border-secondary border-opacity-50 bg-white">
                     <button
                         onClick={() => onViewChange('day')}
-                        className={`px-3 py-1.5 text-sm font-medium ${
+                        className={`px-3 py-1 small fw-medium ${
                             view === 'day'
                                 ? 'bg-primary text-white'
-                                : 'text-gray-700 hover:bg-gray-50'
+                                : 'text-body '
                         } rounded-l-md`}
                     >
                         Dzień
                     </button>
                     <button
                         onClick={() => onViewChange('week')}
-                        className={`border-l border-r border-gray-300 px-3 py-1.5 text-sm font-medium ${
+                        className={`border-start border-end border-secondary border-opacity-50 px-3 py-1 small fw-medium ${
                             view === 'week'
                                 ? 'bg-primary text-white'
-                                : 'text-gray-700 hover:bg-gray-50'
+                                : 'text-body '
                         }`}
                     >
                         Tydzień
                     </button>
                     <button
                         onClick={() => onViewChange('month')}
-                        className={`px-3 py-1.5 text-sm font-medium ${
+                        className={`px-3 py-1 small fw-medium ${
                             view === 'month'
                                 ? 'bg-primary text-white'
-                                : 'text-gray-700 hover:bg-gray-50'
+                                : 'text-body '
                         } rounded-r-md`}
                     >
                         Miesiąc

@@ -19,7 +19,7 @@ const statusLabels: Record<StocktakingStatus, string> = {
 };
 
 const statusColors: Record<StocktakingStatus, string> = {
-    draft: 'bg-gray-100 text-gray-800',
+    draft: 'bg-secondary bg-opacity-10 text-dark',
     in_progress: 'bg-blue-100 text-blue-800',
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
@@ -114,13 +114,13 @@ export default function StocktakingTab() {
     return (
         <div>
             {error && !isModalOpen && (
-                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                <div className="mb-3 rounded-3 border border-danger bg-danger bg-opacity-10 p-2 small text-danger">
                     {error}
                 </div>
             )}
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+                <div className="d-flex align-items-center gap-3">
                     <select
                         value={statusFilter}
                         onChange={(e) =>
@@ -128,7 +128,7 @@ export default function StocktakingTab() {
                                 e.target.value as StocktakingStatus | '',
                             )
                         }
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="border border-secondary border-opacity-50 rounded-3 px-3 py-2 small"
                     >
                         <option value="">Wszystkie statusy</option>
                         {Object.entries(statusLabels).map(([value, label]) => (
@@ -140,7 +140,7 @@ export default function StocktakingTab() {
                 </div>
                 <button
                     onClick={handleOpenModal}
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                    className="px-3 py-2 bg-teal-600 text-white rounded-3"
                 >
                     + Nowa inwentaryzacja
                 </button>
@@ -148,39 +148,37 @@ export default function StocktakingTab() {
 
             {/* Table */}
             {isLoading ? (
-                <div className="text-center py-8 text-gray-500">
-                    Ładowanie...
-                </div>
+                <div className="text-center py-4 text-muted">Ładowanie...</div>
             ) : stocktakings.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-4 text-muted">
                     Brak inwentaryzacji. Utwórz pierwszą inwentaryzację.
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-100">
+                        <thead className="bg-light">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Nr inwentaryzacji
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Data
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Utworzył
                                 </th>
-                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-center small fw-medium text-muted text-uppercase">
                                     Produktów
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-4 py-2 text-end small fw-medium text-muted text-uppercase">
                                     Akcje
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white">
                             {stocktakings.map((stocktaking) => {
                                 const countedItems =
                                     stocktaking.items?.filter(
@@ -196,35 +194,32 @@ export default function StocktakingTab() {
                                     ).length || 0;
 
                                 return (
-                                    <tr
-                                        key={stocktaking.id}
-                                        className="hover:bg-gray-50"
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="font-medium text-gray-900">
+                                    <tr key={stocktaking.id} className="">
+                                        <td className="px-4 py-3 text-nowrap">
+                                            <div className="fw-medium text-dark">
                                                 {stocktaking.stocktakingNumber}
                                             </div>
                                             {stocktaking.notes && (
-                                                <div className="text-sm text-gray-500 truncate max-w-xs">
+                                                <div className="small text-muted text-truncate">
                                                     {stocktaking.notes}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-4 py-3 text-nowrap small text-muted">
                                             {formatPanelDate(
                                                 stocktaking.stocktakingDate,
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-4 py-3 text-nowrap small text-muted">
                                             {stocktaking.createdBy?.name || '-'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                        <td className="px-4 py-3 text-nowrap small text-center">
                                             {stocktaking.status ===
                                             'in_progress' ? (
                                                 <span>
                                                     {countedItems}/{totalItems}
                                                     {differencesCount > 0 && (
-                                                        <span className="ml-1 text-orange-600">
+                                                        <span className="ms-1 text-warning">
                                                             ({differencesCount}{' '}
                                                             różnic)
                                                         </span>
@@ -235,7 +230,7 @@ export default function StocktakingTab() {
                                                 <span>
                                                     {totalItems}
                                                     {differencesCount > 0 && (
-                                                        <span className="ml-1 text-orange-600">
+                                                        <span className="ms-1 text-warning">
                                                             ({differencesCount}{' '}
                                                             różnic)
                                                         </span>
@@ -245,9 +240,9 @@ export default function StocktakingTab() {
                                                 '-'
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 py-3 text-nowrap">
                                             <span
-                                                className={`px-2 py-1 text-xs rounded-full ${statusColors[stocktaking.status]}`}
+                                                className={`px-2 py-1 small rounded-circle ${statusColors[stocktaking.status]}`}
                                             >
                                                 {
                                                     statusLabels[
@@ -256,7 +251,7 @@ export default function StocktakingTab() {
                                                 }
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                        <td className="px-4 py-3 text-nowrap text-end small">
                                             {stocktaking.status === 'draft' && (
                                                 <button
                                                     onClick={() =>
@@ -264,7 +259,7 @@ export default function StocktakingTab() {
                                                             stocktaking.id,
                                                         )
                                                     }
-                                                    className="text-blue-600 hover:text-blue-900"
+                                                    className="text-primary"
                                                 >
                                                     Rozpocznij
                                                 </button>
@@ -277,14 +272,14 @@ export default function StocktakingTab() {
                                                             stocktaking.id,
                                                         )
                                                     }
-                                                    className="text-green-600 hover:text-green-900"
+                                                    className="text-success"
                                                 >
                                                     Zakończ
                                                 </button>
                                             )}
                                             {stocktaking.status ===
                                                 'completed' && (
-                                                <span className="text-gray-400">
+                                                <span className="text-secondary">
                                                     Zakończona{' '}
                                                     {formatPanelDate(
                                                         stocktaking.completedAt,
@@ -301,11 +296,11 @@ export default function StocktakingTab() {
             )}
 
             {/* Info box */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-sm font-medium text-blue-900 mb-2">
+            <div className="mt-4 p-3 bg-primary bg-opacity-10 rounded-3">
+                <h3 className="small fw-medium text-primary mb-2">
                     Jak działa inwentaryzacja?
                 </h3>
-                <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                <ol className="small text-primary gap-1 list-decimal list-inside">
                     <li>Utwórz nową inwentaryzację</li>
                     <li>
                         Rozpocznij - system załaduje wszystkie produkty ze
@@ -320,7 +315,7 @@ export default function StocktakingTab() {
             {isModalOpen && (
                 <PanelModal title="Nowa inwentaryzacja">
                     {error && (
-                        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        <div className="mb-3 rounded-3 border border-danger bg-danger bg-opacity-10 p-2 small text-danger">
                             {error}
                         </div>
                     )}
@@ -328,10 +323,10 @@ export default function StocktakingTab() {
                         onSubmit={(event) => {
                             void handleSubmit(event);
                         }}
-                        className="space-y-4"
+                        className="gap-2"
                     >
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                            <label className="mb-1 d-block small fw-medium text-body">
                                 Data inwentaryzacji
                             </label>
                             <input
@@ -343,11 +338,11 @@ export default function StocktakingTab() {
                                         stocktakingDate: e.target.value,
                                     })
                                 }
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                                className="w-100 rounded-3 border border-secondary border-opacity-50 px-3 py-2"
                             />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                            <label className="mb-1 d-block small fw-medium text-body">
                                 Notatki
                             </label>
                             <textarea
@@ -360,21 +355,21 @@ export default function StocktakingTab() {
                                 }
                                 rows={3}
                                 placeholder="np. Inwentaryzacja kwartalna Q1 2026"
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                                className="w-100 rounded-3 border border-secondary border-opacity-50 px-3 py-2"
                             />
                         </div>
-                        <div className="flex justify-end gap-3 pt-4">
+                        <div className="d-flex justify-content-end gap-2 pt-3">
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
-                                className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                                className="rounded-3 border border-secondary border-opacity-50 px-3 py-2 text-body"
                             >
                                 Anuluj
                             </button>
                             <button
                                 type="submit"
                                 disabled={createStocktaking.isPending}
-                                className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+                                className="rounded-3 bg-teal-600 px-3 py-2 text-white"
                             >
                                 {createStocktaking.isPending
                                     ? 'Tworzenie...'

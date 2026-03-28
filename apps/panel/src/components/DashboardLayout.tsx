@@ -61,14 +61,16 @@ export default function DashboardLayout({ children }: Props) {
         role && role in map ? map[role as Role] : ClientSidebar;
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="d-flex bg-light">
             <SidebarComponent
                 open={menuOpen}
                 onClose={() => setMenuOpen(false)}
             />
-            <div className="flex flex-col flex-1">
+            <div className="d-flex flex-column flex-fill">
                 <Topbar onMenu={() => setMenuOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-4">{children}</main>
+                <main className="flex-fill overflow-y-auto p-3">
+                    {children}
+                </main>
             </div>
         </div>
     );

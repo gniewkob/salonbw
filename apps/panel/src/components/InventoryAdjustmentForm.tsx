@@ -102,10 +102,10 @@ export default function InventoryAdjustmentForm({
     };
 
     return (
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+        <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
             <select
                 data-testid="product-select"
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
                 onClick={(e) => {
@@ -129,15 +129,15 @@ export default function InventoryAdjustmentForm({
                 type="number"
                 value={delta}
                 onChange={(e) => setDelta(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Delta"
             />
-            <p className="text-sm text-gray-500">
+            <p className="small text-muted">
                 Positive for stock in, negative for stock out
             </p>
             <select
                 data-testid="reason-select"
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 onClick={handleReasonSelectClick}
@@ -156,17 +156,17 @@ export default function InventoryAdjustmentForm({
             <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="border p-1 w-full"
+                className="border p-1 w-100"
                 placeholder="Note (optional)"
                 maxLength={500}
                 rows={3}
             />
             {error && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-danger small">
                     {error}
                 </p>
             )}
-            <div className="flex gap-2 justify-end">
+            <div className="d-flex gap-2 justify-content-end">
                 <button
                     type="button"
                     onClick={onCancel}

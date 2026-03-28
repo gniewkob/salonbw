@@ -8,13 +8,9 @@ export default function AppointmentListItem({ appointment }: Props) {
     return (
         <li className="border p-2">
             <div>{new Date(appointment.startTime).toLocaleString()}</div>
-            <div className="text-sm text-gray-500">
-                {appointment.client?.name}
-            </div>
-            <div className="text-sm text-gray-500">
-                {appointment.service?.name}
-            </div>
-            <div className="text-sm text-gray-500">
+            <div className="small text-muted">{appointment.client?.name}</div>
+            <div className="small text-muted">{appointment.service?.name}</div>
+            <div className="small text-muted">
                 {appointment.employee?.name || appointment.employee?.fullName}
             </div>
         </li>

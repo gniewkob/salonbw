@@ -10,7 +10,7 @@ import type { CalendarEvent, CalendarView as CalendarViewType } from '@/types';
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
     loading: () => (
-        <div className="flex h-96 items-center justify-center rounded border border-dashed text-sm text-gray-600">
+        <div className="d-flex h-96 align-items-center justify-content-center rounded border border-dashed small text-muted">
             Initialising calendar engine...
         </div>
     ),
@@ -148,12 +148,10 @@ export default function CalendarView({
     );
 
     return (
-        <div
-            className={`flex h-full ${hideSidebar ? '' : 'flex-col md:flex-row'}`}
-        >
+        <div className={`d-flex h-100 ${hideSidebar ? '' : 'flex-column '}`}>
             {/* Sidebar matches source layout: Left side filters */}
             {!hideSidebar && (
-                <div className="w-full md:w-64 flex-shrink-0 border-r border-gray-200 bg-white">
+                <div className="w-100 flex-flex-shrink-0 border-end border-secondary border-opacity-25 bg-white">
                     <CalendarSidebar
                         employees={employees}
                         selectedEmployeeIds={selectedEmployeeIds}
@@ -169,15 +167,15 @@ export default function CalendarView({
             )}
 
             {/* Main Calendar Area */}
-            <div className="flex-1 overflow-auto bg-white p-2">
+            <div className="flex-fill overflow-auto bg-white p-2">
                 {/* Custom Header matching source top bar usually goes here or in Layout */}
 
                 {pluginLoadError ? (
-                    <div className="p-4 text-center text-sm text-red-700">
+                    <div className="p-3 text-center small text-danger">
                         Calendar engine failed to load: {pluginLoadError}
                     </div>
                 ) : loading ? (
-                    <div className="flex h-full items-center justify-center opacity-50">
+                    <div className="d-flex h-100 align-items-center justify-content-center opacity-50">
                         Loading appointments...
                     </div>
                 ) : calendarPlugins ? (
@@ -213,7 +211,7 @@ export default function CalendarView({
                         nowIndicator
                     />
                 ) : (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-3 text-center text-muted">
                         Initializing...
                     </div>
                 )}

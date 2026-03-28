@@ -15,10 +15,12 @@ export default function PanelActionBar({
         <>
             <div className="form-actions-prev" />
             <div
-                className={`form-actions flex items-center gap-3 ${className ?? ''}`.trim()}
+                className={`form-actions d-flex align-items-center gap-3 ${className ?? ''}`.trim()}
             >
                 {secondary ? <div>{secondary}</div> : null}
-                <div className="flex items-center gap-2 ml-auto">{primary}</div>
+                <div className="d-flex align-items-center gap-2 ms-auto">
+                    {primary}
+                </div>
             </div>
         </>
     );

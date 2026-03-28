@@ -180,7 +180,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
 
                     <div className="modal-body modal-body-scroll">
                         <form onSubmit={(e) => void handleCreate(e)}>
-                            <div className="form-group">
+                            <div className="form-">
                                 <label
                                     className="control-label"
                                     htmlFor="new_category_name"
@@ -196,7 +196,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                                     disabled={isBusy}
                                 />
                             </div>
-                            <div className="form-group">
+                            <div className="form-">
                                 <label
                                     className="control-label"
                                     htmlFor="new_category_parent"
@@ -308,7 +308,7 @@ function CategoryEditorRow({
 
     return (
         <div className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]">
-            <div className="form-group">
+            <div className="form-">
                 <label
                     className="control-label"
                     htmlFor={`cat_name_${draft.id}`}
@@ -325,7 +325,7 @@ function CategoryEditorRow({
                     disabled={isBusy}
                 />
             </div>
-            <div className="form-group">
+            <div className="form-">
                 <label
                     className="control-label"
                     htmlFor={`cat_parent_${draft.id}`}
@@ -357,8 +357,8 @@ function CategoryEditorRow({
                         ))}
                 </select>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-                <div className="form-group">
+            <div className="-cols-2 gap-2">
+                <div className="form-">
                     <label
                         className="control-label"
                         htmlFor={`cat_sort_order_${draft.id}`}
@@ -379,7 +379,7 @@ function CategoryEditorRow({
                         disabled={isBusy}
                     />
                 </div>
-                <div className="form-group">
+                <div className="form-">
                     <label
                         className="control-label"
                         htmlFor={`cat_active_${draft.id}`}
@@ -404,7 +404,7 @@ function CategoryEditorRow({
                 </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="d-flex gap-2">
                 <button
                     type="button"
                     className="btn btn-default btn-xs"

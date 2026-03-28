@@ -21,7 +21,7 @@ const COLOR_CLASSES = {
 };
 
 const ICON_COLOR_CLASSES = {
-    default: 'text-gray-400',
+    default: 'text-secondary',
     primary: 'text-primary-500',
     success: 'text-green-500',
     warning: 'text-yellow-500',
@@ -43,24 +43,24 @@ export default function KpiCard({
 
     return (
         <div
-            className={`rounded-lg border p-4 shadow-sm ${COLOR_CLASSES[color]}`}
+            className={`rounded-3 border p-3 shadow-sm ${COLOR_CLASSES[color]}`}
         >
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
-                    <p className="mt-1 text-2xl font-bold text-gray-900">
+            <div className="d-flex align-items-start justify-content-between">
+                <div className="flex-fill">
+                    <p className="small fw-medium text-muted">{title}</p>
+                    <p className="mt-1 fs-3 fw-bold text-dark">
                         {displayValue}
                     </p>
                     {subtitle && (
-                        <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+                        <p className="mt-1 small text-muted">{subtitle}</p>
                     )}
                     {trend && (
-                        <div className="mt-2 flex items-center gap-1">
+                        <div className="mt-2 d-flex align-items-center gap-1">
                             <span
-                                className={`text-sm font-medium ${
+                                className={`small fw-medium ${
                                     trend.isPositive
-                                        ? 'text-green-600'
-                                        : 'text-red-600'
+                                        ? 'text-success'
+                                        : 'text-danger'
                                 }`}
                             >
                                 {trend.isPositive ? '+' : ''}
@@ -69,8 +69,8 @@ export default function KpiCard({
                             <svg
                                 className={`w-4 h-4 ${
                                     trend.isPositive
-                                        ? 'text-green-600'
-                                        : 'text-red-600 rotate-180'
+                                        ? 'text-success'
+                                        : 'text-danger rotate-180'
                                 }`}
                                 fill="none"
                                 stroke="currentColor"
@@ -88,7 +88,7 @@ export default function KpiCard({
                 </div>
                 {icon && (
                     <div
-                        className={`p-2 rounded-lg bg-white/50 ${ICON_COLOR_CLASSES[color]}`}
+                        className={`p-2 rounded-3 bg-white/50 ${ICON_COLOR_CLASSES[color]}`}
                     >
                         {icon}
                     </div>
