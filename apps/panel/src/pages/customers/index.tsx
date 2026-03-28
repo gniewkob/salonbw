@@ -288,8 +288,8 @@ export default function ClientsPage() {
                         />
 
                         {/* Toolbar - styl source UI */}
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                            <div className="d-flex align-items-center gap-2">
                                 <input
                                     type="text"
                                     placeholder="wyszukaj klienta"
@@ -369,7 +369,7 @@ export default function ClientsPage() {
                         )}
 
                         {/* Lista klientów */}
-                        <div className="bg-white border border-gray-300 rounded-sm">
+                        <div className="bg-white border border-secondary border-opacity-25 rounded-1">
                             <div className="clients-list-header">
                                 <label className="clients-checkbox-all">
                                     <input type="checkbox" />
@@ -382,7 +382,7 @@ export default function ClientsPage() {
                                     Ładowanie...
                                 </div>
                             ) : (
-                                <table className="w-full">
+                                <table className="w-100">
                                     <tbody>
                                         {filteredCustomers.map((customer) => (
                                             <DraggableCustomerRow
@@ -483,8 +483,8 @@ export default function ClientsPage() {
                     {/* Drag Overlay - podgląd przeciąganego klienta */}
                     <DragOverlay dropAnimation={null}>
                         {draggedCustomer ? (
-                            <div className="bg-white shadow-lg rounded p-12 border border-sky-200 flex items-center gap-8">
-                                <span className="font-medium">
+                            <div className="bg-white shadow-lg rounded p-5 border border-primary border-opacity-25 d-flex align-items-center gap-5">
+                                <span className="fw-medium">
                                     {draggedCustomer.name}
                                 </span>
                             </div>

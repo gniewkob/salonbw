@@ -220,10 +220,10 @@ export default function NewCustomerPage() {
                             ]}
                         />
 
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold">Nowy klient</h2>
+                        <div className="d-flex align-items-center justify-content-between">
+                            <h2 className="fs-3 fw-bold">Nowy klient</h2>
                         </div>
-                        <p className="text-sm text-gray-500">
+                        <p className="small text-muted">
                             Klienci / Nowy klient
                         </p>
 
