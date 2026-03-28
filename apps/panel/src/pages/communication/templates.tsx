@@ -226,7 +226,7 @@ export default function TemplatesPage() {
                                             <td>
                                                 <strong>{template.name}</strong>
                                                 {template.description && (
-                                                    <div className="salonbw-muted text-xs">
+                                                    <div className="salonbw-muted small">
                                                         {template.description}
                                                     </div>
                                                 )}

@@ -340,7 +340,7 @@ export default function CommunicationPage() {
                                             )}{' '}
                                             z {data.total}
                                         </div>
-                                        <div className="form_pagination col-xs-5 text-right">
+                                        <div className="form_pagination col-xs-5 text-end">
                                             <button
                                                 type="button"
                                                 className="button ml-s"
