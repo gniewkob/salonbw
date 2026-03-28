@@ -59,71 +59,76 @@ export default function WarehouseSalesHistoryPage() {
             activeTab="sales"
         >
             {isLoading ? (
-                <p className="products-empty">
+                <p className="salonbw-muted p-20">
                     Ładowanie historii sprzedaży...
                 </p>
             ) : (
                 <>
-                    <div className="products-toolbar">
-                        <input
-                            type="text"
-                            className="salonbw-input"
-                            title="Wyszukaj w historii sprzedaży"
-                            placeholder="wyszukaj w historii sprzedaży..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                            }}
-                        />
-                        <select
-                            className="salonbw-select"
-                            aria-label="rodzaj sprzedaży"
-                            title="Rodzaj sprzedaży"
-                            value={kindFilter}
-                            onChange={(e) => {
-                                setKindFilter(e.target.value);
-                                setPage(1);
-                            }}
-                        >
-                            <option value="">wszystkie</option>
-                            <option value="sale">sprzedaż</option>
-                            <option value="void">void</option>
-                            <option value="refund">zwrot</option>
-                            <option value="correction">korekta</option>
-                        </select>
-                        <Link
-                            href="/sales/new"
-                            className="button button-blue"
-                            style={{ marginLeft: 'auto' }}
-                        >
-                            dodaj sprzedaż
-                        </Link>
+                    <div className="row mb-l">
+                        <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+                            <input
+                                type="text"
+                                placeholder="wyszukaj w historii sprzedaży..."
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                            />
+                            <select
+                                aria-label="rodzaj sprzedaży"
+                                value={kindFilter}
+                                onChange={(e) => {
+                                    setKindFilter(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="">wszystkie</option>
+                                <option value="sale">sprzedaż</option>
+                                <option value="void">void</option>
+                                <option value="refund">zwrot</option>
+                                <option value="correction">korekta</option>
+                            </select>
+                        </div>
+                        <div className="col-sm-8 col-lg-7">
+                            <div className="d-flex flex-wrap jc-end">
+                                <Link
+                                    href="/sales/new"
+                                    className="button button-blue ml-xs"
+                                >
+                                    dodaj sprzedaż
+                                </Link>
+                            </div>
+                        </div>
                     </div>
-                    <div className="products-table-wrap">
-                        <table className="products-table">
+                    <div className="column_row data_table">
+                        <table className="table-bordered">
                             <thead>
                                 <tr>
-                                    <th>nazwa</th>
-                                    <th>rodzaj</th>
-                                    <th>suma brutto</th>
-                                    <th>sprzedano</th>
-                                    <th>pracownik</th>
-                                    <th>klient</th>
+                                    <th>Nazwa</th>
+                                    <th>Rodzaj</th>
+                                    <th>Suma brutto</th>
+                                    <th>Sprzedano</th>
+                                    <th>Pracownik</th>
+                                    <th>Klient</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {items.map((sale) => {
+                                {items.map((sale, i) => {
                                     const firstItem =
                                         sale.items?.[0]?.productName ??
                                         sale.saleNumber;
                                     const saleType = saleKindLabel(sale);
                                     return (
-                                        <tr key={sale.id}>
-                                            <td>
+                                        <tr
+                                            key={sale.id}
+                                            className={
+                                                i % 2 === 0 ? 'odd' : 'even'
+                                            }
+                                        >
+                                            <td className="wrap blue_text pointer link_body">
                                                 <Link
                                                     href={`/sales/history/${sale.id}`}
-                                                    className="products-link"
                                                 >
                                                     {firstItem}
                                                 </Link>
@@ -150,26 +155,19 @@ export default function WarehouseSalesHistoryPage() {
                                 })}
                             </tbody>
                         </table>
-                        <div className="products-table-footer">
-                            <span>
-                                Pozycje od {from} do {to} z {total}
-                            </span>
-                            <div className="products-table-footer__controls">
-                                <span>na stronie</span>
-                                <select
-                                    className="salonbw-select salonbw-select--inline"
-                                    aria-label="na stronie"
-                                    title="Na stronie"
-                                    value={String(PAGE_SIZE)}
-                                    disabled
-                                >
-                                    <option value="20">20</option>
-                                </select>
-                                <div className="products-pagination-nav">
+                    </div>
+                    <div className="pagination_container">
+                        <div className="column_row">
+                            <div className="row">
+                                <div className="info col-xs-7">
+                                    Pozycje od {from} do {to} z {total} | na
+                                    stronie 20
+                                </div>
+                                <div className="form_pagination col-xs-5">
                                     <input
                                         type="text"
+                                        className="pagination-page-input"
                                         aria-label="strona"
-                                        title="Strona"
                                         value={safePage}
                                         onChange={(e) => {
                                             const next = Number(e.target.value);
@@ -182,9 +180,12 @@ export default function WarehouseSalesHistoryPage() {
                                             }
                                         }}
                                     />
-                                    <span>z {totalPages}</span>
+                                    {' z '}
+                                    <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
+                                        className="button button-link button_next ml-s"
+                                        aria-label="Następna strona"
                                         disabled={safePage >= totalPages}
                                         onClick={() =>
                                             setPage((prev) =>
@@ -192,7 +193,10 @@ export default function WarehouseSalesHistoryPage() {
                                             )
                                         }
                                     >
-                                        {'>'}
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
                                     </button>
                                 </div>
                             </div>

@@ -3640,6 +3640,10 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     padding-right: 15px;
     box-sizing: border-box;
 }
+.mb-xs { margin-bottom: 4px; }
+.mb-s  { margin-bottom: 8px; }
+.mb-m  { margin-bottom: 12px; }
+.mb-l  { margin-bottom: 16px; }
 .mb-xl { margin-bottom: 30px; }
 .mt-xs { margin-top: 5px; }
 .ml-s { margin-left: 8px; }
