@@ -23,7 +23,6 @@ import {
 } from '@dnd-kit/core';
 import type { Route } from 'next';
 
-// Komponent dla wiersza klienta z obsługą drag (styl source UI)
 function formatLastVisit(date: string | null | undefined) {
     if (!date) return '-';
     const value = new Date(date);
@@ -42,10 +41,12 @@ function DraggableCustomerRow({
     customer,
     isDragging,
     onOpen,
+    rowClass,
 }: {
     customer: Customer;
     isDragging: boolean;
     onOpen: (id: number) => void;
+    rowClass?: string;
 }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: customer.id,
@@ -61,83 +62,97 @@ function DraggableCustomerRow({
         <tr
             ref={setNodeRef}
             {...{ style }}
-            className={`${isDragging ? 'opacity-50' : ''}`}
+            className={`customer-row ${rowClass ?? ''} ${isDragging ? 'opacity-50' : ''}`.trim()}
             onClick={() => onOpen(customer.id)}
         >
-            <td className="col-checkbox">
-                <input
-                    type="checkbox"
-                    aria-label="Wybierz klienta"
-                    onClick={(e) => e.stopPropagation()}
-                    onPointerDown={(e) => e.stopPropagation()}
-                />
-            </td>
-            <td className="col-name">
+            <td className="w-50p">
+                <span className="checkbox_container">
+                    <input
+                        type="checkbox"
+                        aria-label="Wybierz klienta"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    />
+                </span>
                 <Link
                     href={`/customers/${customer.id}`}
-                    className="clients-name-link"
+                    className="row-title"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                 >
                     {customer.fullName || customer.name}
                 </Link>
             </td>
-            <td className="col-phone">
-                <div className="clients-contact-cell">
-                    {customer.email ? (
-                        <a
-                            href={`mailto:${customer.email}`}
-                            className="clients-icon-link"
-                            onClick={(e) => e.stopPropagation()}
-                            onPointerDown={(e) => e.stopPropagation()}
-                            title={customer.email}
+            <td>
+                {customer.email ? (
+                    <a
+                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&single=1`}
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
+                        <div
+                            className="icon_box"
+                            title={`wyślij email: ${customer.email}`}
                         >
-                            <i
-                                className="fa fa-envelope-o"
-                                aria-hidden="true"
-                            />
-                        </a>
-                    ) : null}
-                    {customer.phone ? (
+                            <i className="icon sprite-customer_email" />
+                        </div>
+                    </a>
+                ) : (
+                    <div className="icon_box" title="nie podano">
+                        <i className="icon sprite-customer_email icon-opacity" />
+                    </div>
+                )}
+                {customer.phone ? (
+                    <div className="inline_block">
                         <a
                             href={`tel:${customer.phone}`}
-                            className="clients-phone-link"
+                            className="versum-phone-button"
                             onClick={(e) => e.stopPropagation()}
                             onPointerDown={(e) => e.stopPropagation()}
                         >
-                            <i className="fa fa-phone" aria-hidden="true" />
+                            <div className="icon_box pull-left">
+                                <i className="icon sprite-customer_telephone" />
+                            </div>
                             {customer.phone}
                         </a>
-                    ) : (
-                        <span className="clients-phone-empty">nie podano</span>
-                    )}
-                </div>
+                    </div>
+                ) : null}
             </td>
-            <td className="col-last-visit">
-                {formatLastVisit(customer.lastVisitDate)}
-            </td>
-            <td className="col-actions">
-                <div className="clients-actions-wrap">
-                    <span
-                        className="clients-drag-handle"
-                        title="Przeciągnij do grupy"
-                        {...listeners}
-                        {...attributes}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        ⋮⋮
-                    </span>
-                    <Link
-                        href={`/customers/${customer.id}/edit`}
-                        className="clients-edit-link"
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        title="Edytuj"
-                    >
-                        <i className="fa fa-pencil" aria-hidden="true" />
-                    </Link>
+            <td className="hidden-xs">
+                <div
+                    className="icon_box"
+                    title={
+                        customer.lastVisitDate
+                            ? `ostatnia wizyta: ${formatLastVisit(customer.lastVisitDate)}`
+                            : 'brak wizyt'
+                    }
+                >
+                    <i className="icon sprite-settings_opening_hours" />
                 </div>
+                <span>{formatLastVisit(customer.lastVisitDate)}</span>
+            </td>
+            <td
+                className="text-right hidden-xs"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+            >
+                <span
+                    className="customers-drag-handle"
+                    title="Przeciągnij do grupy"
+                    {...listeners}
+                    {...attributes}
+                >
+                    ⋮⋮
+                </span>
+                <Link
+                    href={`/customers/${customer.id}/edit`}
+                    className="button button-link"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    title="Edytuj"
+                >
+                    <i className="icon sprite-pencil" aria-hidden="true" />
+                </Link>
             </td>
         </tr>
     );
@@ -147,7 +162,6 @@ export default function ClientsPage() {
     const { role } = useAuth();
     const router = useRouter();
 
-    // Pobierz aktywne filtry z URL
     const currentGroupId = router.query.groupId
         ? Number(router.query.groupId)
         : undefined;
@@ -164,12 +178,10 @@ export default function ClientsPage() {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
-    // Reset to page 1 when URL filters change
     useEffect(() => {
         setPage(1);
     }, [currentGroupId, currentTagId, currentServiceId, currentEmployeeId]);
 
-    // Przygotuj filtry dla API
     const filters: CustomerFilterParams = useMemo(
         () => ({
             groupId: currentGroupId,
@@ -202,14 +214,12 @@ export default function ClientsPage() {
     );
     const sensors = useSensors(
         useSensor(PointerSensor, {
-            // Prevent normal clicks from being treated as drag starts.
             activationConstraint: { distance: 8 },
         }),
     );
 
     const activeGroup = groups?.find((g) => g.id === currentGroupId);
 
-    // Funkcja do czyszczenia filtra
     const clearGroupFilter = () => {
         const restQuery = { ...router.query };
         delete restQuery.groupId;
@@ -220,7 +230,6 @@ export default function ClientsPage() {
         );
     };
 
-    // Lokalne filtrowanie wyszukiwania (wyszukuje w już przefiltrowanych przez API)
     const filteredCustomers = searchTerm
         ? customers.filter(
               (c) =>
@@ -229,7 +238,6 @@ export default function ClientsPage() {
           )
         : customers;
 
-    // Handlery dla Drag & Drop
     const handleDragStart = (event: DragStartEvent) => {
         const customer = customers.find((c) => c.id === event.active.id);
         if (customer) {
@@ -245,7 +253,6 @@ export default function ClientsPage() {
                 const groupId = Number(over.id);
                 const customerId = Number(active.id);
 
-                // Sprawdź czy klient już jest w grupie
                 const group = groups?.find((g) => g.id === groupId);
                 const customer = customers.find((c) => c.id === customerId);
 
@@ -264,6 +271,12 @@ export default function ClientsPage() {
             setDraggedCustomer(null);
         })();
     };
+
+    const totalCount = customersData?.total ?? 0;
+    const totalPages =
+        customersData?.totalPages ?? (Math.ceil(totalCount / pageSize) || 1);
+    const fromItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+    const toItem = Math.min(page * pageSize, totalCount);
 
     if (!role) return null;
 
@@ -287,68 +300,58 @@ export default function ClientsPage() {
                             ]}
                         />
 
-                        {/* Toolbar - styl source UI */}
-                        <div className="d-flex align-items-center justify-content-between mb-4">
-                            <div className="d-flex align-items-center gap-2">
+                        <div className="row mb-l">
+                            <div className="col-sm-7 d-flex flex-wrap mb-m mb-md-0">
                                 <input
                                     type="text"
+                                    name="query"
                                     placeholder="wyszukaj klienta"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
                                         setPage(1);
                                     }}
-                                    className="salonbw-input"
+                                    className="right_space"
                                 />
-                                <button className="salonbw-btn salonbw-btn--link">
-                                    nazwisko: od A do Z ▼
-                                </button>
                             </div>
-                            <Link
-                                href="/customers/new"
-                                className="salonbw-btn salonbw-btn--primary salonbw-btn--add"
-                            >
-                                <span className="btn-icon">+</span>
-                                Dodaj klienta
-                            </Link>
+                            <div className="col-sm-5 text-right">
+                                <Link
+                                    href="/customers/new"
+                                    className="button button-blue"
+                                    id="add_customer_button"
+                                >
+                                    <i className="icon sprite-add_customer" />
+                                    Dodaj klienta
+                                </Link>
+                            </div>
                         </div>
 
-                        {/* Aktywne filtry - jak w source UI */}
                         {activeGroup && (
-                            <div className="clients-active-filters">
-                                <div className="clients-filter-header">
-                                    <span>wybrane kryteria wyszukiwania:</span>
-                                    <button
-                                        onClick={clearGroupFilter}
-                                        className="clients-filter-close"
-                                        title="Wyczyść filtry"
-                                    >
-                                        ✕
-                                    </button>
+                            <div className="column_row results_info">
+                                <a
+                                    className="close close_all"
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        clearGroupFilter();
+                                    }}
+                                >
+                                    ×
+                                </a>
+                                <div className="results_title">
+                                    wybrane kryteria wyszukiwania:
                                 </div>
-                                <div className="clients-filter-badge">
-                                    <span className="clients-filter-tag">
-                                        należą do grup (
-                                        {filteredCustomers.length})
-                                        <span className="clients-filter-name">
-                                            {activeGroup.name}
-                                        </span>
-                                        <button
-                                            onClick={clearGroupFilter}
-                                            className="clients-filter-remove"
-                                        >
-                                            ✕
-                                        </button>
-                                    </span>
+                                <div id="selected_filters">
+                                    <span>{activeGroup.name}</span>
                                 </div>
-                                <div className="clients-filter-stats">
-                                    <span>
-                                        Klientów spełniających kryteria:
-                                    </span>
+                                <div className="results_size_info">
+                                    Klientów spełniających kryteria:{' '}
                                     <strong>{filteredCustomers.length}</strong>
-                                    <button
-                                        className="clients-filter-create-group"
-                                        onClick={() => {
+                                    <a
+                                        href="#"
+                                        id="create_group_button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
                                             void router.push(
                                                 {
                                                     pathname: router.pathname,
@@ -363,130 +366,136 @@ export default function ClientsPage() {
                                         }}
                                     >
                                         utwórz grupę
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         )}
 
-                        {/* Lista klientów */}
-                        <div className="bg-white border border-secondary border-opacity-25 rounded-1">
-                            <div className="clients-list-header">
-                                <label className="clients-checkbox-all">
-                                    <input type="checkbox" />
-                                    <span>zaznacz wszystkich (0)</span>
-                                </label>
-                            </div>
-
-                            {isLoading ? (
-                                <div className="clients-loading">
-                                    Ładowanie...
+                        {isLoading ? (
+                            <p className="salonbw-muted p-20">Ładowanie...</p>
+                        ) : (
+                            <>
+                                <div className="column_row all_customers_checker">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            aria-label="zaznacz wszystkich"
+                                        />
+                                        zaznacz wszystkich (
+                                        <span>{filteredCustomers.length}</span>)
+                                    </label>
                                 </div>
-                            ) : (
-                                <table className="w-100">
-                                    <tbody>
-                                        {filteredCustomers.map((customer) => (
-                                            <DraggableCustomerRow
-                                                key={customer.id}
-                                                customer={customer}
-                                                isDragging={
-                                                    draggedCustomer?.id ===
-                                                    customer.id
-                                                }
-                                                onOpen={(id) =>
-                                                    void router.push(
-                                                        `/customers/${id}` as Route,
-                                                    )
-                                                }
-                                            />
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
+                                <div
+                                    className="column_row details_container"
+                                    id="customers_list"
+                                >
+                                    <table className="list-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Klient</th>
+                                                <th>Kontakt</th>
+                                                <th className="hidden-xs">
+                                                    Ostatnia wizyta
+                                                </th>
+                                                <th
+                                                    className="text-right hidden-xs"
+                                                    aria-label="Akcje"
+                                                />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredCustomers.map(
+                                                (customer, i) => (
+                                                    <DraggableCustomerRow
+                                                        key={customer.id}
+                                                        customer={customer}
+                                                        isDragging={
+                                                            draggedCustomer?.id ===
+                                                            customer.id
+                                                        }
+                                                        rowClass={
+                                                            i % 2 === 0
+                                                                ? 'odd'
+                                                                : 'even'
+                                                        }
+                                                        onOpen={(id) =>
+                                                            void router.push(
+                                                                `/customers/${id}` as Route,
+                                                            )
+                                                        }
+                                                    />
+                                                ),
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
 
-                            {/* Paginacja - styl source UI */}
-                            {(() => {
-                                const totalCount = customersData?.total ?? 0;
-                                const totalPages =
-                                    customersData?.totalPages ??
-                                    (Math.ceil(totalCount / pageSize) || 1);
-                                const fromItem =
-                                    totalCount === 0
-                                        ? 0
-                                        : (page - 1) * pageSize + 1;
-                                const toItem = Math.min(
-                                    page * pageSize,
-                                    totalCount,
-                                );
-                                return (
-                                    <div className="clients-pagination">
-                                        <span>
-                                            Pozycje od {fromItem} do {toItem} z{' '}
-                                            {totalCount}
-                                        </span>
-                                        <span className="clients-pagination-separator">
-                                            |
-                                        </span>
-                                        <label>
-                                            na stronie
-                                            <select
-                                                className="salonbw-select"
-                                                value={pageSize}
-                                                onChange={(e) => {
-                                                    setPageSize(
-                                                        Number(e.target.value),
-                                                    );
-                                                    setPage(1);
-                                                }}
-                                            >
-                                                <option value="20">20</option>
-                                                <option value="50">50</option>
-                                                <option value="100">100</option>
-                                            </select>
-                                        </label>
-                                        <div className="clients-pagination-nav">
-                                            <button
-                                                type="button"
-                                                className="salonbw-btn salonbw-btn--icon"
-                                                onClick={() =>
-                                                    setPage((p) => p - 1)
-                                                }
-                                                disabled={page <= 1}
-                                            >
-                                                ‹
-                                            </button>
-                                            <input
-                                                type="text"
-                                                value={page}
-                                                className="salonbw-input salonbw-input--small"
-                                                aria-label="Aktualna strona"
-                                                readOnly
-                                            />
-                                            <span>z</span>
-                                            <span>{totalPages}</span>
-                                            <button
-                                                type="button"
-                                                className="salonbw-btn salonbw-btn--icon"
-                                                onClick={() =>
-                                                    setPage((p) => p + 1)
-                                                }
-                                                disabled={page >= totalPages}
-                                            >
-                                                ›
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })()}
+                        <div className="pagination_container">
+                            <div className="row">
+                                <div className="info col-xs-7">
+                                    Pozycje od {fromItem} do {toItem} z{' '}
+                                    <span id="total_found">{totalCount}</span> |
+                                    na stronie{' '}
+                                    <select
+                                        name="size"
+                                        aria-label="na stronie"
+                                        value={pageSize}
+                                        onChange={(e) => {
+                                            setPageSize(Number(e.target.value));
+                                            setPage(1);
+                                        }}
+                                    >
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <div className="form_pagination col-xs-5">
+                                    <button
+                                        type="button"
+                                        className="button button-link"
+                                        aria-label="Poprzednia strona"
+                                        disabled={page <= 1}
+                                        onClick={() => setPage((p) => p - 1)}
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-left-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                    <input
+                                        type="text"
+                                        name="page"
+                                        className="pagination-page-input"
+                                        aria-label="strona"
+                                        value={page}
+                                        readOnly
+                                    />
+                                    {' z '}
+                                    <a className="pointer">{totalPages}</a>
+                                    <button
+                                        type="button"
+                                        className="button button-link button_next ml-s"
+                                        aria-label="Następna strona"
+                                        disabled={page >= totalPages}
+                                        onClick={() => setPage((p) => p + 1)}
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Drag Overlay - podgląd przeciąganego klienta */}
                     <DragOverlay dropAnimation={null}>
                         {draggedCustomer ? (
-                            <div className="bg-white shadow-lg rounded p-5 border border-primary border-opacity-25 d-flex align-items-center gap-5">
-                                <span className="fw-medium">
-                                    {draggedCustomer.name}
-                                </span>
+                            <div className="clients-drag-overlay">
+                                <span>{draggedCustomer.name}</span>
                             </div>
                         ) : null}
                     </DragOverlay>
