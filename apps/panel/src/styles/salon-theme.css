@@ -309,6 +309,11 @@ a.pjax_link:hover { text-decoration: underline; }
   width: 19px;
   height: 16px;
 }
+.icon.sprite-settings_services {
+  background-position: -2482px -1433px;
+  width: 16px;
+  height: 19px;
+}
 .icon.sprite-breadcrumbs_settings {
   background-position: -119px -614px;
   width: 16px;
@@ -565,6 +570,11 @@ a.pjax_link:hover { text-decoration: underline; }
   background-position: -1870px -613px;
   width: 19px;
   height: 19px;
+}
+.icon.sprite-stock_value_report {
+  background-position: -3094px -143px;
+  width: 17px;
+  height: 23px;
 }
 .icon.sprite-register_activity {
   background-position: -2074px -484px;

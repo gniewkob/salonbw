@@ -238,27 +238,41 @@ function ServicesPageContent({ role }: { role: Role }) {
             ) : (
                 <>
                     <div className="column_row data_table">
-                        <table className="table-bordered">
+                        <table className="table table-bordered">
                             <thead>
                                 <tr>
                                     <th className="pointer checkbox_container center_text">
-                                        <input
-                                            type="checkbox"
-                                            aria-label="Wybierz wszystkie usługi"
-                                            checked={
-                                                selectedIds.length ===
-                                                    paginatedServices.length &&
-                                                paginatedServices.length > 0
-                                            }
-                                            onChange={toggleSelectAll}
-                                        />
+                                        <label className="mb-0 mt-1">
+                                            <input
+                                                type="checkbox"
+                                                aria-label="Wybierz wszystkie usługi"
+                                                checked={
+                                                    selectedIds.length ===
+                                                        paginatedServices.length &&
+                                                    paginatedServices.length > 0
+                                                }
+                                                onChange={toggleSelectAll}
+                                            />
+                                        </label>
                                     </th>
-                                    <th>Nazwa</th>
-                                    <th>Kategoria</th>
-                                    <th>Czas trwania</th>
-                                    <th>Popularność</th>
-                                    <th>Cena brutto</th>
-                                    <th>VAT</th>
+                                    <th>
+                                        <div>Nazwa</div>
+                                    </th>
+                                    <th>
+                                        <div>Kategoria</div>
+                                    </th>
+                                    <th>
+                                        <div>Czas trwania</div>
+                                    </th>
+                                    <th>
+                                        <div>Popularność</div>
+                                    </th>
+                                    <th>
+                                        <div>Cena brutto</div>
+                                    </th>
+                                    <th>
+                                        <div>VAT</div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -271,16 +285,20 @@ function ServicesPageContent({ role }: { role: Role }) {
                                             }
                                         >
                                             <td className="pointer checkbox_container center_text">
-                                                <input
-                                                    type="checkbox"
-                                                    aria-label="Wybierz usługę"
-                                                    checked={selectedIds.includes(
-                                                        service.id,
-                                                    )}
-                                                    onChange={() =>
-                                                        toggleSelect(service.id)
-                                                    }
-                                                />
+                                                <label className="mb-0 mt-1">
+                                                    <input
+                                                        type="checkbox"
+                                                        aria-label="Wybierz usługę"
+                                                        checked={selectedIds.includes(
+                                                            service.id,
+                                                        )}
+                                                        onChange={() =>
+                                                            toggleSelect(
+                                                                service.id,
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
                                             </td>
                                             <td className="wrap blue_text pointer link_body w-40p">
                                                 <Link

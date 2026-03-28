@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import type { SalonModule } from './navigation';
 import ServicesNav from './navs/ServicesNav';
+import ServiceDetailNav from './navs/ServiceDetailNav';
 import ClientsNav from './navs/ClientsNav';
 import ClientDetailNav from './navs/ClientDetailNav';
 import CalendarNav from './navs/CalendarNav';
@@ -89,7 +90,35 @@ export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
     } else if (module.key === 'communication') {
         content = <CommunicationNav />;
     } else if (module.key === 'services') {
-        content = <ServicesNav />;
+        if (router.pathname === '/services/[id]') {
+            const serviceIdRaw = Array.isArray(router.query.id)
+                ? router.query.id[0]
+                : router.query.id;
+            const serviceId = serviceIdRaw ? Number(serviceIdRaw) : Number.NaN;
+            const tab = Array.isArray(router.query.tab)
+                ? router.query.tab[0]
+                : router.query.tab;
+            const activeTab = (tab as string | undefined) ?? 'summary';
+            content =
+                Number.isInteger(serviceId) && serviceId > 0 ? (
+                    <ServiceDetailNav
+                        serviceId={serviceId}
+                        activeTab={
+                            activeTab as
+                                | 'summary'
+                                | 'stats'
+                                | 'history'
+                                | 'employees'
+                                | 'comments'
+                                | 'commissions'
+                        }
+                    />
+                ) : (
+                    <ServicesNav />
+                );
+        } else {
+            content = <ServicesNav />;
+        }
     } else if (module.key === 'settings') {
         content = <SettingsNav />;
     }

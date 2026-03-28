@@ -32,13 +32,20 @@ export default function ServicesNav() {
         <div className="column_row">
             <div className="tree">
                 <a
-                    className={!currentCategoryId ? 'root active' : 'root'}
+                    className={
+                        !currentCategoryId
+                            ? 'item root with_icon active'
+                            : 'item root with_icon'
+                    }
                     href="#"
                     onClick={(event) => {
                         event.preventDefault();
                         updateFilters(undefined);
                     }}
                 >
+                    <span className="icon_box">
+                        <i className="icon sprite-settings_services" />
+                    </span>
                     Wszystkie usługi
                 </a>
                 <ul>
