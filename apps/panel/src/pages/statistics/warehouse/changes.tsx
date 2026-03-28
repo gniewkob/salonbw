@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import {
@@ -93,7 +93,7 @@ export default function WarehouseChangesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
                     <div className="flex-between mb-20">
@@ -263,7 +263,7 @@ export default function WarehouseChangesPage() {
                         </>
                     ) : null}
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

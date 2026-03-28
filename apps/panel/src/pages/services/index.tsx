@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role, Service, ServiceVariant } from '@/types';
 
@@ -21,9 +21,9 @@ export default function ServicesPage() {
     if (!role) return null;
 
     return (
-        <SalonBWShell role={role}>
+        <SalonShell role={role}>
             <ServicesPageContent role={role} />
-        </SalonBWShell>
+        </SalonShell>
     );
 }
 
@@ -209,7 +209,7 @@ function ServicesPageContent({ role }: { role: Role }) {
 
     return (
         <div className="salonbw-page" data-testid="services-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_services"
                 items={[{ label: 'Usługi' }]}
             />

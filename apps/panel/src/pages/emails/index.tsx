@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 import EmailList from '@/components/EmailList';
 
@@ -10,9 +10,9 @@ export default function EmailsPage() {
 
     return (
         <RouteGuard permission="nav:emails">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <EmailList />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

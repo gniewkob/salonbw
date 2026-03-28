@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -185,7 +185,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
                     data-testid="settings-detail"
@@ -194,7 +194,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                         {NAV}
                     </aside>
                     <div className="settings-detail-layout__main">
-                        <VersumBreadcrumbs
+                        <SalonBreadcrumbs
                             iconClass="sprite-breadcrumbs_settings"
                             items={[
                                 { label: 'Ustawienia', href: '/settings' },
@@ -418,7 +418,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                         </PanelSection>
                     </div>
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

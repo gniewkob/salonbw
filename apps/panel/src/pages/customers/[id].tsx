@@ -3,9 +3,9 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import ClientDetailNav from '@/components/salonbw/navs/ClientDetailNav';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import ClientDetailNav from '@/components/salon/navs/ClientDetailNav';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
@@ -148,7 +148,7 @@ export default function CustomerDetailPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <CustomerErrorBoundary
                     fallback={
                         <div className="show_customer" id="customers_main">
@@ -168,7 +168,7 @@ export default function CustomerDetailPage() {
                     }
                 >
                     <div className="show_customer" id="customers_main">
-                        <VersumBreadcrumbs
+                        <SalonBreadcrumbs
                             iconClass="sprite-breadcrumbs_customers"
                             items={[
                                 { label: 'Klienci', href: '/customers' },
@@ -341,7 +341,7 @@ export default function CustomerDetailPage() {
                         )}
                     </div>
                 </CustomerErrorBoundary>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

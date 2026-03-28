@@ -2,10 +2,10 @@ import { useState, useRef, useEffect, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
-import SalonBWIcon from './SalonBWIcon';
+import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
 
-export default function SalonBWTopbar() {
+export default function SalonTopbar() {
     const { user, logout } = useAuth();
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -75,8 +75,8 @@ export default function SalonBWTopbar() {
                         href={topbar.brand.href}
                         title="przejdź do pulpitu"
                     >
-                        <SalonBWIcon id="svg-logo" className="svg-logo" />
-                        <SalonBWIcon
+                        <SalonIcon id="svg-logo" className="svg-logo" />
+                        <SalonIcon
                             id="svg-dashboard-ico"
                             className="svg-dashboard-ico"
                         />
@@ -116,7 +116,7 @@ export default function SalonBWTopbar() {
                                     }
                                     id="notification_center_navbar_icon"
                                 >
-                                    <SalonBWIcon
+                                    <SalonIcon
                                         id="svg-notifications"
                                         className="svg-notifications"
                                     />
@@ -139,7 +139,7 @@ export default function SalonBWTopbar() {
                                         topbar.tasks.count ?? 0
                                     }
                                 >
-                                    <SalonBWIcon
+                                    <SalonIcon
                                         id="svg-todo"
                                         className="svg-todo"
                                     />
@@ -167,7 +167,7 @@ export default function SalonBWTopbar() {
                             }}
                         >
                             <div className="d-inline-block jQ_nav_chat_notification">
-                                <SalonBWIcon
+                                <SalonIcon
                                     id="svg-help"
                                     className="svg-help mr-xs"
                                 />
@@ -190,7 +190,7 @@ export default function SalonBWTopbar() {
                                             }
                                         >
                                             <div className="jQ_chat_notification">
-                                                <SalonBWIcon
+                                                <SalonIcon
                                                     id="svg-help"
                                                     className="svg-chat"
                                                 />
@@ -203,7 +203,7 @@ export default function SalonBWTopbar() {
                             ) : null}
                             <li className="main-menu-li">
                                 <Link href={topbar.help.contactFormHref}>
-                                    <SalonBWIcon
+                                    <SalonIcon
                                         id="svg-message"
                                         className="svg-message"
                                     />

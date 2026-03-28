@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import type { Role } from '@/types';
-import SalonBWIcon from './SalonBWIcon';
-import type { SalonBWModule } from './navigation';
+import SalonIcon from './SalonIcon';
+import type { SalonModule } from './navigation';
 
-interface SalonBWMainNavProps {
-    modules: SalonBWModule[];
-    activeModule: SalonBWModule;
+interface SalonMainNavProps {
+    modules: SalonModule[];
+    activeModule: SalonModule;
     role: Role;
 }
 
@@ -14,10 +14,10 @@ const MODULE_BADGES: Record<string, string> = {
     communication: '140',
 };
 
-export default function SalonBWMainNav({
+export default function SalonMainNav({
     modules,
     activeModule,
-}: SalonBWMainNavProps) {
+}: SalonMainNavProps) {
     return (
         <div className="mainnav" id="mainnav">
             <ul className="nav" e2e-main-nav="">
@@ -36,7 +36,7 @@ export default function SalonBWMainNav({
                                 title={item.label}
                             >
                                 <div className="nav-icon-wrapper">
-                                    <SalonBWIcon
+                                    <SalonIcon
                                         id={item.iconId}
                                         className={item.iconId}
                                     />

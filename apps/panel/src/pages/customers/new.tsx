@@ -3,9 +3,9 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import NewCustomerNav from '@/components/salonbw/navs/NewCustomerNav';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import NewCustomerNav from '@/components/salon/navs/NewCustomerNav';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCreateCustomer } from '@/hooks/useCustomers';
@@ -194,7 +194,7 @@ export default function NewCustomerPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <CustomerErrorBoundary
                     fallback={
                         <div
@@ -212,7 +212,7 @@ export default function NewCustomerPage() {
                         className="show_customer new_customer"
                         id="customers_main"
                     >
-                        <VersumBreadcrumbs
+                        <SalonBreadcrumbs
                             iconClass="sprite-breadcrumbs_customers"
                             items={[
                                 { label: 'Klienci', href: '/customers' },
@@ -274,7 +274,7 @@ export default function NewCustomerPage() {
                         </form>
                     </div>
                 </CustomerErrorBoundary>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

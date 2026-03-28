@@ -1,13 +1,13 @@
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function NewsletterNewPage() {
     const { role } = useAuth();
     if (!role) return null;
     return (
-        <SalonBWShell role={role}>
-            <VersumBreadcrumbs
+        <SalonShell role={role}>
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_communication"
                 items={[
                     { label: 'Komunikacja', href: '/communication' },
@@ -68,6 +68,6 @@ export default function NewsletterNewPage() {
                     </div>
                 </form>
             </div>
-        </SalonBWShell>
+        </SalonShell>
     );
 }

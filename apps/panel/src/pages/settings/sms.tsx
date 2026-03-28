@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import SmsSettingsPage from '@/components/settings/SmsSettingsPage';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function SmsSettingsRoute() {
@@ -10,9 +10,9 @@ export default function SmsSettingsRoute() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <SmsSettingsPage />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

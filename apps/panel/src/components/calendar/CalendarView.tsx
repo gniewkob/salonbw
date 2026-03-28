@@ -34,7 +34,7 @@ interface CalendarViewProps {
     currentDate: Date;
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
-    hideSidebar?: boolean; // When true, don't render sidebar (used in SalonBWShell)
+    hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
 }
 
 const VIEW_MAP: Record<CalendarViewType, string> = {

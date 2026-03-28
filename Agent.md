@@ -151,3 +151,26 @@ pnpm tsc --noEmit
 1. Check CI logs: `gh run view <run-id> --log-failed`
 2. Fix locally, run pre-commit checks again
 3. Commit fix and redeploy
+
+
+## 14. Vibe Coding & Visual Flow (2026 Standard)
+
+**CRITICAL**: As a Vibe Coding agent, do not just 'write code'. You must 'feel' and 'see' the interface.
+
+**Visual Verification Strategy**:
+- For any UI change in 'apps/panel' or 'apps/landing', use the **Playwright/Browser** plugin to launch the dev server and take a screenshot.
+- Compare the screenshot with the 'Versum Vibe' (see 'docs/UI_PATTERN_CATALOG.md').
+- Check for 'Visual Junk': Ensure spacing (padding/margin), typography, and interactive states (hover/focus) feel polished and 'alive'.
+- Use the **Frontend Design** skill to suggest aesthetic improvements before implementing them.
+
+**Vibe Constraints**:
+- **Consistency**: All panel modules MUST feel like a single, cohesive OS (The 'Versum Flow').
+- **Interactive Feedback**: Every action (button click, form submit) MUST have a clear, smooth visual feedback (loaders, transitions).
+- **Mobile First Vibe**: Even if working on the panel, verify that the 'vibe' holds up on smaller viewports.
+
+**Workflow**:
+1. **Brainstorm**: Describe the 'vibe' of the feature first.
+2. **Plan**: Write the technical steps.
+3. **See**: Launch browser, verify current state.
+4. **Code**: Implement changes.
+5. **Vibe Check**: Final screenshot verification + polish.

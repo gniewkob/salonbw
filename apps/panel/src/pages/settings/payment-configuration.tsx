@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import PaymentConfigurationPage from '@/components/settings/PaymentConfigurationPage';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function PaymentConfigurationRoute() {
@@ -10,9 +10,9 @@ export default function PaymentConfigurationRoute() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <PaymentConfigurationPage />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

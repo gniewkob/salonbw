@@ -7,7 +7,7 @@ import {
     useUpdateCustomerGroup,
 } from '@/hooks/useCustomers';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CustomerSettingsNav from './CustomerSettingsNav';
 import type { CustomerGroup } from '@/types';
 
@@ -200,7 +200,7 @@ export default function CustomerGroupsListPage() {
 
     return (
         <div className="settings-customer-groups-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_settings"
                 items={[
                     { label: 'Ustawienia', href: '/settings' },

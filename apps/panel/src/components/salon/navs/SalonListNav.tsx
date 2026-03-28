@@ -7,15 +7,12 @@ interface ListNavItem {
     active: boolean;
 }
 
-interface SalonBWListNavProps {
+interface SalonListNavProps {
     heading: string;
     items: ListNavItem[];
 }
 
-export default function SalonBWListNav({
-    heading,
-    items,
-}: SalonBWListNavProps) {
+export default function SalonListNav({ heading, items }: SalonListNavProps) {
     return (
         <div className="column_row">
             <div className="nav-header">{heading}</div>

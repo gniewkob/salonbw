@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useMessageTemplates,
@@ -308,9 +308,9 @@ export default function CommunicationDetailPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="salonbw-page communication-detail-page">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_communication_set"
                         items={[
                             { label: 'Łączność', href: '/communication' },
@@ -907,7 +907,7 @@ export default function CommunicationDetailPage() {
                         </div>
                     </div>
                 ) : null}
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

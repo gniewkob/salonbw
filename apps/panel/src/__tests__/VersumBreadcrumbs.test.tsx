@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 
-describe('VersumBreadcrumbs', () => {
+describe('SalonBreadcrumbs', () => {
     it('renders the vendor-style breadcrumbs wrapper with icon and links', () => {
         const { container } = render(
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_statistics"
                 items={[
                     { label: 'Statystyki', href: '/statistics' },

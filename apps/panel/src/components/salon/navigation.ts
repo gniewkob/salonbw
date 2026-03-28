@@ -1,7 +1,7 @@
 import type { Role } from '@/types';
 import { can, type Permission } from '@/utils/access';
 
-export type SalonBWModuleKey =
+export type SalonModuleKey =
     | 'calendar'
     | 'customers'
     | 'products'
@@ -12,7 +12,7 @@ export type SalonBWModuleKey =
     | 'extension'
     | 'helps';
 
-export interface SalonBWShellProfile {
+export interface SalonShellProfile {
     bodyId: string;
     bodyClasses?: string[];
     mainNavClass: string;
@@ -29,18 +29,18 @@ export interface SalonBWShellProfile {
     contentFrameVariant: 'default' | 'calendar' | 'fullWidth';
 }
 
-export interface SalonBWModule {
-    key: SalonBWModuleKey;
+export interface SalonModule {
+    key: SalonModuleKey;
     href: string;
     label: string;
     iconId: string;
     permission: Permission;
-    shell: SalonBWShellProfile;
+    shell: SalonShellProfile;
     secondaryNav: boolean;
     pinBottom?: boolean;
 }
 
-export const SALONBW_MODULES: SalonBWModule[] = [
+export const SALON_MODULES: SalonModule[] = [
     {
         key: 'calendar',
         href: '/calendar',
@@ -188,7 +188,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
     },
 ];
 
-const HELPS_MODULE: SalonBWModule = {
+const HELPS_MODULE: SalonModule = {
     key: 'helps',
     href: '/helps/new',
     label: 'pomoc',
@@ -208,9 +208,9 @@ const HELPS_MODULE: SalonBWModule = {
 };
 
 function withShellOverride(
-    module: SalonBWModule,
-    shellOverride: Partial<SalonBWShellProfile>,
-): SalonBWModule {
+    module: SalonModule,
+    shellOverride: Partial<SalonShellProfile>,
+): SalonModule {
     return {
         ...module,
         shell: {
@@ -225,32 +225,32 @@ function resolveSettingsShellOverride(path: string) {
         return {
             bodyId: 'settings_dashboard',
             bodyClasses: ['no_sidenav', 'settings-dashboard-landing'],
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/branch')) {
         return {
             bodyId: 'settings_branch',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/calendar')) {
         return {
             bodyId: 'settings_calendar',
             bodyClasses: ['no_sidenav'],
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/categories')) {
         return {
             bodyId: 'settings_categories',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/customer_groups')) {
         return {
             bodyId: 'settings_customer_groups',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (
@@ -259,13 +259,13 @@ function resolveSettingsShellOverride(path: string) {
     ) {
         return {
             bodyId: 'settings_customer_origins',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/customer-panel')) {
         return {
             bodyId: 'settings_customer_panel',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (
@@ -274,7 +274,7 @@ function resolveSettingsShellOverride(path: string) {
     ) {
         return {
             bodyId: 'settings_data_protection',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (
@@ -283,7 +283,7 @@ function resolveSettingsShellOverride(path: string) {
     ) {
         return {
             bodyId: 'settings_employees',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (
@@ -292,20 +292,20 @@ function resolveSettingsShellOverride(path: string) {
     ) {
         return {
             bodyId: 'settings_extra_fields',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/payment-configuration')) {
         return {
             bodyId: 'settings_online_payments_config',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/sms')) {
         return {
             bodyId: 'settings_sms',
             mainContentClass: 'communication_settings',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/timetable/branch')) {
@@ -313,7 +313,7 @@ function resolveSettingsShellOverride(path: string) {
             bodyId: 'timetable_branches',
             bodyClasses: ['no_sidenav'],
             mainContentClass: '',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (
@@ -323,33 +323,33 @@ function resolveSettingsShellOverride(path: string) {
         return {
             bodyId: 'timetable_employees',
             mainContentClass: '',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/timetable/templates')) {
         return {
             bodyId: 'timetable_templates',
             mainContentClass: '',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/settings/trades')) {
         return {
             bodyId: 'settings_trades',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     if (path.startsWith('/event-reminders')) {
         return {
             bodyId: 'physical_marketing',
             mainContentClass: 'settings',
-        } satisfies Partial<SalonBWShellProfile>;
+        } satisfies Partial<SalonShellProfile>;
     }
 
     return null;
 }
 
-export function resolveSalonBWModule(pathname: string): SalonBWModule {
+export function resolveSalonModule(pathname: string): SalonModule {
     // Normalize path
     const path = pathname.toLowerCase();
 
@@ -359,11 +359,11 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/dashboard') ||
         path === '/'
     ) {
-        return SALONBW_MODULES[0];
+        return SALON_MODULES[0];
     }
 
     if (path.startsWith('/customers')) {
-        return SALONBW_MODULES[1];
+        return SALON_MODULES[1];
     }
 
     if (
@@ -379,14 +379,14 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/manufacturers') ||
         path.startsWith('/admin/warehouse')
     ) {
-        return SALONBW_MODULES[2];
+        return SALON_MODULES[2];
     }
 
     if (
         path.startsWith('/statistics') ||
         path.startsWith('/admin/statistics')
     ) {
-        return SALONBW_MODULES[3];
+        return SALON_MODULES[3];
     }
 
     if (
@@ -397,15 +397,15 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/admin/communications')
     ) {
         if (path.startsWith('/messages')) {
-            return withShellOverride(SALONBW_MODULES[4], {
+            return withShellOverride(SALON_MODULES[4], {
                 bodyId: 'communication',
             });
         }
-        return SALONBW_MODULES[4];
+        return SALON_MODULES[4];
     }
 
     if (path.startsWith('/services') || path.startsWith('/admin/services')) {
-        return SALONBW_MODULES[5];
+        return SALON_MODULES[5];
     }
 
     if (
@@ -419,10 +419,10 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
     ) {
         const settingsShellOverride = resolveSettingsShellOverride(path);
         if (settingsShellOverride) {
-            return withShellOverride(SALONBW_MODULES[6], settingsShellOverride);
+            return withShellOverride(SALON_MODULES[6], settingsShellOverride);
         }
 
-        return SALONBW_MODULES[6];
+        return SALON_MODULES[6];
     }
 
     if (
@@ -430,19 +430,19 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/admin/loyalty') ||
         path.startsWith('/admin/gift-cards')
     ) {
-        return SALONBW_MODULES[7];
+        return SALON_MODULES[7];
     }
 
     if (path.startsWith('/helps')) {
         return HELPS_MODULE;
     }
 
-    return SALONBW_MODULES[0];
+    return SALON_MODULES[0];
 }
 
-export function visibleSalonBWModules(
+export function visibleSalonModules(
     role: Role | null | undefined,
-): SalonBWModule[] {
+): SalonModule[] {
     if (!role) return [];
-    return SALONBW_MODULES.filter((item) => can(role, item.permission));
+    return SALON_MODULES.filter((item) => can(role, item.permission));
 }

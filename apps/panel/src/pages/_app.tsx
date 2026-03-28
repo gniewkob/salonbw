@@ -6,11 +6,13 @@ import { useRouter } from 'next/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@/styles/salon-theme.css';
 import '@/styles/globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/styles/salon-shell.css';
 import RouteProgress from '@/components/RouteProgress';
-import SalonBWSvgSprites from '@/components/salonbw/SalonBWSvgSprites';
+import SalonSvgSprites from '@/components/salon/SalonSvgSprites';
 import { initSentry } from '@/sentry.client';
 import {
     isAnalyticsEnabled,
@@ -105,7 +107,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             <AuthProvider>
                 <ToastProvider>
                     <SecondaryNavProvider>
-                        <SalonBWSvgSprites />
+                        <SalonSvgSprites />
                         {isAnalyticsEnabled() && (
                             <>
                                 {/* GA4 loader */}

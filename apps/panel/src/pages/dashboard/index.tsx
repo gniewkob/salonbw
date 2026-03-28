@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import type { ComponentProps } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 import type ClientDashboardComponent from '@/components/dashboard/ClientDashboard';
@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
-            <SalonBWShell role={role}>{renderDashboard()}</SalonBWShell>
+            <SalonShell role={role}>{renderDashboard()}</SalonShell>
         </RouteGuard>
     );
 }

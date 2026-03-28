@@ -1,17 +1,17 @@
 import {
-    SALONBW_MODULES,
-    resolveSalonBWModule,
-} from '@/components/salonbw/navigation';
+    SALON_MODULES,
+    resolveSalonModule,
+} from '@/components/salon/navigation';
 
 describe('SalonBW shell profile', () => {
     it('maps shell classes to vendor-compatible values', () => {
-        const products = SALONBW_MODULES.find(
+        const products = SALON_MODULES.find(
             (module) => module.key === 'products',
         );
-        const statistics = SALONBW_MODULES.find(
+        const statistics = SALON_MODULES.find(
             (module) => module.key === 'statistics',
         );
-        const extension = SALONBW_MODULES.find(
+        const extension = SALON_MODULES.find(
             (module) => module.key === 'extension',
         );
 
@@ -27,14 +27,14 @@ describe('SalonBW shell profile', () => {
     });
 
     it('resolves physical and logical panel modules to shared shell profiles', () => {
-        expect(resolveSalonBWModule('/products').shell.bodyId).toBe(
+        expect(resolveSalonModule('/products').shell.bodyId).toBe(
             'physical_products',
         );
-        expect(resolveSalonBWModule('/statistics').shell.bodyId).toBe(
+        expect(resolveSalonModule('/statistics').shell.bodyId).toBe(
             'logical_statistics',
         );
-        expect(
-            resolveSalonBWModule('/admin/gift-cards').shell.mainNavClass,
-        ).toBe('extensions');
+        expect(resolveSalonModule('/admin/gift-cards').shell.mainNavClass).toBe(
+            'extensions',
+        );
     });
 });

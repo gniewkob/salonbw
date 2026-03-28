@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import EventRemindersPage from '@/components/settings/EventRemindersPage';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -10,9 +10,9 @@ export default function EventRemindersIndexPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <EventRemindersPage />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

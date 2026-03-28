@@ -1,7 +1,7 @@
 import RouteGuard from '@/components/RouteGuard';
 import BranchIdentityForm from '@/components/settings/BranchIdentityForm';
 import SettingsDetailLayout from '@/components/settings/SettingsDetailLayout';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 const branchNavItems = [
@@ -28,7 +28,7 @@ export default function BranchSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <SettingsDetailLayout
                     sectionTitle="Dane salonu"
                     breadcrumbLabel="Dane salonu"
@@ -36,7 +36,7 @@ export default function BranchSettingsPage() {
                 >
                     <BranchIdentityForm />
                 </SettingsDetailLayout>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

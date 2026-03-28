@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useStaffOptions } from '@/hooks/useEmployees';
 import { useTimetables } from '@/hooks/useTimetables';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -352,7 +352,7 @@ export default function TimetableEmployeesPage() {
 
     return (
         <div className="timetable-employees-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_settings"
                 items={[
                     { label: 'Ustawienia', href: '/settings' },

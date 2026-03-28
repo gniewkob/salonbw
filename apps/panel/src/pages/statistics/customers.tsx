@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientStats } from '@/hooks/useStatistics';
 
@@ -24,9 +24,9 @@ export default function ClientsStatisticsPage() {
     if (!role) return null;
 
     return (
-        <SalonBWShell role={role}>
+        <SalonShell role={role}>
             <div className="salonbw-page" data-testid="clients-statistics-page">
-                <VersumBreadcrumbs
+                <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_statistics"
                     items={[
                         { label: 'Statystyki', href: '/statistics' },
@@ -180,6 +180,6 @@ export default function ClientsStatisticsPage() {
                     </div>
                 )}
             </div>
-        </SalonBWShell>
+        </SalonShell>
     );
 }

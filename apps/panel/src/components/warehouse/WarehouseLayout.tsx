@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type WarehouseMainTab = 'products' | 'sales' | 'use' | 'deliveries' | 'orders';
@@ -74,9 +74,9 @@ export default function WarehouseLayout({
             <Head>
                 <title>{pageTitle}</title>
             </Head>
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="products_index" id="products_main">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_stock"
                         items={[
                             { label: 'Magazyn', href: '/products' },
@@ -132,7 +132,7 @@ export default function WarehouseLayout({
 
                     {children}
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

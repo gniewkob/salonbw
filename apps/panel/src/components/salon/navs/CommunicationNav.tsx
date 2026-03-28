@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import SalonBWListNav from './SalonBWListNav';
+import SalonListNav from './SalonListNav';
 
 type NavItem = {
     id: string;
@@ -37,7 +37,7 @@ export default function CommunicationNav() {
         router.pathname === href || router.pathname.startsWith(`${href}/`);
 
     return (
-        <SalonBWListNav
+        <SalonListNav
             heading="ŁĄCZNOŚĆ"
             items={COMMUNICATION_ITEMS.map((item) => ({
                 ...item,

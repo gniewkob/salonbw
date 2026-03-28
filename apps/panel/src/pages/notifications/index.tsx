@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 import NotificationList from '@/components/NotificationList';
 
@@ -10,9 +10,9 @@ export default function NotificationsPage() {
 
     return (
         <RouteGuard>
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <NotificationList />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

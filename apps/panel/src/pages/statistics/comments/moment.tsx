@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function MomentCommentsPage() {
@@ -9,7 +9,7 @@ export default function MomentCommentsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="statistics-page">
                     <h1 className="text-2xl font-semibold mb-20">
                         Komentarze Moment
@@ -48,7 +48,7 @@ export default function MomentCommentsPage() {
                         </div>
                     </div>
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }
