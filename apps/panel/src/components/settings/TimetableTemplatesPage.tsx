@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useStaffOptions } from '@/hooks/useEmployees';
 import { useTimetables } from '@/hooks/useTimetables';
 import {
@@ -352,7 +352,7 @@ export default function TimetableTemplatesPage() {
 
     return (
         <div className="timetable-templates-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_settings"
                 items={[
                     { label: 'Ustawienia', href: '/settings' },

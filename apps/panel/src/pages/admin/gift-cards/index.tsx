@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { format, addYears } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
@@ -207,9 +207,9 @@ export default function GiftCardsManagementPage() {
             roles={['admin', 'receptionist']}
             permission="nav:extension"
         >
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="gift-cards-page">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_extensions"
                         items={[
                             { label: 'Dodatki', href: '/extension' },
@@ -1427,7 +1427,7 @@ export default function GiftCardsManagementPage() {
                         )}
                     </div>
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

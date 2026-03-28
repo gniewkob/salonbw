@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCommissionReport } from '@/hooks/useStatistics';
@@ -293,12 +293,12 @@ export default function CommissionsPage() {
     if (!role) return null;
 
     return (
-        <SalonBWShell role={role}>
+        <SalonShell role={role}>
             <div
                 className="salonbw-page statistics-module"
                 data-testid="commissions-page"
             >
-                <VersumBreadcrumbs
+                <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_statistics"
                     items={[
                         { label: 'Statystyki', href: '/statistics' },
@@ -600,6 +600,6 @@ export default function CommissionsPage() {
                     </div>
                 )}
             </div>
-        </SalonBWShell>
+        </SalonShell>
     );
 }

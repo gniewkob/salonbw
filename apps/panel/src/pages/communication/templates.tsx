@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
 import type { TemplateType, MessageChannel } from '@/types';
@@ -134,9 +134,9 @@ export default function TemplatesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="salonbw-page">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_communication"
                         items={[
                             { label: 'Łączność', href: '/communication' },
@@ -538,7 +538,7 @@ export default function TemplatesPage() {
                         </div>
                     )}
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

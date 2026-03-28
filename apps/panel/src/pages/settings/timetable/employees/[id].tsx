@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployee, useStaffOptions } from '@/hooks/useEmployees';
@@ -448,7 +448,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
     if (employeeLoading || timetablesLoading) {
         return (
             <RouteGuard roles={['admin']} permission="nav:settings">
-                <SalonBWShell role={role}>
+                <SalonShell role={role}>
                     <div
                         className="settings-detail-layout"
                         data-testid="settings-detail"
@@ -462,7 +462,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             </div>
                         </div>
                     </div>
-                </SalonBWShell>
+                </SalonShell>
             </RouteGuard>
         );
     }
@@ -470,7 +470,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
     if (timetablesError || !employee || !id) {
         return (
             <RouteGuard roles={['admin']} permission="nav:settings">
-                <SalonBWShell role={role}>
+                <SalonShell role={role}>
                     <div
                         className="settings-detail-layout"
                         data-testid="settings-detail"
@@ -493,14 +493,14 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             </div>
                         </div>
                     </div>
-                </SalonBWShell>
+                </SalonShell>
             </RouteGuard>
         );
     }
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
                     data-testid="settings-detail"
@@ -509,7 +509,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                         {secondaryNav}
                     </aside>
                     <div className="settings-detail-layout__main">
-                        <VersumBreadcrumbs
+                        <SalonBreadcrumbs
                             iconClass="sprite-breadcrumbs_settings"
                             items={[
                                 { label: 'Ustawienia', href: '/settings' },
@@ -843,7 +843,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                         onSave={handleSaveException}
                     />
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

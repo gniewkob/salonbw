@@ -2,8 +2,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSmsHistory, useSmsMutations } from '@/hooks/useSms';
 import { useEmailHistory, useEmailMutations } from '@/hooks/useEmails';
@@ -95,9 +95,9 @@ export default function CommunicationPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div data-testid="communication-page">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_communication"
                         items={[
                             { label: 'Łączność', href: '/communication' },
@@ -474,7 +474,7 @@ export default function CommunicationPage() {
                         </div>
                     </div>
                 )}
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

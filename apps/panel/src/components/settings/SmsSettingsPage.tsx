@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useSettingsMutations, useSmsSettings } from '@/hooks/useSettings';
 import type { SmsSettings, SmsType } from '@/types';
@@ -179,7 +179,7 @@ export default function SmsSettingsPage() {
 
     return (
         <div className="sms-settings-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_communication_set"
                 items={[
                     { label: 'ustawienia', href: '/settings' },

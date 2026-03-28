@@ -2,25 +2,25 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import type { Role } from '@/types';
-import SalonBWMainNav from './SalonBWMainNav';
-import SalonBWSecondaryNav from './SalonBWSecondaryNav';
-import SalonBWTopbar from './SalonBWTopbar';
+import SalonMainNav from './SalonMainNav';
+import SalonSecondaryNav from './SalonSecondaryNav';
+import SalonTopbar from './SalonTopbar';
 import FloatingHelpButton from './FloatingHelpButton';
 import PajaxLoader from './PajaxLoader';
-import { resolveSalonBWModule, visibleSalonBWModules } from './navigation';
+import { resolveSalonModule, visibleSalonModules } from './navigation';
 import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
 
-interface SalonBWShellProps {
+interface SalonShellProps {
     role: Role;
     children: ReactNode;
 }
 
-export default function SalonBWShell({ role, children }: SalonBWShellProps) {
+export default function SalonShell({ role, children }: SalonShellProps) {
     const router = useRouter();
     const secondaryNavContext = useSecondaryNavContext();
     const routeForModuleResolution = router.asPath || router.pathname;
-    const activeModule = resolveSalonBWModule(routeForModuleResolution);
-    const modules = visibleSalonBWModules(role);
+    const activeModule = resolveSalonModule(routeForModuleResolution);
+    const modules = visibleSalonModules(role);
     const secondNavRenderKey = `${activeModule.key}:${router.pathname}:${router.asPath}`;
     const resolvedSecondaryNav = secondaryNavContext?.secondaryNav ?? null;
     const shellProfile = activeModule.shell;
@@ -91,10 +91,10 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
     return (
         <div id="salonbw-shell-root">
             <PajaxLoader />
-            <SalonBWTopbar />
+            <SalonTopbar />
             <div className="main-container" id="main-container">
                 <div className="sidebar hidden-print" id="sidebar">
-                    <SalonBWMainNav
+                    <SalonMainNav
                         role={role}
                         modules={modules}
                         activeModule={activeModule}
@@ -104,7 +104,7 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
                             {resolvedSecondaryNav}
                         </div>
                     ) : (
-                        <SalonBWSecondaryNav
+                        <SalonSecondaryNav
                             key={secondNavRenderKey}
                             module={activeModule}
                         />

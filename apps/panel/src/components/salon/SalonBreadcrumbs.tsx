@@ -1,19 +1,19 @@
 import Link from 'next/link';
 
-export interface VersumBreadcrumbItem {
+export interface SalonBreadcrumbItem {
     label: string;
     href?: string;
 }
 
-interface VersumBreadcrumbsProps {
+interface SalonBreadcrumbsProps {
     iconClass: string;
-    items: VersumBreadcrumbItem[];
+    items: SalonBreadcrumbItem[];
 }
 
-export default function VersumBreadcrumbs({
+export default function SalonBreadcrumbs({
     iconClass,
     items,
-}: VersumBreadcrumbsProps) {
+}: SalonBreadcrumbsProps) {
     if (!items.length) return null;
 
     return (

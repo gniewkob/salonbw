@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import TimetableTemplatesPage from '@/components/settings/TimetableTemplatesPage';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function TimetableTemplatesRoute() {
@@ -10,9 +10,9 @@ export default function TimetableTemplatesRoute() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <TimetableTemplatesPage />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

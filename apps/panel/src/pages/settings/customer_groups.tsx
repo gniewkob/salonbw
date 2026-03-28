@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import CustomerGroupsListPage from '@/components/settings/CustomerGroupsListPage';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function CustomerGroupsSettingsPage() {
@@ -10,9 +10,9 @@ export default function CustomerGroupsSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <CustomerGroupsListPage />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

@@ -1,4 +1,4 @@
-import SalonBWIcon from './SalonBWIcon';
+import SalonIcon from './SalonIcon';
 
 export default function FloatingHelpButton() {
     return (
@@ -7,7 +7,7 @@ export default function FloatingHelpButton() {
             className="salonbw-floating-help"
             aria-label="Pomoc"
         >
-            <SalonBWIcon
+            <SalonIcon
                 id="svg-chat"
                 className="salonbw-icon salonbw-icon--lg"
             />

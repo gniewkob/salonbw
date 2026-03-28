@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
-import EmployeesNav from '@/components/salonbw/navs/EmployeesNav';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import EmployeesNav from '@/components/salon/navs/EmployeesNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
@@ -75,9 +75,9 @@ export default function EmployeesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="employees-page">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_settings"
                         items={[
                             { label: 'Ustawienia', href: '/settings' },
@@ -140,7 +140,7 @@ export default function EmployeesPage() {
                         />
                     </Modal>
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

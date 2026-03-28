@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import CalendarSettingsForm from '@/components/settings/CalendarSettingsForm';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function CalendarSettingsPage() {
@@ -10,9 +10,9 @@ export default function CalendarSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <CalendarSettingsForm />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

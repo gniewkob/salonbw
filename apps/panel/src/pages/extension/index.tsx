@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type ExtensionCard = {
@@ -99,9 +99,9 @@ export default function ExtensionPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="extension-page">
-                    <VersumBreadcrumbs
+                    <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_extensions"
                         items={[{ label: 'Dodatki' }]}
                     />
@@ -170,7 +170,7 @@ export default function ExtensionPage() {
                         ))}
                     </div>
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

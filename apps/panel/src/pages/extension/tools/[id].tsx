@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type PlanAvailability = {
@@ -190,9 +190,9 @@ export default function ExtensionToolPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <ExtensionToolContent />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }
@@ -205,7 +205,7 @@ function ExtensionToolContent() {
 
     return (
         <div className="salonbw-page" data-testid="extension-tool-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_extensions"
                 items={[
                     { label: 'Dodatki', href: '/extension' },

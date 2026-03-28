@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/router';
-import type { SalonBWModule } from './navigation';
+import type { SalonModule } from './navigation';
 import ServicesNav from './navs/ServicesNav';
 import ClientsNav from './navs/ClientsNav';
 import ClientDetailNav from './navs/ClientDetailNav';
@@ -13,8 +13,8 @@ import SettingsNav from './navs/SettingsNav';
 // clientsSections moved to ClientsNav
 // servicesSections moved to ServicesNav
 
-interface SalonBWSecondaryNavProps {
-    module: SalonBWModule;
+interface SalonSecondaryNavProps {
+    module: SalonModule;
 }
 
 function parseCustomerIdFromRoute(
@@ -33,9 +33,7 @@ function parseCustomerIdFromRoute(
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-export default function SalonBWSecondaryNav({
-    module,
-}: SalonBWSecondaryNavProps) {
+export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
     const router = useRouter();
 
     if (!module.secondaryNav) {

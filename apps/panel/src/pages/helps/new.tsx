@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import HelpContactPage from '@/components/help/HelpContactPage';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HelpContactRoute() {
@@ -10,9 +10,9 @@ export default function HelpContactRoute() {
 
     return (
         <RouteGuard>
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <HelpContactPage />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

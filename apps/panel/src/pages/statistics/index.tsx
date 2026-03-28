@@ -18,8 +18,8 @@ import {
 } from '@/hooks/useStatistics';
 import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import StatisticsPieChart from '@/components/statistics/StatisticsPieChart';
 import StatisticsToolbar from '@/components/statistics/StatisticsToolbar';
@@ -81,9 +81,9 @@ export default function StatisticsPage() {
     if (!role) return null;
 
     return (
-        <SalonBWShell role={role}>
+        <SalonShell role={role}>
             <StatisticsPageContent />
-        </SalonBWShell>
+        </SalonShell>
     );
 }
 
@@ -499,7 +499,7 @@ function StatisticsPageContent() {
             data-testid="statistics-page"
             style={{ maxWidth: '1200px', margin: '0 auto' }}
         >
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_statistics"
                 items={[
                     { label: 'Statystyki', href: '/statistics' },

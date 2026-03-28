@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import PanelSection from '@/components/ui/PanelSection';
 
 type SettingsDetailNavItem = {
@@ -65,7 +65,7 @@ export default function SettingsDetailLayout({
             </aside>
 
             <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
+                <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_settings"
                     items={[
                         { label: 'Ustawienia', href: '/settings' },

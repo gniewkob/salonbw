@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import PanelActionBar from '@/components/ui/PanelActionBar';
 import { useCalendarSettings, useSettingsMutations } from '@/hooks/useSettings';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -171,7 +171,7 @@ export default function CalendarSettingsForm() {
 
     return (
         <div className="settings-calendar-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_settings"
                 items={[
                     { label: 'Ustawienia', href: '/settings' },

@@ -1,9 +1,9 @@
-interface SalonBWIconProps {
+interface SalonIconProps {
     id: string;
     className?: string;
 }
 
-export default function SalonBWIcon({ id, className }: SalonBWIconProps) {
+export default function SalonIcon({ id, className }: SalonIconProps) {
     return (
         <svg
             aria-hidden="true"

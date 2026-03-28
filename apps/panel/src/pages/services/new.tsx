@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import ManageCategoriesModal from '@/components/services/ManageCategoriesModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -79,9 +79,9 @@ export default function NewServicePage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <NewServicePageContent />
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }
@@ -490,7 +490,7 @@ function NewServicePageContent() {
 
     return (
         <div className="salonbw-page services-create-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_services"
                 items={[
                     { label: 'Usługi', href: '/services' },

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import PanelActionBar from '@/components/ui/PanelActionBar';
 import {
     useCreateCustomerGroup,
@@ -32,7 +32,7 @@ export default function NewCustomerGroupPage() {
 
     return (
         <div className="settings-customer-group-form-page">
-            <VersumBreadcrumbs
+            <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_settings"
                 items={[
                     { label: 'Ustawienia', href: '/settings' },

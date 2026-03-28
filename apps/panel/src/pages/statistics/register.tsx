@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCashRegister } from '@/hooks/useStatistics';
 import type { CashRegisterSummary } from '@/types';
@@ -55,9 +55,9 @@ export default function CashRegisterPage() {
     if (!role) return null;
 
     return (
-        <SalonBWShell role={role}>
+        <SalonShell role={role}>
             <div className="salonbw-page" data-testid="cash-register-page">
-                <VersumBreadcrumbs
+                <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_statistics"
                     items={[
                         { label: 'Statystyki', href: '/statistics' },
@@ -319,6 +319,6 @@ export default function CashRegisterPage() {
                     </>
                 )}
             </div>
-        </SalonBWShell>
+        </SalonShell>
     );
 }

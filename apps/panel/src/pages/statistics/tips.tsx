@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTipsSummary } from '@/hooks/useStatistics';
 
@@ -39,9 +39,9 @@ export default function TipsPage() {
     const avgTip = totalCount > 0 ? totalTips / totalCount : 0;
 
     return (
-        <SalonBWShell role={role}>
+        <SalonShell role={role}>
             <div className="salonbw-page" data-testid="tips-page">
-                <VersumBreadcrumbs
+                <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_statistics"
                     items={[
                         { label: 'Statystyki', href: '/statistics' },
@@ -201,6 +201,6 @@ export default function TipsPage() {
                     </>
                 )}
             </div>
-        </SalonBWShell>
+        </SalonShell>
     );
 }

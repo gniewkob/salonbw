@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -209,12 +209,12 @@ export default function ServiceDetailsPage() {
     if (!role) return null;
 
     return (
-        <SalonBWShell role={role || 'admin'}>
+        <SalonShell role={role || 'admin'}>
             <div
                 className="salonbw-page service-details-page"
                 data-testid="service-details-page"
             >
-                <VersumBreadcrumbs
+                <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_services"
                     items={[
                         { label: 'Usługi', href: '/services' },
@@ -830,6 +830,6 @@ export default function ServiceDetailsPage() {
                     />
                 )}
             </div>
-        </SalonBWShell>
+        </SalonShell>
     );
 }

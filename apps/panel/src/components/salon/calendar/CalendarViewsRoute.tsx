@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import ManageCalendarViewsModal from '@/components/salonbw/modals/ManageCalendarViewsModal';
+import SalonShell from '@/components/salon/SalonShell';
+import ManageCalendarViewsModal from '@/components/salon/modals/ManageCalendarViewsModal';
 import CreateCalendarViewModal, {
     type CreateCalendarViewPayload,
-} from '@/components/salonbw/modals/CreateCalendarViewModal';
+} from '@/components/salon/modals/CreateCalendarViewModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCalendarViews, useSettingsMutations } from '@/hooks/useSettings';
@@ -135,7 +135,7 @@ export default function CalendarViewsRoute({ nestedCreate = false }: Props) {
 
     return (
         <RouteGuard permission="nav:calendar">
-            <SalonBWShell role={role}>
+            <SalonShell role={role}>
                 <div
                     className="salonbw-page"
                     data-testid="calendar-views-modal-route"
@@ -172,7 +172,7 @@ export default function CalendarViewsRoute({ nestedCreate = false }: Props) {
                         onSubmit={handleSubmit}
                     />
                 ) : null}
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

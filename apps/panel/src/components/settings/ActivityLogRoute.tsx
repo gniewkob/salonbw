@@ -5,8 +5,8 @@ import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import RouteGuard from '@/components/RouteGuard';
-import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
@@ -176,8 +176,8 @@ export default function ActivityLogRoute({
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
-            <SalonBWShell role={role}>
-                <VersumBreadcrumbs
+            <SalonShell role={role}>
+                <SalonBreadcrumbs
                     iconClass={
                         breadcrumbs[0]?.iconClass ??
                         'sprite-breadcrumbs_settings'
@@ -640,7 +640,7 @@ export default function ActivityLogRoute({
                         </div>
                     </div>
                 </div>
-            </SalonBWShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

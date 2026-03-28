@@ -1,4 +1,4 @@
-export default function SalonBWSvgSprites() {
+export default function SalonSvgSprites() {
     return (
         <div aria-hidden="true" className="hidden">
             <svg xmlns="http://www.w3.org/2000/svg">
