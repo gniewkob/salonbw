@@ -53,10 +53,11 @@ export default function ServiceList({
 
     if (services.length === 0) {
         return (
-            <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-                <div className="text-gray-400 mb-4">
+            <div className="bg-white rounded-3 shadow-sm border p-5 text-center">
+                <div className="text-secondary mb-4">
                     <svg
-                        className="w-12 h-12 mx-auto"
+                        style={{ width: 48, height: 48 }}
+                        className="mx-auto d-block"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -69,59 +70,62 @@ export default function ServiceList({
                         />
                     </svg>
                 </div>
-                <p className="text-gray-500">Brak usług w tej kategorii</p>
+                <p className="text-muted">Brak usług w tej kategorii</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+        <div className="bg-white rounded-3 shadow-sm border overflow-hidden">
+            <table className="w-100">
+                <thead className="bg-light border-bottom">
                     <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-start small fw-medium text-muted text-uppercase">
                             Usługa
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-start small fw-medium text-muted text-uppercase">
                             Kategoria
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-start small fw-medium text-muted text-uppercase">
                             Czas
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-end small fw-medium text-muted text-uppercase">
                             Cena
                         </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-center small fw-medium text-muted text-uppercase">
                             Online
                         </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-center small fw-medium text-muted text-uppercase">
                             Aktywna
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-end small fw-medium text-muted text-uppercase">
                             Akcje
                         </th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody>
                     {services.map((service) => (
                         <tr
                             key={service.id}
-                            className={`hover:bg-gray-50 ${!service.isActive ? 'opacity-60' : ''}`}
+                            className={!service.isActive ? 'opacity-50' : ''}
                         >
                             <td className="px-4 py-3">
                                 <div>
-                                    <div className="font-medium text-gray-900">
+                                    <div className="fw-medium text-dark">
                                         {service.name}
                                     </div>
                                     {service.description && (
-                                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                                        <div
+                                            className="small text-muted text-truncate"
+                                            style={{ maxWidth: 300 }}
+                                        >
                                             {service.description}
                                         </div>
                                     )}
                                     {service.variants &&
                                         service.variants.length > 0 && (
                                             <div className="mt-1">
-                                                <span className="inline-flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                                                <span className="d-inline-flex align-items-center small text-primary bg-primary bg-opacity-10 px-2 rounded-pill">
                                                     {service.variants.length}{' '}
                                                     wariant
                                                     {service.variants.length ===
@@ -136,23 +140,24 @@ export default function ServiceList({
                                         )}
                                 </div>
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">
+                            <td className="px-4 py-3 small text-muted">
                                 {getCategoryName(service.categoryId)}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">
+                            <td className="px-4 py-3 small text-muted">
                                 {formatDuration(service.duration)}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">
+                            <td className="px-4 py-3 small text-dark text-end fw-medium">
                                 {formatPrice(service.price, service.priceType)}
                             </td>
                             <td className="px-4 py-3 text-center">
                                 {service.onlineBooking ? (
                                     <span
-                                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600"
+                                        className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 text-success"
+                                        style={{ width: 24, height: 24 }}
                                         title="Dostępna online"
                                     >
                                         <svg
-                                            className="w-4 h-4"
+                                            style={{ width: 16, height: 16 }}
                                             fill="currentColor"
                                             viewBox="0 0 20 20"
                                         >
@@ -165,11 +170,12 @@ export default function ServiceList({
                                     </span>
                                 ) : (
                                     <span
-                                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-400"
+                                        className="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary bg-opacity-25 text-secondary"
+                                        style={{ width: 24, height: 24 }}
                                         title="Niedostępna online"
                                     >
                                         <svg
-                                            className="w-4 h-4"
+                                            style={{ width: 16, height: 16 }}
                                             fill="currentColor"
                                             viewBox="0 0 20 20"
                                         >
@@ -191,11 +197,19 @@ export default function ServiceList({
                                             !service.isActive,
                                         )
                                     }
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                        service.isActive
-                                            ? 'bg-primary-600'
-                                            : 'bg-gray-300'
-                                    }`}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        width: 44,
+                                        height: 24,
+                                        borderRadius: 12,
+                                        backgroundColor: service.isActive
+                                            ? 'var(--bs-primary)'
+                                            : '#d1d5db',
+                                        border: 'none',
+                                        padding: '2px',
+                                        cursor: 'pointer',
+                                    }}
                                     aria-label={
                                         service.isActive
                                             ? 'Dezaktywuj usługę'
@@ -203,25 +217,31 @@ export default function ServiceList({
                                     }
                                 >
                                     <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                            service.isActive
-                                                ? 'translate-x-6'
-                                                : 'translate-x-1'
-                                        }`}
+                                        style={{
+                                            display: 'inline-block',
+                                            width: 16,
+                                            height: 16,
+                                            borderRadius: '50%',
+                                            backgroundColor: 'white',
+                                            transform: service.isActive
+                                                ? 'translateX(20px)'
+                                                : 'translateX(0)',
+                                            transition: 'transform 0.15s',
+                                        }}
                                     />
                                 </button>
                             </td>
-                            <td className="px-4 py-3 text-right">
-                                <div className="flex items-center justify-end gap-2">
+                            <td className="px-4 py-3 text-end">
+                                <div className="d-flex align-items-center justify-content-end gap-2">
                                     <button
                                         type="button"
                                         onClick={() => onOpenDetails(service)}
-                                        className="p-1 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                                        className="p-1 rounded text-muted"
                                         title="Szczegóły usługi"
                                         aria-label="Szczegóły usługi"
                                     >
                                         <svg
-                                            className="w-5 h-5"
+                                            style={{ width: 20, height: 20 }}
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -239,12 +259,12 @@ export default function ServiceList({
                                         onClick={() =>
                                             onManageVariants(service)
                                         }
-                                        className="p-1 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                                        className="p-1 rounded text-muted"
                                         title="Warianty usługi"
                                         aria-label="Zarządzaj wariantami"
                                     >
                                         <svg
-                                            className="w-5 h-5"
+                                            style={{ width: 20, height: 20 }}
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -260,12 +280,12 @@ export default function ServiceList({
                                     <button
                                         type="button"
                                         onClick={() => onEdit(service)}
-                                        className="p-1 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                                        className="p-1 rounded text-muted"
                                         title="Edytuj usługę"
                                         aria-label="Edytuj usługę"
                                     >
                                         <svg
-                                            className="w-5 h-5"
+                                            style={{ width: 20, height: 20 }}
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -289,12 +309,12 @@ export default function ServiceList({
                                                 void onDelete(service.id);
                                             }
                                         }}
-                                        className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
+                                        className="p-1 rounded text-muted"
                                         title="Usuń usługę"
                                         aria-label="Usuń usługę"
                                     >
                                         <svg
-                                            className="w-5 h-5"
+                                            style={{ width: 20, height: 20 }}
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"

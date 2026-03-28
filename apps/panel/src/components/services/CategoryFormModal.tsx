@@ -206,7 +206,7 @@ export default function CategoryFormModal({
                                     Kolor
                                 </label>
                                 <div className="col-sm-9">
-                                    <div className="flex-center gap-6 flex-wrap mt-5">
+                                    <div className="d-flex align-items-center gap-5 flex-wrap mt-5">
                                         {COLOR_OPTIONS.map((color) => {
                                             const dotStyle = {
                                                 '--dynamic-color': color,

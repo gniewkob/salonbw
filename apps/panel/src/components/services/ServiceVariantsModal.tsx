@@ -339,7 +339,7 @@ export default function ServiceVariantsModal({
                                                 Cena (zł) *
                                             </label>
                                             <div className="controls">
-                                                <div className="flex items-center gap-2">
+                                                <div className="d-flex align-items-center gap-2">
                                                     <input
                                                         type="number"
                                                         id="variant-price"

@@ -75,7 +75,7 @@ export default function ManageCategoriesModal({
                     className="salonbw-list-item flex-between pl-dynamic"
                     style={rowStyle}
                 >
-                    <div className="flex-center gap-10">
+                    <div className="d-flex align-items-center gap-3">
                         {category.color && (
                             // eslint-disable-next-line
                             <span
@@ -146,7 +146,10 @@ export default function ManageCategoriesModal({
                                 <span>Nazwa kategorii</span>
                                 <span>Akcje</span>
                             </div>
-                            <div className="h-400 overflow-y-auto">
+                            <div
+                                className="overflow-auto"
+                                style={{ maxHeight: 400 }}
+                            >
                                 {categories.length > 0 ? (
                                     categories.map((cat) =>
                                         renderCategoryRow(cat),
