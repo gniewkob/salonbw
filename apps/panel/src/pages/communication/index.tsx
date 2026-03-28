@@ -105,61 +105,72 @@ export default function CommunicationPage() {
                         ]}
                     />
 
-                    <div className="row mb-l">
-                        <div className="col-sm-5 input-with-select-sm mb-s mb-md-0">
-                            <select
-                                value={kind}
-                                aria-label="Rodzaj wiadomości"
-                                onChange={(event) => {
-                                    setKind(
-                                        event.target.value as 'sms' | 'email',
-                                    );
-                                    setStatus('');
-                                    setPage(1);
-                                }}
+                    <div className="inner">
+                        <div className="actions">
+                            <button
+                                type="button"
+                                className="button button-blue"
+                                onClick={() => setIsModalOpen(true)}
                             >
-                                <option value="sms">SMS</option>
-                                <option value="email">Email</option>
-                            </select>
-                            <select
-                                value={status}
-                                aria-label="Status wiadomości"
-                                onChange={(event) => {
-                                    setStatus(event.target.value);
-                                    setPage(1);
-                                }}
+                                wyślij wiadomość pojedynczą
+                            </button>
+                            <Link
+                                href="/communication/mass"
+                                className="button button-blue"
                             >
-                                <option value="">wszystkie statusy</option>
-                                {kind === 'sms' ? (
-                                    <>
-                                        <option value="sent">wysłane</option>
-                                        <option value="delivered">
-                                            dostarczone
-                                        </option>
-                                        <option value="failed">nieudane</option>
-                                        <option value="rejected">
-                                            odrzucone
-                                        </option>
-                                        <option value="pending">
-                                            oczekujące
-                                        </option>
-                                    </>
-                                ) : (
-                                    <>
-                                        <option value="pending">
-                                            oczekujące
-                                        </option>
-                                        <option value="sent">wysłane</option>
-                                        <option value="failed">nieudane</option>
-                                    </>
-                                )}
-                            </select>
+                                wyślij wiadomość masową
+                            </Link>
                         </div>
-                        <div className="col-sm-7">
-                            <div className="d-flex flex-wrap jc-end">
+                    </div>
+
+                    <div className="inner">
+                        <div className="row">
+                            <div className="col-md-3 col-sm-6 mb-xs">
+                                <span className="mr-s">Rodzaj:</span>
+                                <select
+                                    className="w-full"
+                                    value={kind}
+                                    aria-label="Rodzaj wiadomości"
+                                    onChange={(event) => {
+                                        setKind(
+                                            event.target.value as
+                                                | 'sms'
+                                                | 'email',
+                                        );
+                                        setStatus('');
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value="sms">SMS i email</option>
+                                    <option value="email">tylko email</option>
+                                </select>
+                            </div>
+                            <div className="col-md-3 col-sm-6 mb-xs">
+                                <span className="mr-s">Status:</span>
+                                <select
+                                    className="w-full"
+                                    value={status}
+                                    aria-label="Status wiadomości"
+                                    onChange={(event) => {
+                                        setStatus(event.target.value);
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value="">
+                                        odczytane i nieodczytane
+                                    </option>
+                                    <option value="sent">wysłane</option>
+                                    <option value="delivered">
+                                        dostarczone
+                                    </option>
+                                    <option value="failed">nieudane</option>
+                                    <option value="pending">oczekujące</option>
+                                </select>
+                            </div>
+                            <div className="col-md-3 col-sm-6 mb-xs">
                                 <Link
                                     href="/communication/templates"
-                                    className="button ml-xs"
+                                    className="button"
                                 >
                                     szablony
                                 </Link>
@@ -168,19 +179,6 @@ export default function CommunicationPage() {
                                     className="button ml-xs"
                                 >
                                     przypomnienia
-                                </Link>
-                                <button
-                                    type="button"
-                                    className="button ml-xs"
-                                    onClick={() => setIsModalOpen(true)}
-                                >
-                                    wyślij wiadomość
-                                </button>
-                                <Link
-                                    href="/communication/mass"
-                                    className="button button-blue ml-xs"
-                                >
-                                    wyślij masową
                                 </Link>
                             </div>
                         </div>
@@ -192,42 +190,42 @@ export default function CommunicationPage() {
                         </div>
                     ) : data ? (
                         <>
-                            <div className="column_row data_table">
-                                <table className="table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Odbiorca</th>
-                                            <th>Wiadomość</th>
-                                            <th>Rodzaj</th>
-                                            <th>Wysłano</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {kind === 'sms'
-                                            ? smsHistory.data.items.map(
-                                                  (entry, i) => (
-                                                      <tr
-                                                          key={`sms-${entry.id}`}
-                                                          className={
-                                                              i % 2 === 0
-                                                                  ? 'odd'
-                                                                  : 'even'
-                                                          }
-                                                      >
-                                                          <td>
-                                                              <Link
-                                                                  href={getCommunicationHref(
-                                                                      entry.id,
-                                                                      'sms',
-                                                                  )}
-                                                              >
-                                                                  {
-                                                                      entry.recipient
-                                                                  }
-                                                              </Link>
-                                                          </td>
-                                                          <td>
-                                                              <strong>
+                            <div className="inner">
+                                <div className="column_row data_table">
+                                    <table className="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Odbiorca</th>
+                                                <th>Wiadomość</th>
+                                                <th>Rodzaj</th>
+                                                <th>Wysłano</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {kind !== 'email'
+                                                ? smsHistory.data.items.map(
+                                                      (entry, i) => (
+                                                          <tr
+                                                              key={`sms-${entry.id}`}
+                                                              className={
+                                                                  i % 2 === 0
+                                                                      ? 'odd row'
+                                                                      : 'even row'
+                                                              }
+                                                          >
+                                                              <td className="wrap">
+                                                                  <Link
+                                                                      href={getCommunicationHref(
+                                                                          entry.id,
+                                                                          'sms',
+                                                                      )}
+                                                                  >
+                                                                      {
+                                                                          entry.recipient
+                                                                      }
+                                                                  </Link>
+                                                              </td>
+                                                              <td className="wrap">
                                                                   <Link
                                                                       href={getCommunicationHref(
                                                                           entry.id,
@@ -237,53 +235,55 @@ export default function CommunicationPage() {
                                                                       {entry.subject ||
                                                                           'Wiadomość'}
                                                                   </Link>
-                                                              </strong>
-                                                              <div className="light_text">
-                                                                  {entry.content.slice(
-                                                                      0,
-                                                                      120,
+                                                                  <div className="excerpt">
+                                                                      {entry.content.slice(
+                                                                          0,
+                                                                          120,
+                                                                      )}
+                                                                      {entry
+                                                                          .content
+                                                                          .length >
+                                                                      120
+                                                                          ? '...'
+                                                                          : ''}
+                                                                  </div>
+                                                              </td>
+                                                              <td className="wrap">
+                                                                  <span className="v2-label v2-label-info">
+                                                                      {entry.channel ||
+                                                                          'sms standard'}
+                                                                  </span>
+                                                              </td>
+                                                              <td className="wrap">
+                                                                  {formatDateTime(
+                                                                      entry.sentAt ||
+                                                                          entry.createdAt,
                                                                   )}
-                                                                  {entry.content
-                                                                      .length >
-                                                                  120
-                                                                      ? '...'
-                                                                      : ''}
-                                                              </div>
-                                                          </td>
-                                                          <td>
-                                                              {entry.channel}
-                                                          </td>
-                                                          <td>
-                                                              {formatDateTime(
-                                                                  entry.sentAt ||
-                                                                      entry.createdAt,
-                                                              )}
-                                                          </td>
-                                                      </tr>
-                                                  ),
-                                              )
-                                            : emailHistory.data.items.map(
-                                                  (entry, i) => (
-                                                      <tr
-                                                          key={`email-${entry.id}`}
-                                                          className={
-                                                              i % 2 === 0
-                                                                  ? 'odd'
-                                                                  : 'even'
-                                                          }
-                                                      >
-                                                          <td>
-                                                              <Link
-                                                                  href={getCommunicationHref(
-                                                                      entry.id,
-                                                                      'email',
-                                                                  )}
-                                                              >
-                                                                  {entry.to}
-                                                              </Link>
-                                                          </td>
-                                                          <td>
-                                                              <strong>
+                                                              </td>
+                                                          </tr>
+                                                      ),
+                                                  )
+                                                : emailHistory.data.items.map(
+                                                      (entry, i) => (
+                                                          <tr
+                                                              key={`email-${entry.id}`}
+                                                              className={
+                                                                  i % 2 === 0
+                                                                      ? 'odd row'
+                                                                      : 'even row'
+                                                              }
+                                                          >
+                                                              <td className="wrap">
+                                                                  <Link
+                                                                      href={getCommunicationHref(
+                                                                          entry.id,
+                                                                          'email',
+                                                                      )}
+                                                                  >
+                                                                      {entry.to}
+                                                                  </Link>
+                                                              </td>
+                                                              <td className="wrap">
                                                                   <Link
                                                                       href={getCommunicationHref(
                                                                           entry.id,
@@ -293,86 +293,105 @@ export default function CommunicationPage() {
                                                                       {entry.subject ||
                                                                           'Email'}
                                                                   </Link>
-                                                              </strong>
-                                                              <div className="light_text">
-                                                                  {(
-                                                                      entry.template ??
-                                                                      ''
-                                                                  ).slice(
-                                                                      0,
-                                                                      120,
+                                                                  <div className="excerpt">
+                                                                      {(
+                                                                          entry.template ??
+                                                                          ''
+                                                                      ).slice(
+                                                                          0,
+                                                                          120,
+                                                                      )}
+                                                                      {(
+                                                                          entry.template ??
+                                                                          ''
+                                                                      ).length >
+                                                                      120
+                                                                          ? '...'
+                                                                          : ''}
+                                                                  </div>
+                                                              </td>
+                                                              <td className="wrap">
+                                                                  <span className="v2-label v2-label-info">
+                                                                      email
+                                                                  </span>
+                                                              </td>
+                                                              <td className="wrap">
+                                                                  {formatDateTime(
+                                                                      entry.sentAt ||
+                                                                          entry.createdAt,
                                                                   )}
-                                                                  {(
-                                                                      entry.template ??
-                                                                      ''
-                                                                  ).length > 120
-                                                                      ? '...'
-                                                                      : ''}
-                                                              </div>
-                                                          </td>
-                                                          <td>email</td>
-                                                          <td>
-                                                              {formatDateTime(
-                                                                  entry.sentAt ||
-                                                                      entry.createdAt,
-                                                              )}
-                                                          </td>
-                                                      </tr>
-                                                  ),
-                                              )}
-                                    </tbody>
-                                </table>
+                                                              </td>
+                                                          </tr>
+                                                      ),
+                                                  )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
 
                             <div className="pagination_container">
-                                <div className="column_row">
-                                    <div className="row">
-                                        <div className="info col-xs-7">
-                                            Pozycje{' '}
-                                            {Math.min(
-                                                (page - 1) * data.limit + 1,
-                                                data.total,
-                                            )}{' '}
-                                            -{' '}
-                                            {Math.min(
-                                                page * data.limit,
-                                                data.total,
-                                            )}{' '}
-                                            z {data.total}
-                                        </div>
-                                        <div className="form_pagination col-xs-5 text-end">
-                                            <button
-                                                type="button"
-                                                className="button ml-s"
-                                                disabled={page <= 1}
-                                                onClick={() =>
-                                                    setPage((current) =>
-                                                        Math.max(
-                                                            1,
-                                                            current - 1,
-                                                        ),
-                                                    )
-                                                }
-                                            >
-                                                poprzednia
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="button ml-s"
-                                                disabled={
-                                                    page * data.limit >=
-                                                    data.total
-                                                }
-                                                onClick={() =>
-                                                    setPage(
-                                                        (current) =>
-                                                            current + 1,
-                                                    )
-                                                }
-                                            >
-                                                następna
-                                            </button>
-                                        </div>
+                                <div className="row">
+                                    <div className="info col-xs-7">
+                                        Pozycje od{' '}
+                                        {Math.min(
+                                            (page - 1) * data.limit + 1,
+                                            data.total,
+                                        )}{' '}
+                                        do{' '}
+                                        {Math.min(
+                                            page * data.limit,
+                                            data.total,
+                                        )}{' '}
+                                        z {data.total}
+                                    </div>
+                                    <div className="form_pagination col-xs-5">
+                                        <button
+                                            type="button"
+                                            className="button button-link"
+                                            aria-label="Poprzednia strona"
+                                            disabled={page <= 1}
+                                            onClick={() =>
+                                                setPage((current) =>
+                                                    Math.max(1, current - 1),
+                                                )
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-left-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                        <input
+                                            type="text"
+                                            className="pagination-page-input"
+                                            aria-label="strona"
+                                            value={page}
+                                            readOnly
+                                        />
+                                        {' z '}
+                                        <a className="pointer">
+                                            {Math.ceil(
+                                                data.total / data.limit,
+                                            ) || 1}
+                                        </a>
+                                        <button
+                                            type="button"
+                                            className="button button-link button_next ml-s"
+                                            aria-label="Następna strona"
+                                            disabled={
+                                                page * data.limit >= data.total
+                                            }
+                                            onClick={() =>
+                                                setPage(
+                                                    (current) => current + 1,
+                                                )
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-right-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
                                     </div>
                                 </div>
                             </div>

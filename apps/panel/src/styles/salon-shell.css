@@ -410,6 +410,51 @@ body.e2e-body {
     text-decoration: underline;
 }
 
+/* v2-label badges (Versum-native) */
+.v2-label {
+    border-radius: 6px;
+    line-height: 1;
+    padding: 0.375rem 0.5rem;
+    font-weight: 600;
+    display: inline-block;
+    color: #738fa8;
+    background: #f1f4f6;
+}
+
+.v2-label-success {
+    color: #51c448;
+    background: #eef9ed;
+}
+
+.v2-label-warning {
+    color: #ff9500;
+    background: #fff4e6;
+}
+
+.v2-label-error {
+    color: #f06941;
+    background: #fef0ec;
+}
+
+.v2-label-info {
+    color: #56aef0;
+    background: #eef7fe;
+}
+
+/* message excerpt (Versum-native) */
+.excerpt {
+    font-size: 11px;
+    color: #909095;
+}
+
+.excerpt span {
+    color: #313140;
+}
+
+.table-bordered tr.unread td .excerpt {
+    font-weight: 600;
+}
+
 .buttons_bottom {
     margin-top: 16px;
 }
