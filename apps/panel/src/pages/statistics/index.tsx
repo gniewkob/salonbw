@@ -497,7 +497,6 @@ function StatisticsPageContent() {
         <div
             className="salonbw-page statistics-module"
             data-testid="statistics-page"
-            style={{ maxWidth: '1200px', margin: '0 auto' }}
         >
             <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_statistics"
@@ -524,8 +523,8 @@ function StatisticsPageContent() {
                     Nie udało się pobrać raportu finansowego.
                 </div>
             ) : (
-                <div className="statistics-description p-4">
-                    <h2 className="mt-4">Salon ogółem</h2>
+                <div className="description">
+                    <h2>Salon ogółem</h2>
                     <p>
                         Liczba sfinalizowanych wizyt:{' '}
                         <strong>{reportTotals.totalVisits}</strong>
@@ -537,14 +536,14 @@ function StatisticsPageContent() {
                     </p>
                     <br />
 
-                    <div className="d-flex gap-4">
-                        <div style={{ flex: 5 }}>
-                            <div className="statistics-price-summary">
-                                <div className="statistics-data-table">
+                    <div className="row">
+                        <div className="col-lg-5">
+                            <div className="price_summary">
+                                <div className="data_table compact_cells no_hover">
                                     <table>
                                         <tbody>
                                             <tr>
-                                                <td className="statistics-td-empty" />
+                                                <td className="empty" />
                                                 <th>netto</th>
                                                 <th>brutto</th>
                                             </tr>
@@ -578,7 +577,7 @@ function StatisticsPageContent() {
                                             </tr>
                                             <tr>
                                                 <td
-                                                    className="statistics-td-summary"
+                                                    className="empty text-right bigger text-wrap"
                                                     colSpan={3}
                                                 >
                                                     Utarg ze sprzedaży usług i
@@ -593,8 +592,8 @@ function StatisticsPageContent() {
                                             </tr>
                                             <tr>
                                                 <th>Napiwki</th>
-                                                <td className="statistics-td-no-right" />
-                                                <td className="statistics-td-no-left">
+                                                <td className="no-right-border" />
+                                                <td className="no-left-border">
                                                     {formatMoney(
                                                         reportTotals.dayTips,
                                                     )}
@@ -628,15 +627,19 @@ function StatisticsPageContent() {
                                 <br />
                             </div>
                         </div>
-                        <div className="flex-[7]">
-                            <div className="statistics-chart-wrap">
-                                <div className="statistics-chart-title">
-                                    Udział metod płatności w utargu
-                                    <span
-                                        className="statistics-info-tip"
+                        <div className="col-lg-7">
+                            <div style={{ width: '500px' }}>
+                                <div className="text-center strong mb-m">
+                                    <span>Udział metod płatności w utargu</span>
+                                    <div
+                                        className="info_tip ml-s"
                                         title="Wykres nie uwzględnia kwot zwrotów"
-                                        aria-label="Informacja"
-                                    />
+                                    >
+                                        <a
+                                            className="icon sprite-info_tip"
+                                            aria-label="Informacja"
+                                        />
+                                    </div>
                                 </div>
                                 <StatisticsPieChart
                                     width={500}
@@ -662,9 +665,9 @@ function StatisticsPageContent() {
                             </div>
                         </div>
                     </div>
-                    <br className="statistics-clearfix" />
+                    <br className="c" />
 
-                    <h2 className="mt-8">Dane w podziale na pracowników</h2>
+                    <h2>Dane w podziale na pracowników</h2>
                     <div className="data_table">
                         <table className="table table-bordered">
                             <tbody>
@@ -802,8 +805,8 @@ function StatisticsPageContent() {
                         </table>
                     </div>
 
-                    <div className="statistics-employee-chart-wrap">
-                        <p className="statistics-chart-label">
+                    <div style={{ width: '550px' }}>
+                        <p className="text-center">
                             Udział pracowników w utargu
                         </p>
                         <StatisticsPieChart
@@ -815,9 +818,7 @@ function StatisticsPageContent() {
                                 color: employee.color,
                             }))}
                         />
-                        <div className="statistics-wybrana">
-                            Wybrana wartość:
-                        </div>
+                        <div style={{ marginTop: '8px' }}>Wybrana wartość:</div>
                     </div>
                 </div>
             )}

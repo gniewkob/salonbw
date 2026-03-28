@@ -2880,12 +2880,12 @@ body.e2e-statistics .main-content .inner {
     padding-right: 8px;
 }
 
-/* Main content (.description equivalent) */
-.statistics-description {
+/* Main content (Versum-native class names) */
+.statistics-module .description {
     overflow: hidden;
 }
 
-.statistics-description h2 {
+.statistics-module .description h2 {
     font-size: 22px;
     font-weight: 400;
     margin: 20px 0 10px;
@@ -2893,34 +2893,28 @@ body.e2e-statistics .main-content .inner {
     color: #313140;
 }
 
-.statistics-description p {
+.statistics-module .description p {
     margin: 0 0 10px;
     font-size: 13px;
     line-height: 20px;
 }
 
-
-.statistics-clearfix {
-    clear: both;
-    display: block;
-}
-
-/* Price summary table (.data_table.compact_cells.no_hover) */
-.statistics-price-summary {
+/* Price summary */
+.statistics-module .price_summary {
     font-size: 13px;
     line-height: 20px;
 }
 
-.statistics-data-table {
+.statistics-module .data_table.compact_cells {
     display: block;
 }
 
-.statistics-data-table table {
+.statistics-module .data_table.compact_cells table {
     border-collapse: collapse;
     width: 100%;
 }
 
-.statistics-data-table th {
+.statistics-module .data_table.compact_cells th {
     font-size: 11px;
     font-weight: 600;
     color: #313140;
@@ -2930,7 +2924,7 @@ body.e2e-statistics .main-content .inner {
     text-align: left;
 }
 
-.statistics-data-table td {
+.statistics-module .data_table.compact_cells td {
     font-size: 13px;
     font-weight: 400;
     color: #313140;
@@ -2939,12 +2933,12 @@ body.e2e-statistics .main-content .inner {
     text-align: left;
 }
 
-.statistics-td-empty {
+.statistics-module .data_table .empty {
     background: #f5f8fa !important;
     border: 1px solid #ccd6dd !important;
 }
 
-.statistics-td-summary {
+.statistics-module .data_table .bigger.text-wrap {
     text-align: right !important;
     font-size: 13px !important;
     white-space: normal !important;
@@ -2953,94 +2947,35 @@ body.e2e-statistics .main-content .inner {
     padding: 5px 7px !important;
 }
 
-.statistics-td-no-right {
+.statistics-module .no-right-border {
     border-right: none !important;
 }
 
-.statistics-td-no-left {
+.statistics-module .no-left-border {
     border-left: none !important;
 }
 
-/* Payment chart container */
-.statistics-chart-wrap {
-    width: 500px;
-}
-
-.statistics-chart-title {
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 16px;
+/* Chart title (.text-center.strong.mb-m) */
+.statistics-module .text-center.strong.mb-m {
     font-size: 13px;
     color: #313140;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    margin-bottom: 16px;
 }
 
-.statistics-info-tip {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%23337ab7'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E") no-repeat center;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-/* jqplot-style chart legend */
-.statistics-jqplot-wrap {
-    position: relative;
-}
-
-.statistics-jqplot-legend {
-    background: rgba(255, 255, 255, 0.6);
-    font-size: 9.75px;
-    color: #666;
-    border-collapse: collapse;
-}
-
-.statistics-jqplot-swatch-outer {
-    width: 16px;
-    height: 16px;
-    display: flex;
+/* Info tip icon container */
+.statistics-module .info_tip {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-}
-
-.statistics-jqplot-swatch {
-    width: 12px;
-    height: 12px;
-    border: 1px solid;
-}
-
-.statistics-jqplot-label {
-    padding-left: 4px;
-    white-space: nowrap;
-}
-
-/* Employee chart */
-.statistics-employee-chart-wrap {
-    width: 550px;
-    margin-top: 16px;
-}
-
-.statistics-chart-label {
-    text-align: center;
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: #313140;
-}
-
-.statistics-wybrana {
-    margin-top: 8px;
-    font-size: 13px;
-    color: #313140;
 }
 
 @media (max-width: 1100px) {
-    .statistics-chart-wrap,
-    .statistics-employee-chart-wrap {
-        width: 100%;
+    .statistics-module [style*="width: 500px"],
+    .statistics-module [style*="width: 550px"] {
+        width: 100% !important;
     }
 }
 
