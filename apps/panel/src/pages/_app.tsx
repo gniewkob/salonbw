@@ -8,7 +8,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
-import '@/styles/salonbw-shell.css';
+import '@/styles/salon-shell.css';
 import RouteProgress from '@/components/RouteProgress';
 import SalonBWSvgSprites from '@/components/salonbw/SalonBWSvgSprites';
 import { initSentry } from '@/sentry.client';
