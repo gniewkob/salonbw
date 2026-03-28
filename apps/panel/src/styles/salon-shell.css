@@ -573,118 +573,102 @@ textarea.form-control {
     justify-content: center;
 }
 
-.clients-list {
-    background: #fff;
-    border: 1px solid var(--salon-border);
-    border-radius: 2px;
+/* customers list-table (Versum-native) */
+.list-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.clients-list-header {
-    border-bottom: 1px solid #e1e6eb;
-    padding: 8px 10px;
-    font-size: 11px;
-    color: #66707a;
+.list-table > thead > tr > th {
+    padding: 5px 7px;
 }
 
-.clients-checkbox-all {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-weight: 400;
+.list-table > tbody > tr > td {
+    padding: 10px 7px;
+    border-top: 1px solid #ccd6dd;
+    white-space: nowrap;
 }
 
-.clients-checkbox-all input[type='checkbox'] {
-    width: 12px;
-    height: 12px;
+.list-table > tbody > tr.customer-row:hover > td {
+    background: #f5f9fc;
+    cursor: pointer;
 }
 
-.clients-contact-cell {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+.list-table .w-50p {
+    width: 50%;
+    white-space: normal;
 }
 
-.clients-phone-link {
-    display: inline-flex;
-    align-items: center;
-    color: #6c7680;
+.list-table a.row-title {
+    font-size: 15px;
+    white-space: normal;
+    color: #2b7bbd;
     text-decoration: none;
 }
 
-.clients-phone-link i,
-.clients-contact-cell .clients-icon-link i {
-    margin-right: 6px;
-    color: #9aa3ab;
+.list-table a.row-title:hover {
+    text-decoration: underline;
 }
 
-.clients-phone-empty {
-    color: #9aa3ab;
+.all_customers_checker {
+    margin: 0 0 10px 5px;
 }
 
-.clients-actions-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+.all_customers_checker label {
+    font-weight: normal;
+    font-size: 13px;
 }
 
-.clients-drag-handle {
+.all_customers_checker input {
+    margin-right: 5px;
+    position: relative;
+    top: 2px;
+}
+
+.column_row.results_info {
+    position: relative;
+    border: 1px solid #c8c8c8;
+    padding: 11px 20px;
+    color: #4b5360;
+    margin-bottom: 10px;
+}
+
+.column_row.results_info .close {
+    position: absolute;
+    top: 0;
+    right: 1px;
+}
+
+.column_row.results_info .results_title {
+    margin-bottom: 15px;
+}
+
+.column_row.results_info .results_size_info {
+    margin-top: 15px;
+}
+
+.customers-drag-handle {
     opacity: 0;
     color: #b5bdc4;
     font-size: 11px;
     line-height: 1;
     transition: opacity 0.15s ease;
-}
-
-.clients-name-link {
-    color: #2b7bbd;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.clients-name-link:hover {
-    text-decoration: underline;
-}
-
-.clients-icon-link,
-.clients-edit-link {
-    color: #98a1aa;
-    text-decoration: none;
-}
-
-.clients-icon-link:hover,
-.clients-edit-link:hover {
-    color: #6f7780;
-}
-
-.clients-pagination {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    color: #7d8790;
-    padding: 10px 0;
-}
-
-.clients-pagination-separator {
-    color: #c6cdd4;
-}
-
-.clients-pagination .salonbw-select {
-    height: 24px;
-    border: 1px solid #ccd2d8;
-    border-radius: 3px;
+    cursor: grab;
     margin-left: 6px;
-    font-size: 11px;
-    padding: 0 6px;
-    background: #fff;
 }
 
-.clients-pagination-nav {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+tr.customer-row:hover .customers-drag-handle {
+    opacity: 1;
+}
+
+.clients-drag-overlay {
+    background: #fff;
+    border: 1px solid #ccd6dd;
+    border-radius: 3px;
+    padding: 6px 12px;
+    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
 }
 
 .salonbw-input--small {
