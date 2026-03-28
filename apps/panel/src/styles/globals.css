@@ -371,7 +371,7 @@ body {
 }
 
 .salonbw-btn--primary {
-    background: var(--salonbw-accent);
+    background: var(--salon-accent);
     color: #fff;
 }
 
@@ -436,14 +436,14 @@ body {
 }
 
 .salonbw-btn--add {
-    background: var(--salonbw-accent, #25b4c1);
+    background: var(--salon-accent, #25b4c1);
     color: #fff;
 }
 
 .salonbw-btn--link {
     background: transparent;
     border: 0;
-    color: var(--salonbw-accent, #25b4c1);
+    color: var(--salon-accent, #25b4c1);
     padding: 0;
     text-decoration: underline;
     cursor: pointer;
@@ -599,7 +599,7 @@ body {
 }
 
 .salonbw-link {
-    color: var(--salonbw-accent, #25b4c1);
+    color: var(--salon-accent, #25b4c1);
     text-decoration: none;
 }
 
@@ -1258,7 +1258,7 @@ body {
 }
 
 .salonbw-dashboard__period-btn.active {
-    background: var(--salonbw-accent, #25b4c1);
+    background: var(--salon-accent, #25b4c1);
     color: #fff;
 }
 
@@ -1327,7 +1327,7 @@ body {
 .salonbw-mini-chart__bar {
     flex: 1;
     border-radius: 2px;
-    background: var(--salonbw-accent, #25b4c1);
+    background: var(--salon-accent, #25b4c1);
 }
 
 .salonbw-mini-chart__bar--blue {

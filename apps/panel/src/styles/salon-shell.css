@@ -1,20 +1,20 @@
 :root {
-    --salonbw-topbar-h: 42px;
-    --salonbw-mainnav-w: 62px;
-    --salonbw-mainnav-item-h: 57px;
-    --salonbw-sidenav-w: 214px;
-    --salonbw-content-max: 1010px;
-    --salonbw-content-pad: 20px;
-    --salonbw-border: #cfd4da;
-    --salonbw-bg: #eceff2;
-    --salonbw-panel-bg: #f5f7f9;
-    --salonbw-text: #505960;
-    --salonbw-muted: #828a92;
+    --salon-topbar-h: 42px;
+    --salon-mainnav-w: 62px;
+    --salon-mainnav-item-h: 57px;
+    --salon-sidenav-w: 214px;
+    --salon-content-max: 1010px;
+    --salon-content-pad: 20px;
+    --salon-border: #cfd4da;
+    --salon-bg: #eceff2;
+    --salon-panel-bg: #f5f7f9;
+    --salon-text: #505960;
+    --salon-muted: #828a92;
     /* brand active/link blue */
-    --salonbw-accent: #008bb4;
-    --salonbw-mainnav-bg: #24272b;
-    --salonbw-mainnav-active: #181a1e;
-    --salonbw-green: #2ecc71;
+    --salon-accent: #008bb4;
+    --salon-mainnav-bg: #24272b;
+    --salon-mainnav-active: #181a1e;
+    --salon-green: #2ecc71;
 }
 
 body.e2e-body {
@@ -76,7 +76,7 @@ body.e2e-body {
 
 .btn-default {
     background: #fff;
-    border: 1px solid var(--salonbw-border);
+    border: 1px solid var(--salon-border);
     color: #4d565e;
 }
 
@@ -141,7 +141,7 @@ body.e2e-body {
 
 .modal-content {
     background: #fff;
-    border: 1px solid var(--salonbw-border);
+    border: 1px solid var(--salon-border);
     border-radius: 3px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
     overflow: hidden;
@@ -555,7 +555,7 @@ textarea.form-control {
     border: 0;
     background: transparent;
     padding: 0;
-    color: var(--salonbw-accent);
+    color: var(--salon-accent);
     font-size: 11px;
     cursor: pointer;
     text-decoration: none;
@@ -575,7 +575,7 @@ textarea.form-control {
 
 .clients-list {
     background: #fff;
-    border: 1px solid var(--salonbw-border);
+    border: 1px solid var(--salon-border);
     border-radius: 2px;
 }
 
@@ -713,7 +713,7 @@ textarea.form-control {
    ======================================== */
 
 .products_index {
-    max-width: var(--salonbw-content-max);
+    max-width: var(--salon-content-max);
 }
 
 .products-toolbar {
@@ -2133,14 +2133,14 @@ textarea.form-control {
    ======================================== */
 
 .navbar.navbar-default {
-    height: var(--salonbw-topbar-h);
-    min-height: var(--salonbw-topbar-h);
+    height: var(--salon-topbar-h);
+    min-height: var(--salon-topbar-h);
     border-bottom: 1px solid #e7e7e7;
     background: #fff;
     display: flex;
     align-items: center;
     padding: 0;
-    padding-left: var(--salonbw-mainnav-w);
+    padding-left: var(--salon-mainnav-w);
     position: sticky;
     top: 0;
     z-index: 30;
@@ -2442,7 +2442,7 @@ textarea.form-control {
 .main-container {
     position: relative;
     display: flex;
-    min-height: calc(100vh - var(--salonbw-topbar-h));
+    min-height: calc(100vh - var(--salon-topbar-h));
     width: 100%;
     background: #f7f8f9;
 }
@@ -2456,7 +2456,7 @@ textarea.form-control {
     width: auto;
     display: flex;
     flex-shrink: 0;
-    padding-left: var(--salonbw-mainnav-w);
+    padding-left: var(--salon-mainnav-w);
 }
 
 /* Mainnav - Dark sidebar with icons */
@@ -2465,9 +2465,9 @@ textarea.form-control {
     position: fixed;
     top: 0;
     left: 0;
-    width: var(--salonbw-mainnav-w);
+    width: var(--salon-mainnav-w);
     height: 100vh;
-    background: var(--salonbw-mainnav-bg);
+    background: var(--salon-mainnav-bg);
     color: #93a1b0;
     border-right: 1px solid #1b1e22;
     flex-shrink: 0;
@@ -2484,7 +2484,7 @@ textarea.form-control {
 }
 
 .mainnav .nav li {
-    min-height: var(--salonbw-mainnav-item-h);
+    min-height: var(--salon-mainnav-item-h);
     position: relative;
 }
 
@@ -2500,11 +2500,11 @@ textarea.form-control {
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--salonbw-green);
+    background: var(--salon-green);
 }
 
 .mainnav .nav li a {
-    min-height: var(--salonbw-mainnav-item-h);
+    min-height: var(--salon-mainnav-item-h);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2520,7 +2520,7 @@ textarea.form-control {
 }
 
 .mainnav .nav li.active a {
-    background: var(--salonbw-mainnav-active);
+    background: var(--salon-mainnav-active);
     color: #ffffff;
 }
 
@@ -2553,7 +2553,7 @@ textarea.form-control {
 
 /* Badge in nav label */
 .nav-badge {
-    color: var(--salonbw-green);
+    color: var(--salon-green);
     font-weight: 600;
 }
 
@@ -2563,9 +2563,9 @@ textarea.form-control {
 
 #sidenav,
 .sidenav {
-    width: var(--salonbw-sidenav-w);
+    width: var(--salon-sidenav-w);
     background: #fff;
-    border-right: 1px solid var(--salonbw-border);
+    border-right: 1px solid var(--salon-border);
     padding: 10px 8px;
     overflow-y: auto;
 }
@@ -2581,7 +2581,7 @@ body.e2e-statistics .sidenav {
 
 body#extension,
 body.e2e-extension {
-    --salonbw-sidenav-w: 0px;
+    --salon-sidenav-w: 0px;
     font-family: 'Lato', sans-serif;
     line-height: 1.42857;
 }
@@ -2629,7 +2629,7 @@ body.e2e-extension .main-content .inner {
 #sidenav .nav-list li.active a,
 .sidenav .nav-list li a:hover,
 .sidenav .nav-list li.active a {
-    color: var(--salonbw-accent);
+    color: var(--salon-accent);
     background: #eef3f7;
 }
 
@@ -2649,9 +2649,9 @@ body.e2e-extension .main-content .inner {
 }
 
 .main-content .inner {
-    max-width: var(--salonbw-content-max);
+    max-width: var(--salon-content-max);
     margin: 0 auto;
-    padding: var(--salonbw-content-pad);
+    padding: var(--salon-content-pad);
     min-height: 0;
 }
 
@@ -2746,7 +2746,7 @@ body.e2e-statistics .main-content .inner {
 #sidenav .tree > .root:hover,
 .sidenav .tree > .root:hover {
     background: #eef3f7;
-    color: var(--salonbw-accent);
+    color: var(--salon-accent);
 }
 
 #sidenav .tree ul,
@@ -2776,7 +2776,7 @@ body.e2e-statistics .main-content .inner {
 .sidenav .tree li.active > a,
 .sidenav .tree li a:hover {
     background: #eef3f7;
-    color: var(--salonbw-accent);
+    color: var(--salon-accent);
 }
 
 #sidenav .tree_options,
@@ -2794,7 +2794,7 @@ body.e2e-statistics .main-content .inner {
 
 #sidenav .tree_options a:hover,
 .sidenav .tree_options a:hover {
-    color: var(--salonbw-accent);
+    color: var(--salon-accent);
     text-decoration: underline;
 }
 
@@ -3970,7 +3970,7 @@ body.settings-dashboard-landing .sidenav {
 
 body.settings-dashboard-landing #sidebar,
 body.settings-dashboard-landing .sidebar {
-    width: var(--salonbw-mainnav-w);
+    width: var(--salon-mainnav-w);
 }
 
 body.settings-dashboard-landing #main-content > .inner,
