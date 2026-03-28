@@ -3130,7 +3130,7 @@ body.e2e-statistics .main-content .inner {
    Statistics data_table — source `.data_table` + `.table.table-bordered` override
    Source: computed styles from source panel capture /statistics/dashboard
    ============================================= */
-.data_table { display: block; }
+.data_table { display: block; overflow-x: auto; }
 .data_table .table-bordered {
     width: 100%;
     border-collapse: collapse;

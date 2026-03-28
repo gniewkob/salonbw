@@ -37,15 +37,6 @@ type TabKey =
     | 'comments'
     | 'commissions';
 
-const tabs: Array<{ key: TabKey; label: string }> = [
-    { key: 'summary', label: 'podsumowanie' },
-    { key: 'stats', label: 'statystyki' },
-    { key: 'history', label: 'historia usługi' },
-    { key: 'employees', label: 'przypisani pracownicy' },
-    { key: 'comments', label: 'komentarze' },
-    { key: 'commissions', label: 'prowizje' },
-];
-
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat('pl-PL', {
         style: 'currency',
@@ -63,7 +54,17 @@ export default function ServiceDetailsPage() {
     const { user, role } = useAuth();
     const router = useRouter();
     const serviceId = Number(router.query.id);
-    const [activeTab, setActiveTab] = useState<TabKey>('summary');
+    const tabParam = Array.isArray(router.query.tab)
+        ? router.query.tab[0]
+        : router.query.tab;
+    const activeTab: TabKey =
+        tabParam === 'stats' ||
+        tabParam === 'history' ||
+        tabParam === 'employees' ||
+        tabParam === 'comments' ||
+        tabParam === 'commissions'
+            ? tabParam
+            : 'summary';
     const [historyPage] = useState(1);
     const [commentText, setCommentText] = useState('');
     const [commentRating, setCommentRating] = useState(5);
@@ -243,22 +244,6 @@ export default function ServiceDetailsPage() {
                         </button>
                     </div>
                 </div>
-
-                <ul className="nav nav-tabs service-details-tabs">
-                    {tabs.map((tab) => (
-                        <li
-                            key={tab.key}
-                            className={activeTab === tab.key ? 'active' : ''}
-                        >
-                            <a
-                                href="javascript:;"
-                                onClick={() => setActiveTab(tab.key)}
-                            >
-                                {tab.label}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
 
                 {!summaryData && summary.isLoading ? (
                     <div className="service-empty mt-15">
