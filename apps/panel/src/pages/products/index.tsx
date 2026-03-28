@@ -154,15 +154,13 @@ export default function WarehouseProductsPage() {
             heading="Magazyn / Produkty"
             activeTab="products"
         >
-            <div className="d-flex align-items-center justify-content-between mb-5">
-                <div className="d-flex align-items-center gap-2">
-                    {' '}
+            <div className="row mb-l">
+                <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="wyszukaj produkt"
-                        className="right_space"
                     />
                     <select
                         value={productTypeFilter}
@@ -180,19 +178,21 @@ export default function WarehouseProductsPage() {
                         ))}
                     </select>
                 </div>
-                <div className="d-flex align-items-center gap-2">
-                    <Link href="/sales/new" className="button ml-xs">
-                        dodaj sprzedaż
-                    </Link>
-                    <Link href="/use/new" className="button ml-xs">
-                        dodaj zużycie
-                    </Link>
-                    <Link
-                        href="/products/new"
-                        className="button button-blue ml-xs"
-                    >
-                        dodaj produkt
-                    </Link>
+                <div className="col-sm-8 col-lg-7">
+                    <div className="d-flex flex-wrap jc-end">
+                        <Link href="/sales/new" className="button ml-xs">
+                            dodaj sprzedaż
+                        </Link>
+                        <Link href="/use/new" className="button ml-xs">
+                            dodaj zużycie
+                        </Link>
+                        <Link
+                            href="/products/new"
+                            className="button button-blue ml-xs"
+                        >
+                            dodaj produkt
+                        </Link>
+                    </div>
                 </div>
             </div>
 

@@ -16,80 +16,92 @@ export default function WarehouseUsageHistoryPage() {
             pageTitle="Magazyn / Historia zużycia | SalonBW"
             heading="Magazyn / Historia zużycia"
             activeTab="use"
-            actions={
-                <>
-                    <Link href="/use/new" className="btn btn-primary btn-xs">
-                        dodaj zużycie
-                    </Link>
-                    <Link
-                        href="/use/new?scope=planned"
-                        className="btn btn-default btn-xs"
-                    >
-                        dodaj planowane zużycie
-                    </Link>
-                </>
-            }
         >
-            {isLoading ? (
-                <p className="products-empty">Ładowanie historii zużycia...</p>
-            ) : (
-                <div className="products-table-wrap">
-                    <table className="products-table">
-                        <thead>
-                            <tr>
-                                <th>nr zużycia</th>
-                                <th>data</th>
-                                <th>klient</th>
-                                <th>pracownik</th>
-                                <th>pozycje</th>
-                                <th>szczegóły</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {visibleUsage.map((entry) => (
-                                <tr key={entry.id}>
-                                    <td>{entry.usageNumber}</td>
-                                    <td>
-                                        {new Date(
-                                            entry.usedAt,
-                                        ).toLocaleDateString('pl-PL')}
-                                    </td>
-                                    <td>{entry.clientName ?? '-'}</td>
-                                    <td>{entry.employee?.name ?? '-'}</td>
-                                    <td>
-                                        {entry.summary?.totalItems ??
-                                            entry.items?.reduce(
-                                                (sum, item) =>
-                                                    sum +
-                                                    Number(item.quantity ?? 0),
-                                                0,
-                                            ) ??
-                                            0}
-                                    </td>
-                                    <td>
-                                        <Link
-                                            href={`/use/history/${entry.id}`}
-                                            className="products-link"
-                                        >
-                                            otwórz
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <div className="products-table-footer">
-                        <span>
-                            Pozycje od {from} do {to} z {usage.length}
-                        </span>
-                        <div className="products-table-footer__controls">
-                            <span>na stronie</span>
-                            <span className="products-table-footer__page-size">
-                                {pageSize}
-                            </span>
-                        </div>
+            <div className="row mb-l">
+                <div className="col-sm-12">
+                    <div className="d-flex flex-wrap jc-end">
+                        <Link
+                            href="/use/new"
+                            className="button button-blue ml-xs"
+                        >
+                            dodaj zużycie
+                        </Link>
+                        <Link
+                            href="/use/new?scope=planned"
+                            className="button ml-xs"
+                        >
+                            dodaj planowane zużycie
+                        </Link>
                     </div>
                 </div>
+            </div>
+            {isLoading ? (
+                <p className="salonbw-muted p-20">
+                    Ładowanie historii zużycia...
+                </p>
+            ) : (
+                <>
+                    <div className="column_row data_table">
+                        <table className="table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>nr zużycia</th>
+                                    <th>data</th>
+                                    <th>klient</th>
+                                    <th>pracownik</th>
+                                    <th>pozycje</th>
+                                    <th>szczegóły</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {visibleUsage.map((entry, i) => (
+                                    <tr
+                                        key={entry.id}
+                                        className={i % 2 === 0 ? 'odd' : 'even'}
+                                    >
+                                        <td>{entry.usageNumber}</td>
+                                        <td>
+                                            {new Date(
+                                                entry.usedAt,
+                                            ).toLocaleDateString('pl-PL')}
+                                        </td>
+                                        <td>{entry.clientName ?? '-'}</td>
+                                        <td>{entry.employee?.name ?? '-'}</td>
+                                        <td>
+                                            {entry.summary?.totalItems ??
+                                                entry.items?.reduce(
+                                                    (sum, item) =>
+                                                        sum +
+                                                        Number(
+                                                            item.quantity ?? 0,
+                                                        ),
+                                                    0,
+                                                ) ??
+                                                0}
+                                        </td>
+                                        <td className="wrap blue_text pointer link_body">
+                                            <Link
+                                                href={`/use/history/${entry.id}`}
+                                            >
+                                                otwórz
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="pagination_container">
+                        <div className="column_row">
+                            <div className="row">
+                                <div className="info col-xs-7">
+                                    Pozycje od {from} do {to} z {usage.length} |
+                                    na stronie 20
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
         </WarehouseLayout>
     );

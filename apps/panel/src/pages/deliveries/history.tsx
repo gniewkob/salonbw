@@ -72,49 +72,54 @@ export default function WarehouseDeliveriesHistoryPage() {
             activeTab="deliveries"
         >
             {isLoading ? (
-                <p className="products-empty">Ładowanie historii dostaw...</p>
+                <p className="salonbw-muted p-20">
+                    Ładowanie historii dostaw...
+                </p>
             ) : (
                 <>
-                    <div className="products-toolbar">
-                        <input
-                            type="text"
-                            className="salonbw-input"
-                            placeholder="wyszukaj w historii dostaw..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                            }}
-                        />
-                        <select
-                            className="salonbw-select"
-                            aria-label="status dostawy"
-                            value={statusFilter ?? ''}
-                            onChange={(e) => {
-                                const status = e.target.value;
-                                setPage(1);
-                                void router.push({
-                                    pathname: '/deliveries/history',
-                                    query: status ? { status } : {},
-                                });
-                            }}
-                        >
-                            <option value="">wszystkie</option>
-                            <option value="draft">robocze</option>
-                            <option value="pending">oczekujące</option>
-                            <option value="received">przyjęte</option>
-                            <option value="cancelled">anulowane</option>
-                        </select>
-                        <Link
-                            href="/deliveries/new"
-                            className="button button-blue"
-                            style={{ marginLeft: 'auto' }}
-                        >
-                            dodaj dostawę
-                        </Link>
+                    <div className="row mb-l">
+                        <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+                            <input
+                                type="text"
+                                placeholder="wyszukaj w historii dostaw..."
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                            />
+                            <select
+                                aria-label="status dostawy"
+                                value={statusFilter ?? ''}
+                                onChange={(e) => {
+                                    const status = e.target.value;
+                                    setPage(1);
+                                    void router.push({
+                                        pathname: '/deliveries/history',
+                                        query: status ? { status } : {},
+                                    });
+                                }}
+                            >
+                                <option value="">wszystkie</option>
+                                <option value="draft">robocze</option>
+                                <option value="pending">oczekujące</option>
+                                <option value="received">przyjęte</option>
+                                <option value="cancelled">anulowane</option>
+                            </select>
+                        </div>
+                        <div className="col-sm-8 col-lg-7">
+                            <div className="d-flex flex-wrap jc-end">
+                                <Link
+                                    href="/deliveries/new"
+                                    className="button button-blue ml-xs"
+                                >
+                                    dodaj dostawę
+                                </Link>
+                            </div>
+                        </div>
                     </div>
-                    <div className="products-table-wrap">
-                        <table className="products-table">
+                    <div className="column_row data_table">
+                        <table className="table-bordered">
                             <thead>
                                 <tr>
                                     <th>wystawiono</th>
@@ -127,7 +132,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {pagedDeliveries.map((delivery) => {
+                                {pagedDeliveries.map((delivery, i) => {
                                     const date = delivery.deliveryDate
                                         ? new Date(delivery.deliveryDate)
                                         : new Date(delivery.createdAt);
@@ -142,11 +147,15 @@ export default function WarehouseDeliveriesHistoryPage() {
                                     );
                                     const net = gross / 1.23;
                                     return (
-                                        <tr key={delivery.id}>
-                                            <td>
+                                        <tr
+                                            key={delivery.id}
+                                            className={
+                                                i % 2 === 0 ? 'odd' : 'even'
+                                            }
+                                        >
+                                            <td className="wrap blue_text pointer link_body">
                                                 <Link
                                                     href={`/deliveries/${delivery.id}`}
-                                                    className="products-link"
                                                 >
                                                     {date.toLocaleDateString(
                                                         'pl-PL',
@@ -188,24 +197,18 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 })}
                             </tbody>
                         </table>
-                        <div className="products-table-footer">
-                            <span>
-                                Pozycje od {from} do {to} z{' '}
-                                {visibleDeliveries.length}
-                            </span>
-                            <div className="products-table-footer__controls">
-                                <span>na stronie</span>
-                                <select
-                                    className="salonbw-select salonbw-select--inline"
-                                    aria-label="na stronie"
-                                    value={String(pageSize)}
-                                    disabled
-                                >
-                                    <option value="20">20</option>
-                                </select>
-                                <div className="products-pagination-nav">
+                    </div>
+                    <div className="pagination_container">
+                        <div className="column_row">
+                            <div className="row">
+                                <div className="info col-xs-7">
+                                    Pozycje od {from} do {to} z{' '}
+                                    {visibleDeliveries.length} | na stronie 20
+                                </div>
+                                <div className="form_pagination col-xs-5">
                                     <input
                                         type="text"
+                                        className="pagination-page-input"
                                         aria-label="strona"
                                         value={safePage}
                                         onChange={(e) => {
@@ -219,9 +222,12 @@ export default function WarehouseDeliveriesHistoryPage() {
                                             }
                                         }}
                                     />
-                                    <span>z {totalPages}</span>
+                                    {' z '}
+                                    <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
+                                        className="button button-link button_next ml-s"
+                                        aria-label="Następna strona"
                                         disabled={safePage >= totalPages}
                                         onClick={() =>
                                             setPage((prev) =>
@@ -229,7 +235,10 @@ export default function WarehouseDeliveriesHistoryPage() {
                                             )
                                         }
                                     >
-                                        {'>'}
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
                                     </button>
                                 </div>
                             </div>

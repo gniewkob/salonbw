@@ -63,51 +63,57 @@ export default function WarehouseOrdersHistoryPage() {
             pageTitle="Magazyn / Historia zamówień | SalonBW"
             heading="Magazyn / Historia zamówień"
             activeTab="orders"
-            actions={
-                <Link href="/orders/new" className="btn btn-primary btn-xs">
-                    dodaj zamówienie
-                </Link>
-            }
         >
             {isLoading ? (
-                <p className="products-empty">Ładowanie zamówień...</p>
+                <p className="salonbw-muted p-20">Ładowanie zamówień...</p>
             ) : (
                 <>
-                    <div className="products-toolbar">
-                        <input
-                            type="text"
-                            className="salonbw-input"
-                            placeholder="wyszukaj w historii zamówień..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                            }}
-                        />
-                        <select
-                            className="salonbw-select"
-                            value={statusFilter ?? ''}
-                            onChange={(e) => {
-                                const status = e.target.value;
-                                setPage(1);
-                                void router.push({
-                                    pathname: '/orders/history',
-                                    query: status ? { status } : {},
-                                });
-                            }}
-                        >
-                            <option value="">wszystkie</option>
-                            <option value="draft">robocze</option>
-                            <option value="sent">wysłane</option>
-                            <option value="partially_received">
-                                częściowo przyjęte
-                            </option>
-                            <option value="received">przyjęte</option>
-                            <option value="cancelled">anulowane</option>
-                        </select>
+                    <div className="row mb-l">
+                        <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+                            <input
+                                type="text"
+                                placeholder="wyszukaj w historii zamówień..."
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                            />
+                            <select
+                                aria-label="status zamówienia"
+                                value={statusFilter ?? ''}
+                                onChange={(e) => {
+                                    const status = e.target.value;
+                                    setPage(1);
+                                    void router.push({
+                                        pathname: '/orders/history',
+                                        query: status ? { status } : {},
+                                    });
+                                }}
+                            >
+                                <option value="">wszystkie</option>
+                                <option value="draft">robocze</option>
+                                <option value="sent">wysłane</option>
+                                <option value="partially_received">
+                                    częściowo przyjęte
+                                </option>
+                                <option value="received">przyjęte</option>
+                                <option value="cancelled">anulowane</option>
+                            </select>
+                        </div>
+                        <div className="col-sm-8 col-lg-7">
+                            <div className="d-flex flex-wrap jc-end">
+                                <Link
+                                    href="/orders/new"
+                                    className="button button-blue ml-xs"
+                                >
+                                    dodaj zamówienie
+                                </Link>
+                            </div>
+                        </div>
                     </div>
-                    <div className="products-table-wrap">
-                        <table className="products-table">
+                    <div className="column_row data_table">
+                        <table className="table-bordered">
                             <thead>
                                 <tr>
                                     <th>wystawiono</th>
@@ -120,19 +126,19 @@ export default function WarehouseOrdersHistoryPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleOrders.map((order) => (
-                                    <tr key={order.id}>
+                                {visibleOrders.map((order, i) => (
+                                    <tr
+                                        key={order.id}
+                                        className={i % 2 === 0 ? 'odd' : 'even'}
+                                    >
                                         <td>
                                             {new Date(
                                                 order.createdAt,
                                             ).toLocaleDateString('pl-PL')}
                                         </td>
                                         <td>{order.items?.length ?? 0}</td>
-                                        <td>
-                                            <Link
-                                                href={`/orders/${order.id}`}
-                                                className="products-link"
-                                            >
+                                        <td className="wrap blue_text pointer link_body">
+                                            <Link href={`/orders/${order.id}`}>
                                                 {order.orderNumber}
                                             </Link>
                                         </td>
@@ -156,7 +162,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                 <>
                                                     <button
                                                         type="button"
-                                                        className="products-link"
+                                                        className="blue_text"
                                                         onClick={() =>
                                                             void sendMutation.mutateAsync(
                                                                 order.id,
@@ -168,7 +174,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                     {' · '}
                                                     <button
                                                         type="button"
-                                                        className="products-link"
+                                                        className="blue_text"
                                                         onClick={() =>
                                                             void cancelMutation.mutateAsync(
                                                                 order.id,
@@ -182,7 +188,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                 <>
                                                     <button
                                                         type="button"
-                                                        className="products-link"
+                                                        className="blue_text"
                                                         onClick={() =>
                                                             void receiveMutation.mutateAsync(
                                                                 order.id,
@@ -194,7 +200,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                     {' · '}
                                                     <button
                                                         type="button"
-                                                        className="products-link"
+                                                        className="blue_text"
                                                         onClick={() =>
                                                             void cancelMutation.mutateAsync(
                                                                 order.id,
@@ -213,44 +219,54 @@ export default function WarehouseOrdersHistoryPage() {
                             </tbody>
                         </table>
                     </div>
+                    <div className="pagination_container">
+                        <div className="column_row">
+                            <div className="row">
+                                <div className="info col-xs-7">
+                                    Pozycje od {from} do {to} z{' '}
+                                    {searchedOrders.length} | na stronie 20
+                                </div>
+                                <div className="form_pagination col-xs-5">
+                                    <input
+                                        type="text"
+                                        className="pagination-page-input"
+                                        aria-label="strona"
+                                        value={safePage}
+                                        onChange={(e) => {
+                                            const next = Number(e.target.value);
+                                            if (
+                                                Number.isFinite(next) &&
+                                                next >= 1 &&
+                                                next <= totalPages
+                                            ) {
+                                                setPage(next);
+                                            }
+                                        }}
+                                    />
+                                    {' z '}
+                                    <a className="pointer">{totalPages}</a>
+                                    <button
+                                        type="button"
+                                        className="button button-link button_next ml-s"
+                                        aria-label="Następna strona"
+                                        disabled={safePage >= totalPages}
+                                        onClick={() =>
+                                            setPage((prev) =>
+                                                Math.min(prev + 1, totalPages),
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </>
             )}
-            <div className="products-pagination">
-                Pozycje od {from} do {to} z {searchedOrders.length} | na stronie
-                <select
-                    className="salonbw-select salonbw-select--inline"
-                    value={String(pageSize)}
-                    disabled
-                >
-                    <option value="20">20</option>
-                </select>
-                <div className="products-pagination-nav">
-                    <input
-                        type="text"
-                        value={safePage}
-                        onChange={(e) => {
-                            const next = Number(e.target.value);
-                            if (
-                                Number.isFinite(next) &&
-                                next >= 1 &&
-                                next <= totalPages
-                            ) {
-                                setPage(next);
-                            }
-                        }}
-                    />
-                    <span>z {totalPages}</span>
-                    <button
-                        type="button"
-                        disabled={safePage >= totalPages}
-                        onClick={() =>
-                            setPage((prev) => Math.min(prev + 1, totalPages))
-                        }
-                    >
-                        {'>'}
-                    </button>
-                </div>
-            </div>
         </WarehouseLayout>
     );
 }
