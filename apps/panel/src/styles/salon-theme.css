@@ -1,0 +1,619 @@
+/* =============================================
+   SalonBW Theme — custom classes over Bootstrap 5
+   Only classes Bootstrap does NOT cover natively.
+   ============================================= */
+
+/* --- CSS Variables --- */
+:root {
+  --salon-accent: #008bb4;
+  --salon-brand: #25B4C1;
+  --salon-brand-hover: #1f9ba8;
+  --salon-bg: #f5f5f5;
+  --salon-fg: #333333;
+}
+
+/* --- Body defaults --- */
+body {
+  background: var(--salon-bg);
+  color: var(--salon-fg);
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* --- Buttons --- */
+.btn-salon {
+  background: var(--salon-brand);
+  color: #fff;
+  border-color: var(--salon-brand);
+}
+.btn-salon:hover,
+.btn-salon:focus {
+  background: var(--salon-brand-hover);
+  border-color: var(--salon-brand-hover);
+  color: #fff;
+}
+.btn-salon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-blue {
+  background: #56aef0;
+  color: #fff;
+  border: 1px solid #56aef0;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.42857;
+  text-decoration: none;
+}
+.button-blue:hover { filter: brightness(0.95); color: #fff; text-decoration: none; }
+
+.button { display: inline-block; padding: 6px 12px; cursor: pointer; font-size: 13px; text-decoration: none; }
+.button-link { background: transparent; color: var(--salon-accent); border: none; padding: 6px 12px; cursor: pointer; }
+.button-link:hover { text-decoration: underline; }
+
+/* --- Sections (PanelSection wrapper) --- */
+.salon-section {
+  padding: 15px 20px;
+  background: #fff;
+  margin-bottom: 20px;
+}
+.salon-section > .actions {
+  float: right;
+  text-align: right;
+  line-height: 36px;
+}
+.salon-section > h2 {
+  font-size: 22px;
+  font-weight: 400;
+  margin: 20px 0 10px;
+}
+
+/* --- Column row --- */
+.salon-column-row {
+  padding: 15px 20px;
+  background: #fff;
+}
+.salon-column-row h2 {
+  font-size: 22px;
+  font-weight: 400;
+  margin: 20px 0 30px;
+}
+
+/* --- Boxes --- */
+.box {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 2px;
+  margin-bottom: 15px;
+  padding: 15px;
+}
+.info-box {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 2px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+.info-box .box-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 10px;
+}
+.info-box .bottom-link {
+  margin-top: 10px;
+  text-align: right;
+}
+.info-box .bottom-link a { color: var(--salon-accent); font-size: 12px; }
+
+/* --- Tree nav (sidebar customer groups) --- */
+.tree { padding: 0; }
+.tree a.root {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  color: #333;
+  text-decoration: none;
+  font-weight: 600;
+}
+.tree ul { list-style: none; padding-left: 15px; margin: 0; }
+.tree li a {
+  display: block;
+  padding: 4px 10px;
+  color: #555;
+  text-decoration: none;
+  font-size: 13px;
+}
+.tree li a:hover { background: #f5f8fa; }
+
+/* --- Icon box --- */
+.icon_box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Table enhancements (on top of Bootstrap .table) --- */
+.table-bordered th div {
+  padding: 16px 24px 16px 8px;
+}
+.table-bordered th {
+  font-size: 11px;
+  font-weight: 600;
+  background: #f5f8fa;
+}
+.table-bordered td {
+  font-size: 13px;
+  padding: 7px 10px 6px;
+  border-top: 1px solid #ddd;
+}
+tr.odd td { background: #fff; }
+tr.even td { background: #f4fbff; }
+
+/* --- DL horizontal (detail views) --- */
+.dl-horizontal dt { float: left; width: 160px; text-align: right; font-weight: 600; }
+.dl-horizontal dd { margin-left: 170px; }
+
+/* --- Actions toolbar --- */
+.actions { text-align: right; line-height: 36px; }
+
+/* --- Breadcrumb override --- */
+.breadcrumb li,
+.breadcrumb a {
+  font-size: 20px;
+  font-weight: 300;
+  font-family: 'Lato', sans-serif;
+}
+
+/* --- Status colors (SalonBW-specific shades) --- */
+.text-salon-green { color: #5cb85c; }
+.text-salon-blue { color: #56aef0; }
+.text-salon-red { color: #d9534f; }
+.bg-salon-green { background: #5cb85c; color: #fff; }
+.bg-salon-blue { background: #56aef0; color: #fff; }
+.bg-salon-red { background: #d9534f; color: #fff; }
+
+/* --- Date range input --- */
+.salon-date-range {
+  width: 210px;
+  height: 28px;
+  color: #919191;
+  border: 1px solid #bfbfbf;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+/* --- Overflow ellipsis utility --- */
+.overflow_with_ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- SalonBW badge variants --- */
+.badge-salon { background: var(--salon-brand); color: #fff; }
+.badge-salon-success { background: #dff0d8; color: #3c763d; }
+.badge-salon-warning { background: #fcf8e3; color: #8a6d3b; }
+.badge-salon-error { background: #f2dede; color: #a94442; }
+.badge-salon-inactive { background: #e5e5e5; color: #666; }
+
+/* --- Form accent (focus ring) --- */
+.form-control:focus {
+  border-color: var(--salon-brand);
+  box-shadow: 0 0 0 0.2rem rgba(37, 180, 193, 0.25);
+}
+
+/* --- Pjax link styling --- */
+a.pjax_link { color: var(--salon-accent); }
+a.pjax_link:hover { text-decoration: underline; }
+
+/* =============================================
+   Sprite icons
+   Base: sprite PNG from Versum CDN (local copy at /salonbw-calendar/assets/sprite-0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d.png)
+   Positions sourced from: apps/panel/public/versum-calendar/assets/responsive-*.css
+   Only sprites actually used in apps/panel/src/ are included.
+   ============================================= */
+
+/* Base sprite rule — sets shared background-image for all .sprite-* icons */
+.icon[class*='sprite-'] {
+  display: inline-block;
+  vertical-align: middle;
+  background-image: url("/salonbw-calendar/assets/sprite-0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d.png");
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+/* SVG-based sprites (overrides above background-image) */
+.icon.sprite-exel_blue {
+  width: 14px;
+  height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2356aef0'%3E%3Cpath d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zm-5-5l-1.5-3 1.5-3H11l-1 2-1-2H7.5l1.5 3-1.5 3H9l1-2 1 2H13z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+}
+.icon.sprite-print_blue {
+  width: 14px;
+  height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2356aef0'%3E%3Cpath d='M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+}
+.icon.sprite-active_green {
+  width: 14px;
+  height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317d38f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20%2C6 9%2C17 4%2C12'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+}
+.icon.sprite-stock_action_sell {
+  width: 16px;
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23337ab7' d='M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.8-14l.7 2h13.1l-1.8 8H6.9L4.4 2H2V0H0v2h2l.2 1zM6.5 14h10l.4-2H6.1l.4 2z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+}
+.icon.sprite-stock_action_consumption {
+  width: 16px;
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23337ab7' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+}
+.icon.sprite-stock_stocktaking {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  background: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/* Settings sprites — sprite sheet positions */
+.icon.sprite-settings_blue {
+  background-position: -2278px -1080px;
+  width: 17px;
+  height: 17px;
+}
+.icon.sprite-settings_branch {
+  background-position: -2278px -1211px;
+  width: 19px;
+  height: 19px;
+}
+.icon.sprite-settings_calendar {
+  background-position: -2278px -1280px;
+  width: 20px;
+  height: 20px;
+}
+.icon.sprite-settings_employees {
+  background-position: -2278px -1694px;
+  width: 17px;
+  height: 20px;
+}
+.icon.sprite-settings_notifications_nav {
+  background-position: -2482px -338px;
+  width: 19px;
+  height: 17px;
+}
+.icon.sprite-settings_payment_methods {
+  background-position: -2482px -685px;
+  width: 19px;
+  height: 18px;
+}
+.icon.sprite-settings_sms_nav {
+  background-position: -2482px -1502px;
+  width: 19px;
+  height: 16px;
+}
+.icon.sprite-breadcrumbs_settings {
+  background-position: -119px -614px;
+  width: 16px;
+  height: 16px;
+}
+.icon.sprite-extension_star_black {
+  background-position: -850px -1043px;
+  width: 19px;
+  height: 17px;
+}
+.icon.sprite-settings_customer_groups {
+  background-position: -2278px -1350px;
+  width: 16px;
+  height: 18px;
+}
+.icon.sprite-settings_customer_origins {
+  background-position: -2278px -1418px;
+  width: 15px;
+  height: 21px;
+}
+.icon.sprite-settings_cut_logo {
+  background-position: -2278px -1560px;
+  width: 16px;
+  height: 16px;
+}
+.icon.sprite-settings_data_protection {
+  background-position: -2278px -1626px;
+  width: 18px;
+  height: 18px;
+}
+.icon.sprite-settings_extra_fields {
+  background-position: -2278px -1764px;
+  width: 21px;
+  height: 20px;
+}
+.icon.sprite-settings_label_visits {
+  background-position: -2482px -66px;
+  width: 18px;
+  height: 18px;
+}
+.icon.sprite-settings_phone_records_nav {
+  background-position: -2482px -753px;
+  width: 17px;
+  height: 20px;
+}
+.icon.sprite-settings_prepay {
+  background-position: -2482px -823px;
+  width: 19px;
+  height: 18px;
+}
+.icon.sprite-settings_product_purchase_prices {
+  background-position: -2482px -959px;
+  width: 18px;
+  height: 17px;
+}
+
+/* General sprite sheet positions */
+.icon.sprite-active_blue {
+  background-position: 0 -64px;
+  width: 14px;
+  height: 14px;
+}
+.icon.sprite-add_customer_save {
+  background-position: 0 -460px;
+  width: 15px;
+  height: 15px;
+}
+.icon.sprite-advanced_sms_options {
+  background-position: 0 -942px;
+  width: 21px;
+  height: 21px;
+}
+.icon.sprite-all_employees {
+  background-position: 0 -1153px;
+  width: 26px;
+  height: 17px;
+}
+.icon.sprite-breadcrumbs_communication,
+.icon.sprite-breadcrumbs_communication_set {
+  background-position: -119px -138px;
+  width: 22px;
+  height: 17px;
+}
+.icon.sprite-breadcrumbs_customers {
+  background-position: -119px -205px;
+  width: 22px;
+  height: 21px;
+}
+.icon.sprite-breadcrumbs_extensions {
+  background-position: -119px -341px;
+  width: 19px;
+  height: 19px;
+}
+.icon.sprite-breadcrumbs_help {
+  background-position: -119px -410px;
+  width: 18px;
+  height: 18px;
+}
+.icon.sprite-breadcrumbs_services {
+  background-position: -119px -543px;
+  width: 18px;
+  height: 21px;
+}
+.icon.sprite-breadcrumbs_statistics {
+  background-position: -119px -680px;
+  width: 18px;
+  height: 17px;
+}
+.icon.sprite-breadcrumbs_stock {
+  background-position: -119px -747px;
+  width: 21px;
+  height: 17px;
+}
+.icon.sprite-calendar_employees {
+  background-position: -119px -1088px;
+  width: 17px;
+  height: 18px;
+}
+.icon.sprite-client_absent_on {
+  background-position: -238px -476px;
+  width: 21px;
+  height: 22px;
+}
+.icon.sprite-customer_card {
+  background-position: -238px -997px;
+  width: 21px;
+  height: 18px;
+}
+.icon.sprite-customer_dashboard {
+  background-position: -238px -1065px;
+  width: 17px;
+  height: 17px;
+}
+.icon.sprite-customer_description {
+  background-position: -238px -1132px;
+  width: 12px;
+  height: 15px;
+}
+.icon.sprite-customer_email {
+  background-position: -238px -1197px;
+  width: 15px;
+  height: 12px;
+}
+.icon.sprite-customer_female {
+  background-position: -238px -1259px;
+  width: 20px;
+  height: 21px;
+}
+.icon.sprite-customer_files {
+  background-position: -238px -1330px;
+  width: 20px;
+  height: 18px;
+}
+.icon.sprite-customer_history_visits {
+  background-position: -238px -1469px;
+  width: 19px;
+  height: 20px;
+}
+.icon.sprite-customer_male {
+  background-position: -238px -1739px;
+  width: 21px;
+  height: 22px;
+}
+.icon.sprite-customer_personal_data {
+  background-position: -442px 0;
+  width: 21px;
+  height: 19px;
+}
+.icon.sprite-customer_photo_gallery {
+  background-position: -442px -69px;
+  width: 21px;
+  height: 18px;
+}
+.icon.sprite-customer_statistics {
+  background-position: -442px -137px;
+  width: 17px;
+  height: 18px;
+}
+.icon.sprite-customer_telephone {
+  background-position: -442px -205px;
+  width: 16px;
+  height: 18px;
+  top: -1px;
+}
+.icon.sprite-customer_unknown_sex {
+  background-position: -442px -273px;
+  width: 20px;
+  height: 21px;
+}
+.icon.sprite-delete {
+  background-position: -442px -1676px;
+  width: 12px;
+  height: 19px;
+}
+.icon.sprite-filter {
+  background-position: -850px -1314px;
+  width: 14px;
+  height: 15px;
+}
+.icon.sprite-filter_cancellation_visits {
+  background-position: -850px -1588px;
+  width: 13px;
+  height: 19px;
+}
+.icon.sprite-filter_handled_employees {
+  background-position: -850px -1797px;
+  width: 17px;
+  height: 18px;
+}
+.icon.sprite-filter_less {
+  background-position: -850px -1932px;
+  width: 13px;
+  height: 2px;
+  top: -1px;
+}
+.icon.sprite-filter_more {
+  background-position: -1054px -66px;
+  width: 14px;
+  height: 15px;
+}
+.icon.sprite-filter_purchased_services {
+  background-position: -1054px -276px;
+  width: 16px;
+  height: 19px;
+}
+.icon.sprite-filter_visit_salon {
+  background-position: -1054px -485px;
+  width: 13px;
+  height: 20px;
+}
+.icon.sprite-group {
+  background-position: -1258px -1277px;
+  width: 21px;
+  height: 20px;
+}
+.icon.sprite-group_recent_added {
+  background-position: -1258px -1347px;
+  width: 19px;
+  height: 24px;
+  top: 2px;
+}
+.icon.sprite-group_today {
+  background-position: -1258px -1484px;
+  width: 20px;
+  height: 20px;
+  top: -1px;
+}
+.icon.sprite-info_tip {
+  background-position: -1462px -576px;
+  width: 21px;
+  height: 21px;
+}
+.icon.sprite-opinions {
+  background-position: -1870px -613px;
+  width: 19px;
+  height: 19px;
+}
+.icon.sprite-register_activity {
+  background-position: -2074px -484px;
+  width: 22px;
+  height: 14px;
+}
+.icon.sprite-schedule_copy {
+  background-position: -2074px -1158px;
+  width: 15px;
+  height: 18px;
+}
+.icon.sprite-schedule_dayoff {
+  background-position: -2074px -1294px;
+  width: 17px;
+  height: 17px;
+}
+.icon.sprite-schedule_employees {
+  background-position: -2074px -1497px;
+  width: 19px;
+  height: 21px;
+}
+.icon.sprite-schedule_inactive {
+  background-position: -2074px -1768px;
+  width: 13px;
+  height: 16px;
+}
+.icon.sprite-schedule_report {
+  background-position: -2278px -137px;
+  width: 16px;
+  height: 22px;
+}
+.icon.sprite-schedule_template {
+  background-position: -2278px -209px;
+  width: 15px;
+  height: 13px;
+}
+.icon.sprite-stock_products {
+  background-position: -2890px -1317px;
+  width: 20px;
+  height: 22px;
+}
+.icon.sprite-tips {
+  background-position: -3094px -541px;
+  width: 22px;
+  height: 16px;
+}
+.icon.sprite-user_group {
+  background-position: -3094px -955px;
+  width: 16px;
+  height: 18px;
+  top: -1px;
+}
