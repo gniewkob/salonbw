@@ -154,8 +154,8 @@ export default function WarehouseProductsPage() {
             heading="Magazyn / Produkty"
             activeTab="products"
         >
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-2">
+            <div className="d-flex align-items-center justify-content-between mb-5">
+                <div className="d-flex align-items-center gap-2">
                     {' '}
                     <input
                         type="text"
@@ -180,7 +180,7 @@ export default function WarehouseProductsPage() {
                         ))}
                     </select>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="d-flex align-items-center gap-2">
                     <Link href="/sales/new" className="button ml-xs">
                         dodaj sprzedaż
                     </Link>
