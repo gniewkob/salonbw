@@ -537,8 +537,8 @@ function StatisticsPageContent() {
                     </p>
                     <br />
 
-                    <div className="flex gap-4">
-                        <div className="flex-[5]">
+                    <div className="d-flex gap-4">
+                        <div style={{ flex: 5 }}>
                             <div className="statistics-price-summary">
                                 <div className="statistics-data-table">
                                     <table>

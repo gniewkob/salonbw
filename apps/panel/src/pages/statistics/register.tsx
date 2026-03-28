@@ -93,7 +93,7 @@ export default function CashRegisterPage() {
 
                 {/* Tabs */}
                 <div className="px-4 border-bottom">
-                    <div className="nav-tabs border-b-0">
+                    <div className="nav-tabs">
                         <button
                             type="button"
                             className={activeTab === 'register' ? 'active' : ''}
@@ -112,7 +112,7 @@ export default function CashRegisterPage() {
                 </div>
 
                 {/* Action buttons */}
-                <div className="p-4 flex gap-2 justify-center">
+                <div className="p-4 d-flex gap-2 justify-content-center">
                     <button type="button" className="btn btn-primary">
                         dodaj wpływ (kasa przyjmie)
                     </button>
@@ -122,14 +122,12 @@ export default function CashRegisterPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm salonbw-muted">
-                        Ładowanie...
-                    </div>
+                    <div className="p-4 small salonbw-muted">Ładowanie...</div>
                 ) : activeTab === 'register' ? (
                     <>
                         {/* Status header */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <h2 className="text-xl font-normal">
+                        <div className="d-flex align-items-center gap-3 mb-4">
+                            <h2 className="fs-4 fw-normal mb-0">
                                 kasa otwarta
                             </h2>
                             <button
@@ -142,110 +140,121 @@ export default function CashRegisterPage() {
 
                         {/* Summary cards */}
                         {data && summary && (
-                            <div className="grid grid-cols-4 gap-4 mb-6">
+                            <div className="row g-4 mb-5">
                                 {/* Current balance */}
-                                <div className="border rounded p-4 text-center bg-blue-50">
-                                    <div className="text-sm text-gray-600 mb-2">
-                                        aktualny stan kasy
-                                    </div>
-                                    <div className="text-2xl font-bold text-blue-600">
-                                        {formatMoney(
-                                            data.totals.total + summary.tips,
-                                        )}
+                                <div className="col-3">
+                                    <div className="border rounded p-4 text-center bg-primary bg-opacity-10">
+                                        <div className="small text-muted mb-2">
+                                            aktualny stan kasy
+                                        </div>
+                                        <div className="fs-3 fw-bold text-primary">
+                                            {formatMoney(
+                                                data.totals.total +
+                                                    summary.tips,
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Initial balance */}
-                                <div className="border rounded p-4 text-center">
-                                    <div className="text-sm text-gray-600 mb-2">
-                                        stan początkowy
-                                    </div>
-                                    <div className="text-xl font-semibold">
-                                        {formatMoney(0)}
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-1">
-                                        na dzień:{' '}
-                                        {format(
-                                            new Date(selectedDate),
-                                            'dd.MM.yyyy',
-                                        )}
+                                <div className="col-3">
+                                    <div className="border rounded p-4 text-center">
+                                        <div className="small text-muted mb-2">
+                                            stan początkowy
+                                        </div>
+                                        <div className="fs-5 fw-semibold">
+                                            {formatMoney(0)}
+                                        </div>
+                                        <div className="small text-muted mt-1">
+                                            na dzień:{' '}
+                                            {format(
+                                                new Date(selectedDate),
+                                                'dd.MM.yyyy',
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Income */}
-                                <div className="border rounded p-4 text-center bg-green-50">
-                                    <div className="text-sm text-gray-600 mb-2">
-                                        wpływy
-                                    </div>
-                                    <div className="text-xl font-semibold text-green-700">
-                                        {formatMoney(summary.total)}
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-2 space-y-1">
-                                        <div>
-                                            wizyty i sprzedaże:{' '}
-                                            {formatMoney(
-                                                summary.appointments +
-                                                    summary.products,
-                                            )}
+                                <div className="col-3">
+                                    <div className="border rounded p-4 text-center bg-success bg-opacity-10">
+                                        <div className="small text-muted mb-2">
+                                            wpływy
                                         </div>
-                                        <div>
-                                            napiwki: {formatMoney(summary.tips)}
+                                        <div className="fs-5 fw-semibold text-success">
+                                            {formatMoney(summary.total)}
                                         </div>
-                                        <div>
-                                            inne: {formatMoney(summary.other)}
+                                        <div className="small text-muted mt-2">
+                                            <div>
+                                                wizyty i sprzedaże:{' '}
+                                                {formatMoney(
+                                                    summary.appointments +
+                                                        summary.products,
+                                                )}
+                                            </div>
+                                            <div>
+                                                napiwki:{' '}
+                                                {formatMoney(summary.tips)}
+                                            </div>
+                                            <div>
+                                                inne:{' '}
+                                                {formatMoney(summary.other)}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Expenses */}
-                                <div className="border rounded p-4 text-center bg-red-50">
-                                    <div className="text-sm text-gray-600 mb-2">
-                                        wypływy
-                                    </div>
-                                    <div className="text-xl font-semibold text-red-700">
-                                        {formatMoney(0)}
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-2">
-                                        inne: {formatMoney(0)}
+                                <div className="col-3">
+                                    <div className="border rounded p-4 text-center bg-danger bg-opacity-10">
+                                        <div className="small text-muted mb-2">
+                                            wypływy
+                                        </div>
+                                        <div className="fs-5 fw-semibold text-danger">
+                                            {formatMoney(0)}
+                                        </div>
+                                        <div className="small text-muted mt-2">
+                                            inne: {formatMoney(0)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {/* Other operations */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-3">
+                        <div className="mb-5">
+                            <h3 className="fs-5 fw-semibold mb-3">
                                 Inne operacje kasowe
                             </h3>
-                            <div className="text-gray-500 italic">
+                            <div className="text-muted fst-italic">
                                 brak operacji
                             </div>
                         </div>
 
                         {/* Outflows */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-3">
+                        <div className="mb-5">
+                            <h3 className="fs-5 fw-semibold mb-3">
                                 Wypływy z kasy
                             </h3>
-                            <div className="text-gray-500 italic">
+                            <div className="text-muted fst-italic">
                                 brak operacji
                             </div>
                         </div>
 
                         {/* Inflows */}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-3">
+                        <div className="mb-5">
+                            <h3 className="fs-5 fw-semibold mb-3">
                                 Wpływy do kasy
                             </h3>
-                            <div className="text-gray-500 italic">
+                            <div className="text-muted fst-italic">
                                 brak operacji
                             </div>
                         </div>
 
                         {/* Entries table */}
                         {data && data.entries.length > 0 && (
-                            <div className="salonbw-table-wrap mt-6">
-                                <h3 className="text-lg font-semibold mb-3">
+                            <div className="salonbw-table-wrap mt-5">
+                                <h3 className="fs-5 fw-semibold mb-3">
                                     Szczegóły transakcji
                                 </h3>
                                 <table className="salonbw-table">
@@ -293,10 +302,10 @@ export default function CashRegisterPage() {
                                                     {entry.paymentMethod ===
                                                         'voucher' && 'Voucher'}
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {formatMoney(entry.amount)}
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {entry.tip > 0
                                                         ? formatMoney(entry.tip)
                                                         : '-'}
@@ -310,10 +319,10 @@ export default function CashRegisterPage() {
                     </>
                 ) : (
                     <>
-                        <h3 className="text-lg font-semibold mb-3">
+                        <h3 className="fs-5 fw-semibold mb-3">
                             Historia operacji kasowych
                         </h3>
-                        <div className="text-gray-500 italic">
+                        <div className="text-muted fst-italic">
                             Funkcja w przygotowaniu
                         </div>
                     </>

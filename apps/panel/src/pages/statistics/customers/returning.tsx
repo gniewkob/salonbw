@@ -82,11 +82,11 @@ export default function CustomersReturning() {
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
-                    <div className="flex-between mb-20">
-                        <h1 className="text-2xl font-semibold">
+                    <div className="flex-between mb-5">
+                        <h1 className="fs-3 fw-semibold">
                             Powracalność klientów
                         </h1>
-                        <div className="flex gap-8">
+                        <div className="d-flex gap-5">
                             <select
                                 title="Okres statystyk"
                                 aria-label="Wybierz okres"
@@ -108,7 +108,7 @@ export default function CustomersReturning() {
                     ) : stats ? (
                         <>
                             {/* KPI Cards */}
-                            <div className="row mb-20">
+                            <div className="row mb-5">
                                 <div className="col-sm-3">
                                     <div className="salonbw-tile">
                                         <div className="salonbw-tile__label">
@@ -126,7 +126,7 @@ export default function CustomersReturning() {
                                         </div>
                                         <div className="salonbw-tile__value text-accent">
                                             {stats.newClients}
-                                            <span className="text-sm ml-8">
+                                            <span className="small ms-5">
                                                 ({stats.newPercentage}%)
                                             </span>
                                         </div>
@@ -139,7 +139,7 @@ export default function CustomersReturning() {
                                         </div>
                                         <div className="salonbw-tile__value text-[#11ce44]">
                                             {stats.returningClients}
-                                            <span className="text-sm ml-8">
+                                            <span className="small ms-5">
                                                 ({stats.returningPercentage}%)
                                             </span>
                                         </div>
