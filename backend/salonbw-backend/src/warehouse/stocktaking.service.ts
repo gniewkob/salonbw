@@ -4,7 +4,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Stocktaking, StocktakingStatus } from './entities/stocktaking.entity';
 import { StocktakingItem } from './entities/stocktaking-item.entity';
 import {
@@ -351,19 +351,38 @@ export class StocktakingService {
 
         await this.dataSource.transaction(async (manager) => {
             if (applyDifferences) {
+                const itemsWithDifference = stocktaking.items.filter(
+                    (item) => item.difference !== null && item.difference !== 0,
+                );
+                const productIds = Array.from(
+                    new Set(itemsWithDifference.map((item) => item.productId)),
+                );
+                const products =
+                    productIds.length > 0
+                        ? await manager.find(Product, {
+                              where: { id: In(productIds) },
+                          })
+                        : [];
+                const productsById = new Map(
+                    products.map((product) => [product.id, product]),
+                );
+                const updatedProducts: Product[] = [];
+                const touchedProductIds = new Set<number>();
+                const movements: ProductMovement[] = [];
+
                 for (const item of stocktaking.items) {
                     if (item.difference === null || item.difference === 0)
                         continue;
 
-                    const product = await manager.findOne(Product, {
-                        where: { id: item.productId },
-                    });
+                    const product = productsById.get(item.productId);
                     if (!product) continue;
 
                     const quantityBefore = product.stock;
                     product.stock = item.countedQuantity!;
-
-                    await manager.save(product);
+                    if (!touchedProductIds.has(product.id)) {
+                        updatedProducts.push(product);
+                        touchedProductIds.add(product.id);
+                    }
 
                     // Create movement record
                     const movement = manager.create(ProductMovement, {
@@ -376,7 +395,14 @@ export class StocktakingService {
                         createdById: actor.id,
                         notes: `Inwentaryzacja ${stocktaking.stocktakingNumber}`,
                     });
-                    await manager.save(movement);
+                    movements.push(movement);
+                }
+
+                if (updatedProducts.length > 0) {
+                    await manager.save(Product, updatedProducts);
+                }
+                if (movements.length > 0) {
+                    await manager.save(ProductMovement, movements);
                 }
             }
 

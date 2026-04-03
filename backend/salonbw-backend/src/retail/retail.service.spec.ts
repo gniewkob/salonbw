@@ -311,9 +311,9 @@ describe('RetailService reversal flow', () => {
             'hasTable',
         ).mockResolvedValue(false);
         jest.spyOn(
-            service as unknown as { generateSaleNumber: (managerArg: unknown) => Promise<string> },
-            'generateSaleNumber',
-        ).mockResolvedValue('S20260300501');
+            service as unknown as { formatSaleNumber: (id: number) => string },
+            'formatSaleNumber',
+        ).mockReturnValue('S20260300501');
         jest.spyOn(service, 'getSaleDetails').mockResolvedValue({
             id: 500,
             summary: { totalGross: -20 },

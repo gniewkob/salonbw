@@ -468,11 +468,34 @@ export class CustomersService {
     }
 
     async sortGroups(dto: SortCustomerGroupsDto) {
-        for (const item of dto.items) {
-            await this.groupsRepo.update(item.id, {
-                parentId: item.parentId,
-                sortOrder: item.sortOrder,
+        if (dto.items.length > 0) {
+            const ids = dto.items.map((item) => item.id);
+            const parentCases: string[] = [];
+            const sortCases: string[] = [];
+            const params: Record<string, number | null | number[]> = { ids };
+
+            dto.items.forEach((item, index) => {
+                const idKey = `id${index}`;
+                const parentKey = `parent${index}`;
+                const sortKey = `sort${index}`;
+                parentCases.push(`WHEN id = :${idKey} THEN :${parentKey}`);
+                sortCases.push(`WHEN id = :${idKey} THEN :${sortKey}`);
+                params[idKey] = item.id;
+                params[parentKey] = item.parentId ?? null;
+                params[sortKey] = item.sortOrder;
             });
+
+            await this.groupsRepo
+                .createQueryBuilder()
+                .update(CustomerGroup)
+                .set({
+                    parentId: () =>
+                        `CASE ${parentCases.join(' ')} ELSE "parentId" END`,
+                    sortOrder: () =>
+                        `CASE ${sortCases.join(' ')} ELSE "sortOrder" END`,
+                })
+                .where('id IN (:...ids)', params)
+                .execute();
         }
 
         return this.findAllGroups();
@@ -592,23 +615,22 @@ export class CustomersService {
 
     async assignTagsToCustomer(customerId: number, tagIds: number[]) {
         const customer = await this.findOne(customerId);
-        const tags = await this.tagsRepo.findBy({ id: In(tagIds) });
+        const tags = await this.tagsRepo.find({
+            where: { id: In(tagIds) },
+            relations: ['customers'],
+        });
 
-        // Add customer to each tag
+        const tagsToUpdate: CustomerTag[] = [];
         for (const tag of tags) {
-            const tagWithCustomers = await this.tagsRepo.findOne({
-                where: { id: tag.id },
-                relations: ['customers'],
-            });
-            if (tagWithCustomers) {
-                const existingIds = new Set(
-                    tagWithCustomers.customers.map((c) => c.id),
-                );
-                if (!existingIds.has(customerId)) {
-                    tagWithCustomers.customers.push(customer);
-                    await this.tagsRepo.save(tagWithCustomers);
-                }
+            const existingIds = new Set(tag.customers.map((c) => c.id));
+            if (!existingIds.has(customerId)) {
+                tag.customers.push(customer);
+                tagsToUpdate.push(tag);
             }
+        }
+
+        if (tagsToUpdate.length > 0) {
+            await this.tagsRepo.save(tagsToUpdate);
         }
 
         return { success: true };

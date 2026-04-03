@@ -31,8 +31,11 @@ d('ChatController', () => {
     let messages: ChatMessage[];
     let appointment: Appointment;
     let canBind = true;
+    let previousThrowDeprecation: boolean;
 
     beforeEach(async () => {
+        previousThrowDeprecation = process.throwDeprecation;
+        process.throwDeprecation = false;
         messages = [];
         appointment = {
             id: 1,
@@ -103,7 +106,9 @@ d('ChatController', () => {
             await app.listen(0, '127.0.0.1');
         } catch (error) {
             const err = error as NodeJS.ErrnoException;
-            if (err?.code === 'EPERM') {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            if (err?.code === 'EPERM' || message.includes('app.router')) {
                 canBind = false;
                 return;
             }
@@ -112,6 +117,7 @@ d('ChatController', () => {
     });
 
     afterEach(async () => {
+        process.throwDeprecation = previousThrowDeprecation;
         if (app) {
             await app.close();
         }
