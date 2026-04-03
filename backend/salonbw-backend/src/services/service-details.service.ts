@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import {
     endOfDay,
     endOfMonth,
@@ -380,19 +380,45 @@ export class ServiceDetailsService {
         });
         if (!service) throw new NotFoundException('Service not found');
 
+        const variantIds = Array.from(
+            new Set(
+                items
+                    .map((item) => item.serviceVariantId)
+                    .filter((id): id is number => typeof id === 'number'),
+            ),
+        );
+        const variants =
+            variantIds.length > 0
+                ? await this.variantRepository.find({
+                      where: { id: In(variantIds) },
+                  })
+                : [];
+        const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
+
+        const productIds = Array.from(
+            new Set(
+                items
+                    .map((item) => item.productId)
+                    .filter((id): id is number => typeof id === 'number'),
+            ),
+        );
+        const products =
+            productIds.length > 0
+                ? await this.productRepository.find({
+                      where: { id: In(productIds) },
+                  })
+                : [];
+        const productsById = new Map(products.map((product) => [product.id, product]));
+
         for (const item of items) {
             if (item.serviceVariantId) {
-                const variant = await this.variantRepository.findOne({
-                    where: { id: item.serviceVariantId },
-                });
+                const variant = variantsById.get(item.serviceVariantId);
                 if (!variant || variant.serviceId !== serviceId) {
                     throw new BadRequestException('Invalid serviceVariantId');
                 }
             }
             if (item.productId) {
-                const product = await this.productRepository.findOne({
-                    where: { id: item.productId },
-                });
+                const product = productsById.get(item.productId);
                 if (!product) {
                     throw new BadRequestException('Invalid productId');
                 }
@@ -429,11 +455,23 @@ export class ServiceDetailsService {
         });
         if (!service) throw new NotFoundException('Service not found');
 
+        const employeeIds = Array.from(
+            new Set(
+                rules
+                    .map((rule) => rule.employeeId)
+                    .filter((id): id is number => typeof id === 'number'),
+            ),
+        );
+        const employees =
+            employeeIds.length > 0
+                ? await this.userRepository.find({
+                      where: { id: In(employeeIds) },
+                  })
+                : [];
+        const employeesById = new Set(employees.map((employee) => employee.id));
+
         for (const rule of rules) {
-            const employee = await this.userRepository.findOne({
-                where: { id: rule.employeeId },
-            });
-            if (!employee) {
+            if (!employeesById.has(rule.employeeId)) {
                 throw new BadRequestException('Invalid employeeId');
             }
         }

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpModule } from '@nestjs/axios';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import nock from 'nock';
 import { WhatsappService } from './whatsapp.service';
@@ -66,8 +67,8 @@ describe('WhatsappService', () => {
     });
 
     it('should log error on 401 and not throw', async () => {
-        const consoleSpy = jest
-            .spyOn(console, 'error')
+        const loggerSpy = jest
+            .spyOn(Logger.prototype, 'error')
             .mockImplementation(() => {});
         const scope = nock('https://graph.facebook.com')
             .matchHeader('content-type', 'application/json')
@@ -77,13 +78,13 @@ describe('WhatsappService', () => {
         await expect(
             service.sendTemplate('987654321', 'test_template', ['x']),
         ).resolves.toBeUndefined();
-        expect(consoleSpy).toHaveBeenCalled();
+        expect(loggerSpy).toHaveBeenCalled();
         expect(scope.isDone()).toBe(true);
     });
 
     it('should retry twice and succeed on third attempt', async () => {
-        const consoleSpy = jest
-            .spyOn(console, 'error')
+        const loggerSpy = jest
+            .spyOn(Logger.prototype, 'error')
             .mockImplementation(() => {});
         let attempts = 0;
         const scope = nock('https://graph.facebook.com')
@@ -99,7 +100,7 @@ describe('WhatsappService', () => {
             service.sendTemplate('987654321', 'test_template', ['x']),
         ).resolves.toBeUndefined();
 
-        expect(consoleSpy).toHaveBeenCalledTimes(2);
+        expect(loggerSpy).toHaveBeenCalledTimes(2);
         expect(attempts).toBe(3);
         expect(scope.isDone()).toBe(true);
     });

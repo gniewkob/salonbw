@@ -63,11 +63,18 @@ describe('CustomerStatisticsService', () => {
         ]);
 
         (appointmentsRepo.query as jest.Mock).mockImplementation(
-            async (sql: string) => {
+            async (sql: string, params?: unknown[]) => {
                 if (sql.includes('to_regclass')) {
-                    return [{ exists: 'product_sales' }];
+                    const tableName = params?.[0];
+                    if (tableName === 'public.product_sales') {
+                        return [{ exists: 'product_sales' }];
+                    }
+                    return [{ exists: null }];
                 }
-                if (sql.includes('GROUP BY month')) {
+                if (
+                    sql.includes('FROM product_sales') &&
+                    sql.includes('GROUP BY month')
+                ) {
                     return [{ month: '2026-03', spent: '40' }];
                 }
                 if (sql.includes('GROUP BY ps."productId"')) {

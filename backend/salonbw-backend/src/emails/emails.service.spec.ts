@@ -3,7 +3,10 @@ import { EmailsService } from './emails.service';
 import { ConfigService } from '@nestjs/config';
 import { MetricsService } from '../observability/metrics.service';
 import { PinoLogger } from 'nestjs-pino';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { SendEmailDto } from './dto/send-email.dto';
+import { EmailLog } from './email-log.entity';
+import { User } from '../users/user.entity';
 
 describe('EmailsService', () => {
     let service: EmailsService;
@@ -28,13 +31,35 @@ describe('EmailsService', () => {
         error: jest.fn(),
     };
 
+    const mockEmailLogsRepo = {
+        create: jest.fn((payload: Partial<EmailLog>) => ({ id: 1, ...payload })),
+        save: jest.fn(async (payload: Partial<EmailLog>) => ({
+            id: 1,
+            ...payload,
+        })),
+        update: jest.fn(async () => ({ affected: 1 })),
+    };
+
+    const mockUsersRepo = {
+        findOne: jest.fn(async () => null),
+    };
+
     beforeEach(async () => {
+        jest.clearAllMocks();
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 EmailsService,
                 { provide: ConfigService, useValue: mockConfigService },
                 { provide: MetricsService, useValue: mockMetricsService },
                 { provide: PinoLogger, useValue: mockLogger },
+                {
+                    provide: getRepositoryToken(EmailLog),
+                    useValue: mockEmailLogsRepo,
+                },
+                {
+                    provide: getRepositoryToken(User),
+                    useValue: mockUsersRepo,
+                },
             ],
         }).compile();
 
@@ -59,7 +84,7 @@ describe('EmailsService', () => {
         const warn = logger.warn as unknown as jest.Mock;
         expect(warn).toHaveBeenCalledWith(
             expect.objectContaining({
-                to: dto.to,
+                to: 'te***@example.com',
                 subject: dto.subject,
                 template: dto.template,
                 data: dto.data,

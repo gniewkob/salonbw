@@ -4,7 +4,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Delivery, DeliveryStatus } from './entities/delivery.entity';
 import { DeliveryItem } from './entities/delivery-item.entity';
 import {
@@ -99,9 +99,38 @@ export class DeliveriesService {
         const saved = await this.deliveryRepository.save(delivery);
 
         if (dto.items && dto.items.length > 0) {
-            for (const itemDto of dto.items) {
-                await this.addItem(saved.id, itemDto);
+            const productIds = Array.from(
+                new Set(dto.items.map((item) => item.productId)),
+            );
+            const products = await this.productRepository.find({
+                where: { id: In(productIds) },
+            });
+            const productsById = new Map(
+                products.map((product) => [product.id, product]),
+            );
+            for (const productId of productIds) {
+                if (!productsById.has(productId)) {
+                    throw new NotFoundException(
+                        `Produkt o ID ${productId} nie istnieje`,
+                    );
+                }
             }
+
+            const items = dto.items.map((itemDto) =>
+                this.deliveryItemRepository.create({
+                    deliveryId: saved.id,
+                    productId: itemDto.productId,
+                    quantity: itemDto.quantity,
+                    unitCost: itemDto.unitCost,
+                    totalCost: itemDto.quantity * itemDto.unitCost,
+                    batchNumber: itemDto.batchNumber,
+                    expiryDate: itemDto.expiryDate
+                        ? new Date(itemDto.expiryDate)
+                        : null,
+                }),
+            );
+            await this.deliveryItemRepository.save(items);
+            await this.recalculateTotalCost(saved.id);
         }
 
         await this.logService.logAction(actor, LogAction.DELIVERY_CREATED, {
@@ -266,17 +295,33 @@ export class DeliveriesService {
         }
 
         await this.dataSource.transaction(async (manager) => {
+            const productIds = Array.from(
+                new Set(delivery.items.map((item) => item.productId)),
+            );
+            const products =
+                productIds.length > 0
+                    ? await manager.find(Product, {
+                          where: { id: In(productIds) },
+                      })
+                    : [];
+            const productsById = new Map(
+                products.map((product) => [product.id, product]),
+            );
+            const updatedProducts: Product[] = [];
+            const touchedProductIds = new Set<number>();
+            const movements: ProductMovement[] = [];
+
             // Update product stocks and create movements
             for (const item of delivery.items) {
-                const product = await manager.findOne(Product, {
-                    where: { id: item.productId },
-                });
+                const product = productsById.get(item.productId);
                 if (!product) continue;
 
                 const quantityBefore = product.stock;
                 product.stock += item.quantity;
-
-                await manager.save(product);
+                if (!touchedProductIds.has(product.id)) {
+                    updatedProducts.push(product);
+                    touchedProductIds.add(product.id);
+                }
 
                 // Create movement record
                 const movement = manager.create(ProductMovement, {
@@ -289,7 +334,14 @@ export class DeliveriesService {
                     createdById: actor.id,
                     notes: `Dostawa ${delivery.deliveryNumber}`,
                 });
-                await manager.save(movement);
+                movements.push(movement);
+            }
+
+            if (updatedProducts.length > 0) {
+                await manager.save(Product, updatedProducts);
+            }
+            if (movements.length > 0) {
+                await manager.save(ProductMovement, movements);
             }
 
             // Update delivery status

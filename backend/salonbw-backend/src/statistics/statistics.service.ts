@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import {
+    Repository,
+    Between,
+    MoreThanOrEqual,
+    LessThanOrEqual,
+    In,
+} from 'typeorm';
 import {
     startOfDay,
     endOfDay,
@@ -1268,17 +1274,28 @@ export class StatisticsService {
             where: { role: Role.Employee },
         });
 
+        const employeeIds = employees.map((employee) => employee.id);
+        const timetables =
+            employeeIds.length > 0
+                ? await this.timetableRepository.find({
+                      where: {
+                          employeeId: In(employeeIds),
+                          isActive: true,
+                      },
+                      relations: ['slots', 'exceptions'],
+                  })
+                : [];
+        const timetableByEmployeeId = new Map<number, Timetable>();
+        for (const timetable of timetables) {
+            if (!timetableByEmployeeId.has(timetable.employeeId)) {
+                timetableByEmployeeId.set(timetable.employeeId, timetable);
+            }
+        }
+
         const reports: WorkTimeReport[] = [];
 
         for (const employee of employees) {
-            // Get timetable for employee
-            const timetable = await this.timetableRepository.findOne({
-                where: {
-                    employeeId: employee.id,
-                    isActive: true,
-                },
-                relations: ['slots', 'exceptions'],
-            });
+            const timetable = timetableByEmployeeId.get(employee.id);
 
             // Calculate work time for each day in range
             const byDay: WorkTimeReport['byDay'] = [];

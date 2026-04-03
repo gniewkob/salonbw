@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service } from './service.entity';
 import { ServicesService } from './services.service';
+import { ServiceVariant } from './entities/service-variant.entity';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -14,6 +15,7 @@ import { AppCacheService } from '../cache/cache.service';
 describe('ServicesService', () => {
     let service: ServicesService;
     let repo: jest.Mocked<Repository<Service>>;
+    let variantRepo: jest.Mocked<Repository<ServiceVariant>>;
     let serviceEntity: Service;
     let logService: jest.Mocked<LogService>;
     let cache: jest.Mocked<AppCacheService>;
@@ -38,6 +40,12 @@ describe('ServicesService', () => {
             delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
         }) as unknown as jest.Mocked<Repository<Service>>;
 
+    const mockVariantRepository = (): jest.Mocked<Repository<ServiceVariant>> =>
+        ({
+            create: jest.fn(),
+            save: jest.fn().mockResolvedValue([]),
+        }) as unknown as jest.Mocked<Repository<ServiceVariant>>;
+
     beforeEach(async () => {
         serviceEntity = {
             id: 1,
@@ -53,6 +61,10 @@ describe('ServicesService', () => {
                 {
                     provide: getRepositoryToken(Service),
                     useValue: mockRepository(),
+                },
+                {
+                    provide: getRepositoryToken(ServiceVariant),
+                    useValue: mockVariantRepository(),
                 },
                 {
                     provide: LogService,
@@ -78,9 +90,14 @@ describe('ServicesService', () => {
         repo = module.get<jest.Mocked<Repository<Service>>>(
             getRepositoryToken(Service),
         );
+        variantRepo = module.get<jest.Mocked<Repository<ServiceVariant>>>(
+            getRepositoryToken(ServiceVariant),
+        );
         logService = module.get<jest.Mocked<LogService>>(LogService);
         cache = module.get<jest.Mocked<AppCacheService>>(AppCacheService);
         jest.clearAllMocks();
+        variantRepo.create.mockReset();
+        variantRepo.save.mockResolvedValue([]);
         cache.get.mockResolvedValue(null);
         cache.set.mockResolvedValue(undefined);
         cache.del.mockResolvedValue(undefined);

@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import {
     WarehouseOrder,
     WarehouseOrderStatus,
@@ -73,18 +73,34 @@ export class OrdersService {
 
         const saved = await this.ordersRepository.save(order);
 
+        const productIds = Array.from(
+            new Set(
+                dto.items
+                    .map((item) => item.productId)
+                    .filter((productId): productId is number =>
+                        typeof productId === 'number',
+                    ),
+            ),
+        );
+        const products =
+            productIds.length > 0
+                ? await this.productsRepository.find({
+                      where: { id: In(productIds) },
+                  })
+                : [];
+        const productsById = new Map(products.map((product) => [product.id, product]));
+        for (const productId of productIds) {
+            if (!productsById.has(productId)) {
+                throw new NotFoundException(`Product ${productId} not found`);
+            }
+        }
+
         const items: WarehouseOrderItem[] = [];
         for (const inputItem of dto.items) {
             let productName = inputItem.productName ?? '';
             if (inputItem.productId) {
-                const product = await this.productsRepository.findOne({
-                    where: { id: inputItem.productId },
-                });
-                if (!product) {
-                    throw new NotFoundException(
-                        `Product ${inputItem.productId} not found`,
-                    );
-                }
+                const product = productsById.get(inputItem.productId);
+                if (!product) throw new NotFoundException(`Product ${inputItem.productId} not found`);
                 productName = product.name;
             }
 
@@ -229,18 +245,48 @@ export class OrdersService {
         }
 
         await this.dataSource.transaction(async (manager) => {
+            const productIds = Array.from(
+                new Set(
+                    order.items
+                        .map((item) => item.productId)
+                        .filter((productId): productId is number =>
+                            typeof productId === 'number',
+                        ),
+                ),
+            );
+            const products =
+                productIds.length > 0
+                    ? await manager.find(Product, {
+                          where: { id: In(productIds) },
+                      })
+                    : [];
+            const productsById = new Map(
+                products.map((product) => [product.id, product]),
+            );
+            const updatedProducts: Product[] = [];
+            const touchedProductIds = new Set<number>();
+            const updatedItems: WarehouseOrderItem[] = [];
+
             for (const item of order.items) {
                 if (!item.productId) continue;
-                const product = await manager.findOne(Product, {
-                    where: { id: item.productId },
-                });
+                const product = productsById.get(item.productId);
                 if (!product) continue;
 
                 product.stock += item.quantity;
-                await manager.save(product);
+                if (!touchedProductIds.has(product.id)) {
+                    updatedProducts.push(product);
+                    touchedProductIds.add(product.id);
+                }
 
                 item.receivedQuantity = item.quantity;
-                await manager.save(item);
+                updatedItems.push(item);
+            }
+
+            if (updatedProducts.length > 0) {
+                await manager.save(Product, updatedProducts);
+            }
+            if (updatedItems.length > 0) {
+                await manager.save(WarehouseOrderItem, updatedItems);
             }
 
             order.status = WarehouseOrderStatus.Received;
