@@ -67,7 +67,7 @@ export class ReviewsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Customer, Role.Employee, Role.Admin)
     @Get('reviews/me')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get reviews for current user' })
@@ -87,7 +87,7 @@ export class ReviewsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Customer, Role.Employee, Role.Admin)
     @Get('customers/:id/reviews')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get reviews for a customer' })
@@ -107,7 +107,7 @@ export class ReviewsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Customer, Role.Employee, Role.Admin)
     @Get('employees/:id/reviews')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get reviews for an employee' })
@@ -127,7 +127,7 @@ export class ReviewsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client)
+    @Roles(Role.Customer)
     @Post('reviews')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a review' })
@@ -148,7 +148,7 @@ export class ReviewsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Admin)
+    @Roles(Role.Customer, Role.Admin)
     @Delete('reviews/:id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a review' })

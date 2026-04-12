@@ -30,6 +30,14 @@ interface AuditResult {
     versumDetails: string;
 }
 
+interface PixelDiffResult {
+    action: string;
+    mismatchPct: number;
+    thresholdPct: number;
+    pass: boolean;
+    diffArtifact: string;
+}
+
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 
 function requireEnv(name: string): string {
@@ -212,6 +220,45 @@ async function computePixelDiff(panelPath: string, versumPath: string, diffPath:
     return { mismatchPct };
 }
 
+function buildReport(results: AuditResult[], pixelDiffResults: PixelDiffResult[]) {
+    const functionalParity = results.every((row) => row.parity === 'YES');
+    const visualParity =
+        pixelDiffResults.length > 0 &&
+        pixelDiffResults.every((row) => row.pass);
+
+    const lines = [
+        '# Settings Parity Audit (Production, Full)',
+        '',
+        `Generated: ${new Date().toISOString()}`,
+        '',
+        '## YES/NO per Screen/Action',
+        '| Action | Panel | Versum | Parity | Panel URL | Versum URL | Notes |',
+        '|---|---|---|---|---|---|---|',
+        ...results.map(
+            (row) =>
+                `| ${row.action} | ${row.panel} | ${row.versum} | ${row.parity} | ${row.panelUrl} | ${row.versumUrl} | panel: ${row.panelDetails}; versum: ${row.versumDetails} |`,
+        ),
+        '',
+        '## Final Verdict',
+        `- Functional parity: \`${functionalParity ? 'YES' : 'NO'}\``,
+        '',
+        '## Visual Parity (Strict)',
+        '| Action | Mismatch % | Threshold % | Pass | Diff Artifact |',
+        '|---|---:|---:|---|---|',
+        ...pixelDiffResults.map(
+            (row) =>
+                `| ${row.action} | ${row.mismatchPct.toFixed(3)} | ${row.thresholdPct.toFixed(1)} | ${row.pass ? 'YES' : 'NO'} | ${row.diffArtifact} |`,
+        ),
+        '',
+        '## Final Visual Verdict',
+        `- Visual parity (critical screens): \`${visualParity ? 'YES' : 'NO'}\``,
+        `- Threshold policy: each critical screen must be <= ${VISUAL_DIFF_THRESHOLD_PCT.toFixed(1)}% mismatch.`,
+        '',
+    ];
+
+    return `${lines.join('\n')}\n`;
+}
+
 const actions: AuditAction[] = [
     {
         id: '01-settings',
@@ -226,6 +273,32 @@ const actions: AuditAction[] = [
         versumCheck: {
             requiredTexts: ['ustawienia'],
             requiredSelectors: ['#sidebar', '#main-content'],
+            forbiddenTexts: ['application error: a client-side exception has occurred'],
+        },
+    },
+    {
+        id: '02-payment-configuration',
+        name: 'Settings payment configuration',
+        panelUrl: 'https://panel.salon-bw.pl/settings/payment-configuration',
+        versumUrl:
+            'https://panel.versum.com/salonblackandwhite/settings/payment_configuration',
+        panelCheck: {
+            requiredTexts: ['moment pay'],
+            requiredSelectors: [
+                '#sidebar',
+                '#main-content',
+                '#sidenav',
+                'body#settings_online_payments_config',
+            ],
+            forbiddenTexts: ['application error: a client-side exception has occurred'],
+        },
+        versumCheck: {
+            requiredTexts: ['moment pay'],
+            requiredSelectors: [
+                '#sidebar',
+                '#main-content',
+                'body#settings_online_payments_config',
+            ],
             forbiddenTexts: ['application error: a client-side exception has occurred'],
         },
     },
@@ -262,6 +335,7 @@ test.describe('PROD audit: settings panel vs versum', () => {
         await loginVersum(versumPage);
 
         const results: AuditResult[] = [];
+        const pixelDiffResults: PixelDiffResult[] = [];
 
         for (const [index, action] of actions.entries()) {
             const seq = String(index + 1).padStart(2, '0');
@@ -303,37 +377,27 @@ test.describe('PROD audit: settings panel vs versum', () => {
             const diffPath = path.join(outDir, `diff-${seq}-${action.id}.png`);
             const { mismatchPct } = await computePixelDiff(panelShot, versumShot, diffPath);
             const visualPass = mismatchPct <= VISUAL_DIFF_THRESHOLD_PCT;
-
-            const report = [
-                '# Settings Parity Audit (Production, Full)',
-                '',
-                `Generated: ${new Date().toISOString()}`,
-                '',
-                '## YES/NO per Screen/Action',
-                '| Action | Panel | Versum | Parity | Panel URL | Versum URL | Notes |',
-                '|---|---|---|---|---|---|---|',
-                ...results.map((row) =>
-                    `| ${row.action} | ${row.panel} | ${row.versum} | ${row.parity} | ${row.panelUrl} | ${row.versumUrl} | panel: ${row.panelDetails}; versum: ${row.versumDetails} |`,
-                ),
-                '',
-                '## Final Verdict',
-                `- Functional parity: \`${results.every((x) => x.parity === 'YES') ? 'YES' : 'NO'}\``,
-                '',
-                '## Visual Parity (Strict)',
-                '| Action | Mismatch % | Threshold % | Pass | Diff Artifact |',
-                '|---|---:|---:|---|---|',
-                `| ${action.name} | ${mismatchPct.toFixed(3)} | ${VISUAL_DIFF_THRESHOLD_PCT.toFixed(1)} | ${visualPass ? 'YES' : 'NO'} | ${path.basename(diffPath)} |`,
-                '',
-                '## Final Visual Verdict',
-                `- Visual parity (critical screens): \`${visualPass ? 'YES' : 'NO'}\``,
-                `- Threshold policy: each critical screen must be <= ${VISUAL_DIFF_THRESHOLD_PCT.toFixed(1)}% mismatch.`,
-                '',
-            ].join('\n');
-
-            await fs.writeFile(path.join(outDir, 'REPORT.md'), `${report}\n`);
-            await fs.writeFile(path.join(outDir, 'checklist.json'), `${JSON.stringify(results, null, 2)}\n`);
-            await fs.writeFile(path.join(outDir, 'pixel-diff.json'), `${JSON.stringify({ action: action.id, mismatchPct, thresholdPct: VISUAL_DIFF_THRESHOLD_PCT, pass: visualPass }, null, 2)}\n`);
+            pixelDiffResults.push({
+                action: action.name,
+                mismatchPct,
+                thresholdPct: VISUAL_DIFF_THRESHOLD_PCT,
+                pass: visualPass,
+                diffArtifact: path.basename(diffPath),
+            });
         }
+
+        await fs.writeFile(
+            path.join(outDir, 'REPORT.md'),
+            buildReport(results, pixelDiffResults),
+        );
+        await fs.writeFile(
+            path.join(outDir, 'checklist.json'),
+            `${JSON.stringify(results, null, 2)}\n`,
+        );
+        await fs.writeFile(
+            path.join(outDir, 'pixel-diff.json'),
+            `${JSON.stringify(pixelDiffResults, null, 2)}\n`,
+        );
 
         await panelContext.close();
         await versumContext.close();

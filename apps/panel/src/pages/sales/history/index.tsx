@@ -149,7 +149,7 @@ export default function WarehouseSalesHistoryPage() {
                                             <td>
                                                 {sale.employee?.name ?? '-'}
                                             </td>
-                                            <td>{sale.clientName ?? '-'}</td>
+                                            <td>{sale.customerName ?? '-'}</td>
                                         </tr>
                                     );
                                 })}
@@ -181,7 +181,9 @@ export default function WarehouseSalesHistoryPage() {
                                         }}
                                     />
                                     {' z '}
-                                    <a className="pointer">{totalPages}</a>
+                                    <span className="pointer">
+                                        {totalPages}
+                                    </span>
                                     <button
                                         type="button"
                                         className="button button-link button_next ml-s"

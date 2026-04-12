@@ -34,7 +34,7 @@ export class WarehouseSale {
     @Column({ type: 'varchar', length: 60, unique: true })
     saleNumber: string;
 
-    @Column({ type: 'timestamp', default: () => 'now()' })
+    @Column({ default: () => 'now()' })
     soldAt: Date;
 
     @Column({ type: 'varchar', length: 200, nullable: true })

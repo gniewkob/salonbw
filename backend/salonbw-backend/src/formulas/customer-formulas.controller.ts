@@ -25,7 +25,7 @@ export class CustomerFormulasController {
     constructor(private readonly formulasService: FormulasService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Admin)
+    @Roles(Role.Customer, Role.Admin)
     @Get('me/formulas')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get formulas for current user' })

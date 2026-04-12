@@ -175,7 +175,7 @@ export default function PaymentConfigurationPage() {
                     role="status"
                 >
                     {isEnabled
-                        ? 'Moment Pay jest aktywny i zapisuje ustawienia przez backend salonbw.'
+                        ? 'Moment Pay jest aktywny.'
                         : 'Moment Pay jest obecnie wyłączony.'}
                 </div>
 
@@ -184,9 +184,8 @@ export default function PaymentConfigurationPage() {
                         className="settings-payment-page__notice"
                         role="status"
                     >
-                        Aktywacja wykorzystuje istniejący backendowy endpoint
-                        ustawień płatności. Po włączeniu możesz od razu zapisać
-                        ustawienia przedpłat poniżej.
+                        Po aktywacji możesz od razu ustawić poziom przedpłaty
+                        dla rezerwacji online i zapisać zmiany poniżej.
                     </div>
                 ) : null}
 

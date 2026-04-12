@@ -603,7 +603,7 @@ export interface ServiceHistoryResponse {
         startTime: string;
         endTime: string;
         status: string;
-        client?: { id: number; name: string };
+        customer?: { id: number; name: string };
         employee?: { id: number; name: string };
         serviceVariant?: ServiceVariant | null;
         paidAmount?: number | null;
@@ -766,7 +766,7 @@ export function useUploadServicePhoto() {
             isPublic?: boolean;
         }) => {
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('Filedata', file);
             if (caption) formData.append('caption', caption);
             if (sortOrder !== undefined) {
                 formData.append('sortOrder', String(sortOrder));
@@ -774,6 +774,7 @@ export function useUploadServicePhoto() {
             if (isPublic !== undefined) {
                 formData.append('isPublic', String(isPublic));
             }
+            formData.append('gallery_id', String(serviceId));
             return apiFetch<ServiceMedia>(
                 `/services/${serviceId}/photos/upload`,
                 {

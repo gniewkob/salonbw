@@ -16,15 +16,15 @@ import {
 } from 'recharts';
 
 interface ReturningStats {
-    totalClients: number;
-    returningClients: number;
+    totalCustomers: number;
+    returningCustomers: number;
     returningPercentage: number;
-    newClients: number;
+    newCustomers: number;
     newPercentage: number;
     byMonth: Array<{
         month: string;
-        newClients: number;
-        returningClients: number;
+        newCustomers: number;
+        returningCustomers: number;
     }>;
 }
 
@@ -68,10 +68,10 @@ export default function CustomersReturning() {
 
     const pieData = stats
         ? [
-              { name: 'Nowi', value: stats.newClients, color: COLORS.new },
+              { name: 'Nowi', value: stats.newCustomers, color: COLORS.new },
               {
                   name: 'Powracający',
-                  value: stats.returningClients,
+                  value: stats.returningCustomers,
                   color: COLORS.returning,
               },
           ]
@@ -115,7 +115,7 @@ export default function CustomersReturning() {
                                             Wszyscy klienci
                                         </div>
                                         <div className="salonbw-tile__value">
-                                            {stats.totalClients}
+                                            {stats.totalCustomers}
                                         </div>
                                     </div>
                                 </div>
@@ -125,7 +125,7 @@ export default function CustomersReturning() {
                                             Nowi klienci
                                         </div>
                                         <div className="salonbw-tile__value text-accent">
-                                            {stats.newClients}
+                                            {stats.newCustomers}
                                             <span className="small ms-5">
                                                 ({stats.newPercentage}%)
                                             </span>
@@ -138,7 +138,7 @@ export default function CustomersReturning() {
                                             Powracający
                                         </div>
                                         <div className="salonbw-tile__value text-[#11ce44]">
-                                            {stats.returningClients}
+                                            {stats.returningCustomers}
                                             <span className="small ms-5">
                                                 ({stats.returningPercentage}%)
                                             </span>
@@ -194,12 +194,12 @@ export default function CustomersReturning() {
                                                     <YAxis />
                                                     <Tooltip />
                                                     <Bar
-                                                        dataKey="newClients"
+                                                        dataKey="newCustomers"
                                                         name="Nowi"
                                                         fill={COLORS.new}
                                                     />
                                                     <Bar
-                                                        dataKey="returningClients"
+                                                        dataKey="returningCustomers"
                                                         name="Powracający"
                                                         fill={COLORS.returning}
                                                     />

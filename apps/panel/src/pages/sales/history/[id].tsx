@@ -151,7 +151,11 @@ export default function WarehouseSaleDetailsPage() {
                     <Link href="/sales/new" className="btn btn-primary btn-xs">
                         dodaj sprzedaż
                     </Link>
-                    <button type="button" className="btn btn-default btn-xs">
+                    <button
+                        type="button"
+                        className="btn btn-default btn-xs"
+                        onClick={() => window.print()}
+                    >
                         drukuj
                     </button>
                 </div>
@@ -171,7 +175,7 @@ export default function WarehouseSaleDetailsPage() {
                             <div>nr sprzedaży: {sale.saleNumber}</div>
                             <div>rodzaj: {saleKindLabel(sale.kind)}</div>
                             <div>status: {saleStatusLabel(sale.status)}</div>
-                            <div>klient: {sale.clientName ?? '-'}</div>
+                            <div>klient: {sale.customerName ?? '-'}</div>
                             <div>pracownik: {sale.employee?.name ?? '-'}</div>
                             <div>data sprzedaży: {formatDate(sale.soldAt)}</div>
                             <div>

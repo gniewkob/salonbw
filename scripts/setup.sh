@@ -57,12 +57,20 @@ else
   npm ci || npm install
 fi
 
-# 5) Frontend env file
-if [ -f "$ROOT_DIR/frontend/.env.example" ] && [ ! -f "$ROOT_DIR/frontend/.env.local" ]; then
-  echo "[setup] Creating frontend/.env.local from example…"
-  cp "$ROOT_DIR/frontend/.env.example" "$ROOT_DIR/frontend/.env.local"
-  if ! grep -q '^NEXT_PUBLIC_API_URL=' "$ROOT_DIR/frontend/.env.local"; then
-    echo "NEXT_PUBLIC_API_URL=http://localhost:3001" >> "$ROOT_DIR/frontend/.env.local"
+# 5) Frontend env files (landing + panel)
+if [ -f "$ROOT_DIR/apps/landing/.env.example" ] && [ ! -f "$ROOT_DIR/apps/landing/.env.local" ]; then
+  echo "[setup] Creating apps/landing/.env.local from example…"
+  cp "$ROOT_DIR/apps/landing/.env.example" "$ROOT_DIR/apps/landing/.env.local"
+  if ! grep -q '^NEXT_PUBLIC_API_URL=' "$ROOT_DIR/apps/landing/.env.local"; then
+    echo "NEXT_PUBLIC_API_URL=http://localhost:3001" >> "$ROOT_DIR/apps/landing/.env.local"
+  fi
+fi
+
+if [ -f "$ROOT_DIR/apps/panel/.env.example" ] && [ ! -f "$ROOT_DIR/apps/panel/.env.local" ]; then
+  echo "[setup] Creating apps/panel/.env.local from example…"
+  cp "$ROOT_DIR/apps/panel/.env.example" "$ROOT_DIR/apps/panel/.env.local"
+  if ! grep -q '^NEXT_PUBLIC_API_URL=' "$ROOT_DIR/apps/panel/.env.local"; then
+    echo "NEXT_PUBLIC_API_URL=http://localhost:3001" >> "$ROOT_DIR/apps/panel/.env.local"
   fi
 fi
 
@@ -87,6 +95,7 @@ EOF
 fi
 
 echo "[setup] Done. Next steps:"
-echo "  - Start API:     pnpm --filter salonbw-backend start:dev"
-echo "  - Start frontend: pnpm --filter frontend dev"
+echo "  - Start API:      pnpm --filter salonbw-backend start:dev"
+echo "  - Start landing:  pnpm --filter @salonbw/landing dev"
+echo "  - Start panel:    pnpm --filter @salonbw/panel dev"
 echo "  - Health check:   curl http://localhost:3001/healthz"

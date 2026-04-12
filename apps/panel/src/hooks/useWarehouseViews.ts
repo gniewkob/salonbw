@@ -311,7 +311,7 @@ export function useCreateWarehouseSale() {
     return useMutation({
         mutationFn: (payload: {
             soldAt?: string;
-            clientName?: string;
+            customerName?: string;
             employeeId?: number;
             paymentMethod?: string;
             note?: string;
@@ -420,7 +420,7 @@ export function useCreateWarehouseUsage() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (payload: {
-            clientName?: string;
+            customerName?: string;
             employeeId?: number;
             appointmentId?: number;
             note?: string;

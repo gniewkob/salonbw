@@ -36,5 +36,9 @@ export const createAuthValue = (
         void args;
         return undefined as Awaited<ReturnType<AuthValue['apiFetch']>>;
     }) as unknown as AuthValue['apiFetch'],
+    apiFetchBlob: jest.fn(async (...args: Parameters<AuthValue['apiFetchBlob']>) => {
+        void args;
+        return new Blob() as Awaited<ReturnType<AuthValue['apiFetchBlob']>>;
+    }) as unknown as AuthValue['apiFetchBlob'],
     ...overrides,
 });

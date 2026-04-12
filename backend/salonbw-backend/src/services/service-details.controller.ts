@@ -1,5 +1,6 @@
 import {
     Body,
+    BadRequestException,
     Controller,
     Delete,
     Get,
@@ -13,7 +14,7 @@ import {
     Res,
     UseGuards,
     UseInterceptors,
-    UploadedFile,
+    UploadedFiles,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -22,7 +23,7 @@ import {
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'node:path';
@@ -167,58 +168,83 @@ export class ServiceDetailsController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Upload service photo file' })
     @UseInterceptors(
-        FileInterceptor('image', {
-            storage: diskStorage({
-                destination: (
-                    req: ExpressRequest,
-                    _file: Express.Multer.File,
-                    cb: (error: Error | null, destination: string) => void,
-                ) => {
-                    const root =
-                        (process.env.UPLOADS_DIR || '').trim() ||
-                        path.join(process.cwd(), 'uploads');
-                    const rawId = req.params?.id;
-                    const serviceId = Number(rawId);
-                    if (!Number.isInteger(serviceId) || serviceId <= 0) {
-                        return cb(new Error('Invalid serviceId'), root);
-                    }
-                    const dir = path.join(
-                        root,
-                        'services',
-                        String(serviceId),
-                        'gallery',
-                    );
-                    fs.mkdirSync(dir, { recursive: true });
-                    cb(null, dir);
-                },
-                filename: (
-                    req: ExpressRequest & { __servicePhotoName?: string },
-                    file: Express.Multer.File,
-                    cb: (error: Error | null, filename: string) => void,
-                ) => {
-                    const ext = path
-                        .extname(file.originalname || '')
-                        .toLowerCase()
-                        .slice(0, 10);
-                    const name = `${uuidv4()}${ext || ''}`;
-                    req.__servicePhotoName = name;
-                    cb(null, name);
-                },
-            }),
-            limits: { fileSize: 10 * 1024 * 1024 },
-        }),
+        FileFieldsInterceptor(
+            [
+                { name: 'image', maxCount: 1 },
+                { name: 'Filedata', maxCount: 1 },
+            ],
+            {
+                storage: diskStorage({
+                    destination: (
+                        req: ExpressRequest,
+                        _file: Express.Multer.File,
+                        cb: (error: Error | null, destination: string) => void,
+                    ) => {
+                        const root =
+                            (process.env.UPLOADS_DIR || '').trim() ||
+                            path.join(process.cwd(), 'uploads');
+                        const rawId = req.params?.id;
+                        const serviceId = Number(rawId);
+                        if (!Number.isInteger(serviceId) || serviceId <= 0) {
+                            return cb(new Error('Invalid serviceId'), root);
+                        }
+                        const dir = path.join(
+                            root,
+                            'services',
+                            String(serviceId),
+                            'gallery',
+                        );
+                        fs.mkdirSync(dir, { recursive: true });
+                        cb(null, dir);
+                    },
+                    filename: (
+                        req: ExpressRequest & { __servicePhotoName?: string },
+                        file: Express.Multer.File,
+                        cb: (error: Error | null, filename: string) => void,
+                    ) => {
+                        const ext = path
+                            .extname(file.originalname || '')
+                            .toLowerCase()
+                            .slice(0, 10);
+                        const name = `${uuidv4()}${ext || ''}`;
+                        req.__servicePhotoName = name;
+                        cb(null, name);
+                    },
+                }),
+                limits: { fileSize: 10 * 1024 * 1024 },
+            },
+        ),
     )
     async uploadPhotoFile(
         @Param('id', ParseIntPipe) id: number,
         @Req()
         req: ExpressRequest & { __servicePhotoName?: string; user?: unknown },
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFiles()
+        files:
+            | {
+                  image?: Express.Multer.File[];
+                  Filedata?: Express.Multer.File[];
+              }
+            | undefined,
         @Body('caption') caption?: string,
         @Body('sortOrder') sortOrderRaw?: string,
         @Body('isPublic') isPublicRaw?: string,
+        @Body('gallery_id') galleryIdRaw?: string,
     ) {
+        const file = files?.Filedata?.[0] ?? files?.image?.[0];
         if (!file) {
             throw new Error('No image uploaded');
+        }
+        if (galleryIdRaw && galleryIdRaw.trim().length > 0) {
+            const galleryId = Number(galleryIdRaw);
+            if (!Number.isInteger(galleryId) || galleryId <= 0) {
+                throw new BadRequestException('Invalid gallery_id');
+            }
+            if (galleryId !== id) {
+                throw new BadRequestException(
+                    'gallery_id must match service scope',
+                );
+            }
         }
         const storedName = String(req.__servicePhotoName || file.filename);
         const relPath = path.join(

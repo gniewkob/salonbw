@@ -98,6 +98,8 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 - `docs/CI_CD.md`
 - `docs/RELEASE_CHECKLIST.md`
 - `docs/VERSUM_CLONING_STANDARD.md` (canonical SOP for 1:1 cloning/copying Versum -> panel)
+- `docs/CODEX_PROJECT_MCP_SETUP.md` (repo-local Codex plugin and MCP setup notes)
+- `plugins/salonbw-codex/README.md` (repo-local Codex skill map, fast entrypoints, and recommended combinations)
 - **More context lives in `docs/`** (architecture, rollout, monitoring, and Versum-clone notes).
 
 ## 10a. Versum Cloning Rule (mandatory)
@@ -107,6 +109,8 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 
 ## 11. CI notes
 - `e2e-frontend-chrome.yml` runs panel E2E with a local backend via the MyDevil SSH tunnel and needs the same secrets as `e2e.yml`.
+- SSH-based GitHub workflows must use pinned host keys (`MYDEVIL_KNOWN_HOSTS` or `ssh-keyscan` bootstrap) with `StrictHostKeyChecking=yes`.
+- Do not reintroduce generic remote-shell workflow_dispatch jobs or raw production log dump workflows; utility workflows must stay allowlisted and redacted.
 
 ## 12. MANDATORY Pre-Commit Checklist (Agent MUST follow)
 

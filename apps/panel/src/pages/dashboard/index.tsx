@@ -4,15 +4,15 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 
-import type ClientDashboardComponent from '@/components/dashboard/ClientDashboard';
+import type CustomerDashboardComponent from '@/components/dashboard/CustomerDashboard';
 import type AdminDashboardComponent from '@/components/dashboard/AdminDashboard';
 
-const ClientDashboard = dynamic<
-    ComponentProps<typeof ClientDashboardComponent>
->(() => import('@/components/dashboard/ClientDashboard'), {
+const CustomerDashboard = dynamic<
+    ComponentProps<typeof CustomerDashboardComponent>
+>(() => import('@/components/dashboard/CustomerDashboard'), {
     ssr: false,
     loading: () => (
-        <div className="p-4 small text-muted">Loading dashboard...</div>
+        <div className="p-4 small text-muted">Ładowanie panelu...</div>
     ),
 });
 
@@ -21,7 +21,7 @@ const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="p-4 small text-muted">Loading dashboard...</div>
+            <div className="p-4 small text-muted">Ładowanie panelu...</div>
         ),
     },
 );
@@ -33,20 +33,24 @@ export default function DashboardPage() {
 
     const renderDashboard = () => {
         switch (role) {
-            case 'client':
-                return <ClientDashboard />;
+            case 'customer':
+                return <CustomerDashboard />;
             case 'admin':
                 return <AdminDashboard />;
             case 'employee':
             case 'receptionist':
                 return <AdminDashboard />;
             default:
-                return <div>Please log in to view your dashboard</div>;
+                return (
+                    <div className="p-4 small text-muted">
+                        Zaloguj się, aby zobaczyć swój panel.
+                    </div>
+                );
         }
     };
 
     return (
-        <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
+        <RouteGuard roles={['customer', 'employee', 'receptionist', 'admin']}>
             <SalonShell role={role}>{renderDashboard()}</SalonShell>
         </RouteGuard>
     );

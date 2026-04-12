@@ -1,27 +1,46 @@
 name: Ops Maintenance
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   maintenance:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe Server (Hijacked)
+      - name: Configure SSH
         env:
-          SSH_KEY: ${{ secrets.MYDEVIL_PRIVATE_KEY }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          MYDEVIL_PRIVATE_KEY: ${{ secrets.MYDEVIL_PRIVATE_KEY }}
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh
-          echo "${{ secrets.MYDEVIL_PRIVATE_KEY }}" > ~/.ssh/mydevil
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$MYDEVIL_PRIVATE_KEY}"
+          printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           chmod 600 ~/.ssh/mydevil
-          
+          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
+            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+
+      - name: Probe Server
+        env:
+          MYDEVIL_SSH_USER: ${{ secrets.MYDEVIL_SSH_USER }}
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+        run: |
+          set -euo pipefail
+
           echo "=== ls -la apps/nodejs/panelbw ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw"
-          
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$MYDEVIL_SSH_USER@$MYDEVIL_SSH_HOST" "ls -la apps/nodejs/panelbw"
+
           echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$MYDEVIL_SSH_USER@$MYDEVIL_SSH_HOST" "ls -la apps/nodejs/panelbw/.next/server/pages"
 
           echo "=== Check Symlink public_nodejs ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || echo "Symlink check failed"
-          
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$MYDEVIL_SSH_USER@$MYDEVIL_SSH_HOST" "ls -la domains/panel.salon-bw.pl/public_nodejs" || echo "Symlink check failed"
+
           echo "=== Check Redirect Logic (index.js) ==="
-          # Check if index.js contains 'redirect' or 'Dashboard'
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$MYDEVIL_SSH_USER@$MYDEVIL_SSH_HOST" "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"

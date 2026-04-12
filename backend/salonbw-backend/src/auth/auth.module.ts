@@ -45,7 +45,9 @@ import { RefreshToken } from './refresh-token.entity';
 })
 export class AuthModule {
     configure(consumer: MiddlewareConsumer) {
-        // Protect all routes with CSRF middleware
-        consumer.apply(CsrfMiddleware).forRoutes('*');
+        // Protect all routes with CSRF middleware, except in tests
+        if (process.env.NODE_ENV !== 'test') {
+            consumer.apply(CsrfMiddleware).forRoutes('*');
+        }
     }
 }

@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "salonbw-devil-ssh": {
+      "command": "python3",
+      "args": [
+        "./scripts/devil_ssh_mcp.py"
+      ],
+      "env": {
+        "SALONBW_DEVIL_TARGET": "devil"
+      }
+    },
+    "salonbw-observability": {
+      "command": "python3",
+      "args": [
+        "./scripts/observability_mcp.py"
+      ]
+    },
+    "salonbw-runtime-health": {
+      "command": "python3",
+      "args": [
+        "./scripts/runtime_health_mcp.py"
+      ]
+    }
+  }
+}

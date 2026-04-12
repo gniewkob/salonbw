@@ -76,7 +76,7 @@ describe('list hooks', () => {
 describe('useDashboard', () => {
     it('returns data and upcoming list', async () => {
         const apiFetch = jest.fn().mockResolvedValue({
-            clientCount: 1,
+            customerCount: 1,
             employeeCount: 1,
             todayAppointments: 2,
             upcomingAppointments: [

@@ -25,7 +25,7 @@ export class ReminderSettings {
 
     @Column({
         name: 'preferred_channel',
-        type: 'enum',
+        type: 'simple-enum',
         enum: ReminderChannel,
         default: ReminderChannel.Sms,
     })

@@ -32,7 +32,7 @@ export class User {
     @Column()
     name: string;
 
-    @Column({ type: 'simple-enum', enum: Role, default: Role.Client })
+    @Column({ type: 'simple-enum', enum: Role, default: Role.Customer })
     role: Role;
 
     @Column({ type: 'varchar', nullable: true })
@@ -88,8 +88,18 @@ export class User {
     @Column({ default: false })
     gdprConsent: boolean;
 
-    @Column({ nullable: true })
+    @Column({ type: 'datetime', nullable: true })
     gdprConsentDate?: Date;
+
+    // Social Auth IDs
+    @Column({ name: 'google_id', type: 'varchar', length: 100, nullable: true, unique: true })
+    googleId?: string | null;
+
+    @Column({ name: 'facebook_id', type: 'varchar', length: 100, nullable: true, unique: true })
+    facebookId?: string | null;
+
+    @Column({ name: 'apple_id', type: 'varchar', length: 100, nullable: true, unique: true })
+    appleId?: string | null;
 
     @CreateDateColumn()
     createdAt: Date;
