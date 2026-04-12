@@ -38,7 +38,7 @@ const CHANNELS: { value: MessageChannel; label: string }[] = [
 ];
 
 const AVAILABLE_VARIABLES = [
-    { key: 'client_name', label: 'Imię klienta' },
+    { key: 'customer_name', label: 'Imię klienta' },
     { key: 'service_name', label: 'Nazwa usługi' },
     { key: 'date', label: 'Data wizyty' },
     { key: 'time', label: 'Godzina wizyty' },

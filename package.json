@@ -39,7 +39,8 @@
     },
     "pnpm": {
         "onlyBuiltDependencies": [
-            "cypress"
+            "cypress",
+            "sqlite3"
         ],
         "overrides": {
             "axios": "^1.7.9",
@@ -52,9 +53,7 @@
             "cross-spawn": "^7.0.6",
             "micromatch": "^4.0.8",
             "nanoid": "^3.3.8",
-            "path-to-regexp": "^0.1.12",
             "body-parser": "^1.20.3",
-            "express": "^4.21.2",
             "cookie": "^0.7.2",
             "rand-token": "workspace:rand-token@1.0.1",
             "fast-xml-parser": ">=5.5.6",

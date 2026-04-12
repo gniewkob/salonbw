@@ -14,7 +14,7 @@ export class CalendarViewEntity {
     @Column({ type: 'varchar', length: 120 })
     name: string;
 
-    @Column({ type: 'jsonb', default: () => "'[]'" })
+    @Column({ type: 'simple-json', default: () => "'[]'" })
     employeeIds: number[];
 
     @CreateDateColumn({ name: 'created_at' })

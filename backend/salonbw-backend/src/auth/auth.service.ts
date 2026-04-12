@@ -127,6 +127,13 @@ export class AuthService {
         }
 
         const user = await this.usersService.findByEmail(email);
+        
+        // Prevent password login for accounts created via Social Auth without a password
+        if (user?.password && user.password.startsWith('SOCIAL_AUTH_DISABLED_')) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            throw new UnauthorizedException('Please login using your social account');
+        }
+
         const isValidPassword = user
             ? await bcrypt.compare(pass, user.password)
             : false;

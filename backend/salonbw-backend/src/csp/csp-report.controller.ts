@@ -1,5 +1,6 @@
 import { Controller, Post, Body, HttpCode, Logger } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { sanitizeLogValue } from '../logs/redaction.util';
 
 interface CSPViolationReport {
     'csp-report': {
@@ -26,15 +27,18 @@ export class CSPReportController {
         const violation = report['csp-report'];
 
         // Log CSP violations for monitoring
-        this.logger.warn('CSP Violation Detected', {
-            documentUri: violation['document-uri'],
-            violatedDirective: violation['violated-directive'],
-            effectiveDirective: violation['effective-directive'],
-            blockedUri: violation['blocked-uri'],
-            sourceFile: violation['source-file'],
-            lineNumber: violation['line-number'],
-            columnNumber: violation['column-number'],
-        });
+        this.logger.warn(
+            sanitizeLogValue({
+                documentUri: violation['document-uri'],
+                violatedDirective: violation['violated-directive'],
+                effectiveDirective: violation['effective-directive'],
+                blockedUri: violation['blocked-uri'],
+                sourceFile: violation['source-file'],
+                lineNumber: violation['line-number'],
+                columnNumber: violation['column-number'],
+            }),
+            'CSP Violation Detected',
+        );
 
         // In production, you might want to:
         // 1. Store violations in a database for analysis

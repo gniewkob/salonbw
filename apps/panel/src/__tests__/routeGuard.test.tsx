@@ -57,7 +57,7 @@ describe('RouteGuard', () => {
 
     it('renders Forbidden when role not permitted', () => {
         mockedUseAuth.mockReturnValue(
-            createAuthValue({ isAuthenticated: true, role: 'client' }),
+            createAuthValue({ isAuthenticated: true, role: 'customer' }),
         );
         render(
             <RouteGuard roles={['admin']}>

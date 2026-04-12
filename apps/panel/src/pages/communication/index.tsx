@@ -57,6 +57,7 @@ export default function CommunicationPage() {
 
     const loading = kind === 'sms' ? smsHistory.loading : emailHistory.loading;
     const data = kind === 'sms' ? smsHistory.data : emailHistory.data;
+    const kindLabel = kind === 'sms' ? 'SMS' : 'email';
 
     const resetCompose = () => {
         setRecipient('');
@@ -141,7 +142,7 @@ export default function CommunicationPage() {
                                         setPage(1);
                                     }}
                                 >
-                                    <option value="sms">SMS i email</option>
+                                    <option value="sms">tylko SMS</option>
                                     <option value="email">tylko email</option>
                                 </select>
                             </div>
@@ -369,11 +370,11 @@ export default function CommunicationPage() {
                                             readOnly
                                         />
                                         {' z '}
-                                        <a className="pointer">
+                                        <span className="pointer">
                                             {Math.ceil(
                                                 data.total / data.limit,
                                             ) || 1}
-                                        </a>
+                                        </span>
                                         <button
                                             type="button"
                                             className="button button-link button_next ml-s"
@@ -405,7 +406,7 @@ export default function CommunicationPage() {
                     <div className="salonbw-modal-overlay">
                         <div className="salonbw-modal" role="dialog">
                             <div className="salonbw-modal__header">
-                                <h3>Wyślij wiadomość ({kind})</h3>
+                                <h3>Wyślij wiadomość ({kindLabel})</h3>
                                 <button
                                     type="button"
                                     className="salonbw-modal__close"

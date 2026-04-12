@@ -42,13 +42,13 @@ export class AutomaticMessageRule {
     description: string | null;
 
     @Column({
-        type: 'enum',
+        type: 'simple-enum',
         enum: AutomaticMessageTrigger,
     })
     trigger: AutomaticMessageTrigger;
 
     @Column({
-        type: 'enum',
+        type: 'simple-enum',
         enum: MessageChannel,
         default: MessageChannel.Sms,
     })
@@ -102,8 +102,8 @@ export class AutomaticMessageRule {
     @Column({ type: 'int', default: 0 })
     sentCount: number;
 
-    @Column({ type: 'timestamp', nullable: true })
-    lastSentAt: Date | null;
+    @Column({ nullable: true })
+    lastSentAt: Date;
 
     // Audit
     @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })

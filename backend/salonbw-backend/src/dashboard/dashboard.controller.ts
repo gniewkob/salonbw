@@ -31,7 +31,7 @@ export class DashboardController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client)
+    @Roles(Role.Customer)
     @Get('client')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get client dashboard summary' })

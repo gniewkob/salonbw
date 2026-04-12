@@ -1,6 +1,7 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerModule } from 'nestjs-pino';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import request, { type Response } from 'supertest';
 import * as jwt from 'jsonwebtoken';
@@ -9,6 +10,7 @@ import { Repository } from 'typeorm';
 
 import { AuthModule } from '../src/auth/auth.module';
 import { AppointmentsModule } from '../src/appointments/appointments.module';
+import { FinanceModule } from '../src/finance/finance.module';
 import { ServicesModule } from '../src/services/services.module';
 import { FormulasModule } from '../src/formulas/formulas.module';
 import { ProductsModule } from '../src/products/products.module';
@@ -20,6 +22,7 @@ import { CommissionRule } from '../src/commissions/commission-rule.entity';
 import { Formula } from '../src/formulas/formula.entity';
 import { Product } from '../src/products/product.entity';
 import { Log } from '../src/logs/log.entity';
+import { ALL_ENTITIES } from './test-entities';
 
 interface AppointmentResponse {
     id: number;
@@ -56,23 +59,18 @@ d('Appointments integration', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
                 ConfigModule.forRoot({ isGlobal: true }),
+                LoggerModule.forRoot({
+                    pinoHttp: { level: 'silent' },
+                }),
                 TypeOrmModule.forRoot({
                     type: 'sqlite',
                     database: ':memory:',
                     dropSchema: true,
-                    entities: [
-                        User,
-                        Appointment,
-                        Service,
-                        Commission,
-                        CommissionRule,
-                        Formula,
-                        Product,
-                        Log,
-                    ],
+                    entities: ALL_ENTITIES,
                     synchronize: true,
                 }),
                 AuthModule,
+                FinanceModule,
                 ServicesModule,
                 AppointmentsModule,
                 FormulasModule,
@@ -82,6 +80,7 @@ d('Appointments integration', () => {
 
         app = moduleFixture.createNestApplication();
         app.use(cookieParser());
+        app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
         await app.init();
         server = app.getHttpServer() as Parameters<typeof request>[0];
 
@@ -135,7 +134,7 @@ d('Appointments integration', () => {
             commissionPercent: 10,
         });
 
-        const jwtSecret = process.env.JWT_SECRET ?? '';
+        const jwtSecret = 'test-secret';
         clientToken = jwt.sign({ sub: client.id, role: 'client' }, jwtSecret);
         employeeToken = jwt.sign(
             { sub: employee.id, role: 'employee' },
@@ -443,7 +442,7 @@ d('Appointments integration', () => {
 
     it('rejects non-numeric client id for formulas', async () => {
         await request(server)
-            .get('/clients/abc/formulas')
+            .get('/customers/abc/formulas')
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(400);
     });

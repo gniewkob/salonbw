@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { Client } from '@/types';
+import { Customer } from '@/types';
 
 export function useCustomerApi() {
     const { apiFetch } = useAuth();
@@ -8,12 +8,12 @@ export function useCustomerApi() {
 
     const create = async (data: { name: string }) => {
         try {
-            const res = await apiFetch<Client>('/customers', {
+            const res = await apiFetch<Customer>('/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-            toast.success('Client created');
+            toast.success('Customer created');
             return res;
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : 'Error');
@@ -23,12 +23,12 @@ export function useCustomerApi() {
 
     const update = async (id: number, data: { name: string }) => {
         try {
-            const res = await apiFetch<Client>(`/customers/${id}`, {
+            const res = await apiFetch<Customer>(`/customers/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-            toast.success('Client updated');
+            toast.success('Customer updated');
             return res;
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : 'Error');
@@ -39,7 +39,7 @@ export function useCustomerApi() {
     const remove = async (id: number) => {
         try {
             await apiFetch(`/customers/${id}`, { method: 'DELETE' });
-            toast.success('Client deleted');
+            toast.success('Customer deleted');
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : 'Error');
             throw err;

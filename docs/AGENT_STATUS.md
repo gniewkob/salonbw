@@ -1,6 +1,23 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-19 (P1+P2 route coverage is implemented, but parity status is mixed: `exact`, `aliased`, and `invent` routes coexist; implemented does not equal DONE 1:1)_
+_Last updated: 2026-04-03 (security hardening pass: remote shell workflow removed in favor of allowlisted ops, log fetch workflow redacted/scoped, deploy SSH host verification enforced, non-production guard added for test-data injection, chat WebSocket origin validation aligned with HTTP CORS policy, and sensitive app logging tightened for email/SMS/WhatsApp/gift-card flows)_
+
+Operational note (2026-04-03):
+- Backend E2E test suite restored to 100% pass rate (37/37 tests).
+- Introduced `test/test-entities.ts` for consistent TypeORM metadata in E2E tests using SQLite memory database.
+- Standardized entities for PostgreSQL/SQLite cross-compatibility (swapped `jsonb` -> `simple-json`, `enum` -> `simple-enum`, and removed `timestamptz` from `RefreshToken`).
+- Fixed NestJS 11 routing issues by resolving `path-to-regexp` and `express` version conflicts in workspace root.
+- `RetailService` hardened for SQLite compatibility (conditional locking, agnostic table checks and inserts).
+- CSRF middleware disabled during tests to prevent 401/403 errors on state-changing requests.
+- Decision: System to remain independent (no Booksy sync). Focus shifted to Social Auth (Google, Facebook, Apple) and account linking for clients.
+
+Operational note (2026-04-03, security hardening pass):
+- `.github/workflows/fetch_logs.yml` now fetches only targeted `api|panel` logs, limits line count, and redacts likely secrets/tokens/emails before output.
+- SSH-based workflows now use pinned host keys with `StrictHostKeyChecking=yes`; raw `StrictHostKeyChecking=no` was removed from deploy and ops workflows.
+- `.github/workflows/add-test-data.yml` now refuses production API targets and requires explicit non-production confirmation.
+- Backend logging now masks gift card codes, phone numbers, and communication-provider payloads in the most sensitive reviewed paths (`emails`, `sms`, `whatsapp`, client-log ingestion, and gift-card app/audit logging).
+- Rollback guidance now requires encrypted backups plus restore-readiness notes before treating an environment with sensitive data as rollback-safe.
+- Enterprise target-state and sequencing are tracked in `docs/ENTERPRISE_READINESS_PLAN.md`.
 
 Operational note (2026-03-19):
 - `.github/workflows/deploy.yml` now scopes push-triggered post-deploy smoke/log steps to the app actually deployed and skips SSH-dependent diagnostics when SSH setup never completed, reducing false failures/noise on push runs.

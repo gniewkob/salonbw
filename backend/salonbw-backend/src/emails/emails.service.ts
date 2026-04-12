@@ -9,6 +9,7 @@ import { ContactFormDto } from './dto/contact-form.dto';
 import { MetricsService } from '../observability/metrics.service';
 import { EmailLog, EmailLogStatus } from './email-log.entity';
 import { User } from '../users/user.entity';
+import { maskEmail, sanitizeLogValue } from '../logs/redaction.util';
 
 type MailOptions = { to: string; subject: string; html: string; from?: string };
 type TransportOpts = {
@@ -172,10 +173,10 @@ export class EmailsService {
             // In development, just log the email
             this.logger.warn(
                 {
-                    to: dto.to,
+                    to: maskEmail(dto.to),
                     subject: dto.subject,
                     template: dto.template,
-                    data: dto.data,
+                    data: sanitizeLogValue(dto.data),
                 },
                 'Email logged (SMTP not configured)',
             );
@@ -197,7 +198,7 @@ export class EmailsService {
 
             await this.transporter.sendMail(mailOptions);
             this.logger.info(
-                { to: dto.to, subject: dto.subject },
+                { to: maskEmail(dto.to), subject: dto.subject },
                 'Email sent successfully',
             );
             this.metrics.incEmail('success');
@@ -207,7 +208,18 @@ export class EmailsService {
             });
         } catch (error: unknown) {
             this.logger.error(
-                { error, to: dto.to, subject: dto.subject },
+                {
+                    error: sanitizeLogValue(
+                        error instanceof Error
+                            ? {
+                                  message: error.message,
+                                  name: error.name,
+                              }
+                            : error,
+                    ),
+                    to: maskEmail(dto.to),
+                    subject: dto.subject,
+                },
                 'Failed to send email',
             );
             this.metrics.incEmail('failed');

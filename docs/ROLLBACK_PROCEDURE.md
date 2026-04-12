@@ -167,15 +167,23 @@ cd /usr/home/vetternkraft/apps/nodejs/panelbw
 **Scenario:** Database migration causing data issues or breaking changes
 
 **CRITICAL:** Database rollbacks can cause data loss. Always backup first.
+**CRITICAL:** For environments containing financial or personal data, only encrypted backups are acceptable.
 
 **Steps:**
 
 1. **Backup Current Database:**
    ```bash
    ssh vetternkraft@s0.mydevil.net
-   # Contact hosting support for database backup
-   # Or use pg_dump if you have access
+   # Use an approved encrypted backup path only
+   # Do not create raw dumps in repo worktrees, CI artifacts, or shared home directories
    ```
+
+   Minimum backup requirements before rollback:
+   - [ ] backup is encrypted at rest and in transit
+   - [ ] backup location is access-restricted to approved operators only
+   - [ ] retention period is defined
+   - [ ] restore owner is identified
+   - [ ] restore drill for the target environment has been performed recently
 
 2. **Check Current Migration Status:**
    ```bash
@@ -204,6 +212,20 @@ cd /usr/home/vetternkraft/apps/nodejs/panelbw
 **Time Required:** 2-5 minutes per migration
 
 **Warning:** Reverting migrations may require manual data migration if data was transformed or deleted.
+
+## Backup / Restore Policy For Sensitive Data
+
+If the environment contains financial data, customer data, phone numbers, email addresses, gift card balances, or staff personal data:
+
+- Never export raw database dumps into the git repository, GitHub Actions artifacts, or local desktop folders without encryption.
+- Prefer encrypted provider snapshots or encrypted `pg_dump` outputs stored in an approved restricted location.
+- Treat restore capability as mandatory, not optional: a backup that has not been tested in restore is not considered sufficient.
+- Keep a written record of:
+  - who can create backups,
+  - where backups are stored,
+  - how they are encrypted,
+  - how long they are retained,
+  - when restore was last tested.
 
 ---
 

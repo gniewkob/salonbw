@@ -6,6 +6,8 @@ import {
     UseGuards,
     ParseIntPipe,
     NotFoundException,
+    Query,
+    Res,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -13,18 +15,23 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { InvoicesService } from './invoices.service';
+import { JPKService } from './jpk.service';
 import { Invoice } from './invoice.entity';
 
 @ApiTags('invoices')
 @Controller('invoices')
 export class InvoicesController {
-    constructor(private readonly invoicesService: InvoicesService) {}
+    constructor(
+        private readonly invoicesService: InvoicesService,
+        private readonly jpkService: JPKService,
+    ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
@@ -37,7 +44,7 @@ export class InvoicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Customer, Role.Employee, Role.Admin)
     @Get('me')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get invoices for current user' })
@@ -47,7 +54,7 @@ export class InvoicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Customer, Role.Employee, Role.Admin)
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get invoice by ID' })
@@ -94,5 +101,27 @@ export class InvoicesController {
             throw new NotFoundException();
         }
         return invoice;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Get('export/jpk-fa')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Export JPK_FA (admin only)' })
+    async exportJPK(
+        @Query('from') from: string,
+        @Query('to') to: string,
+        @Res() res: Response,
+    ) {
+        const xml = await this.jpkService.generateJPKFA(
+            new Date(from),
+            new Date(to),
+        );
+        res.set('Content-Type', 'application/xml');
+        res.set(
+            'Content-Disposition',
+            `attachment; filename=JPK_FA_${from}_${to}.xml`,
+        );
+        res.send(xml);
     }
 }

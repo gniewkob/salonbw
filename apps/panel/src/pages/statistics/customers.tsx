@@ -1,21 +1,40 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
-import { useClientStats } from '@/hooks/useStatistics';
+import { useCustomerStats } from '@/hooks/useStatistics';
 
-export default function ClientsStatisticsPage() {
+export default function CustomersStatisticsPage() {
     const { role } = useAuth();
     const [range, setRange] = useState<'month' | 'quarter' | 'year'>('month');
-    const { data, isLoading } = useClientStats({
-        range:
-            range === 'month'
-                ? 'this_month'
-                : range === 'quarter'
-                  ? 'this_month'
-                  : 'this_month',
-    });
+    const statsQuery = useMemo(() => {
+        const today = new Date();
+        const to = today.toISOString().split('T')[0];
+
+        if (range === 'month') {
+            return { range: 'this_month' as const };
+        }
+
+        if (range === 'quarter') {
+            const from = new Date(today);
+            from.setMonth(from.getMonth() - 3);
+            return {
+                range: 'custom' as const,
+                from: from.toISOString().split('T')[0],
+                to,
+            };
+        }
+
+        const from = new Date(today);
+        from.setFullYear(from.getFullYear() - 1);
+        return {
+            range: 'custom' as const,
+            from: from.toISOString().split('T')[0],
+            to,
+        };
+    }, [range]);
+    const { data, isLoading } = useCustomerStats(statsQuery);
 
     const formatMoney = (value: number): string => {
         return value.toFixed(2).replace('.', ',') + ' zł';
@@ -25,7 +44,7 @@ export default function ClientsStatisticsPage() {
 
     return (
         <SalonShell role={role}>
-            <div className="salonbw-page" data-testid="clients-statistics-page">
+            <div className="salonbw-page" data-testid="customers-statistics-page">
                 <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_statistics"
                     items={[
@@ -78,7 +97,7 @@ export default function ClientsStatisticsPage() {
                                             Nowi klienci
                                         </div>
                                         <div className="fs-3 fw-bold text-primary">
-                                            {data.newClients}
+                                            {data.newCustomers}
                                         </div>
                                     </div>
                                 </div>
@@ -89,7 +108,7 @@ export default function ClientsStatisticsPage() {
                                             Powracający
                                         </div>
                                         <div className="fs-3 fw-bold text-success">
-                                            {data.returningClients}
+                                            {data.returningCustomers}
                                         </div>
                                     </div>
                                 </div>
@@ -111,7 +130,7 @@ export default function ClientsStatisticsPage() {
                                             Średnio wizyt/klient
                                         </div>
                                         <div className="fs-3 fw-bold">
-                                            {data.averageVisitsPerClient.toFixed(
+                                            {data.averageVisitsPerCustomer.toFixed(
                                                 1,
                                             )}
                                         </div>
@@ -120,10 +139,10 @@ export default function ClientsStatisticsPage() {
                             </div>
                         )}
 
-                        {/* Top clients */}
+                        {/* Top customers */}
                         {data &&
-                            data.topClients &&
-                            data.topClients.length > 0 && (
+                            data.topCustomers &&
+                            data.topCustomers.length > 0 && (
                                 <div className="mb-5">
                                     <h3 className="fs-5 fw-semibold mb-3">
                                         Najlepsi klienci
@@ -142,29 +161,29 @@ export default function ClientsStatisticsPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {data.topClients.map(
-                                                    (client) => (
+                                                {data.topCustomers.map(
+                                                    (customer) => (
                                                         <tr
                                                             key={
-                                                                client.clientId
+                                                                customer.customerId
                                                             }
                                                         >
                                                             <td>
                                                                 <Link
-                                                                    href={`/customers/${client.clientId}`}
+                                                                    href={`/customers/${customer.customerId}`}
                                                                     className="salonbw-link"
                                                                 >
                                                                     {
-                                                                        client.clientName
+                                                                        customer.customerName
                                                                     }
                                                                 </Link>
                                                             </td>
                                                             <td className="text-end">
-                                                                {client.visits}
+                                                                {customer.visits}
                                                             </td>
                                                             <td className="text-end fw-semibold">
                                                                 {formatMoney(
-                                                                    client.totalSpent,
+                                                                    customer.totalSpent,
                                                                 )}
                                                             </td>
                                                         </tr>
@@ -176,13 +195,46 @@ export default function ClientsStatisticsPage() {
                                 </div>
                             )}
 
-                        {/* Placeholder for returning customers by employee */}
                         <div className="mb-5">
                             <h3 className="fs-5 fw-semibold mb-3">
-                                Powracalność klientów
+                                Szczegółowe raporty klientów
                             </h3>
-                            <div className="text-muted fst-italic">
-                                Szczegółowy raport powracalności w przygotowaniu
+                            <div className="row g-4">
+                                <div className="col-md-6">
+                                    <Link
+                                        href="/statistics/customers/returning"
+                                        className="d-block border rounded p-4 text-decoration-none h-100"
+                                    >
+                                        <div className="small text-muted mb-2">
+                                            Powracalność klientów
+                                        </div>
+                                        <div className="fs-5 fw-semibold text-body mb-2">
+                                            Zobacz pełny raport powrotów
+                                        </div>
+                                        <div className="small text-muted">
+                                            Szczegółowy udział nowych i
+                                            powracających klientów oraz wykresy
+                                            trendu.
+                                        </div>
+                                    </Link>
+                                </div>
+                                <div className="col-md-6">
+                                    <Link
+                                        href="/statistics/customers/origins"
+                                        className="d-block border rounded p-4 text-decoration-none h-100"
+                                    >
+                                        <div className="small text-muted mb-2">
+                                            Źródła klientów
+                                        </div>
+                                        <div className="fs-5 fw-semibold text-body mb-2">
+                                            Sprawdź skąd trafiają klienci
+                                        </div>
+                                        <div className="small text-muted">
+                                            Raport pokazuje najskuteczniejsze
+                                            źródła pozyskania i rozkład wizyt.
+                                        </div>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>

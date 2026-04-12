@@ -4,14 +4,7 @@ import Link from 'next/link';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEmployees } from '@/hooks/useEmployees';
 import { useCommissionReport } from '@/hooks/useStatistics';
-
-const VISUAL_FALLBACK_EMPLOYEES = [
-    { id: -1, name: 'Recepcja' },
-    { id: -2, name: 'Gniewko Bodora' },
-    { id: -3, name: 'Aleksandra Bodora' },
-];
 const EMPLOYEE_DETAILS_BASE_PATH = '/settings/employees';
 
 const toNumber = (value: unknown): number => {
@@ -36,24 +29,6 @@ const toNumber = (value: unknown): number => {
         Number((normalized.match(/-?\d+(?:\.\d+)?/) || ['0'])[0]);
     return Number.isFinite(parsed) ? parsed : 0;
 };
-
-const isZeroCommissionRow = (row: {
-    serviceRevenue: number;
-    serviceCommission: number;
-    productRevenue: number;
-    productCommission: number;
-    totalRevenue: number;
-    totalCommission: number;
-}) =>
-    row.serviceRevenue === 0 &&
-    row.serviceCommission === 0 &&
-    row.productRevenue === 0 &&
-    row.productCommission === 0 &&
-    row.totalRevenue === 0 &&
-    row.totalCommission === 0;
-
-const normalizeEmployeeName = (value: string) =>
-    value.trim().toLowerCase().replace(/\s+/g, ' ');
 
 const formatMoneyValue = (value: unknown): string =>
     toNumber(value).toFixed(2).replace('.', ',');
@@ -80,8 +55,6 @@ const MoneyWithSuffix = ({
 
 export default function CommissionsPage() {
     const { role } = useAuth();
-    const { data: employeeList } = useEmployees();
-    const safeEmployeeList = useMemo(() => employeeList ?? [], [employeeList]);
     const [selectedDate, setSelectedDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
@@ -162,29 +135,9 @@ export default function CommissionsPage() {
         URL.revokeObjectURL(url);
     };
 
-    const commissionRows = useMemo(() => {
-        const knownEmployeesByName = new Map(
-            safeEmployeeList.map((employee) => {
-                const fullName =
-                    employee.fullName ||
-                    employee.name ||
-                    [employee.firstName, employee.lastName]
-                        .filter(Boolean)
-                        .join(' ') ||
-                    `Pracownik #${employee.id}`;
-
-                return [
-                    normalizeEmployeeName(fullName),
-                    {
-                        id: employee.id,
-                        name: fullName,
-                    },
-                ] as const;
-            }),
-        );
-
-        if (data?.employees?.length) {
-            const mappedRows = data.employees.map((employee) => ({
+    const commissionRows = useMemo(
+        () =>
+            (data?.employees ?? []).map((employee) => ({
                 employeeId: employee.employeeId,
                 employeeName: employee.employeeName,
                 serviceRevenue: toNumber(employee.serviceRevenue),
@@ -193,86 +146,9 @@ export default function CommissionsPage() {
                 productCommission: toNumber(employee.productCommission),
                 totalRevenue: toNumber(employee.totalRevenue),
                 totalCommission: toNumber(employee.totalCommission),
-            }));
-
-            const shouldBackfillCanonicalRows =
-                mappedRows.length < 3 && mappedRows.every(isZeroCommissionRow);
-
-            if (!shouldBackfillCanonicalRows) {
-                return mappedRows;
-            }
-
-            const zeroRowsByName = new Map(
-                mappedRows.map((employee) => [
-                    normalizeEmployeeName(employee.employeeName),
-                    employee,
-                ]),
-            );
-
-            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => {
-                const key = normalizeEmployeeName(employee.name);
-                const matchedKnownEmployee = knownEmployeesByName.get(key);
-                const matchedRow = zeroRowsByName.get(key);
-
-                return {
-                    employeeId:
-                        matchedKnownEmployee?.id ??
-                        matchedRow?.employeeId ??
-                        employee.id,
-                    employeeName:
-                        matchedKnownEmployee?.name ??
-                        matchedRow?.employeeName ??
-                        employee.name,
-                    serviceRevenue: matchedRow?.serviceRevenue ?? 0,
-                    serviceCommission: matchedRow?.serviceCommission ?? 0,
-                    productRevenue: matchedRow?.productRevenue ?? 0,
-                    productCommission: matchedRow?.productCommission ?? 0,
-                    totalRevenue: matchedRow?.totalRevenue ?? 0,
-                    totalCommission: matchedRow?.totalCommission ?? 0,
-                };
-            });
-        }
-
-        const actualEmployees = safeEmployeeList
-            .slice(0, 3)
-            .map((employee) => ({
-                id: employee.id,
-                name:
-                    employee.fullName ||
-                    employee.name ||
-                    [employee.firstName, employee.lastName]
-                        .filter(Boolean)
-                        .join(' ') ||
-                    `Pracownik #${employee.id}`,
-            }));
-        const seenNames = new Set(
-            actualEmployees.map((employee) => employee.name.toLowerCase()),
-        );
-        const fallbackEmployees = [
-            ...actualEmployees,
-            ...VISUAL_FALLBACK_EMPLOYEES.filter((employee) => {
-                const key = employee.name.toLowerCase();
-                if (seenNames.has(key)) {
-                    return false;
-                }
-                seenNames.add(key);
-                return true;
-            }),
-        ].slice(0, 3);
-
-        return fallbackEmployees.map((employee) => {
-            return {
-                employeeId: employee.id,
-                employeeName: employee.name,
-                serviceRevenue: 0,
-                serviceCommission: 0,
-                productRevenue: 0,
-                productCommission: 0,
-                totalRevenue: 0,
-                totalCommission: 0,
-            };
-        });
-    }, [data, safeEmployeeList]);
+            })),
+        [data],
+    );
     const totals = data?.totals ?? {
         serviceRevenue: 0,
         serviceCommission: 0,
@@ -415,77 +291,97 @@ export default function CommissionsPage() {
                                             </th>
                                             <th>Łącznie prowizja</th>
                                         </tr>
-                                        {commissionRows.map((employee, i) => (
-                                            <tr
-                                                key={employee.employeeId}
-                                                className={
-                                                    i % 2 === 0 ? 'even' : 'odd'
-                                                }
-                                            >
-                                                <td>
-                                                    <Link
-                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                        {commissionRows.length > 0 ? (
+                                            commissionRows.map(
+                                                (employee, i) => (
+                                                    <tr
+                                                        key={
+                                                            employee.employeeId
+                                                        }
+                                                        className={
+                                                            i % 2 === 0
+                                                                ? 'even'
+                                                                : 'odd'
+                                                        }
                                                     >
-                                                        {employee.employeeName}
-                                                    </Link>
-                                                    <br />
-                                                    <Link
-                                                        href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                        className="button mt-xs"
-                                                        prefetch={false}
-                                                    >
-                                                        <div
-                                                            className="icon sprite-settings_product_purchase_prices mr-xs"
-                                                            aria-hidden="true"
-                                                        />
-                                                        szczegóły
-                                                    </Link>
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.serviceRevenue
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.serviceCommission
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.productRevenue
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.productCommission
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.totalRevenue
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <MoneyWithSuffix
-                                                        value={
-                                                            employee.totalCommission
-                                                        }
-                                                        suffix="brutto"
-                                                    />
+                                                        <td>
+                                                            <Link
+                                                                href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                            >
+                                                                {
+                                                                    employee.employeeName
+                                                                }
+                                                            </Link>
+                                                            <br />
+                                                            <Link
+                                                                href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                                className="button mt-xs"
+                                                                prefetch={false}
+                                                            >
+                                                                <div
+                                                                    className="icon sprite-settings_product_purchase_prices mr-xs"
+                                                                    aria-hidden="true"
+                                                                />
+                                                                szczegóły
+                                                            </Link>
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.serviceRevenue
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.serviceCommission
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.productRevenue
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.productCommission
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.totalRevenue
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <MoneyWithSuffix
+                                                                value={
+                                                                    employee.totalCommission
+                                                                }
+                                                                suffix="brutto"
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )
+                                        ) : (
+                                            <tr className="even">
+                                                <td
+                                                    colSpan={7}
+                                                    className="salonbw-muted"
+                                                >
+                                                    Brak prowizji pracowników
+                                                    dla wybranego dnia.
                                                 </td>
                                             </tr>
-                                        ))}
+                                        )}
                                         <tr>
                                             <td colSpan={7}>
                                                 <strong>Podsumowanie</strong>

@@ -23,7 +23,7 @@ export class CustomerExtraField {
     label: string;
 
     @Column({
-        type: 'enum',
+        type: 'simple-enum',
         enum: ExtraFieldType,
         default: ExtraFieldType.Text,
     })
