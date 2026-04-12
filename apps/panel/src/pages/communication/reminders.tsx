@@ -17,7 +17,7 @@ export default function RemindersPage() {
     const [results, setResults] = useState<
         Array<{
             appointmentId: number;
-            customerName: string;
+            clientName: string;
             smsSent: boolean;
             emailSent: boolean;
             error?: string;
@@ -169,7 +169,7 @@ export default function RemindersPage() {
                                             <tbody>
                                                 {results.map((r) => (
                                                     <tr key={r.appointmentId}>
-                                                        <td>{r.customerName}</td>
+                                                        <td>{r.clientName}</td>
                                                         <td>
                                                             {r.smsSent ? (
                                                                 <span className="salonbw-badge salonbw-badge--success">

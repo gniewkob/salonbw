@@ -12,7 +12,6 @@
   "types": "./src/index.ts",
   "scripts": {
     "gen:api": "openapi-typescript ../../backend/salonbw-backend/openapi.json --output src/schema.ts",
-    "prebuild": "pnpm run gen:api",
     "build": "tsc --emitDeclarationOnly"
   },
   "devDependencies": {

@@ -11,15 +11,6 @@ const reasons = [
     'transfer',
 ] as const;
 
-const reasonLabels: Record<(typeof reasons)[number], string> = {
-    delivery: 'Dostawa',
-    sale: 'Sprzedaż',
-    correction: 'Korekta',
-    damage: 'Uszkodzenie',
-    return: 'Zwrot',
-    transfer: 'Przesunięcie',
-};
-
 interface Props {
     products: Product[];
     onSubmit: (data: AdjustInventoryData) => Promise<void>;
@@ -63,12 +54,12 @@ export default function InventoryAdjustmentForm({
             !Number.isFinite(parsedData.productId) ||
             parsedData.productId < 1
         ) {
-            setError('Wybierz produkt');
+            setError('Product is required');
             return;
         }
 
         if (!Number.isFinite(parsedData.delta)) {
-            setError('Podaj zmianę stanu');
+            setError('Delta is required');
             return;
         }
 
@@ -76,12 +67,12 @@ export default function InventoryAdjustmentForm({
             !parsedData.reason ||
             !reasons.includes(parsedData.reason as (typeof reasons)[number])
         ) {
-            setError('Wybierz powód zmiany');
+            setError('Reason is required');
             return;
         }
 
         if (parsedData.note && parsedData.note.length > 500) {
-            setError('Notatka może mieć maksymalnie 500 znaków');
+            setError('Note must be <= 500 characters');
             return;
         }
 
@@ -95,11 +86,7 @@ export default function InventoryAdjustmentForm({
                 note: parsedData.note,
             });
         } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message || 'Wystąpił błąd'
-                    : 'Wystąpił błąd',
-            );
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }
@@ -143,10 +130,10 @@ export default function InventoryAdjustmentForm({
                 value={delta}
                 onChange={(e) => setDelta(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Zmiana stanu"
+                placeholder="Delta"
             />
             <p className="small text-muted">
-                Wartość dodatnia zwiększa stan, a ujemna zmniejsza stan
+                Positive for stock in, negative for stock out
             </p>
             <select
                 data-testid="reason-select"
@@ -155,14 +142,14 @@ export default function InventoryAdjustmentForm({
                 onChange={(e) => setReason(e.target.value)}
                 onClick={handleReasonSelectClick}
             >
-                <option value="">Wybierz powód</option>
+                <option value="">Select reason</option>
                 {reasons.map((option) => (
                     <option
                         key={option}
                         value={option}
                         data-testid={`reason-option-${option}`}
                     >
-                        {reasonLabels[option]}
+                        {option}
                     </option>
                 ))}
             </select>
@@ -170,7 +157,7 @@ export default function InventoryAdjustmentForm({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Notatka (opcjonalnie)"
+                placeholder="Note (optional)"
                 maxLength={500}
                 rows={3}
             />
@@ -186,14 +173,14 @@ export default function InventoryAdjustmentForm({
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    Anuluj
+                    Cancel
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

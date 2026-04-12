@@ -34,11 +34,11 @@ export default function AppointmentForm({
                 'status' in err &&
                 (err as { status?: number }).status === 409
             ) {
-                setError('Wybrany termin jest już zajęty');
+                setError('Conflict');
             } else if (err instanceof Error) {
-                setError(err.message || 'Wystąpił błąd');
+                setError(err.message || 'Error');
             } else {
-                setError('Wystąpił błąd');
+                setError('Error');
             }
         } finally {
             setSubmitting(false);
@@ -76,14 +76,14 @@ export default function AppointmentForm({
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Anuluj
+                    Cancel
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

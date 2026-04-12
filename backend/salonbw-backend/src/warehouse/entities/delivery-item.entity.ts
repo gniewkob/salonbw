@@ -50,6 +50,6 @@ export class DeliveryItem {
     @Column({ type: 'varchar', length: 50, nullable: true })
     batchNumber: string | null;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'date', nullable: true })
     expiryDate: Date | null;
 }

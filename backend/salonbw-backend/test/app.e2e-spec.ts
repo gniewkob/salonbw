@@ -2,22 +2,9 @@ import { INestApplication, Module } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { HealthController } from '../src/health.controller';
-import { HealthService } from '../src/health.service';
 
 @Module({
     controllers: [HealthController],
-    providers: [
-        {
-            provide: HealthService,
-            useValue: {
-                getHealthSummary: async () => ({
-                    status: 'ok',
-                    timestamp: new Date().toISOString(),
-                    services: {},
-                }),
-            },
-        },
-    ],
 })
 class TestAppModule {}
 
@@ -32,14 +19,12 @@ d('Health (e2e)', () => {
             imports: [TestAppModule],
         }).compile();
 
-        app = moduleFixture.createNestApplication({ bodyParser: false });
+        app = moduleFixture.createNestApplication();
         await app.init();
     });
 
     afterAll(async () => {
-        if (app) {
-            await app.close();
-        }
+        await app.close();
     });
 
     it('/health (GET)', () => {

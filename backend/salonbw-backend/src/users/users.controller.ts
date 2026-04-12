@@ -28,7 +28,7 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Receptionist, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     @SkipThrottle()
     @Get('profile')
     @ApiBearerAuth()

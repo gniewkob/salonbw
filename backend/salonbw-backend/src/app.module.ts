@@ -12,9 +12,7 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { UsersModule } from './users/users.module';
-import { FinanceModule } from './finance/finance.module';
 import { AuthModule } from './auth/auth.module';
-import { AuthSocialModule } from './auth-social/auth-social.module';
 import { ServicesModule } from './services/services.module';
 import { ProductsModule } from './products/products.module';
 import { AppointmentsModule } from './appointments/appointments.module';
@@ -60,24 +58,6 @@ import { ContentModule } from './content/content.module';
                 renameContext: 'component',
                 pinoHttp: {
                     level: config.get('PINO_LOG_LEVEL', 'info'),
-                    redact: {
-                        paths: [
-                            'req.headers.authorization',
-                            'req.headers.cookie',
-                            'req.headers.x-log-token',
-                            'req.body.password',
-                            'req.body.token',
-                            'req.body.refreshToken',
-                            'req.body.currentPassword',
-                            'req.body.newPassword',
-                            'req.body.smtpPassword',
-                            'req.body.smtp.password',
-                            'res.headers["set-cookie"]',
-                            'err.config.headers.Authorization',
-                            'err.config.headers.authorization',
-                        ],
-                        censor: '[REDACTED]',
-                    },
                     autoLogging: {
                         ignore: (req) => req.url === '/metrics',
                     },
@@ -118,9 +98,7 @@ import { ContentModule } from './content/content.module';
             useFactory: createTypeOrmConfig,
         }),
         UsersModule,
-        FinanceModule,
         AuthModule,
-        AuthSocialModule,
         ServicesModule,
         ProductsModule,
         AppointmentsModule,
@@ -194,19 +172,14 @@ function resolvePinoTransport(config: ConfigService) {
 }
 
 function createThrottlerConfig(config: ConfigService) {
-    const nodeEnv = config.get<string>('NODE_ENV', 'development');
-    const isTest = nodeEnv === 'test' || config.get('DB_TYPE') === 'sqlite';
-
     const ttl = asPositiveNumber(
         config.get<string>('THROTTLE_TTL', '60000'),
         'THROTTLE_TTL',
     );
-    const limit = isTest
-        ? 1000
-        : asPositiveNumber(
-              config.get<string>('THROTTLE_LIMIT', '10'),
-              'THROTTLE_LIMIT',
-          );
+    const limit = asPositiveNumber(
+        config.get<string>('THROTTLE_LIMIT', '10'),
+        'THROTTLE_LIMIT',
+    );
     return [{ ttl, limit }];
 }
 
@@ -238,18 +211,6 @@ function createTypeOrmConfig(config: ConfigService): TypeOrmModuleOptions {
         nodeEnv === 'development'
             ? ['error', 'warn', 'query']
             : ['error', 'warn'];
-
-    const dbType = config.get<'postgres' | 'sqlite'>('DB_TYPE', 'postgres');
-
-    if (dbType === 'sqlite') {
-        return {
-            type: 'sqlite',
-            database: config.get<string>('DATABASE_URL', ':memory:'),
-            autoLoadEntities: true,
-            synchronize: shouldSync,
-            logging,
-        };
-    }
 
     return {
         type: 'postgres' as const,

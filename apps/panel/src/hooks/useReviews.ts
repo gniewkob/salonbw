@@ -4,7 +4,7 @@ import { Review } from '@/types';
 
 interface Options {
     employeeId?: number;
-    customerId?: number;
+    clientId?: number;
     mine?: boolean;
 }
 
@@ -21,8 +21,8 @@ export function useReviews(options: Options = {}) {
     useEffect(() => {
         const endpoint = options.employeeId
             ? `/employees/${options.employeeId}/reviews`
-            : options.customerId
-              ? `/customers/${options.customerId}/reviews`
+            : options.clientId
+              ? `/customers/${options.clientId}/reviews`
               : options.mine
                 ? '/reviews/me'
                 : '/reviews';
@@ -49,7 +49,7 @@ export function useReviews(options: Options = {}) {
             .finally(() => setLoading(false));
     }, [
         options.employeeId,
-        options.customerId,
+        options.clientId,
         options.mine,
         page,
         limit,

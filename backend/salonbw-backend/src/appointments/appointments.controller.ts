@@ -29,7 +29,6 @@ import { Appointment } from './appointment.entity';
 import { User } from '../users/user.entity';
 import { Service as SalonService } from '../services/service.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { CheckConflictsQueryDto } from './dto/check-conflicts-query.dto';
 import { GetAppointmentsDto } from './dto/get-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
@@ -41,30 +40,28 @@ export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Customer)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
     @Get()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'List appointments (optional filters, paginated)' })
-    @ApiResponse({ status: 200, description: 'Paginated appointments list' })
+    @ApiOperation({ summary: 'List appointments (admin, optional filters)' })
+    @ApiResponse({ status: 200, type: Appointment, isArray: true })
     findAll(
-        @Query()
+        @Query(new ValidationPipe({ transform: true }))
         query: GetAppointmentsDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<{ data: Appointment[]; total: number; page: number; limit: number; totalPages: number }> {
+    ): Promise<Appointment[]> {
         if (user.role === Role.Admin || user.role === Role.Receptionist) {
             return this.appointmentsService.findAllInRange({
-                from: query.from,
-                to: query.to,
+                from: query.from ? new Date(query.from) : undefined,
+                to: query.to ? new Date(query.to) : undefined,
                 employeeId: query.employeeId,
-                page: query.page,
-                limit: query.limit,
             });
         }
-        return this.appointmentsService.findForUser(user.userId, query.page, query.limit);
+        return this.appointmentsService.findForUser(user.userId);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Post()
     @ApiBearerAuth()
     @ApiOperation({
@@ -102,27 +99,24 @@ export class AppointmentsController {
                 employee: { id: body.employeeId } as User,
                 service: { id: body.serviceId } as SalonService,
                 serviceVariantId: body.serviceVariantId,
-                startTime: body.startTime,
+                startTime: new Date(body.startTime),
             },
             { id: user.userId } as User,
         );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get('me')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get appointments for current user (paginated)' })
-    @ApiResponse({ status: 200, description: 'Paginated appointments list' })
-    findMine(
-        @CurrentUser() user: { userId: number },
-        @Query() query: GetAppointmentsDto,
-    ): Promise<{ data: Appointment[]; total: number; page: number; limit: number; totalPages: number }> {
-        return this.appointmentsService.findForUser(user.userId, query.page, query.limit);
+    @ApiOperation({ summary: 'Get appointments for current user' })
+    @ApiResponse({ status: 200, type: Appointment, isArray: true })
+    findMine(@CurrentUser() user: { userId: number }): Promise<Appointment[]> {
+        return this.appointmentsService.findForUser(user.userId);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Patch(':id/cancel')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Cancel appointment' })
@@ -199,8 +193,8 @@ export class AppointmentsController {
     ): Promise<Appointment | null> {
         const updated = await this.appointmentsService.updateStartTime(
             id,
-            body.startTime,
-            body.endTime,
+            new Date(body.startTime),
+            body.endTime ? new Date(body.endTime) : undefined,
             body.serviceVariantId,
             { id: user.userId } as User,
         );
@@ -250,8 +244,8 @@ export class AppointmentsController {
 
         const updated = await this.appointmentsService.reschedule(
             id,
-            body.startTime,
-            body.endTime,
+            new Date(body.startTime),
+            body.endTime ? new Date(body.endTime) : undefined,
             body.employeeId,
             body.force ?? false,
             { id: user.userId } as User,
@@ -279,19 +273,23 @@ export class AppointmentsController {
     })
     async checkConflicts(
         @Param('id', ParseIntPipe) id: number,
-        @Query() query: CheckConflictsQueryDto,
+        @Query('startTime') startTime: string,
+        @Query('endTime') endTime: string,
+        @Query('employeeId') employeeId?: string,
     ) {
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
         }
 
-        const targetEmployeeId = query.employeeId ?? appointment.employee.id;
+        const targetEmployeeId = employeeId
+            ? parseInt(employeeId, 10)
+            : appointment.employee.id;
 
         return this.appointmentsService.checkConflicts(
             targetEmployeeId,
-            query.startTime,
-            query.endTime,
+            new Date(startTime),
+            new Date(endTime),
             id,
         );
     }
@@ -319,7 +317,7 @@ export class AppointmentsController {
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async finalize(
         @Param('id', ParseIntPipe) id: number,
-        @Body()
+        @Body(new ValidationPipe({ transform: true }))
         body: FinalizeAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {

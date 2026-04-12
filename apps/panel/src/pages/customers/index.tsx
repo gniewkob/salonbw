@@ -42,15 +42,11 @@ function DraggableCustomerRow({
     isDragging,
     onOpen,
     rowClass,
-    isSelected,
-    onToggleSelection,
 }: {
     customer: Customer;
     isDragging: boolean;
     onOpen: (id: number) => void;
     rowClass?: string;
-    isSelected: boolean;
-    onToggleSelection: (id: number) => void;
 }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: customer.id,
@@ -74,8 +70,6 @@ function DraggableCustomerRow({
                     <input
                         type="checkbox"
                         aria-label="Wybierz klienta"
-                        checked={isSelected}
-                        onChange={() => onToggleSelection(customer.id)}
                         onClick={(e) => e.stopPropagation()}
                         onPointerDown={(e) => e.stopPropagation()}
                     />
@@ -92,7 +86,7 @@ function DraggableCustomerRow({
             <td>
                 {customer.email ? (
                     <a
-                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&recipientId=${customer.id}&single=1`}
+                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&single=1`}
                         onClick={(e) => e.stopPropagation()}
                         onPointerDown={(e) => e.stopPropagation()}
                     >
@@ -164,7 +158,7 @@ function DraggableCustomerRow({
     );
 }
 
-export default function CustomersPage() {
+export default function ClientsPage() {
     const { role } = useAuth();
     const router = useRouter();
 
@@ -183,7 +177,6 @@ export default function CustomersPage() {
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         setPage(1);
@@ -195,7 +188,6 @@ export default function CustomersPage() {
             tagId: currentTagId,
             serviceId: currentServiceId,
             employeeId: currentEmployeeId,
-            search: searchTerm || undefined,
             hasUpcomingVisit:
                 router.query.hasUpcomingVisit === 'true' ? true : undefined,
             limit: pageSize,
@@ -206,7 +198,6 @@ export default function CustomersPage() {
             currentTagId,
             currentServiceId,
             currentEmployeeId,
-            searchTerm,
             router.query.hasUpcomingVisit,
             page,
             pageSize,
@@ -214,12 +205,10 @@ export default function CustomersPage() {
     );
 
     const { data: customersData, isLoading } = useCustomers(filters);
-    const customers = useMemo(() => customersData?.data ?? [], [customersData]);
+    const customers = customersData?.items ?? [];
     const { data: groups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
-    const [selectedCustomerIds, setSelectedCustomerIds] = useState<number[]>(
-        [],
-    );
+    const [searchTerm, setSearchTerm] = useState('');
     const [draggedCustomer, setDraggedCustomer] = useState<Customer | null>(
         null,
     );
@@ -241,38 +230,13 @@ export default function CustomersPage() {
         );
     };
 
-    const filteredCustomers = customers;
-
-    useEffect(() => {
-        setSelectedCustomerIds((current) =>
-            current.filter((id) =>
-                customers.some((customer) => customer.id === id),
-            ),
-        );
-    }, [customers]);
-
-    const visibleCustomerIds = filteredCustomers.map((customer) => customer.id);
-    const allVisibleSelected =
-        visibleCustomerIds.length > 0 &&
-        visibleCustomerIds.every((id) => selectedCustomerIds.includes(id));
-
-    const toggleCustomerSelection = (customerId: number) => {
-        setSelectedCustomerIds((current) =>
-            current.includes(customerId)
-                ? current.filter((id) => id !== customerId)
-                : [...current, customerId],
-        );
-    };
-
-    const toggleVisibleSelection = () => {
-        setSelectedCustomerIds((current) => {
-            if (allVisibleSelected) {
-                return current.filter((id) => !visibleCustomerIds.includes(id));
-            }
-
-            return Array.from(new Set([...current, ...visibleCustomerIds]));
-        });
-    };
+    const filteredCustomers = searchTerm
+        ? customers.filter(
+              (c) =>
+                  c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.phone?.includes(searchTerm),
+          )
+        : customers;
 
     const handleDragStart = (event: DragStartEvent) => {
         const customer = customers.find((c) => c.id === event.active.id);
@@ -416,11 +380,6 @@ export default function CustomersPage() {
                                         <input
                                             type="checkbox"
                                             aria-label="zaznacz wszystkich"
-                                            checked={allVisibleSelected}
-                                            disabled={
-                                                visibleCustomerIds.length === 0
-                                            }
-                                            onChange={toggleVisibleSelection}
                                         />
                                         zaznacz wszystkich (
                                         <span>{filteredCustomers.length}</span>)
@@ -458,12 +417,6 @@ export default function CustomersPage() {
                                                             i % 2 === 0
                                                                 ? 'odd'
                                                                 : 'even'
-                                                        }
-                                                        isSelected={selectedCustomerIds.includes(
-                                                            customer.id,
-                                                        )}
-                                                        onToggleSelection={
-                                                            toggleCustomerSelection
                                                         }
                                                         onOpen={(id) =>
                                                             void router.push(
@@ -521,9 +474,7 @@ export default function CustomersPage() {
                                         readOnly
                                     />
                                     {' z '}
-                                    <span className="pointer">
-                                        {totalPages}
-                                    </span>
+                                    <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
                                         className="button button-link button_next ml-s"
@@ -543,7 +494,7 @@ export default function CustomersPage() {
 
                     <DragOverlay dropAnimation={null}>
                         {draggedCustomer ? (
-                            <div className="customers-drag-overlay">
+                            <div className="clients-drag-overlay">
                                 <span>{draggedCustomer.name}</span>
                             </div>
                         ) : null}

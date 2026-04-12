@@ -72,7 +72,7 @@ export class EmployeesController {
     async staffOptions() {
         const users = await this.usersService.findAll();
         return users
-            .filter((user) => user.role !== Role.Customer)
+            .filter((user) => user.role !== Role.Client)
             .map((user) => ({
                 id: user.id,
                 name: user.name,

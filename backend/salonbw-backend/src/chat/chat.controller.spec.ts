@@ -39,7 +39,7 @@ d('ChatController', () => {
         messages = [];
         appointment = {
             id: 1,
-            client: { id: 1, role: Role.Customer } as unknown as User,
+            client: { id: 1, role: Role.Client } as unknown as User,
             employee: { id: 2, role: Role.Employee } as unknown as User,
         } as Appointment;
 
@@ -74,7 +74,7 @@ d('ChatController', () => {
             ),
         };
 
-        currentUser = { userId: 1, role: Role.Customer };
+        currentUser = { userId: 1, role: Role.Client };
 
         const moduleRef = await Test.createTestingModule({
             controllers: [ChatController],
@@ -144,7 +144,7 @@ d('ChatController', () => {
         expect(body).toHaveLength(1);
         expect(body[0].text).toBe('hello');
 
-        currentUser = { userId: 3, role: Role.Customer };
+        currentUser = { userId: 3, role: Role.Client };
         await request(server).get('/appointments/1/chat').expect(403);
     });
 });

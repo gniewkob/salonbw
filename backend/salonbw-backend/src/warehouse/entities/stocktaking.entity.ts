@@ -53,8 +53,8 @@ export class Stocktaking {
     @Column({ type: 'int', nullable: true })
     completedById: number | null;
 
-    @Column({ nullable: true })
-    completedAt: Date;
+    @Column({ type: 'timestamp', nullable: true })
+    completedAt: Date | null;
 
     @OneToMany(() => StocktakingItem, (item) => item.stocktaking, {
         cascade: true,

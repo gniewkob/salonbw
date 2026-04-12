@@ -33,7 +33,7 @@ export class ServiceVariantsController {
     constructor(private readonly variantsService: ServiceVariantsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all variants for a service' })

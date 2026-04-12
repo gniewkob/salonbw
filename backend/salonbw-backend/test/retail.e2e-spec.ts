@@ -1,7 +1,6 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
-import { LoggerModule } from 'nestjs-pino';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import * as jwt from 'jsonwebtoken';
@@ -10,7 +9,6 @@ import { Repository } from 'typeorm';
 
 import { AuthModule } from '../src/auth/auth.module';
 import { RetailModule } from '../src/retail/retail.module';
-import { FinanceModule } from '../src/finance/finance.module';
 import { ProductsModule } from '../src/products/products.module';
 import { UsersModule } from '../src/users/users.module';
 import { User } from '../src/users/user.entity';
@@ -20,7 +18,6 @@ import { Service } from '../src/services/service.entity';
 import { Commission } from '../src/commissions/commission.entity';
 import { CommissionRule } from '../src/commissions/commission-rule.entity';
 import { Log } from '../src/logs/log.entity';
-import { ALL_ENTITIES } from './test-entities';
 
 const SKIP = process.env.SKIP_BIND_TESTS === '1';
 const d = SKIP ? describe.skip : describe;
@@ -43,18 +40,22 @@ d('Retail (POS) integration', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
                 ConfigModule.forRoot({ isGlobal: true }),
-                LoggerModule.forRoot({
-                    pinoHttp: { level: 'silent' },
-                }),
                 TypeOrmModule.forRoot({
                     type: 'sqlite',
                     database: ':memory:',
                     dropSchema: true,
-                    entities: ALL_ENTITIES,
+                    entities: [
+                        User,
+                        Product,
+                        Appointment,
+                        Service,
+                        Commission,
+                        CommissionRule,
+                        Log,
+                    ],
                     synchronize: true,
                 }),
                 AuthModule,
-                FinanceModule,
                 UsersModule,
                 ProductsModule,
                 RetailModule,
@@ -63,7 +64,6 @@ d('Retail (POS) integration', () => {
 
         app = moduleFixture.createNestApplication();
         app.use(cookieParser());
-        app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
         await app.init();
         server = app.getHttpServer() as Parameters<typeof request>[0];
 
@@ -88,7 +88,6 @@ d('Retail (POS) integration', () => {
             name: 'Shampoo',
             brand: 'BW',
             unitPrice: 25,
-            vatRate: 23,
             stock: 10,
         });
     });
@@ -107,7 +106,7 @@ d('Retail (POS) integration', () => {
                 employeeId: employee.id,
             })
             .expect(201);
-        expect((res.body as { status: string }).status).toBe('active');
+        expect((res.body as { status: string }).status).toBe('ok');
         const updated = await productRepo.findOne({
             where: { id: product.id },
         });

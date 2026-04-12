@@ -4,7 +4,7 @@ import type { Route } from 'next';
 import { useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
-import CustomerDetailNav from '@/components/salon/navs/CustomerDetailNav';
+import ClientDetailNav from '@/components/salon/navs/ClientDetailNav';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -119,7 +119,7 @@ export default function CustomerDetailPage() {
         () =>
             customerId !== null ? (
                 <div className="sidenav" id="sidenav">
-                    <CustomerDetailNav
+                    <ClientDetailNav
                         customerId={customerId}
                         customerName={
                             customer?.fullName || customer?.name || '...'

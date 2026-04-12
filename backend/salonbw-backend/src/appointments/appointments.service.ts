@@ -4,7 +4,6 @@ import {
     BadRequestException,
     Inject,
     forwardRef,
-    Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -28,18 +27,13 @@ import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
-import { PushService } from '../notifications/push.service';
-import { LoyaltyService } from '../loyalty/loyalty.service';
 import { MetricsService } from '../observability/metrics.service';
-import { maskPhone, sanitizeLogValue } from '../logs/redaction.util';
 import { Optional } from '@nestjs/common';
 import { RetailService } from '../retail/retail.service';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
-    private readonly logger = new Logger(AppointmentsService.name);
-
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
@@ -52,8 +46,6 @@ export class AppointmentsService {
         private readonly commissionsService: CommissionsService,
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
-        private readonly pushService: PushService,
-        private readonly loyaltyService: LoyaltyService,
         @Optional() private readonly metrics?: MetricsService,
         @Optional()
         @Inject(forwardRef(() => RetailService))
@@ -63,7 +55,7 @@ export class AppointmentsService {
     private async loadClientOrThrow(id: number): Promise<User> {
         const client = await this.usersRepository.findOne({ where: { id } });
         if (!client) throw new BadRequestException('Invalid clientId');
-        if (client.role !== Role.Customer)
+        if (client.role !== Role.Client)
             throw new BadRequestException(
                 'Provided clientId does not belong to a client',
             );
@@ -142,10 +134,7 @@ export class AppointmentsService {
         try {
             await this.logService.logAction(user, action, payload);
         } catch (error) {
-            this.logger.error(
-                { action, error: sanitizeLogValue(error) },
-                'Failed to persist log action',
-            );
+            console.error('Failed to persist log action', error);
         }
     }
 
@@ -155,14 +144,11 @@ export class AppointmentsService {
         return { date, time };
     }
 
-    async findAllInRange(params: {
+    findAllInRange(params: {
         from?: Date;
         to?: Date;
         employeeId?: number;
-        page?: number;
-        limit?: number;
-    }): Promise<{ data: Appointment[]; total: number; page: number; limit: number; totalPages: number }> {
-        const { page = 1, limit = 50 } = params;
+    }): Promise<Appointment[]> {
         const where: FindOptionsWhere<Appointment> & {
             employee?: { id: number };
         } = {};
@@ -174,23 +160,11 @@ export class AppointmentsService {
         } else if (params.to) {
             where.startTime = LessThan(params.to);
         }
-
-        const offset = (page - 1) * limit;
-        const [data, total] = await this.appointmentsRepository.findAndCount({
+        return this.appointmentsRepository.find({
             where,
             order: { startTime: 'ASC' },
             relations: ['formulas'],
-            skip: offset,
-            take: limit,
         });
-
-        return {
-            data,
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        };
     }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
@@ -244,59 +218,22 @@ export class AppointmentsService {
                     time,
                 );
             } catch (error) {
-                this.logger.error(
-                    {
-                        appointmentId: result.id,
-                        recipient: maskPhone(client.phone),
-                        error: sanitizeLogValue(error),
-                    },
-                    'Failed to send booking confirmation',
-                );
+                console.error('Failed to send booking confirmation', error);
             }
         } else {
-            this.logger.warn(
-                {
-                    appointmentId: result.id,
-                    hasPhone: Boolean(client.phone),
-                    notificationsEnabled: client.receiveNotifications !== false,
-                },
-                'Skipping booking confirmation',
+            console.warn(
+                'Client has no phone number or notifications disabled; skipping booking confirmation',
             );
         }
-
-        // Notify employee if booked by a customer
-        if (user.role === 'client') { // Keep 'client' string check or import Role
-            this.pushService.notifyUsers([employee.id], {
-                title: 'Nowa rezerwacja!',
-                body: `${client.name || 'Klient'} umówił/a się na ${service.name} (${this.formatDate(result.startTime).date} ${this.formatDate(result.startTime).time}).`,
-                url: `/calendar`,
-            }).catch(e => this.logger.error('Failed to send push to employee', e));
-        }
-
         return result;
     }
 
-    async findForUser(
-        userId: number,
-        page: number = 1,
-        limit: number = 50,
-    ): Promise<{ data: Appointment[]; total: number; page: number; limit: number; totalPages: number }> {
-        const offset = (page - 1) * limit;
-        const [data, total] = await this.appointmentsRepository.findAndCount({
+    findForUser(userId: number): Promise<Appointment[]> {
+        return this.appointmentsRepository.find({
             where: [{ client: { id: userId } }, { employee: { id: userId } }],
             order: { startTime: 'ASC' },
             relations: ['formulas'],
-            skip: offset,
-            take: limit,
         });
-
-        return {
-            data,
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        };
     }
 
     async findOne(id: number): Promise<Appointment | null> {
@@ -343,12 +280,9 @@ export class AppointmentsService {
                     },
                 );
             } catch (error) {
-                this.logger.error(
-                    {
-                        appointmentId: updated.id,
-                        error: sanitizeLogValue(error),
-                    },
+                console.error(
                     'Failed to log appointment cancellation action',
+                    error,
                 );
             }
         }
@@ -401,24 +335,11 @@ export class AppointmentsService {
                         time,
                     );
                 } catch (error) {
-                    this.logger.error(
-                        {
-                            appointmentId: updated.id,
-                            recipient: maskPhone(updated.client.phone),
-                            error: sanitizeLogValue(error),
-                        },
-                        'Failed to send follow up message',
-                    );
+                    console.error('Failed to send follow up message', error);
                 }
             } else {
-                this.logger.warn(
-                    {
-                        appointmentId: updated.id,
-                        hasPhone: Boolean(updated.client.phone),
-                        notificationsEnabled:
-                            updated.client.receiveNotifications !== false,
-                    },
-                    'Skipping follow up message',
+                console.warn(
+                    'Client has no phone number or notifications disabled; skipping follow up message',
                 );
             }
         }
@@ -696,18 +617,6 @@ export class AppointmentsService {
                 discount,
                 productsCount: dto.products?.length ?? 0,
             });
-
-            // Award loyalty points
-            await this.loyaltyService
-                .awardPointsForAppointment(
-                    updated.client.id,
-                    updated.id,
-                    paidAmount,
-                    user.id,
-                )
-                .catch((e) =>
-                    this.logger.error('Failed to award loyalty points', e),
-                );
 
             // Send follow-up notification
             if (updated.client.phone && updated.client.receiveNotifications) {

@@ -29,7 +29,7 @@ export default function WarehouseUsageCreatePage() {
     const [lines, setLines] = useState<UsageLineForm[]>([
         { productId: '', quantity: '1' },
     ]);
-    const [customerName, setCustomerName] = useState('');
+    const [clientName, setClientName] = useState('');
     const [employeeId, setEmployeeId] = useState('');
     const [plannedFor, setPlannedFor] = useState(
         new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
@@ -76,7 +76,7 @@ export default function WarehouseUsageCreatePage() {
         }
 
         await createMutation.mutateAsync({
-            customerName: customerName || undefined,
+            clientName: clientName || undefined,
             employeeId: employeeId ? Number(employeeId) : undefined,
             scope: usageScope,
             plannedFor: isPlanned
@@ -188,8 +188,8 @@ export default function WarehouseUsageCreatePage() {
                     <span>Klient</span>
                     <input
                         type="text"
-                        value={customerName}
-                        onChange={(event) => setCustomerName(event.target.value)}
+                        value={clientName}
+                        onChange={(event) => setClientName(event.target.value)}
                         className="form-control"
                         placeholder="wpisz nazwisko lub imię klienta"
                     />

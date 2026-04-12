@@ -27,7 +27,7 @@ export class CalendarSettings {
     // Default view settings
     @Column({
         name: 'default_view',
-        type: 'simple-enum',
+        type: 'enum',
         enum: CalendarView,
         default: CalendarView.Day,
     })
@@ -140,7 +140,7 @@ export class CalendarSettings {
     // Colors for appointment statuses
     @Column({
         name: 'status_colors',
-        type: 'simple-json',
+        type: 'jsonb',
         default: () =>
             `'{"pending": "#FFC107", "confirmed": "#28A745", "in_progress": "#17A2B8", "completed": "#6C757D", "cancelled": "#DC3545", "no_show": "#343A40"}'`,
     })

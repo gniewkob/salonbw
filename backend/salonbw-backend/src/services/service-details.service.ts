@@ -393,9 +393,7 @@ export class ServiceDetailsService {
                       where: { id: In(variantIds) },
                   })
                 : [];
-        const variantsById = new Map(
-            variants.map((variant) => [variant.id, variant]),
-        );
+        const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
 
         const productIds = Array.from(
             new Set(
@@ -410,9 +408,7 @@ export class ServiceDetailsService {
                       where: { id: In(productIds) },
                   })
                 : [];
-        const productsById = new Map(
-            products.map((product) => [product.id, product]),
-        );
+        const productsById = new Map(products.map((product) => [product.id, product]));
 
         for (const item of items) {
             if (item.serviceVariantId) {

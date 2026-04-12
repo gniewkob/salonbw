@@ -6,23 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCashRegister } from '@/hooks/useStatistics';
 import type { CashRegisterSummary } from '@/types';
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-    cash: 'Gotówka',
-    card: 'Karta',
-    transfer: 'Przelew',
-    online: 'Online',
-    voucher: 'Voucher',
-};
-
-const ENTRY_TYPE_LABELS: Record<
-    CashRegisterSummary['entries'][number]['type'],
-    string
-> = {
-    appointment: 'Wizyta',
-    product: 'Produkt',
-    other: 'Inne',
-};
-
 export default function CashRegisterPage() {
     const { role } = useAuth();
     const [selectedDate, setSelectedDate] = useState(
@@ -68,43 +51,6 @@ export default function CashRegisterPage() {
     };
 
     const summary = data ? calculateSummary(data.entries) : null;
-    const entries = data?.entries ?? [];
-    const chronologicalEntries = [...entries].sort((a, b) =>
-        `${b.time}`.localeCompare(`${a.time}`),
-    );
-    const inflowEntries = chronologicalEntries.filter(
-        (entry) => entry.amount > 0,
-    );
-    const outflowEntries = chronologicalEntries.filter(
-        (entry) => entry.amount < 0,
-    );
-    const otherOperationEntries = chronologicalEntries.filter(
-        (entry) => entry.type === 'other',
-    );
-    const paymentTotals = data
-        ? [
-              {
-                  label: 'Gotówka',
-                  value: data.totals.cash,
-              },
-              {
-                  label: 'Karta',
-                  value: data.totals.card,
-              },
-              {
-                  label: 'Przelew',
-                  value: data.totals.transfer,
-              },
-              {
-                  label: 'Online',
-                  value: data.totals.online,
-              },
-              {
-                  label: 'Voucher',
-                  value: data.totals.voucher,
-              },
-          ].filter((item) => item.value !== 0)
-        : [];
 
     if (!role) return null;
 
@@ -167,20 +113,10 @@ export default function CashRegisterPage() {
 
                 {/* Action buttons */}
                 <div className="p-4 d-flex gap-2 justify-content-center">
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        disabled
-                        title="Operacje ręczne nie są jeszcze dostępne w tym widoku"
-                    >
+                    <button type="button" className="btn btn-primary">
                         dodaj wpływ (kasa przyjmie)
                     </button>
-                    <button
-                        type="button"
-                        className="btn btn-default"
-                        disabled
-                        title="Operacje ręczne nie są jeszcze dostępne w tym widoku"
-                    >
+                    <button type="button" className="btn btn-default">
                         dodaj wypływ (kasa wypłaci)
                     </button>
                 </div>
@@ -197,8 +133,6 @@ export default function CashRegisterPage() {
                             <button
                                 type="button"
                                 className="btn btn-primary btn-sm"
-                                disabled
-                                title="Zamykanie kasy nie jest jeszcze dostępne w tym widoku"
                             >
                                 zamknij kasę
                             </button>
@@ -292,42 +226,9 @@ export default function CashRegisterPage() {
                             <h3 className="fs-5 fw-semibold mb-3">
                                 Inne operacje kasowe
                             </h3>
-                            {otherOperationEntries.length > 0 ? (
-                                <div className="salonbw-table-wrap">
-                                    <table className="salonbw-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Czas</th>
-                                                <th>Opis</th>
-                                                <th className="text-end">
-                                                    Kwota
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {otherOperationEntries.map(
-                                                (entry) => (
-                                                    <tr key={entry.id}>
-                                                        <td>{entry.time}</td>
-                                                        <td>
-                                                            {entry.description}
-                                                        </td>
-                                                        <td className="text-end">
-                                                            {formatMoney(
-                                                                entry.amount,
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-muted fst-italic">
-                                    brak operacji
-                                </div>
-                            )}
+                            <div className="text-muted fst-italic">
+                                brak operacji
+                            </div>
                         </div>
 
                         {/* Outflows */}
@@ -335,46 +236,9 @@ export default function CashRegisterPage() {
                             <h3 className="fs-5 fw-semibold mb-3">
                                 Wypływy z kasy
                             </h3>
-                            {outflowEntries.length > 0 ? (
-                                <div className="salonbw-table-wrap">
-                                    <table className="salonbw-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Czas</th>
-                                                <th>Typ</th>
-                                                <th>Opis</th>
-                                                <th className="text-end">
-                                                    Kwota
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {outflowEntries.map((entry) => (
-                                                <tr key={entry.id}>
-                                                    <td>{entry.time}</td>
-                                                    <td>
-                                                        {
-                                                            ENTRY_TYPE_LABELS[
-                                                                entry.type
-                                                            ]
-                                                        }
-                                                    </td>
-                                                    <td>{entry.description}</td>
-                                                    <td className="text-end">
-                                                        {formatMoney(
-                                                            entry.amount,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-muted fst-italic">
-                                    brak operacji
-                                </div>
-                            )}
+                            <div className="text-muted fst-italic">
+                                brak operacji
+                            </div>
                         </div>
 
                         {/* Inflows */}
@@ -382,53 +246,9 @@ export default function CashRegisterPage() {
                             <h3 className="fs-5 fw-semibold mb-3">
                                 Wpływy do kasy
                             </h3>
-                            {inflowEntries.length > 0 ? (
-                                <div className="salonbw-table-wrap">
-                                    <table className="salonbw-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Czas</th>
-                                                <th>Typ</th>
-                                                <th>Opis</th>
-                                                <th>Metoda płatności</th>
-                                                <th className="text-end">
-                                                    Kwota
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {inflowEntries.map((entry) => (
-                                                <tr key={entry.id}>
-                                                    <td>{entry.time}</td>
-                                                    <td>
-                                                        {
-                                                            ENTRY_TYPE_LABELS[
-                                                                entry.type
-                                                            ]
-                                                        }
-                                                    </td>
-                                                    <td>{entry.description}</td>
-                                                    <td>
-                                                        {PAYMENT_METHOD_LABELS[
-                                                            entry.paymentMethod
-                                                        ] ||
-                                                            entry.paymentMethod}
-                                                    </td>
-                                                    <td className="text-end">
-                                                        {formatMoney(
-                                                            entry.amount,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-muted fst-italic">
-                                    brak operacji
-                                </div>
-                            )}
+                            <div className="text-muted fst-italic">
+                                brak operacji
+                            </div>
                         </div>
 
                         {/* Entries table */}
@@ -465,7 +285,7 @@ export default function CashRegisterPage() {
                                                 </td>
                                                 <td>{entry.description}</td>
                                                 <td>
-                                                    {entry.customerName || '-'}
+                                                    {entry.clientName || '-'}
                                                 </td>
                                                 <td>
                                                     {entry.employeeName || '-'}
@@ -498,127 +318,14 @@ export default function CashRegisterPage() {
                         )}
                     </>
                 ) : (
-                    <div className="d-flex flex-column gap-4">
-                        <div className="row g-4">
-                            <div className="col-sm-4">
-                                <div className="border rounded p-4 text-center">
-                                    <div className="small text-muted mb-2">
-                                        Liczba operacji
-                                    </div>
-                                    <div className="fs-3 fw-bold">
-                                        {chronologicalEntries.length}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-sm-4">
-                                <div className="border rounded p-4 text-center bg-success bg-opacity-10">
-                                    <div className="small text-muted mb-2">
-                                        Suma wpływów
-                                    </div>
-                                    <div className="fs-5 fw-semibold text-success">
-                                        {formatMoney(
-                                            inflowEntries.reduce(
-                                                (sum, entry) =>
-                                                    sum + entry.amount,
-                                                0,
-                                            ),
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-sm-4">
-                                <div className="border rounded p-4 text-center bg-danger bg-opacity-10">
-                                    <div className="small text-muted mb-2">
-                                        Suma wypływów
-                                    </div>
-                                    <div className="fs-5 fw-semibold text-danger">
-                                        {formatMoney(
-                                            outflowEntries.reduce(
-                                                (sum, entry) =>
-                                                    sum + entry.amount,
-                                                0,
-                                            ),
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                    <>
+                        <h3 className="fs-5 fw-semibold mb-3">
+                            Historia operacji kasowych
+                        </h3>
+                        <div className="text-muted fst-italic">
+                            Funkcja w przygotowaniu
                         </div>
-
-                        <div className="salonbw-table-wrap">
-                            <h3 className="fs-5 fw-semibold mb-3">
-                                Historia operacji kasowych
-                            </h3>
-                            {paymentTotals.length > 0 ? (
-                                <div className="d-flex flex-wrap gap-2 mb-3">
-                                    {paymentTotals.map((item) => (
-                                        <span
-                                            key={item.label}
-                                            className="badge bg-light text-body border"
-                                        >
-                                            {item.label}:{' '}
-                                            {formatMoney(item.value)}
-                                        </span>
-                                    ))}
-                                </div>
-                            ) : null}
-                            {chronologicalEntries.length > 0 ? (
-                                <table className="salonbw-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Czas</th>
-                                            <th>Typ</th>
-                                            <th>Opis</th>
-                                            <th>Klient</th>
-                                            <th>Pracownik</th>
-                                            <th>Metoda płatności</th>
-                                            <th className="text-end">Kwota</th>
-                                            <th className="text-end">
-                                                Napiwek
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {chronologicalEntries.map((entry) => (
-                                            <tr key={entry.id}>
-                                                <td>{entry.time}</td>
-                                                <td>
-                                                    {
-                                                        ENTRY_TYPE_LABELS[
-                                                            entry.type
-                                                        ]
-                                                    }
-                                                </td>
-                                                <td>{entry.description}</td>
-                                                <td>
-                                                    {entry.customerName || '-'}
-                                                </td>
-                                                <td>
-                                                    {entry.employeeName || '-'}
-                                                </td>
-                                                <td>
-                                                    {PAYMENT_METHOD_LABELS[
-                                                        entry.paymentMethod
-                                                    ] || entry.paymentMethod}
-                                                </td>
-                                                <td className="text-end">
-                                                    {formatMoney(entry.amount)}
-                                                </td>
-                                                <td className="text-end">
-                                                    {entry.tip > 0
-                                                        ? formatMoney(entry.tip)
-                                                        : '-'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <div className="text-muted fst-italic">
-                                    Brak operacji dla wybranego dnia
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    </>
                 )}
             </div>
         </SalonShell>

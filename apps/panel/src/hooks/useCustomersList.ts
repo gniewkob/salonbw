@@ -1,6 +1,6 @@
 import { useList } from './useList';
-import { Customer } from '@/types';
+import { Client } from '@/types';
 
-export function useCustomersList(page?: number, limit?: number) {
-    return useList<Customer>('/customers', { page, limit });
+export function useCustomersList() {
+    return useList<Client>('/customers');
 }
