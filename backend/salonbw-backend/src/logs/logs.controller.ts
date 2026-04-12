@@ -28,7 +28,6 @@ import { LogService } from './log.service';
 import { GetLogsDto } from './dto/get-logs.dto';
 import { ClientLogDto } from './dto/client-log.dto';
 import { GetActivityFeedDto } from './dto/get-activity-feed.dto';
-import { sanitizeLogValue } from './redaction.util';
 
 @ApiTags('logs')
 @Controller('logs')
@@ -89,21 +88,15 @@ export class LogsController {
         if (expected && token !== expected) {
             throw new UnauthorizedException('Invalid log token');
         }
-        const sanitizedMessage = sanitizeLogValue(dto.message);
-        const sanitizedExtra = sanitizeLogValue(dto.extra);
-        const sanitizedStack = sanitizeLogValue(dto.stack);
         this.logger.error(
             {
                 source: 'frontend',
                 path: dto.path,
                 userAgent: dto.userAgent,
-                extra: sanitizedExtra,
-                stack: sanitizedStack,
+                extra: dto.extra,
                 level: dto.level ?? 'error',
             },
-            typeof sanitizedMessage === 'string'
-                ? sanitizedMessage
-                : 'Client log message',
+            dto.message,
         );
         return { accepted: true };
     }

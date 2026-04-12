@@ -1,7 +1,7 @@
 import type { Role } from '@/types';
 
 export function getPostLoginRoute(role: Role | null | undefined): string {
-    if (role === 'customer') {
+    if (role === 'client') {
         return '/dashboard';
     }
 

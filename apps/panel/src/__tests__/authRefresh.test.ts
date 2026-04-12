@@ -72,7 +72,7 @@ describe('ApiClient token refresh', () => {
             },
         );
 
-        const customer = new ApiClient(
+        const client = new ApiClient(
             () => accessToken,
             jest.fn(),
             (tokens) => {
@@ -82,7 +82,7 @@ describe('ApiClient token refresh', () => {
             },
         );
 
-        const result = await customer.request<{ ok: boolean }>('/protected');
+        const result = await client.request<{ ok: boolean }>('/protected');
         expect(result).toEqual({ ok: true });
         expect(accessToken).toBe('newToken');
         expect(localStorage.getItem('refreshToken')).toBe('newRefresh');

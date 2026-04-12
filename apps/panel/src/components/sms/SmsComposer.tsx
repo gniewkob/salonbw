@@ -115,7 +115,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                     />
                     <p className="mt-1 small text-muted">
                         Zmienne typu {'{'}
-                        {'{'} customer_name {'}'}
+                        {'{'} client_name {'}'}
                         {'}'} zostaną automatycznie zastąpione danymi klienta.
                     </p>
                 </div>

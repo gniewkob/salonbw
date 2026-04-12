@@ -28,11 +28,11 @@ export class EmailLog {
     @Column({ type: 'text' })
     template: string;
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column({ type: 'jsonb', nullable: true })
     data: Record<string, string> | null;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: EmailLogStatus,
         default: EmailLogStatus.Pending,
     })
@@ -55,7 +55,7 @@ export class EmailLog {
     @JoinColumn({ name: 'sentById' })
     sentBy: User | null;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'timestamp', nullable: true })
     sentAt: Date | null;
 
     @CreateDateColumn()

@@ -44,7 +44,7 @@ type CalendarEmbedConfig = {
         api: {
             deviceToken: null;
             graphQL: { url: string };
-            auth: { url: string; customerId: string };
+            auth: { url: string; clientId: string };
         };
     };
     t_net: string;
@@ -85,7 +85,7 @@ export function buildCalendarEmbedConfig(userId: number): CalendarEmbedConfig {
             api: {
                 deviceToken: null,
                 graphQL: { url: '/graphql' },
-                auth: { url: '/api/auth/token', customerId: 'salonbw' },
+                auth: { url: '/api/auth/token', clientId: 'salonbw' },
             },
         },
         t_net: 'netto',

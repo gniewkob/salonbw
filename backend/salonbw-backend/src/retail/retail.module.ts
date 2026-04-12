@@ -8,7 +8,6 @@ import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { LogsModule } from '../logs/logs.module';
-import { FinanceModule } from '../finance/finance.module';
 import { UsageController } from './usage.controller';
 import { WarehouseSale } from '../warehouse/entities/warehouse-sale.entity';
 import { WarehouseSaleItem } from '../warehouse/entities/warehouse-sale-item.entity';
@@ -28,7 +27,6 @@ import { WarehouseUsageItem } from '../warehouse/entities/warehouse-usage-item.e
         ]),
         CommissionsModule,
         LogsModule,
-        FinanceModule,
     ],
     controllers: [SalesController, InventoryController, UsageController],
     providers: [RetailService],

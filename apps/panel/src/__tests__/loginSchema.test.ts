@@ -7,13 +7,13 @@ describe('loginValidationSchema', () => {
                 email: '',
                 password: '',
             }),
-        ).rejects.toThrow('Podaj adres e-mail');
+        ).rejects.toThrow('Email is required');
         await expect(
             loginValidationSchema.validateAt('password', {
                 email: 'a@b.com',
                 password: '',
             }),
-        ).rejects.toThrow('Podaj hasło');
+        ).rejects.toThrow('Password is required');
     });
 
     it('validates email format', async () => {
@@ -22,7 +22,7 @@ describe('loginValidationSchema', () => {
                 { email: 'bad', password: 'secret' },
                 { abortEarly: false },
             ),
-        ).rejects.toThrow('Podaj poprawny adres e-mail');
+        ).rejects.toThrow('Invalid email');
         await expect(
             loginValidationSchema.isValid({
                 email: 'user@example.com',

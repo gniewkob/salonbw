@@ -1,4 +1,10 @@
-export type Role = 'customer' | 'employee' | 'receptionist' | 'admin';
+export interface Client {
+    id: number;
+    name: string;
+    phone?: string;
+}
+
+export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
 
 export interface User {
     id: number;
@@ -23,7 +29,7 @@ export interface Appointment {
     id: number;
     startTime: string;
     endTime?: string;
-    customer?: Customer;
+    client?: Client;
     service?: Service;
     employee?: Employee;
     status?: AppointmentStatus;
@@ -164,13 +170,13 @@ export interface Employee {
     lastName?: string;
     fullName?: string;
     color?: string;
-    role?: 'admin' | 'employee' | 'receptionist' | 'customer';
+    role?: 'admin' | 'employee' | 'receptionist' | 'client';
 }
 
 export interface StaffOption {
     id: number;
     name: string;
-    role: 'admin' | 'employee' | 'receptionist' | 'customer';
+    role: 'admin' | 'employee' | 'receptionist' | 'client';
 }
 
 export interface ActivityLogFeedItem {
@@ -265,19 +271,19 @@ export interface Review {
     rating: number;
     comment?: string;
     employee?: Employee;
-    customer?: Customer;
-    author?: Customer;
+    client?: Client;
+    author?: Client;
     createdAt?: string;
 }
 
 export interface DashboardResponse {
-    customerCount: number;
+    clientCount: number;
     employeeCount: number;
     todayAppointments: number;
     upcomingAppointments: Appointment[];
 }
 
-export interface CustomerDashboardResponse {
+export interface ClientDashboardResponse {
     upcomingAppointment: {
         id: number;
         serviceName: string;
@@ -352,8 +358,8 @@ export interface CalendarEvent {
     endTime: string;
     employeeId: number;
     employeeName: string;
-    customerId?: number;
-    customerName?: string;
+    clientId?: number;
+    clientName?: string;
     serviceId?: number;
     serviceName?: string;
     status?: string;
@@ -539,7 +545,7 @@ export interface CustomerFilterParams {
 }
 
 export interface PaginatedCustomers {
-    data: Customer[];
+    items: Customer[];
     total: number;
     page: number;
     limit: number;
@@ -645,7 +651,7 @@ export interface ProductHistoryItem {
     totalNet: number | null;
     totalGross: number | null;
     vatRate: number | null;
-    customerName: string | null;
+    clientName: string | null;
     reference: {
         type: 'sale' | 'usage' | 'delivery' | 'stocktaking' | 'inventory';
         id: number;
@@ -687,8 +693,8 @@ export interface WarehouseSale {
     id: number;
     saleNumber: string;
     soldAt: string;
-    customerName?: string | null;
-    customerId?: number | null;
+    clientName?: string | null;
+    clientId?: number | null;
     employeeId?: number | null;
     appointmentId?: number | null;
     kind?: WarehouseSaleKind;
@@ -732,8 +738,8 @@ export interface WarehouseUsage {
     usageNumber: string;
     usedAt: string;
     scope?: 'planned' | 'completed';
-    customerName?: string | null;
-    customerId?: number | null;
+    clientName?: string | null;
+    clientId?: number | null;
     employeeId?: number | null;
     appointmentId?: number | null;
     notes?: string | null;
@@ -1084,7 +1090,7 @@ export interface SmsLog {
     appointment?: {
         id: number;
         startTime?: string;
-        customer?: { id: number; name: string };
+        client?: { id: number; name: string };
         employee?: { id: number; name: string };
         service?: { id: number; name: string };
     };
@@ -1128,7 +1134,7 @@ export interface DashboardStats {
     todayProductRevenue: number;
     todayAppointments: number;
     todayCompletedAppointments: number;
-    todayNewCustomers: number;
+    todayNewClients: number;
     weekRevenue: number;
     weekProductRevenue: number;
     weekAppointments: number;
@@ -1141,7 +1147,7 @@ export interface DashboardStats {
         date: string;
         count: number;
     }>;
-    monthDailyNewCustomers: Array<{
+    monthDailyNewClients: Array<{
         date: string;
         count: number;
     }>;
@@ -1209,14 +1215,14 @@ export interface ServiceStats {
     averageDuration: number;
 }
 
-export interface CustomerStatsData {
-    newCustomers: number;
-    returningCustomers: number;
+export interface ClientStatsData {
+    newClients: number;
+    returningClients: number;
     totalVisits: number;
-    averageVisitsPerCustomer: number;
-    topCustomers: Array<{
-        customerId: number;
-        customerName: string;
+    averageVisitsPerClient: number;
+    topClients: Array<{
+        clientId: number;
+        clientName: string;
         visits: number;
         totalSpent: number;
     }>;
@@ -1231,7 +1237,7 @@ export interface CashRegisterEntry {
     amount: number;
     tip: number;
     employeeName: string | null;
-    customerName: string | null;
+    clientName: string | null;
 }
 
 export interface CashRegisterSummary {
@@ -1263,8 +1269,8 @@ export const AutomaticMessageTrigger = {
     AppointmentCancellation: 'appointment_cancellation',
     FollowUp: 'follow_up',
     Birthday: 'birthday',
-    InactiveCustomer: 'inactive_customer',
-    NewCustomer: 'new_customer',
+    InactiveClient: 'inactive_client',
+    NewClient: 'new_client',
     ReviewRequest: 'review_request',
 } as const;
 export type AutomaticMessageTrigger =
@@ -1508,7 +1514,7 @@ export interface DataProtectionSettings {
 export interface DataProtectionEmployeeLimit {
     id: number;
     name: string;
-    role: 'admin' | 'employee' | 'receptionist' | 'customer';
+    role: 'admin' | 'employee' | 'receptionist' | 'client';
     paranoiaLimitOverride: number | null;
 }
 
@@ -1545,7 +1551,7 @@ export interface CalendarSettings {
     maxBookingAdvanceDays: number;
     allowSameDayBooking: boolean;
     cancellationDeadlineHours: number;
-    allowCustomerReschedule: boolean;
+    allowClientReschedule: boolean;
     rescheduleDeadlineHours: number;
     reminderEnabled: boolean;
     reminderHoursBefore: number;
@@ -1600,9 +1606,6 @@ export interface OnlineBookingSettings {
     widgetTheme: string;
     widgetPrimaryColor: string | null;
     widgetBorderRadius: number;
-    facebookBookingEnabled: boolean;
-    facebookPageId: string | null;
-    instagramBookingEnabled: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -1674,7 +1677,7 @@ export interface UpdateCalendarSettingsRequest {
     maxBookingAdvanceDays?: number;
     allowSameDayBooking?: boolean;
     cancellationDeadlineHours?: number;
-    allowCustomerReschedule?: boolean;
+    allowClientReschedule?: boolean;
     rescheduleDeadlineHours?: number;
     reminderEnabled?: boolean;
     reminderHoursBefore?: number;
@@ -1718,9 +1721,6 @@ export interface UpdateOnlineBookingSettingsRequest {
     widgetTheme?: string;
     widgetPrimaryColor?: string;
     widgetBorderRadius?: number;
-    facebookBookingEnabled?: boolean;
-    facebookPageId?: string;
-    instagramBookingEnabled?: boolean;
 }
 
 export interface UpdatePaymentConfigurationRequest {

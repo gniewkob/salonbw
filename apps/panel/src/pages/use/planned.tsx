@@ -62,7 +62,7 @@ export default function WarehouseUsagePlannedPage() {
                                             'pl-PL',
                                         )}
                                     </td>
-                                    <td>{entry.customerName ?? '-'}</td>
+                                    <td>{entry.clientName ?? '-'}</td>
                                     <td>{entry.employee?.name ?? '-'}</td>
                                     <td>{entry.summary?.totalItems ?? 0}</td>
                                     <td>

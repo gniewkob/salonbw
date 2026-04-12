@@ -14,10 +14,8 @@ import { RefreshToken } from './refresh-token.entity';
 const EXCLUDED_PATHS = new Set([
     '/auth/login',
     '/auth/register',
-    '/auth/social',
     '/api/auth/login',
     '/api/auth/register',
-    '/api/auth/social',
     '/logs/client',
     // Public contact form endpoint (no session cookies / CSRF token)
     '/emails/contact',

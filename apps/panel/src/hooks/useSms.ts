@@ -303,7 +303,7 @@ export function useSmsMutations() {
                 count: number;
                 results: Array<{
                     appointmentId: number;
-                    customerName: string;
+                    clientName: string;
                     smsSent: boolean;
                     emailSent: boolean;
                     error?: string;

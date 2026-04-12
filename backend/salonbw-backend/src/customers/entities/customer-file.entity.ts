@@ -51,7 +51,7 @@ export class CustomerFile {
     size: number;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: CustomerFileCategory,
         default: CustomerFileCategory.Other,
     })

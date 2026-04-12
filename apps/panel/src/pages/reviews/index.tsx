@@ -17,7 +17,7 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="salonbw-loading">Ładowanie formularza opinii…</div>
+            <div className="salonbw-loading">Loading review form…</div>
         ),
     },
 );
@@ -43,7 +43,7 @@ export default function ReviewsPage() {
                 ...r,
                 appointmentDisplay: r.appointmentId ?? r.appointment?.id ?? '',
                 employeeName: r.employee?.fullName ?? r.employee?.name,
-                authorName: r.author?.name ?? r.customer?.name,
+                authorName: r.author?.name ?? r.client?.name,
             })),
         );
     }, [data]);
@@ -52,11 +52,11 @@ export default function ReviewsPage() {
 
     const columns: Column<Row>[] = [
         { header: 'ID', accessor: 'id' },
-        { header: 'Wizyta', accessor: 'appointmentDisplay' },
-        { header: 'Pracownik', accessor: 'employeeName' },
-        { header: 'Autor', accessor: 'authorName' },
-        { header: 'Ocena', accessor: 'rating' },
-        { header: 'Komentarz', accessor: 'comment' },
+        { header: 'Appointment', accessor: 'appointmentDisplay' },
+        { header: 'Employee', accessor: 'employeeName' },
+        { header: 'Author', accessor: 'authorName' },
+        { header: 'Rating', accessor: 'rating' },
+        { header: 'Comment', accessor: 'comment' },
     ];
 
     const handleCreate = async (values: {
@@ -76,7 +76,7 @@ export default function ReviewsPage() {
                     created.appointmentId ?? created.appointment?.id ?? '',
                 employeeName:
                     created.employee?.fullName ?? created.employee?.name,
-                authorName: created.author?.name ?? created.customer?.name,
+                authorName: created.author?.name ?? created.client?.name,
             },
         ]);
         setOpenForm(false);
@@ -105,7 +105,7 @@ export default function ReviewsPage() {
                               updated.employee?.fullName ??
                               updated.employee?.name,
                           authorName:
-                              updated.author?.name ?? updated.customer?.name,
+                              updated.author?.name ?? updated.client?.name,
                       }
                     : cl,
             ),
@@ -115,7 +115,7 @@ export default function ReviewsPage() {
     };
 
     const handleDelete = async (row: Row) => {
-        if (!confirm(`Usunąć opinię #${row.id}?`)) return;
+        if (!confirm(`Delete review ${row.id}?`)) return;
         await api.remove(row.id);
         setRows((c) => c.filter((cl) => cl.id !== row.id));
     };
@@ -134,7 +134,7 @@ export default function ReviewsPage() {
                     <div className="salonbw-page__toolbar">
                         {isAdmin && (
                             <label className="salonbw-label">
-                                Pracownik
+                                Employee
                                 <input
                                     type="number"
                                     className="salonbw-input salonbw-input--sm"

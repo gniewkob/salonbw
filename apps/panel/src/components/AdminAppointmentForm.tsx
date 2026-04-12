@@ -1,18 +1,18 @@
 import { FormEvent, useState } from 'react';
-import { Customer, Employee, Service } from '@/types';
+import { Client, Employee, Service } from '@/types';
 
 interface Props {
-    customers: Customer[];
+    clients: Client[];
     employees: Employee[];
     services: Service[];
     initial?: {
         startTime?: string;
-        customerId?: number;
+        clientId?: number;
         employeeId?: number;
         serviceId?: number;
     };
     onSubmit: (data: {
-        customerId: number;
+        clientId: number;
         employeeId: number;
         serviceId: number;
         startTime: string;
@@ -21,15 +21,15 @@ interface Props {
 }
 
 export default function AdminAppointmentForm({
-    customers,
+    clients,
     employees,
     services,
     initial,
     onSubmit,
     onCancel,
 }: Props) {
-    const [customerId, setCustomerId] = useState<number>(
-        initial?.customerId ?? customers[0]?.id ?? 0,
+    const [clientId, setClientId] = useState<number>(
+        initial?.clientId ?? clients[0]?.id ?? 0,
     );
     const [employeeId, setEmployeeId] = useState<number>(
         initial?.employeeId ?? employees[0]?.id ?? 0,
@@ -48,10 +48,10 @@ export default function AdminAppointmentForm({
         setError('');
         try {
             setSubmitting(true);
-            await onSubmit({ customerId, employeeId, serviceId, startTime });
+            await onSubmit({ clientId, employeeId, serviceId, startTime });
         } catch (err: unknown) {
-            if (err instanceof Error) setError(err.message || 'Wystąpił błąd');
-            else setError('Wystąpił błąd');
+            if (err instanceof Error) setError(err.message);
+            else setError('Error');
         } finally {
             setSubmitting(false);
         }
@@ -61,10 +61,10 @@ export default function AdminAppointmentForm({
         <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
             <select
                 className="border p-1 w-100"
-                value={customerId}
-                onChange={(e) => setCustomerId(Number(e.target.value))}
+                value={clientId}
+                onChange={(e) => setClientId(Number(e.target.value))}
             >
-                {customers.map((c) => (
+                {clients.map((c) => (
                     <option key={c.id} value={c.id}>
                         {c.name}
                     </option>
@@ -109,14 +109,14 @@ export default function AdminAppointmentForm({
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Anuluj
+                    Cancel
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

@@ -85,31 +85,29 @@ export default function SalonTopbar() {
             </div>
             <div className="ml-auto">
                 <ul className="navbar-right simple-list d-flex">
-                    {topbar.search.enabled ? (
-                        <li className="d-flex">
-                            <div className="omnibox-wrapper">
-                                <input
-                                    className="omnibox"
-                                    data-search-url={topbar.search.searchUrl}
-                                    id="omnibox"
-                                    placeholder={topbar.search.placeholder}
-                                />
-                                <div
-                                    className="dropdown-menu"
-                                    id="omnibox-results"
-                                ></div>
-                            </div>
-                        </li>
-                    ) : null}
+                    <li className="d-flex">
+                        <div className="omnibox-wrapper">
+                            <input
+                                className="omnibox"
+                                data-search-url={topbar.search.searchUrl}
+                                id="omnibox"
+                                placeholder={topbar.search.placeholder}
+                            />
+                            <div
+                                className="dropdown-menu"
+                                id="omnibox-results"
+                            ></div>
+                        </div>
+                    </li>
                     {topbar.notifications.enabled ? (
                         <li
                             className="notification_center"
                             id="notification_center_navbar"
                         >
-                            <Link
+                            <a
                                 className="link e2e-notification-center-navbar"
-                                href="/notifications"
-                                title="Powiadomienia"
+                                href="#"
+                                onClick={(event) => event.preventDefault()}
                             >
                                 <div
                                     className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}
@@ -123,7 +121,7 @@ export default function SalonTopbar() {
                                         className="svg-notifications"
                                     />
                                 </div>
-                            </Link>
+                            </a>
                         </li>
                     ) : null}
                     {topbar.tasks.enabled ? (

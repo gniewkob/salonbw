@@ -1,13 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { isAxiosError } from 'axios';
-import { maskPhone, sanitizeLogValue } from '../logs/redaction.util';
 
 @Injectable()
 export class WhatsappService {
-    private readonly logger = new Logger(WhatsappService.name);
     private readonly token: string;
     private readonly phoneId: string;
     private readonly lang: string;
@@ -33,7 +31,7 @@ export class WhatsappService {
         this.enabled = Boolean(this.token && this.phoneId);
 
         if (!this.enabled) {
-            this.logger.warn(
+            console.warn(
                 'WhatsApp notifications disabled: missing WHATSAPP_TOKEN or WHATSAPP_PHONE_ID',
             );
         }
@@ -82,23 +80,12 @@ export class WhatsappService {
                 return;
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
-                    this.logger.error(
-                        {
-                            recipient: maskPhone(to),
-                            templateName,
-                            error: sanitizeLogValue(error.response?.data),
-                        },
+                    console.error(
                         'Failed to send WhatsApp message',
+                        error.response?.data,
                     );
                 } else {
-                    this.logger.error(
-                        {
-                            recipient: maskPhone(to),
-                            templateName,
-                            error: sanitizeLogValue(error),
-                        },
-                        'Failed to send WhatsApp message',
-                    );
+                    console.error('Failed to send WhatsApp message', error);
                 }
                 if (attempt < retries - 1) {
                     await delay(1000);

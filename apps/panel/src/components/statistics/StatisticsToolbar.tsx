@@ -6,11 +6,8 @@ interface StatisticsToolbarProps {
     onDateChange: (value: string) => void;
     onPrint?: () => void;
     onExcel?: () => void;
-    onPdf?: () => void;
     excelDisabled?: boolean;
-    pdfDisabled?: boolean;
     excelLabel?: string;
-    pdfLabel?: string;
 }
 
 export default function StatisticsToolbar({
@@ -21,11 +18,8 @@ export default function StatisticsToolbar({
     onDateChange,
     onPrint,
     onExcel,
-    onPdf,
     excelDisabled = false,
-    pdfDisabled = false,
     excelLabel = 'pobierz raport Excel',
-    pdfLabel = 'pobierz raport PDF',
 }: StatisticsToolbarProps) {
     return (
         <div className="actions statistics-toolbar">
@@ -92,21 +86,6 @@ export default function StatisticsToolbar({
                             aria-hidden="true"
                         />
                         {excelLabel}
-                    </button>
-                ) : null}
-                {onPdf ? (
-                    <button
-                        type="button"
-                        className="button ml-s"
-                        onClick={onPdf}
-                        disabled={pdfDisabled}
-                    >
-                        <div
-                            className="icon sprite-pdf_blue mr-xs"
-                            style={{ display: 'inline-block', width: '16px', height: '16px', backgroundColor: '#e74c3c' }}
-                            aria-hidden="true"
-                        />
-                        {pdfLabel}
                     </button>
                 ) : null}
                 {onPrint ? (

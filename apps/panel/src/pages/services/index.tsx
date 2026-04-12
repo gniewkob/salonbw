@@ -387,9 +387,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                         }}
                                     />
                                     <span className="conjunction"> z </span>
-                                    <span className="pointer">
-                                        {totalPages}
-                                    </span>
+                                    <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
                                         className="button button_next ml-s"

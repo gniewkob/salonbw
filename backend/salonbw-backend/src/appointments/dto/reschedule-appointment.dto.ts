@@ -1,18 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDate, IsOptional, IsNumber, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class RescheduleAppointmentDto {
-    @ApiProperty({ description: 'New start time' })
-    @IsDate()
-    @Type(() => Date)
-    startTime: Date;
+    @ApiProperty({ description: 'New start time ISO string' })
+    @IsDateString()
+    startTime: string;
 
-    @ApiPropertyOptional({ description: 'New end time' })
+    @ApiPropertyOptional({ description: 'New end time ISO string' })
     @IsOptional()
-    @IsDate()
-    @Type(() => Date)
-    endTime?: Date;
+    @IsDateString()
+    endTime?: string;
 
     @ApiPropertyOptional({ description: 'New employee ID (optional)' })
     @IsOptional()

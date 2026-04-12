@@ -79,7 +79,7 @@ export class Branch {
     // Working hours (JSON for flexibility)
     @Column({
         name: 'working_hours',
-        type: 'simple-json',
+        type: 'jsonb',
         default: () =>
             `'{"mon": {"open": "09:00", "close": "18:00"}, "tue": {"open": "09:00", "close": "18:00"}, "wed": {"open": "09:00", "close": "18:00"}, "thu": {"open": "09:00", "close": "18:00"}, "fri": {"open": "09:00", "close": "18:00"}, "sat": {"open": "10:00", "close": "14:00"}, "sun": null}'`,
     })
@@ -100,7 +100,7 @@ export class Branch {
 
     // Status
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: BranchStatus,
         default: BranchStatus.Active,
     })

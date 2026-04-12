@@ -14,7 +14,7 @@ export class ContentSection {
     @Column({ unique: true })
     key: string; // e.g., 'hero_slides', 'founder_message', 'history_items', 'core_values'
 
-    @Column({ type: 'simple-json' })
+    @Column({ type: 'jsonb' })
     data: Record<string, unknown>;
 
     @Column({ type: 'text', nullable: true })

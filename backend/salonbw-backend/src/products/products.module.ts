@@ -11,7 +11,6 @@ import { ServiceRecipeItem } from '../services/entities/service-recipe-item.enti
 import { User } from '../users/user.entity';
 import { ProductCategoriesController } from './product-categories.controller';
 import { ProductCategoriesService } from './product-categories.service';
-import { CacheModule } from '../cache/cache.module';
 
 @Module({
     imports: [
@@ -23,7 +22,6 @@ import { CacheModule } from '../cache/cache.module';
             User,
         ]),
         LogsModule,
-        CacheModule,
     ],
     providers: [ProductsService, ProductCategoriesService, RolesGuard],
     controllers: [ProductsController, ProductCategoriesController],

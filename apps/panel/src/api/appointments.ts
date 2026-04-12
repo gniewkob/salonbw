@@ -29,7 +29,7 @@ export function useAppointmentsApi() {
             employeeId: number;
             serviceId: number;
             startTime: string;
-            customerId?: number;
+            clientId?: number;
         }) =>
             apiFetch<Appointment>('/appointments', {
                 method: 'POST',

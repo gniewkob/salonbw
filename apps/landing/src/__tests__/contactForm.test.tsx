@@ -18,26 +18,35 @@ describe('ContactForm', () => {
                 <ContactForm />
             </ToastProvider>,
         );
-        fireEvent.change(screen.getByPlaceholderText('Imię i nazwisko'), {
+        fireEvent.change(screen.getByPlaceholderText('Your name'), {
             target: { value: 'John' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Adres e-mail'), {
+        fireEvent.change(screen.getByPlaceholderText('Your email'), {
             target: { value: 'john@example.com' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Treść wiadomości'), {
+        fireEvent.change(screen.getByPlaceholderText('Message'), {
             target: { value: 'Hello' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /wyślij/i }));
+        fireEvent.click(screen.getByRole('button', { name: /send/i }));
         await waitFor(() => expect(global.fetch).toHaveBeenCalled());
         expect(global.fetch).toHaveBeenCalledWith(
-            `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
+            `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
             expect.objectContaining({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: 'John',
-                    replyTo: 'john@example.com',
-                    message: 'Hello',
+                    to: 'kontakt@salon-bw.pl',
+                    subject: 'Zapytanie ze strony - John',
+                    template:
+                        '<p><strong>Imię:</strong> {{name}}</p>' +
+                        '<p><strong>Email:</strong> {{email}}</p>' +
+                        '<p><strong>Wiadomość:</strong></p>' +
+                        '<p>{{message}}</p>',
+                    data: {
+                        name: 'John',
+                        email: 'john@example.com',
+                        message: 'Hello',
+                    },
                 }),
             }),
         );
@@ -49,16 +58,16 @@ describe('ContactForm', () => {
                 <ContactForm />
             </ToastProvider>,
         );
-        fireEvent.change(screen.getByPlaceholderText('Imię i nazwisko'), {
+        fireEvent.change(screen.getByPlaceholderText('Your name'), {
             target: { value: 'John' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Adres e-mail'), {
+        fireEvent.change(screen.getByPlaceholderText('Your email'), {
             target: { value: 'invalid' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Treść wiadomości'), {
+        fireEvent.change(screen.getByPlaceholderText('Message'), {
             target: { value: 'Hello' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /wyślij/i }));
+        fireEvent.click(screen.getByRole('button', { name: /send/i }));
         expect(
             await screen.findByText(/nieprawidłowy format adresu email/i),
         ).toBeInTheDocument();

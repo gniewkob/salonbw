@@ -18,17 +18,6 @@ gh run view <run-id> --log | tail
 
 All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are populated (SSH key, mydevil host/user, optional API URLs, `NPM_TOKEN`).
 
-## 1.1 Production access gate
-
-Before running production operations against environments carrying sensitive data, confirm:
-
-- the GitHub `production` environment is protected by required reviewers,
-- only approved operators can dispatch deploy-capable workflows,
-- the target workflow is allowlisted and does not expose arbitrary shell execution,
-- the action is recorded in `docs/AGENT_STATUS.md` when it affects runtime, data, or security posture.
-
-If those checks are not satisfied, stop and treat the environment as not enterprise-ready.
-
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.

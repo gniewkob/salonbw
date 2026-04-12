@@ -77,9 +77,8 @@ export class OrdersService {
             new Set(
                 dto.items
                     .map((item) => item.productId)
-                    .filter(
-                        (productId): productId is number =>
-                            typeof productId === 'number',
+                    .filter((productId): productId is number =>
+                        typeof productId === 'number',
                     ),
             ),
         );
@@ -89,9 +88,7 @@ export class OrdersService {
                       where: { id: In(productIds) },
                   })
                 : [];
-        const productsById = new Map(
-            products.map((product) => [product.id, product]),
-        );
+        const productsById = new Map(products.map((product) => [product.id, product]));
         for (const productId of productIds) {
             if (!productsById.has(productId)) {
                 throw new NotFoundException(`Product ${productId} not found`);
@@ -103,10 +100,7 @@ export class OrdersService {
             let productName = inputItem.productName ?? '';
             if (inputItem.productId) {
                 const product = productsById.get(inputItem.productId);
-                if (!product)
-                    throw new NotFoundException(
-                        `Product ${inputItem.productId} not found`,
-                    );
+                if (!product) throw new NotFoundException(`Product ${inputItem.productId} not found`);
                 productName = product.name;
             }
 
@@ -255,9 +249,8 @@ export class OrdersService {
                 new Set(
                     order.items
                         .map((item) => item.productId)
-                        .filter(
-                            (productId): productId is number =>
-                                typeof productId === 'number',
+                        .filter((productId): productId is number =>
+                            typeof productId === 'number',
                         ),
                 ),
             );

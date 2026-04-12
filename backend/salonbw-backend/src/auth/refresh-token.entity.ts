@@ -19,15 +19,15 @@ export class RefreshToken {
     @Column({ type: 'varchar', length: 255 })
     jti: string;
 
-    @Column({ nullable: false })
+    @Column({ type: 'timestamptz', nullable: false })
     expiresAt: Date;
 
-    @Column({ nullable: true })
-    revokedAt?: Date;
+    @Column({ type: 'timestamptz', nullable: true })
+    revokedAt?: Date | null;
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column({ type: 'jsonb', nullable: true })
     meta?: Record<string, unknown>;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamptz' })
     createdAt: Date;
 }
