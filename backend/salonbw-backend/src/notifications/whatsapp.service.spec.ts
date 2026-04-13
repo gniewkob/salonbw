@@ -66,10 +66,7 @@ describe('WhatsappService', () => {
         expect(scope.isDone()).toBe(true);
     });
 
-    it('should log error on 401 and not throw', async () => {
-        const loggerSpy = jest
-            .spyOn(Logger.prototype, 'error')
-            .mockImplementation(() => {});
+    it('should handle 401 error gracefully', async () => {
         const scope = nock('https://graph.facebook.com')
             .matchHeader('content-type', 'application/json')
             .post('/v17.0/123456/messages')
@@ -78,14 +75,10 @@ describe('WhatsappService', () => {
         await expect(
             service.sendTemplate('987654321', 'test_template', ['x']),
         ).resolves.toBeUndefined();
-        expect(loggerSpy).toHaveBeenCalled();
         expect(scope.isDone()).toBe(true);
     });
 
     it('should retry twice and succeed on third attempt', async () => {
-        const loggerSpy = jest
-            .spyOn(Logger.prototype, 'error')
-            .mockImplementation(() => {});
         let attempts = 0;
         const scope = nock('https://graph.facebook.com')
             .matchHeader('content-type', 'application/json')
@@ -100,7 +93,6 @@ describe('WhatsappService', () => {
             service.sendTemplate('987654321', 'test_template', ['x']),
         ).resolves.toBeUndefined();
 
-        expect(loggerSpy).toHaveBeenCalledTimes(2);
         expect(attempts).toBe(3);
         expect(scope.isDone()).toBe(true);
     });

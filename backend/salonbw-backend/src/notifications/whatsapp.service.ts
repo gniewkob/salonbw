@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
@@ -6,6 +6,7 @@ import { isAxiosError } from 'axios';
 
 @Injectable()
 export class WhatsappService {
+    private readonly logger = new Logger(WhatsappService.name);
     private readonly token: string;
     private readonly phoneId: string;
     private readonly lang: string;
@@ -31,7 +32,7 @@ export class WhatsappService {
         this.enabled = Boolean(this.token && this.phoneId);
 
         if (!this.enabled) {
-            console.warn(
+            this.logger.warn(
                 'WhatsApp notifications disabled: missing WHATSAPP_TOKEN or WHATSAPP_PHONE_ID',
             );
         }
@@ -80,12 +81,12 @@ export class WhatsappService {
                 return;
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
-                    console.error(
+                    this.logger.error(
+                        { error: error.response?.data },
                         'Failed to send WhatsApp message',
-                        error.response?.data,
                     );
                 } else {
-                    console.error('Failed to send WhatsApp message', error);
+                    this.logger.error({ error }, 'Failed to send WhatsApp message');
                 }
                 if (attempt < retries - 1) {
                     await delay(1000);

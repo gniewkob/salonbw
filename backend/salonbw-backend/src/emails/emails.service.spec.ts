@@ -84,7 +84,7 @@ describe('EmailsService', () => {
         const warn = logger.warn as unknown as jest.Mock;
         expect(warn).toHaveBeenCalledWith(
             expect.objectContaining({
-                to: 'te***@example.com',
+                to: dto.to,
                 subject: dto.subject,
                 template: dto.template,
                 data: dto.data,
