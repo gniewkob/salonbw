@@ -18,7 +18,7 @@ export class SmsSettings {
 
     @Column({
         name: 'sms_type',
-        type: 'simple-enum',
+        type: 'enum',
         enum: SmsType,
         default: SmsType.Standard,
     })

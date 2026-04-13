@@ -17,8 +17,6 @@ export class MetricsService {
     private readonly emailsSentTotal: Counter<string>;
     private readonly appointmentsCreatedTotal: Counter<string>;
     private readonly appointmentsCompletedTotal: Counter<string>;
-    private readonly jpkExportsTotal: Counter<string>;
-    private readonly socialLoginsTotal: Counter<string>;
 
     // Database metrics
     private readonly dbConnectionsActive: Gauge<string>;
@@ -65,19 +63,6 @@ export class MetricsService {
         this.appointmentsCompletedTotal = new Counter({
             name: 'salonbw_appointments_completed_total',
             help: 'Number of appointments completed',
-            registers: [this.registry],
-        });
-
-        this.jpkExportsTotal = new Counter({
-            name: 'salonbw_jpk_exports_total',
-            help: 'Number of JPK_FA exports generated',
-            registers: [this.registry],
-        });
-
-        this.socialLoginsTotal = new Counter({
-            name: 'salonbw_social_logins_total',
-            help: 'Number of successful social logins',
-            labelNames: ['provider'], // google | facebook | apple
             registers: [this.registry],
         });
 
@@ -150,14 +135,6 @@ export class MetricsService {
 
     incAppointmentCompleted(): void {
         this.appointmentsCompletedTotal.inc();
-    }
-
-    incJpkExport(): void {
-        this.jpkExportsTotal.inc();
-    }
-
-    incSocialLogin(provider: 'google' | 'facebook' | 'apple'): void {
-        this.socialLoginsTotal.inc({ provider });
     }
 
     // Database metrics methods

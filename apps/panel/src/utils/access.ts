@@ -1,7 +1,7 @@
 import type { Role } from '@/types';
 
 export type Permission =
-    | 'dashboard:customer'
+    | 'dashboard:client'
     | 'dashboard:employee'
     | 'dashboard:receptionist'
     | 'dashboard:admin'
@@ -21,8 +21,8 @@ export type Permission =
     | 'nav:extension';
 
 const rolePermissions: Record<Role, Set<Permission>> = {
-    customer: new Set([
-        'dashboard:customer',
+    client: new Set([
+        'dashboard:client',
         'nav:appointments',
         'nav:invoices',
         'nav:reviews',

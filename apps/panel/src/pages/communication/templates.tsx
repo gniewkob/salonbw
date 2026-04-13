@@ -464,7 +464,7 @@ export default function TemplatesPage() {
 
                                         <div className="salonbw-variables-help">
                                             <h4>Dostępne zmienne:</h4>
-                                            <code>{'{{customer_name}}'}</code>
+                                            <code>{'{{client_name}}'}</code>
                                             <code>{'{{service_name}}'}</code>
                                             <code>{'{{date}}'}</code>
                                             <code>{'{{time}}'}</code>

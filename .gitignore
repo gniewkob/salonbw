@@ -12,8 +12,7 @@
 .env.test.local
 backend/.env
 backend/salonbw-backend/.env
-apps/landing/.env.local
-apps/panel/.env.local
+frontend/.env.local
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
@@ -37,16 +36,9 @@ node_modules/
 dist/
 
 # Ignore Next.js build output and dependencies
-apps/landing/node_modules/
-apps/landing/.next/
-apps/panel/node_modules/
-apps/panel/.next/
+frontend/node_modules/
+frontend/.next/
 .turbo/
-
-# Coverage reports
-apps/landing/coverage/
-apps/panel/coverage/
-backend/salonbw-backend/coverage/
 
 # tailwindcss binary
 tailwindcss

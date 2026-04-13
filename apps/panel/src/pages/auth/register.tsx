@@ -19,48 +19,20 @@ type RegisterErrors = Partial<Record<keyof RegisterFormValues, string>>;
 const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
     const errors: RegisterErrors = {};
     if (!values.name.trim()) {
-        errors.name = 'Podaj imię i nazwisko';
+        errors.name = 'Name is required';
     }
     const trimmedEmail = values.email.trim();
     if (!trimmedEmail) {
-        errors.email = 'Podaj adres e-mail';
+        errors.email = 'Email is required';
     } else if (!emailPattern.test(trimmedEmail)) {
-        errors.email = 'Podaj poprawny adres e-mail';
+        errors.email = 'Invalid email';
     }
     if (!values.password) {
-        errors.password = 'Podaj hasło';
+        errors.password = 'Password is required';
     } else if (values.password.length < 6) {
-        errors.password = 'Hasło musi mieć co najmniej 6 znaków';
+        errors.password = 'Password must be at least 6 characters';
     }
     return errors;
-};
-
-export const registerValidationSchema = {
-    async validateAt(
-        field: keyof RegisterFormValues,
-        values: RegisterFormValues,
-    ) {
-        const errors = validateRegisterForm(values);
-        const message = errors[field];
-        if (message) {
-            throw new Error(message);
-        }
-    },
-    async validate(values: RegisterFormValues) {
-        const errors = validateRegisterForm(values);
-        if (Object.keys(errors).length > 0) {
-            throw new Error(
-                errors.name ??
-                    errors.email ??
-                    errors.password ??
-                    'Formularz rejestracji zawiera błędy',
-            );
-        }
-        return values;
-    },
-    async isValid(values: RegisterFormValues) {
-        return Object.keys(validateRegisterForm(values)).length === 0;
-    },
 };
 
 export default function RegisterPage() {
@@ -119,9 +91,7 @@ export default function RegisterPage() {
             void router.push(getPostLoginRoute(profile?.role));
         } catch (err: unknown) {
             setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się utworzyć konta. Spróbuj ponownie.',
+                err instanceof Error ? err.message : 'Registration failed',
             );
         } finally {
             setSubmitting(false);
@@ -131,25 +101,21 @@ export default function RegisterPage() {
     return (
         <div className="p-3 bg-white">
             <button onClick={() => router.back()} className="mb-3">
-                &larr; Wróć
+                &larr; Back
             </button>
             <form
                 onSubmit={(e) => void handleSubmit(e)}
                 className="gap-2 mx-auto"
                 noValidate
             >
-                <h1 className="fs-3 fw-bold">Załóż konto</h1>
-                <p className="text-muted small mb-3">
-                    Utwórz konto, aby przejść do panelu rezerwacji i obsługi
-                    klientów.
-                </p>
+                <h1 className="fs-3 fw-bold">Register</h1>
 
                 <div>
                     <input
                         className={`border p-2 w-100 rounded ${
                             touched.name && errors.name ? 'border-danger' : ''
                         }`}
-                        placeholder="Imię i nazwisko"
+                        placeholder="Name"
                         value={form.name}
                         onChange={(e) => handleChange('name', e.target.value)}
                         onBlur={() => handleBlur('name')}
@@ -164,7 +130,7 @@ export default function RegisterPage() {
                         className={`border p-2 w-100 rounded ${
                             touched.email && errors.email ? 'border-danger' : ''
                         }`}
-                        placeholder="Adres e-mail"
+                        placeholder="Email"
                         type="email"
                         value={form.email}
                         onChange={(e) => handleChange('email', e.target.value)}
@@ -178,7 +144,7 @@ export default function RegisterPage() {
                 <div>
                     <input
                         className="border p-2 w-100 rounded"
-                        placeholder="Telefon (opcjonalnie)"
+                        placeholder="Phone (optional)"
                         type="tel"
                         value={form.phone}
                         onChange={(e) => handleChange('phone', e.target.value)}
@@ -192,7 +158,7 @@ export default function RegisterPage() {
                                 ? 'border-danger'
                                 : ''
                         }`}
-                        placeholder="Hasło"
+                        placeholder="Password"
                         type="password"
                         value={form.password}
                         onChange={(e) =>
@@ -212,7 +178,7 @@ export default function RegisterPage() {
                     type="submit"
                     disabled={submitting}
                 >
-                    {submitting ? 'Tworzenie konta...' : 'Zarejestruj się'}
+                    {submitting ? 'Registering...' : 'Register'}
                 </button>
                 {error && (
                     <p role="alert" className="text-danger text-center">
@@ -220,9 +186,9 @@ export default function RegisterPage() {
                     </p>
                 )}
                 <p className="text-center small">
-                    Masz już konto?{' '}
+                    Already have an account?{' '}
                     <Link href="/auth/login" className="text-primary">
-                        Zaloguj się
+                        Login
                     </Link>
                 </p>
             </form>

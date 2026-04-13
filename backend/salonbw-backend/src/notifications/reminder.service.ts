@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,12 +8,9 @@ import {
     AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { WhatsappService } from './whatsapp.service';
-import { maskPhone, sanitizeLogValue } from '../logs/redaction.util';
 
 @Injectable()
 export class ReminderService {
-    private readonly logger = new Logger(ReminderService.name);
-
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
@@ -50,14 +47,7 @@ export class ReminderService {
                     .slice(0, 5);
                 await this.whatsapp.sendReminder(phone, date, time);
             } catch (error) {
-                this.logger.error(
-                    {
-                        appointmentId: appointment.id,
-                        recipient: maskPhone(phone),
-                        error: sanitizeLogValue(error),
-                    },
-                    'Failed to send reminder',
-                );
+                console.error('Failed to send reminder', error);
             }
         }
     }

@@ -230,7 +230,7 @@ When deploying on mydevil.net with Phusion Passenger for Node.js:
   - `.next/standalone/` → `public_nodejs/.next/standalone/`
   - `.next/static/` → `public_nodejs/.next/static/`
   - `public/` → `public_nodejs/public/`
-  - `app.js` → `public_nodejs/app.js` (entry that runs `node .next/standalone/server.js`).
+  - `frontend/app.js` → `public_nodejs/app.js` (entry that runs `node .next/standalone/server.js`).
 - Environment for Passenger: set in `~/.bash_profile` (not `.bashrc`), e.g.:
 
 ```bash

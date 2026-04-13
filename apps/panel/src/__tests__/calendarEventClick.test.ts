@@ -6,7 +6,7 @@ describe('appointmentFromEventClick', () => {
         const ap: Appointment = {
             id: 123,
             startTime: '2025-01-01T10:00:00Z',
-            customer: { id: 1, name: 'Alice' },
+            client: { id: 1, name: 'Alice' },
             service: { id: 1, name: 'Cut', duration: 30, price: 10 },
         } as unknown as Appointment;
         const info: { event: { extendedProps?: unknown } } = {

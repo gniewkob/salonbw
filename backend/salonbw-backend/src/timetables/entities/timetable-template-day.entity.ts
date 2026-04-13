@@ -34,7 +34,7 @@ export class TimetableTemplateDay {
     dayOfWeek: DayOfWeek;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: TimetableTemplateDayKind,
         default: TimetableTemplateDayKind.Open,
     })

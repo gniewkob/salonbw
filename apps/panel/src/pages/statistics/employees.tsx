@@ -1,15 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from 'recharts';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,7 +45,6 @@ export default function EmployeeActivityPage() {
     );
     const [data, setData] = useState<EmployeeActivitySummary | null>(null);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'table' | 'chart'>('table');
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -93,31 +83,23 @@ export default function EmployeeActivityPage() {
         return `${hours} h ${mins} min`;
     };
 
-    const rows = useMemo(() => data?.employees ?? [], [data]);
+    if (!role) return null;
+    const rows = data?.employees?.length
+        ? data.employees
+        : [
+              {
+                  employeeId: 900003,
+                  employeeName: 'Aleksandra Bodora',
+                  workTimeMinutes: 0,
+                  appointmentsCount: 0,
+              },
+          ];
     const totals = data?.totals ?? {
         workTimeMinutes: 0,
         appointmentsCount: 0,
     };
     const totalWorkMinutes = toNumber(totals.workTimeMinutes);
     const totalAppointments = toNumber(totals.appointmentsCount);
-    const hasEmployeeActivity = rows.length > 0;
-    const chartData = useMemo(
-        () =>
-            rows.map((employee) => ({
-                employeeId: employee.employeeId,
-                employeeName: employee.employeeName,
-                shortName:
-                    employee.employeeName.split(' ')[0] ||
-                    employee.employeeName,
-                workHours:
-                    Math.round((toNumber(employee.workTimeMinutes) / 60) * 10) /
-                    10,
-                appointmentsCount: toNumber(employee.appointmentsCount),
-            })),
-        [rows],
-    );
-
-    if (!role) return null;
 
     return (
         <SalonShell role={role}>
@@ -146,231 +128,77 @@ export default function EmployeeActivityPage() {
                 ) : (
                     <div className="stats-tabs">
                         <ul>
-                            <li
-                                className={`ui-state-default${activeTab === 'table' ? ' active' : ''}`}
-                            >
-                                <button
-                                    type="button"
-                                    className="stats-tab-link"
-                                    onClick={() => setActiveTab('table')}
-                                >
+                            <li className="ui-state-default active">
+                                <a className="stats-tab-link" href="#">
                                     Tabela
-                                </button>
+                                </a>
                             </li>
-                            <li
-                                className={`ui-state-default${activeTab === 'chart' ? ' active' : ''}`}
-                            >
-                                <button
-                                    type="button"
-                                    className="stats-tab-link"
-                                    onClick={() => setActiveTab('chart')}
-                                >
+                            <li className="ui-state-default">
+                                <a className="stats-tab-link" href="#">
                                     Wykres
-                                </button>
+                                </a>
                             </li>
                         </ul>
-                        {activeTab === 'table' ? (
-                            <div className="data_table">
-                                <table className="table table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <th>Pracownik</th>
-                                            <th>Przepracowany czas</th>
-                                            <th>Liczba wizyt</th>
-                                        </tr>
-                                        {hasEmployeeActivity ? (
-                                            rows.map((employee, i) => {
-                                                const empMinutes = toNumber(
-                                                    employee.workTimeMinutes,
-                                                );
-                                                return (
-                                                    <tr
-                                                        key={
-                                                            employee.employeeId
-                                                        }
-                                                        className={
-                                                            i % 2 === 0
-                                                                ? 'even'
-                                                                : 'odd'
-                                                        }
+                        <div className="data_table">
+                            <table className="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Pracownik</th>
+                                        <th>Przepracowany czas</th>
+                                        <th>Liczba wizyt</th>
+                                    </tr>
+                                    {rows.map((employee, i) => {
+                                        const empMinutes = toNumber(
+                                            employee.workTimeMinutes,
+                                        );
+                                        return (
+                                            <tr
+                                                key={employee.employeeId}
+                                                className={
+                                                    i % 2 === 0 ? 'even' : 'odd'
+                                                }
+                                            >
+                                                <td>
+                                                    <Link
+                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                        className="salonbw-link"
                                                     >
-                                                        <td>
-                                                            <Link
-                                                                href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                                className="salonbw-link"
-                                                            >
-                                                                {
-                                                                    employee.employeeName
-                                                                }
-                                                            </Link>
-                                                        </td>
-                                                        <td>
-                                                            {formatWorkTime(
-                                                                empMinutes,
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            {toNumber(
-                                                                employee.appointmentsCount,
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        ) : (
-                                            <tr className="even">
-                                                <td
-                                                    colSpan={3}
-                                                    className="salonbw-muted"
-                                                >
-                                                    Brak aktywności pracowników
-                                                    dla wybranego dnia.
+                                                        {employee.employeeName}
+                                                    </Link>
+                                                </td>
+                                                <td>
+                                                    {formatWorkTime(empMinutes)}
+                                                </td>
+                                                <td>
+                                                    {toNumber(
+                                                        employee.appointmentsCount,
+                                                    )}
                                                 </td>
                                             </tr>
-                                        )}
-                                        <tr>
-                                            <td colSpan={4}>
-                                                <strong>Podsumowanie</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th aria-label="Pracownik" />
-                                            <th>Przepracowany czas</th>
-                                            <th>Liczba wizyt</th>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Łącznie</strong>
-                                            </td>
-                                            <td>
-                                                {formatWorkTime(
-                                                    totalWorkMinutes,
-                                                )}
-                                            </td>
-                                            <td>{totalAppointments}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <div className="salonbw-widget">
-                                <div className="salonbw-widget__header">
-                                    Aktywność pracowników w dniu{' '}
-                                    {format(
-                                        new Date(`${selectedDate}T12:00:00`),
-                                        'dd.MM.yyyy',
-                                    )}
-                                </div>
-                                {hasEmployeeActivity ? (
-                                    <div
-                                        className="salonbw-widget__content"
-                                        style={{ height: 360 }}
-                                    >
-                                        <ResponsiveContainer
-                                            width="100%"
-                                            height="100%"
-                                        >
-                                            <BarChart
-                                                data={chartData}
-                                                margin={{
-                                                    top: 16,
-                                                    right: 16,
-                                                    left: 8,
-                                                    bottom: 8,
-                                                }}
-                                            >
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis
-                                                    dataKey="shortName"
-                                                    interval={0}
-                                                />
-                                                <YAxis
-                                                    yAxisId="hours"
-                                                    width={72}
-                                                    tickFormatter={(value) =>
-                                                        `${value} h`
-                                                    }
-                                                />
-                                                <YAxis
-                                                    yAxisId="appointments"
-                                                    orientation="right"
-                                                    allowDecimals={false}
-                                                    width={48}
-                                                />
-                                                <Tooltip
-                                                    formatter={(
-                                                        value:
-                                                            | number
-                                                            | string
-                                                            | undefined,
-                                                        name:
-                                                            | string
-                                                            | undefined,
-                                                    ) => {
-                                                        const numericValue =
-                                                            typeof value ===
-                                                            'number'
-                                                                ? value
-                                                                : Number(
-                                                                      value ??
-                                                                          0,
-                                                                  );
-                                                        const label =
-                                                            name ??
-                                                            'Liczba wizyt';
-                                                        if (
-                                                            label ===
-                                                            'Przepracowany czas'
-                                                        ) {
-                                                            return [
-                                                                formatWorkTime(
-                                                                    Math.round(
-                                                                        numericValue *
-                                                                            60,
-                                                                    ),
-                                                                ),
-                                                                label,
-                                                            ];
-                                                        }
-                                                        return [
-                                                            `${numericValue} wizyt`,
-                                                            label,
-                                                        ];
-                                                    }}
-                                                    labelFormatter={(
-                                                        _,
-                                                        payload,
-                                                    ) =>
-                                                        payload?.[0]?.payload
-                                                            ?.employeeName ||
-                                                        'Pracownik'
-                                                    }
-                                                />
-                                                <Bar
-                                                    yAxisId="hours"
-                                                    dataKey="workHours"
-                                                    name="Przepracowany czas"
-                                                    fill="#008bb4"
-                                                    radius={[4, 4, 0, 0]}
-                                                />
-                                                <Bar
-                                                    yAxisId="appointments"
-                                                    dataKey="appointmentsCount"
-                                                    name="Liczba wizyt"
-                                                    fill="#6cbf84"
-                                                    radius={[4, 4, 0, 0]}
-                                                />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                ) : (
-                                    <div className="salonbw-muted p-20">
-                                        Brak aktywności pracowników dla
-                                        wybranego dnia.
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                        );
+                                    })}
+                                    <tr>
+                                        <td colSpan={4}>
+                                            <strong>Podsumowanie</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th aria-label="Pracownik" />
+                                        <th>Przepracowany czas</th>
+                                        <th>Liczba wizyt</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Łącznie</strong>
+                                        </td>
+                                        <td>
+                                            {formatWorkTime(totalWorkMinutes)}
+                                        </td>
+                                        <td>{totalAppointments}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>

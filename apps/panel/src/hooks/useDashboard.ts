@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { DashboardResponse, CustomerDashboardResponse } from '@/types';
+import { DashboardResponse, ClientDashboardResponse } from '@/types';
 
 export interface DashboardData extends DashboardResponse {}
 
@@ -28,19 +28,19 @@ export function useDashboard() {
     return { data, upcoming: data?.upcomingAppointments ?? [], loading };
 }
 
-export function useCustomerDashboard() {
+export function useClientDashboard() {
     const { apiFetch } = useAuth();
-    const [data, setData] = useState<CustomerDashboardResponse | null>(null);
+    const [data, setData] = useState<ClientDashboardResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         let mounted = true;
-        const getCustomerDashboard = async () => {
+        const getClientDashboard = async () => {
             try {
                 const d =
-                    await apiFetch<CustomerDashboardResponse>(
-                        '/dashboard/customer',
+                    await apiFetch<ClientDashboardResponse>(
+                        '/dashboard/client',
                     );
                 if (mounted) setData(d);
             } catch (err) {
@@ -52,7 +52,7 @@ export function useCustomerDashboard() {
                 if (mounted) setLoading(false);
             }
         };
-        void getCustomerDashboard();
+        void getClientDashboard();
         return () => {
             mounted = false;
         };

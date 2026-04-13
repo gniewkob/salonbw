@@ -43,7 +43,7 @@ export class GiftCard {
 
     // Status
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: GiftCardStatus,
         default: GiftCardStatus.Active,
     })
@@ -95,7 +95,7 @@ export class GiftCard {
     // Restrictions
     @Column({
         name: 'allowed_services',
-        type: 'simple-json',
+        type: 'jsonb',
         default: () => `'[]'`,
         comment:
             'Service IDs that this card can be used for. Empty = all services',
@@ -123,8 +123,8 @@ export class GiftCard {
     @Column({ name: 'sold_by_id', nullable: true })
     soldById: number;
 
-    @Column({ name: 'sold_at', type: 'datetime', nullable: true })
-    soldAt: Date | null;
+    @Column({ name: 'sold_at', type: 'timestamp', nullable: true })
+    soldAt: Date;
 
     // Tracking
     @CreateDateColumn({ name: 'created_at' })
@@ -159,7 +159,7 @@ export class GiftCardTransaction {
     giftCardId: number;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: GiftCardTransactionType,
     })
     type: GiftCardTransactionType;

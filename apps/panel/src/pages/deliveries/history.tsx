@@ -223,9 +223,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                         }}
                                     />
                                     {' z '}
-                                    <span className="pointer">
-                                        {totalPages}
-                                    </span>
+                                    <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
                                         className="button button-link button_next ml-s"

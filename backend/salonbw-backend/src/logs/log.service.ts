@@ -201,21 +201,12 @@ export class LogService {
             }
         }
 
-        const logData = {
+        const log = this.logRepository.create({
             user: user ?? null,
             action,
             description,
-        };
-
-        if ((this.logRepository.manager.connection.options as any).type === 'sqlite') {
-            const result = await this.logRepository.createQueryBuilder()
-                .insert()
-                .values(logData)
-                .execute();
-            return { id: result.identifiers[0].id, ...logData } as any;
-        }
-
-        return this.logRepository.save(logData);
+        });
+        return this.logRepository.save(log);
     }
 
     async findAll(options: {

@@ -462,38 +462,44 @@ export class LoyaltyService {
                 }
 
                 await this.deductPoints(balance, reward.pointsCost, manager);
-                
-                await manager.query(
-                    `UPDATE loyalty_balances SET "current_balance" = $1, "total_points_spent" = $2 WHERE "user_id" = $3`,
-                    [balance.currentBalance, balance.totalPointsSpent, balance.userId]
-                );
+                await manager.getRepository(LoyaltyBalance).save(balance);
 
-                const txDescription = `Wymiana na nagrodę: ${reward.name}`;
-                const now = new Date();
-                
-                let savedTxId: number;
-                if (this.dataSource.options.type === 'sqlite') {
-                    await manager.query(
-                        `INSERT INTO loyalty_transactions ("user_id", type, source, points, "balance_after", "reward_id", description, "performed_by_id", "created_at")
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-                        [userId, LoyaltyTransactionType.Spend, LoyaltyTransactionSource.Reward, -reward.pointsCost, balance.currentBalance, reward.id, txDescription, actorId, now]
-                    );
-                    const res = await manager.query('SELECT last_insert_rowid() as id');
-                    savedTxId = Number(res[0].id);
+                const txRepo = manager.getRepository(LoyaltyTransaction);
+                const tx = txRepo.create({
+                    userId,
+                    type: LoyaltyTransactionType.Spend,
+                    source: LoyaltyTransactionSource.Reward,
+                    points: -reward.pointsCost,
+                    balanceAfter: balance.currentBalance,
+                    rewardId: reward.id,
+                    description: `Wymiana na nagrodę: ${reward.name}`,
+                    performedById: actorId,
+                });
+                const savedTx = await txRepo.save(tx);
+
+                // Atomic increment with max limit constraint check to avoid overselling race condition
+                if (reward.maxRedemptions) {
+                    const updateResult = await manager
+                        .getRepository(LoyaltyReward)
+                        .createQueryBuilder()
+                        .update()
+                        .set({
+                            currentRedemptions: () => 'current_redemptions + 1',
+                        })
+                        .where('id = :id', { id: reward.id })
+                        .andWhere('current_redemptions < max_redemptions')
+                        .execute();
+
+                    if (updateResult.affected === 0) {
+                        throw new BadRequestException(
+                            'Ta nagroda została w międzyczasie wyczerpana.',
+                        );
+                    }
                 } else {
-                    const res = await manager.query(
-                        `INSERT INTO loyalty_transactions ("user_id", type, source, points, "balance_after", "reward_id", description, "performed_by_id", "created_at")
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) RETURNING id`,
-                        [userId, LoyaltyTransactionType.Spend, LoyaltyTransactionSource.Reward, -reward.pointsCost, balance.currentBalance, reward.id, txDescription, actorId]
-                    );
-                    savedTxId = Number(res[0].id);
+                    await manager
+                        .getRepository(LoyaltyReward)
+                        .increment({ id: reward.id }, 'currentRedemptions', 1);
                 }
-
-                // Atomic increment
-                await manager.query(
-                    `UPDATE loyalty_rewards SET current_redemptions = current_redemptions + 1 WHERE id = $1`,
-                    [reward.id]
-                );
 
                 const redemptionCode =
                     await this.generateRedemptionCode(manager);
@@ -501,34 +507,20 @@ export class LoyaltyService {
                     Date.now() + 90 * 24 * 60 * 60 * 1000,
                 );
 
-                let redemptionId: number;
-                if (this.dataSource.options.type === 'sqlite') {
-                    await manager.query(
-                        `INSERT INTO loyalty_reward_redemptions ("user_id", "reward_id", "points_spent", "transaction_id", "redemption_code", "expires_at", status, "created_at")
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                        [userId, reward.id, reward.pointsCost, savedTxId, redemptionCode, expiresAt, 'active', now]
-                    );
-                    const res = await manager.query('SELECT last_insert_rowid() as id');
-                    redemptionId = Number(res[0].id);
-                } else {
-                    const res = await manager.query(
-                        `INSERT INTO loyalty_reward_redemptions ("user_id", "reward_id", "points_spent", "transaction_id", "redemption_code", "expires_at", status, "created_at")
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING id`,
-                        [userId, reward.id, reward.pointsCost, savedTxId, redemptionCode, expiresAt, 'active']
-                    );
-                    redemptionId = Number(res[0].id);
-                }
-
-                return {
-                    id: redemptionId,
+                const redemptionRepo = manager.getRepository(
+                    LoyaltyRewardRedemption,
+                );
+                const redemption = redemptionRepo.create({
                     userId,
                     rewardId: reward.id,
                     pointsSpent: reward.pointsCost,
-                    transactionId: savedTxId,
+                    transactionId: savedTx.id,
                     redemptionCode,
                     expiresAt,
                     status: 'active',
-                } as any;
+                });
+
+                return redemptionRepo.save(redemption);
             },
         );
 
@@ -742,7 +734,6 @@ export class LoyaltyService {
             );
         }
 
-        const isSqlite = this.dataSource.options.type === 'sqlite';
         const earnTxs = await manager.getRepository(LoyaltyTransaction).find({
             where: {
                 userId: balance.userId,
@@ -751,7 +742,7 @@ export class LoyaltyService {
                 pointsRemaining: MoreThan(0),
             },
             order: { createdAt: 'ASC' },
-            ...(isSqlite ? {} : { lock: { mode: 'pessimistic_write' } }),
+            lock: { mode: 'pessimistic_write' },
         });
 
         let toDeduct = amount;
@@ -763,10 +754,7 @@ export class LoyaltyService {
             tx.pointsRemaining -= deductedFromTx;
             toDeduct -= deductedFromTx;
 
-            await manager.query(
-                `UPDATE loyalty_transactions SET "points_remaining" = $1 WHERE id = $2`,
-                [tx.pointsRemaining, tx.id]
-            );
+            await manager.getRepository(LoyaltyTransaction).save(tx);
         }
 
         balance.currentBalance -= amount;
@@ -783,11 +771,9 @@ export class LoyaltyService {
         manager: EntityManager,
     ): Promise<LoyaltyBalance> {
         const repo = manager.getRepository(LoyaltyBalance);
-        const isSqlite = this.dataSource.options.type === 'sqlite';
-        
         let balance = await repo.findOne({
             where: { userId },
-            ...(isSqlite ? {} : { lock: { mode: 'pessimistic_write' } }),
+            lock: { mode: 'pessimistic_write' },
         });
 
         if (!balance) {
@@ -803,11 +789,11 @@ export class LoyaltyService {
                 await repo.save(balance);
             } catch (err: any) {
                 // Fail-safe handling for concurrent creation if unique constraint fails
-                if (err.code === '23505' || err.message?.includes('SQLITE_CONSTRAINT')) {
-                    // Postgres duplicate key code or SQLite constraint
+                if (err.code === '23505') {
+                    // Postgres duplicate key code
                     balance = await repo.findOne({
                         where: { userId },
-                        ...(isSqlite ? {} : { lock: { mode: 'pessimistic_write' } }),
+                        lock: { mode: 'pessimistic_write' },
                     });
                     if (!balance) throw err;
                 } else {

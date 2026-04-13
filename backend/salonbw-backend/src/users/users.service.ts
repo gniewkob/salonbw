@@ -53,7 +53,7 @@ export class UsersService {
             email: dto.email,
             name: dto.name,
             password: hashedPassword,
-            role: Role.Customer,
+            role: Role.Client,
             phone: dto.phone ?? null,
             commissionBase: dto.commissionBase ?? 0,
             receiveNotifications: dto.receiveNotifications ?? true,

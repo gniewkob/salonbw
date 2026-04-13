@@ -80,11 +80,11 @@ const mainTiles: SettingsTile[] = [
     {
         href: '/settings/reminders',
         label: 'komunikacja z klientem',
-        boxClass: 'customer_communication',
-        iconId: 'svg-customer_communication',
+        boxClass: 'client_communication',
+        iconId: 'svg-client_communication',
     },
     {
-        href: '/admin/settings/booking-widgets',
+        href: '/communication',
         label: 'media społecznościowe',
         boxClass: 'social_media',
         iconId: 'svg-social_media',

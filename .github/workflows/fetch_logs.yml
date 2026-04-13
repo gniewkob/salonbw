@@ -1,105 +1,24 @@
-name: Fetch Redacted Logs
+name: Fetch Staging Logs
 
 on:
   workflow_dispatch:
     inputs:
-      service:
-        description: "Service log to fetch"
-        required: true
-        type: choice
-        options:
-          - api
-          - panel
-      log_type:
-        description: "Log stream"
-        required: true
-        type: choice
-        options:
-          - passenger
-          - app
       lines:
-        description: "Number of lines to fetch (max 200)"
+        description: 'Number of lines to fetch'
         required: false
-        default: "200"
-
-permissions:
-  contents: read
+        default: '500'
 
 jobs:
   fetch-logs:
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
-        env:
-          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
-          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
         run: |
-          set -euo pipefail
           mkdir -p ~/.ssh
-          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
-          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
-            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
-          else
-            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
-          fi
+          echo "${{ secrets.MYDEVIL_SSH_KEY }}" > ~/.ssh/mydevil
           chmod 600 ~/.ssh/mydevil
-          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
-            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
-          fi
+          ssh-keyscan -H ${{ secrets.MYDEVIL_SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Fetch redacted logs
-        env:
-          SERVICE: ${{ github.event.inputs.service }}
-          LOG_TYPE: ${{ github.event.inputs.log_type }}
-          RAW_LINES: ${{ github.event.inputs.lines }}
-          MYDEVIL_SSH_USER: ${{ secrets.MYDEVIL_SSH_USER }}
-          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+      - name: Fetch Logs
         run: |
-          set -euo pipefail
-
-          if ! [[ "$RAW_LINES" =~ ^[0-9]+$ ]]; then
-            echo "lines must be numeric" >&2
-            exit 1
-          fi
-          if [ "$RAW_LINES" -gt 200 ]; then
-            echo "lines must be <= 200" >&2
-            exit 1
-          fi
-
-          case "$SERVICE" in
-            api)
-              APP_DIR="api_salonbw"
-              ;;
-            panel)
-              APP_DIR="panelbw"
-              ;;
-            *)
-              echo "Unsupported service: $SERVICE" >&2
-              exit 1
-              ;;
-          esac
-
-          case "$LOG_TYPE" in
-            passenger)
-              LOG_FILE="\$HOME/logs/nodejs/${APP_DIR}/passenger.log"
-              ;;
-            app)
-              LOG_FILE="\$HOME/logs/nodejs/${APP_DIR}/app.log"
-              ;;
-            *)
-              echo "Unsupported log type: $LOG_TYPE" >&2
-              exit 1
-              ;;
-          esac
-
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            "$MYDEVIL_SSH_USER@$MYDEVIL_SSH_HOST" \
-            "set -euo pipefail; test -f \"$LOG_FILE\"; tail -n \"$RAW_LINES\" \"$LOG_FILE\"" \
-          | sed -E \
-              -e 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/[REDACTED_EMAIL]/g' \
-              -e 's/(Bearer )[A-Za-z0-9._-]+/\1[REDACTED_TOKEN]/g' \
-              -e 's/(authorization|Authorization|token|Token|password|Password|secret|Secret)([\"=: ]+)([^\" ,]+)/\1\2[REDACTED]/g'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "find ~/apps/nodejs -name app.log -print -exec echo '--- {} ---' \; -exec tail -n ${{ github.event.inputs.lines }} {} \;"

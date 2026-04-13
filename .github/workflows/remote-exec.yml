@@ -1,35 +1,19 @@
-name: Remote Ops (Allowlisted)
+name: Remote Exec (Utility)
 
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: "Allowlisted remote operation"
+      cmd:
+        description: 'Command to run on remote'
         required: true
-        type: choice
-        options:
-          - www-list
-          - restart-api
-          - restart-panel
-          - restart-landing
-          - restart-legacy
-          - api-healthz
-
-permissions:
-  contents: read
+        default: 'ls -la'
 
 jobs:
   exec:
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
-        env:
-          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
-          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
         run: |
-          set -euo pipefail
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
           if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
@@ -38,44 +22,11 @@ jobs:
             printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           fi
           chmod 600 ~/.ssh/mydevil
-          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
-            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
-          fi
-
-      - name: Run allowlisted command
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
         env:
-          ACTION: ${{ github.event.inputs.action }}
-          MYDEVIL_SSH_USER: ${{ secrets.MYDEVIL_SSH_USER }}
-          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run Command
         run: |
-          set -euo pipefail
-
-          case "$ACTION" in
-            www-list)
-              REMOTE_CMD="devil www list"
-              ;;
-            restart-api)
-              REMOTE_CMD="devil www restart api.salon-bw.pl"
-              ;;
-            restart-panel)
-              REMOTE_CMD="devil www restart panel.salon-bw.pl"
-              ;;
-            restart-landing)
-              REMOTE_CMD="devil www restart dev.salon-bw.pl"
-              ;;
-            restart-legacy)
-              REMOTE_CMD="devil www restart salon-bw.pl"
-              ;;
-            api-healthz)
-              REMOTE_CMD="curl -fsS https://api.salon-bw.pl/healthz"
-              ;;
-            *)
-              echo "Unsupported action: $ACTION" >&2
-              exit 1
-              ;;
-          esac
-
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            "$MYDEVIL_SSH_USER@$MYDEVIL_SSH_HOST" "$REMOTE_CMD"
+          ssh -i ~/.ssh/mydevil ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "${{ github.event.inputs.cmd }}"

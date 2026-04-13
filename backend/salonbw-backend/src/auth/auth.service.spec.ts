@@ -92,7 +92,7 @@ describe('AuthService.validateUser', () => {
             email: 'test@example.com',
             name: 'Test User',
             password: 'hashed',
-            role: Role.Customer,
+            role: Role.Client,
         } as unknown as User;
         usersService.findByEmail.mockResolvedValue(user);
         (bcryptMock.compare as unknown as jest.Mock).mockResolvedValue(true);
@@ -112,7 +112,7 @@ describe('AuthService.validateUser', () => {
             id: 1,
             email: 'test@example.com',
             name: 'Test User',
-            role: Role.Customer,
+            role: Role.Client,
         });
     });
 
@@ -134,7 +134,7 @@ describe('AuthService.validateUser', () => {
             email: 'test@example.com',
             name: 'Test User',
             password: 'hashed',
-            role: Role.Customer,
+            role: Role.Client,
         } as unknown as User;
         usersService.findByEmail.mockResolvedValue(user);
         (bcryptMock.compare as unknown as jest.Mock).mockResolvedValue(false);
@@ -204,7 +204,7 @@ describe('AuthService.login', () => {
             email: 'test@example.com',
             name: 'Test',
             password: 'hashed',
-            role: Role.Customer,
+            role: Role.Client,
             phone: '123',
             receiveNotifications: true,
             commissionBase: 0,
@@ -219,14 +219,14 @@ describe('AuthService.login', () => {
                     accessSecret,
                 ) as jwt.JwtPayload;
                 expect(accessPayload.sub).toBe(1);
-                expect(accessPayload.role).toBe(Role.Customer);
+                expect(accessPayload.role).toBe(Role.Client);
 
                 const refreshPayload = jwt.verify(
                     refresh_token,
                     refreshSecret,
                 ) as jwt.JwtPayload;
                 expect(refreshPayload.sub).toBe(1);
-                expect(refreshPayload.role).toBe(Role.Customer);
+                expect(refreshPayload.role).toBe(Role.Client);
             });
     });
 });
@@ -290,7 +290,7 @@ describe('AuthService.refresh', () => {
             email: 'test@example.com',
             name: 'Test',
             password: 'hashed',
-            role: Role.Customer,
+            role: Role.Client,
             phone: '123',
             receiveNotifications: true,
             commissionBase: 0,
@@ -331,13 +331,13 @@ describe('AuthService.refresh', () => {
             accessSecret,
         ) as jwt.JwtPayload;
         expect(accessPayload.sub).toBe(1);
-        expect(accessPayload.role).toBe(Role.Customer);
+        expect(accessPayload.role).toBe(Role.Client);
 
         const refreshPayload = jwt.verify(
             refresh_token,
             refreshSecret,
         ) as jwt.JwtPayload;
         expect(refreshPayload.sub).toBe(1);
-        expect(refreshPayload.role).toBe(Role.Customer);
+        expect(refreshPayload.role).toBe(Role.Client);
     });
 });

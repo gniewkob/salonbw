@@ -221,10 +221,10 @@ export default function NewCustomerPage() {
                         />
 
                         <div className="d-flex align-items-center justify-content-between">
-                            <h2 className="fs-3 fw-bold">nowy klient</h2>
+                            <h2 className="fs-3 fw-bold">Nowy klient</h2>
                         </div>
                         <p className="small text-muted">
-                            klienci / nowy klient
+                            Klienci / Nowy klient
                         </p>
 
                         <form

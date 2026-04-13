@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesGuard } from '../auth/roles.guard';
 import { LogsModule } from '../logs/logs.module';
-import { CacheModule } from '../cache/cache.module';
 
 // Entities
 import { Service } from './service.entity';
@@ -47,7 +46,6 @@ import { ServiceDetailsController } from './service-details.controller';
             CommissionRule,
         ]),
         LogsModule,
-        CacheModule,
     ],
     providers: [
         ServicesService,

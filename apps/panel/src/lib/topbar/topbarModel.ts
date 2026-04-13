@@ -12,7 +12,6 @@ export interface TopbarViewModel {
         mode: 'versum';
     };
     search: {
-        enabled: boolean;
         placeholder: string;
         searchUrl: string;
     };
@@ -54,7 +53,7 @@ function normalizeRoleLabel(role?: string | null) {
             return 'pracownik';
         case 'receptionist':
             return 'recepcjonista';
-        case 'customer':
+        case 'client':
             return 'klient';
         default:
             return role?.trim() || 'administrator';
@@ -90,7 +89,6 @@ export function buildTopbarViewModel(
             mode: 'versum',
         },
         search: {
-            enabled: false,
             placeholder: 'Szukaj...',
             searchUrl: '/global_searches',
         },
@@ -99,7 +97,7 @@ export function buildTopbarViewModel(
             unreadCount: null,
         },
         tasks: {
-            enabled: false,
+            enabled: true,
             count: null,
         },
         help: {

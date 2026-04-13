@@ -9,7 +9,7 @@ jest.mock('@/hooks/useDashboard', () => ({
                 {
                     id: 1,
                     startTime: '2026-03-12T10:00:00.000Z',
-                    customer: { id: 2, name: 'Jan Kowalski' },
+                    client: { id: 2, name: 'Jan Kowalski' },
                     service: { id: 3, name: 'Strzyżenie' },
                 },
             ],
@@ -25,7 +25,7 @@ jest.mock('@/hooks/useStatistics', () => ({
             todayProductRevenue: 80,
             todayAppointments: 4,
             todayCompletedAppointments: 3,
-            todayNewCustomers: 2,
+            todayNewClients: 2,
             weekRevenue: 1200,
             weekProductRevenue: 250,
             weekAppointments: 12,
@@ -38,7 +38,7 @@ jest.mock('@/hooks/useStatistics', () => ({
                 { date: '2026-03-11', count: 2 },
                 { date: '2026-03-12', count: 4 },
             ],
-            monthDailyNewCustomers: [
+            monthDailyNewClients: [
                 { date: '2026-03-11', count: 1 },
                 { date: '2026-03-12', count: 2 },
             ],

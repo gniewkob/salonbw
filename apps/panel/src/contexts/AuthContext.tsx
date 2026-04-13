@@ -29,7 +29,6 @@ interface AuthContextValue {
     logout: () => Promise<void>;
     refresh: () => Promise<void>;
     apiFetch: <T>(endpoint: string, init?: RequestInit) => Promise<T>;
-    apiFetchBlob: (endpoint: string, init?: RequestInit) => Promise<Blob>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -149,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setCsrfToken(readCsrfCookie());
     }, []);
 
-    const customer = useMemo(() => {
+    const client = useMemo(() => {
         return new ApiClient(
             () => {
                 const cookieToken = Cookies.get('accessToken');
@@ -176,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchProfile = useCallback(async () => {
         try {
-            const u = await customer.request<User>('/users/profile', {
+            const u = await client.request<User>('/users/profile', {
                 headers: {
                     'x-skip-logout': 'true',
                     'Cache-Control': 'no-store',
@@ -190,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsAuthenticated(false);
             clearSessionState();
         }
-    }, [customer, clearSessionState]);
+    }, [client, clearSessionState]);
 
     useEffect(() => {
         if (!hasAuthHint()) {
@@ -235,8 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout: handleLogout,
         refresh,
-        apiFetch: customer.request.bind(customer),
-        apiFetchBlob: customer.requestBlob.bind(customer),
+        apiFetch: client.request.bind(client),
     };
 
     return (

@@ -96,7 +96,7 @@ export class CustomersService {
 
         let query = this.usersRepo
             .createQueryBuilder('user')
-            .where('user.role = :role', { role: Role.Customer });
+            .where('user.role = :role', { role: Role.Client });
 
         // Search by name or phone
         if (search) {
@@ -323,13 +323,13 @@ export class CustomersService {
 
         // Pagination
         const offset = (page - 1) * limit;
-        const [data, total] = await query
+        const [items, total] = await query
             .skip(offset)
             .take(limit)
             .getManyAndCount();
 
         return {
-            data,
+            items,
             total,
             page,
             limit,
@@ -339,7 +339,7 @@ export class CustomersService {
 
     async findOne(id: number) {
         const customer = await this.usersRepo.findOne({
-            where: { id, role: Role.Customer },
+            where: { id, role: Role.Client },
             relations: ['groups'],
         });
         if (!customer) {
@@ -362,7 +362,7 @@ export class CustomersService {
             email,
             password,
             name,
-            role: Role.Customer,
+            role: Role.Client,
             commissionBase: 0,
         });
 
@@ -403,7 +403,7 @@ export class CustomersService {
             );
         }
 
-        await this.usersRepo.delete({ id: customer.id, role: Role.Customer });
+        await this.usersRepo.delete({ id: customer.id, role: Role.Client });
         return { success: true };
     }
 
@@ -440,7 +440,7 @@ export class CustomersService {
         if (dto.memberIds?.length) {
             group.members = await this.usersRepo.findBy({
                 id: In(dto.memberIds),
-                role: Role.Customer,
+                role: Role.Client,
             });
         }
 
@@ -460,7 +460,7 @@ export class CustomersService {
         if (dto.memberIds !== undefined) {
             group.members = await this.usersRepo.findBy({
                 id: In(dto.memberIds),
-                role: Role.Customer,
+                role: Role.Client,
             });
         }
 
@@ -511,7 +511,7 @@ export class CustomersService {
         const group = await this.findOneGroup(groupId);
         const newMembers = await this.usersRepo.findBy({
             id: In(customerIds),
-            role: Role.Customer,
+            role: Role.Client,
         });
 
         const existingIds = new Set(group.members.map((m) => m.id));

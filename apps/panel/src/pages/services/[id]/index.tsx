@@ -443,7 +443,7 @@ export default function ServiceDetailsPage() {
                                                                 ?.name ?? '—'}
                                                         </td>
                                                         <td>
-                                                            {item.customer
+                                                            {item.client
                                                                 ?.name ?? '—'}
                                                         </td>
                                                         <td>

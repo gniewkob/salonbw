@@ -34,15 +34,6 @@ function createStatisticsService({
 }) {
     const appointmentRepository: MockRepository<Appointment> = {
         find: jest.fn().mockResolvedValue(appointments),
-        createQueryBuilder: jest.fn(() => ({
-            leftJoin: jest.fn().mockReturnThis(),
-            select: jest.fn().mockReturnThis(),
-            addSelect: jest.fn().mockReturnThis(),
-            where: jest.fn().mockReturnThis(),
-            andWhere: jest.fn().mockReturnThis(),
-            groupBy: jest.fn().mockReturnThis(),
-            getRawMany: jest.fn().mockResolvedValue([]),
-        })),
     };
     const userRepository: MockRepository<User> = {
         find: jest.fn().mockResolvedValue(employees),

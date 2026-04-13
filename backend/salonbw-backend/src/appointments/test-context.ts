@@ -11,8 +11,6 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
-import { PushService } from '../notifications/push.service';
-import { LoyaltyService } from '../loyalty/loyalty.service';
 
 export interface AppointmentsTestContext {
     service: AppointmentsService;
@@ -22,7 +20,6 @@ export interface AppointmentsTestContext {
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     mockWhatsappService: jest.Mocked<WhatsappService>;
-    mockPushService: jest.Mocked<PushService>;
     logActionSpy: jest.SpyInstance;
     sendFollowUpMock: jest.Mock;
     transactionMock: jest.Mock;
@@ -35,7 +32,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const users: User[] = [
         {
             id: 1,
-            role: Role.Customer,
+            role: Role.Client,
             email: '',
             password: '',
             name: '',
@@ -130,15 +127,6 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         ),
     } as unknown as jest.Mocked<WhatsappService>;
 
-    const mockPushService = {
-        notifyUsers: jest.fn().mockResolvedValue(undefined),
-    } as unknown as jest.Mocked<PushService>;
-
-    const mockLoyaltyService = {
-        addPoints: jest.fn().mockResolvedValue(undefined),
-        getBalance: jest.fn().mockResolvedValue({ points: 0 }),
-    } as unknown as jest.Mocked<LoyaltyService>;
-
     const sendFollowUpMock = jest.spyOn(
         mockWhatsappService,
         'sendFollowUp',
@@ -160,8 +148,6 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockCommissionsService,
         mockLogService,
         mockWhatsappService,
-        mockPushService,
-        mockLoyaltyService,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
@@ -173,7 +159,6 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockAppointmentsRepo,
         mockServicesRepo,
         mockWhatsappService,
-        mockPushService,
         logActionSpy,
         sendFollowUpMock,
         transactionMock,
@@ -273,8 +258,7 @@ function createAppointmentsRepo(
             if (typeof criteria === 'number') {
                 return Promise.resolve(findById(criteria));
             }
-            const findWhere = criteria as any;
-            const where = findWhere?.where;
+            const where = criteria?.where;
             if (!where) return Promise.resolve(null);
             if (where.id !== undefined) {
                 return Promise.resolve(findById(where.id));

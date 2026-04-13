@@ -105,23 +105,6 @@ On `push`, the workflow detects changed paths and skips apps that did not change
 
 Populate the secrets in the repository or organisation settings before enabling each workflow. For non-production environments, create separate values and reference them via GitHub environments.
 
-## Production Environment Protection Checklist
-
-Before treating `production` as ready for sensitive financial or personal data, verify:
-
-- `production` GitHub Environment exists and is used by deploy-capable workflows.
-- Required reviewers are enabled for `production` deployments.
-- Only approved maintainers can trigger or approve production deploys.
-- Branch protection is enabled for the deployment branch.
-- Workflow permissions are least-privilege and do not expose broad write scopes.
-- Production workflows do not accept arbitrary remote shell input.
-- Production log access is redacted and scoped to minimum necessary output.
-- Test-data workflows cannot target production.
-- Deployment, backup, and incident-response operators are identified by name or role.
-- Secrets have an owner and a documented rotation procedure.
-
-If any of the items above are missing, do not classify the platform as enterprise-ready for full sensitive data.
-
 ## Local vs CI strategy
 
 - Local: run only unit tests and targeted E2E specs as needed. For macOS machines where Electron verification is flaky, prefer Chrome and the split server approach:

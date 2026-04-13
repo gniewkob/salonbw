@@ -106,13 +106,10 @@ export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
                                         <i className="fa fa-arrow-left mr-6"></i>
                                         Wróć
                                     </button>
-                                    <Link
-                                        href={`/customers/${customer.id}/edit`}
-                                        className="btn btn-default btn-sm ml-8"
-                                    >
+                                    <button className="btn btn-default btn-sm ml-8">
                                         <i className="fa fa-pencil mr-6"></i>
                                         Edytuj
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
                         </div>

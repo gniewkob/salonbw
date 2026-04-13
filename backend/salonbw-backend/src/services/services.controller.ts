@@ -41,7 +41,7 @@ export class ServicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all services with optional filters' })
@@ -80,7 +80,7 @@ export class ServicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get('with-relations')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all services with categories and variants' })
@@ -90,7 +90,7 @@ export class ServicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get('online-booking')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get services available for online booking' })
@@ -100,7 +100,7 @@ export class ServicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get('by-category/:categoryId')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get services by category' })
@@ -112,7 +112,7 @@ export class ServicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get service by id' })

@@ -5,7 +5,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-
 import cookieParser from 'cookie-parser';
 import { LogService } from './logs/log.service';
 import { AuthFailureFilter } from './logs/auth-failure.filter';
@@ -41,13 +40,8 @@ async function bootstrap() {
     app.useGlobalFilters(...globalFilters);
     const metricsInterceptor = await app.resolve(HttpMetricsInterceptor);
     app.useGlobalInterceptors(metricsInterceptor, new LoggerErrorInterceptor());
-
     app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-            transform: true,
-        }),
+        new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
     app.use(cookieParser());
     // app.setGlobalPrefix('api'); // Removed to align with api.salon-bw.pl (no /api suffix)
@@ -60,9 +54,9 @@ async function bootstrap() {
         next();
     });
     const config = app.get(ConfigService);
-    const nodeEnv = config.get<string>('NODE_ENV', 'development');
     const enableSwagger =
-        config.get<string>('ENABLE_SWAGGER', nodeEnv !== 'production' ? 'true' : 'false')?.toLowerCase() === 'true';
+        config.get<string>('ENABLE_SWAGGER', 'false')?.toLowerCase() === 'true';
+    const nodeEnv = config.get<string>('NODE_ENV', 'development');
 
     if (enableSwagger) {
         const swaggerConfig = new DocumentBuilder()

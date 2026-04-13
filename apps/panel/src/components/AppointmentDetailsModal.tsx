@@ -22,29 +22,21 @@ export default function AppointmentDetailsModal({
 }: Props) {
     if (!appointment) return null;
     const a = appointment;
-    const date = new Date(a.startTime).toLocaleString('pl-PL');
-    const statusLabel =
-        a.paymentStatus === 'paid'
-            ? 'opłacona'
-            : a.paymentStatus === 'pending'
-              ? 'oczekuje na płatność'
-              : a.paymentStatus === 'refunded'
-                ? 'zwrócona'
-                : 'zaplanowana';
+    const date = new Date(a.startTime).toLocaleString();
     return (
         <Modal open={open} onClose={onClose}>
             <div className="gap-2">
-                <h3 className="fs-5 fw-semibold">Wizyta #{a.id}</h3>
+                <h3 className="fs-5 fw-semibold">Appointment #{a.id}</h3>
                 <div className="small text-muted">{date}</div>
-                <div>Klient: {a.customer?.name ?? '-'}</div>
-                <div>Usługa: {a.service?.name ?? '-'}</div>
+                <div>Client: {a.client?.name ?? '-'}</div>
+                <div>Service: {a.service?.name ?? '-'}</div>
                 <div>
-                    Pracownik: {a.employee?.fullName ?? a.employee?.name ?? '-'}
+                    Employee: {a.employee?.fullName ?? a.employee?.name ?? '-'}
                 </div>
-                <div>Status: {statusLabel}</div>
+                <div>Status: {a.paymentStatus ?? 'scheduled'}</div>
                 <div className="d-flex gap-2 justify-content-end pt-2">
                     <button className="border px-2 py-1" onClick={onClose}>
-                        Zamknij
+                        Close
                     </button>
                     {canCancel && (
                         <button
@@ -53,7 +45,7 @@ export default function AppointmentDetailsModal({
                                 if (a.id && onCancel) void onCancel(a.id);
                             }}
                         >
-                            Anuluj
+                            Cancel
                         </button>
                     )}
                     {canComplete && (
@@ -63,7 +55,7 @@ export default function AppointmentDetailsModal({
                                 if (a.id && onComplete) void onComplete(a.id);
                             }}
                         >
-                            Zakończ
+                            Complete
                         </button>
                     )}
                 </div>
