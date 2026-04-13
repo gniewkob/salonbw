@@ -75,7 +75,7 @@ async function seed() {
         if (!client) {
             const newClient = userRepo.create({
                 ...clientData,
-                role: Role.Client,
+                role: Role.Customer,
                 password: await bcrypt.hash('test123', 10),
                 gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
                 createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),

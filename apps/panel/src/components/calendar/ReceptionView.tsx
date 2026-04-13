@@ -253,15 +253,15 @@ export default function ReceptionView({
                                         )}
                                     </td>
                                     <td>
-                                        <div className="salonbw-reception-client">
+                                        <div className="salonbw-reception-customer">
                                             <strong>
-                                                {appointment.client?.name ||
+                                                {appointment.customer?.name ||
                                                     'Brak klienta'}
                                             </strong>
-                                            {appointment.client?.phone && (
+                                            {appointment.customer?.phone && (
                                                 <div className="salonbw-reception-phone">
                                                     📞{' '}
-                                                    {appointment.client.phone}
+                                                    {appointment.customer.phone}
                                                 </div>
                                             )}
                                         </div>

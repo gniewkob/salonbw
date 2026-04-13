@@ -28,6 +28,7 @@ import {
 } from './dto/gift-card.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { maskGiftCardCode } from '../logs/redaction.util';
 
 @Injectable()
 export class GiftCardsService {
@@ -131,12 +132,14 @@ export class GiftCardsService {
             LogAction.GIFT_CARD_CREATED,
             {
                 giftCardId: saved.id,
-                code: saved.code,
+                code: maskGiftCardCode(saved.code),
                 value: saved.initialValue,
             },
         );
 
-        this.logger.log(`Gift card ${code} created by user ${actorId}`);
+        this.logger.log(
+            `Gift card ${maskGiftCardCode(code)} created by user ${actorId}`,
+        );
         return saved;
     }
 
@@ -291,14 +294,14 @@ export class GiftCardsService {
             LogAction.GIFT_CARD_REDEEMED,
             {
                 giftCardId: card.id,
-                code: card.code,
+                code: maskGiftCardCode(card.code),
                 amount: dto.amount,
                 remainingBalance: newBalance,
             },
         );
 
         this.logger.log(
-            `Gift card ${card.code} redeemed for ${dto.amount} by user ${actorId}`,
+            `Gift card ${maskGiftCardCode(card.code)} redeemed for ${dto.amount} by user ${actorId}`,
         );
         return updated;
     }

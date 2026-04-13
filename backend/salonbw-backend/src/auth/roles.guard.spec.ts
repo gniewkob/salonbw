@@ -39,7 +39,7 @@ describe('RolesGuard', () => {
 
     it('returns true when roles match', () => {
         jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
-            Role.Client,
+            Role.Customer,
         ]);
         const ctx = createContext(Role.Admin);
         expect(guard.canActivate(ctx)).toBe(true);
@@ -49,7 +49,7 @@ describe('RolesGuard', () => {
         jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
             Role.Admin,
         ]);
-        const ctx = createContext(Role.Client);
+        const ctx = createContext(Role.Customer);
         expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
     });
 });

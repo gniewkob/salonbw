@@ -57,17 +57,17 @@ export class NewsletterRecipient {
     })
     status: RecipientStatus;
 
-    @Column({ type: 'timestamp', nullable: true })
-    sentAt: Date | null;
+    @Column({ type: 'datetime', nullable: true })
+    sentAt: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
-    deliveredAt: Date | null;
+    @Column({ type: 'datetime', nullable: true })
+    deliveredAt: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
-    openedAt: Date | null;
+    @Column({ type: 'datetime', nullable: true })
+    openedAt: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
-    clickedAt: Date | null;
+    @Column({ type: 'datetime', nullable: true })
+    clickedAt: Date;
 
     @Column({ type: 'text', nullable: true })
     errorMessage: string | null;

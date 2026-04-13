@@ -6,7 +6,7 @@ import type { Appointment } from '@/types';
 const appt: Appointment = {
     id: 123,
     startTime: new Date('2030-01-01T10:00:00.000Z').toISOString(),
-    client: { id: 1, name: 'John Client' },
+    customer: { id: 1, name: 'John Customer' },
     employee: { id: 2, name: 'Eve Employee', fullName: 'Eve Employee' },
     service: { id: 3, name: 'Haircut', duration: 60, price: 100 },
 };
@@ -28,7 +28,7 @@ describe('AppointmentDetailsModal', () => {
         );
 
         expect(screen.getByText(/Appointment #123/)).toBeInTheDocument();
-        expect(screen.getByText(/John Client/)).toBeInTheDocument();
+        expect(screen.getByText(/John Customer/)).toBeInTheDocument();
         expect(screen.getByText(/Haircut/)).toBeInTheDocument();
         expect(screen.getByText(/Eve Employee/)).toBeInTheDocument();
 

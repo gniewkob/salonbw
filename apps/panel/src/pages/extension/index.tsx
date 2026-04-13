@@ -122,7 +122,7 @@ export default function ExtensionPage() {
                                             data-testid={`extension-card-${card.id}`}
                                         >
                                             <div
-                                                className={`ext-col ${card.colClass} ext_active`}
+                                                className={`ext-col ${card.colClass}${card.status === 'Aktywny' ? ' ext_active' : ''}`}
                                             >
                                                 <div className="ext_image">
                                                     <svg

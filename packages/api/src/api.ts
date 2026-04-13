@@ -371,6 +371,62 @@ export class ApiClient {
         return this.execute<T>(endpoint, init);
     }
 
+    async requestBlob(endpoint: string, init: RequestInit = {}): Promise<Blob> {
+        return this.executeBlob(endpoint, init);
+    }
+
+    private async executeBlob(
+        endpoint: string,
+        init: RequestInit = {},
+        retry = true,
+    ): Promise<Blob> {
+        const baseInit = this.options.requestInit ?? {};
+        const mergedInit: RequestInit = {
+            ...baseInit,
+            ...init,
+        };
+        const headers = new Headers(this.defaultHeaders);
+        const baseHeaders = new Headers(baseInit.headers ?? {});
+        baseHeaders.forEach((value, key) => headers.set(key, value));
+        const incomingHeaders = new Headers(init.headers ?? {});
+        incomingHeaders.forEach((value, key) => headers.set(key, value));
+
+        const token = this.getAccessToken();
+        if (token) {
+            headers.set("Authorization", `Bearer ${token}`);
+        }
+
+        const response = await fetch(this.buildUrl(endpoint), {
+            ...mergedInit,
+            headers,
+            credentials: "include",
+        });
+
+        if (response.status === 401 && retry) {
+            const tokens = await this.refreshTokens();
+            if (tokens) {
+                headers.set("Authorization", `Bearer ${tokens.accessToken}`);
+                const retryResponse = await fetch(this.buildUrl(endpoint), {
+                    ...init,
+                    headers,
+                    credentials: "include",
+                });
+                if (!retryResponse.ok) {
+                    throw this.createError(retryResponse);
+                }
+                return retryResponse.blob();
+            }
+            this.onLogout();
+            throw this.createError(response, "Unauthorized");
+        }
+
+        if (!response.ok) {
+            throw this.createError(response);
+        }
+
+        return response.blob();
+    }
+
     async requestTyped<
         Path extends keyof paths,
         Method extends keyof paths[Path],

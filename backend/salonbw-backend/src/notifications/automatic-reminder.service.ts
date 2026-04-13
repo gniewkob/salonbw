@@ -14,6 +14,7 @@ import {
     MessageTemplate,
 } from '../sms/entities/message-template.entity';
 import { EmailsService } from '../emails/emails.service';
+import { maskPhone, sanitizeLogValue } from '../logs/redaction.util';
 
 interface ReminderResult {
     appointmentId: number;
@@ -148,8 +149,11 @@ export class AutomaticReminderService {
             result.error =
                 error instanceof Error ? error.message : 'Unknown error';
             this.logger.error(
-                `Failed to send reminder for appointment ${appointment.id}:`,
-                error,
+                {
+                    appointmentId: appointment.id,
+                    error: sanitizeLogValue(error),
+                },
+                'Failed to send reminder',
             );
         }
 
@@ -168,8 +172,14 @@ export class AutomaticReminderService {
             return log !== null;
         } catch (error) {
             this.logger.error(
-                `SMS reminder failed for appointment ${appointment.id}:`,
-                error,
+                {
+                    appointmentId: appointment.id,
+                    recipient: appointment.client?.phone
+                        ? maskPhone(appointment.client.phone)
+                        : undefined,
+                    error: sanitizeLogValue(error),
+                },
+                'SMS reminder failed',
             );
             return false;
         }
@@ -246,8 +256,11 @@ export class AutomaticReminderService {
             return true;
         } catch (error) {
             this.logger.error(
-                `Email reminder failed for appointment ${appointment.id}:`,
-                error,
+                {
+                    appointmentId: appointment.id,
+                    error: sanitizeLogValue(error),
+                },
+                'Email reminder failed',
             );
             return false;
         }

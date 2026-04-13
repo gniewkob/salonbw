@@ -39,7 +39,11 @@ export default function CalendarPage() {
                 document.close();
             } catch (e) {
                 didReplaceDocumentRef.current = false;
-                setError(e instanceof Error ? e.message : 'Unknown error');
+                setError(
+                    e instanceof Error
+                        ? e.message
+                        : 'Nieznany błąd ładowania kalendarza',
+                );
             }
         };
 
@@ -49,7 +53,9 @@ export default function CalendarPage() {
     if (error) {
         return (
             <main className="p-6 font-sans">
-                <h1 className="text-[18px] m-0">Calendar unavailable</h1>
+                <h1 className="text-[18px] m-0">
+                    Kalendarz jest chwilowo niedostępny
+                </h1>
                 <p className="mt-3 mb-0 opacity-80">{error}</p>
                 <p className="mt-3 mb-0">
                     <button
@@ -57,12 +63,12 @@ export default function CalendarPage() {
                         onClick={() => window.location.reload()}
                         className="appearance-none border border-gray-300 px-[10px] py-1.5 rounded-md bg-white cursor-pointer"
                     >
-                        Reload
+                        Odśwież
                     </button>
                 </p>
             </main>
         );
     }
 
-    return <main className="p-6 font-sans">Loading calendar...</main>;
+    return <main className="p-6 font-sans">Ładowanie kalendarza...</main>;
 }

@@ -354,7 +354,7 @@ export class AutomaticMessagesService {
         // Find clients with birthday today
         const clients = await this.userRepository
             .createQueryBuilder('user')
-            .where('user.role = :role', { role: Role.Client })
+            .where('user.role = :role', { role: Role.Customer })
             .andWhere('user.birthDate IS NOT NULL')
             .andWhere("TO_CHAR(user.birthDate, 'MM-DD') = :today", { today })
             .andWhere('user.phone IS NOT NULL')
@@ -417,7 +417,7 @@ export class AutomaticMessagesService {
         // but have had at least one appointment before
         const inactiveClients = await this.userRepository
             .createQueryBuilder('user')
-            .where('user.role = :role', { role: Role.Client })
+            .where('user.role = :role', { role: Role.Customer })
             .andWhere('user.phone IS NOT NULL')
             .andWhere((qb) => {
                 const subQuery = qb

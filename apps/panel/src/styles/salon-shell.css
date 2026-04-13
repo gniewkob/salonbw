@@ -5665,8 +5665,19 @@ body.e2e-extension .main-content .inner.extension_info {
     max-width: 980px;
 }
 
+.services-create-title {
+    margin: 0;
+}
+
 .services-create-form {
     background: #fff;
+}
+
+.services-create-section-copy {
+    margin: 0 0 18px;
+    color: #7e8791;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .services-create-fields {
@@ -5827,7 +5838,7 @@ body.e2e-extension .main-content .inner.extension_info {
 }
 
 .services-create-advanced {
-    margin-bottom: 24px;
+    margin-bottom: 8px;
 }
 
 .services-create-alert {
@@ -5856,6 +5867,17 @@ body.e2e-extension .main-content .inner.extension_info {
 
 .services-create-recipe {
     margin-top: 14px;
+}
+
+.services-create-box-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.services-create-advanced-box .box-title {
+    margin-bottom: 12px;
 }
 
 .services-create-recipe-table {
@@ -5932,6 +5954,11 @@ body.e2e-extension .main-content .inner.extension_info {
     .services-create-time-row {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .services-create-box-title-row {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 

@@ -36,6 +36,9 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: read
+
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: "22"
@@ -53,6 +56,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
           if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
@@ -61,18 +65,23 @@ jobs:
             printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           fi
           chmod 600 ~/.ssh/mydevil
+          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
+            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
+          fi
 
           echo "=== ls -la apps/nodejs/panelbw ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw" || true
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw" || true
 
           echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages" || true
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages" || true
 
           echo "=== Check Symlink public_nodejs ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || true
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || true
 
           echo "=== Check Redirect Logic (index.js) ==="
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
 
   deploy:
     if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
@@ -393,7 +402,7 @@ jobs:
           echo "🚀 STEP: Verifying SSH connectivity"
           echo "============================================"
 
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             vetternkraft@s0.mydevil.net "echo '✅ SSH connection successful'" || {
             echo "❌ SSH connection failed"
             exit 1
@@ -448,7 +457,7 @@ jobs:
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
           # Create destinations
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
 
       - name: Ensure remote directories exist (panel)
         if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
@@ -456,7 +465,7 @@ jobs:
           echo "Ensuring Symlink for Panel..."
           # Remove public_nodejs if it exists (directory or symlink) to ensure Clean Symlink creation
           # We use 'rm -rf' because 'ln -sfn' behaves unexpectedly if target is a real directory
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
 
       - name: Upload frontend bundle (panel)
         if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
@@ -556,13 +565,13 @@ jobs:
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
           timeout 900 rsync -az --timeout=120 \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # 3. Extract and Clean (robust against NFS/.nfs* leftovers)
           # Use atomic-ish rename instead of rm -rf (can fail with "Directory not empty").
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
 
       - name: Upload frontend bundle (landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
@@ -660,17 +669,17 @@ jobs:
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
           timeout 900 rsync -az --timeout=120 \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # Extract and Clean (robust against NFS/.nfs* leftovers)
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
 
       - name: Install dependencies (frontend panel)
         if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
@@ -694,7 +703,7 @@ jobs:
       - name: Install dependencies (frontend landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
@@ -721,7 +730,7 @@ jobs:
           TARGET_APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
           TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
 
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
           set -euo pipefail
 
           # Create probe file for diagnostics
@@ -753,7 +762,7 @@ jobs:
           TARGET_APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
 
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
           set -euo pipefail
 
           # Create probe file for diagnostics
@@ -782,7 +791,7 @@ jobs:
       - name: "Diagnostic: Expose and Print logs (panel)"
         if: ${{ always() && (github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true')) }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -809,7 +818,7 @@ jobs:
       - name: "Diagnostic: Expose logs (landing)"
         if: ${{ always() && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -827,17 +836,17 @@ jobs:
         run: |
           rsync -az --delete --timeout=300 \
             --exclude='.git' \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/dist/ \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" backend/salonbw-backend/dist/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/dist/
-          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/package.json \
+          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" backend/salonbw-backend/package.json \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
-          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/app.js \
+          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" backend/salonbw-backend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
 
       - name: Install dependencies (backend)
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           install_cmd="npm install --omit=dev --ignore-scripts"
@@ -860,7 +869,7 @@ jobs:
       - name: "Diagnostic: Startup Probe (frontend)"
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -916,7 +925,7 @@ jobs:
       - name: "Diagnostic: Startup Probe (panel)"
         if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' APP_NAME='${{ steps.dest.outputs.app_name_panel }}' bash -s" <<'END_PROBE'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' APP_NAME='${{ steps.dest.outputs.app_name_panel }}' bash -s" <<'END_PROBE'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -1037,11 +1046,11 @@ jobs:
 
           # Upload the generated base .env (without SMTP credentials).
           # SMTP_* must be set directly on the server and is preserved across deploys.
-          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
+          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" .env.production \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env.generated
 
           # Merge server-side to avoid moving SMTP credentials through CI/CD.
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
@@ -1060,7 +1069,7 @@ jobs:
       - name: Validate DB connectivity (api)
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
@@ -1072,7 +1081,7 @@ jobs:
       - name: Run DB migrations (api)
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
@@ -1090,7 +1099,7 @@ jobs:
           echo "🚀 STEP: Verifying panel bundle on remote server"
           echo "============================================"
 
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}'
           cd "$REMOTE_PATH"
@@ -1124,7 +1133,7 @@ jobs:
           APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
           REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
           echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
 
       - name: Restart app (landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
@@ -1132,15 +1141,15 @@ jobs:
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
           echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
 
       - name: Debug - List Apps
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www list"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www list"
 
       - name: Restart app (backend)
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_api }}'"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_api }}'"
 
       - name: Smoke test (backend)
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
@@ -1176,7 +1185,7 @@ jobs:
       - name: Collect remote logs (frontend)
         if: ${{ always() && steps.ssh.outcome == 'success' && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
             "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
@@ -1197,7 +1206,7 @@ jobs:
       - name: Collect remote logs (backend)
         if: ${{ always() && steps.ssh.outcome == 'success' && (github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true')) }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
             "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' APP='${{ steps.dest.outputs.app_name_api }}' bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
@@ -1279,7 +1288,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+          NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             "${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}" \
             "ls -1 '${{ steps.dest.outputs.remote_path_public }}/.next/static/chunks' | head -n 1" || true)"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
