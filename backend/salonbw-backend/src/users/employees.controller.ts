@@ -17,7 +17,7 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsString, MinLength, IsOptional, IsEmail } from 'class-validator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -37,6 +37,13 @@ class CreateEmployeeDto {
     @IsString()
     @MinLength(1)
     lastName!: string;
+    @IsEmail()
+    @IsOptional()
+    email?: string;
+    @IsString()
+    @MinLength(6)
+    @IsOptional()
+    password?: string;
 }
 
 @ApiTags('employees')
@@ -106,8 +113,8 @@ export class EmployeesController {
     @ApiResponse({ status: 201 })
     async create(@Body() dto: CreateEmployeeDto, @CurrentUser() actor?: User) {
         const name = `${dto.firstName} ${dto.lastName}`.trim();
-        const email = this.genEmail(name, 'employee');
-        const password = this.genPassword();
+        const email = dto.email || this.genEmail(name, 'employee');
+        const password = dto.password || this.genPassword();
         const created = await this.usersService.createUserWithRole(
             { email, password, name },
             Role.Employee,
