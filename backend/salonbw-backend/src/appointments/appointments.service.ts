@@ -27,6 +27,7 @@ import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 import { MetricsService } from '../observability/metrics.service';
 import { Optional } from '@nestjs/common';
 import { RetailService } from '../retail/retail.service';
@@ -50,6 +51,8 @@ export class AppointmentsService {
         @Optional()
         @Inject(forwardRef(() => RetailService))
         private readonly retailService?: RetailService,
+        @Optional()
+        private readonly loyaltyService?: LoyaltyService,
     ) {}
 
     private async loadClientOrThrow(id: number): Promise<User> {
