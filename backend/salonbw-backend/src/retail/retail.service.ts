@@ -26,6 +26,7 @@ import {
 import { WarehouseSaleItem } from '../warehouse/entities/warehouse-sale-item.entity';
 import { WarehouseUsage } from '../warehouse/entities/warehouse-usage.entity';
 import { WarehouseUsageItem } from '../warehouse/entities/warehouse-usage-item.entity';
+import { PricingService } from '../finance/pricing.service';
 
 interface NormalizedSaleItem {
     product: Product;
@@ -70,6 +71,7 @@ export class RetailService {
         private readonly logs: LogService,
         private readonly config: ConfigService,
         private readonly dataSource: DataSource,
+        private readonly pricingService: PricingService,
     ) {
         this.requireCommission =
             this.config.get<string>('POS_REQUIRE_COMMISSION', 'false') ===
@@ -81,7 +83,7 @@ export class RetailService {
     }
 
     private roundMoney(value: number): number {
-        return Number(value.toFixed(2));
+        return this.pricingService.round(value);
     }
 
     private async q<T>(sql: string, params: unknown[]): Promise<T[]> {
@@ -91,6 +93,14 @@ export class RetailService {
 
     private async hasTable(name: string): Promise<boolean> {
         try {
+            if (this.dataSource.options.type === 'sqlite') {
+                const tableName = name.includes('.') ? name.split('.')[1] : name;
+                const result = await this.dataSource.query(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                    [tableName],
+                );
+                return result.length > 0;
+            }
             const result = await this.q<{ exists: string | null }>(
                 'SELECT to_regclass($1) AS exists',
                 [name],
@@ -265,6 +275,30 @@ export class RetailService {
     ): Promise<number | null> {
         const unitPriceDecimal = (unitPriceCents / 100).toFixed(2);
         const discountDecimal = (discountCents / 100).toFixed(2);
+
+        if (this.dataSource.options.type === 'sqlite') {
+            await manager.query(
+                `INSERT INTO product_sales (productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId, note, "warehouseSaleId", "warehouseSaleItemId")
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    productId,
+                    soldAt,
+                    quantity,
+                    unitPriceDecimal,
+                    discountDecimal,
+                    employeeId,
+                    appointmentId,
+                    note,
+                    warehouseSaleId,
+                    warehouseSaleItemId,
+                ],
+            );
+            const result = await manager.query(
+                'SELECT last_insert_rowid() as id',
+            );
+            return Number(result[0].id);
+        }
+
         const rows = await manager.query(
             `INSERT INTO product_sales (productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId, note, "warehouseSaleId", "warehouseSaleItemId")
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -522,6 +556,23 @@ export class RetailService {
         note: string | null,
         actorId: number | null,
     ) {
+        if (this.dataSource.options.type === 'sqlite') {
+            await manager.query(
+                `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
+                 VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`,
+                [
+                    productId,
+                    delta,
+                    reason,
+                    referenceType,
+                    referenceId,
+                    note,
+                    actorId,
+                ],
+            );
+            return;
+        }
+
         await manager.query(
             `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
              VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
@@ -575,7 +626,7 @@ export class RetailService {
                         effectiveSaleQuantities.map((entry) => entry.productId),
                     ),
                 },
-                lock: { mode: 'pessimistic_write' },
+                ... (this.dataSource.options.type !== 'sqlite' && { lock: { mode: 'pessimistic_write' } }),
             });
             const productsById = new Map(
                 lockedProducts.map((product) => [product.id, product]),
@@ -640,10 +691,9 @@ export class RetailService {
                     grossBeforeDiscount,
                     Math.max(0, item.discountGross),
                 );
-                const lineGross = grossBeforeDiscount - discountGross;
-                const divider = 1 + vatRate / 100;
-                const lineNet = lineGross / divider;
-                const unitNet = item.unitPriceGross / divider;
+                const lineGross = this.roundMoney(grossBeforeDiscount - discountGross);
+                const lineNet = this.pricingService.calculateNet(lineGross, vatRate);
+                const unitNet = this.pricingService.calculateNet(item.unitPriceGross, vatRate);
 
                 const stockBefore = product.stock;
                 product.stock -= item.quantity;
@@ -837,7 +887,7 @@ export class RetailService {
         const reversal = await this.dataSource.transaction(async (manager) => {
             const lockedSourceSale = await manager.findOne(WarehouseSale, {
                 where: { id: sourceSale.id },
-                lock: { mode: 'pessimistic_write' },
+                ... (this.dataSource.options.type !== 'sqlite' && { lock: { mode: 'pessimistic_write' } }),
             });
             if (!lockedSourceSale) {
                 throw new NotFoundException(`Sale ${sourceSale.id} not found`);
@@ -873,7 +923,7 @@ export class RetailService {
             const lockedProducts = productIds.length
                 ? await manager.find(Product, {
                       where: { id: In(productIds) },
-                      lock: { mode: 'pessimistic_write' },
+                      ... (this.dataSource.options.type !== 'sqlite' && { lock: { mode: 'pessimistic_write' } }),
                   })
                 : [];
             const productsById = new Map(
@@ -1172,7 +1222,7 @@ export class RetailService {
                         ),
                     ),
                 },
-                lock: { mode: 'pessimistic_write' },
+                ... (this.dataSource.options.type !== 'sqlite' && { lock: { mode: 'pessimistic_write' } }),
             });
             const lockedProductsById = new Map(
                 lockedProducts.map((product) => [product.id, product]),

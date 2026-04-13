@@ -87,7 +87,7 @@ export default function ProductHistoryPage() {
                                         {money(item.totalGross)}
                                     </td>
                                     <td className="px-3 py-2">
-                                        {item.clientName ?? '-'}
+                                        {item.customerName ?? '-'}
                                     </td>
                                 </tr>
                             ))}

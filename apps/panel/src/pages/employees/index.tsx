@@ -19,7 +19,9 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="salonbw-loading">Loading employee form…</div>
+            <div className="salonbw-loading">
+                Ładowanie formularza pracownika…
+            </div>
         ),
     },
 );
@@ -44,7 +46,7 @@ export default function EmployeesPage() {
 
     const columns: Column<Employee>[] = [
         { header: 'ID', accessor: 'id' },
-        { header: 'Name', accessor: 'fullName' },
+        { header: 'Imię i nazwisko', accessor: 'fullName' },
     ];
 
     const handleCreate = async (values: {
@@ -68,7 +70,7 @@ export default function EmployeesPage() {
     };
 
     const handleDelete = async (row: Employee) => {
-        if (!confirm(`Delete ${row.fullName}?`)) return;
+        if (!confirm(`Usunąć pracownika ${row.fullName}?`)) return;
         await api.remove(row.id);
         setRows((c) => c.filter((cl) => cl.id !== row.id));
     };

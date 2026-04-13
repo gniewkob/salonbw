@@ -1,0 +1,20 @@
+{
+  "name": "salonbw-local",
+  "interface": {
+    "displayName": "SalonBW Local"
+  },
+  "plugins": [
+    {
+      "name": "salonbw-codex",
+      "source": {
+        "source": "local",
+        "path": "./plugins/salonbw-codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

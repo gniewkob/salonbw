@@ -64,12 +64,12 @@ export default function SaleForm({
             !Number.isFinite(parsedData.productId) ||
             parsedData.productId < 1
         ) {
-            setError('Product is required');
+            setError('Wybierz produkt');
             return;
         }
 
         if (!Number.isFinite(parsedData.quantity) || parsedData.quantity < 1) {
-            setError('Quantity must be at least 1');
+            setError('Ilość musi być co najmniej równa 1');
             return;
         }
 
@@ -77,7 +77,7 @@ export default function SaleForm({
             parsedData.unitPrice !== undefined &&
             (!Number.isFinite(parsedData.unitPrice) || parsedData.unitPrice < 0)
         ) {
-            setError('Unit price must be >= 0');
+            setError('Cena jednostkowa musi być większa lub równa 0');
             return;
         }
 
@@ -85,12 +85,12 @@ export default function SaleForm({
             parsedData.discount !== undefined &&
             (!Number.isFinite(parsedData.discount) || parsedData.discount < 0)
         ) {
-            setError('Discount must be >= 0');
+            setError('Rabat musi być większy lub równy 0');
             return;
         }
 
         if (parsedData.note && parsedData.note.length > 500) {
-            setError('Note must be <= 500 characters');
+            setError('Notatka może mieć maksymalnie 500 znaków');
             return;
         }
 
@@ -107,7 +107,11 @@ export default function SaleForm({
                 note: parsedData.note,
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message || 'Error' : 'Error');
+            setError(
+                err instanceof Error
+                    ? err.message || 'Wystąpił błąd'
+                    : 'Wystąpił błąd',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -147,7 +151,7 @@ export default function SaleForm({
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Quantity"
+                placeholder="Ilość"
             />
             <select
                 data-testid="employee-select"
@@ -156,7 +160,7 @@ export default function SaleForm({
                 onChange={(e) => setEmployeeId(e.target.value)}
                 onClick={handleSelectOption(setEmployeeId)}
             >
-                <option value="">None</option>
+                <option value="">Bez pracownika</option>
                 {employees.map((employee) => (
                     <option
                         key={employee.id}
@@ -174,15 +178,15 @@ export default function SaleForm({
                 onChange={(e) => setAppointmentId(e.target.value)}
                 onClick={handleSelectOption(setAppointmentId)}
             >
-                <option value="">None</option>
+                <option value="">Bez wizyty</option>
                 {appointments.map((appointment) => (
                     <option
                         key={appointment.id}
                         value={appointment.id}
                         data-testid={`appointment-option-${appointment.id}`}
                     >
-                        {appointment.client?.name ?? 'Unknown client'} ·{' '}
-                        {appointment.service?.name ?? 'Service'} ·{' '}
+                        {appointment.customer?.name ?? 'Nieznany klient'} ·{' '}
+                        {appointment.service?.name ?? 'Usługa'} ·{' '}
                         {new Date(appointment.startTime).toLocaleString()}
                     </option>
                 ))}
@@ -194,7 +198,7 @@ export default function SaleForm({
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Unit price override"
+                placeholder="Cena jednostkowa"
             />
             <input
                 type="number"
@@ -203,13 +207,13 @@ export default function SaleForm({
                 value={discount}
                 onChange={(e) => setDiscount(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Discount"
+                placeholder="Rabat"
             />
             <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Note"
+                placeholder="Notatka"
                 maxLength={500}
                 rows={3}
             />
@@ -225,14 +229,14 @@ export default function SaleForm({
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>

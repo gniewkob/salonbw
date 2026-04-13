@@ -46,9 +46,9 @@ import {
     EmployeeActivity,
     EmployeeActivitySummary,
     ServiceStats,
-    ClientStats,
-    ClientReturningStats,
-    ClientOriginStats,
+    CustomerStats,
+    CustomerReturningStats,
+    CustomerOriginStats,
     CashRegisterSummary,
     CashRegisterEntry,
     TipsSummary,
@@ -102,7 +102,7 @@ export class StatisticsService {
 
         const [
             todayAppointments,
-            todayNewClients,
+            todayNewCustomers,
             weekAppointments,
             monthCompletedAppointments,
             monthAllAppointments,
@@ -118,7 +118,7 @@ export class StatisticsService {
             }),
             this.userRepository.count({
                 where: {
-                    role: Role.Client,
+                    role: Role.Customer,
                     createdAt: Between(todayStart, todayEnd),
                 },
             }),
@@ -147,7 +147,7 @@ export class StatisticsService {
             }),
             this.userRepository.find({
                 where: {
-                    role: Role.Client,
+                    role: Role.Customer,
                     createdAt: Between(monthStart, todayEnd),
                 },
                 select: {
@@ -196,10 +196,10 @@ export class StatisticsService {
             );
         }
 
-        const newClientsByDay = new Map<string, number>();
+        const newCustomersByDay = new Map<string, number>();
         for (const client of monthNewClients) {
             const dayKey = format(new Date(client.createdAt), 'yyyy-MM-dd');
-            newClientsByDay.set(dayKey, (newClientsByDay.get(dayKey) ?? 0) + 1);
+            newCustomersByDay.set(dayKey, (newCustomersByDay.get(dayKey) ?? 0) + 1);
         }
 
         let productRevenueByDay = new Map<string, number>();
@@ -258,9 +258,9 @@ export class StatisticsService {
             date: dayKey,
             count: appointmentCountByDay.get(dayKey) ?? 0,
         }));
-        const monthDailyNewClients = dayKeys.map((dayKey) => ({
+        const monthDailyNewCustomers = dayKeys.map((dayKey) => ({
             date: dayKey,
-            count: newClientsByDay.get(dayKey) ?? 0,
+            count: newCustomersByDay.get(dayKey) ?? 0,
         }));
         const monthDailyRevenue = dayKeys.map((dayKey) => {
             const serviceRevenue = serviceRevenueByDay.get(dayKey) ?? 0;
@@ -278,7 +278,7 @@ export class StatisticsService {
             todayProductRevenue,
             todayAppointments: todayAppointments.length,
             todayCompletedAppointments: todayCompleted.length,
-            todayNewClients,
+            todayNewCustomers,
             weekRevenue: weekServiceRevenue + weekProductRevenue,
             weekProductRevenue,
             weekAppointments: weekAppointments.length,
@@ -288,7 +288,7 @@ export class StatisticsService {
             pendingAppointments,
             averageRating: parseFloat(ratingResult?.avg ?? '0') || 0,
             monthDailyAppointments,
-            monthDailyNewClients,
+            monthDailyNewCustomers,
             monthDailyRevenue,
         };
     }
@@ -299,19 +299,25 @@ export class StatisticsService {
         groupBy: GroupBy = GroupBy.Day,
         employeeId?: number,
     ): Promise<RevenueDataPoint[]> {
-        const whereClause: Record<string, unknown> = {
-            startTime: Between(from, to),
-            status: AppointmentStatus.Completed,
-        };
+        const qb = this.appointmentRepository
+            .createQueryBuilder('apt')
+            .leftJoin('apt.service', 'srv')
+            .leftJoin('apt.serviceVariant', 'var')
+            .select('apt.startTime', 'startTime')
+            .addSelect('COALESCE(apt.paidAmount, COALESCE(var.price, srv.price, 0))', 'revenue')
+            .addSelect('COALESCE(apt.tipAmount, 0)', 'tips')
+            .where('apt.startTime BETWEEN :from AND :to', { from, to })
+            .andWhere('apt.status = :status', { status: AppointmentStatus.Completed });
 
         if (employeeId) {
-            whereClause.employeeId = employeeId;
+            qb.andWhere('apt.employeeId = :employeeId', { employeeId });
         }
 
-        const appointments = await this.appointmentRepository.find({
-            where: whereClause,
-            relations: ['service', 'serviceVariant'],
-        });
+        const appointments = await qb.getRawMany<{
+            startTime: string | Date;
+            revenue: string | number;
+            tips: string | number;
+        }>();
 
         let productSalesByBucket = new Map<string, number>();
         const hasProductSales = await this.hasTable('public.product_sales');
@@ -388,11 +394,11 @@ export class StatisticsService {
             });
 
             const revenue = periodAppointments.reduce(
-                (sum, a) => sum + this.resolveAppointmentPrice(a),
+                (sum, a) => sum + this.parseMoney(a.revenue),
                 0,
             );
             const tips = periodAppointments.reduce(
-                (sum, a) => sum + (a.tipAmount ?? 0),
+                (sum, a) => sum + this.parseMoney(a.tips),
                 0,
             );
 
@@ -413,17 +419,23 @@ export class StatisticsService {
     }
 
     async getEmployeeRanking(from: Date, to: Date): Promise<EmployeeStats[]> {
-        const [employees, appointments, reviewRows] = await Promise.all([
+        const [employees, aptStats, reviewRows] = await Promise.all([
             this.userRepository.find({
                 where: { role: Role.Employee },
+                select: ['id', 'name'],
             }),
-            this.appointmentRepository.find({
-                where: {
-                    startTime: Between(from, to),
-                    status: AppointmentStatus.Completed,
-                },
-                relations: ['service', 'serviceVariant'],
-            }),
+            this.appointmentRepository.createQueryBuilder('apt')
+                .leftJoin('apt.service', 'srv')
+                .leftJoin('apt.serviceVariant', 'var')
+                .select('apt.employeeId', 'employeeId')
+                .addSelect('COUNT(apt.id)', 'appointments')
+                .addSelect('SUM(COALESCE(apt.paidAmount, COALESCE(var.price, srv.price, 0)))', 'revenue')
+                .addSelect('SUM(COALESCE(apt.tipAmount, 0))', 'tips')
+                .addSelect('SUM(COALESCE(var.duration, srv.duration, 0))', 'totalDuration')
+                .where('apt.startTime BETWEEN :from AND :to', { from, to })
+                .andWhere('apt.status = :status', { status: AppointmentStatus.Completed })
+                .groupBy('apt.employeeId')
+                .getRawMany(),
             this.reviewRepository
                 .createQueryBuilder('review')
                 .innerJoin('review.appointment', 'appointment')
@@ -442,16 +454,17 @@ export class StatisticsService {
                 }>(),
         ]);
 
-        const appointmentsByEmployee = new Map<number, Appointment[]>();
-        for (const appointment of appointments) {
-            const employeeAppointments =
-                appointmentsByEmployee.get(appointment.employeeId) ?? [];
-            employeeAppointments.push(appointment);
-            appointmentsByEmployee.set(
-                appointment.employeeId,
-                employeeAppointments,
-            );
-        }
+        const statsByEmployee = new Map(
+            aptStats.map((row) => [
+                Number(row.employeeId),
+                {
+                    appointments: Number(row.appointments || 0),
+                    revenue: this.parseMoney(row.revenue || 0),
+                    tips: this.parseMoney(row.tips || 0),
+                    totalDuration: Number(row.totalDuration || 0),
+                },
+            ])
+        );
 
         const reviewsByEmployee = new Map<
             number,
@@ -467,42 +480,29 @@ export class StatisticsService {
         );
 
         const stats = employees.map((employee) => {
-            const employeeAppointments =
-                appointmentsByEmployee.get(employee.id) ?? [];
-            const revenue = employeeAppointments.reduce(
-                (sum, appointment) =>
-                    sum + this.resolveAppointmentPrice(appointment),
-                0,
-            );
-            const tips = employeeAppointments.reduce(
-                (sum, appointment) => sum + (appointment.tipAmount ?? 0),
-                0,
-            );
-            const totalDuration = employeeAppointments.reduce(
-                (sum, appointment) =>
-                    sum +
-                    (appointment.serviceVariant?.duration ??
-                        appointment.service?.duration ??
-                        0),
-                0,
-            );
+            const empStats = statsByEmployee.get(employee.id) ?? {
+                appointments: 0,
+                revenue: 0,
+                tips: 0,
+                totalDuration: 0,
+            };
             const reviews = reviewsByEmployee.get(employee.id);
 
             return {
                 employeeId: employee.id,
                 employeeName: employee.name,
-                revenue,
-                appointments: employeeAppointments.length,
-                completedAppointments: employeeAppointments.length,
+                revenue: empStats.revenue,
+                appointments: empStats.appointments,
+                completedAppointments: empStats.appointments,
                 averageDuration:
-                    employeeAppointments.length > 0
-                        ? totalDuration / employeeAppointments.length
+                    empStats.appointments > 0
+                        ? Math.round(empStats.totalDuration / empStats.appointments)
                         : 0,
                 averageRevenue:
-                    employeeAppointments.length > 0
-                        ? revenue / employeeAppointments.length
+                    empStats.appointments > 0
+                        ? this.parseMoney(empStats.revenue / empStats.appointments)
                         : 0,
-                tips,
+                tips: empStats.tips,
                 rating: reviews?.avg ?? 0,
                 reviewCount: reviews?.count ?? 0,
             };
@@ -555,11 +555,11 @@ export class StatisticsService {
         }));
     }
 
-    async getClientStats(from: Date, to: Date): Promise<ClientStats> {
+    async getCustomerStats(from: Date, to: Date): Promise<CustomerStats> {
         // New clients in period
-        const newClients = await this.userRepository.count({
+        const newCustomers = await this.userRepository.count({
             where: {
-                role: Role.Client,
+                role: Role.Customer,
                 createdAt: Between(from, to),
             },
         });
@@ -571,7 +571,7 @@ export class StatisticsService {
             .andWhere('appointment.status = :status', {
                 status: AppointmentStatus.Completed,
             })
-            .select('DISTINCT appointment.clientId')
+            .select('DISTINCT appointment.customerId')
             .getRawMany();
 
         const totalVisits = await this.appointmentRepository.count({
@@ -591,8 +591,8 @@ export class StatisticsService {
             .andWhere('appointment.status = :status', {
                 status: AppointmentStatus.Completed,
             })
-            .select('client.id', 'clientId')
-            .addSelect('client.name', 'clientName')
+            .select('client.id', 'customerId')
+            .addSelect('client.name', 'customerName')
             .addSelect('COUNT(*)', 'visits')
             .addSelect(
                 'SUM(COALESCE(appointment.paidAmount, serviceVariant.price, service.price, 0))',
@@ -605,16 +605,16 @@ export class StatisticsService {
             .getRawMany();
 
         return {
-            newClients,
-            returningClients: clientsWithAppointments.length,
+            newCustomers,
+            returningCustomers: clientsWithAppointments.length,
             totalVisits,
-            averageVisitsPerClient:
+            averageVisitsPerCustomer:
                 clientsWithAppointments.length > 0
                     ? totalVisits / clientsWithAppointments.length
                     : 0,
             topClients: topClientsResult.map((r) => ({
-                clientId: r.clientId,
-                clientName: r.clientName,
+                customerId: r.customerId,
+                customerName: r.customerName,
                 visits: parseInt(r.visits, 10),
                 totalSpent: parseFloat(r.totalSpent) || 0,
             })),
@@ -643,7 +643,7 @@ export class StatisticsService {
             amount: this.resolveAppointmentPrice(a),
             tip: a.tipAmount ?? 0,
             employeeName: a.employee?.name ?? null,
-            clientName: a.client?.name ?? null,
+            customerName: a.client?.name ?? null,
         }));
 
         const totals = {
@@ -997,10 +997,10 @@ export class StatisticsService {
         }
     }
 
-    async getClientReturningStats(
+    async getCustomerReturningStats(
         from: Date,
         to: Date,
-    ): Promise<ClientReturningStats> {
+    ): Promise<CustomerReturningStats> {
         // Get all clients who had appointments in the period
         const appointments = await this.appointmentRepository
             .createQueryBuilder('appointment')
@@ -1009,38 +1009,38 @@ export class StatisticsService {
             .andWhere('appointment.status = :status', {
                 status: AppointmentStatus.Completed,
             })
-            .select('client.id', 'clientId')
+            .select('client.id', 'customerId')
             .addSelect('MIN(appointment.startTime)', 'firstVisit')
             .addSelect('COUNT(*)', 'visitCount')
             .groupBy('client.id')
             .getRawMany();
 
         // Get clients who had appointments BEFORE this period (returning)
-        const clientIds = appointments.map((a) => a.clientId);
-        const returningClientsList =
-            clientIds.length > 0
+        const customerIds = appointments.map((a) => a.customerId);
+        const returningCustomersList =
+            customerIds.length > 0
                 ? await this.appointmentRepository
                       .createQueryBuilder('appointment')
-                      .where('appointment.clientId IN (:...clientIds)', {
-                          clientIds,
+                      .where('appointment.customerId IN (:...customerIds)', {
+                          customerIds,
                       })
                       .andWhere('appointment.startTime < :from', { from })
                       .andWhere('appointment.status = :status', {
                           status: AppointmentStatus.Completed,
                       })
-                      .select('DISTINCT appointment.clientId', 'clientId')
+                      .select('DISTINCT appointment.customerId', 'customerId')
                       .getRawMany()
                 : [];
 
         const returningClientIds = new Set(
-            returningClientsList.map((r) => r.clientId),
+            returningCustomersList.map((r) => r.customerId),
         );
 
-        const totalClients = appointments.length;
-        const returningClients = appointments.filter((a) =>
-            returningClientIds.has(a.clientId),
+        const totalCustomers = appointments.length;
+        const returningCustomers = appointments.filter((a) =>
+            returningClientIds.has(a.customerId),
         ).length;
-        const newClients = totalClients - returningClients;
+        const newCustomers = totalCustomers - returningCustomers;
 
         // Monthly breakdown
         const monthlyData = await this.appointmentRepository
@@ -1051,7 +1051,7 @@ export class StatisticsService {
                 status: AppointmentStatus.Completed,
             })
             .select("DATE_TRUNC('month', appointment.startTime)", 'month')
-            .addSelect('client.id', 'clientId')
+            .addSelect('client.id', 'customerId')
             .addSelect('MIN(appointment.startTime)', 'firstVisitInPeriod')
             .groupBy("DATE_TRUNC('month', appointment.startTime)")
             .addGroupBy('client.id')
@@ -1061,61 +1061,61 @@ export class StatisticsService {
         // Group by month and calculate new/returning
         const monthMap = new Map<
             string,
-            { newClients: number; returningClients: number }
+            { newCustomers: number; returningCustomers: number }
         >();
 
         for (const row of monthlyData) {
             const monthKey = format(new Date(row.month), 'yyyy-MM');
-            const clientId = row.clientId;
+            const customerId = row.customerId;
 
             if (!monthMap.has(monthKey)) {
-                monthMap.set(monthKey, { newClients: 0, returningClients: 0 });
+                monthMap.set(monthKey, { newCustomers: 0, returningCustomers: 0 });
             }
 
             const monthStats = monthMap.get(monthKey)!;
 
             // Check if client had visits before this period
-            const hadPreviousVisits = returningClientIds.has(clientId);
+            const hadPreviousVisits = returningClientIds.has(customerId);
 
             if (hadPreviousVisits) {
-                monthStats.returningClients++;
+                monthStats.returningCustomers++;
             } else {
-                monthStats.newClients++;
+                monthStats.newCustomers++;
             }
         }
 
         const byMonth = Array.from(monthMap.entries()).map(
             ([month, stats]) => ({
                 month,
-                newClients: stats.newClients,
-                returningClients: stats.returningClients,
+                newCustomers: stats.newCustomers,
+                returningCustomers: stats.returningCustomers,
             }),
         );
 
         return {
-            totalClients,
-            returningClients,
+            totalCustomers,
+            returningCustomers,
             returningPercentage:
-                totalClients > 0
-                    ? Math.round((returningClients / totalClients) * 100)
+                totalCustomers > 0
+                    ? Math.round((returningCustomers / totalCustomers) * 100)
                     : 0,
-            newClients,
+            newCustomers,
             newPercentage:
-                totalClients > 0
-                    ? Math.round((newClients / totalClients) * 100)
+                totalCustomers > 0
+                    ? Math.round((newCustomers / totalCustomers) * 100)
                     : 0,
             byMonth,
         };
     }
 
-    async getClientOriginStats(
+    async getCustomerOriginStats(
         from: Date,
         to: Date,
-    ): Promise<ClientOriginStats> {
+    ): Promise<CustomerOriginStats> {
         // Get new clients in period with their origin/source
         const clients = await this.userRepository
             .createQueryBuilder('user')
-            .where('user.role = :role', { role: Role.Client })
+            .where('user.role = :role', { role: Role.Customer })
             .andWhere('user.createdAt BETWEEN :from AND :to', { from, to })
             .select('user.id', 'id')
             .addSelect('user.source', 'source')
@@ -1140,7 +1140,7 @@ export class StatisticsService {
             .sort((a, b) => b.count - a.count);
 
         return {
-            totalClients: total,
+            totalCustomers: total,
             origins,
         };
     }
@@ -1407,8 +1407,8 @@ export class StatisticsService {
     // Helper method to resolve date range
     resolveDateRange(
         range: DateRange,
-        customFrom?: string,
-        customTo?: string,
+        customFrom?: Date,
+        customTo?: Date,
     ): { from: Date; to: Date } {
         const now = new Date();
 
@@ -1445,8 +1445,8 @@ export class StatisticsService {
             case DateRange.Custom:
                 if (customFrom && customTo) {
                     return {
-                        from: startOfDay(new Date(customFrom)),
-                        to: endOfDay(new Date(customTo)),
+                        from: startOfDay(customFrom),
+                        to: endOfDay(customTo),
                     };
                 }
                 // If custom range without dates, use default (this month)

@@ -72,19 +72,72 @@ test.describe('PROD smoke: communication navigation', () => {
         await nav.getByRole('link', { name: 'Wiadomości masowe' }).click();
         await expect(page).toHaveURL(/\/communication\/mass/);
         await expect(
-            page.locator('h1:has-text("Łączność / Wyślij wiadomość masową")'),
+            page.locator('h3:has-text("Kanał komunikacji")'),
         ).toBeVisible();
 
         await nav.getByRole('link', { name: 'Szablony wiadomości' }).click();
         await expect(page).toHaveURL(/\/communication\/templates/);
         await expect(
-            page.locator('h1:has-text("Łączność / Szablony wiadomości")'),
+            page.locator('button:has-text("+ Nowy szablon")'),
         ).toBeVisible();
 
         await nav.getByRole('link', { name: 'Przypomnienia' }).click();
         await expect(page).toHaveURL(/\/communication\/reminders/);
         await expect(
-            page.locator('h1:has-text("Łączność / Automatyczne przypomnienia")'),
+            page.locator('h3:has-text("Statystyki (ostatnie 7 dni)")'),
         ).toBeVisible();
+    });
+
+    test('communication detail exposes actions instead of disabled placeholder', async ({
+        page,
+    }) => {
+        await login(page);
+        await page.goto('/communication');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="communication-page"]'),
+        ).toBeVisible();
+        await expect(page.locator('text=Ładowanie wiadomości...')).not.toBeVisible(
+            { timeout: 15_000 },
+        );
+
+        const rows = page.locator('table.table-bordered tbody tr');
+        const rowCount = await rows.count();
+
+        if (rowCount === 0) {
+            await expect(
+                page.locator('text=Pozycje 0 - 0 z 0'),
+            ).toBeVisible();
+            return;
+        }
+
+        const firstMessageLink = rows.first().locator('td a').first();
+
+        await expect(firstMessageLink).toBeVisible();
+        await firstMessageLink.click();
+
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page).toHaveURL(/\/communication\/\d+/);
+
+        const actionsMenu = page.locator(
+            'summary:has-text("operacje"), summary:has-text("Operacje")',
+        );
+        await expect(actionsMenu).toBeVisible();
+        await actionsMenu.click();
+
+        await expect(
+            page.locator('.customer-more-dropdown__menu button:has-text("odpowiedz")'),
+        ).toBeVisible();
+        await expect(
+            page.locator('.customer-more-dropdown__menu button:has-text("drukuj")'),
+        ).toBeVisible();
+
+        const replyAction = page.locator(
+            '.customer-more-dropdown__menu button:has-text("odpowiedz")',
+        );
+        await replyAction.click();
+
+        await expect(page.locator('#reply_form')).toBeVisible();
     });
 });

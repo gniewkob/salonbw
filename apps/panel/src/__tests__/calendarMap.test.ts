@@ -7,7 +7,7 @@ describe('calendar mapping', () => {
             {
                 id: 1,
                 startTime: '2025-01-01T10:00:00Z',
-                client: { id: 1, name: 'Alice' },
+                customer: { id: 1, name: 'Alice' },
                 service: { id: 1, name: 'Cut', duration: 30, price: 10 },
                 employee: { id: 2, name: 'Bob' },
                 paymentStatus: 'completed',
@@ -15,7 +15,7 @@ describe('calendar mapping', () => {
             {
                 id: 2,
                 startTime: '2025-01-01T11:00:00Z',
-                client: { id: 2, name: 'Cathy' },
+                customer: { id: 2, name: 'Cathy' },
                 service: { id: 1, name: 'Cut', duration: 30, price: 10 },
                 employee: { id: 3, name: 'Dan' },
                 paymentStatus: 'cancelled',

@@ -160,11 +160,11 @@ export default function FinalizationModal({
             <div className="w-100">
                 <h2 className="fs-5 fw-semibold mb-3">Finalizacja wizyty</h2>
 
-                {/* Client & Service Info */}
+                {/* Customer & Service Info */}
                 <div className="bg-light rounded-3 p-2 mb-3">
                     <div className="small text-muted">
                         <span className="fw-medium">
-                            {appointment.client?.name}
+                            {appointment.customer?.name}
                         </span>
                         <span className="mx-2">•</span>
                         <span>{appointment.service?.name}</span>

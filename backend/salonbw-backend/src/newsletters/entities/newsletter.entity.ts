@@ -57,10 +57,10 @@ export class Newsletter {
     })
     status: NewsletterStatus;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ type: 'datetime', nullable: true })
     scheduledAt: Date | null;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ type: 'datetime', nullable: true })
     sentAt: Date | null;
 
     @Column({ default: 0 })

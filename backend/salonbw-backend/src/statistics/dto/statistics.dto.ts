@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsEnum, IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export enum DateRange {
     Today = 'today',
@@ -22,13 +23,15 @@ export class StatisticsQueryDto {
     @IsOptional()
     range?: DateRange;
 
-    @IsString()
     @IsOptional()
-    from?: string;
+    @IsDate()
+    @Type(() => Date)
+    from?: Date;
 
-    @IsString()
     @IsOptional()
-    to?: string;
+    @IsDate()
+    @Type(() => Date)
+    to?: Date;
 
     @IsNumber()
     @IsOptional()
@@ -43,12 +46,19 @@ export class StatisticsQueryDto {
     groupBy?: GroupBy;
 }
 
+export class SingleDateQueryDto {
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    date?: Date;
+}
+
 export interface DashboardStats {
     todayRevenue: number;
     todayProductRevenue: number;
     todayAppointments: number;
     todayCompletedAppointments: number;
-    todayNewClients: number;
+    todayNewCustomers: number;
     weekRevenue: number;
     weekProductRevenue: number;
     weekAppointments: number;
@@ -61,7 +71,7 @@ export interface DashboardStats {
         date: string;
         count: number;
     }>;
-    monthDailyNewClients: Array<{
+    monthDailyNewCustomers: Array<{
         date: string;
         count: number;
     }>;
@@ -121,34 +131,34 @@ export interface ServiceStats {
     averageDuration: number;
 }
 
-export interface ClientStats {
-    newClients: number;
-    returningClients: number;
+export interface CustomerStats {
+    newCustomers: number;
+    returningCustomers: number;
     totalVisits: number;
-    averageVisitsPerClient: number;
+    averageVisitsPerCustomer: number;
     topClients: Array<{
-        clientId: number;
-        clientName: string;
+        customerId: number;
+        customerName: string;
         visits: number;
         totalSpent: number;
     }>;
 }
 
-export interface ClientReturningStats {
-    totalClients: number;
-    returningClients: number;
+export interface CustomerReturningStats {
+    totalCustomers: number;
+    returningCustomers: number;
     returningPercentage: number;
-    newClients: number;
+    newCustomers: number;
     newPercentage: number;
     byMonth: Array<{
         month: string;
-        newClients: number;
-        returningClients: number;
+        newCustomers: number;
+        returningCustomers: number;
     }>;
 }
 
-export interface ClientOriginStats {
-    totalClients: number;
+export interface CustomerOriginStats {
+    totalCustomers: number;
     origins: Array<{
         origin: string;
         count: number;
@@ -165,7 +175,7 @@ export interface CashRegisterEntry {
     amount: number;
     tip: number;
     employeeName: string | null;
-    clientName: string | null;
+    customerName: string | null;
 }
 
 export interface CashRegisterSummary {

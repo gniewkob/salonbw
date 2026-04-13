@@ -16,12 +16,12 @@ interface SidebarProps {
     onClose?: () => void;
 }
 
-const ClientSidebar: ComponentType<SidebarProps> =
+const CustomerSidebar: ComponentType<SidebarProps> =
     process.env.NODE_ENV === 'test'
         ? // eslint-disable-next-line global-require
-          (require('./sidebars/ClientSidebarMenu')
+          (require('./sidebars/CustomerSidebarMenu')
               .default as ComponentType<SidebarProps>)
-        : dynamic<SidebarProps>(() => import('./sidebars/ClientSidebarMenu'));
+        : dynamic<SidebarProps>(() => import('./sidebars/CustomerSidebarMenu'));
 const EmployeeSidebar: ComponentType<SidebarProps> =
     process.env.NODE_ENV === 'test'
         ? // eslint-disable-next-line global-require
@@ -52,13 +52,13 @@ export default function DashboardLayout({ children }: Props) {
     }
 
     const map: Record<Role, ComponentType<SidebarProps>> = {
-        client: ClientSidebar,
+        customer: CustomerSidebar,
         employee: EmployeeSidebar,
         receptionist: ReceptionistSidebar,
         admin: AdminSidebar,
     };
     const SidebarComponent =
-        role && role in map ? map[role as Role] : ClientSidebar;
+        role && role in map ? map[role as Role] : CustomerSidebar;
 
     return (
         <div className="d-flex bg-light">

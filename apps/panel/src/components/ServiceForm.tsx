@@ -16,7 +16,7 @@ export default function ServiceForm({ initial, onSubmit, onCancel }: Props) {
         e.preventDefault();
         const trimmed = name.trim();
         if (!trimmed) {
-            setError('Name is required');
+            setError('Podaj nazwę usługi');
             return;
         }
 
@@ -25,7 +25,11 @@ export default function ServiceForm({ initial, onSubmit, onCancel }: Props) {
         try {
             await onSubmit({ name: trimmed });
         } catch (err) {
-            setError(err instanceof Error ? err.message || 'Error' : 'Error');
+            setError(
+                err instanceof Error
+                    ? err.message || 'Wystąpił błąd'
+                    : 'Wystąpił błąd',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -37,7 +41,7 @@ export default function ServiceForm({ initial, onSubmit, onCancel }: Props) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Name"
+                placeholder="Nazwa usługi"
             />
             {error && (
                 <p role="alert" className="text-danger small">
@@ -50,14 +54,14 @@ export default function ServiceForm({ initial, onSubmit, onCancel }: Props) {
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>

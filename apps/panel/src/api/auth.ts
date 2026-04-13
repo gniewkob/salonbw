@@ -8,7 +8,7 @@ export function setLogoutCallback(cb: () => void) {
     logoutCallback = cb;
 }
 
-const client = new ApiClient(
+const customer = new ApiClient(
     () => null,
     () => logoutCallback(),
     undefined,
@@ -60,27 +60,33 @@ export async function login(
     credentials: LoginCredentials,
 ): Promise<AuthTokens> {
     try {
-        const raw = await client.request<ServerTokens>('/auth/login', {
+        const raw = await customer.request<ServerTokens>('/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials),
         });
         return mapTokens(raw);
     } catch (err: unknown) {
-        throw new Error(err instanceof Error ? err.message : 'Login failed');
+        throw new Error(
+            err instanceof Error
+                ? err.message
+                : 'Nie udało się zalogować. Spróbuj ponownie.',
+        );
     }
 }
 
 export async function register(data: RegisterData): Promise<User> {
     try {
-        return await client.request<User>('/auth/register', {
+        return await customer.request<User>('/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
     } catch (err: unknown) {
         throw new Error(
-            err instanceof Error ? err.message : 'Registration failed',
+            err instanceof Error
+                ? err.message
+                : 'Nie udało się utworzyć konta. Spróbuj ponownie.',
         );
     }
 }
@@ -94,7 +100,7 @@ export async function refreshToken(): Promise<AuthTokens> {
             (typeof document !== 'undefined'
                 ? Cookies.get(REFRESH_TOKEN_KEY)
                 : null);
-        const raw = await client.request<ServerTokens>('/auth/refresh', {
+        const raw = await customer.request<ServerTokens>('/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
@@ -102,13 +108,15 @@ export async function refreshToken(): Promise<AuthTokens> {
         return mapTokens(raw);
     } catch (err: unknown) {
         throw new Error(
-            err instanceof Error ? err.message : 'Token refresh failed',
+            err instanceof Error
+                ? err.message
+                : 'Nie udało się odświeżyć sesji. Zaloguj się ponownie.',
         );
     }
 }
 
 export async function logout(): Promise<void> {
-    await client.request('/auth/logout', {
+    await customer.request('/auth/logout', {
         method: 'POST',
         headers: { 'x-skip-logout': 'true' },
     });

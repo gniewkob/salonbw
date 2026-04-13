@@ -16,7 +16,7 @@ describe('ApiClient', () => {
     });
 
     it('adds Authorization header when token is present', async () => {
-        const client = new ApiClient(
+        const customer = new ApiClient(
             () => 't',
             () => {},
         );
@@ -33,13 +33,13 @@ describe('ApiClient', () => {
                 );
             },
         );
-        await client.request('/test');
+        await customer.request('/test');
         expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
     it('calls logout callback on 401 responses', async () => {
         const onLogout = jest.fn();
-        const client = new ApiClient(() => null, onLogout, undefined, {
+        const customer = new ApiClient(() => null, onLogout, undefined, {
             getRefreshToken: () => null,
         });
         (global.fetch as jest.Mock).mockResolvedValue(
@@ -48,12 +48,12 @@ describe('ApiClient', () => {
                 headers: { 'Content-Type': 'text/plain' },
             }),
         );
-        await expect(client.request('/test')).rejects.toThrow('Unauthorized');
+        await expect(customer.request('/test')).rejects.toThrow('Unauthorized');
         expect(onLogout).toHaveBeenCalled();
     });
 
     it('propagates error messages from the server', async () => {
-        const client = new ApiClient(
+        const customer = new ApiClient(
             () => null,
             () => {},
         );
@@ -64,32 +64,32 @@ describe('ApiClient', () => {
                 headers: { 'Content-Type': 'application/json' },
             }),
         );
-        await client.request('/test').catch((err) => {
+        await customer.request('/test').catch((err) => {
             expect(err).toHaveProperty('message', message);
         });
     });
 
     it('returns undefined for 204 responses', async () => {
-        const client = new ApiClient(
+        const customer = new ApiClient(
             () => null,
             () => {},
         );
         (global.fetch as jest.Mock).mockResolvedValue(
             new Response(null, { status: 204 }),
         );
-        const res = await client.request('/test');
+        const res = await customer.request('/test');
         expect(res).toBeUndefined();
     });
 
     it('returns undefined for empty bodies', async () => {
-        const client = new ApiClient(
+        const customer = new ApiClient(
             () => null,
             () => {},
         );
         (global.fetch as jest.Mock).mockResolvedValue(
             new Response('', { status: 200 }),
         );
-        const res = await client.request('/test');
+        const res = await customer.request('/test');
         expect(res).toBeUndefined();
     });
 });

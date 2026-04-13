@@ -49,7 +49,7 @@ export class EmployeeServicesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
     @Get('employee/:employeeId/services')
     @ApiBearerAuth()
     @ApiOperation({

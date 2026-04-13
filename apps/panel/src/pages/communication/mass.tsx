@@ -19,8 +19,8 @@ export default function MassCommunicationPage() {
     const { sendBulkEmail } = useEmailMutations();
 
     const customers = useMemo(
-        () => customersData?.items ?? [],
-        [customersData?.items],
+        () => customersData?.data ?? [],
+        [customersData?.data],
     );
 
     const [step, setStep] = useState<'recipients' | 'message' | 'preview'>(
@@ -396,7 +396,7 @@ export default function MassCommunicationPage() {
 
                                 <div className="salonbw-variables-help">
                                     <h4>Dostępne zmienne:</h4>
-                                    <code>{'{{client_name}}'}</code>
+                                    <code>{'{{customer_name}}'}</code>
                                     <code>{'{{salon_name}}'}</code>
                                     <code>{'{{salon_phone}}'}</code>
                                     <code>{'{{date}}'}</code>

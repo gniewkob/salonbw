@@ -11,7 +11,7 @@ const ENABLED =
     typeof window !== 'undefined';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '/api';
-const CLIENT_LOG_URL = `${API_BASE}/logs/client`;
+const CLIENT_LOG_URL = `${API_BASE}/logs/customer`;
 const LOG_TOKEN = process.env.NEXT_PUBLIC_LOG_TOKEN;
 
 export async function logClientError(payload: ClientLogPayload) {
@@ -33,7 +33,7 @@ export async function logClientError(payload: ClientLogPayload) {
     } catch (error) {
         if (process.env.NODE_ENV !== 'production') {
             // eslint-disable-next-line no-console
-            console.warn('Failed to send client log', error);
+            console.warn('Failed to send customer log', error);
         }
     }
 }
