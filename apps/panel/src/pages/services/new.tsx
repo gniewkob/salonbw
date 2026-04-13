@@ -510,6 +510,37 @@ function NewServicePageContent() {
                 </div>
             ) : null}
 
+            <div className="column_row row buttons-row">
+                <div className="col-sm-6">
+                    <h2 className="column_row services-create-title">
+                        Dodawanie usługi
+                    </h2>
+                </div>
+                <div className="right-buttons col-sm-6">
+                    <Link href="/services" className="button">
+                        anuluj
+                    </Link>
+                    <button
+                        type="button"
+                        className="button ml-s"
+                        disabled={isSaving}
+                        onClick={() =>
+                            void handleSubmit('save_and_add_another')
+                        }
+                    >
+                        zapisz i dodaj kolejną
+                    </button>
+                    <button
+                        type="button"
+                        className="button button-blue ml-s"
+                        disabled={isSaving}
+                        onClick={() => void handleSubmit('save')}
+                    >
+                        zapisz usługę
+                    </button>
+                </div>
+            </div>
+
             <form
                 className="services-create-form"
                 onSubmit={(event) => {
@@ -517,707 +548,759 @@ function NewServicePageContent() {
                     void handleSubmit('save');
                 }}
             >
-                <fieldset>
-                    <ol className="services-create-fields">
-                        <li className="services-create-field">
-                            <label htmlFor="service_name">Nazwa</label>
-                            <div className="services-create-control">
-                                <input
-                                    id="service_name"
-                                    className="form-control"
-                                    value={name}
-                                    onChange={(event) =>
-                                        setName(event.target.value)
-                                    }
-                                />
-                                <p className="services-create-help">
-                                    Nazwa powinna jednoznacznie identyfikować
-                                    usługę.
-                                </p>
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label htmlFor="service_category">Kategoria</label>
-                            <div className="services-create-control services-create-inline">
-                                <select
-                                    id="service_category"
-                                    className="salonbw-select services-create-select"
-                                    value={categoryId}
-                                    onChange={(event) =>
-                                        setCategoryId(event.target.value)
-                                    }
-                                >
-                                    <option value="">wybierz kategorię</option>
-                                    {categoryOptions.map((category) => (
-                                        <option
-                                            key={category.id}
-                                            value={category.id}
-                                        >
-                                            {formatCategoryLabel(
-                                                category.name,
-                                                category.depth,
-                                            )}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button
-                                    type="button"
-                                    className="button button-link"
-                                    onClick={() => setIsCategoriesOpen(true)}
-                                >
-                                    Dodaj kategorię
-                                </button>
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label htmlFor="service_duration">
-                                Czas trwania
-                            </label>
-                            <div className="services-create-control">
-                                <div className="services-create-inline">
+                <div className="service-details-content mt-15">
+                    <div className="info-box">
+                        <div className="box-title">Podstawowe informacje</div>
+                        <p className="services-create-section-copy">
+                            Formularz odwzorowuje główny flow Versum dla nowej
+                            usługi: nazwa, kategoria, czas, cena, opisy i
+                            zdjęcia.
+                        </p>
+                        <ol className="services-create-fields">
+                            <li className="services-create-field">
+                                <label htmlFor="service_name">Nazwa</label>
+                                <div className="services-create-control">
                                     <input
-                                        id="service_duration"
-                                        type="number"
-                                        min="0"
-                                        className="form-control services-create-number"
-                                        value={duration}
+                                        id="service_name"
+                                        className="form-control"
+                                        value={name}
                                         onChange={(event) =>
-                                            setDuration(event.target.value)
+                                            setName(event.target.value)
                                         }
-                                        disabled={measureKind === 'multiple'}
                                     />
-                                    <span>minut</span>
+                                    <p className="services-create-help">
+                                        Nazwa powinna jednoznacznie
+                                        identyfikować usługę.
+                                    </p>
+                                </div>
+                            </li>
+
+                            <li className="services-create-field">
+                                <label htmlFor="service_category">
+                                    Kategoria
+                                </label>
+                                <div className="services-create-control services-create-inline">
+                                    <select
+                                        id="service_category"
+                                        className="salonbw-select services-create-select"
+                                        value={categoryId}
+                                        onChange={(event) =>
+                                            setCategoryId(event.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            wybierz kategorię
+                                        </option>
+                                        {categoryOptions.map((category) => (
+                                            <option
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {formatCategoryLabel(
+                                                    category.name,
+                                                    category.depth,
+                                                )}
+                                            </option>
+                                        ))}
+                                    </select>
                                     <button
                                         type="button"
                                         className="button button-link"
                                         onClick={() =>
-                                            setShowDurationModal(true)
+                                            setIsCategoriesOpen(true)
                                         }
                                     >
-                                        Zaawansowane
+                                        Dodaj kategorię
                                     </button>
                                 </div>
+                            </li>
 
-                                {hasDurationBefore ||
-                                hasDurationAfter ||
-                                hasBreak ? (
-                                    <div className="services-create-panel">
-                                        <div className="services-create-extra-summary">
-                                            {hasDurationBefore ? (
-                                                <span>
-                                                    blokada przed:{' '}
-                                                    {durationBefore || '0'} min
-                                                </span>
-                                            ) : null}
-                                            {hasBreak ? (
-                                                <span>
-                                                    przerwa: po{' '}
-                                                    {breakOffset || '0'} min na{' '}
-                                                    {breakDuration || '0'} min
-                                                </span>
-                                            ) : null}
-                                            {hasDurationAfter ? (
-                                                <span>
-                                                    blokada po:{' '}
-                                                    {durationAfter || '0'} min
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                        <p className="services-create-help services-create-help--tight">
-                                            Source UI używa dla tego pola
-                                            osobnego modalu. W panelu
-                                            odwzorowujemy ten flow, ale backend
-                                            create nadal nie zapisuje tych
-                                            wartości.
-                                        </p>
-                                    </div>
-                                ) : null}
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label htmlFor="service_price">Cena</label>
-                            <div className="services-create-control">
-                                {showMeasureKindBox ? (
-                                    <div className="services-create-measure-box">
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                checked={
-                                                    measureKind === 'single'
-                                                }
-                                                onChange={() =>
-                                                    setMeasureKind('single')
-                                                }
-                                            />
-                                            Jeden wariant
-                                        </label>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                checked={
-                                                    measureKind ===
-                                                    'single_with_range'
-                                                }
-                                                onChange={() =>
-                                                    setMeasureKind(
-                                                        'single_with_range',
-                                                    )
-                                                }
-                                            />
-                                            Widełki cenowe
-                                        </label>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                checked={
-                                                    measureKind === 'multiple'
-                                                }
-                                                onChange={() =>
-                                                    setMeasureKind('multiple')
-                                                }
-                                            />
-                                            Wiele wariantów
-                                        </label>
-                                    </div>
-                                ) : null}
-
-                                {measureKind !== 'multiple' ? (
+                            <li className="services-create-field">
+                                <label htmlFor="service_duration">
+                                    Czas trwania
+                                </label>
+                                <div className="services-create-control">
                                     <div className="services-create-inline">
                                         <input
-                                            id="service_price"
+                                            id="service_duration"
                                             type="number"
-                                            step="0.01"
                                             min="0"
                                             className="form-control services-create-number"
-                                            value={price}
+                                            value={duration}
                                             onChange={(event) =>
-                                                setPrice(event.target.value)
+                                                setDuration(event.target.value)
+                                            }
+                                            disabled={
+                                                measureKind === 'multiple'
                                             }
                                         />
-                                        {measureKind === 'single_with_range' ? (
-                                            <>
-                                                <span>do</span>
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    className="form-control services-create-number"
-                                                    value={priceMax}
-                                                    onChange={(event) =>
-                                                        setPriceMax(
-                                                            event.target.value,
-                                                        )
-                                                    }
-                                                />
-                                            </>
-                                        ) : null}
-                                        <span>zł</span>
-                                        <span className="services-create-muted">
-                                            (brutto)
-                                        </span>
+                                        <span>minut</span>
                                         <button
                                             type="button"
                                             className="button button-link"
                                             onClick={() =>
-                                                setShowMeasureKindBox(
-                                                    (current) => !current,
-                                                )
+                                                setShowDurationModal(true)
                                             }
                                         >
                                             Zaawansowane
                                         </button>
                                     </div>
-                                ) : (
-                                    <div className="services-create-variants">
-                                        <table className="salonbw-table services-create-variants-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Nazwa wariantu</th>
-                                                    <th>Czas trwania</th>
-                                                    <th>Cena</th>
-                                                    <th>usuń</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {variants.map((variant) => (
-                                                    <tr key={variant.key}>
-                                                        <td>
-                                                            <input
-                                                                type="text"
-                                                                className="form-control"
-                                                                value={
-                                                                    variant.name
-                                                                }
-                                                                onChange={(
-                                                                    event,
-                                                                ) =>
-                                                                    updateVariant(
-                                                                        variant.key,
-                                                                        'name',
-                                                                        event
-                                                                            .target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                placeholder="np. włosy długie"
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <div className="services-create-inline">
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    className="form-control services-create-number"
-                                                                    value={
-                                                                        variant.duration
-                                                                    }
-                                                                    onChange={(
-                                                                        event,
-                                                                    ) =>
-                                                                        updateVariant(
-                                                                            variant.key,
-                                                                            'duration',
-                                                                            event
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <span>min</span>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div className="services-create-inline">
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    min="0"
-                                                                    className="form-control services-create-number"
-                                                                    value={
-                                                                        variant.price
-                                                                    }
-                                                                    onChange={(
-                                                                        event,
-                                                                    ) =>
-                                                                        updateVariant(
-                                                                            variant.key,
-                                                                            'price',
-                                                                            event
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <span>zł</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="text-center">
-                                                            <button
-                                                                type="button"
-                                                                className="button button-link services-create-delete"
-                                                                onClick={() =>
-                                                                    removeVariant(
-                                                                        variant.key,
-                                                                    )
-                                                                }
-                                                            >
-                                                                usuń
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                        <div className="mt-m">
+
+                                    {hasDurationBefore ||
+                                    hasDurationAfter ||
+                                    hasBreak ? (
+                                        <div className="services-create-panel">
+                                            <div className="services-create-extra-summary">
+                                                {hasDurationBefore ? (
+                                                    <span>
+                                                        blokada przed:{' '}
+                                                        {durationBefore || '0'}{' '}
+                                                        min
+                                                    </span>
+                                                ) : null}
+                                                {hasBreak ? (
+                                                    <span>
+                                                        przerwa: po{' '}
+                                                        {breakOffset || '0'} min
+                                                        na{' '}
+                                                        {breakDuration || '0'}{' '}
+                                                        min
+                                                    </span>
+                                                ) : null}
+                                                {hasDurationAfter ? (
+                                                    <span>
+                                                        blokada po:{' '}
+                                                        {durationAfter || '0'}{' '}
+                                                        min
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <p className="services-create-help services-create-help--tight">
+                                                Source UI używa dla tego pola
+                                                osobnego modalu. W panelu
+                                                odwzorowujemy ten flow, a
+                                                backend zapisuje już blokadę
+                                                przed/po oraz przerwę w trakcie
+                                                usługi.
+                                            </p>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </li>
+
+                            <li className="services-create-field">
+                                <label htmlFor="service_price">Cena</label>
+                                <div className="services-create-control">
+                                    {showMeasureKindBox ? (
+                                        <div className="services-create-measure-box">
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    checked={
+                                                        measureKind === 'single'
+                                                    }
+                                                    onChange={() =>
+                                                        setMeasureKind('single')
+                                                    }
+                                                />
+                                                Jeden wariant
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    checked={
+                                                        measureKind ===
+                                                        'single_with_range'
+                                                    }
+                                                    onChange={() =>
+                                                        setMeasureKind(
+                                                            'single_with_range',
+                                                        )
+                                                    }
+                                                />
+                                                Widełki cenowe
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    checked={
+                                                        measureKind ===
+                                                        'multiple'
+                                                    }
+                                                    onChange={() =>
+                                                        setMeasureKind(
+                                                            'multiple',
+                                                        )
+                                                    }
+                                                />
+                                                Wiele wariantów
+                                            </label>
+                                        </div>
+                                    ) : null}
+
+                                    {measureKind !== 'multiple' ? (
+                                        <div className="services-create-inline">
+                                            <input
+                                                id="service_price"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                className="form-control services-create-number"
+                                                value={price}
+                                                onChange={(event) =>
+                                                    setPrice(event.target.value)
+                                                }
+                                            />
+                                            {measureKind ===
+                                            'single_with_range' ? (
+                                                <>
+                                                    <span>do</span>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        className="form-control services-create-number"
+                                                        value={priceMax}
+                                                        onChange={(event) =>
+                                                            setPriceMax(
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </>
+                                            ) : null}
+                                            <span>zł</span>
+                                            <span className="services-create-muted">
+                                                (brutto)
+                                            </span>
                                             <button
                                                 type="button"
-                                                className="button"
-                                                onClick={addVariant}
+                                                className="button button-link"
+                                                onClick={() =>
+                                                    setShowMeasureKindBox(
+                                                        (current) => !current,
+                                                    )
+                                                }
                                             >
-                                                dodaj kolejny wariant
+                                                Zaawansowane
                                             </button>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label htmlFor="service_vat">VAT</label>
-                            <div className="services-create-control">
-                                <select
-                                    id="service_vat"
-                                    className="salonbw-select services-create-select services-create-select--small"
-                                    value={vatCode}
-                                    onChange={(event) =>
-                                        setVatCode(
-                                            event.target.value as VatCode,
-                                        )
-                                    }
-                                >
-                                    {VAT_OPTIONS.map((option) => (
-                                        <option
-                                            key={option.code}
-                                            value={option.code}
-                                        >
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label htmlFor="service_description">
-                                Opis publiczny
-                            </label>
-                            <div className="services-create-control">
-                                <textarea
-                                    id="service_description"
-                                    className="form-control services-create-textarea"
-                                    value={publicDescription}
-                                    onChange={(event) =>
-                                        setPublicDescription(event.target.value)
-                                    }
-                                />
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label htmlFor="service_private_description">
-                                Opis prywatny
-                            </label>
-                            <div className="services-create-control">
-                                <textarea
-                                    id="service_private_description"
-                                    className="form-control services-create-textarea"
-                                    value={privateDescription}
-                                    onChange={(event) =>
-                                        setPrivateDescription(
-                                            event.target.value,
-                                        )
-                                    }
-                                />
-                            </div>
-                        </li>
-
-                        <li className="services-create-field">
-                            <label>Zdjęcia</label>
-                            <div className="services-create-control">
-                                <div className="services-create-gallery">
-                                    <div className="services-create-panel services-create-upload-panel">
-                                        <label className="btn btn-default services-create-upload-trigger">
-                                            dodaj zdjęcia
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                multiple
-                                                className="sr-only"
-                                                onChange={(event) => {
-                                                    const files = Array.from(
-                                                        event.target.files ??
-                                                            [],
-                                                    );
-                                                    if (files.length === 0) {
-                                                        return;
-                                                    }
-                                                    setSelectedFiles(files);
-                                                    event.currentTarget.value =
-                                                        '';
-                                                }}
-                                            />
-                                        </label>
-                                        {selectedFiles.length > 0 ? (
-                                            <ul className="services-create-file-list">
-                                                {selectedFiles.map((file) => (
-                                                    <li key={file.name}>
-                                                        <span>{file.name}</span>
-                                                        <span className="services-create-muted">
-                                                            {Math.max(
-                                                                1,
-                                                                Math.round(
-                                                                    file.size /
-                                                                        1024,
-                                                                ),
-                                                            )}{' '}
-                                                            KB
-                                                        </span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : null}
-                                    </div>
-                                    <p className="services-create-help services-create-help--tight">
-                                        Source UI używa uploadu `Filedata` z
-                                        `gallery_id`. Po zapisaniu usługi
-                                        wybrane pliki są wysyłane osobnym
-                                        requestem multipart do backendu panelu.
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-                    </ol>
-
-                    <legend className="services-create-legend">
-                        Zaawansowane{' '}
-                        <button
-                            type="button"
-                            className="button button-link"
-                            onClick={() =>
-                                setShowAdvancedSection((current) => !current)
-                            }
-                        >
-                            {showAdvancedSection ? 'Ukryj' : 'Pokaż'}
-                        </button>
-                    </legend>
-
-                    {showAdvancedSection ? (
-                        <div className="services-create-advanced">
-                            <div className="services-create-field">
-                                <label htmlFor="service_online_booking">
-                                    Rezerwacja online
-                                </label>
-                                <div className="services-create-control">
-                                    <select
-                                        id="service_online_booking"
-                                        className="salonbw-select services-create-select"
-                                        value={onlineBookingMode}
-                                        onChange={(event) =>
-                                            setOnlineBookingMode(
-                                                event.target
-                                                    .value as OnlineBookingMode,
-                                            )
-                                        }
-                                    >
-                                        <option value="online_booking_enabled">
-                                            Usługę można rezerwować online
-                                        </option>
-                                        <option value="online_booking_hidden">
-                                            Rezerwacja online zablokowana.
-                                            Usługa nie jest widoczna dla
-                                            klientów.
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="services-create-field">
-                                <label>Receptura</label>
-                                <div className="services-create-control">
-                                    <div className="services-create-panel">
-                                        <button
-                                            type="button"
-                                            className="button button-link"
-                                            onClick={() =>
-                                                setShowRecipeTable(
-                                                    (current) => !current,
-                                                )
-                                            }
-                                        >
-                                            {showRecipeTable
-                                                ? 'ukryj recepturę'
-                                                : 'zdefiniuj recepturę'}
-                                        </button>
-                                        {showRecipeTable ? (
-                                            <div className="services-create-recipe">
-                                                <table className="salonbw-table services-create-recipe-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>materiał</th>
-                                                            <th>jednostka</th>
-                                                            <th>ilość</th>
-                                                            <th>usuń</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {recipeItems.map(
-                                                            (item) => (
-                                                                <tr
-                                                                    key={
-                                                                        item.key
+                                    ) : (
+                                        <div className="services-create-variants">
+                                            <table className="salonbw-table services-create-variants-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nazwa wariantu</th>
+                                                        <th>Czas trwania</th>
+                                                        <th>Cena</th>
+                                                        <th>usuń</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {variants.map((variant) => (
+                                                        <tr key={variant.key}>
+                                                            <td>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control"
+                                                                    value={
+                                                                        variant.name
+                                                                    }
+                                                                    onChange={(
+                                                                        event,
+                                                                    ) =>
+                                                                        updateVariant(
+                                                                            variant.key,
+                                                                            'name',
+                                                                            event
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    placeholder="np. włosy długie"
+                                                                />
+                                                            </td>
+                                                            <td>
+                                                                <div className="services-create-inline">
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        className="form-control services-create-number"
+                                                                        value={
+                                                                            variant.duration
+                                                                        }
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            updateVariant(
+                                                                                variant.key,
+                                                                                'duration',
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                    <span>
+                                                                        min
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div className="services-create-inline">
+                                                                    <input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        min="0"
+                                                                        className="form-control services-create-number"
+                                                                        value={
+                                                                            variant.price
+                                                                        }
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            updateVariant(
+                                                                                variant.key,
+                                                                                'price',
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                    <span>
+                                                                        zł
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    className="button button-link services-create-delete"
+                                                                    onClick={() =>
+                                                                        removeVariant(
+                                                                            variant.key,
+                                                                        )
                                                                     }
                                                                 >
-                                                                    <td className="services-create-recipe-cell">
-                                                                        <input
-                                                                            type="text"
-                                                                            className="form-control"
-                                                                            placeholder="wpisz nazwę, kod kreskowy, itp."
-                                                                            value={
-                                                                                item.productName
-                                                                            }
-                                                                            onFocus={() => {
-                                                                                setActiveRecipeRowKey(
-                                                                                    item.key,
-                                                                                );
-                                                                                setRecipeProductSearch(
-                                                                                    item.productName,
-                                                                                );
-                                                                            }}
-                                                                            onChange={(
-                                                                                event,
-                                                                            ) => {
-                                                                                updateRecipeItem(
-                                                                                    item.key,
-                                                                                    'productId',
-                                                                                    null,
-                                                                                );
-                                                                                updateRecipeItem(
-                                                                                    item.key,
-                                                                                    'productName',
-                                                                                    event
-                                                                                        .target
-                                                                                        .value,
-                                                                                );
-                                                                                setActiveRecipeRowKey(
-                                                                                    item.key,
-                                                                                );
-                                                                                setRecipeProductSearch(
-                                                                                    event
-                                                                                        .target
-                                                                                        .value,
-                                                                                );
-                                                                            }}
-                                                                        />
-                                                                        {activeRecipeRowKey ===
-                                                                            item.key &&
-                                                                        recipeSuggestions.length >
-                                                                            0 ? (
-                                                                            <div className="services-create-recipe-suggestions">
-                                                                                {recipeSuggestions.map(
-                                                                                    (
-                                                                                        product,
-                                                                                    ) => (
-                                                                                        <button
-                                                                                            key={
-                                                                                                product.id
-                                                                                            }
-                                                                                            type="button"
-                                                                                            className="services-create-recipe-option"
-                                                                                            onClick={() => {
-                                                                                                updateRecipeItem(
-                                                                                                    item.key,
-                                                                                                    'productId',
-                                                                                                    product.id,
-                                                                                                );
-                                                                                                updateRecipeItem(
-                                                                                                    item.key,
-                                                                                                    'productName',
-                                                                                                    product.name,
-                                                                                                );
-                                                                                                updateRecipeItem(
-                                                                                                    item.key,
-                                                                                                    'unit',
-                                                                                                    product.unit ||
-                                                                                                        product.packageUnit ||
-                                                                                                        'op.',
-                                                                                                );
-                                                                                                setActiveRecipeRowKey(
-                                                                                                    null,
-                                                                                                );
-                                                                                                setRecipeProductSearch(
-                                                                                                    '',
-                                                                                                );
-                                                                                            }}
-                                                                                        >
-                                                                                            <span>
-                                                                                                {
-                                                                                                    product.name
-                                                                                                }
-                                                                                            </span>
-                                                                                            <span className="services-create-muted">
-                                                                                                {product.unit ||
-                                                                                                    product.packageUnit ||
-                                                                                                    'op.'}
-                                                                                            </span>
-                                                                                        </button>
-                                                                                    ),
-                                                                                )}
-                                                                            </div>
-                                                                        ) : null}
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="text"
-                                                                            className="form-control"
-                                                                            value={
-                                                                                item.unit
-                                                                            }
-                                                                            onChange={(
-                                                                                event,
-                                                                            ) =>
-                                                                                updateRecipeItem(
-                                                                                    item.key,
-                                                                                    'unit',
-                                                                                    event
-                                                                                        .target
-                                                                                        .value,
-                                                                                )
-                                                                            }
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            min="0"
-                                                                            step="0.01"
-                                                                            className="form-control services-create-number"
-                                                                            value={
-                                                                                item.quantity
-                                                                            }
-                                                                            onChange={(
-                                                                                event,
-                                                                            ) =>
-                                                                                updateRecipeItem(
-                                                                                    item.key,
-                                                                                    'quantity',
-                                                                                    event
-                                                                                        .target
-                                                                                        .value,
-                                                                                )
-                                                                            }
-                                                                        />
-                                                                    </td>
-                                                                    <td className="text-center">
-                                                                        <button
-                                                                            type="button"
-                                                                            className="button button-link services-create-delete"
-                                                                            onClick={() =>
-                                                                                removeRecipeItem(
-                                                                                    item.key,
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            usuń
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            ),
-                                                        )}
-                                                    </tbody>
-                                                </table>
+                                                                    usuń
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            <div className="mt-m">
                                                 <button
                                                     type="button"
                                                     className="button"
-                                                    onClick={addRecipeItem}
+                                                    onClick={addVariant}
                                                 >
-                                                    dodaj kolejną pozycję
+                                                    dodaj kolejny wariant
                                                 </button>
                                             </div>
-                                        ) : null}
+                                        </div>
+                                    )}
+                                </div>
+                            </li>
+
+                            <li className="services-create-field">
+                                <label htmlFor="service_vat">VAT</label>
+                                <div className="services-create-control">
+                                    <select
+                                        id="service_vat"
+                                        className="salonbw-select services-create-select services-create-select--small"
+                                        value={vatCode}
+                                        onChange={(event) =>
+                                            setVatCode(
+                                                event.target.value as VatCode,
+                                            )
+                                        }
+                                    >
+                                        {VAT_OPTIONS.map((option) => (
+                                            <option
+                                                key={option.code}
+                                                value={option.code}
+                                            >
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </li>
+
+                            <li className="services-create-field">
+                                <label htmlFor="service_description">
+                                    Opis publiczny
+                                </label>
+                                <div className="services-create-control">
+                                    <textarea
+                                        id="service_description"
+                                        className="form-control services-create-textarea"
+                                        value={publicDescription}
+                                        onChange={(event) =>
+                                            setPublicDescription(
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </li>
+
+                            <li className="services-create-field">
+                                <label htmlFor="service_private_description">
+                                    Opis prywatny
+                                </label>
+                                <div className="services-create-control">
+                                    <textarea
+                                        id="service_private_description"
+                                        className="form-control services-create-textarea"
+                                        value={privateDescription}
+                                        onChange={(event) =>
+                                            setPrivateDescription(
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </li>
+
+                            <li className="services-create-field">
+                                <label>Zdjęcia</label>
+                                <div className="services-create-control">
+                                    <div className="services-create-gallery">
+                                        <div className="services-create-panel services-create-upload-panel">
+                                            <label className="btn btn-default services-create-upload-trigger">
+                                                dodaj zdjęcia
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    className="sr-only"
+                                                    onChange={(event) => {
+                                                        const files =
+                                                            Array.from(
+                                                                event.target
+                                                                    .files ??
+                                                                    [],
+                                                            );
+                                                        if (
+                                                            files.length === 0
+                                                        ) {
+                                                            return;
+                                                        }
+                                                        setSelectedFiles(files);
+                                                        event.currentTarget.value =
+                                                            '';
+                                                    }}
+                                                />
+                                            </label>
+                                            {selectedFiles.length > 0 ? (
+                                                <ul className="services-create-file-list">
+                                                    {selectedFiles.map(
+                                                        (file) => (
+                                                            <li key={file.name}>
+                                                                <span>
+                                                                    {file.name}
+                                                                </span>
+                                                                <span className="services-create-muted">
+                                                                    {Math.max(
+                                                                        1,
+                                                                        Math.round(
+                                                                            file.size /
+                                                                                1024,
+                                                                        ),
+                                                                    )}{' '}
+                                                                    KB
+                                                                </span>
+                                                            </li>
+                                                        ),
+                                                    )}
+                                                </ul>
+                                            ) : null}
+                                        </div>
                                         <p className="services-create-help services-create-help--tight">
-                                            Receptura odwzorowuje realny układ
-                                            source UI i po zapisie usługi jest
-                                            wysyłana osobnym requestem do
-                                            `/services/:id/recipe`.
+                                            Source UI używa uploadu `Filedata` z
+                                            `gallery_id`. Po zapisaniu usługi
+                                            wybrane pliki są wysyłane osobnym
+                                            requestem multipart; panel wysyła
+                                            już compat payload `Filedata` +
+                                            `gallery_id`, ale nadal zapisuje
+                                            media do własnego storage.
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div className="info-box services-create-advanced-box">
+                        <div className="box-title services-create-box-title-row">
+                            <span>Zaawansowane</span>
+                            <button
+                                type="button"
+                                className="button button-link"
+                                onClick={() =>
+                                    setShowAdvancedSection(
+                                        (current) => !current,
+                                    )
+                                }
+                            >
+                                {showAdvancedSection ? 'Ukryj' : 'Pokaż'}
+                            </button>
                         </div>
-                    ) : null}
+
+                        {showAdvancedSection ? (
+                            <div className="services-create-advanced">
+                                <div className="services-create-field">
+                                    <label htmlFor="service_online_booking">
+                                        Rezerwacja online
+                                    </label>
+                                    <div className="services-create-control">
+                                        <select
+                                            id="service_online_booking"
+                                            className="salonbw-select services-create-select"
+                                            value={onlineBookingMode}
+                                            onChange={(event) =>
+                                                setOnlineBookingMode(
+                                                    event.target
+                                                        .value as OnlineBookingMode,
+                                                )
+                                            }
+                                        >
+                                            <option value="online_booking_enabled">
+                                                Usługę można rezerwować online
+                                            </option>
+                                            <option value="online_booking_hidden">
+                                                Rezerwacja online zablokowana.
+                                                Usługa nie jest widoczna dla
+                                                klientów.
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="services-create-field">
+                                    <label>Receptura</label>
+                                    <div className="services-create-control">
+                                        <div className="services-create-panel">
+                                            <button
+                                                type="button"
+                                                className="button button-link"
+                                                onClick={() =>
+                                                    setShowRecipeTable(
+                                                        (current) => !current,
+                                                    )
+                                                }
+                                            >
+                                                {showRecipeTable
+                                                    ? 'ukryj recepturę'
+                                                    : 'zdefiniuj recepturę'}
+                                            </button>
+                                            {showRecipeTable ? (
+                                                <div className="services-create-recipe">
+                                                    <table className="salonbw-table services-create-recipe-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>
+                                                                    materiał
+                                                                </th>
+                                                                <th>
+                                                                    jednostka
+                                                                </th>
+                                                                <th>ilość</th>
+                                                                <th>usuń</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {recipeItems.map(
+                                                                (item) => (
+                                                                    <tr
+                                                                        key={
+                                                                            item.key
+                                                                        }
+                                                                    >
+                                                                        <td className="services-create-recipe-cell">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                placeholder="wpisz nazwę, kod kreskowy, itp."
+                                                                                value={
+                                                                                    item.productName
+                                                                                }
+                                                                                onFocus={() => {
+                                                                                    setActiveRecipeRowKey(
+                                                                                        item.key,
+                                                                                    );
+                                                                                    setRecipeProductSearch(
+                                                                                        item.productName,
+                                                                                    );
+                                                                                }}
+                                                                                onChange={(
+                                                                                    event,
+                                                                                ) => {
+                                                                                    updateRecipeItem(
+                                                                                        item.key,
+                                                                                        'productId',
+                                                                                        null,
+                                                                                    );
+                                                                                    updateRecipeItem(
+                                                                                        item.key,
+                                                                                        'productName',
+                                                                                        event
+                                                                                            .target
+                                                                                            .value,
+                                                                                    );
+                                                                                    setActiveRecipeRowKey(
+                                                                                        item.key,
+                                                                                    );
+                                                                                    setRecipeProductSearch(
+                                                                                        event
+                                                                                            .target
+                                                                                            .value,
+                                                                                    );
+                                                                                }}
+                                                                            />
+                                                                            {activeRecipeRowKey ===
+                                                                                item.key &&
+                                                                            recipeSuggestions.length >
+                                                                                0 ? (
+                                                                                <div className="services-create-recipe-suggestions">
+                                                                                    {recipeSuggestions.map(
+                                                                                        (
+                                                                                            product,
+                                                                                        ) => (
+                                                                                            <button
+                                                                                                key={
+                                                                                                    product.id
+                                                                                                }
+                                                                                                type="button"
+                                                                                                className="services-create-recipe-option"
+                                                                                                onClick={() => {
+                                                                                                    updateRecipeItem(
+                                                                                                        item.key,
+                                                                                                        'productId',
+                                                                                                        product.id,
+                                                                                                    );
+                                                                                                    updateRecipeItem(
+                                                                                                        item.key,
+                                                                                                        'productName',
+                                                                                                        product.name,
+                                                                                                    );
+                                                                                                    updateRecipeItem(
+                                                                                                        item.key,
+                                                                                                        'unit',
+                                                                                                        product.unit ||
+                                                                                                            product.packageUnit ||
+                                                                                                            'op.',
+                                                                                                    );
+                                                                                                    setActiveRecipeRowKey(
+                                                                                                        null,
+                                                                                                    );
+                                                                                                    setRecipeProductSearch(
+                                                                                                        '',
+                                                                                                    );
+                                                                                                }}
+                                                                                            >
+                                                                                                <span>
+                                                                                                    {
+                                                                                                        product.name
+                                                                                                    }
+                                                                                                </span>
+                                                                                                <span className="services-create-muted">
+                                                                                                    {product.unit ||
+                                                                                                        product.packageUnit ||
+                                                                                                        'op.'}
+                                                                                                </span>
+                                                                                            </button>
+                                                                                        ),
+                                                                                    )}
+                                                                                </div>
+                                                                            ) : null}
+                                                                        </td>
+                                                                        <td className="services-create-recipe-cell">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                value={
+                                                                                    item.unit
+                                                                                }
+                                                                                onChange={(
+                                                                                    event,
+                                                                                ) =>
+                                                                                    updateRecipeItem(
+                                                                                        item.key,
+                                                                                        'unit',
+                                                                                        event
+                                                                                            .target
+                                                                                            .value,
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                min="0"
+                                                                                step="0.01"
+                                                                                className="form-control services-create-number"
+                                                                                value={
+                                                                                    item.quantity
+                                                                                }
+                                                                                onChange={(
+                                                                                    event,
+                                                                                ) =>
+                                                                                    updateRecipeItem(
+                                                                                        item.key,
+                                                                                        'quantity',
+                                                                                        event
+                                                                                            .target
+                                                                                            .value,
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        </td>
+                                                                        <td className="text-center">
+                                                                            <button
+                                                                                type="button"
+                                                                                className="button button-link services-create-delete"
+                                                                                onClick={() =>
+                                                                                    removeRecipeItem(
+                                                                                        item.key,
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                usuń
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ),
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                    <button
+                                                        type="button"
+                                                        className="button"
+                                                        onClick={addRecipeItem}
+                                                    >
+                                                        dodaj kolejną pozycję
+                                                    </button>
+                                                </div>
+                                            ) : null}
+                                            <p className="services-create-help services-create-help--tight">
+                                                Receptura odwzorowuje realny
+                                                układ source UI i po zapisie
+                                                usługi jest wysyłana osobnym
+                                                requestem do
+                                                `/services/:id/recipe`.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
 
                     <div className="form-actions">
                         <div className="pull_right cancel-link">
@@ -1241,7 +1324,7 @@ function NewServicePageContent() {
                             zapisz i dodaj kolejną
                         </button>
                     </div>
-                </fieldset>
+                </div>
             </form>
 
             <ManageCategoriesModal

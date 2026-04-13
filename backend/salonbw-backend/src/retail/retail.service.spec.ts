@@ -143,6 +143,7 @@ describe('RetailService reversal flow', () => {
         const dataSource = {
             query: jest.fn(),
             transaction: jest.fn(),
+            options: { type: 'sqlite' },
         } as unknown as DataSource;
 
         return {

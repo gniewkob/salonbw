@@ -35,13 +35,13 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
         e.preventDefault();
         const appointmentId = Number(form.appointmentId);
         if (!Number.isFinite(appointmentId) || appointmentId < 1) {
-            setError('Appointment is required');
+            setError('Podaj identyfikator wizyty');
             return;
         }
 
         const rating = Number(form.rating);
         if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-            setError('Rating must be between 1 and 5');
+            setError('Ocena musi być w zakresie od 1 do 5');
             return;
         }
 
@@ -55,7 +55,11 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                 comment,
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message || 'Error' : 'Error');
+            setError(
+                err instanceof Error
+                    ? err.message || 'Wystąpił błąd'
+                    : 'Wystąpił błąd',
+            );
         }
     };
 
@@ -66,22 +70,22 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                 value={form.appointmentId}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Appointment"
+                placeholder="Id wizyty"
             />
             {initial?.employee && (
                 <input
                     value={initial.employee.fullName}
                     readOnly
                     className="border p-1 w-100 bg-light"
-                    placeholder="Employee"
+                    placeholder="Pracownik"
                 />
             )}
-            {(initial?.author ?? initial?.client) && (
+            {(initial?.author ?? initial?.customer) && (
                 <input
-                    value={(initial.author ?? initial.client)?.name ?? ''}
+                    value={(initial.author ?? initial.customer)?.name ?? ''}
                     readOnly
                     className="border p-1 w-100 bg-light"
-                    placeholder="Author"
+                    placeholder="Autor"
                 />
             )}
             <input
@@ -89,14 +93,14 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                 value={form.rating}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Rating"
+                placeholder="Ocena"
             />
             <textarea
                 name="comment"
                 value={form.comment}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Comment"
+                placeholder="Komentarz"
             />
             {error && (
                 <p role="alert" className="text-danger small">
@@ -109,10 +113,10 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button type="submit" className="border px-2 py-1">
-                    Save
+                    Zapisz
                 </button>
             </div>
         </form>

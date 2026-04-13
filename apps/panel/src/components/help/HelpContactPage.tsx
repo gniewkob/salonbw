@@ -161,7 +161,7 @@ export default function HelpContactPage() {
                     to: recipient,
                     subject: `Panel pomoc: ${branchName} (${SALONBW_CLIENT_NUMBER})`,
                     template:
-                        '<p><strong>Numer klienta:</strong> {{clientNumber}}</p>' +
+                        '<p><strong>Numer klienta:</strong> {{customerNumber}}</p>' +
                         '<p><strong>Salon:</strong> {{branchName}}</p>' +
                         '<p><strong>Użytkownik:</strong> {{userName}}</p>' +
                         '<p><strong>Email do odpowiedzi:</strong> {{replyEmail}}</p>' +
@@ -171,7 +171,7 @@ export default function HelpContactPage() {
                         '<p><strong>Pytanie:</strong></p>' +
                         '<p>{{query}}</p>',
                     data: {
-                        clientNumber: SALONBW_CLIENT_NUMBER,
+                        customerNumber: SALONBW_CLIENT_NUMBER,
                         branchName,
                         userName: user?.name || 'Nieznany użytkownik',
                         replyEmail: trimmedEmail,

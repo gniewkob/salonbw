@@ -23,7 +23,7 @@ jest.mock('@/api/apiClient', () => ({
 }));
 
 describe('auth flow', () => {
-    it('login fetches token and fetches clients then logout clears token', async () => {
+    it('login fetches token and fetches customers then logout clears token', async () => {
         const wrapper = ({ children }: { children: React.ReactNode }) =>
             React.createElement(AuthProvider, null, children);
         const { result } = renderHook(() => useAuth(), { wrapper });
@@ -35,11 +35,11 @@ describe('auth flow', () => {
 
         requestMock.mockResolvedValueOnce([{ id: 1, name: 'John' }]);
         await act(async () => {
-            const clients =
+            const customers =
                 await result.current.apiFetch<{ id: number; name: string }[]>(
                     '/customers',
                 );
-            expect(clients[0].name).toBe('John');
+            expect(customers[0].name).toBe('John');
         });
 
         await act(async () => {

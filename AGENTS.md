@@ -233,6 +233,8 @@ After any change that affects deploy/infra/runtime behavior, update:
   - api is backend
   - salon-bw.pl is legacy and will be replaced
 - Do not “simplify” cookies/origin rules without a confirmed auth test plan.
+- Do not reintroduce arbitrary remote-shell workflow_dispatch jobs or raw production log dump workflows in GitHub Actions.
+- Do not disable SSH host verification in CI/CD; keep pinned host keys with `StrictHostKeyChecking=yes`.
 - Do not replace symlink-based deployment paths unless the workflow is updated accordingly.
 - Do not add new tooling that requires new credentials unless explicitly provided and stored as Secrets.
 
@@ -247,3 +249,13 @@ Rules:
 - Treat this document as the single source of truth for **how** to clone (copy-first, adapt later, validate parity).
 - Any deviation from 1:1 must be explicitly documented in `docs/VERSUM_CLONE_PROGRESS.md`.
 - Do not mark a module as "100%" if any UI action is stubbed, TODO, or missing parity smoke after deploy.
+
+---
+
+## 13) Codex local plugin / MCP notes
+
+- Repo-local Codex plugin lives in `plugins/salonbw-codex`.
+- Repo marketplace entry lives in `.agents/plugins/marketplace.json`.
+- Project-local MCP guidance and missing integrations live in `docs/CODEX_PROJECT_MCP_SETUP.md`.
+- Repo-local skill map and usage guide live in `plugins/salonbw-codex/README.md`.
+- Prefer repo-local Codex guidance over ad-hoc global customization when possible.

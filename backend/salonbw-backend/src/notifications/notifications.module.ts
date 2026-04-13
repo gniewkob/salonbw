@@ -9,11 +9,14 @@ import { WhatsappServiceMock } from './whatsapp.mock';
 import { SmsModule } from '../sms/sms.module';
 import { MessageTemplate } from '../sms/entities/message-template.entity';
 import { EmailsModule } from '../emails/emails.module';
+import { PushSubscription } from './push-subscription.entity';
+import { PushService } from './push.service';
+import { PushController } from './push.controller';
 
 @Module({
     imports: [
         HttpModule,
-        TypeOrmModule.forFeature([Appointment, MessageTemplate]),
+        TypeOrmModule.forFeature([Appointment, MessageTemplate, PushSubscription]),
         forwardRef(() => SmsModule),
         EmailsModule,
     ],
@@ -23,7 +26,9 @@ import { EmailsModule } from '../emails/emails.module';
             : WhatsappService,
         ReminderService,
         AutomaticReminderService,
+        PushService,
     ],
-    exports: [WhatsappService, AutomaticReminderService],
+    controllers: [PushController],
+    exports: [WhatsappService, AutomaticReminderService, PushService],
 })
 export class NotificationsModule {}

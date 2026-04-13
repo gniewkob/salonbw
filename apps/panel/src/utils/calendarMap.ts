@@ -36,7 +36,7 @@ export function mapAppointmentsToEvents(
             const svc = a.service?.id ? svcMap.get(a.service.id) : undefined;
             const emp = a.employee?.id ? empMap.get(a.employee.id) : undefined;
             const end = (a as unknown as { endTime?: string }).endTime;
-            const title = `${a.client?.name ?? ''}${a.client?.name ? ' – ' : ''}${
+            const title = `${a.customer?.name ?? ''}${a.customer?.name ? ' – ' : ''}${
                 a.service?.name ?? ''
             }${emp?.name ? ` (${emp.name})` : ''}`;
             const bg = colorFor(a.employee?.id, a.paymentStatus);

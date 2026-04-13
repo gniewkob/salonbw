@@ -10,24 +10,24 @@ import type { Role } from '@/types';
 type NavLink = { href: Route; label: string; permission: Permission };
 
 const homeLink: Record<Role, NavLink> = {
-    client: {
+    customer: {
         href: '/dashboard' as Route,
-        label: 'Home',
-        permission: 'dashboard:client',
+        label: 'Pulpit',
+        permission: 'dashboard:customer',
     },
     employee: {
         href: '/dashboard' as Route,
-        label: 'Home',
+        label: 'Pulpit',
         permission: 'dashboard:employee',
     },
     receptionist: {
         href: '/dashboard' as Route,
-        label: 'Home',
+        label: 'Pulpit',
         permission: 'dashboard:receptionist',
     },
     admin: {
         href: '/dashboard' as Route,
-        label: 'Home',
+        label: 'Pulpit',
         permission: 'dashboard:admin',
     },
 } as const;
@@ -35,37 +35,37 @@ const homeLink: Record<Role, NavLink> = {
 const navItems: NavLink[] = [
     {
         href: '/appointments' as Route,
-        label: 'Appointments',
+        label: 'Wizyty',
         permission: 'nav:appointments',
     },
     {
         href: '/invoices' as Route,
-        label: 'Invoices',
+        label: 'Faktury',
         permission: 'nav:invoices',
     },
     {
         href: '/reviews' as Route,
-        label: 'Reviews',
+        label: 'Opinie',
         permission: 'nav:reviews',
     },
     {
         href: '/customers' as Route,
-        label: 'Clients',
+        label: 'Klienci',
         permission: 'nav:customers',
     },
     {
         href: '/employees' as Route,
-        label: 'Employees',
+        label: 'Pracownicy',
         permission: 'nav:employees',
     },
     {
         href: '/products' as Route,
-        label: 'Products',
+        label: 'Produkty',
         permission: 'nav:products',
     },
     {
         href: '/emails' as Route,
-        label: 'Emails',
+        label: 'Wiadomości',
         permission: 'nav:emails',
     },
 ];
@@ -73,9 +73,9 @@ const navItems: NavLink[] = [
 export default function DashboardNav() {
     const { logout, role } = useAuth();
     const router = useRouter();
-    const fallbackRole: Role = 'client';
+    const fallbackRole: Role = 'customer';
     const currentRole =
-        role === 'client' ||
+        role === 'customer' ||
         role === 'employee' ||
         role === 'receptionist' ||
         role === 'admin'
@@ -112,7 +112,7 @@ export default function DashboardNav() {
                         void logout();
                     }}
                 >
-                    Logout
+                    Wyloguj się
                 </button>
             </nav>
         </aside>

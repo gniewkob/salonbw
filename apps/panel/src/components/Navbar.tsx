@@ -13,7 +13,7 @@ export default function Navbar() {
 
     return (
         <nav
-            aria-label="Main navigation"
+            aria-label="Nawigacja główna"
             className="d-flex justify-content-between align-items-center p-3 bg-light shadow"
         >
             <Link
@@ -26,7 +26,7 @@ export default function Navbar() {
                 {dashboardRoute ? (
                     <li>
                         <Link href={dashboardRoute} className={linkClass}>
-                            Dashboard
+                            Pulpit
                         </Link>
                     </li>
                 ) : (
@@ -36,7 +36,7 @@ export default function Navbar() {
                                 href={'/auth/login' as Route}
                                 className={linkClass}
                             >
-                                Login
+                                Zaloguj się
                             </Link>
                         </li>
                         <li>
@@ -44,7 +44,7 @@ export default function Navbar() {
                                 href={'/auth/register' as Route}
                                 className={linkClass}
                             >
-                                Register
+                                Zarejestruj się
                             </Link>
                         </li>
                     </>

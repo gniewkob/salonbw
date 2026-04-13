@@ -58,7 +58,7 @@ export default function DataTable<T>({
     return (
         <div>
             <input
-                placeholder="Search"
+                placeholder="Szukaj"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="border p-1 mb-2"
@@ -101,7 +101,7 @@ export default function DataTable<T>({
                     onClick={() => setPage((p) => Math.max(p - 1, 0))}
                     className="border px-2 py-1"
                 >
-                    Prev
+                    Poprzednia
                 </button>
                 <span>
                     {page + 1} / {totalPages || 1}
@@ -113,7 +113,7 @@ export default function DataTable<T>({
                     }
                     className="border px-2 py-1"
                 >
-                    Next
+                    Następna
                 </button>
             </div>
         </div>

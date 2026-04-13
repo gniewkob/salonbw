@@ -32,7 +32,7 @@ const mockAppointments = [
     {
         id: 1,
         startTime: '2025-01-15T10:00:00.000Z',
-        client: { id: 1, name: 'John Doe' },
+        customer: { id: 1, name: 'John Doe' },
         service: { id: 1, name: 'Haircut', duration: 30, price: 50 },
         employee: { id: 1, name: 'Employee A' },
         paymentStatus: 'pending',

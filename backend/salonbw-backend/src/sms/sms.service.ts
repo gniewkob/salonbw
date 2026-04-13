@@ -25,6 +25,7 @@ import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { maskPhone, sanitizeLogValue } from '../logs/redaction.util';
 
 interface SmsApiResponse {
     id?: string;
@@ -214,7 +215,13 @@ export class SmsService {
                 log.status = SmsStatus.Failed;
                 log.errorMessage =
                     error instanceof Error ? error.message : 'Unknown error';
-                this.logger.error(`Failed to send SMS: ${log.errorMessage}`);
+                this.logger.error(
+                    {
+                        recipient: maskPhone(log.recipient),
+                        error: sanitizeLogValue(log.errorMessage),
+                    },
+                    'Failed to send SMS',
+                );
             }
         } else {
             // Development mode - simulate success
@@ -222,7 +229,7 @@ export class SmsService {
             log.sentAt = new Date();
             log.partsCount = Math.ceil(dto.content.length / 160);
             this.logger.log(
-                `[DEV] SMS would be sent to ${log.recipient}: ${dto.content}`,
+                `[DEV] SMS would be sent to ${maskPhone(log.recipient)} (content redacted)`,
             );
         }
 

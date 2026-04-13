@@ -87,7 +87,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
     const [filterSource, setFilterSource] = useState<ReviewSource | 'all'>(
         'all',
     );
-    const { data, loading } = useReviews({ clientId: customerId });
+    const { data, loading } = useReviews({ customerId: customerId });
     const reviews = data.map(mapReviewToCustomerReview);
     const isLoading = loading;
 
