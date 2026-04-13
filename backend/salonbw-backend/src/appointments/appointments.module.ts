@@ -11,6 +11,7 @@ import { LogsModule } from '../logs/logs.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ObservabilityModule } from '../observability/observability.module';
 import { RetailModule } from '../retail/retail.module';
+import { LoyaltyModule } from '../loyalty/loyalty.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { RetailModule } from '../retail/retail.module';
         NotificationsModule,
         ObservabilityModule,
         forwardRef(() => RetailModule),
+        LoyaltyModule,
     ],
     providers: [AppointmentsService],
     controllers: [AppointmentsController],
