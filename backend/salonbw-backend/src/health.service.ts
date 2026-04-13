@@ -127,11 +127,9 @@ export class HealthService {
             smtp,
             instagram,
         };
-        const status = Object.values(services).every(
-            (svc) => svc.status !== 'error',
-        )
-            ? 'ok'
-            : 'error';
+        // Only the database check is critical for overall health.
+        // SMTP and Instagram may fail without making the service unavailable.
+        const status = database.status === 'ok' ? 'ok' : 'error';
         return {
             status,
             timestamp: new Date().toISOString(),
