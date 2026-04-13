@@ -3,9 +3,13 @@ import {
     Get,
     Param,
     Patch,
+    Post,
+    Body,
     UseGuards,
     ParseIntPipe,
     NotFoundException,
+    Res,
+    HttpStatus,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -18,13 +22,19 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
+import type { Response } from 'express';
 import { InvoicesService } from './invoices.service';
 import { Invoice } from './invoice.entity';
+import { JpkService } from './jpk.service';
+import { JpkExportDto, JpkSingleExportDto } from './dto/jpk-export.dto';
 
 @ApiTags('invoices')
 @Controller('invoices')
 export class InvoicesController {
-    constructor(private readonly invoicesService: InvoicesService) {}
+    constructor(
+        private readonly invoicesService: InvoicesService,
+        private readonly jpkService: JpkService,
+    ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
@@ -94,5 +104,60 @@ export class InvoicesController {
             throw new NotFoundException();
         }
         return invoice;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Post('jpk/export')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Export invoices to JPK FA (period)' })
+    @ApiResponse({ status: 200, description: 'Returns JPK FA XML' })
+    async exportJpkPeriod(
+        @Body() dto: JpkExportDto,
+        @Res() res: Response,
+    ): Promise<void> {
+        const xml = await this.jpkService.generateJpkFa(
+            new Date(dto.startDate),
+            new Date(dto.endDate),
+            {
+                nip: dto.nip,
+                name: dto.companyName,
+                email: dto.email,
+                address: dto.address,
+                taxOfficeCode: dto.taxOfficeCode,
+            },
+        );
+
+        res.set({
+            'Content-Type': 'application/xml',
+            'Content-Disposition': `attachment; filename="JPK_FA_${dto.startDate}_${dto.endDate}.xml"`,
+        });
+        res.send(xml);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Post(':id/jpk')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Export single invoice to JPK FA' })
+    @ApiResponse({ status: 200, description: 'Returns JPK FA XML for single invoice' })
+    async exportJpkSingle(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: JpkSingleExportDto,
+        @Res() res: Response,
+    ): Promise<void> {
+        const xml = await this.jpkService.generateJpkFaForInvoice(id, {
+            nip: dto.nip,
+            name: dto.companyName,
+            email: dto.email,
+            address: dto.address,
+            taxOfficeCode: dto.taxOfficeCode,
+        });
+
+        res.set({
+            'Content-Type': 'application/xml',
+            'Content-Disposition': `attachment; filename="JPK_FA_invoice_${id}.xml"`,
+        });
+        res.send(xml);
     }
 }

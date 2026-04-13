@@ -69,7 +69,8 @@
         "ts-node": "^10.9.2",
         "typeorm": "^0.3.28",
         "uuid": "^8.3.2",
-        "web-push": "^3.6.7"
+        "web-push": "^3.6.7",
+        "xml2js": "^0.6.2"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.4",
@@ -92,6 +93,7 @@
         "@types/socket.io-client": "^3.0.0",
         "@types/supertest": "^6.0.2",
         "@types/web-push": "^3.6.4",
+        "@types/xml2js": "^0.4.14",
         "eslint": "^9.39.1",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-prettier": "^5.5.5",
