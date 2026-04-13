@@ -17,6 +17,7 @@ import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { CreateUsageDto } from './dto/create-usage.dto';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
+import { PricingService } from '../finance/pricing.service';
 import { LogAction } from '../logs/log-action.enum';
 import {
     WarehouseSale,
@@ -70,6 +71,7 @@ export class RetailService {
         private readonly logs: LogService,
         private readonly config: ConfigService,
         private readonly dataSource: DataSource,
+        private readonly pricing: PricingService,
     ) {
         this.requireCommission =
             this.config.get<string>('POS_REQUIRE_COMMISSION', 'false') ===
