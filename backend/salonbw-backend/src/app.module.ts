@@ -43,6 +43,7 @@ import { SettingsModule } from './settings/settings.module';
 import { BranchesModule } from './branches/branches.module';
 import { GiftCardsModule } from './gift-cards/gift-cards.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { FinanceModule } from './finance/finance.module';
 import { VersumCompatModule } from './versum-compat/versum-compat.module';
 import { ContentModule } from './content/content.module';
 
@@ -126,6 +127,7 @@ import { ContentModule } from './content/content.module';
         BranchesModule,
         GiftCardsModule,
         LoyaltyModule,
+        FinanceModule,
         VersumCompatModule,
         ContentModule,
     ],
