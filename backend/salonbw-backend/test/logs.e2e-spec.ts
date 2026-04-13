@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerModule, PinoLogger } from 'nestjs-pino';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import cookieParser from 'cookie-parser';
@@ -14,6 +15,7 @@ import { Log } from '../src/logs/log.entity';
 import { LogAction } from '../src/logs/log-action.enum';
 import { User } from '../src/users/user.entity';
 import { AuthFailureFilter } from '../src/logs/auth-failure.filter';
+import { ALL_ENTITIES } from './test-entities';
 
 interface LogsResponse {
     data: Log[];
@@ -38,11 +40,14 @@ d('LogsController (e2e)', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
                 ConfigModule.forRoot({ isGlobal: true }),
+                LoggerModule.forRoot({
+                    pinoHttp: { level: 'silent' },
+                }),
                 TypeOrmModule.forRoot({
                     type: 'sqlite',
                     database: ':memory:',
                     dropSchema: true,
-                    entities: [User, Log],
+                    entities: ALL_ENTITIES,
                     synchronize: true,
                 }),
                 AuthModule,
@@ -53,7 +58,8 @@ d('LogsController (e2e)', () => {
         app = moduleFixture.createNestApplication();
         app.use(cookieParser());
         logService = moduleFixture.get(LogService);
-        app.useGlobalFilters(new AuthFailureFilter(logService));
+        const logger = await moduleFixture.resolve<PinoLogger>(PinoLogger);
+        app.useGlobalFilters(new AuthFailureFilter(logService, logger));
         await app.init();
         server = app.getHttpServer() as Parameters<typeof request>[0];
 

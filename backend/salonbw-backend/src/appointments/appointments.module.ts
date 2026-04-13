@@ -10,6 +10,7 @@ import { User } from '../users/user.entity';
 import { LogsModule } from '../logs/logs.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ObservabilityModule } from '../observability/observability.module';
+import { LoyaltyModule } from '../loyalty/loyalty.module';
 import { RetailModule } from '../retail/retail.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { RetailModule } from '../retail/retail.module';
         LogsModule,
         NotificationsModule,
         ObservabilityModule,
+        LoyaltyModule,
         forwardRef(() => RetailModule),
     ],
     providers: [AppointmentsService],

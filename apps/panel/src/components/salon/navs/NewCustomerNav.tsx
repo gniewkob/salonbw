@@ -37,10 +37,10 @@ const tabs: Array<{
 export default function NewCustomerNav({
     activeTab,
     onSelect,
-    title = 'NOWY KLIENT',
+    title = 'nowy klient',
 }: NewCustomerNavProps) {
     return (
-        <div className="show_action_content client-detail-nav">
+        <div className="show_action_content customer-detail-nav">
             <div className="column_row">
                 <h4>{title}</h4>
                 <div className="tree">

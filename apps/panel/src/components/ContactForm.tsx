@@ -107,7 +107,7 @@ export default function ContactForm() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="Your name"
+                placeholder="Imię i nazwisko"
                 className="w-100 border p-2 rounded"
             />
             <input
@@ -115,7 +115,7 @@ export default function ContactForm() {
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="Your email"
+                placeholder="Adres e-mail"
                 className="w-100 border p-2 rounded"
             />
             {emailError && (
@@ -127,7 +127,7 @@ export default function ContactForm() {
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                placeholder="Message"
+                placeholder="Treść wiadomości"
                 className="w-100 border p-2 rounded"
                 rows={4}
             />
@@ -154,7 +154,7 @@ export default function ContactForm() {
                 disabled={!isValid}
                 className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded"
             >
-                Send
+                Wyślij
             </button>
         </form>
     );

@@ -1193,7 +1193,7 @@ export class VersumCompatService {
         const qb = this.usersRepository
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.groups', 'groups')
-            .where('user.role = :role', { role: Role.Client });
+            .where('user.role = :role', { role: Role.Customer });
 
         if (query.search) {
             qb.andWhere(
@@ -1239,7 +1239,7 @@ export class VersumCompatService {
 
     async getCustomer(id: number) {
         const user = await this.usersRepository.findOne({
-            where: { id, role: Role.Client },
+            where: { id, role: Role.Customer },
             relations: ['groups', 'tags'],
         });
 

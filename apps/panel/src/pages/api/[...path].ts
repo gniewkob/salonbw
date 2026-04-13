@@ -10,7 +10,7 @@ export function normalizeCompatStatus(
     status: number,
 ): number {
     // Vendored calendar runtime expects success responses from GraphQL reads as 200.
-    // Some backend stacks return 201 for POST /graphql, which the legacy client treats
+    // Some backend stacks return 201 for POST /graphql, which the legacy customer treats
     // as an error despite receiving a valid payload.
     if (targetPath === '/graphql' && status === 201) {
         return 200;

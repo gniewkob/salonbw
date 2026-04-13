@@ -51,7 +51,7 @@ const TRIGGER_OPTIONS: {
         description: 'Wysyłane X godzin po wizycie',
     },
     {
-        value: TriggerEnum.InactiveClient,
+        value: TriggerEnum.InactiveCustomer,
         label: 'Reaktywacja nieaktywnych',
         description: 'Wysyłane po X dniach bez wizyty',
     },
@@ -64,8 +64,8 @@ const CHANNEL_OPTIONS: { value: AutomaticMessageChannel; label: string }[] = [
 ];
 
 const DEFAULT_VARIABLES = [
-    { key: 'client_name', desc: 'Pełne imię i nazwisko klienta' },
-    { key: 'client_first_name', desc: 'Imię klienta' },
+    { key: 'customer_name', desc: 'Pełne imię i nazwisko klienta' },
+    { key: 'customer_first_name', desc: 'Imię klienta' },
     { key: 'service_name', desc: 'Nazwa usługi' },
     { key: 'employee_name', desc: 'Imię pracownika' },
     { key: 'date', desc: 'Data wizyty (dd.MM.yyyy)' },
@@ -150,7 +150,7 @@ export default function AutomaticRuleModal({
         formData.trigger === TriggerEnum.FollowUp ||
         formData.trigger === TriggerEnum.ReviewRequest;
 
-    const needsInactivityDays = formData.trigger === TriggerEnum.InactiveClient;
+    const needsInactivityDays = formData.trigger === TriggerEnum.InactiveCustomer;
 
     if (!isOpen) return null;
 

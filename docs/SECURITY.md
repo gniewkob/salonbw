@@ -33,12 +33,21 @@
 
 - Pin GitHub Actions to immutable SHAs and validate inputs before interpolation in shell steps.
 - Prefer scripting (Python/Node) for complex logic and to avoid brittle quoting in shell.
+- Do not keep generic remote-shell workflows in GitHub Actions for production infrastructure. If remote operations are unavoidable, they must be allowlisted, auditable, and scoped to a narrow set of maintenance commands.
+- Do not expose raw production `app.log` retrieval via workflow_dispatch. Log access should be redacted, targeted to a specific service, and limited to the minimum line window needed for incident response.
+- SSH automation must use pinned host keys (`known_hosts`) and `StrictHostKeyChecking=yes`. Avoid `StrictHostKeyChecking=no` in all CI/CD and ops workflows.
+- Test-data workflows must never default to production endpoints. Any synthetic data injection must target non-production environments only and require explicit confirmation.
 
 ## Data Handling
 
 - Sanitise and validate all inbound data with `class-validator` on the backend.
-- Scrub personally identifiable information (PII) from logs where feasible.
+- Scrub personally identifiable information (PII), authentication material, and financial identifiers from logs by default, not only "where feasible".
+- Backend HTTP logging must redact `authorization`, `cookie`, `x-log-token`, password-like request fields, and `set-cookie` response headers before logs leave the process.
+- Client-side error ingestion must sanitize message/stack/extra payloads before writing to app logs or Loki.
+- Gift card codes, phone numbers, SMS/WhatsApp payloads, and provider error payloads must be masked or redacted in application logs and workflow outputs.
 - Backups and exports should be encrypted in transit and at rest.
+- A backup is not considered sufficient for sensitive data unless restore has been tested on a controlled environment.
+- Before loading real financial or personal data, verify access paths for logs, SSH automation, backup storage, and CI/CD secrets handling as a single review scope rather than treating application auth in isolation.
 
 ## Incident Response
 

@@ -30,10 +30,10 @@ export class MessageTemplate {
     @Column({ length: 100 })
     name: string;
 
-    @Column({ type: 'enum', enum: TemplateType, default: TemplateType.Custom })
+    @Column({ type: 'simple-enum', enum: TemplateType, default: TemplateType.Custom })
     type: TemplateType;
 
-    @Column({ type: 'enum', enum: MessageChannel, default: MessageChannel.SMS })
+    @Column({ type: 'simple-enum', enum: MessageChannel, default: MessageChannel.SMS })
     channel: MessageChannel;
 
     @Column({ type: 'text' })

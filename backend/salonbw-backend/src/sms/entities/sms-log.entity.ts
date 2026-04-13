@@ -26,7 +26,7 @@ export class SmsLog {
     @Column({ length: 20 })
     recipient: string; // Phone number or email
 
-    @Column({ type: 'enum', enum: MessageChannel, default: MessageChannel.SMS })
+    @Column({ type: 'simple-enum', enum: MessageChannel, default: MessageChannel.SMS })
     channel: MessageChannel;
 
     @Column({ type: 'text' })
@@ -35,7 +35,7 @@ export class SmsLog {
     @Column({ length: 200, nullable: true })
     subject: string; // For email
 
-    @Column({ type: 'enum', enum: SmsStatus, default: SmsStatus.Pending })
+    @Column({ type: 'simple-enum', enum: SmsStatus, default: SmsStatus.Pending })
     status: SmsStatus;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
@@ -78,10 +78,10 @@ export class SmsLog {
     @JoinColumn({ name: 'sentById' })
     sentBy: User;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ nullable: true })
     sentAt: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ nullable: true })
     deliveredAt: Date;
 
     @CreateDateColumn()

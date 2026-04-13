@@ -26,6 +26,21 @@ interface ChatSocket extends Socket {
     };
 }
 
+function parseAllowedOrigins(frontendRaw?: string): string[] {
+    if (!frontendRaw) {
+        return [];
+    }
+
+    const origins = new Set<string>();
+    for (const entry of frontendRaw.split(',')) {
+        const trimmed = entry.trim();
+        if (!trimmed) continue;
+        const url = new URL(trimmed);
+        origins.add(url.origin);
+    }
+    return Array.from(origins.values());
+}
+
 @WebSocketGateway()
 @UsePipes(
     new ValidationPipe({
@@ -44,8 +59,32 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayInit {
     ) {}
 
     afterInit(server: Server) {
+        const allowedOrigins = parseAllowedOrigins(
+            this.configService.get<string>('FRONTEND_URL'),
+        );
+        const nodeEnv =
+            this.configService.get<string>('NODE_ENV') ?? 'development';
+
+        if (nodeEnv === 'production' && allowedOrigins.length === 0) {
+            throw new Error(
+                'FRONTEND_URL environment variable is required for chat gateway in production',
+            );
+        }
+
         server.engine.opts.cors = {
-            origin: this.configService.get<string>('FRONTEND_URL') ?? true,
+            origin: allowedOrigins.length
+                ? (
+                      origin: string | undefined,
+                      callback: (err: Error | null, allow?: boolean) => void,
+                  ) => {
+                      if (!origin || allowedOrigins.includes(origin)) {
+                          callback(null, true);
+                      } else {
+                          callback(new Error('Not allowed by chat CORS'));
+                      }
+                  }
+                : true,
+            credentials: true,
         };
     }
 

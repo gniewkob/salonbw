@@ -21,7 +21,7 @@ export class DashboardService {
 
     async getSummary(): Promise<DashboardSummaryDto> {
         const clientCount = await this.usersRepository.count({
-            where: { role: Role.Client },
+            where: { role: Role.Customer },
         });
         const employeeCount = await this.usersRepository.count({
             where: { role: Role.Employee },

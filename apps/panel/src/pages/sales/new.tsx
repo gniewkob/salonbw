@@ -43,7 +43,7 @@ export default function WarehouseSaleCreatePage() {
             vatRate: '23',
         },
     ]);
-    const [clientName, setClientName] = useState('');
+    const [customerName, setCustomerName] = useState('');
     const [employeeId, setEmployeeId] = useState('');
     const [soldAt, setSoldAt] = useState(new Date().toISOString().slice(0, 10));
     const [note, setNote] = useState('');
@@ -141,7 +141,7 @@ export default function WarehouseSaleCreatePage() {
             soldAt: soldAt
                 ? new Date(`${soldAt}T12:00:00`).toISOString()
                 : undefined,
-            clientName: clientName || undefined,
+            customerName: customerName || undefined,
             employeeId: employeeId ? Number(employeeId) : undefined,
             paymentMethod,
             note: note || undefined,
@@ -314,9 +314,9 @@ export default function WarehouseSaleCreatePage() {
                             <div className="warehouse-inline-field">
                                 <input
                                     type="text"
-                                    value={clientName}
+                                    value={customerName}
                                     onChange={(event) =>
-                                        setClientName(event.target.value)
+                                        setCustomerName(event.target.value)
                                     }
                                     className="form-control"
                                     placeholder="wpisz nazwisko lub numer telefonu"

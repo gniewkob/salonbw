@@ -10,6 +10,8 @@ Operational note (2026-02-14):
 - Frontend deploy bundles are transfer-lean (no `node_modules`, no `.next/cache` in tarball); production dependencies are installed on the FreeBSD host after extract (`npm22` fallback to `npm`).
 - Remote dependency install steps are retry-guarded in workflow (`3` attempts for panel/landing/api) to absorb transient npm/network failures.
 - Push-triggered deploy follow-up steps are target-aware: landing smoke/log collection only runs when landing is actually deployed, and SSH-based diagnostics are skipped when the SSH setup step did not complete.
+- GitHub Actions SSH automation now expects pinned host keys via `MYDEVIL_KNOWN_HOSTS` or `ssh-keyscan` bootstrap and uses `StrictHostKeyChecking=yes`.
+- Utility workflows must stay allowlisted and redacted; do not reintroduce generic remote shell execution or raw production log dumps through `workflow_dispatch`.
 
 ## 0. Recommended: targeted deploys (GitHub Actions)
 

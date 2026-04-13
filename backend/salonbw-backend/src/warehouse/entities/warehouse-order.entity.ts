@@ -7,6 +7,7 @@ import {
     OneToMany,
     ManyToOne,
     JoinColumn,
+    Index,
 } from 'typeorm';
 import { WarehouseOrderItem } from './warehouse-order-item.entity';
 import { User } from '../../users/user.entity';
@@ -42,11 +43,11 @@ export class WarehouseOrder {
     })
     status: WarehouseOrderStatus;
 
-    @Column({ type: 'timestamp', nullable: true })
-    sentAt: Date | null;
+    @Column({ nullable: true })
+    sentAt: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
-    receivedAt: Date | null;
+    @Column({ nullable: true })
+    receivedAt: Date;
 
     @Column({ type: 'text', nullable: true })
     notes: string | null;

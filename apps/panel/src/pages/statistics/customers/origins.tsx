@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 
 interface OriginStats {
-    totalClients: number;
+    totalCustomers: number;
     origins: Array<{
         origin: string;
         count: number;
@@ -41,7 +41,7 @@ const COLORS = [
     { name: 'Portal', color: '#f3c200' },
 ];
 
-export default function ClientOriginsPage() {
+export default function CustomerOriginsPage() {
     const { role, apiFetch } = useAuth();
     const [dateRange, setDateRange] = useState('this_month');
     const [stats, setStats] = useState<OriginStats | null>(null);
@@ -116,7 +116,7 @@ export default function ClientOriginsPage() {
                                             Nowi klienci
                                         </div>
                                         <div className="salonbw-tile__value">
-                                            {stats.totalClients}
+                                            {stats.totalCustomers}
                                         </div>
                                     </div>
                                 </div>

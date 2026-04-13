@@ -14,14 +14,14 @@ export default function StockForm({ onSubmit, onCancel }: Props) {
         e.preventDefault();
         const num = Number(amount);
         if (Number.isNaN(num) || !Number.isFinite(num)) {
-            setError('Amount is required');
+            setError('Podaj ilość');
             return;
         }
         try {
             setSubmitting(true);
             await onSubmit(num);
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Error');
+            setError(err instanceof Error ? err.message : 'Wystąpił błąd');
         } finally {
             setSubmitting(false);
         }
@@ -34,7 +34,7 @@ export default function StockForm({ onSubmit, onCancel }: Props) {
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
                 className="border p-1 w-100"
-                placeholder="Amount"
+                placeholder="Ilość"
             />
             {error && (
                 <p role="alert" className="text-danger small">
@@ -47,14 +47,14 @@ export default function StockForm({ onSubmit, onCancel }: Props) {
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>
