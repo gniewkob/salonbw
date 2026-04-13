@@ -116,36 +116,16 @@ export class HealthService {
         }
     }
 
-    private async checkWebPush(): Promise<DependencyStatus> {
-        const publicKey = this.config.get<string>('VAPID_PUBLIC_KEY');
-        const privateKey = this.config.get<string>('VAPID_PRIVATE_KEY');
-
-        if (!publicKey || !privateKey) {
-            return {
-                status: 'skipped',
-                latencyMs: 0,
-                message: 'VAPID keys not configured',
-            };
-        }
-
-        return {
-            status: 'ok',
-            latencyMs: 0,
-        };
-    }
-
     async getHealthSummary(): Promise<HealthSummary> {
-        const [database, smtp, instagram, webpush] = await Promise.all([
+        const [database, smtp, instagram] = await Promise.all([
             this.checkDatabase(),
             this.checkSmtp(),
             this.checkInstagram(),
-            this.checkWebPush(),
         ]);
         const services: Record<string, DependencyStatus> = {
             database,
             smtp,
             instagram,
-            webpush,
         };
         const status = Object.values(services).every(
             (svc) => svc.status !== 'error',

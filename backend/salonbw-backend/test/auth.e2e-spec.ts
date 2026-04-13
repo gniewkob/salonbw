@@ -2,12 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { LoggerModule } from 'nestjs-pino';
 import request from 'supertest';
 import { AuthModule } from '../src/auth/auth.module';
 import { User } from '../src/users/user.entity';
 import { Log } from '../src/logs/log.entity';
-import { ALL_ENTITIES } from './test-entities';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import { Repository } from 'typeorm';
@@ -24,8 +22,7 @@ interface ErrorResponse {
 }
 
 interface ProfileResponse {
-    id: number;
-    email: string;
+    userId: number;
 }
 
 const SKIP = process.env.SKIP_BIND_TESTS === '1';
@@ -46,14 +43,11 @@ d('Auth & Users (e2e)', () => {
         moduleFixture = await Test.createTestingModule({
             imports: [
                 ConfigModule.forRoot({ isGlobal: true }),
-                LoggerModule.forRoot({
-                    pinoHttp: { level: 'silent' },
-                }),
                 TypeOrmModule.forRoot({
                     type: 'sqlite',
                     database: ':memory:',
                     dropSchema: true,
-                    entities: ALL_ENTITIES,
+                    entities: [User, Log],
                     synchronize: true,
                 }),
                 AuthModule,
@@ -98,7 +92,7 @@ d('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBeDefined();
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
@@ -137,7 +131,7 @@ d('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBeDefined();
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
@@ -175,7 +169,7 @@ d('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBeDefined();
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
@@ -204,7 +198,7 @@ d('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBeDefined();
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
@@ -225,9 +219,9 @@ d('Auth & Users (e2e)', () => {
             .get('/users/profile')
             .set('Authorization', `Bearer ${accessToken}`)
             .expect(200);
-        const { id } = res.body as ProfileResponse;
+        const { userId } = res.body as ProfileResponse;
 
-        expect(id).toBeDefined();
+        expect(userId).toBe(2);
     });
 
     it('denies access to admin endpoint for client', async () => {

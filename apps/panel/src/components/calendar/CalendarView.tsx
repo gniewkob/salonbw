@@ -107,7 +107,7 @@ export default function CalendarView({
                               ?.color || '#3b82f6',
                 extendedProps: {
                     originalEvent: event,
-                    customerName: event.customerName,
+                    clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
                 editable: event.type === 'appointment',
@@ -172,12 +172,11 @@ export default function CalendarView({
 
                 {pluginLoadError ? (
                     <div className="p-3 text-center small text-danger">
-                        Nie udało się załadować silnika kalendarza:{' '}
-                        {pluginLoadError}
+                        Calendar engine failed to load: {pluginLoadError}
                     </div>
                 ) : loading ? (
                     <div className="d-flex h-100 align-items-center justify-content-center opacity-50">
-                        Ładowanie wizyt...
+                        Loading appointments...
                     </div>
                 ) : calendarPlugins ? (
                     <FullCalendar
@@ -213,7 +212,7 @@ export default function CalendarView({
                     />
                 ) : (
                     <div className="p-3 text-center text-muted">
-                        Inicjalizacja kalendarza...
+                        Initializing...
                     </div>
                 )}
             </div>

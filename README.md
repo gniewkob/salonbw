@@ -4,8 +4,7 @@
 
 Salon Black & White is a full-stack monorepo containing:
 
-- a [Next.js](https://nextjs.org) **landing page** (public site) in [`apps/landing/`](apps/landing/)
-- a [Next.js](https://nextjs.org) **admin panel** (dashboard) in [`apps/panel/`](apps/panel/)
+- a [Next.js](https://nextjs.org) frontend in [`frontend/`](frontend/)
 - a [NestJS](https://nestjs.com) backend API in [`backend/salonbw-backend/`](backend/salonbw-backend/)
 - shared packages (OpenAPI client, utilities) in [`packages/`](packages/)
 
@@ -28,8 +27,7 @@ This README summarises the essentials. For deep dives, see the living documentat
    - Copy samples and adjust as needed (see [`docs/ENV.md`](docs/ENV.md)). Production deployments must define `FRONTEND_URL`, `COOKIE_DOMAIN`, and `ENABLE_SWAGGER=false` unless explicitly exposing docs:
 
      ```bash
-     cp apps/landing/.env.local.example apps/landing/.env.local
-     cp apps/panel/.env.local.example apps/panel/.env.local
+     cp frontend/.env.local.example frontend/.env.local
      cp backend/salonbw-backend/.env.example backend/salonbw-backend/.env
      cp .env.development.local.example .env.development.local    # optional tunnel defaults
      ```
@@ -40,14 +38,11 @@ This README summarises the essentials. For deep dives, see the living documentat
    # Terminal 1 – backend
    pnpm --filter salonbw-backend start:dev
 
-   # Terminal 2 – landing page
-   pnpm --filter @salonbw/landing dev
-   
-   # Terminal 3 – panel (optional)
-   pnpm --filter @salonbw/panel dev
+   # Terminal 2 – frontend
+   pnpm --filter frontend dev
    ```
 
-   Visit <http://localhost:3000> for landing or <http://localhost:3001> for panel. The frontend proxies the backend using `NEXT_PUBLIC_API_URL`.
+   Visit <http://localhost:3000>. The frontend proxies the backend using `NEXT_PUBLIC_API_URL`.
 
 5. **Optional: connect to production DB via tunnel**
    - Configure `.env.development.local` (hosting host/user/db) and run:
@@ -63,13 +58,11 @@ This README summarises the essentials. For deep dives, see the living documentat
 ## Repository layout
 
 ```
-apps/
-  landing/          # Public marketing site (dev.salon-bw.pl)
-    src/pages/      # Marketing pages
-    src/components/ # Shared UI
-  panel/            # Admin dashboard (panel.salon-bw.pl)
-    src/pages/      # Dashboard routes
-    src/components/ # Dashboard components
+frontend/
+  app|pages/        # Public marketing pages and dashboards per role
+  components/       # Shared UI
+  hooks/contexts/   # Client state
+  api/              # OpenAPI-based client utilities
 
 backend/
   salonbw-backend/
@@ -80,7 +73,7 @@ packages/
   utils/            # Shared utilities (RBAC, etc.)
 ```
 
-The legacy Laravel frontend has been removed; the repo now contains the Next.js apps (landing + panel) for the UI and the NestJS backend API.
+The legacy Laravel frontend has been removed; the repo now contains only the Next.js app for the UI and the NestJS backend API.
 
 ## Key documentation
 
@@ -100,15 +93,13 @@ The legacy Laravel frontend has been removed; the repo now contains the Next.js 
 ## Common scripts
 
 ```bash
-pnpm lint                              # Workspace lint
-pnpm typecheck                         # TypeScript diagnostics
-pnpm --filter @salonbw/landing test    # Landing unit tests (Jest)
-pnpm --filter @salonbw/panel test      # Panel unit tests (Jest)
-pnpm --filter salonbw-backend test     # Backend unit tests
-pnpm --filter @salonbw/landing build   # Landing production build
-pnpm --filter @salonbw/panel build     # Panel production build
-pnpm --filter salonbw-backend build    # NestJS production build
-pnpm tunnel:start|stop                 # Manage SSH DB tunnel
+pnpm lint                     # Workspace lint
+pnpm typecheck                # TypeScript diagnostics
+pnpm --filter frontend test   # Frontend unit tests (Jest)
+pnpm --filter salonbw-backend test   # Backend unit tests
+pnpm --filter frontend build  # Next.js production build (standalone)
+pnpm --filter salonbw-backend build  # NestJS production build
+pnpm tunnel:start|stop        # Manage SSH DB tunnel
 ```
 
 Husky hooks ensure lint + typecheck run before commits.

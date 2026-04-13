@@ -69,7 +69,7 @@ export class LoyaltyProgram {
     @Column({ name: 'enable_tiers', default: false })
     enableTiers: boolean;
 
-    @Column({ name: 'tier_thresholds', type: 'simple-json', default: () => `'[]'` })
+    @Column({ name: 'tier_thresholds', type: 'jsonb', default: () => `'[]'` })
     tierThresholds: Array<{
         name: string;
         minPoints: number;
@@ -166,13 +166,13 @@ export class LoyaltyTransaction {
     userId: number;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: LoyaltyTransactionType,
     })
     type: LoyaltyTransactionType;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: LoyaltyTransactionSource,
     })
     source: LoyaltyTransactionSource;
@@ -209,7 +209,7 @@ export class LoyaltyTransaction {
     performedBy: User;
 
     // Expiration tracking
-    @Column({ name: 'expires_at', type: 'datetime', nullable: true })
+    @Column({ name: 'expires_at', type: 'timestamp', nullable: true })
     expiresAt: Date | null;
 
     @Column({ name: 'is_expired', default: false })
@@ -240,7 +240,7 @@ export class LoyaltyReward {
     description: string;
 
     @Column({
-        type: 'simple-enum',
+        type: 'enum',
         enum: RewardType,
     })
     type: RewardType;
@@ -282,11 +282,11 @@ export class LoyaltyReward {
     @Column({ name: 'is_active', default: true })
     isActive: boolean;
 
-    @Column({ name: 'available_from', type: 'datetime', nullable: true })
-    availableFrom: Date | null;
+    @Column({ name: 'available_from', type: 'date', nullable: true })
+    availableFrom: Date;
 
-    @Column({ name: 'available_until', type: 'datetime', nullable: true })
-    availableUntil: Date | null;
+    @Column({ name: 'available_until', type: 'date', nullable: true })
+    availableUntil: Date;
 
     @Column({ name: 'max_redemptions', nullable: true })
     maxRedemptions: number;
@@ -338,14 +338,14 @@ export class LoyaltyRewardRedemption {
     @Column({ length: 20, default: 'active' })
     status: string; // active, used, expired, cancelled
 
-    @Column({ name: 'used_at', type: 'datetime', nullable: true })
-    usedAt: Date | null;
+    @Column({ name: 'used_at', type: 'timestamp', nullable: true })
+    usedAt: Date;
 
     @Column({ name: 'used_appointment_id', nullable: true })
     usedAppointmentId: number;
 
-    @Column({ name: 'expires_at', type: 'datetime', nullable: true })
-    expiresAt: Date | null;
+    @Column({ name: 'expires_at', type: 'timestamp', nullable: true })
+    expiresAt: Date;
 
     // Code for redemption voucher
     @Column({ name: 'redemption_code', length: 20, unique: true })

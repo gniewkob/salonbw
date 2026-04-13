@@ -91,12 +91,12 @@ export default function AdminDashboard() {
         }));
     }, [stats?.monthDailyAppointments]);
 
-    const newCustomersSeries = useMemo<MiniChartPoint[]>(() => {
-        return (stats?.monthDailyNewCustomers ?? []).map((point) => ({
+    const newClientsSeries = useMemo<MiniChartPoint[]>(() => {
+        return (stats?.monthDailyNewClients ?? []).map((point) => ({
             date: point.date,
             value: point.count,
         }));
-    }, [stats?.monthDailyNewCustomers]);
+    }, [stats?.monthDailyNewClients]);
 
     const revenueSeries = useMemo<MiniChartPoint[]>(() => {
         return (stats?.monthDailyRevenue ?? []).map((point) => ({
@@ -115,15 +115,15 @@ export default function AdminDashboard() {
         };
     }, [appointmentSeries, stats?.todayAppointments, yesterdayKey]);
 
-    const newCustomersTrend = useMemo(() => {
+    const newClientsTrend = useMemo(() => {
         const yesterday =
-            newCustomersSeries.find((point) => point.date === yesterdayKey)
+            newClientsSeries.find((point) => point.date === yesterdayKey)
                 ?.value ?? 0;
         return {
-            text: formatTrend(stats?.todayNewCustomers ?? 0, yesterday),
-            positive: isPositiveTrend(stats?.todayNewCustomers ?? 0, yesterday),
+            text: formatTrend(stats?.todayNewClients ?? 0, yesterday),
+            positive: isPositiveTrend(stats?.todayNewClients ?? 0, yesterday),
         };
-    }, [newCustomersSeries, stats?.todayNewCustomers, yesterdayKey]);
+    }, [newClientsSeries, stats?.todayNewClients, yesterdayKey]);
 
     const revenueTrend = useMemo(() => {
         const yesterday =
@@ -204,16 +204,16 @@ export default function AdminDashboard() {
                         nowych klientów
                     </h3>
                     <div className="salonbw-stat-card__value">
-                        {stats.todayNewCustomers}
+                        {stats.todayNewClients}
                         <span
-                            className={`salonbw-stat-card__change ${newCustomersTrend.positive ? 'positive' : ''}`.trim()}
+                            className={`salonbw-stat-card__change ${newClientsTrend.positive ? 'positive' : ''}`.trim()}
                         >
-                            {newCustomersTrend.text}
+                            {newClientsTrend.text}
                         </span>
                     </div>
                     <div className="salonbw-stat-card__chart">
                         <MiniChart
-                            series={newCustomersSeries}
+                            series={newClientsSeries}
                             todayKey={todayKey}
                             barClassName="salonbw-mini-chart__bar--blue"
                         />
@@ -260,14 +260,14 @@ export default function AdminDashboard() {
                                     className="salonbw-activity-item"
                                 >
                                     <div className="salonbw-activity-item__avatar">
-                                        {appointment.customer?.name?.charAt(0) ||
+                                        {appointment.client?.name?.charAt(0) ||
                                             '?'}
                                     </div>
                                     <div className="salonbw-activity-item__content">
                                         <div className="salonbw-activity-item__title">
                                             Wizyta:{' '}
-                                            {appointment.customer?.name ||
-                                                'Nieznany klient'}
+                                            {appointment.client?.name ||
+                                                'Unknown'}
                                         </div>
                                         <div className="salonbw-activity-item__meta">
                                             {format(
@@ -305,13 +305,13 @@ export default function AdminDashboard() {
                                         )}
                                     </div>
                                     <div className="salonbw-appointment-item__details">
-                                        <div className="salonbw-appointment-item__customer">
-                                            {appointment.customer?.name ||
-                                                'Nieznany klient'}
+                                        <div className="salonbw-appointment-item__client">
+                                            {appointment.client?.name ||
+                                                'Unknown'}
                                         </div>
                                         <div className="salonbw-appointment-item__service">
                                             {appointment.service?.name ||
-                                                'Nieznana usługa'}
+                                                'Unknown'}
                                         </div>
                                     </div>
                                 </div>
@@ -333,20 +333,10 @@ export default function AdminDashboard() {
                     <div className="salonbw-dashboard__section-header">
                         <h2>zadania</h2>
                         <div className="salonbw-dashboard__section-actions">
-                            <button
-                                type="button"
-                                className="salonbw-icon-btn"
-                                disabled
-                                title="Moduł zadań nie jest jeszcze dostępny w panelu"
-                            >
+                            <button type="button" className="salonbw-icon-btn">
                                 +
                             </button>
-                            <button
-                                type="button"
-                                className="salonbw-icon-btn"
-                                disabled
-                                title="Moduł zadań nie jest jeszcze dostępny w panelu"
-                            >
+                            <button type="button" className="salonbw-icon-btn">
                                 •••
                             </button>
                         </div>

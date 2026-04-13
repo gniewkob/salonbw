@@ -58,7 +58,7 @@ export class LoyaltyController {
 
     // Balance - Current user
     @Get('balance/me')
-    @Roles(Role.Customer, Role.Employee, Role.Receptionist, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     async getMyBalance(@Request() req: { user: { id: number } }) {
         return this.loyaltyService.getBalanceResponse(req.user.id);
     }
@@ -72,7 +72,7 @@ export class LoyaltyController {
 
     // Transactions - Current user
     @Get('transactions/me')
-    @Roles(Role.Customer, Role.Employee, Role.Receptionist, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     async getMyTransactions(@Request() req: { user: { id: number } }) {
         return this.loyaltyService.getUserTransactions(req.user.id);
     }
@@ -114,7 +114,7 @@ export class LoyaltyController {
 
     // Rewards - Available for current user
     @Get('rewards/available')
-    @Roles(Role.Customer, Role.Employee, Role.Receptionist, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     async getAvailableRewards(@Request() req: { user: { id: number } }) {
         return this.loyaltyService.getAvailableRewards(req.user.id);
     }
@@ -159,7 +159,7 @@ export class LoyaltyController {
 
     // Redeem reward
     @Post('redeem')
-    @Roles(Role.Customer, Role.Employee, Role.Receptionist, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     async redeemReward(
         @Body() dto: RedeemRewardDto,
         @Request() req: { user: { id: number } },
@@ -190,7 +190,7 @@ export class LoyaltyController {
 
     // Get user redemptions - Current user
     @Get('redemptions/me')
-    @Roles(Role.Customer, Role.Employee, Role.Receptionist, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     async getMyRedemptions(@Request() req: { user: { id: number } }) {
         return this.loyaltyService.getUserRedemptions(req.user.id);
     }

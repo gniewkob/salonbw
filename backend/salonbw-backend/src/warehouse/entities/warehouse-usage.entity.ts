@@ -19,7 +19,7 @@ export class WarehouseUsage {
     @Column({ type: 'varchar', length: 60, unique: true })
     usageNumber: string;
 
-    @Column({ default: () => 'now()' })
+    @Column({ type: 'timestamp', default: () => 'now()' })
     usedAt: Date;
 
     @Column({ type: 'varchar', length: 200, nullable: true })

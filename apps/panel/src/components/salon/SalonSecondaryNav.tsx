@@ -3,15 +3,15 @@ import { useRouter } from 'next/router';
 import type { SalonModule } from './navigation';
 import ServicesNav from './navs/ServicesNav';
 import ServiceDetailNav from './navs/ServiceDetailNav';
-import CustomersNav from './navs/CustomersNav';
-import CustomerDetailNav from './navs/CustomerDetailNav';
+import ClientsNav from './navs/ClientsNav';
+import ClientDetailNav from './navs/ClientDetailNav';
 import CalendarNav from './navs/CalendarNav';
 import WarehouseNav from './navs/WarehouseNav';
 import StatisticsNav from './navs/StatisticsNav';
 import CommunicationNav from './navs/CommunicationNav';
 import SettingsNav from './navs/SettingsNav';
 
-// customersSections moved to CustomersNav
+// clientsSections moved to ClientsNav
 // servicesSections moved to ServicesNav
 
 interface SalonSecondaryNavProps {
@@ -72,16 +72,16 @@ export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
                                 : 'summary';
             content =
                 customerId !== null ? (
-                    <CustomerDetailNav
+                    <ClientDetailNav
                         customerId={customerId}
                         customerName="..."
                         activeTab={activeTab}
                     />
                 ) : (
-                    <CustomersNav />
+                    <ClientsNav />
                 );
         } else {
-            content = <CustomersNav />;
+            content = <ClientsNav />;
         }
     } else if (module.key === 'products') {
         content = <WarehouseNav />;

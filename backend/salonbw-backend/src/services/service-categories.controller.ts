@@ -33,7 +33,7 @@ export class ServiceCategoriesController {
     constructor(private readonly categoriesService: ServiceCategoriesService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all service categories' })
@@ -43,7 +43,7 @@ export class ServiceCategoriesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get('tree')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get category tree (hierarchical structure)' })
@@ -53,7 +53,7 @@ export class ServiceCategoriesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin, Role.Receptionist)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get service category by ID' })

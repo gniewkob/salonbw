@@ -42,10 +42,10 @@ export class Delivery {
     })
     status: DeliveryStatus;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'date', nullable: true })
     deliveryDate: Date | null;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'date', nullable: true })
     receivedDate: Date | null;
 
     @Column({ type: 'varchar', length: 100, nullable: true })

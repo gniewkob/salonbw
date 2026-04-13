@@ -104,7 +104,7 @@ export class OnlineBookingSettings {
     // Restrictions
     @Column({
         name: 'blocked_services',
-        type: 'simple-json',
+        type: 'jsonb',
         default: () => `'[]'`,
         comment: 'Service IDs that are not available for online booking',
     })
@@ -112,7 +112,7 @@ export class OnlineBookingSettings {
 
     @Column({
         name: 'blocked_employees',
-        type: 'simple-json',
+        type: 'jsonb',
         default: () => `'[]'`,
         comment: 'Employee IDs that are not available for online booking',
     })
@@ -127,16 +127,6 @@ export class OnlineBookingSettings {
 
     @Column({ name: 'widget_border_radius', default: 8 })
     widgetBorderRadius: number;
-
-    // Social Integrations
-    @Column({ name: 'facebook_booking_enabled', default: false })
-    facebookBookingEnabled: boolean;
-
-    @Column({ name: 'facebook_page_id', length: 100, nullable: true })
-    facebookPageId: string;
-
-    @Column({ name: 'instagram_booking_enabled', default: false })
-    instagramBookingEnabled: boolean;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

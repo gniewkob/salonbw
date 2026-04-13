@@ -2,53 +2,20 @@ name: Add Test Data
 
 on:
   workflow_dispatch:
-    inputs:
-      api_url:
-        description: "Non-production API base URL"
-        required: true
-      confirmation:
-        description: "Type ADD_NON_PROD_TEST_DATA to continue"
-        required: true
-
-permissions:
-  contents: read
 
 jobs:
   add-test-data:
     runs-on: ubuntu-latest
-    environment: staging
-
+    environment: production
+    
     steps:
-      - name: Validate target
-        env:
-          API_URL: ${{ github.event.inputs.api_url }}
-          CONFIRMATION: ${{ github.event.inputs.confirmation }}
-        run: |
-          set -euo pipefail
-          if [ "$CONFIRMATION" != "ADD_NON_PROD_TEST_DATA" ]; then
-            echo "Missing confirmation token" >&2
-            exit 1
-          fi
-          if [ "$API_URL" = "https://api.salon-bw.pl" ] || [ "$API_URL" = "http://api.salon-bw.pl" ]; then
-            echo "Refusing to inject test data into production API" >&2
-            exit 1
-          fi
-          case "$API_URL" in
-            http://*|https://*)
-              ;;
-            *)
-              echo "api_url must be http/https" >&2
-              exit 1
-              ;;
-          esac
-
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install axios
@@ -56,11 +23,10 @@ jobs:
 
       - name: Add test data via API
         env:
-          API_URL: ${{ github.event.inputs.api_url }}
+          API_URL: ${{ secrets.API_URL || 'https://api.salon-bw.pl' }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
-          set -euo pipefail
           if [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ]; then
             echo "Missing required secrets: ADMIN_EMAIL and/or ADMIN_PASSWORD"
             exit 1

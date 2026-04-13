@@ -23,7 +23,7 @@ export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
             } w-60 bg-dark text-white position-fixed inset-y-0 start-0 overflow-y-auto`}
             onClick={onClose}
         >
-            <div className="p-3 fs-5 fw-bold">Pulpit</div>
+            <div className="p-3 fs-5 fw-bold">Dashboard</div>
             <nav className="gap-1 px-3">
                 {links.map((link) => (
                     <Link
@@ -42,7 +42,7 @@ export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
                         void onLogout();
                     }}
                 >
-                    Wyloguj się
+                    Logout
                 </button>
             </nav>
         </aside>

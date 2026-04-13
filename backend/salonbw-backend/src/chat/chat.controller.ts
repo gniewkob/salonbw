@@ -34,7 +34,7 @@ export class ChatController {
     ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Customer, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get(':id/chat')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get chat messages for an appointment' })

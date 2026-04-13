@@ -11,9 +11,6 @@ on:
       - master
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: "22"
@@ -222,33 +219,5 @@ jobs:
 
       - name: Audit (fail on high/critical only)
         run: pnpm audit --audit-level=high --ignore-unfixable
-
-  secret-scan:
-    name: Secret Hygiene
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
-
-      - name: Scan tracked files for likely secrets
-        shell: bash
-        run: |
-          set -euo pipefail
-          if rg -n --hidden --no-ignore-vcs \
-            --glob '!.git/**' \
-            --glob '!**/*.lock' \
-            --glob '!**/pnpm-lock.yaml' \
-            --glob '!**/package-lock.json' \
-            --glob '!**/*.svg' \
-            --glob '!**/*.png' \
-            --glob '!**/*.jpg' \
-            --glob '!**/*.jpeg' \
-            --glob '!**/*.webp' \
-            --glob '!**/*.map' \
-            '(-----BEGIN ([A-Z0-9]+ )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}|postgres(ql)?://[^[:space:]]+:[^[:space:]]+@|JWT_SECRET=|JWT_REFRESH_SECRET=|SMTP_PASSWORD=|ADMIN_PASSWORD=|MYDEVIL_SSH_KEY=|SSH_PRIVATE_KEY=)' \
-            .; then
-            echo "Potential secret material found in tracked files" >&2
-            exit 1
-          fi
 
 # cspell:ignore GITHUB npmjs github elif

@@ -5,7 +5,6 @@ Use this list whenever preparing a new production deployment. Check off each ite
 ## 1. Pre-release sanity
 
 - [ ] Confirm the target commit already passed the full CI pipeline (`ci.yml` and `e2e.yml`).
-- [ ] If the release touches environments carrying sensitive data, verify the current `go/no-go` state in [`docs/ENTERPRISE_READINESS_PLAN.md`](./ENTERPRISE_READINESS_PLAN.md).
 - [ ] Run the workspace tests locally for confidence:
     ```bash
     pnpm lint
@@ -20,7 +19,6 @@ Use this list whenever preparing a new production deployment. Check off each ite
 - [ ] (If API changed) Regenerate the OpenAPI client and commit: `pnpm --filter @salonbw/api gen:api`.
 - [ ] Review `apps/landing/CHANGELOG.md` and `apps/panel/CHANGELOG.md` (or author new entries) and ensure user-visible changes are documented.
 - [ ] Verify environment variables in `docs/ENV.md` match the expected production configuration.
-- [ ] Confirm production environment protections and reviewer gates are still enabled.
 - [ ] Audit secrets in GitHub → Settings → Secrets (tunnel credentials, JWT secrets, WhatsApp tokens) and update if rotations occurred.
 - [ ] Smoke-test the app locally with Staging/Prod configuration if possible (set `NEXT_PUBLIC_API_URL`, use the SSH tunnel).
 

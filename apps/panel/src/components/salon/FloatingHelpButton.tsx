@@ -1,10 +1,9 @@
-import Link from 'next/link';
 import SalonIcon from './SalonIcon';
 
 export default function FloatingHelpButton() {
     return (
-        <Link
-            href="/helps/new"
+        <button
+            type="button"
             className="salonbw-floating-help"
             aria-label="Pomoc"
         >
@@ -12,6 +11,6 @@ export default function FloatingHelpButton() {
                 id="svg-chat"
                 className="salonbw-icon salonbw-icon--lg"
             />
-        </Link>
+        </button>
     );
 }

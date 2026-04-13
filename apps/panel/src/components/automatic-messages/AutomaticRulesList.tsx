@@ -19,8 +19,8 @@ const TRIGGER_LABELS: Record<AutomaticMessageTrigger, string> = {
     appointment_cancellation: 'Anulowanie wizyty',
     follow_up: 'Wiadomość po wizycie',
     birthday: 'Życzenia urodzinowe',
-    inactive_customer: 'Reaktywacja klienta',
-    new_customer: 'Nowy klient',
+    inactive_client: 'Reaktywacja klienta',
+    new_client: 'Nowy klient',
     review_request: 'Prośba o opinię',
 };
 
@@ -30,8 +30,8 @@ const TRIGGER_COLORS: Record<AutomaticMessageTrigger, string> = {
     appointment_cancellation: 'bg-red-100 text-red-700',
     follow_up: 'bg-purple-100 text-purple-700',
     birthday: 'bg-pink-100 text-pink-700',
-    inactive_customer: 'bg-orange-100 text-orange-700',
-    new_customer: 'bg-teal-100 text-teal-700',
+    inactive_client: 'bg-orange-100 text-orange-700',
+    new_client: 'bg-teal-100 text-teal-700',
     review_request: 'bg-yellow-100 text-yellow-700',
 };
 

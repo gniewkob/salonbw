@@ -37,7 +37,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
         e.preventDefault();
         const name = form.name.trim();
         if (!name) {
-            setError('Podaj nazwę produktu');
+            setError('Name is required');
             return;
         }
 
@@ -55,19 +55,16 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
 
         const unitPrice = parseNumberField(
             form.unitPrice,
-            'Cena musi być większa lub równa 0',
+            'Price must be >= 0',
         );
         if (unitPrice === null) return;
 
-        const stock = parseNumberField(
-            form.stock,
-            'Stan magazynowy musi być większy lub równy 0',
-        );
+        const stock = parseNumberField(form.stock, 'Stock must be >= 0');
         if (stock === null) return;
 
         const lowStockThreshold = parseNumberField(
             form.lowStockThreshold,
-            'Próg niskiego stanu musi być większy lub równy 0',
+            'Low stock threshold must be >= 0',
         );
         if (lowStockThreshold === null) return;
 
@@ -84,11 +81,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
                 brand,
             });
         } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message || 'Wystąpił błąd'
-                    : 'Wystąpił błąd',
-            );
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }
@@ -101,35 +94,35 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
                 value={form.name}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Nazwa produktu"
+                placeholder="Name"
             />
             <input
                 name="brand"
                 value={form.brand}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Marka"
+                placeholder="Brand"
             />
             <input
                 name="unitPrice"
                 value={form.unitPrice}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Cena"
+                placeholder="Price"
             />
             <input
                 name="stock"
                 value={form.stock}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Stan magazynowy"
+                placeholder="Stock"
             />
             <input
                 name="lowStockThreshold"
                 value={form.lowStockThreshold}
                 onChange={handleChange}
                 className="border p-1 w-100"
-                placeholder="Próg niskiego stanu"
+                placeholder="Low Stock Threshold"
             />
             {error && (
                 <p role="alert" className="text-danger small">
@@ -142,14 +135,14 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Anuluj
+                    Cancel
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

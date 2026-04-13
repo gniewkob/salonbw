@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
-import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,12 +18,12 @@ const validateLoginForm = (values: LoginFormValues): LoginErrors => {
     const errors: LoginErrors = {};
     const trimmedEmail = values.email.trim();
     if (!trimmedEmail) {
-        errors.email = 'Podaj adres e-mail';
+        errors.email = 'Email is required';
     } else if (!emailPattern.test(trimmedEmail)) {
-        errors.email = 'Podaj poprawny adres e-mail';
+        errors.email = 'Invalid email';
     }
     if (!values.password.trim()) {
-        errors.password = 'Podaj hasło';
+        errors.password = 'Password is required';
     }
     return errors;
 };
@@ -40,11 +39,7 @@ export const loginValidationSchema = {
     async validate(values: LoginFormValues) {
         const errors = validateLoginForm(values);
         if (Object.keys(errors).length > 0) {
-            throw new Error(
-                errors.email ??
-                    errors.password ??
-                    'Podaj poprawny adres e-mail',
-            );
+            throw new Error(errors.email ?? errors.password ?? 'Invalid email');
         }
         return values;
     },
@@ -99,11 +94,7 @@ export default function LoginPage() {
                     : '';
             void router.push(redirectTo || fallback);
         } catch (err: unknown) {
-            setStatus(
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się zalogować. Spróbuj ponownie.',
-            );
+            setStatus(err instanceof Error ? err.message : 'Login failed');
             setForm((prev) => ({ ...prev, password: '' }));
         } finally {
             setSubmitting(false);
@@ -123,12 +114,8 @@ export default function LoginPage() {
             <div className="w-100" style={{ maxWidth: 448 }}>
                 <div className="text-center">
                     <h2 className="mt-4 fs-3 fw-bold text-dark">
-                        Zaloguj się do panelu SalonBW
+                        Sign in to SalonBW Panel
                     </h2>
-                    <p className="mt-2 text-muted small">
-                        Zarządzaj wizytami, klientami i komunikacją salonu w
-                        jednym miejscu.
-                    </p>
                 </div>
                 <form
                     className="mt-4"
@@ -139,7 +126,7 @@ export default function LoginPage() {
                     <div className="mb-3">
                         <div>
                             <label htmlFor="email" className="visually-hidden">
-                                Adres e-mail
+                                Email address
                             </label>
                             <input
                                 id="email"
@@ -148,7 +135,7 @@ export default function LoginPage() {
                                 autoComplete="email"
                                 required
                                 className="form-control rounded-top"
-                                placeholder="Adres e-mail"
+                                placeholder="Email address"
                                 value={form.email}
                                 onChange={(event) => {
                                     const value = event.target.value;
@@ -183,7 +170,7 @@ export default function LoginPage() {
                                 htmlFor="password"
                                 className="visually-hidden"
                             >
-                                Hasło
+                                Password
                             </label>
                             <input
                                 id="password"
@@ -192,7 +179,7 @@ export default function LoginPage() {
                                 autoComplete="current-password"
                                 required
                                 className="form-control rounded-bottom"
-                                placeholder="Hasło"
+                                placeholder="Password"
                                 value={form.password}
                                 onChange={(event) => {
                                     const value = event.target.value;
@@ -230,11 +217,9 @@ export default function LoginPage() {
                             disabled={submitting}
                             className="btn btn-primary w-100"
                         >
-                            {submitting ? 'Logowanie...' : 'Zaloguj się'}
+                            {submitting ? 'Signing in...' : 'Sign in'}
                         </button>
                     </div>
-
-                    <SocialAuthButtons />
 
                     {status && (
                         <div className="text-center mt-3">
@@ -246,13 +231,13 @@ export default function LoginPage() {
                 </form>
                 <div className="text-center small mt-3">
                     <p>
-                        Nie masz jeszcze konta?{' '}
+                        Don&apos;t have an account?{' '}
                         <Link
                             href="/auth/register"
                             prefetch={false}
                             className="fw-semibold text-primary"
                         >
-                            Zarejestruj się
+                            Register
                         </Link>
                     </p>
                 </div>

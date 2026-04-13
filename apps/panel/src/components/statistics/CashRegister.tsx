@@ -102,7 +102,7 @@ export default function CashRegister({ data, loading }: Props) {
                                     </span>
                                 </td>
                                 <td className="px-3 py-2 text-nowrap small text-muted">
-                                    {entry.customerName || '-'}
+                                    {entry.clientName || '-'}
                                 </td>
                                 <td className="px-3 py-2 text-nowrap small text-muted">
                                     {entry.employeeName || '-'}

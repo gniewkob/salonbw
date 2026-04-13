@@ -12,19 +12,13 @@ import { useNewsletterMutations } from '@/hooks/useNewsletters';
 interface Props {
     isOpen: boolean;
     newsletter: Newsletter | null;
-    initialData?: {
-        channel?: NewsletterChannel;
-        recipientIds?: number[];
-        filterMode?: 'filter' | 'manual';
-        recipientFilter?: RecipientFilter;
-    };
     onClose: () => void;
     onSave: (data: CreateNewsletterRequest) => Promise<void>;
 }
 
 const VARIABLES = [
-    { key: '{{customer_name}}', label: 'Imię klienta' },
-    { key: '{{customer_email}}', label: 'Email klienta' },
+    { key: '{{client_name}}', label: 'Imię klienta' },
+    { key: '{{client_email}}', label: 'Email klienta' },
     { key: '{{salon_name}}', label: 'Nazwa salonu' },
     { key: '{{current_date}}', label: 'Aktualna data' },
     { key: '{{unsubscribe_link}}', label: 'Link wypisania' },
@@ -33,7 +27,6 @@ const VARIABLES = [
 export default function NewsletterEditorModal({
     isOpen,
     newsletter,
-    initialData,
     onClose,
     onSave,
 }: Props) {
@@ -67,15 +60,13 @@ export default function NewsletterEditorModal({
             setName('');
             setSubject('');
             setContent('');
-            setChannel(initialData?.channel ?? 'email');
-            setRecipientFilter(
-                initialData?.recipientFilter ?? { hasEmailConsent: true },
-            );
-            setRecipientIds(initialData?.recipientIds ?? []);
-            setFilterMode(initialData?.filterMode ?? 'filter');
+            setChannel('email');
+            setRecipientFilter({ hasEmailConsent: true });
+            setRecipientIds([]);
+            setFilterMode('filter');
         }
         setPreviewCount(null);
-    }, [initialData, isOpen, newsletter]);
+    }, [newsletter, isOpen]);
 
     const handlePreviewRecipients = async () => {
         try {
@@ -306,8 +297,8 @@ export default function NewsletterEditorModal({
                                         className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus: font-mono small"
                                         placeholder={
                                             channel === 'email'
-                                                ? '<h1>Witaj {{customer_name}}!</h1>\n<p>Mamy dla Ciebie świetne nowości...</p>'
-                                                : 'Witaj {{customer_name}}! Sprawdź nasze nowe usługi...'
+                                                ? '<h1>Witaj {{client_name}}!</h1>\n<p>Mamy dla Ciebie świetne nowości...</p>'
+                                                : 'Witaj {{client_name}}! Sprawdź nasze nowe usługi...'
                                         }
                                         required
                                     />

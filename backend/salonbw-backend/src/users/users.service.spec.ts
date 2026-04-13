@@ -82,7 +82,7 @@ describe('UsersService', () => {
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
-                role: Role.Customer,
+                role: Role.Client,
                 phone: dto.phone,
                 commissionBase: dto.commissionBase,
                 receiveNotifications: dto.receiveNotifications,
@@ -101,13 +101,13 @@ describe('UsersService', () => {
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
-                role: Role.Customer,
+                role: Role.Client,
                 phone: dto.phone,
                 commissionBase: dto.commissionBase,
                 receiveNotifications: dto.receiveNotifications,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
-            expect(result.role).toBe(Role.Customer);
+            expect(result.role).toBe(Role.Client);
             expect(result.password).toBe('hashedPass');
             expect(result.commissionBase).toBe(dto.commissionBase);
             expect(result.phone).toBe(dto.phone);
@@ -128,7 +128,7 @@ describe('UsersService', () => {
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
-                role: Role.Customer,
+                role: Role.Client,
                 phone: null,
                 commissionBase: 0,
                 receiveNotifications: true,
@@ -147,7 +147,7 @@ describe('UsersService', () => {
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
-                role: Role.Customer,
+                role: Role.Client,
                 phone: null,
                 commissionBase: 0,
                 receiveNotifications: true,

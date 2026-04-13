@@ -101,9 +101,9 @@ export default function EventCard({
                     >
                         {event.title}
                     </div>
-                    {!isTimeBlock && event.customerName && (
+                    {!isTimeBlock && event.clientName && (
                         <div className="text-muted text-truncate">
-                            {event.customerName}
+                            {event.clientName}
                         </div>
                     )}
                     <div

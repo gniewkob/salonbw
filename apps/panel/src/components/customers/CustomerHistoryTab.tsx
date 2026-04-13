@@ -117,12 +117,9 @@ export default function CustomerHistoryTab({ customerId }: Props) {
     return (
         <div className="customer-history-tab customer-history-tab--salonbw">
             <div className="customer-history-toolbar">
-                <span
-                    className="btn btn-default btn-xs disabled"
-                    aria-hidden="true"
-                >
-                    filtry wizyt
-                </span>
+                <button type="button" className="btn btn-default btn-xs">
+                    filtruj
+                </button>
             </div>
 
             <div className="customer-history-toolbar customer-history-toolbar--tight">

@@ -7,8 +7,8 @@ describe('getPostLoginRoute', () => {
         expect(getPostLoginRoute('receptionist')).toBe('/calendar');
     });
 
-    it('returns dashboard for customer and unknown role', () => {
-        expect(getPostLoginRoute('customer')).toBe('/dashboard');
+    it('returns dashboard for client and unknown role', () => {
+        expect(getPostLoginRoute('client')).toBe('/dashboard');
         expect(getPostLoginRoute(null)).toBe('/dashboard');
     });
 });

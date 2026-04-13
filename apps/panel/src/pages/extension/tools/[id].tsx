@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -203,7 +202,6 @@ function ExtensionToolContent() {
     const id = String(router.query.id || '');
     const resolvedId = TOOL_ALIASES[id] || id;
     const tool = resolvedId ? TOOLS[resolvedId] : undefined;
-    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     return (
         <div className="salonbw-page" data-testid="extension-tool-page">
@@ -270,8 +268,6 @@ function ExtensionToolContent() {
                                                     <button
                                                         type="button"
                                                         className="button button-blue"
-                                                        disabled
-                                                        title="Aktywacja dodatku nie jest jeszcze dostępna w tym panelu"
                                                     >
                                                         wypróbuj za darmo
                                                     </button>
@@ -297,26 +293,10 @@ function ExtensionToolContent() {
                                                 <a
                                                     data-more-link="true"
                                                     href="#"
-                                                    onClick={(event) => {
-                                                        event.preventDefault();
-                                                        setIsDescriptionExpanded(
-                                                            (value) => !value,
-                                                        );
-                                                    }}
                                                 >
-                                                    {isDescriptionExpanded
-                                                        ? 'zwiń opis «'
-                                                        : 'czytaj więcej »'}
+                                                    czytaj więcej »
                                                 </a>
-                                                <div
-                                                    className="description_more"
-                                                    style={{
-                                                        display:
-                                                            isDescriptionExpanded
-                                                                ? 'block'
-                                                                : undefined,
-                                                    }}
-                                                >
+                                                <div className="description_more">
                                                     {tool.descriptionMore.map(
                                                         (text) => (
                                                             <p key={text}>

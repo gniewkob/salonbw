@@ -50,20 +50,12 @@ $ npm run start:prod
 # unit tests
 $ npm run test
 
-# e2e tests (uses SQLite in-memory DB)
+# e2e tests
 $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
 ```
-
-### E2E Testing Note
-E2E tests use an in-memory SQLite database for speed and isolation. To ensure TypeORM finds all necessary metadata, all entities are registered via `test/test-entities.ts`. If you add a new entity, remember to add it to this file. 
-
-Entities have been standardized to use cross-compatible types:
-- `simple-json` instead of `jsonb`
-- `simple-enum` instead of `enum`
-- Standard `Date` mapping instead of `timestamptz` (for PostgreSQL compatibility, these are still stored as appropriate types in production).
 
 ## Deployment
 

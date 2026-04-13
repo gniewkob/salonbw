@@ -141,13 +141,6 @@ export default function CommunicationDetailPage() {
         activeKind === 'sms'
             ? (sms?.recipient ?? '')
             : (email?.recipient ?? '');
-    const customerHref = detail?.recipientUser?.id
-        ? `/customers/${detail.recipientUser.id}`
-        : null;
-    const appointmentHref =
-        activeKind === 'sms' && sms?.appointment?.id
-            ? `/calendar?event=${sms.appointment.id}`
-            : null;
     const defaultReplySubject = email?.subject
         ? `Re: ${email.subject}`
         : 'Odpowiedź';
@@ -361,48 +354,13 @@ export default function CommunicationDetailPage() {
                         <div className="communication-detail-layout">
                             <div className="row mb-l">
                                 <div className="col-xs-12 text-end">
-                                    <details className="customer-more-dropdown">
-                                        <summary className="button button-dropdown customer-more-dropdown__trigger">
-                                            operacje
-                                        </summary>
-                                        <ul className="customer-more-dropdown__menu">
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleShowReply}
-                                                >
-                                                    odpowiedz
-                                                </button>
-                                            </li>
-                                            {customerHref ? (
-                                                <li>
-                                                    <Link href={customerHref}>
-                                                        pokaż kartę klienta
-                                                    </Link>
-                                                </li>
-                                            ) : null}
-                                            {appointmentHref ? (
-                                                <li>
-                                                    <Link
-                                                        href={appointmentHref}
-                                                    >
-                                                        pokaż wizytę w
-                                                        kalendarzu
-                                                    </Link>
-                                                </li>
-                                            ) : null}
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        window.print()
-                                                    }
-                                                >
-                                                    drukuj
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </details>
+                                    <button
+                                        type="button"
+                                        className="button button-dropdown"
+                                        disabled
+                                    >
+                                        operacje
+                                    </button>
                                 </div>
                             </div>
 

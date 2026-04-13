@@ -65,7 +65,7 @@ export default function WarehouseUsageHistoryPage() {
                                                 entry.usedAt,
                                             ).toLocaleDateString('pl-PL')}
                                         </td>
-                                        <td>{entry.customerName ?? '-'}</td>
+                                        <td>{entry.clientName ?? '-'}</td>
                                         <td>{entry.employee?.name ?? '-'}</td>
                                         <td>
                                             {entry.summary?.totalItems ??

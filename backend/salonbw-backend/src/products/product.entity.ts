@@ -6,7 +6,6 @@ import {
     UpdateDateColumn,
     ManyToOne,
     JoinColumn,
-    Index,
 } from 'typeorm';
 import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { Supplier } from '../warehouse/entities/supplier.entity';

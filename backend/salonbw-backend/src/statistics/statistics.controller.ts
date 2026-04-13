@@ -4,12 +4,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { StatisticsService } from './statistics.service';
-import {
-    DateRange,
-    GroupBy,
-    StatisticsQueryDto,
-    SingleDateQueryDto,
-} from './dto/statistics.dto';
+import { DateRange, GroupBy } from './dto/statistics.dto';
 
 @Controller('statistics')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -24,30 +19,40 @@ export class StatisticsController {
 
     @Get('revenue')
     @Roles(Role.Admin)
-    async getRevenueChart(@Query() query: StatisticsQueryDto) {
+    async getRevenueChart(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+        @Query('groupBy') groupBy?: GroupBy,
+        @Query('employeeId') employeeId?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getRevenueChart(
             fromDate,
             toDate,
-            query.groupBy ?? GroupBy.Day,
-            query.employeeId,
+            groupBy ?? GroupBy.Day,
+            employeeId ? parseInt(employeeId, 10) : undefined,
         );
     }
 
     @Get('employees')
     @Roles(Role.Admin)
-    async getEmployeeRanking(@Query() query: StatisticsQueryDto) {
+    async getEmployeeRanking(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getEmployeeRanking(fromDate, toDate);
@@ -55,20 +60,23 @@ export class StatisticsController {
 
     @Get('employees/activity')
     @Roles(Role.Admin)
-    async getEmployeeActivity(@Query() query: SingleDateQueryDto) {
-        return this.statisticsService.getEmployeeActivity(
-            query.date ?? new Date(),
-        );
+    async getEmployeeActivity(@Query('date') date?: string) {
+        const activityDate = date ? new Date(date) : new Date();
+        return this.statisticsService.getEmployeeActivity(activityDate);
     }
 
     @Get('services')
     @Roles(Role.Admin)
-    async getServiceRanking(@Query() query: StatisticsQueryDto) {
+    async getServiceRanking(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getServiceRanking(fromDate, toDate);
@@ -76,33 +84,40 @@ export class StatisticsController {
 
     @Get('customers')
     @Roles(Role.Admin)
-    async getCustomerStats(@Query() query: StatisticsQueryDto) {
+    async getClientStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
-        return this.statisticsService.getCustomerStats(fromDate, toDate);
+        return this.statisticsService.getClientStats(fromDate, toDate);
     }
 
     @Get('register')
     @Roles(Role.Admin, Role.Receptionist)
-    async getCashRegister(@Query() query: SingleDateQueryDto) {
-        return this.statisticsService.getCashRegister(
-            query.date ?? new Date(),
-        );
+    async getCashRegister(@Query('date') date?: string) {
+        const registerDate = date ? new Date(date) : new Date();
+        return this.statisticsService.getCashRegister(registerDate);
     }
 
     @Get('tips')
     @Roles(Role.Admin)
-    async getTipsSummary(@Query() query: StatisticsQueryDto) {
+    async getTipsSummary(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getTipsSummary(fromDate, toDate);
@@ -110,12 +125,16 @@ export class StatisticsController {
 
     @Get('commissions')
     @Roles(Role.Admin)
-    async getCommissionReport(@Query() query: StatisticsQueryDto) {
+    async getCommissionReport(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getCommissionReport(fromDate, toDate);
@@ -123,41 +142,50 @@ export class StatisticsController {
 
     @Get('customers/returning')
     @Roles(Role.Admin)
-    async getCustomerReturningStats(@Query() query: StatisticsQueryDto) {
+    async getClientReturningStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
-        return this.statisticsService.getCustomerReturningStats(
-            fromDate,
-            toDate,
-        );
+        return this.statisticsService.getClientReturningStats(fromDate, toDate);
     }
 
     @Get('customers/origins')
     @Roles(Role.Admin)
-    async getCustomerOriginStats(@Query() query: StatisticsQueryDto) {
+    async getClientOriginStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
-        return this.statisticsService.getCustomerOriginStats(fromDate, toDate);
+        return this.statisticsService.getClientOriginStats(fromDate, toDate);
     }
 
     @Get('warehouse/movements')
     @Roles(Role.Admin)
-    async getWarehouseMovementStats(@Query() query: StatisticsQueryDto) {
+    async getWarehouseMovementStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getWarehouseMovementStats(
@@ -174,12 +202,16 @@ export class StatisticsController {
 
     @Get('worktime')
     @Roles(Role.Admin)
-    async getWorkTimeReport(@Query() query: StatisticsQueryDto) {
+    async getWorkTimeReport(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
         const { from: fromDate, to: toDate } =
             this.statisticsService.resolveDateRange(
-                query.range ?? DateRange.ThisMonth,
-                query.from,
-                query.to,
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
             );
 
         return this.statisticsService.getWorkTimeReport(fromDate, toDate);

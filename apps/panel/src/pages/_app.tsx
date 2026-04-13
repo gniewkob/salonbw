@@ -41,7 +41,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             }),
     );
 
-    // Track customer-side route changes for GA4 when analytics is enabled
+    // Track client-side route changes for GA4 when analytics is enabled
     useEffect(() => {
         if (!isAnalyticsEnabled()) return;
         const handleRouteChange = (url: string) => pageview(url);

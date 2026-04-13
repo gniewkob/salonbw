@@ -5,7 +5,7 @@ import type {
     RevenueDataPoint,
     EmployeeStats,
     ServiceStats,
-    CustomerStatsData,
+    ClientStatsData,
     CashRegisterSummary,
     TipsSummary,
     CommissionReportSummary,
@@ -102,9 +102,9 @@ export function useServiceRanking(params: EmployeeRankingParams = {}) {
     });
 }
 
-// ==================== Customer Stats ====================
+// ==================== Client Stats ====================
 
-export function useCustomerStats(params: EmployeeRankingParams = {}) {
+export function useClientStats(params: EmployeeRankingParams = {}) {
     const { apiFetch } = useAuth();
     const { range = 'this_month', from, to, enabled = true } = params;
 
@@ -113,10 +113,10 @@ export function useCustomerStats(params: EmployeeRankingParams = {}) {
     if (from) queryParams.set('from', from);
     if (to) queryParams.set('to', to);
 
-    return useQuery<CustomerStatsData>({
+    return useQuery<ClientStatsData>({
         queryKey: ['statistics', 'customers', params],
         queryFn: () =>
-            apiFetch<CustomerStatsData>(
+            apiFetch<ClientStatsData>(
                 `/statistics/customers?${queryParams.toString()}`,
             ),
         enabled,
@@ -212,24 +212,4 @@ export function useRevenueChart(params: RevenueChartParams = {}) {
                 `/statistics/revenue?${queryParams.toString()}`,
             ),
     });
-}
-
-// ==================== Exports ====================
-
-export function useExportJPK() {
-    const { apiFetchBlob } = useAuth();
-
-    return async (from: string, to: string) => {
-        const blob = await apiFetchBlob(
-            `/invoices/export/jpk-fa?from=${from}&to=${to}`,
-        );
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `JPK_FA_${from}_${to}.xml`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    };
 }
