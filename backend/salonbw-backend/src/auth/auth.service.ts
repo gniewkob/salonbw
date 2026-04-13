@@ -53,7 +53,7 @@ export class AuthService {
         return { secret, hash };
     }
 
-    private setAuthCookies(
+    public setAuthCookies(
         response: Response,
         accessToken: string,
         refreshToken: string,

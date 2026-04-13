@@ -91,6 +91,13 @@ export class User {
     @Column({ nullable: true })
     gdprConsentDate?: Date;
 
+    // Social authentication
+    @Column({ nullable: true, unique: true })
+    googleId?: string;
+
+    @Column({ nullable: true, unique: true })
+    facebookId?: string;
+
     @CreateDateColumn()
     createdAt: Date;
 

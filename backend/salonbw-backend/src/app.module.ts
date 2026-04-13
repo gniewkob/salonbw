@@ -46,6 +46,7 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
 import { FinanceModule } from './finance/finance.module';
 import { VersumCompatModule } from './versum-compat/versum-compat.module';
 import { ContentModule } from './content/content.module';
+import { AuthSocialModule } from './auth-social/auth-social.module';
 
 @Module({
     imports: [
@@ -127,6 +128,10 @@ import { ContentModule } from './content/content.module';
         BranchesModule,
         GiftCardsModule,
         LoyaltyModule,
+        // Conditionally load AuthSocialModule only if OAuth credentials are configured
+        ...(process.env.GOOGLE_CLIENT_ID || process.env.FACEBOOK_APP_ID
+            ? [AuthSocialModule.register()]
+            : []),
         FinanceModule,
         VersumCompatModule,
         ContentModule,
