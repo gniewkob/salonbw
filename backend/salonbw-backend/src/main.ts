@@ -41,7 +41,11 @@ async function bootstrap() {
     const metricsInterceptor = await app.resolve(HttpMetricsInterceptor);
     app.useGlobalInterceptors(metricsInterceptor, new LoggerErrorInterceptor());
     app.useGlobalPipes(
-        new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            transform: true,
+        }),
     );
     app.use(cookieParser());
     // app.setGlobalPrefix('api'); // Removed to align with api.salon-bw.pl (no /api suffix)
