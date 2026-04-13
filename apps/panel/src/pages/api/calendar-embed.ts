@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
             newLink.addEventListener('click', function(e) {
                 e.stopPropagation();
                 e.preventDefault();
-                window.location.href = href;
+                window.top.location.href = href;
             });
         });
     }, 500);

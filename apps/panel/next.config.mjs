@@ -355,6 +355,13 @@ const nextConfig = {
                 source: '/(.*)',
                 headers: securityHeaders,
             },
+            // Allow the calendar embed to be framed by the same origin
+            {
+                source: '/api/calendar-embed',
+                headers: [
+                    { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+                ],
+            },
             // Cache aggressively for fingerprinted Next.js assets
             {
                 source: '/_next/static/:path*',
