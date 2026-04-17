@@ -75,8 +75,8 @@ importers:
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
       '@fullcalendar/react':
-        specifier: ^6.1.18
-        version: 6.1.19(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^6.1.20
+        version: 6.1.20(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@fullcalendar/timegrid':
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
@@ -232,8 +232,8 @@ importers:
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
       '@fullcalendar/react':
-        specifier: ^6.1.18
-        version: 6.1.19(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^6.1.20
+        version: 6.1.20(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@fullcalendar/timegrid':
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
@@ -1202,10 +1202,10 @@ packages:
     peerDependencies:
       '@fullcalendar/core': ~6.1.19
 
-  '@fullcalendar/react@6.1.19':
-    resolution: {integrity: sha512-FP78vnyylaL/btZeHig8LQgfHgfwxLaIG6sKbNkzkPkKEACv11UyyBoTSkaavPsHtXvAkcTED1l7TOunAyPEnA==}
+  '@fullcalendar/react@6.1.20':
+    resolution: {integrity: sha512-1w0pZtceaUdfAnxMSCGHCQalhi+mR1jOe76sXzyAXpcPz/Lf0zHSdcGK/U2XpZlnQgQtBZW+d+QBnnzVQKCxAA==}
     peerDependencies:
-      '@fullcalendar/core': ~6.1.19
+      '@fullcalendar/core': ~6.1.20
       react: ^16.7.0 || ^17 || ^18 || ^19
       react-dom: ^16.7.0 || ^17 || ^18 || ^19
 
@@ -9525,7 +9525,7 @@ snapshots:
     dependencies:
       '@fullcalendar/core': 6.1.20
 
-  '@fullcalendar/react@6.1.19(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@fullcalendar/react@6.1.20(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@fullcalendar/core': 6.1.20
       react: 18.3.1
