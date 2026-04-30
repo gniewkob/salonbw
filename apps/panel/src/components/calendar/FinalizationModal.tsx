@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import Modal from '@/components/Modal';
+import { CALENDAR_QUERY_KEY } from '@/hooks/useCalendar';
+import { APPOINTMENTS_QUERY_KEY } from '@/hooks/useAppointments';
 import type {
     Appointment,
     PaymentMethod,
@@ -46,11 +48,18 @@ export default function FinalizationModal({
     const [showProductPicker, setShowProductPicker] = useState(false);
 
     // Fetch products for upselling
-    const { data: products = [] } = useQuery<Product[]>({
+    const { data: productsResponse } = useQuery<ProductsResponse>({
         queryKey: ['products'],
-        queryFn: () => apiFetch<Product[]>('/products'),
+        queryFn: () => apiFetch<ProductsResponse>('/products'),
         enabled: open && showProductPicker,
     });
+    const products = useMemo<Product[]>(
+        () =>
+            Array.isArray(productsResponse)
+                ? productsResponse
+                : (productsResponse?.items ?? []),
+        [productsResponse],
+    );
 
     // Calculate totals
     const summary = useMemo(() => {
@@ -90,8 +99,12 @@ export default function FinalizationModal({
             );
         },
         onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['calendar'] });
-            void queryClient.invalidateQueries({ queryKey: ['appointments'] });
+            void queryClient.invalidateQueries({
+                queryKey: CALENDAR_QUERY_KEY,
+            });
+            void queryClient.invalidateQueries({
+                queryKey: APPOINTMENTS_QUERY_KEY,
+            });
             onSuccess?.();
             handleClose();
         },
@@ -420,3 +433,8 @@ export default function FinalizationModal({
         </Modal>
     );
 }
+type ProductsResponse =
+    | Product[]
+    | {
+          items?: Product[];
+      };
