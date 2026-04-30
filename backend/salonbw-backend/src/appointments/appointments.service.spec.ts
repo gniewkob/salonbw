@@ -19,6 +19,7 @@ describe('AppointmentsService', () => {
     let sendFollowUpMock: AppointmentsTestContext['sendFollowUpMock'];
     let transactionMock: AppointmentsTestContext['transactionMock'];
     let createFromAppointmentMock: AppointmentsTestContext['createFromAppointmentMock'];
+    let createSaleMock: AppointmentsTestContext['createSaleMock'];
 
     beforeEach(() => {
         ctx = createAppointmentsTestContext();
@@ -33,6 +34,7 @@ describe('AppointmentsService', () => {
             sendFollowUpMock,
             transactionMock,
             createFromAppointmentMock,
+            createSaleMock,
         } = ctx);
     });
 
@@ -439,5 +441,96 @@ describe('AppointmentsService', () => {
             service.completeAppointment(id, users[1]),
         ).rejects.toBeInstanceOf(BadRequestException);
         expect(createFromAppointmentMock.mock.calls.length).toBe(calls);
+    });
+
+    it('finalizes appointment without products', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const finalized = await service.finalizeAppointment(
+            id,
+            {
+                paymentMethod: 'cash' as never,
+                paidAmountCents: 10000,
+                tipAmountCents: 1500,
+                discountCents: 500,
+                note: 'test finalize',
+            },
+            users[1],
+        );
+
+        expect(finalized?.status).toBe(AppointmentStatus.Completed);
+        expect(createFromAppointmentMock).toHaveBeenCalledTimes(1);
+        expect(createSaleMock).not.toHaveBeenCalled();
+    });
+
+    it('finalizes appointment with products and creates retail sales', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const finalized = await service.finalizeAppointment(
+            id,
+            {
+                paymentMethod: 'card' as never,
+                paidAmountCents: 15000,
+                products: [
+                    {
+                        productId: 101,
+                        quantity: 2,
+                        unitPriceCents: 2500,
+                    },
+                    {
+                        productId: 202,
+                        quantity: 1,
+                        unitPriceCents: 5000,
+                        discountCents: 500,
+                    },
+                ],
+            },
+            users[1],
+        );
+
+        expect(finalized?.status).toBe(AppointmentStatus.Completed);
+        expect(createFromAppointmentMock).toHaveBeenCalledTimes(1);
+        expect(createSaleMock).toHaveBeenCalledTimes(2);
+        expect(createSaleMock).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                productId: 101,
+                quantity: 2,
+                unitPriceCents: 2500,
+                employeeId: users[1].id,
+                appointmentId: id,
+            }),
+            users[1],
+        );
+        expect(createSaleMock).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                productId: 202,
+                quantity: 1,
+                unitPriceCents: 5000,
+                discountCents: 500,
+                employeeId: users[1].id,
+                appointmentId: id,
+            }),
+            users[1],
+        );
     });
 });

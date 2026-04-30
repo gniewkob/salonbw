@@ -12,6 +12,7 @@ import { AppointmentsModule } from '../src/appointments/appointments.module';
 import { ServicesModule } from '../src/services/services.module';
 import { FormulasModule } from '../src/formulas/formulas.module';
 import { ProductsModule } from '../src/products/products.module';
+import { CacheModule } from '../src/cache/cache.module';
 import { User } from '../src/users/user.entity';
 import { Service } from '../src/services/service.entity';
 import { Appointment } from '../src/appointments/appointment.entity';
@@ -73,6 +74,7 @@ d('Appointments integration', () => {
                     synchronize: true,
                 }),
                 AuthModule,
+                CacheModule,
                 ServicesModule,
                 AppointmentsModule,
                 FormulasModule,

@@ -11,6 +11,7 @@ import { AuthModule } from '../src/auth/auth.module';
 import { RetailModule } from '../src/retail/retail.module';
 import { ProductsModule } from '../src/products/products.module';
 import { UsersModule } from '../src/users/users.module';
+import { CacheModule } from '../src/cache/cache.module';
 import { User } from '../src/users/user.entity';
 import { Product } from '../src/products/product.entity';
 import { Appointment } from '../src/appointments/appointment.entity';
@@ -57,6 +58,7 @@ d('Retail (POS) integration', () => {
                 }),
                 AuthModule,
                 UsersModule,
+                CacheModule,
                 ProductsModule,
                 RetailModule,
             ],

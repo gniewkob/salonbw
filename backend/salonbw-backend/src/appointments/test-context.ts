@@ -11,6 +11,7 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
+import { RetailService } from '../retail/retail.service';
 
 export interface AppointmentsTestContext {
     service: AppointmentsService;
@@ -24,6 +25,7 @@ export interface AppointmentsTestContext {
     sendFollowUpMock: jest.Mock;
     transactionMock: jest.Mock;
     createFromAppointmentMock: jest.Mock;
+    createSaleMock: jest.Mock;
 }
 
 export function createAppointmentsTestContext(): AppointmentsTestContext {
@@ -127,6 +129,12 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         ),
     } as unknown as jest.Mocked<WhatsappService>;
 
+    const mockRetailService = {
+        createSale: jest.fn<Promise<unknown>, [unknown, User]>(() =>
+            Promise.resolve({}),
+        ),
+    } as unknown as jest.Mocked<RetailService>;
+
     const sendFollowUpMock = jest.spyOn(
         mockWhatsappService,
         'sendFollowUp',
@@ -139,6 +147,10 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockCommissionsService,
         'createFromAppointment',
     ) as jest.Mock;
+    const createSaleMock = jest.spyOn(
+        mockRetailService,
+        'createSale',
+    ) as jest.Mock;
 
     const service = new AppointmentsService(
         mockAppointmentsRepo,
@@ -148,6 +160,9 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockCommissionsService,
         mockLogService,
         mockWhatsappService,
+        undefined,
+        mockRetailService,
+        undefined,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
@@ -163,6 +178,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         sendFollowUpMock,
         transactionMock,
         createFromAppointmentMock,
+        createSaleMock,
     };
 }
 
