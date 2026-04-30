@@ -94,8 +94,15 @@ Open the repository in VS Code. The workspace includes recommended extensions an
 
 Git hooks run automatically after `pnpm install`. They enforce:
 
+- `gitleaks protect --staged --redact` (secret scan, required)
 - `pnpm lint --fix`
 - `pnpm typecheck`
+
+Install gitleaks once on your machine:
+
+```bash
+brew install gitleaks
+```
 
 If a hook fails, fix the reported issues before committing.
 

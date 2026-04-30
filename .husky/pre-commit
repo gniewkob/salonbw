@@ -1,6 +1,14 @@
 #!/usr/bin/env sh
 . "$(dirname "$0")/_/h"
 
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact
+else
+  echo "gitleaks is required for pre-commit secret scanning."
+  echo "Install with: brew install gitleaks"
+  exit 1
+fi
+
 pnpm lint-staged
 pnpm lint --fix
 pnpm typecheck
