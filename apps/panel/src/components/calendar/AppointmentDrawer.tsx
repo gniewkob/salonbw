@@ -43,7 +43,7 @@ export default function AppointmentDrawer({
     onClose,
     onSaved,
 }: AppointmentDrawerProps) {
-    const { apiFetch } = useAuth();
+    const { apiFetch, role } = useAuth();
     const servicesResult = useServices();
     const services = servicesResult.data ?? EMPTY_SERVICES;
     const employeesResult = useEmployees();
@@ -103,6 +103,15 @@ export default function AppointmentDrawer({
         Number(employeeId) > 0 &&
         Number(serviceId) > 0 &&
         Number(clientId) > 0;
+    const currentStatus = appointment?.status ?? 'scheduled';
+    const canConfirm = currentStatus === 'scheduled';
+    const canStart =
+        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+    const canNoShow =
+        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+    const canCancel =
+        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+    const canComplete = currentStatus === 'in_progress';
 
     const handleCreate = async () => {
         if (!canSaveCreate) return;
@@ -381,52 +390,64 @@ export default function AppointmentDrawer({
 
                         {mode === 'edit' && appointment?.id ? (
                             <>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-primary"
-                                    onClick={() =>
-                                        void handleStatusChange('confirmed')
-                                    }
-                                    disabled={saving}
-                                >
-                                    Potwierdź
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                        void handleStatusChange('in_progress')
-                                    }
-                                    disabled={saving}
-                                >
-                                    Rozpocznij
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-warning"
-                                    onClick={() =>
-                                        void handleStatusChange('no_show')
-                                    }
-                                    disabled={saving}
-                                >
-                                    No-show
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-success"
-                                    onClick={() => void handleComplete()}
-                                    disabled={saving}
-                                >
-                                    Zakończ wizytę
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-danger"
-                                    onClick={() => void handleCancel()}
-                                    disabled={saving}
-                                >
-                                    Anuluj wizytę
-                                </button>
+                                {canConfirm ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-primary"
+                                        onClick={() =>
+                                            void handleStatusChange('confirmed')
+                                        }
+                                        disabled={saving}
+                                    >
+                                        Potwierdź
+                                    </button>
+                                ) : null}
+                                {canStart ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() =>
+                                            void handleStatusChange(
+                                                'in_progress',
+                                            )
+                                        }
+                                        disabled={saving}
+                                    >
+                                        Rozpocznij
+                                    </button>
+                                ) : null}
+                                {canNoShow ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-warning"
+                                        onClick={() =>
+                                            void handleStatusChange('no_show')
+                                        }
+                                        disabled={saving}
+                                    >
+                                        No-show
+                                    </button>
+                                ) : null}
+                                {canComplete && role !== 'receptionist' ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-success"
+                                        onClick={() => void handleComplete()}
+                                        disabled={saving}
+                                    >
+                                        Zakończ wizytę
+                                    </button>
+                                ) : null}
+                                {canCancel ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger"
+                                        onClick={() => void handleCancel()}
+                                        disabled={saving}
+                                    >
+                                        Anuluj wizytę
+                                    </button>
+                                ) : null}
                             </>
                         ) : null}
                     </div>

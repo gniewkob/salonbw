@@ -16,25 +16,34 @@ import {
     subMonths,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function CalendarNav() {
     const router = useRouter();
     const { data: employees } = useEmployees();
 
     const dateParam = router.query.date as string;
-    const urlEmployeeId = router.query.employeeId
-        ? Number(router.query.employeeId)
-        : undefined;
+    const urlEmployeeIdsParam = Array.isArray(router.query.employeeIds)
+        ? router.query.employeeIds[0]
+        : router.query.employeeIds;
+    const urlEmployeeIds = useMemo(
+        () =>
+            urlEmployeeIdsParam
+                ? urlEmployeeIdsParam
+                      .split(',')
+                      .map((value) => Number(value))
+                      .filter((value) => Number.isInteger(value) && value > 0)
+                : [],
+        [urlEmployeeIdsParam],
+    );
 
     const [selectedDate, setSelectedDate] = useState(
         dateParam ? new Date(dateParam) : new Date(),
     );
 
     // Local state for selected employees (multiple selection like in source UI)
-    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
-        urlEmployeeId ? [urlEmployeeId] : [],
-    );
+    const [selectedEmployeeIds, setSelectedEmployeeIds] =
+        useState<number[]>(urlEmployeeIds);
 
     // Sync with URL
     useEffect(() => {
@@ -44,10 +53,8 @@ export default function CalendarNav() {
     }, [dateParam]);
 
     useEffect(() => {
-        if (urlEmployeeId && !selectedEmployeeIds.includes(urlEmployeeId)) {
-            setSelectedEmployeeIds([urlEmployeeId]);
-        }
-    }, [urlEmployeeId]);
+        setSelectedEmployeeIds(urlEmployeeIds);
+    }, [urlEmployeeIds]);
 
     // Calendar grid logic
     const monthStart = startOfMonth(selectedDate);
@@ -76,12 +83,12 @@ export default function CalendarNav() {
 
         setSelectedEmployeeIds(newSelection);
 
-        // Sync with URL (use first selected for now, or none if empty)
+        // Sync with URL
         const query = { ...router.query };
         if (newSelection.length === 0) {
-            delete query.employeeId;
+            delete query.employeeIds;
         } else {
-            query.employeeId = String(newSelection[0]);
+            query.employeeIds = newSelection.join(',');
         }
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,

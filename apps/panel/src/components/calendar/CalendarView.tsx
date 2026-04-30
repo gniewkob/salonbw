@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import type { EventDropArg } from '@fullcalendar/core';
 import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
 import type { CalendarEvent, CalendarView as CalendarViewType } from '@/types';
+import type FullCalendarComponent from '@fullcalendar/react';
 
 // Dynamic import with no SSR to avoid hydration mismatches
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
@@ -14,7 +15,7 @@ const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
             Initialising calendar engine...
         </div>
     ),
-});
+}) as typeof FullCalendarComponent;
 
 interface CalendarViewProps {
     events: CalendarEvent[];
@@ -26,6 +27,7 @@ interface CalendarViewProps {
         newStart: Date,
         newEnd: Date,
         newEmployeeId?: number,
+        revert?: () => void,
     ) => Promise<void> | void;
     onDateSelect: (start: Date, end: Date, employeeId?: number) => void;
     onDateChange: (date: Date) => void;
@@ -59,6 +61,7 @@ export default function CalendarView({
     selectedEmployeeIds,
     hideSidebar = false,
 }: CalendarViewProps) {
+    const calendarRef = useRef<FullCalendarComponent | null>(null);
     const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
         null,
     );
@@ -120,7 +123,13 @@ export default function CalendarView({
             const eventParts = info.event.id.split('-');
             const eventId = parseInt(eventParts[1], 10);
             if (!info.event.start || !info.event.end) return;
-            void onEventDrop(eventId, info.event.start, info.event.end);
+            void onEventDrop(
+                eventId,
+                info.event.start,
+                info.event.end,
+                undefined,
+                info.revert,
+            );
         },
         [onEventDrop],
     );
@@ -146,6 +155,21 @@ export default function CalendarView({
         },
         [selectedEmployeeIds, onEmployeeFilterChange],
     );
+
+    useEffect(() => {
+        const api = calendarRef.current?.getApi();
+        if (!api) return;
+        api.gotoDate(currentDate);
+    }, [currentDate]);
+
+    useEffect(() => {
+        const api = calendarRef.current?.getApi();
+        if (!api) return;
+        const targetView = VIEW_MAP[currentView];
+        if (api.view.type !== targetView) {
+            api.changeView(targetView);
+        }
+    }, [currentView]);
 
     return (
         <div className={`d-flex h-100 ${hideSidebar ? '' : 'flex-column '}`}>
@@ -180,6 +204,7 @@ export default function CalendarView({
                     </div>
                 ) : calendarPlugins ? (
                     <FullCalendar
+                        ref={calendarRef}
                         plugins={calendarPlugins}
                         initialView={VIEW_MAP[currentView]}
                         initialDate={currentDate}

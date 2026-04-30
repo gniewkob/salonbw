@@ -271,7 +271,7 @@ export class CalendarService {
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
         const whereConditions: Record<string, unknown> = {
-            role: In(['employee', 'admin']),
+            role: In(['employee']),
         };
 
         if (employeeIds && employeeIds.length > 0) {

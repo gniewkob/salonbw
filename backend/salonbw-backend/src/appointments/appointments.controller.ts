@@ -62,7 +62,7 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Post()
     @ApiBearerAuth()
     @ApiOperation({
@@ -80,20 +80,20 @@ export class AppointmentsController {
         @Body() body: CreateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
-        if (
-            (user.role === Role.Employee || user.role === Role.Admin) &&
-            !body.clientId
-        ) {
+        const isStaff =
+            user.role === Role.Employee ||
+            user.role === Role.Admin ||
+            user.role === Role.Receptionist;
+
+        if (isStaff && !body.clientId) {
             throw new BadRequestException(
                 'clientId must be provided when creating appointments as staff',
             );
         }
 
-        const client =
-            body.clientId &&
-            (user.role === Role.Employee || user.role === Role.Admin)
-                ? ({ id: body.clientId } as User)
-                : ({ id: user.userId } as User);
+        const client = isStaff
+            ? ({ id: body.clientId } as User)
+            : ({ id: user.userId } as User);
         return this.appointmentsService.create(
             {
                 client,
@@ -245,7 +245,7 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Patch(':id/reschedule')
     @ApiBearerAuth()
     @ApiOperation({

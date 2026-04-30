@@ -43,7 +43,7 @@ export class CalendarController {
     constructor(private readonly calendarService: CalendarService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get('events')
     @ApiBearerAuth()
     @ApiOperation({
@@ -63,7 +63,7 @@ export class CalendarController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get('time-blocks')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get time blocks for date range' })
@@ -80,7 +80,7 @@ export class CalendarController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Post('time-blocks')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a time block (break, vacation, etc.)' })
@@ -100,7 +100,7 @@ export class CalendarController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Patch('time-blocks/:id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a time block' })
@@ -128,7 +128,7 @@ export class CalendarController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Delete('time-blocks/:id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a time block' })
@@ -156,7 +156,7 @@ export class CalendarController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get('conflicts')
     @ApiBearerAuth()
     @ApiOperation({

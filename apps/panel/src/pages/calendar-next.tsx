@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -30,6 +31,7 @@ function toDateParam(value: Date): string {
 }
 
 export default function CalendarNextPage() {
+    const router = useRouter();
     const { role } = useAuth();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
@@ -86,8 +88,6 @@ export default function CalendarNextPage() {
         return map;
     }, [data?.events]);
 
-    if (!role) return null;
-
     const handleEventClick = (event: CalendarEvent) => {
         if (event.type !== 'appointment') return;
         const appointment = appointmentsById.get(event.id);
@@ -99,11 +99,74 @@ export default function CalendarNextPage() {
         });
     };
 
+    useEffect(() => {
+        const dateParam = Array.isArray(router.query.date)
+            ? router.query.date[0]
+            : router.query.date;
+        if (!dateParam) return;
+        const nextDate = new Date(dateParam);
+        if (!Number.isNaN(nextDate.getTime())) {
+            setCurrentDate(nextDate);
+        }
+    }, [router.query.date]);
+
+    useEffect(() => {
+        const idsParam = Array.isArray(router.query.employeeIds)
+            ? router.query.employeeIds[0]
+            : router.query.employeeIds;
+        if (!idsParam) {
+            setSelectedEmployeeIds([]);
+            return;
+        }
+        const parsed = idsParam
+            .split(',')
+            .map((value) => Number(value))
+            .filter((value) => Number.isInteger(value) && value > 0);
+        setSelectedEmployeeIds(parsed);
+    }, [router.query.employeeIds]);
+
+    useEffect(() => {
+        const viewParam = Array.isArray(router.query.view)
+            ? router.query.view[0]
+            : router.query.view;
+        if (
+            viewParam === 'day' ||
+            viewParam === 'week' ||
+            viewParam === 'month' ||
+            viewParam === 'reception'
+        ) {
+            setCurrentView(viewParam);
+        }
+    }, [router.query.view]);
+
+    const updateCalendarQuery = (
+        next: Partial<{
+            date: string;
+            view: CalendarViewType;
+            employeeIds: number[];
+        }>,
+    ) => {
+        const query = { ...router.query } as Record<string, string>;
+        if (next.date !== undefined) query.date = next.date;
+        if (next.view !== undefined) query.view = next.view;
+        if (next.employeeIds !== undefined) {
+            if (next.employeeIds.length > 0) {
+                query.employeeIds = next.employeeIds.join(',');
+            } else {
+                delete query.employeeIds;
+            }
+        }
+        void router.push({ pathname: router.pathname, query }, undefined, {
+            shallow: true,
+        });
+    };
+
     const handleEventDrop = async (
         eventId: number,
         newStart: Date,
         newEnd: Date,
         newEmployeeId?: number,
+        revert?: () => void,
     ) => {
         const event = (data?.events ?? []).find(
             (entry) => entry.id === eventId && entry.type === 'appointment',
@@ -119,7 +182,7 @@ export default function CalendarNextPage() {
         );
 
         if (conflictCheck.hasConflict) {
-            alert('Konflikt kalendarza: pracownik ma już wizytę w tym czasie.');
+            revert?.();
             await refetch();
             return;
         }
@@ -131,6 +194,8 @@ export default function CalendarNextPage() {
             employeeId: targetEmployeeId,
         });
     };
+
+    if (!role) return null;
 
     return (
         <RouteGuard permission="nav:calendar">
@@ -179,13 +244,24 @@ export default function CalendarNextPage() {
                                     initialEmployeeId: employeeId,
                                 })
                             }
-                            onDateChange={setCurrentDate}
-                            onViewChange={setCurrentView}
-                            onEmployeeFilterChange={setSelectedEmployeeIds}
+                            onViewChange={(nextView) => {
+                                setCurrentView(nextView);
+                                updateCalendarQuery({ view: nextView });
+                            }}
+                            onEmployeeFilterChange={(ids) => {
+                                setSelectedEmployeeIds(ids);
+                                updateCalendarQuery({ employeeIds: ids });
+                            }}
+                            onDateChange={(date) => {
+                                setCurrentDate(date);
+                                updateCalendarQuery({
+                                    date: toDateParam(date),
+                                });
+                            }}
                             currentDate={currentDate}
                             currentView={currentView}
                             selectedEmployeeIds={selectedEmployeeIds}
-                            hideSidebar={false}
+                            hideSidebar
                         />
                     </div>
                 </div>
