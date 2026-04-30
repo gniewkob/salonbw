@@ -5,6 +5,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
+import FinalizationModal from './FinalizationModal';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -43,7 +44,7 @@ export default function AppointmentDrawer({
     onClose,
     onSaved,
 }: AppointmentDrawerProps) {
-    const { apiFetch, role } = useAuth();
+    const { apiFetch } = useAuth();
     const servicesResult = useServices();
     const services = servicesResult.data ?? EMPTY_SERVICES;
     const employeesResult = useEmployees();
@@ -63,7 +64,7 @@ export default function AppointmentDrawer({
     });
     const customers = customersResponse?.items ?? [];
     const createCustomer = useCreateCustomer();
-    const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
+    const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
 
     const [startTime, setStartTime] = useState('');
@@ -72,6 +73,7 @@ export default function AppointmentDrawer({
     const [clientId, setClientId] = useState<number | ''>('');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [finalizationOpen, setFinalizationOpen] = useState(false);
 
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
@@ -246,25 +248,6 @@ export default function AppointmentDrawer({
                 err instanceof Error
                     ? err.message
                     : 'Nie udało się anulować wizyty';
-            setError(message);
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleComplete = async () => {
-        if (!appointment?.id) return;
-        setSaving(true);
-        setError(null);
-        try {
-            await completeAppointment.mutateAsync(appointment.id);
-            onSaved();
-            onClose();
-        } catch (err) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się zakończyć wizyty';
             setError(message);
         } finally {
             setSaving(false);
@@ -594,14 +577,16 @@ export default function AppointmentDrawer({
                                         No-show
                                     </button>
                                 ) : null}
-                                {canComplete && role !== 'receptionist' ? (
+                                {canComplete ? (
                                     <button
                                         type="button"
                                         className="btn btn-outline-success"
-                                        onClick={() => void handleComplete()}
+                                        onClick={() =>
+                                            setFinalizationOpen(true)
+                                        }
                                         disabled={saving}
                                     >
-                                        Zakończ wizytę
+                                        Finalizuj wizytę
                                     </button>
                                 ) : null}
                                 {canCancel ? (
@@ -625,6 +610,17 @@ export default function AppointmentDrawer({
                 style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1090 }}
                 onClick={onClose}
                 aria-hidden="true"
+            />
+
+            <FinalizationModal
+                appointment={appointment ?? null}
+                open={finalizationOpen}
+                onClose={() => setFinalizationOpen(false)}
+                onSuccess={() => {
+                    setFinalizationOpen(false);
+                    onSaved();
+                    onClose();
+                }}
             />
         </>
     );
