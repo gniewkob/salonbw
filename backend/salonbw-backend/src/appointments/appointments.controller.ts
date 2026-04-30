@@ -117,7 +117,7 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Patch(':id/cancel')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Cancel appointment' })
