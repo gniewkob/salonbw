@@ -43,7 +43,7 @@ export interface SalonModule {
 export const SALON_MODULES: SalonModule[] = [
     {
         key: 'calendar',
-        href: '/calendar',
+        href: '/calendar-next',
         label: 'kalendarz',
         iconId: 'svg-calendar-nav',
         permission: 'nav:calendar',

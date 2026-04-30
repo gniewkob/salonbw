@@ -28,12 +28,21 @@ export class UsersService {
         return user ?? null;
     }
 
-    async findBySocialId(field: 'googleId' | 'facebookId', id: string): Promise<User | null> {
-        const user = await this.usersRepository.findOne({ where: { [field]: id } });
+    async findBySocialId(
+        field: 'googleId' | 'facebookId',
+        id: string,
+    ): Promise<User | null> {
+        const user = await this.usersRepository.findOne({
+            where: { [field]: id },
+        });
         return user ?? null;
     }
 
-    async updateSocialId(userId: number, provider: 'google' | 'facebook', socialId: string): Promise<void> {
+    async updateSocialId(
+        userId: number,
+        provider: 'google' | 'facebook',
+        socialId: string,
+    ): Promise<void> {
         const field = provider === 'google' ? 'googleId' : 'facebookId';
         await this.usersRepository.update(userId, { [field]: socialId });
     }

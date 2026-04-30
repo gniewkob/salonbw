@@ -33,6 +33,7 @@ import { GetAppointmentsDto } from './dto/get-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
+import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -172,6 +173,47 @@ export class AppointmentsController {
             throw new ForbiddenException();
         }
         return this.appointmentsService.completeAppointment(id, {
+            id: user.userId,
+        } as User);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Patch(':id/status')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Update appointment status',
+        description:
+            'Updates appointment status for staff-driven workflow (confirm/start/no-show/cancel/complete).',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment status updated',
+        type: Appointment,
+    })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async updateStatus(
+        @Param('id', ParseIntPipe) id: number,
+        @Body(new ValidationPipe({ transform: true }))
+        body: UpdateAppointmentStatusDto,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment | null> {
+        const appointment = await this.appointmentsService.findOne(id);
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+
+        if (
+            user.role === Role.Employee &&
+            appointment.employee.id !== user.userId
+        ) {
+            throw new ForbiddenException(
+                'Employees can only update status for their own appointments',
+            );
+        }
+
+        return this.appointmentsService.updateStatus(id, body.status, {
             id: user.userId,
         } as User);
     }

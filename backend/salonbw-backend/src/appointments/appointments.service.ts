@@ -503,6 +503,73 @@ export class AppointmentsService {
         return updated;
     }
 
+    async updateStatus(
+        id: number,
+        targetStatus: AppointmentStatus,
+        user: User,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+
+        if (targetStatus === AppointmentStatus.Cancelled) {
+            return this.cancel(id, user);
+        }
+
+        if (targetStatus === AppointmentStatus.Completed) {
+            return this.completeAppointment(id, user);
+        }
+
+        if (
+            appointment.status === AppointmentStatus.Cancelled ||
+            appointment.status === AppointmentStatus.Completed
+        ) {
+            throw new BadRequestException(
+                'Cannot change status for cancelled or completed appointment',
+            );
+        }
+
+        const allowedTransitions: Record<
+            AppointmentStatus,
+            AppointmentStatus[]
+        > = {
+            [AppointmentStatus.Scheduled]: [
+                AppointmentStatus.Confirmed,
+                AppointmentStatus.InProgress,
+                AppointmentStatus.NoShow,
+            ],
+            [AppointmentStatus.Confirmed]: [
+                AppointmentStatus.InProgress,
+                AppointmentStatus.NoShow,
+            ],
+            [AppointmentStatus.InProgress]: [],
+            [AppointmentStatus.NoShow]: [],
+            [AppointmentStatus.Cancelled]: [],
+            [AppointmentStatus.Completed]: [],
+        };
+
+        const allowedTargets = allowedTransitions[appointment.status] ?? [];
+        if (!allowedTargets.includes(targetStatus)) {
+            throw new BadRequestException(
+                `Cannot change status from ${appointment.status} to ${targetStatus}`,
+            );
+        }
+
+        await this.appointmentsRepository.update(id, { status: targetStatus });
+
+        const updated = await this.findOne(id);
+        if (updated) {
+            await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
+                action: 'status_change',
+                appointmentId: updated.id,
+                previousStatus: appointment.status,
+                status: targetStatus,
+            });
+        }
+        return updated;
+    }
+
     async checkConflicts(
         employeeId: number,
         startTime: Date,

@@ -11,7 +11,7 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
 export class AuthSocialModule {
     static register(): DynamicModule {
         const providers: Array<any> = [SocialAuthService];
-        
+
         // Conditionally register strategies based on env vars
         const googleClientId = process.env.GOOGLE_CLIENT_ID;
         const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -21,7 +21,7 @@ export class AuthSocialModule {
         if (googleClientId && googleSecret) {
             providers.push(GoogleStrategy);
         }
-        
+
         if (facebookId && facebookSecret) {
             providers.push(FacebookStrategy);
         }

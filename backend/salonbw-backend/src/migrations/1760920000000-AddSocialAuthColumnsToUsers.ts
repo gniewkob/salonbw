@@ -1,6 +1,13 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    TableColumn,
+    TableIndex,
+} from 'typeorm';
 
-export class AddSocialAuthColumnsToUsers1760920000000 implements MigrationInterface {
+export class AddSocialAuthColumnsToUsers1760920000000
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Add googleId column
         await queryRunner.addColumn(

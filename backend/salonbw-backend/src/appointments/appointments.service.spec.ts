@@ -204,6 +204,46 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('should update appointment status from scheduled to confirmed', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const updated = await service.updateStatus(
+            id,
+            AppointmentStatus.Confirmed,
+            users[1],
+        );
+
+        expect(updated?.status).toBe(AppointmentStatus.Confirmed);
+    });
+
+    it('should reject invalid status transition to confirmed from completed', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        await service.completeAppointment(id, users[1]);
+
+        await expect(
+            service.updateStatus(id, AppointmentStatus.Confirmed, users[1]),
+        ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('should cancel an appointment even if logging fails', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(

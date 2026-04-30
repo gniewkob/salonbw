@@ -116,14 +116,11 @@ export function useAppointmentMutations() {
 
     const updateAppointmentStatus = useMutation({
         mutationFn: async ({ id, status }: { id: number; status: string }) => {
-            // For now, use cancel/complete endpoints. Later could add more statuses
-            if (status === 'cancelled') {
-                return cancelAppointment.mutateAsync(id);
-            }
-            if (status === 'completed') {
-                return completeAppointment.mutateAsync(id);
-            }
-            throw new Error(`Unsupported status: ${status}`);
+            return apiFetch<Appointment>(`/appointments/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status }),
+            });
         },
         onSuccess: invalidateAppointments,
     });

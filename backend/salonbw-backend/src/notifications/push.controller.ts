@@ -10,7 +10,12 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiBearerAuth,
+} from '@nestjs/swagger';
 import type { Request } from 'express';
 import { PushService } from './push.service';
 import { RolesGuard } from '../auth/roles.guard';
@@ -29,7 +34,10 @@ export class PushController {
     @Get('vapid-public-key')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get VAPID public key for push subscription' })
-    @ApiResponse({ status: 200, description: 'Returns VAPID public key or null if not configured' })
+    @ApiResponse({
+        status: 200,
+        description: 'Returns VAPID public key or null if not configured',
+    })
     getVapidPublicKey() {
         return {
             publicKey: this.pushService.getVapidPublicKey(),
@@ -46,14 +54,20 @@ export class PushController {
         @Req() req: RequestWithUser,
         @Body()
         body: {
-            subscription: { endpoint: string; keys: { p256dh: string; auth: string } };
+            subscription: {
+                endpoint: string;
+                keys: { p256dh: string; auth: string };
+            };
         },
     ) {
         if (!body.subscription?.endpoint || !body.subscription?.keys) {
             return { error: 'Invalid subscription data' };
         }
 
-        await this.pushService.saveSubscription(req.user.userId, body.subscription);
+        await this.pushService.saveSubscription(
+            req.user.userId,
+            body.subscription,
+        );
         return { success: true };
     }
 

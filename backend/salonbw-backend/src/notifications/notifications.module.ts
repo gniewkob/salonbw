@@ -16,7 +16,11 @@ import { PushSubscription } from './push-subscription.entity';
 @Module({
     imports: [
         HttpModule,
-        TypeOrmModule.forFeature([Appointment, MessageTemplate, PushSubscription]),
+        TypeOrmModule.forFeature([
+            Appointment,
+            MessageTemplate,
+            PushSubscription,
+        ]),
         forwardRef(() => SmsModule),
         EmailsModule,
     ],

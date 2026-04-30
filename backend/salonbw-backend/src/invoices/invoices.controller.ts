@@ -140,7 +140,10 @@ export class InvoicesController {
     @Post(':id/jpk')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Export single invoice to JPK FA' })
-    @ApiResponse({ status: 200, description: 'Returns JPK FA XML for single invoice' })
+    @ApiResponse({
+        status: 200,
+        description: 'Returns JPK FA XML for single invoice',
+    })
     async exportJpkSingle(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: JpkSingleExportDto,

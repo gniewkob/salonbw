@@ -86,7 +86,10 @@ export class WhatsappService {
                         'Failed to send WhatsApp message',
                     );
                 } else {
-                    this.logger.error({ error }, 'Failed to send WhatsApp message');
+                    this.logger.error(
+                        { error },
+                        'Failed to send WhatsApp message',
+                    );
                 }
                 if (attempt < retries - 1) {
                     await delay(1000);

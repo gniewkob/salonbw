@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
-export class CreatePushSubscriptionsTable1760930000000 implements MigrationInterface {
+export class CreatePushSubscriptionsTable1760930000000
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
@@ -62,7 +64,10 @@ export class CreatePushSubscriptionsTable1760930000000 implements MigrationInter
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropIndex('push_subscriptions', 'IDX_PUSH_SUBSCRIPTION_USER_ID');
+        await queryRunner.dropIndex(
+            'push_subscriptions',
+            'IDX_PUSH_SUBSCRIPTION_USER_ID',
+        );
         await queryRunner.dropTable('push_subscriptions');
     }
 }
