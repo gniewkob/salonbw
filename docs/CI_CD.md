@@ -10,6 +10,7 @@ Runs on every push to `main` and on pull requests. Key behaviour:
 
 - **Frontend matrix (`public`, `dashboard`, `admin`*)** – each entry runs lint, typecheck, Jest tests, and `next build`. A change detector skips the matrix entry when the relevant routes/components are untouched. `public` → `dev.salon-bw.pl`, `dashboard` → `panel.salon-bw.pl`; `admin` is legacy.
 - **Backend job** – lints, type-checks, tests, and builds the NestJS API using the pnpm workspace.
+- **Secret scan (`gitleaks`)** – runs before build jobs and fails CI when potential secrets are detected in repo/history checked by the workflow.
 - Caching via `actions/setup-node` (pnpm cache) keeps installs fast. Supply `NPM_TOKEN` if private packages are needed.
 
 ### `e2e.yml`

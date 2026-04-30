@@ -91,6 +91,7 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 ## 9a. CI audit policy
 - CI security audit fails only on **high/critical** vulnerabilities.
 - Moderate/low vulnerabilities are reported in the job summary but do not fail CI.
+- CI includes mandatory secret scanning (Gitleaks) on push/PR to `main` and `master`; detected secrets fail the pipeline.
 
 ## 10. References
 - `docs/AGENT_OPERATIONS.md`

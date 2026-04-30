@@ -2,6 +2,9 @@
 
 _Last updated: 2026-03-19 (P1+P2 route coverage is implemented, but parity status is mixed: `exact`, `aliased`, and `invent` routes coexist; implemented does not equal DONE 1:1)_
 
+Operational note (2026-04-30):
+- `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
+
 Operational note (2026-03-19):
 - `.github/workflows/deploy.yml` now scopes push-triggered post-deploy smoke/log steps to the app actually deployed and skips SSH-dependent diagnostics when SSH setup never completed, reducing false failures/noise on push runs.
 
