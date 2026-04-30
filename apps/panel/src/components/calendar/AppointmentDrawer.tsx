@@ -150,13 +150,16 @@ export default function AppointmentDrawer({
         setError(null);
 
         try {
-            await apiFetch<Appointment>(`/appointments/${appointment.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    startTime: fromLocalDateTimeInput(startTime),
-                }),
-            });
+            await apiFetch<Appointment>(
+                `/appointments/${appointment.id}/reschedule`,
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        startTime: fromLocalDateTimeInput(startTime),
+                    }),
+                },
+            );
             onSaved();
             onClose();
         } catch (err) {

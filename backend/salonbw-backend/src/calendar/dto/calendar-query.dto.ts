@@ -12,6 +12,7 @@ export enum CalendarView {
     Day = 'day',
     Week = 'week',
     Month = 'month',
+    Reception = 'reception',
 }
 
 export class CalendarQueryDto {

@@ -249,6 +249,7 @@ export class CalendarService {
     ): { start: Date; end: Date } {
         switch (view) {
             case CalendarView.Day:
+            case CalendarView.Reception:
                 return {
                     start: startOfDay(date),
                     end: endOfDay(date),

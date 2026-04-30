@@ -107,7 +107,7 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get('me')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get appointments for current user' })
@@ -136,8 +136,10 @@ export class AppointmentsController {
         if (!appointment) {
             throw new NotFoundException();
         }
+        const canCancelAny =
+            user.role === Role.Admin || user.role === Role.Receptionist;
         if (
-            user.role !== Role.Admin &&
+            !canCancelAny &&
             appointment.client.id !== user.userId &&
             appointment.employee.id !== user.userId
         ) {

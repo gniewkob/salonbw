@@ -46,6 +46,13 @@ const VIEW_MAP: Record<CalendarViewType, string> = {
     reception: 'timeGridDay',
 };
 
+function toDateKey(value: Date): string {
+    const year = value.getFullYear();
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const day = `${value.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export default function CalendarView({
     events,
     employees,
@@ -135,14 +142,19 @@ export default function CalendarView({
     );
 
     const handleDatesSet = useCallback(
-        (arg: { view: { type: string } }) => {
+        (arg: { view: { type: string; currentStart: Date } }) => {
             const viewType = arg.view.type;
             // Map FullCalendar view IDs to our canonical view enum.
             if (viewType === 'timeGridDay') onViewChange('day');
             else if (viewType === 'timeGridWeek') onViewChange('week');
             else if (viewType === 'dayGridMonth') onViewChange('month');
+
+            const nextDate = arg.view.currentStart;
+            if (toDateKey(nextDate) !== toDateKey(currentDate)) {
+                onDateChange(nextDate);
+            }
         },
-        [onViewChange],
+        [onViewChange, onDateChange, currentDate],
     );
 
     // Sidebar handlers
