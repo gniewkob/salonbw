@@ -14,6 +14,7 @@ on:
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: "22"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   secret-scan:
