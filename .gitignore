@@ -125,3 +125,11 @@ data/
 
 # Claude AI
 .claude/
+
+# Security: block local/browser capture artifacts that may contain PII/secrets
+.playwright-mcp/
+playwright-report/
+**/cypress/screenshots/
+docs/Architektura/*.har
+*-snapshot.md
+*-screenshot.png
