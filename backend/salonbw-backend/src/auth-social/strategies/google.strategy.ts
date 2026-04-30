@@ -8,7 +8,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     constructor(private readonly config: ConfigService) {
         const clientID = config.get<string>('GOOGLE_CLIENT_ID');
         const clientSecret = config.get<string>('GOOGLE_CLIENT_SECRET');
-        
+
         if (!clientID || !clientSecret) {
             throw new Error('Google OAuth credentials not configured');
         }
@@ -22,17 +22,18 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         });
     }
 
-    async validate(
+    validate(
         req: any,
         accessToken: string,
         refreshToken: string,
         profile: any,
         done: VerifyCallback,
-    ): Promise<any> {
+    ): void {
         const { id, emails, name, photos } = profile;
-        
+
         if (!emails?.[0]?.value) {
-            return done(new UnauthorizedException('No email from Google'), false);
+            done(new UnauthorizedException('No email from Google'), false);
+            return;
         }
 
         const user = {
@@ -43,7 +44,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             picture: photos?.[0]?.value,
             provider: 'google',
         };
-        
+
         done(null, user);
     }
 }

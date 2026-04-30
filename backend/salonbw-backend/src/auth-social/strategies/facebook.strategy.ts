@@ -8,7 +8,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     constructor(private readonly config: ConfigService) {
         const clientID = config.get<string>('FACEBOOK_APP_ID');
         const clientSecret = config.get<string>('FACEBOOK_APP_SECRET');
-        
+
         if (!clientID || !clientSecret) {
             throw new Error('Facebook OAuth credentials not configured');
         }
@@ -23,17 +23,18 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
         });
     }
 
-    async validate(
+    validate(
         req: any,
         accessToken: string,
         refreshToken: string,
         profile: any,
         done: any,
-    ): Promise<any> {
+    ): void {
         const { id, emails, name, photos } = profile;
-        
+
         if (!emails?.[0]?.value) {
-            return done(new UnauthorizedException('No email from Facebook'), false);
+            done(new UnauthorizedException('No email from Facebook'), false);
+            return;
         }
 
         const user = {
@@ -44,7 +45,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
             picture: photos?.[0]?.value,
             provider: 'facebook',
         };
-        
+
         done(null, user);
     }
 }

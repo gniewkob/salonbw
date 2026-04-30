@@ -76,8 +76,8 @@ export class JpkService {
         },
     ): Promise<string> {
         const invoices = await this.getInvoicesForPeriod(startDate, endDate);
-        
-        const jpkData = await this.buildJpkFaXml(
+
+        const jpkData = this.buildJpkFaXml(
             startDate,
             endDate,
             companyData,
@@ -118,12 +118,9 @@ export class JpkService {
         const startDate = invoice.createdAt;
         const endDate = invoice.createdAt;
 
-        const jpkData = await this.buildJpkFaXml(
-            startDate,
-            endDate,
-            companyData,
-            [invoice],
-        );
+        const jpkData = this.buildJpkFaXml(startDate, endDate, companyData, [
+            invoice,
+        ]);
 
         const builder = new xml2js.Builder({
             rootName: 'JPK',
@@ -147,7 +144,7 @@ export class JpkService {
         });
     }
 
-    private async buildJpkFaXml(
+    private buildJpkFaXml(
         startDate: Date,
         endDate: Date,
         companyData: {
@@ -158,7 +155,7 @@ export class JpkService {
             taxOfficeCode: string;
         },
         invoices: Invoice[],
-    ): Promise<any> {
+    ): any {
         const now = new Date();
         const header: JpkFaHeader = {
             kodFormularza: {
@@ -181,19 +178,23 @@ export class JpkService {
             email: companyData.email,
         };
 
-        const faktury = invoices.map((invoice, index) => 
-            this.mapInvoiceToJpk(invoice, companyData, index + 1)
+        const faktury = invoices.map((invoice, index) =>
+            this.mapInvoiceToJpk(invoice, companyData, index + 1),
         );
 
         // Calculate totals (assume 23% VAT)
-        const totalGross = invoices.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
+        const totalGross = invoices.reduce(
+            (sum, inv) => sum + Number(inv.amount || 0),
+            0,
+        );
         const totalNet = totalGross * 0.813; // net amount
         const totalVat = totalGross * 0.187; // VAT amount
 
         return {
             $: {
                 xmlns: 'http://jpk.mf.gov.pl/wzor/2021/07/08/07081/',
-                'xmlns:etd': 'http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2018/08/24/eD/DefinicjeTypy/',
+                'xmlns:etd':
+                    'http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2018/08/24/eD/DefinicjeTypy/',
             },
             Naglowek: {
                 KodFormularza: header.kodFormularza,
@@ -210,7 +211,7 @@ export class JpkService {
                 PelnaNazwa: podmiot.pelnaNazwa,
                 Email: podmiot.email,
             },
-            Faktura: faktury.map(f => f.faktura),
+            Faktura: faktury.map((f) => f.faktura),
             FakturaCtrl: {
                 LiczbaFaktur: invoices.length.toString(),
                 WartoscFaktur: totalGross.toFixed(2),
@@ -233,7 +234,7 @@ export class JpkService {
         const vatRate = 23; // default VAT rate
         const isVat = true;
         const isExempt = false;
-        
+
         return {
             typ: 'G',
             faktura: {

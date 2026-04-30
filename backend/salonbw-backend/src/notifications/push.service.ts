@@ -3,10 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { PushSubscription } from './push-subscription.entity';
+import * as webPushLib from 'web-push';
 
 // web-push types
 interface WebPush {
-    setVapidDetails(subject: string, publicKey: string, privateKey: string): void;
+    setVapidDetails(
+        subject: string,
+        publicKey: string,
+        privateKey: string,
+    ): void;
     sendNotification(subscription: unknown, payload: string): Promise<unknown>;
 }
 
@@ -22,25 +27,30 @@ export class PushService {
         private readonly subscriptionsRepo: Repository<PushSubscription>,
         private readonly config: ConfigService,
     ) {
-        this.vapidPublicKey = this.config.get<string>('VAPID_PUBLIC_KEY') || null;
-        this.vapidPrivateKey = this.config.get<string>('VAPID_PRIVATE_KEY') || null;
+        this.vapidPublicKey =
+            this.config.get<string>('VAPID_PUBLIC_KEY') || null;
+        this.vapidPrivateKey =
+            this.config.get<string>('VAPID_PRIVATE_KEY') || null;
 
         if (this.vapidPublicKey && this.vapidPrivateKey) {
             try {
-                // Dynamic import web-push to avoid errors if not configured
-                const webPush = require('web-push');
-                webPush.setVapidDetails(
+                webPushLib.setVapidDetails(
                     'mailto:admin@salon-bw.pl',
                     this.vapidPublicKey,
                     this.vapidPrivateKey,
                 );
-                this.webPush = webPush;
+                this.webPush = webPushLib as unknown as WebPush;
                 this.logger.log('Push notifications configured successfully');
             } catch (error) {
-                this.logger.error('Failed to configure push notifications', error);
+                this.logger.error(
+                    'Failed to configure push notifications',
+                    error,
+                );
             }
         } else {
-            this.logger.warn('VAPID keys not configured - push notifications disabled');
+            this.logger.warn(
+                'VAPID keys not configured - push notifications disabled',
+            );
         }
     }
 
@@ -54,7 +64,10 @@ export class PushService {
 
     async saveSubscription(
         userId: number,
-        subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
+        subscription: {
+            endpoint: string;
+            keys: { p256dh: string; auth: string };
+        },
     ): Promise<void> {
         // Deactivate existing subscriptions for this endpoint
         await this.subscriptionsRepo.update(
@@ -115,10 +128,18 @@ export class PushService {
             } catch (error: any) {
                 // If subscription is expired/invalid, deactivate it
                 if (error?.statusCode === 410 || error?.statusCode === 404) {
-                    await this.subscriptionsRepo.update(sub.id, { isActive: false });
-                    this.logger.debug({ userId, endpoint: sub.endpoint }, 'Push subscription expired, deactivated');
+                    await this.subscriptionsRepo.update(sub.id, {
+                        isActive: false,
+                    });
+                    this.logger.debug(
+                        { userId, endpoint: sub.endpoint },
+                        'Push subscription expired, deactivated',
+                    );
                 } else {
-                    this.logger.error({ userId, error }, 'Failed to send push notification');
+                    this.logger.error(
+                        { userId, error },
+                        'Failed to send push notification',
+                    );
                 }
             }
         }

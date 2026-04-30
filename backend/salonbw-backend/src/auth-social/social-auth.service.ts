@@ -1,9 +1,14 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+    Injectable,
+    UnauthorizedException,
+    ConflictException,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
+import { randomBytes } from 'crypto';
 
 interface SocialProfile {
     id: string;
@@ -28,19 +33,27 @@ export class SocialAuthService {
     ): Promise<{ redirectUrl: string }> {
         const profile = req.user as SocialProfile;
         if (!profile?.email) {
-            throw new UnauthorizedException('No email provided from social provider');
+            throw new UnauthorizedException(
+                'No email provided from social provider',
+            );
         }
 
         // Find existing user by social ID
         let user = await this.findUserBySocialId(provider, profile.id);
-        
+
         if (!user) {
             // Check if user exists with same email
-            const existingUser = await this.usersService.findByEmail(profile.email);
-            
+            const existingUser = await this.usersService.findByEmail(
+                profile.email,
+            );
+
             if (existingUser) {
                 // Link social account to existing user
-                await this.linkSocialAccount(existingUser.id, provider, profile.id);
+                await this.linkSocialAccount(
+                    existingUser.id,
+                    provider,
+                    profile.id,
+                );
                 user = await this.usersService.findById(existingUser.id);
             } else {
                 // Create new user
@@ -65,7 +78,9 @@ export class SocialAuthService {
         return { redirectUrl: redirect || '/dashboard' };
     }
 
-    async getLinkedSocialAccounts(userId: number): Promise<{ google: boolean; facebook: boolean }> {
+    async getLinkedSocialAccounts(
+        userId: number,
+    ): Promise<{ google: boolean; facebook: boolean }> {
         const user = await this.usersService.findById(userId);
         if (!user) {
             throw new UnauthorizedException('User not found');
@@ -76,14 +91,21 @@ export class SocialAuthService {
         };
     }
 
-    private async findUserBySocialId(provider: 'google' | 'facebook', socialId: string): Promise<User | null> {
+    private async findUserBySocialId(
+        provider: 'google' | 'facebook',
+        socialId: string,
+    ): Promise<User | null> {
         // This would need a custom method in UsersService
         // For now, we'll implement a basic version
         const field = provider === 'google' ? 'googleId' : 'facebookId';
         return this.usersService.findBySocialId(field, socialId);
     }
 
-    private async linkSocialAccount(userId: number, provider: 'google' | 'facebook', socialId: string): Promise<void> {
+    private async linkSocialAccount(
+        userId: number,
+        provider: 'google' | 'facebook',
+        socialId: string,
+    ): Promise<void> {
         await this.usersService.updateSocialId(userId, provider, socialId);
     }
 
@@ -97,20 +119,23 @@ export class SocialAuthService {
     }): Promise<User> {
         const userData = {
             email: data.email,
-            name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email.split('@')[0],
+            name:
+                `${data.firstName || ''} ${data.lastName || ''}`.trim() ||
+                data.email.split('@')[0],
             firstName: data.firstName,
             lastName: data.lastName,
             role: Role.Client,
-            password: await this.generateRandomPassword(),
-            ...(data.provider === 'google' ? { googleId: data.socialId } : { facebookId: data.socialId }),
+            password: this.generateRandomPassword(),
+            ...(data.provider === 'google'
+                ? { googleId: data.socialId }
+                : { facebookId: data.socialId }),
         };
 
         return this.usersService.create(userData);
     }
 
-    private async generateRandomPassword(): Promise<string> {
+    private generateRandomPassword(): string {
         // Generate a secure random password
-        const crypto = require('crypto');
-        return crypto.randomBytes(32).toString('hex');
+        return randomBytes(32).toString('hex');
     }
 }
