@@ -46,6 +46,7 @@ export default function FinalizationModal({
     const [note, setNote] = useState<string>('');
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
     const [showProductPicker, setShowProductPicker] = useState(false);
+    const [uiError, setUiError] = useState<string | null>(null);
 
     // Fetch products for upselling
     const { data: productsResponse } = useQuery<ProductsResponse>({
@@ -86,6 +87,8 @@ export default function FinalizationModal({
             grandTotal: Math.max(0, grandTotal),
         };
     }, [appointment, discountPln, tipPln, productSales, products]);
+    const maxDiscount = summary.servicePrice + summary.productsTotal;
+    const isDiscountInvalid = summary.discount > maxDiscount;
 
     // Finalize mutation
     const finalizeMutation = useMutation({
@@ -108,6 +111,13 @@ export default function FinalizationModal({
             onSuccess?.();
             handleClose();
         },
+        onError: (error) => {
+            setUiError(
+                error instanceof Error
+                    ? error.message
+                    : 'Wystąpił błąd podczas finalizacji wizyty',
+            );
+        },
     });
 
     const handleClose = () => {
@@ -117,11 +127,19 @@ export default function FinalizationModal({
         setNote('');
         setProductSales([]);
         setShowProductPicker(false);
+        setUiError(null);
         onClose();
     };
 
     const handleSubmit = () => {
         if (!appointment) return;
+        if (isDiscountInvalid) {
+            setUiError(
+                'Rabat nie może być większy niż suma usługi i produktów.',
+            );
+            return;
+        }
+        setUiError(null);
 
         const data: FinalizeAppointmentRequest = {
             paymentMethod,
@@ -228,6 +246,12 @@ export default function FinalizationModal({
                             className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                             placeholder="0.00"
                         />
+                        {isDiscountInvalid && (
+                            <div className="small text-danger mt-1">
+                                Maksymalny rabat dla tej finalizacji to{' '}
+                                {maxDiscount.toFixed(2)} PLN.
+                            </div>
+                        )}
                     </div>
                     <div>
                         <label className="d-block small fw-medium text-body mb-1">
@@ -297,14 +321,24 @@ export default function FinalizationModal({
                                 const product = products.find(
                                     (p) => p.id === sale.productId,
                                 );
+                                const unitPrice =
+                                    sale.unitPriceCents !== undefined
+                                        ? sale.unitPriceCents / 100
+                                        : (product?.unitPrice ?? 0);
+                                const lineTotal = unitPrice * sale.quantity;
                                 return (
                                     <div
                                         key={sale.productId}
                                         className="d-flex align-items-center justify-content-between bg-light rounded px-2 py-1"
                                     >
-                                        <span className="small">
-                                            {product?.name}
-                                        </span>
+                                        <div className="small">
+                                            <div>{product?.name}</div>
+                                            <div className="text-muted">
+                                                {unitPrice.toFixed(2)} PLN x{' '}
+                                                {sale.quantity} ={' '}
+                                                {lineTotal.toFixed(2)} PLN
+                                            </div>
+                                        </div>
                                         <div className="d-flex align-items-center gap-2">
                                             <button
                                                 type="button"
@@ -403,9 +437,9 @@ export default function FinalizationModal({
                 </div>
 
                 {/* Error */}
-                {finalizeMutation.isError && (
+                {(finalizeMutation.isError || uiError) && (
                     <div className="bg-danger bg-opacity-10 text-danger p-2 rounded mb-3 small">
-                        Wystąpił błąd podczas finalizacji wizyty
+                        {uiError ?? 'Wystąpił błąd podczas finalizacji wizyty'}
                     </div>
                 )}
 
@@ -421,7 +455,9 @@ export default function FinalizationModal({
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        disabled={finalizeMutation.isPending}
+                        disabled={
+                            finalizeMutation.isPending || isDiscountInvalid
+                        }
                         className="flex-fill px-3 py-2 bg-success bg-opacity-10 text-white rounded-2 bg-opacity-10"
                     >
                         {finalizeMutation.isPending
