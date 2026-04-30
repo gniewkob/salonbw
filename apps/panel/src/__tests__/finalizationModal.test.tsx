@@ -67,7 +67,9 @@ describe('FinalizationModal', () => {
             target: { value: '200' },
         });
         expect(
-            screen.getByText('Maksymalny rabat dla tej finalizacji to 120.00 PLN.'),
+            screen.getByText(
+                'Maksymalny rabat dla tej finalizacji to 120.00 PLN.',
+            ),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: 'Zakończ wizytę' }),
