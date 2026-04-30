@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Appointment, Customer, Employee, Service } from '@/types';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
-import { useCustomers } from '@/hooks/useCustomers';
+import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 
@@ -48,8 +48,21 @@ export default function AppointmentDrawer({
     const services = servicesResult.data ?? EMPTY_SERVICES;
     const employeesResult = useEmployees();
     const employees = employeesResult.data ?? EMPTY_EMPLOYEES;
-    const { data: customersResponse } = useCustomers({ limit: 50, page: 1 });
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
+    const [showQuickCreateCustomer, setShowQuickCreateCustomer] =
+        useState(false);
+    const [newCustomerFirstName, setNewCustomerFirstName] = useState('');
+    const [newCustomerLastName, setNewCustomerLastName] = useState('');
+    const [newCustomerPhone, setNewCustomerPhone] = useState('');
+    const [newCustomerEmail, setNewCustomerEmail] = useState('');
+    const { data: customersResponse } = useCustomers({
+        limit: 20,
+        page: 1,
+        search: debouncedCustomerSearch || undefined,
+    });
     const customers = customersResponse?.items ?? [];
+    const createCustomer = useCreateCustomer();
     const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
 
@@ -67,6 +80,16 @@ export default function AppointmentDrawer({
         () => services.find((service) => service.id === Number(serviceId)),
         [serviceId, services],
     );
+    const canCreateInlineCustomer =
+        newCustomerFirstName.trim().length > 0 ||
+        newCustomerLastName.trim().length > 0;
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setDebouncedCustomerSearch(customerSearch.trim());
+        }, 250);
+        return () => window.clearTimeout(timer);
+    }, [customerSearch]);
 
     useEffect(() => {
         if (!open) return;
@@ -85,6 +108,13 @@ export default function AppointmentDrawer({
         setEmployeeId(initialEmployeeId ?? '');
         setServiceId('');
         setClientId('');
+        setCustomerSearch('');
+        setDebouncedCustomerSearch('');
+        setShowQuickCreateCustomer(false);
+        setNewCustomerFirstName('');
+        setNewCustomerLastName('');
+        setNewCustomerPhone('');
+        setNewCustomerEmail('');
         setError(null);
     }, [
         open,
@@ -137,6 +167,36 @@ export default function AppointmentDrawer({
                 err instanceof Error
                     ? err.message
                     : 'Nie udało się utworzyć wizyty';
+            setError(message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleQuickCreateCustomer = async () => {
+        if (!canCreateInlineCustomer) return;
+
+        setSaving(true);
+        setError(null);
+        try {
+            const customer = await createCustomer.mutateAsync({
+                firstName: newCustomerFirstName.trim() || undefined,
+                lastName: newCustomerLastName.trim() || undefined,
+                phone: newCustomerPhone.trim() || undefined,
+                email: newCustomerEmail.trim() || undefined,
+            });
+            setClientId(customer.id);
+            setCustomerSearch(customer.fullName ?? customer.name);
+            setShowQuickCreateCustomer(false);
+            setNewCustomerFirstName('');
+            setNewCustomerLastName('');
+            setNewCustomerPhone('');
+            setNewCustomerEmail('');
+        } catch (err) {
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się utworzyć klienta';
             setError(message);
         } finally {
             setSaving(false);
@@ -305,6 +365,18 @@ export default function AppointmentDrawer({
                         >
                             Klient
                         </label>
+                        {mode === 'create' && (
+                            <input
+                                id="appointment-client-search"
+                                type="search"
+                                className="form-control mb-2"
+                                placeholder="Szukaj po imieniu, nazwisku, telefonie..."
+                                value={customerSearch}
+                                onChange={(event) =>
+                                    setCustomerSearch(event.target.value)
+                                }
+                            />
+                        )}
                         <select
                             id="appointment-client"
                             className="form-select"
@@ -321,6 +393,97 @@ export default function AppointmentDrawer({
                                 </option>
                             ))}
                         </select>
+                        {mode === 'create' && (
+                            <div className="mt-2">
+                                <button
+                                    type="button"
+                                    className="btn btn-link btn-sm p-0"
+                                    onClick={() =>
+                                        setShowQuickCreateCustomer(
+                                            (prev) => !prev,
+                                        )
+                                    }
+                                >
+                                    {showQuickCreateCustomer
+                                        ? 'Ukryj szybkie dodawanie klienta'
+                                        : 'Dodaj nowego klienta'}
+                                </button>
+                            </div>
+                        )}
+                        {mode === 'create' && showQuickCreateCustomer && (
+                            <div className="mt-2 rounded border p-2">
+                                <div className="row g-2">
+                                    <div className="col-6">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Imię"
+                                            value={newCustomerFirstName}
+                                            onChange={(event) =>
+                                                setNewCustomerFirstName(
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-6">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Nazwisko"
+                                            value={newCustomerLastName}
+                                            onChange={(event) =>
+                                                setNewCustomerLastName(
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-6">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Telefon"
+                                            value={newCustomerPhone}
+                                            onChange={(event) =>
+                                                setNewCustomerPhone(
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-6">
+                                        <input
+                                            type="email"
+                                            className="form-control form-control-sm"
+                                            placeholder="E-mail (opcjonalnie)"
+                                            value={newCustomerEmail}
+                                            onChange={(event) =>
+                                                setNewCustomerEmail(
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-12">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-primary btn-sm"
+                                            onClick={() =>
+                                                void handleQuickCreateCustomer()
+                                            }
+                                            disabled={
+                                                saving ||
+                                                createCustomer.isPending ||
+                                                !canCreateInlineCustomer
+                                            }
+                                        >
+                                            Utwórz klienta i wybierz
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div>
