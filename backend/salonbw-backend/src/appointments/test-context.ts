@@ -234,8 +234,8 @@ function createAppointmentsRepo(
                 a.status !== AppointmentStatus.Cancelled &&
                 startTime &&
                 endTime &&
-                a.startTime < startTime &&
-                a.endTime > endTime,
+                a.startTime < endTime &&
+                a.endTime > startTime,
         ) ?? null;
 
     const repoUpdate = jest.fn<
@@ -286,8 +286,8 @@ function createAppointmentsRepo(
             return Promise.resolve(
                 findOverlap(
                     employeeId,
-                    where.startTime?._value,
                     where.endTime?._value,
+                    where.startTime?._value,
                 ),
             );
         }),

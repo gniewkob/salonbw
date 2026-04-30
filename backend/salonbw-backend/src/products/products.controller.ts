@@ -37,7 +37,7 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get()
     @SkipThrottle()
     @ApiBearerAuth()
@@ -48,7 +48,7 @@ export class ProductsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get product by id' })
@@ -58,7 +58,7 @@ export class ProductsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get(':id/card')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get product card details for warehouse view' })
@@ -68,7 +68,7 @@ export class ProductsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get(':id/history')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get product stock and sales history' })
@@ -78,7 +78,7 @@ export class ProductsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get(':id/formulas')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get formulas using this product' })
@@ -88,7 +88,7 @@ export class ProductsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get(':id/commissions')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get product commissions by employee' })
