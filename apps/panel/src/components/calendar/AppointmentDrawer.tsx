@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import type { Appointment, Customer, Employee, Service } from '@/types';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
-import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
+import {
+    useCreateCustomer,
+    useCustomers,
+    useCustomerStatistics,
+} from '@/hooks/useCustomers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import FinalizationModal from './FinalizationModal';
@@ -32,6 +37,16 @@ function toLocalDateTimeInput(value: Date): string {
 
 function fromLocalDateTimeInput(value: string): string {
     return new Date(value).toISOString();
+}
+
+function formatDateTime(value: string | null | undefined): string {
+    if (!value) return 'brak';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'brak';
+    return date.toLocaleString('pl-PL', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    });
 }
 
 export default function AppointmentDrawer({
@@ -85,6 +100,10 @@ export default function AppointmentDrawer({
     const canCreateInlineCustomer =
         newCustomerFirstName.trim().length > 0 ||
         newCustomerLastName.trim().length > 0;
+    const customerIdForInsights =
+        mode === 'edit' ? (appointment?.client?.id ?? null) : null;
+    const { data: customerStats, isLoading: customerStatsLoading } =
+        useCustomerStatistics(customerIdForInsights);
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
@@ -506,6 +525,48 @@ export default function AppointmentDrawer({
                             <div>
                                 Płatność:{' '}
                                 {appointment.paymentStatus ?? 'nieopłacona'}
+                            </div>
+                            <div className="mt-2 pt-2 border-top">
+                                <div className="d-flex align-items-center justify-content-between">
+                                    <strong>Podgląd klienta</strong>
+                                    {appointment.client?.id ? (
+                                        <Link
+                                            href={`/customers/${appointment.client.id}`}
+                                            className="btn btn-sm btn-outline-primary"
+                                        >
+                                            Otwórz kartę klienta
+                                        </Link>
+                                    ) : null}
+                                </div>
+                                {customerStatsLoading ? (
+                                    <div className="text-muted mt-1">
+                                        Ładowanie statystyk klienta...
+                                    </div>
+                                ) : customerStats ? (
+                                    <div className="mt-1">
+                                        <div>
+                                            Wizyty: {customerStats.totalVisits}
+                                            {' · '}
+                                            No-show:{' '}
+                                            {customerStats.noShowVisits}
+                                        </div>
+                                        <div>
+                                            Łączne wydatki:{' '}
+                                            {customerStats.totalSpent.toFixed(2)}{' '}
+                                            PLN
+                                        </div>
+                                        <div>
+                                            Ostatnia wizyta:{' '}
+                                            {formatDateTime(
+                                                customerStats.lastVisitDate,
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-muted mt-1">
+                                        Brak statystyk klienta.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
