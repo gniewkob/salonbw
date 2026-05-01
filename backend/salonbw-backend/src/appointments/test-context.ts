@@ -286,6 +286,7 @@ function createAppointmentsRepo(
             return Promise.resolve(
                 findOverlap(
                     employeeId,
+                    // where.startTime is LessThan(endTime), where.endTime is MoreThan(startTime)
                     where.endTime?._value,
                     where.startTime?._value,
                 ),
