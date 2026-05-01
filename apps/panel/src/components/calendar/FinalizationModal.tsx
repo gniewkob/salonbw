@@ -47,6 +47,7 @@ export default function FinalizationModal({
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
     const [showProductPicker, setShowProductPicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     // Fetch products for upselling
     const { data: productsResponse } = useQuery<ProductsResponse>({
@@ -108,8 +109,11 @@ export default function FinalizationModal({
             void queryClient.invalidateQueries({
                 queryKey: APPOINTMENTS_QUERY_KEY,
             });
+            setSuccessMessage('Wizyta została poprawnie sfinalizowana.');
             onSuccess?.();
-            handleClose();
+            window.setTimeout(() => {
+                handleClose();
+            }, 900);
         },
         onError: (error) => {
             const message =
@@ -134,6 +138,7 @@ export default function FinalizationModal({
         setProductSales([]);
         setShowProductPicker(false);
         setUiError(null);
+        setSuccessMessage(null);
         onClose();
     };
 
@@ -220,7 +225,14 @@ export default function FinalizationModal({
 
     return (
         <Modal open={open} onClose={handleClose}>
-            <div className="w-100">
+            <div
+                className="w-100"
+                style={{
+                    width: 'min(860px, 92vw)',
+                    maxHeight: '85vh',
+                    overflowY: 'auto',
+                }}
+            >
                 <h2 className="fs-5 fw-semibold mb-3">Finalizacja wizyty</h2>
 
                 {/* Client & Service Info */}
@@ -242,7 +254,12 @@ export default function FinalizationModal({
                     <label className="d-block small fw-medium text-body mb-2">
                         Metoda płatności
                     </label>
-                    <div className="-cols-5 gap-2">
+                    <div
+                        className="d-grid gap-2 mb-2"
+                        style={{
+                            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        }}
+                    >
                         {PAYMENT_METHODS.map((method) => (
                             <button
                                 key={method.value}
@@ -264,7 +281,10 @@ export default function FinalizationModal({
                 </div>
 
                 {/* Discount & Tip */}
-                <div className="-cols-2 gap-3 mb-3">
+                <div
+                    className="d-grid gap-3 mb-3"
+                    style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}
+                >
                     <div>
                         <label className="d-block small fw-medium text-body mb-1">
                             Rabat (PLN)
@@ -319,13 +339,16 @@ export default function FinalizationModal({
                     </div>
 
                     {showProductPicker && (
-                        <div className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 max-h-32 overflow-y-auto">
+                        <div
+                            className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 overflow-y-auto"
+                            style={{ maxHeight: '220px' }}
+                        >
                             {products.length === 0 ? (
                                 <p className="small text-muted text-center py-2">
                                     Brak produktów
                                 </p>
                             ) : (
-                                <div className="gap-1">
+                                <div className="d-flex flex-column gap-1">
                                     {products.map((product) => (
                                         <button
                                             key={product.id}
@@ -353,7 +376,7 @@ export default function FinalizationModal({
                     )}
 
                     {productSales.length > 0 && (
-                        <div className="gap-2">
+                        <div className="d-flex flex-column gap-2">
                             {productSales.map((sale) => {
                                 const product = products.find(
                                     (p) => p.id === sale.productId,
@@ -385,11 +408,18 @@ export default function FinalizationModal({
                                                         sale.quantity - 1,
                                                     )
                                                 }
-                                                className="w-6 h-6 d-flex align-items-center justify-content-center rounded border bg-opacity-25"
+                                                className="d-flex align-items-center justify-content-center rounded border"
+                                                style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                }}
                                             >
                                                 -
                                             </button>
-                                            <span className="w-6 text-center small">
+                                            <span
+                                                className="text-center small"
+                                                style={{ width: '24px' }}
+                                            >
                                                 {sale.quantity}
                                             </span>
                                             <button
@@ -400,7 +430,11 @@ export default function FinalizationModal({
                                                         sale.quantity + 1,
                                                     )
                                                 }
-                                                className="w-6 h-6 d-flex align-items-center justify-content-center rounded border bg-opacity-25"
+                                                className="d-flex align-items-center justify-content-center rounded border"
+                                                style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                }}
                                             >
                                                 +
                                             </button>
@@ -439,7 +473,7 @@ export default function FinalizationModal({
 
                 {/* Summary */}
                 <div className="bg-light rounded-3 p-2 mb-3">
-                    <div className="gap-1 small">
+                    <div className="d-flex flex-column gap-1 small">
                         <div className="d-flex justify-content-between">
                             <span>Usługa:</span>
                             <span>{summary.servicePrice.toFixed(2)} PLN</span>
@@ -479,6 +513,11 @@ export default function FinalizationModal({
                         {uiError ?? 'Wystąpił błąd podczas finalizacji wizyty'}
                     </div>
                 )}
+                {successMessage && (
+                    <div className="bg-success bg-opacity-10 text-success p-2 rounded mb-3 small">
+                        {successMessage}
+                    </div>
+                )}
 
                 {/* Actions */}
                 <div className="d-flex gap-2">
@@ -495,7 +534,7 @@ export default function FinalizationModal({
                         disabled={
                             finalizeMutation.isPending || isDiscountInvalid
                         }
-                        className="flex-fill px-3 py-2 bg-success bg-opacity-10 text-white rounded-2 bg-opacity-10"
+                        className="flex-fill btn btn-success"
                     >
                         {finalizeMutation.isPending
                             ? 'Zapisywanie...'
