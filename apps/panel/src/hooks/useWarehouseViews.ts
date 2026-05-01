@@ -271,6 +271,7 @@ interface SalesQuery {
     pageSize?: number;
     search?: string;
     kind?: string;
+    appointmentId?: number;
 }
 
 interface SalesPaginatedResult {
@@ -291,6 +292,7 @@ export function useWarehouseSales(filters: SalesQuery = {}) {
                     pageSize: filters.pageSize,
                     search: filters.search,
                     kind: filters.kind,
+                    appointmentId: filters.appointmentId,
                 })}`,
             ),
     });

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 import type { WarehouseSale } from '@/types';
@@ -28,10 +29,16 @@ function saleKindLabel(sale: WarehouseSale) {
 const PAGE_SIZE = 20;
 
 export default function WarehouseSalesHistoryPage() {
+    const router = useRouter();
     const [search, setSearch] = useState('');
     const [searchDebounced, setSearchDebounced] = useState('');
     const [kindFilter, setKindFilter] = useState('');
     const [page, setPage] = useState(1);
+    const appointmentIdFromQuery = Number(
+        Array.isArray(router.query.appointmentId)
+            ? router.query.appointmentId[0]
+            : router.query.appointmentId,
+    );
 
     useEffect(() => {
         const t = setTimeout(() => setSearchDebounced(search), 300);
@@ -43,6 +50,11 @@ export default function WarehouseSalesHistoryPage() {
         pageSize: PAGE_SIZE,
         search: searchDebounced || undefined,
         kind: kindFilter || undefined,
+        appointmentId:
+            Number.isFinite(appointmentIdFromQuery) &&
+            appointmentIdFromQuery > 0
+                ? appointmentIdFromQuery
+                : undefined,
     });
 
     const items = data?.items ?? [];
@@ -92,6 +104,12 @@ export default function WarehouseSalesHistoryPage() {
                         </div>
                         <div className="col-sm-8 col-lg-7">
                             <div className="d-flex flex-wrap jc-end">
+                                {Number.isFinite(appointmentIdFromQuery) &&
+                                appointmentIdFromQuery > 0 ? (
+                                    <span className="badge text-bg-info me-2 align-self-center">
+                                        Filtr: wizyta #{appointmentIdFromQuery}
+                                    </span>
+                                ) : null}
                                 <Link
                                     href="/sales/new"
                                     className="button button-blue ml-xs"

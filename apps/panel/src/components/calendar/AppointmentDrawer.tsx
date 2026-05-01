@@ -541,7 +541,11 @@ export default function AppointmentDrawer({
                                     <div className="d-flex align-items-center justify-content-between">
                                         <strong>Podsumowanie sprzedaży</strong>
                                         <Link
-                                            href="/sales/history"
+                                            href={
+                                                appointment.id
+                                                    ? `/sales/history?appointmentId=${appointment.id}`
+                                                    : '/sales/history'
+                                            }
                                             className="btn btn-sm btn-outline-secondary"
                                         >
                                             Historia sprzedaży

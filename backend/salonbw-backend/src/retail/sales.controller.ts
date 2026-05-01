@@ -46,7 +46,7 @@ export class SalesController {
 
     @Get()
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Employee, Role.Admin)
+    @Roles(Role.Receptionist, Role.Employee, Role.Admin)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List warehouse sales' })
     @ApiResponse({
@@ -73,23 +73,30 @@ export class SalesController {
         required: false,
         description: 'Filter by kind: sale|void|refund|correction',
     })
+    @ApiQuery({
+        name: 'appointmentId',
+        required: false,
+        description: 'Filter by related appointment id',
+    })
     findSales(
         @Query('page') page?: string,
         @Query('pageSize') pageSize?: string,
         @Query('search') search?: string,
         @Query('kind') kind?: string,
+        @Query('appointmentId') appointmentId?: string,
     ) {
         return this.retail.listSales({
             page: page ? Number(page) : undefined,
             pageSize: pageSize ? Number(pageSize) : undefined,
             search,
             kind,
+            appointmentId: appointmentId ? Number(appointmentId) : undefined,
         });
     }
 
     @Get('summary')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Employee, Role.Admin)
+    @Roles(Role.Receptionist, Role.Employee, Role.Admin)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Sales summary for a period' })
     @ApiQuery({ name: 'from', required: false, description: 'ISO date' })
@@ -112,7 +119,7 @@ export class SalesController {
 
     @Get(':id')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Employee, Role.Admin)
+    @Roles(Role.Receptionist, Role.Employee, Role.Admin)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get warehouse sale details' })
     @ApiResponse({ status: 200, description: 'Warehouse sale details' })
