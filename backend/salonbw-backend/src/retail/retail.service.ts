@@ -667,35 +667,47 @@ export class RetailService {
                 });
                 await manager.save(saleItem);
 
-                try {
-                    const productSaleId = writeProductSales
-                        ? await this.insertProductSale(
-                              manager,
-                              product.id,
-                              item.quantity,
-                              Math.round(item.unitPriceGross * 100),
-                              Math.round(discountGross * 100),
-                              soldAt,
-                              dto.employeeId ?? null,
-                              dto.appointmentId ?? null,
-                              dto.note ?? null,
-                              created.id,
-                              saleItem.id,
-                          )
-                        : null;
-
-                    const runCommission = async () =>
-                        this.createCommissionForSaleItem(
+                const context = `product=${product.id} employee=${dto.employeeId ?? 'n/a'} appointment=${dto.appointmentId ?? 'n/a'}`;
+                let productSaleId: number | null = null;
+                if (writeProductSales) {
+                    try {
+                        productSaleId = await this.insertProductSale(
                             manager,
-                            dto,
-                            product,
-                            Math.round(item.unitPriceGross * 100),
+                            product.id,
                             item.quantity,
+                            Math.round(item.unitPriceGross * 100),
                             Math.round(discountGross * 100),
-                            actor,
-                            productSaleId,
+                            soldAt,
+                            dto.employeeId ?? null,
+                            dto.appointmentId ?? null,
+                            dto.note ?? null,
+                            created.id,
+                            saleItem.id,
                         );
+                    } catch (error) {
+                        this.logger.error(
+                            `Failed to persist POS product sale side effect (${context})`,
+                            error instanceof Error ? error.stack : undefined,
+                        );
+                        if (this.requireCommission) {
+                            throw error;
+                        }
+                    }
+                }
 
+                const runCommission = async () =>
+                    this.createCommissionForSaleItem(
+                        manager,
+                        dto,
+                        product,
+                        Math.round(item.unitPriceGross * 100),
+                        item.quantity,
+                        Math.round(discountGross * 100),
+                        actor,
+                        productSaleId,
+                    );
+
+                try {
                     if (this.requireCommission) {
                         await runCommission();
                     } else {
@@ -706,9 +718,8 @@ export class RetailService {
                         );
                     }
                 } catch (error) {
-                    const context = `product=${product.id} employee=${dto.employeeId ?? 'n/a'} appointment=${dto.appointmentId ?? 'n/a'}`;
                     this.logger.error(
-                        `Failed to create POS commission (${context})`,
+                        `Failed to create POS commission side effect (${context})`,
                         error instanceof Error ? error.stack : undefined,
                     );
                     if (this.requireCommission) {
