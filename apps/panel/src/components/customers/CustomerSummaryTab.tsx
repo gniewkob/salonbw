@@ -9,6 +9,8 @@ import {
     useAddGroupMembers,
     useRemoveGroupMember,
 } from '@/hooks/useCustomers';
+import { useWarehouseSales } from '@/hooks/useWarehouseViews';
+import Link from 'next/link';
 
 interface Props {
     customer: Customer;
@@ -26,9 +28,30 @@ export default function CustomerSummaryTab({
     );
     const { data: history, isLoading: historyLoading } =
         useCustomerEventHistory(customer.id, { limit: 3 });
+    const { data: fullHistory } = useCustomerEventHistory(customer.id, {
+        limit: 20,
+        status: 'completed',
+    });
     const { data: allGroups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
     const removeFromGroup = useRemoveGroupMember();
+    const completedAppointmentIds = (
+        fullHistory?.items
+            .map((item) => item.id)
+            .filter((id) => Number.isFinite(id) && id > 0) ?? []
+    )
+        .slice(0, 20)
+        .join(',');
+    const { data: linkedSales, isLoading: linkedSalesLoading } =
+        useWarehouseSales({
+            page: 1,
+            pageSize: 5,
+            appointmentIds:
+                completedAppointmentIds.length > 0
+                    ? completedAppointmentIds
+                    : undefined,
+            enabled: completedAppointmentIds.length > 0,
+        });
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('pl-PL', {
@@ -206,6 +229,64 @@ export default function CustomerSummaryTab({
                                                     <td className="text-end">
                                                         {formatCurrency(
                                                             visit.price,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="salonbw-widget">
+                            <div className="salonbw-widget__header">
+                                Ostatnie sprzedaże
+                            </div>
+                            <div className="salonbw-widget__content">
+                                {linkedSalesLoading ? (
+                                    <p className="text-muted text-center">
+                                        Ładowanie...
+                                    </p>
+                                ) : !linkedSales ||
+                                  linkedSales.items.length === 0 ? (
+                                    <p className="text-muted text-center">
+                                        Brak sprzedaży powiązanych z wizytami
+                                        klienta
+                                    </p>
+                                ) : (
+                                    <table className="salonbw-table fs-12">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Sprzedaż</th>
+                                                <th className="text-end">
+                                                    Kwota
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {linkedSales.items.map((sale) => (
+                                                <tr key={sale.id}>
+                                                    <td>
+                                                        {formatDate(
+                                                            sale.soldAt,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <Link
+                                                            href={`/sales/history/${sale.id}`}
+                                                            className="link-more"
+                                                        >
+                                                            {sale.saleNumber}
+                                                        </Link>
+                                                    </td>
+                                                    <td className="text-end">
+                                                        {formatCurrency(
+                                                            Number(
+                                                                sale.totalGross ??
+                                                                    0,
+                                                            ),
                                                         )}
                                                     </td>
                                                 </tr>

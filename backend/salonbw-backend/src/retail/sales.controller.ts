@@ -78,19 +78,35 @@ export class SalesController {
         required: false,
         description: 'Filter by related appointment id',
     })
+    @ApiQuery({
+        name: 'appointmentIds',
+        required: false,
+        description:
+            'Filter by related appointment ids (comma separated list)',
+    })
     findSales(
         @Query('page') page?: string,
         @Query('pageSize') pageSize?: string,
         @Query('search') search?: string,
         @Query('kind') kind?: string,
         @Query('appointmentId') appointmentId?: string,
+        @Query('appointmentIds') appointmentIds?: string,
     ) {
+        const normalizedAppointmentIds =
+            appointmentIds
+                ?.split(',')
+                .map((part) => Number(part.trim()))
+                .filter((id) => Number.isFinite(id) && id > 0) ?? [];
         return this.retail.listSales({
             page: page ? Number(page) : undefined,
             pageSize: pageSize ? Number(pageSize) : undefined,
             search,
             kind,
             appointmentId: appointmentId ? Number(appointmentId) : undefined,
+            appointmentIds:
+                normalizedAppointmentIds.length > 0
+                    ? normalizedAppointmentIds
+                    : undefined,
         });
     }
 

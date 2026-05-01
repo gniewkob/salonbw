@@ -272,6 +272,7 @@ interface SalesQuery {
     search?: string;
     kind?: string;
     appointmentId?: number;
+    appointmentIds?: string;
     enabled?: boolean;
 }
 
@@ -295,6 +296,7 @@ export function useWarehouseSales(filters: SalesQuery = {}) {
                     search: filters.search,
                     kind: filters.kind,
                     appointmentId: filters.appointmentId,
+                    appointmentIds: filters.appointmentIds,
                 })}`,
             ),
     });
