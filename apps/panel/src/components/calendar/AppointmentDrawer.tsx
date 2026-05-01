@@ -49,6 +49,14 @@ function formatDateTime(value: string | null | undefined): string {
     });
 }
 
+function formatCurrency(value: number | null | undefined): string {
+    const normalized = Number(value ?? 0);
+    return `${new Intl.NumberFormat('pl-PL', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(normalized)} PLN`;
+}
+
 export default function AppointmentDrawer({
     open,
     mode,
@@ -526,6 +534,56 @@ export default function AppointmentDrawer({
                                 Płatność:{' '}
                                 {appointment.paymentStatus ?? 'nieopłacona'}
                             </div>
+                            {(appointment.finalizedAt ||
+                                appointment.paymentMethod ||
+                                appointment.paidAmount !== undefined) && (
+                                <div className="mt-2 pt-2 border-top">
+                                    <div className="d-flex align-items-center justify-content-between">
+                                        <strong>Podsumowanie sprzedaży</strong>
+                                        <Link
+                                            href="/sales/history"
+                                            className="btn btn-sm btn-outline-secondary"
+                                        >
+                                            Historia sprzedaży
+                                        </Link>
+                                    </div>
+                                    <div className="mt-1">
+                                        <div>
+                                            Metoda:{' '}
+                                            {appointment.paymentMethod ??
+                                                'brak danych'}
+                                        </div>
+                                        <div>
+                                            Zapłacono:{' '}
+                                            {formatCurrency(
+                                                appointment.paidAmount,
+                                            )}
+                                        </div>
+                                        {appointment.discount !== undefined && (
+                                            <div>
+                                                Rabat:{' '}
+                                                {formatCurrency(
+                                                    appointment.discount,
+                                                )}
+                                            </div>
+                                        )}
+                                        {appointment.tipAmount !== undefined && (
+                                            <div>
+                                                Napiwek:{' '}
+                                                {formatCurrency(
+                                                    appointment.tipAmount,
+                                                )}
+                                            </div>
+                                        )}
+                                        <div>
+                                            Finalizacja:{' '}
+                                            {formatDateTime(
+                                                appointment.finalizedAt,
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div className="mt-2 pt-2 border-top">
                                 <div className="d-flex align-items-center justify-content-between">
                                     <strong>Podgląd klienta</strong>
