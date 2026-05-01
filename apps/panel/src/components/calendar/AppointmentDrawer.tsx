@@ -10,6 +10,7 @@ import {
 } from '@/hooks/useCustomers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
+import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 import FinalizationModal from './FinalizationModal';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -112,6 +113,20 @@ export default function AppointmentDrawer({
         mode === 'edit' ? (appointment?.client?.id ?? null) : null;
     const { data: customerStats, isLoading: customerStatsLoading } =
         useCustomerStatistics(customerIdForInsights);
+    const appointmentIdForSales =
+        mode === 'edit' ? (appointment?.id ?? null) : null;
+    const { data: appointmentSalesResponse } = useWarehouseSales({
+        page: 1,
+        pageSize: 1,
+        enabled: appointmentIdForSales !== null,
+        appointmentId:
+            appointmentIdForSales !== null ? appointmentIdForSales : undefined,
+    });
+    const linkedSaleId =
+        appointmentSalesResponse?.items?.[0] &&
+        Number(appointmentSalesResponse.items[0].id) > 0
+            ? Number(appointmentSalesResponse.items[0].id)
+            : null;
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
@@ -542,13 +557,17 @@ export default function AppointmentDrawer({
                                         <strong>Podsumowanie sprzedaży</strong>
                                         <Link
                                             href={
-                                                appointment.id
-                                                    ? `/sales/history?appointmentId=${appointment.id}`
-                                                    : '/sales/history'
+                                                linkedSaleId
+                                                    ? `/sales/history/${linkedSaleId}`
+                                                    : appointment.id
+                                                      ? `/sales/history?appointmentId=${appointment.id}`
+                                                      : '/sales/history'
                                             }
                                             className="btn btn-sm btn-outline-secondary"
                                         >
-                                            Historia sprzedaży
+                                            {linkedSaleId
+                                                ? 'Szczegóły sprzedaży'
+                                                : 'Historia sprzedaży'}
                                         </Link>
                                     </div>
                                     <div className="mt-1">

@@ -272,6 +272,7 @@ interface SalesQuery {
     search?: string;
     kind?: string;
     appointmentId?: number;
+    enabled?: boolean;
 }
 
 interface SalesPaginatedResult {
@@ -285,6 +286,7 @@ export function useWarehouseSales(filters: SalesQuery = {}) {
     const { apiFetch } = useAuth();
     return useQuery<SalesPaginatedResult>({
         queryKey: ['warehouse-sales', filters],
+        enabled: filters.enabled ?? true,
         queryFn: () =>
             apiFetch<SalesPaginatedResult>(
                 `/sales${toQueryString({
