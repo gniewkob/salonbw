@@ -736,9 +736,7 @@ export default function AppointmentDrawer({
                 open={finalizationOpen}
                 onClose={() => setFinalizationOpen(false)}
                 onSuccess={() => {
-                    setFinalizationOpen(false);
                     onSaved();
-                    onClose();
                 }}
             />
         </>

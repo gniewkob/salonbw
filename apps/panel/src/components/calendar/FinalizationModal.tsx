@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import Modal from '@/components/Modal';
@@ -48,6 +48,9 @@ export default function FinalizationModal({
     const [showProductPicker, setShowProductPicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
 
     // Fetch products for upselling
     const { data: productsResponse } = useQuery<ProductsResponse>({
@@ -111,7 +114,7 @@ export default function FinalizationModal({
             });
             setSuccessMessage('Wizyta została poprawnie sfinalizowana.');
             onSuccess?.();
-            window.setTimeout(() => {
+            closeTimerRef.current = setTimeout(() => {
                 handleClose();
             }, 900);
         },
@@ -131,6 +134,10 @@ export default function FinalizationModal({
     });
 
     const handleClose = () => {
+        if (closeTimerRef.current !== null) {
+            clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+        }
         setPaymentMethod('card');
         setDiscountPln('');
         setTipPln('');
@@ -141,6 +148,16 @@ export default function FinalizationModal({
         setSuccessMessage(null);
         onClose();
     };
+
+    useEffect(
+        () => () => {
+            if (closeTimerRef.current !== null) {
+                clearTimeout(closeTimerRef.current);
+                closeTimerRef.current = null;
+            }
+        },
+        [],
+    );
 
     const handleSubmit = () => {
         if (!appointment) return;
