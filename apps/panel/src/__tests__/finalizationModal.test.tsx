@@ -4,6 +4,7 @@ import FinalizationModal from '@/components/calendar/FinalizationModal';
 const apiFetchMock = jest.fn();
 const mutateMock = jest.fn();
 const invalidateMock = jest.fn();
+const useQueryMock = jest.fn();
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ apiFetch: apiFetchMock }),
@@ -21,7 +22,7 @@ jest.mock('@/components/Modal', () => ({
 }));
 
 jest.mock('@tanstack/react-query', () => ({
-    useQuery: jest.fn(() => ({ data: [] })),
+    useQuery: (...args: unknown[]) => useQueryMock(...args),
     useMutation: jest.fn(() => ({
         mutate: mutateMock,
         isPending: false,
@@ -37,6 +38,8 @@ describe('FinalizationModal', () => {
         apiFetchMock.mockReset();
         mutateMock.mockReset();
         invalidateMock.mockReset();
+        useQueryMock.mockReset();
+        useQueryMock.mockReturnValue({ data: [] });
     });
 
     it('blocks finalization when discount exceeds service + products total', () => {
@@ -114,5 +117,53 @@ describe('FinalizationModal', () => {
                 discountCents: 1000,
             }),
         );
+    });
+
+    it('blocks adding product quantity over stock', () => {
+        useQueryMock.mockReturnValue({
+            data: [
+                {
+                    id: 11,
+                    name: 'Szampon',
+                    unitPrice: 30,
+                    stock: 1,
+                    isActive: true,
+                    trackStock: true,
+                },
+            ],
+        });
+
+        render(
+            <FinalizationModal
+                open
+                appointment={{
+                    id: 7,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    status: 'in_progress',
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                }}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Dodaj produkt' }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Szampon/ }));
+        fireEvent.click(screen.getByRole('button', { name: '+' }));
+
+        expect(
+            screen.getByText('Maksymalna ilość dla Szampon to 1.'),
+        ).toBeInTheDocument();
     });
 });

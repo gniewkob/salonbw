@@ -112,11 +112,17 @@ export default function FinalizationModal({
             handleClose();
         },
         onError: (error) => {
-            setUiError(
+            const message =
                 error instanceof Error
                     ? error.message
-                    : 'Wystąpił błąd podczas finalizacji wizyty',
-            );
+                    : 'Wystąpił błąd podczas finalizacji wizyty';
+            if (message.toLowerCase().includes('pos is disabled')) {
+                setUiError(
+                    'Sprzedaż produktów jest wyłączona (POS). Włącz POS_ENABLED=true.',
+                );
+                return;
+            }
+            setUiError(message);
         },
     });
 
@@ -154,7 +160,23 @@ export default function FinalizationModal({
     };
 
     const addProduct = (productId: number) => {
+        const product = products.find((p) => p.id === productId);
+        const trackStock = product?.trackStock !== false;
+        const availableStock = product?.stock ?? 0;
         const existing = productSales.find((p) => p.productId === productId);
+        if (trackStock && existing && existing.quantity >= availableStock) {
+            setUiError(
+                `Maksymalna ilość dla ${product?.name ?? 'produktu'} to ${availableStock}.`,
+            );
+            return;
+        }
+        if (trackStock && !existing && availableStock <= 0) {
+            setUiError(
+                `Produkt ${product?.name ?? 'jest niedostępny'} (stan: 0).`,
+            );
+            return;
+        }
+        setUiError(null);
         if (existing) {
             setProductSales(
                 productSales.map((p) =>
@@ -176,6 +198,16 @@ export default function FinalizationModal({
         if (quantity <= 0) {
             removeProduct(productId);
         } else {
+            const product = products.find((p) => p.id === productId);
+            const trackStock = product?.trackStock !== false;
+            const availableStock = product?.stock ?? 0;
+            if (trackStock && quantity > availableStock) {
+                setUiError(
+                    `Maksymalna ilość dla ${product?.name ?? 'produktu'} to ${availableStock}.`,
+                );
+                return;
+            }
+            setUiError(null);
             setProductSales(
                 productSales.map((p) =>
                     p.productId === productId ? { ...p, quantity } : p,
@@ -303,7 +335,12 @@ export default function FinalizationModal({
                                             }
                                             className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
                                         >
-                                            <span>{product.name}</span>
+                                            <span>
+                                                {product.name}
+                                                <span className="text-muted ms-2">
+                                                    stan: {product.stock}
+                                                </span>
+                                            </span>
                                             <span className="text-muted">
                                                 {product.unitPrice.toFixed(2)}{' '}
                                                 PLN
