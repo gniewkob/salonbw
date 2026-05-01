@@ -363,6 +363,8 @@ export interface CalendarEvent {
     serviceId?: number;
     serviceName?: string;
     status?: string;
+    paymentStatus?: string;
+    paymentMethod?: PaymentMethod;
     blockType?: TimeBlockType;
     notes?: string;
     allDay?: boolean;

@@ -4,6 +4,7 @@ import type { EventDropArg } from '@fullcalendar/core';
 import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
+import EventCard from './EventCard';
 import type { CalendarEvent, CalendarView as CalendarViewType } from '@/types';
 import type FullCalendarComponent from '@fullcalendar/react';
 
@@ -221,6 +222,26 @@ export default function CalendarView({
                         initialView={VIEW_MAP[currentView]}
                         initialDate={currentDate}
                         events={fullCalendarEvents}
+                        eventContent={(info) => {
+                            const original =
+                                info.event.extendedProps
+                                    .originalEvent as CalendarEvent;
+                            const employeeColor =
+                                original.employeeId !== undefined
+                                    ? employees.find(
+                                          (employee) =>
+                                              employee.id ===
+                                              original.employeeId,
+                                      )?.color
+                                    : undefined;
+                            return (
+                                <EventCard
+                                    event={original}
+                                    employeeColor={employeeColor}
+                                    onClick={onEventClick}
+                                />
+                            );
+                        }}
                         eventClick={(info) =>
                             onEventClick(
                                 info.event.extendedProps

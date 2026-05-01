@@ -44,6 +44,15 @@ const STATUS_STYLES: Record<string, string> = {
     no_show: 'opacity-40 bg-red-100',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+    scheduled: 'Zaplanowana',
+    confirmed: 'Potwierdzona',
+    in_progress: 'W trakcie',
+    completed: 'Zakończona',
+    cancelled: 'Anulowana',
+    no_show: 'No-show',
+};
+
 export default function EventCard({
     event,
     employeeColor = '#4A90D9',
@@ -111,6 +120,25 @@ export default function EventCard({
                     >
                         {event.allDay ? 'Cały dzień' : timeStr}
                     </div>
+                    {!isTimeBlock && (
+                        <div className="d-flex flex-wrap gap-1 mt-1">
+                            {event.status ? (
+                                <span className="badge text-bg-light border">
+                                    {STATUS_LABELS[event.status] ??
+                                        event.status}
+                                </span>
+                            ) : null}
+                            {event.paymentStatus ? (
+                                <span className="badge text-bg-light border">
+                                    {event.paymentStatus === 'paid'
+                                        ? 'Opłacona'
+                                        : event.paymentStatus === 'partial'
+                                          ? 'Częściowo opłacona'
+                                          : 'Nieopłacona'}
+                                </span>
+                            ) : null}
+                        </div>
+                    )}
                 </div>
                 {isTimeBlock && event.blockType && (
                     <span
