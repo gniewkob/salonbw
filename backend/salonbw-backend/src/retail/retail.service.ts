@@ -268,7 +268,7 @@ export class RetailService {
         const unitPriceDecimal = (unitPriceCents / 100).toFixed(2);
         const discountDecimal = (discountCents / 100).toFixed(2);
         const rows = await manager.query(
-            `INSERT INTO product_sales (productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId, note, "warehouseSaleId", "warehouseSaleItemId")
+            `INSERT INTO product_sales ("productId", "soldAt", "quantity", "unitPrice", "discount", "employeeId", "appointmentId", "note", "warehouseSaleId", "warehouseSaleItemId")
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              RETURNING id`,
             [
@@ -525,7 +525,7 @@ export class RetailService {
         actorId: number | null,
     ) {
         await manager.query(
-            `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
+            `INSERT INTO inventory_movements ("productId", "delta", "reason", "referenceType", "referenceId", "note", "createdAt", "actorId")
              VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
             [
                 productId,
@@ -1406,10 +1406,10 @@ export class RetailService {
                 revenue: number | string | null;
             }>(
                 `SELECT
-                    COALESCE(SUM(quantity),0) AS units,
-                    COALESCE(SUM(quantity*unitPrice - COALESCE(discount,0)),0) AS revenue
+                    COALESCE(SUM("quantity"),0) AS units,
+                    COALESCE(SUM("quantity"*"unitPrice" - COALESCE("discount",0)),0) AS revenue
                  FROM product_sales
-                 WHERE soldAt BETWEEN $1 AND $2`,
+                 WHERE "soldAt" BETWEEN $1 AND $2`,
                 [from, to],
             );
             const row = res?.[0] ?? { units: 0, revenue: 0 };
@@ -1424,9 +1424,9 @@ export class RetailService {
 
         if (await this.hasTable('public.inventory_movements')) {
             const res = await this.q<{ units: number | string | null }>(
-                `SELECT COALESCE(SUM(CASE WHEN reason='sale' THEN -delta ELSE 0 END),0) AS units
+                `SELECT COALESCE(SUM(CASE WHEN "reason"='sale' THEN -"delta" ELSE 0 END),0) AS units
                  FROM inventory_movements
-                 WHERE createdAt BETWEEN $1 AND $2`,
+                 WHERE "createdAt" BETWEEN $1 AND $2`,
                 [from, to],
             );
             const row =
