@@ -668,21 +668,24 @@ export class RetailService {
                 await manager.save(saleItem);
 
                 try {
-                    if (writeProductSales) {
-                        const productSaleId = await this.insertProductSale(
-                            manager,
-                            product.id,
-                            item.quantity,
-                            Math.round(item.unitPriceGross * 100),
-                            Math.round(discountGross * 100),
-                            soldAt,
-                            dto.employeeId ?? null,
-                            dto.appointmentId ?? null,
-                            dto.note ?? null,
-                            created.id,
-                            saleItem.id,
-                        );
-                        await this.createCommissionForSaleItem(
+                    const productSaleId = writeProductSales
+                        ? await this.insertProductSale(
+                              manager,
+                              product.id,
+                              item.quantity,
+                              Math.round(item.unitPriceGross * 100),
+                              Math.round(discountGross * 100),
+                              soldAt,
+                              dto.employeeId ?? null,
+                              dto.appointmentId ?? null,
+                              dto.note ?? null,
+                              created.id,
+                              saleItem.id,
+                          )
+                        : null;
+
+                    const runCommission = async () =>
+                        this.createCommissionForSaleItem(
                             manager,
                             dto,
                             product,
@@ -692,16 +695,14 @@ export class RetailService {
                             actor,
                             productSaleId,
                         );
+
+                    if (this.requireCommission) {
+                        await runCommission();
                     } else {
-                        await this.createCommissionForSaleItem(
+                        await this.runWithSavepoint(
                             manager,
-                            dto,
-                            product,
-                            Math.round(item.unitPriceGross * 100),
-                            item.quantity,
-                            Math.round(discountGross * 100),
-                            actor,
-                            null,
+                            `sp_commission_${created.id}_${saleItem.id}`,
+                            runCommission,
                         );
                     }
                 } catch (error) {
@@ -1501,5 +1502,21 @@ export class RetailService {
             actor,
             manager,
         );
+    }
+
+    private async runWithSavepoint(
+        manager: EntityManager,
+        savepointName: string,
+        operation: () => Promise<void>,
+    ): Promise<void> {
+        await manager.query(`SAVEPOINT ${savepointName}`);
+        try {
+            await operation();
+            await manager.query(`RELEASE SAVEPOINT ${savepointName}`);
+        } catch (error) {
+            await manager.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
+            await manager.query(`RELEASE SAVEPOINT ${savepointName}`);
+            throw error;
+        }
     }
 }
