@@ -1067,6 +1067,7 @@ export class RetailService {
             kind?: string;
             appointmentId?: number;
             appointmentIds?: number[];
+            customerId?: number;
         } = {},
     ) {
         if (!(await this.hasTable('public.warehouse_sales'))) {
@@ -1114,6 +1115,11 @@ export class RetailService {
                     appointmentIds: ids,
                 });
             }
+        }
+        if (Number.isFinite(params.customerId) && Number(params.customerId) > 0) {
+            qb.andWhere('sale.clientId = :customerId', {
+                customerId: Number(params.customerId),
+            });
         }
 
         const [items, total] = await qb.getManyAndCount();

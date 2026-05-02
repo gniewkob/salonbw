@@ -31,13 +31,9 @@ export default function CustomerSummaryTab({
     const { data: allGroups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
     const removeFromGroup = useRemoveGroupMember();
-    const { completedAppointmentIds, linkedSalesQuery } = useCustomerLinkedSales(
-        customer.id,
-        {
-            historyLimit: 20,
-            salesPageSize: 5,
-        },
-    );
+    const { linkedSalesQuery } = useCustomerLinkedSales(customer.id, {
+        salesPageSize: 5,
+    });
     const { data: linkedSales, isLoading: linkedSalesLoading } =
         linkedSalesQuery;
 
@@ -316,10 +312,10 @@ export default function CustomerSummaryTab({
                                                 )}
                                             </tbody>
                                         </table>
-                                        {completedAppointmentIds.length > 0 && (
+                                        {customer.id > 0 && (
                                             <div className="text-end mt-2">
                                                 <Link
-                                                    href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
+                                                    href={`/sales/history?customerId=${customer.id}`}
                                                     className="link-more"
                                                 >
                                                     Zobacz wszystkie sprzedaże klienta

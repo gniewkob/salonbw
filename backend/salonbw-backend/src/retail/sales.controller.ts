@@ -84,6 +84,11 @@ export class SalesController {
         description:
             'Filter by related appointment ids (comma separated list)',
     })
+    @ApiQuery({
+        name: 'customerId',
+        required: false,
+        description: 'Filter by related customer id',
+    })
     findSales(
         @Query('page') page?: string,
         @Query('pageSize') pageSize?: string,
@@ -91,6 +96,7 @@ export class SalesController {
         @Query('kind') kind?: string,
         @Query('appointmentId') appointmentId?: string,
         @Query('appointmentIds') appointmentIds?: string,
+        @Query('customerId') customerId?: string,
     ) {
         const normalizedAppointmentIds =
             appointmentIds
@@ -107,6 +113,7 @@ export class SalesController {
                 normalizedAppointmentIds.length > 0
                     ? normalizedAppointmentIds
                     : undefined,
+            customerId: customerId ? Number(customerId) : undefined,
         });
     }
 

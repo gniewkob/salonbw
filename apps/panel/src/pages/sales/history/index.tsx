@@ -55,6 +55,11 @@ export default function WarehouseSalesHistoryPage() {
         appointmentIdsFromQuery.length > 0
             ? appointmentIdsFromQuery.join(',')
             : undefined;
+    const customerIdFromQuery = Number(
+        Array.isArray(router.query.customerId)
+            ? router.query.customerId[0]
+            : router.query.customerId,
+    );
 
     useEffect(() => {
         const t = setTimeout(() => setSearchDebounced(search), 300);
@@ -72,6 +77,10 @@ export default function WarehouseSalesHistoryPage() {
             appointmentIdFromQuery > 0
                 ? appointmentIdFromQuery
                 : undefined,
+        customerId:
+            Number.isFinite(customerIdFromQuery) && customerIdFromQuery > 0
+                ? customerIdFromQuery
+                : undefined,
     });
 
     const items = data?.items ?? [];
@@ -83,9 +92,12 @@ export default function WarehouseSalesHistoryPage() {
     const hasAppointmentFilters =
         (Number.isFinite(appointmentIdFromQuery) && appointmentIdFromQuery > 0) ||
         appointmentIdsFromQuery.length > 0;
+    const hasCustomerFilter =
+        Number.isFinite(customerIdFromQuery) && customerIdFromQuery > 0;
 
     const clearAppointmentFilters = () => {
-        const { appointmentId, appointmentIds, ...restQuery } = router.query;
+        const { appointmentId, appointmentIds, customerId, ...restQuery } =
+            router.query;
         void router.push(
             {
                 pathname: '/sales/history',
@@ -148,7 +160,12 @@ export default function WarehouseSalesHistoryPage() {
                                         Filtr: wizyty ({appointmentIdsFromQuery.length})
                                     </span>
                                 ) : null}
-                                {hasAppointmentFilters ? (
+                                {hasCustomerFilter ? (
+                                    <span className="badge text-bg-info me-2 align-self-center">
+                                        Filtr: klient #{customerIdFromQuery}
+                                    </span>
+                                ) : null}
+                                {hasAppointmentFilters || hasCustomerFilter ? (
                                     <button
                                         type="button"
                                         className="button button-default ml-xs"

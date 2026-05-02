@@ -120,13 +120,9 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         status: statusQuery(status),
         withCounts: true,
     });
-    const { completedAppointmentIds, linkedSalesQuery } = useCustomerLinkedSales(
-        customerId,
-        {
-            historyLimit: 50,
-            salesPageSize: 5,
-        },
-    );
+    const { linkedSalesQuery } = useCustomerLinkedSales(customerId, {
+        salesPageSize: 5,
+    });
     const {
         data: customerSales,
         isLoading: customerSalesLoading,
@@ -241,7 +237,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     />
                 </div>
             </div>
-            {completedAppointmentIds.length > 0 ? (
+            {customerId > 0 ? (
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
                     <div className="w-100">
                         <div className="d-flex justify-content-between align-items-center mb-2">
@@ -253,7 +249,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                 )
                             </div>
                             <Link
-                                href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
+                                href={`/sales/history?customerId=${customerId}`}
                                 className="link-more"
                             >
                                 Zobacz sprzedaże klienta
