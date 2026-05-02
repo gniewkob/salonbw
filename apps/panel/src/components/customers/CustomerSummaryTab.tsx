@@ -240,8 +240,14 @@ export default function CustomerSummaryTab({
                         </div>
 
                         <div className="salonbw-widget">
-                            <div className="salonbw-widget__header">
-                                Ostatnie sprzedaże
+                            <div className="salonbw-widget__header d-flex justify-content-between align-items-center">
+                                <span>Ostatnie sprzedaże</span>
+                                {linkedSales &&
+                                typeof linkedSales.total === 'number' ? (
+                                    <span className="text-muted small">
+                                        sprzedaże klienta ({linkedSales.total})
+                                    </span>
+                                ) : null}
                             </div>
                             <div className="salonbw-widget__content">
                                 {linkedSalesLoading ? (
@@ -304,8 +310,12 @@ export default function CustomerSummaryTab({
                                                     href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
                                                     className="link-more"
                                                 >
-                                                    Zobacz wszystkie sprzedaże
-                                                    klienta
+                                                    Zobacz wszystkie sprzedaże klienta
+                                                    {linkedSales &&
+                                                    typeof linkedSales.total ===
+                                                        'number'
+                                                        ? ` (${linkedSales.total})`
+                                                        : ''}
                                                 </Link>
                                             </div>
                                         )}
