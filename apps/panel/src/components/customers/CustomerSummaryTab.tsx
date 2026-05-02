@@ -53,6 +53,24 @@ export default function CustomerSummaryTab({
         return new Date(dateStr).toLocaleDateString('pl-PL');
     };
 
+    const formatPaymentMethod = (method: string | null | undefined) => {
+        if (!method) return '-';
+        switch (method) {
+            case 'cash':
+                return 'Gotówka';
+            case 'card':
+                return 'Karta';
+            case 'transfer':
+                return 'Przelew';
+            case 'online':
+                return 'Online';
+            case 'voucher':
+                return 'Voucher';
+            default:
+                return method;
+        }
+    };
+
     // Grupy, do których klient NIE należy (dodawanie)
     const availableGroups =
         allGroups?.filter(
@@ -255,6 +273,7 @@ export default function CustomerSummaryTab({
                                                 <tr>
                                                     <th>Data</th>
                                                     <th>Sprzedaż</th>
+                                                    <th>Metoda</th>
                                                     <th className="text-end">
                                                         Kwota
                                                     </th>
@@ -278,6 +297,11 @@ export default function CustomerSummaryTab({
                                                                         sale.saleNumber
                                                                     }
                                                                 </Link>
+                                                            </td>
+                                                            <td>
+                                                                {formatPaymentMethod(
+                                                                    sale.paymentMethod,
+                                                                )}
                                                             </td>
                                                             <td className="text-end">
                                                                 {formatCurrency(

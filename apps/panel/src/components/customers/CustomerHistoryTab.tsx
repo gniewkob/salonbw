@@ -25,6 +25,31 @@ function formatCurrency(amount: number) {
     }).format(amount);
 }
 
+function formatDate(dateStr: string | null | undefined) {
+    if (!dateStr) return '-';
+    const dt = new Date(dateStr);
+    if (Number.isNaN(dt.getTime())) return '-';
+    return dt.toLocaleDateString('pl-PL');
+}
+
+function paymentMethodLabel(value: string | null | undefined) {
+    if (!value) return '-';
+    switch (value) {
+        case 'cash':
+            return 'Gotówka';
+        case 'card':
+            return 'Karta';
+        case 'transfer':
+            return 'Przelew';
+        case 'online':
+            return 'Online';
+        case 'voucher':
+            return 'Voucher';
+        default:
+            return value;
+    }
+}
+
 function monthLabel(yyyyMm: string) {
     const [yStr, mStr] = yyyyMm.split('-');
     const y = Number(yStr);
@@ -99,10 +124,14 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         customerId,
         {
             historyLimit: 50,
-            salesPageSize: 1,
+            salesPageSize: 5,
         },
     );
-    const { data: customerSales } = linkedSalesQuery;
+    const {
+        data: customerSales,
+        isLoading: customerSalesLoading,
+        isError: customerSalesError,
+    } = linkedSalesQuery;
 
     const totalPages = Math.max(1, Math.ceil((data?.total || 0) / PAGE_SIZE));
     const fromItem = (data?.total || 0) > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
@@ -214,20 +243,75 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             </div>
             {completedAppointmentIds.length > 0 ? (
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
-                    <div className="text-muted small">
-                        sprzedaże klienta (
-                        {typeof customerSales?.total === 'number'
-                            ? customerSales.total
-                            : 0}
-                        )
-                    </div>
-                    <div>
-                        <Link
-                            href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
-                            className="link-more"
-                        >
-                            Zobacz sprzedaże klienta
-                        </Link>
+                    <div className="w-100">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <div className="text-muted small">
+                                sprzedaże klienta (
+                                {typeof customerSales?.total === 'number'
+                                    ? customerSales.total
+                                    : 0}
+                                )
+                            </div>
+                            <Link
+                                href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
+                                className="link-more"
+                            >
+                                Zobacz sprzedaże klienta
+                            </Link>
+                        </div>
+                        {customerSalesLoading ? (
+                            <div className="text-muted small">
+                                Ładowanie sprzedaży...
+                            </div>
+                        ) : customerSalesError ? (
+                            <div className="text-danger small">
+                                Nie udało się załadować sprzedaży klienta.
+                            </div>
+                        ) : !customerSales ||
+                          customerSales.items.length === 0 ? (
+                            <div className="text-muted small">
+                                Brak sprzedaży powiązanych z zakończonymi
+                                wizytami.
+                            </div>
+                        ) : (
+                            <table className="salonbw-table fs-12">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Sprzedaż</th>
+                                        <th>Metoda</th>
+                                        <th className="text-end">Kwota</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customerSales.items.map((sale) => (
+                                        <tr key={sale.id}>
+                                            <td>{formatDate(sale.soldAt)}</td>
+                                            <td>
+                                                <Link
+                                                    href={`/sales/history/${sale.id}`}
+                                                    className="link-more"
+                                                >
+                                                    {sale.saleNumber}
+                                                </Link>
+                                            </td>
+                                            <td>
+                                                {paymentMethodLabel(
+                                                    sale.paymentMethod,
+                                                )}
+                                            </td>
+                                            <td className="text-end">
+                                                {formatCurrency(
+                                                    Number(
+                                                        sale.totalGross ?? 0,
+                                                    ),
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             ) : null}
