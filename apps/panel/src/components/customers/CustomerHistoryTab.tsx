@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCustomerEventHistory } from '@/hooks/useCustomers';
-import { useWarehouseSales } from '@/hooks/useWarehouseViews';
+import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import Link from 'next/link';
 
 interface Props {
@@ -95,26 +95,14 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         status: statusQuery(status),
         withCounts: true,
     });
-    const { data: completedHistory } = useCustomerEventHistory(customerId, {
-        limit: 50,
-        status: 'completed',
-    });
-    const completedAppointmentIds = (
-        completedHistory?.items
-            .map((item) => item.id)
-            .filter((id) => Number.isFinite(id) && id > 0) ?? []
-    )
-        .slice(0, 50)
-        .join(',');
-    const { data: customerSales } = useWarehouseSales({
-        page: 1,
-        pageSize: 1,
-        appointmentIds:
-            completedAppointmentIds.length > 0
-                ? completedAppointmentIds
-                : undefined,
-        enabled: completedAppointmentIds.length > 0,
-    });
+    const { completedAppointmentIds, linkedSalesQuery } = useCustomerLinkedSales(
+        customerId,
+        {
+            historyLimit: 50,
+            salesPageSize: 1,
+        },
+    );
+    const { data: customerSales } = linkedSalesQuery;
 
     const totalPages = Math.max(1, Math.ceil((data?.total || 0) / PAGE_SIZE));
     const fromItem = (data?.total || 0) > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;

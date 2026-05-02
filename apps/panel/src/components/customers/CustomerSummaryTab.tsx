@@ -9,7 +9,7 @@ import {
     useAddGroupMembers,
     useRemoveGroupMember,
 } from '@/hooks/useCustomers';
-import { useWarehouseSales } from '@/hooks/useWarehouseViews';
+import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import Link from 'next/link';
 
 interface Props {
@@ -28,30 +28,18 @@ export default function CustomerSummaryTab({
     );
     const { data: history, isLoading: historyLoading } =
         useCustomerEventHistory(customer.id, { limit: 3 });
-    const { data: fullHistory } = useCustomerEventHistory(customer.id, {
-        limit: 20,
-        status: 'completed',
-    });
     const { data: allGroups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
     const removeFromGroup = useRemoveGroupMember();
-    const completedAppointmentIds = (
-        fullHistory?.items
-            .map((item) => item.id)
-            .filter((id) => Number.isFinite(id) && id > 0) ?? []
-    )
-        .slice(0, 20)
-        .join(',');
+    const { completedAppointmentIds, linkedSalesQuery } = useCustomerLinkedSales(
+        customer.id,
+        {
+            historyLimit: 20,
+            salesPageSize: 5,
+        },
+    );
     const { data: linkedSales, isLoading: linkedSalesLoading } =
-        useWarehouseSales({
-            page: 1,
-            pageSize: 5,
-            appointmentIds:
-                completedAppointmentIds.length > 0
-                    ? completedAppointmentIds
-                    : undefined,
-            enabled: completedAppointmentIds.length > 0,
-        });
+        linkedSalesQuery;
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('pl-PL', {
