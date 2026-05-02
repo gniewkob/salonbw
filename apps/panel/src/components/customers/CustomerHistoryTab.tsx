@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCustomerEventHistory } from '@/hooks/useCustomers';
+import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 import Link from 'next/link';
 
 interface Props {
@@ -93,6 +94,26 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         to,
         status: statusQuery(status),
         withCounts: true,
+    });
+    const { data: completedHistory } = useCustomerEventHistory(customerId, {
+        limit: 50,
+        status: 'completed',
+    });
+    const completedAppointmentIds = (
+        completedHistory?.items
+            .map((item) => item.id)
+            .filter((id) => Number.isFinite(id) && id > 0) ?? []
+    )
+        .slice(0, 50)
+        .join(',');
+    const { data: customerSales } = useWarehouseSales({
+        page: 1,
+        pageSize: 1,
+        appointmentIds:
+            completedAppointmentIds.length > 0
+                ? completedAppointmentIds
+                : undefined,
+        enabled: completedAppointmentIds.length > 0,
     });
 
     const totalPages = Math.max(1, Math.ceil((data?.total || 0) / PAGE_SIZE));
@@ -203,6 +224,25 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     />
                 </div>
             </div>
+            {completedAppointmentIds.length > 0 ? (
+                <div className="customer-history-toolbar customer-history-toolbar--tight">
+                    <div className="text-muted small">
+                        sprzedaże klienta (
+                        {typeof customerSales?.total === 'number'
+                            ? customerSales.total
+                            : 0}
+                        )
+                    </div>
+                    <div>
+                        <Link
+                            href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
+                            className="link-more"
+                        >
+                            Zobacz sprzedaże klienta
+                        </Link>
+                    </div>
+                </div>
+            ) : null}
 
             {isLoading ? (
                 <div className="customer-loading">
