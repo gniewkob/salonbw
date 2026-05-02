@@ -80,6 +80,22 @@ export default function WarehouseSalesHistoryPage() {
     const safePage = Math.min(Math.max(page, 1), totalPages);
     const from = total ? (safePage - 1) * PAGE_SIZE + 1 : 0;
     const to = total ? Math.min(safePage * PAGE_SIZE, total) : 0;
+    const hasAppointmentFilters =
+        (Number.isFinite(appointmentIdFromQuery) && appointmentIdFromQuery > 0) ||
+        appointmentIdsFromQuery.length > 0;
+
+    const clearAppointmentFilters = () => {
+        const { appointmentId, appointmentIds, ...restQuery } = router.query;
+        void router.push(
+            {
+                pathname: '/sales/history',
+                query: restQuery,
+            },
+            undefined,
+            { shallow: true },
+        );
+        setPage(1);
+    };
 
     return (
         <WarehouseLayout
@@ -131,6 +147,15 @@ export default function WarehouseSalesHistoryPage() {
                                     <span className="badge text-bg-info me-2 align-self-center">
                                         Filtr: wizyty ({appointmentIdsFromQuery.length})
                                     </span>
+                                ) : null}
+                                {hasAppointmentFilters ? (
+                                    <button
+                                        type="button"
+                                        className="button button-default ml-xs"
+                                        onClick={clearAppointmentFilters}
+                                    >
+                                        Pokaż wszystko
+                                    </button>
                                 ) : null}
                                 <Link
                                     href="/sales/new"
