@@ -43,6 +43,28 @@ describe('SalesController', () => {
         expect(service.listSales).toHaveBeenCalled();
     });
 
+    it('parses customerId and appointmentIds in findSales filters', async () => {
+        await controller.findSales(
+            '2',
+            '25',
+            'S2026',
+            'sale',
+            undefined,
+            '10, 20, abc, 0',
+            '123',
+        );
+
+        expect(service.listSales).toHaveBeenCalledWith({
+            page: 2,
+            pageSize: 25,
+            search: 'S2026',
+            kind: 'sale',
+            appointmentId: undefined,
+            appointmentIds: [10, 20],
+            customerId: 123,
+        });
+    });
+
     it('delegates getSummary to service with parsed dates', async () => {
         await expect(
             controller.getSummary('2026-03-01', '2026-03-31'),
