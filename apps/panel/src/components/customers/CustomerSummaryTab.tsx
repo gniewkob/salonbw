@@ -255,44 +255,61 @@ export default function CustomerSummaryTab({
                                         klienta
                                     </p>
                                 ) : (
-                                    <table className="salonbw-table fs-12">
-                                        <thead>
-                                            <tr>
-                                                <th>Data</th>
-                                                <th>Sprzedaż</th>
-                                                <th className="text-end">
-                                                    Kwota
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {linkedSales.items.map((sale) => (
-                                                <tr key={sale.id}>
-                                                    <td>
-                                                        {formatDate(
-                                                            sale.soldAt,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        <Link
-                                                            href={`/sales/history/${sale.id}`}
-                                                            className="link-more"
-                                                        >
-                                                            {sale.saleNumber}
-                                                        </Link>
-                                                    </td>
-                                                    <td className="text-end">
-                                                        {formatCurrency(
-                                                            Number(
-                                                                sale.totalGross ??
-                                                                    0,
-                                                            ),
-                                                        )}
-                                                    </td>
+                                    <>
+                                        <table className="salonbw-table fs-12">
+                                            <thead>
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Sprzedaż</th>
+                                                    <th className="text-end">
+                                                        Kwota
+                                                    </th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {linkedSales.items.map(
+                                                    (sale) => (
+                                                        <tr key={sale.id}>
+                                                            <td>
+                                                                {formatDate(
+                                                                    sale.soldAt,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <Link
+                                                                    href={`/sales/history/${sale.id}`}
+                                                                    className="link-more"
+                                                                >
+                                                                    {
+                                                                        sale.saleNumber
+                                                                    }
+                                                                </Link>
+                                                            </td>
+                                                            <td className="text-end">
+                                                                {formatCurrency(
+                                                                    Number(
+                                                                        sale.totalGross ??
+                                                                            0,
+                                                                    ),
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                        {completedAppointmentIds.length > 0 && (
+                                            <div className="text-end mt-2">
+                                                <Link
+                                                    href={`/sales/history?appointmentIds=${completedAppointmentIds}`}
+                                                    className="link-more"
+                                                >
+                                                    Zobacz wszystkie sprzedaże
+                                                    klienta
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>

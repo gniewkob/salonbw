@@ -39,6 +39,22 @@ export default function WarehouseSalesHistoryPage() {
             ? router.query.appointmentId[0]
             : router.query.appointmentId,
     );
+    const appointmentIdsFromQuery = Array.from(
+        new Set(
+            (
+                Array.isArray(router.query.appointmentIds)
+                    ? router.query.appointmentIds[0]
+                    : router.query.appointmentIds || ''
+            )
+                .split(',')
+                .map((part) => Number(part.trim()))
+                .filter((id) => Number.isFinite(id) && id > 0),
+        ),
+    );
+    const appointmentIdsCsv =
+        appointmentIdsFromQuery.length > 0
+            ? appointmentIdsFromQuery.join(',')
+            : undefined;
 
     useEffect(() => {
         const t = setTimeout(() => setSearchDebounced(search), 300);
@@ -50,6 +66,7 @@ export default function WarehouseSalesHistoryPage() {
         pageSize: PAGE_SIZE,
         search: searchDebounced || undefined,
         kind: kindFilter || undefined,
+        appointmentIds: appointmentIdsCsv,
         appointmentId:
             Number.isFinite(appointmentIdFromQuery) &&
             appointmentIdFromQuery > 0
@@ -108,6 +125,11 @@ export default function WarehouseSalesHistoryPage() {
                                 appointmentIdFromQuery > 0 ? (
                                     <span className="badge text-bg-info me-2 align-self-center">
                                         Filtr: wizyta #{appointmentIdFromQuery}
+                                    </span>
+                                ) : null}
+                                {appointmentIdsFromQuery.length > 0 ? (
+                                    <span className="badge text-bg-info me-2 align-self-center">
+                                        Filtr: wizyty ({appointmentIdsFromQuery.length})
                                     </span>
                                 ) : null}
                                 <Link
