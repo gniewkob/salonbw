@@ -259,8 +259,7 @@ export default function CustomerSummaryTab({
                                 ) : !linkedSales ||
                                   linkedSales.items.length === 0 ? (
                                     <p className="text-muted text-center">
-                                        Brak sprzedaży powiązanych z wizytami
-                                        klienta
+                                        Brak sprzedaży dla tego klienta
                                     </p>
                                 ) : (
                                     <>

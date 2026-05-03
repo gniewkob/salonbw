@@ -27,6 +27,10 @@ function paymentMethodLabel(value?: string | null) {
             return 'karta';
         case 'transfer':
             return 'przelew';
+        case 'online':
+            return 'online';
+        case 'voucher':
+            return 'voucher';
         default:
             return value || '-';
     }
@@ -172,6 +176,20 @@ export default function WarehouseSaleDetailsPage() {
                             <div>rodzaj: {saleKindLabel(sale.kind)}</div>
                             <div>status: {saleStatusLabel(sale.status)}</div>
                             <div>klient: {sale.clientName ?? '-'}</div>
+                            <div>id klienta: {sale.clientId ?? '-'}</div>
+                            <div>
+                                id wizyty:{' '}
+                                {sale.appointmentId ? (
+                                    <Link
+                                        href={`/sales/history?appointmentId=${sale.appointmentId}`}
+                                        className="products-link"
+                                    >
+                                        #{sale.appointmentId}
+                                    </Link>
+                                ) : (
+                                    '-'
+                                )}
+                            </div>
                             <div>pracownik: {sale.employee?.name ?? '-'}</div>
                             <div>data sprzedaży: {formatDate(sale.soldAt)}</div>
                             <div>
@@ -184,6 +202,10 @@ export default function WarehouseSaleDetailsPage() {
                             </div>
                             <div>
                                 ostatnia zmiana: {formatDate(sale.updatedAt)}
+                            </div>
+                            <div>
+                                suma brutto:{' '}
+                                {Number(sale.totalGross ?? 0).toFixed(2)} zł
                             </div>
                             <div>
                                 sprzedaż źródłowa:{' '}

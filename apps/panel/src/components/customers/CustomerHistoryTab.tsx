@@ -266,8 +266,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                         ) : !customerSales ||
                           customerSales.items.length === 0 ? (
                             <div className="text-muted small">
-                                Brak sprzedaży powiązanych z zakończonymi
-                                wizytami.
+                                Brak sprzedaży dla tego klienta.
                             </div>
                         ) : (
                             <table className="salonbw-table fs-12">
