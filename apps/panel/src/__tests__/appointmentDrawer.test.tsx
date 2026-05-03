@@ -5,6 +5,7 @@ const apiFetchMock = jest.fn();
 const cancelMock = jest.fn();
 const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
+const useWarehouseSalesMock = jest.fn();
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ apiFetch: apiFetchMock }),
@@ -39,6 +40,14 @@ jest.mock('@/hooks/useCustomers', () => ({
             items: [{ id: 5, name: 'Jan Kowalski', fullName: 'Jan Kowalski' }],
         },
     }),
+    useCreateCustomer: () => ({
+        mutateAsync: jest.fn(),
+        isPending: false,
+    }),
+    useCustomerStatistics: () => ({
+        data: null,
+        isLoading: false,
+    }),
 }));
 
 jest.mock('@/hooks/useAppointments', () => ({
@@ -49,12 +58,23 @@ jest.mock('@/hooks/useAppointments', () => ({
     }),
 }));
 
+jest.mock('@/hooks/useWarehouseViews', () => ({
+    useWarehouseSales: (...args: unknown[]) => useWarehouseSalesMock(...args),
+}));
+
+jest.mock('@/components/calendar/FinalizationModal', () => ({
+    __esModule: true,
+    default: () => null,
+}));
+
 describe('AppointmentDrawer', () => {
     beforeEach(() => {
         apiFetchMock.mockReset();
         cancelMock.mockReset();
         completeMock.mockReset();
         updateStatusMock.mockReset();
+        useWarehouseSalesMock.mockReset();
+        useWarehouseSalesMock.mockReturnValue({ data: { items: [] } });
     });
 
     it('creates appointment in create mode', async () => {
@@ -130,5 +150,83 @@ describe('AppointmentDrawer', () => {
             id: 1,
             status: 'confirmed',
         });
+    });
+
+    it('links to specific sale details when linkedSaleId exists', () => {
+        useWarehouseSalesMock.mockReturnValue({
+            data: { items: [{ id: 77 }] },
+        });
+
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 1,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    paymentMethod: 'card',
+                    paidAmount: 120,
+                    finalizedAt: '2026-05-01T11:00:00.000Z',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        const link = screen.getByRole('link', { name: 'Szczegóły sprzedaży' });
+        expect(link).toHaveAttribute('href', '/sales/history/77');
+    });
+
+    it('falls back to appointment-filtered sales history when no linkedSaleId', () => {
+        useWarehouseSalesMock.mockReturnValueOnce({
+            data: { items: [] },
+        });
+
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 42,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    paymentMethod: 'cash',
+                    paidAmount: 100,
+                    finalizedAt: '2026-05-01T11:00:00.000Z',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        const link = screen.getByRole('link', { name: 'Historia sprzedaży' });
+        expect(link).toHaveAttribute('href', '/sales/history?appointmentId=42');
     });
 });
