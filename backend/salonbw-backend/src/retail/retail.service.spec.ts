@@ -466,3 +466,138 @@ describe('RetailService listSales filters', () => {
         });
     });
 });
+
+describe('RetailService createSale client linkage', () => {
+    test('persists clientId on WarehouseSale when provided in dto', async () => {
+        const createdSale = { id: 321 };
+        const manager = {
+            find: jest.fn().mockResolvedValue([{ id: 10, stock: 20 }]),
+            create: jest
+                .fn()
+                .mockImplementation(
+                    (
+                        _entity: unknown,
+                        payload: Record<string, unknown>,
+                    ) => ({ ...payload }),
+                ),
+            save: jest.fn(async (entity: Record<string, unknown>) => {
+                if ((entity as { saleNumber?: string }).saleNumber) {
+                    return { ...entity, ...createdSale };
+                }
+                return entity;
+            }),
+            query: jest.fn().mockResolvedValue([]),
+        };
+
+        const dataSource = {
+            transaction: jest.fn(
+                async (cb: (m: typeof manager) => Promise<unknown>) =>
+                    cb(manager),
+            ),
+            query: jest.fn(),
+        } as unknown as DataSource;
+
+        const service = new RetailService(
+            {} as Repository<Product>,
+            {} as Repository<User>,
+            {} as Repository<Appointment>,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-sale.entity').WarehouseSale
+            >,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-sale-item.entity').WarehouseSaleItem
+            >,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-usage.entity').WarehouseUsage
+            >,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-usage-item.entity').WarehouseUsageItem
+            >,
+            {} as CommissionsService,
+            { logAction: jest.fn() } as unknown as LogService,
+            {
+                get: (key: string, defaultValue?: string) => {
+                    if (key === 'POS_ENABLED') return 'true';
+                    if (key === 'POS_REQUIRE_COMMISSION') return 'false';
+                    return defaultValue;
+                },
+            } as unknown as ConfigService,
+            dataSource,
+            {} as never,
+        );
+
+        jest.spyOn(
+            service as unknown as {
+                normalizeSaleItems: (
+                    dto: unknown,
+                ) => Promise<
+                    Array<{
+                        product: {
+                            id: number;
+                            unit?: string | null;
+                            vatRate?: number | null;
+                            name?: string | null;
+                        };
+                        quantity: number;
+                        unit: string;
+                        unitPriceGross: number;
+                        discountGross: number;
+                    }>
+                >;
+            },
+            'normalizeSaleItems',
+        ).mockResolvedValue([
+            {
+                product: {
+                    id: 10,
+                    unit: 'szt.',
+                    vatRate: 23,
+                    name: 'Szampon',
+                },
+                quantity: 1,
+                unit: 'szt.',
+                unitPriceGross: 25,
+                discountGross: 0,
+            },
+        ]);
+        jest.spyOn(
+            service as unknown as {
+                aggregateSaleQuantities: (
+                    items: Array<{ product: { id: number }; quantity: number }>,
+                ) => Array<{ productId: number; quantity: number }>;
+            },
+            'aggregateSaleQuantities',
+        ).mockReturnValue([{ productId: 10, quantity: 1 }]);
+        jest.spyOn(
+            service as unknown as {
+                hasTable: (name: string) => Promise<boolean>;
+            },
+            'hasTable',
+        ).mockResolvedValue(false);
+        jest.spyOn(
+            service as unknown as { formatSaleNumber: (id: number) => string },
+            'formatSaleNumber',
+        ).mockReturnValue('S20260500321');
+        jest.spyOn(service, 'getSaleDetails').mockResolvedValue({
+            id: 321,
+        } as never);
+
+        await service.createSale(
+            {
+                productId: 10,
+                quantity: 1,
+                clientId: 123,
+                clientName: 'Jan Kowalski',
+            },
+            { id: 8 } as User,
+        );
+
+        expect(manager.create).toHaveBeenCalledWith(
+            expect.any(Function),
+            expect.objectContaining({
+                clientId: 123,
+                clientName: 'Jan Kowalski',
+            }),
+        );
+    });
+});
