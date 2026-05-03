@@ -19,6 +19,13 @@ function formatDate(value?: string | null) {
     return date.toLocaleDateString('pl-PL');
 }
 
+function formatCurrency(value?: number | null) {
+    return `${new Intl.NumberFormat('pl-PL', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(Number(value ?? 0))} zł`;
+}
+
 function paymentMethodLabel(value?: string | null) {
     switch (value) {
         case 'cash':
@@ -175,8 +182,33 @@ export default function WarehouseSaleDetailsPage() {
                             <div>nr sprzedaży: {sale.saleNumber}</div>
                             <div>rodzaj: {saleKindLabel(sale.kind)}</div>
                             <div>status: {saleStatusLabel(sale.status)}</div>
-                            <div>klient: {sale.clientName ?? '-'}</div>
-                            <div>id klienta: {sale.clientId ?? '-'}</div>
+                            <div>
+                                klient:{' '}
+                                {sale.clientId ? (
+                                    <Link
+                                        href={`/customers/${sale.clientId}`}
+                                        className="products-link"
+                                    >
+                                        {sale.clientName ??
+                                            `Klient #${sale.clientId}`}
+                                    </Link>
+                                ) : (
+                                    sale.clientName ?? '-'
+                                )}
+                            </div>
+                            <div>
+                                id klienta:{' '}
+                                {sale.clientId ? (
+                                    <Link
+                                        href={`/customers/${sale.clientId}`}
+                                        className="products-link"
+                                    >
+                                        #{sale.clientId}
+                                    </Link>
+                                ) : (
+                                    '-'
+                                )}
+                            </div>
                             <div>
                                 id wizyty:{' '}
                                 {sale.appointmentId ? (
@@ -205,7 +237,7 @@ export default function WarehouseSaleDetailsPage() {
                             </div>
                             <div>
                                 suma brutto:{' '}
-                                {Number(sale.totalGross ?? 0).toFixed(2)} zł
+                                {formatCurrency(sale.totalGross)}
                             </div>
                             <div>
                                 sprzedaż źródłowa:{' '}
