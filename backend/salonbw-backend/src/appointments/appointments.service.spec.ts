@@ -473,6 +473,7 @@ describe('AppointmentsService', () => {
     });
 
     it('finalizes appointment with products and creates retail sales', async () => {
+        users[0].name = 'Jan Kowalski';
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
             {
@@ -517,6 +518,8 @@ describe('AppointmentsService', () => {
                 unitPriceCents: 2500,
                 employeeId: users[1].id,
                 appointmentId: id,
+                clientId: users[0].id,
+                clientName: 'Jan Kowalski',
             }),
             users[1],
         );
@@ -529,6 +532,8 @@ describe('AppointmentsService', () => {
                 discountCents: 500,
                 employeeId: users[1].id,
                 appointmentId: id,
+                clientId: users[0].id,
+                clientName: 'Jan Kowalski',
             }),
             users[1],
         );

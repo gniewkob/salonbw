@@ -601,7 +601,7 @@ export class RetailService {
                 saleNumber: `TEMP-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
                 soldAt,
                 clientName: dto.clientName ?? null,
-                clientId: null,
+                clientId: dto.clientId ?? null,
                 employeeId: dto.employeeId ?? null,
                 appointmentId: dto.appointmentId ?? null,
                 kind: WarehouseSaleKind.Sale,

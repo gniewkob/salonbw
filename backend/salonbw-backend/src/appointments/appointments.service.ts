@@ -657,6 +657,13 @@ export class AppointmentsService {
                     this.retailService
                 ) {
                     for (const productSale of dto.products) {
+                        const customerName = [
+                            appointment.client.firstName,
+                            appointment.client.lastName,
+                        ]
+                            .filter((part) => Boolean(part && part.trim()))
+                            .join(' ')
+                            .trim();
                         await this.retailService.createSale(
                             {
                                 productId: productSale.productId,
@@ -665,6 +672,11 @@ export class AppointmentsService {
                                 discountCents: productSale.discountCents,
                                 employeeId: appointment.employee.id,
                                 appointmentId: appointment.id,
+                                clientId: appointment.client.id,
+                                clientName:
+                                    customerName.length > 0
+                                        ? customerName
+                                        : appointment.client.name ?? null,
                             },
                             user,
                         );

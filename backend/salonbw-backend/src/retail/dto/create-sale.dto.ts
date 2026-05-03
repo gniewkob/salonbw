@@ -152,6 +152,14 @@ export class CreateSaleDto {
     clientName?: string;
 
     @ApiProperty({
+        description: 'ID of the related customer/client',
+        required: false,
+    })
+    @IsInt()
+    @IsOptional()
+    clientId?: number;
+
+    @ApiProperty({
         description: 'Optional payment method',
         required: false,
     })

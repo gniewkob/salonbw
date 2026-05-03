@@ -407,3 +407,62 @@ describe('RetailService reversal flow', () => {
         ).rejects.toThrow('Void must reverse the full remaining sale quantity');
     });
 });
+
+describe('RetailService listSales filters', () => {
+    test('applies customerId filter when provided', async () => {
+        const qb = {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            addOrderBy: jest.fn().mockReturnThis(),
+            skip: jest.fn().mockReturnThis(),
+            take: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getManyAndCount: jest
+                .fn()
+                .mockResolvedValue([[{ id: 1, clientId: 123 }], 1]),
+        };
+
+        const warehouseSales = {
+            createQueryBuilder: jest.fn(() => qb),
+        } as unknown as Repository<
+            import('../warehouse/entities/warehouse-sale.entity').WarehouseSale
+        >;
+
+        const service = new RetailService(
+            {} as Repository<Product>,
+            {} as Repository<User>,
+            {} as Repository<Appointment>,
+            warehouseSales,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-sale-item.entity').WarehouseSaleItem
+            >,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-usage.entity').WarehouseUsage
+            >,
+            {} as Repository<
+                import('../warehouse/entities/warehouse-usage-item.entity').WarehouseUsageItem
+            >,
+            {} as CommissionsService,
+            {} as LogService,
+            { get: () => 'false' } as unknown as ConfigService,
+            {} as DataSource,
+        );
+
+        jest.spyOn(
+            service as unknown as { hasTable: (name: string) => Promise<boolean> },
+            'hasTable',
+        ).mockResolvedValue(true);
+
+        const result = await service.listSales({ customerId: 123 });
+
+        expect(qb.andWhere).toHaveBeenCalledWith('sale.clientId = :customerId', {
+            customerId: 123,
+        });
+        expect(result).toEqual({
+            items: [{ id: 1, clientId: 123 }],
+            total: 1,
+            page: 1,
+            totalPages: 1,
+        });
+    });
+});
