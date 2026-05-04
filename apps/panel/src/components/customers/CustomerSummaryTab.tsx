@@ -8,8 +8,10 @@ import {
     useCustomerGroups,
     useAddGroupMembers,
     useRemoveGroupMember,
+    useTagsForCustomer,
 } from '@/hooks/useCustomers';
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
+import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import Link from 'next/link';
 
 interface Props {
@@ -29,8 +31,10 @@ export default function CustomerSummaryTab({
     const { data: history, isLoading: historyLoading } =
         useCustomerEventHistory(customer.id, { limit: 3 });
     const { data: allGroups } = useCustomerGroups();
+    const { data: customerTags = [] } = useTagsForCustomer(customer.id);
     const addToGroup = useAddGroupMembers();
     const removeFromGroup = useRemoveGroupMember();
+    const { alerts: customerAlerts } = useCustomerAlerts(customer.id);
     const { linkedSalesQuery } = useCustomerLinkedSales(customer.id, {
         salesPageSize: 5,
     });
@@ -333,6 +337,96 @@ export default function CustomerSummaryTab({
                     </div>
 
                     <div className="col-sm-6">
+                        <div className="salonbw-widget">
+                            <div className="salonbw-widget__header d-flex justify-content-between align-items-center">
+                                <span>Kontekst CRM</span>
+                                <Link
+                                    href={`/customers/${customer.id}?tab_name=events_history`}
+                                    className="link-more"
+                                >
+                                    Przejdź do timeline
+                                </Link>
+                            </div>
+                            <div className="salonbw-widget__content">
+                                {customerAlerts.length > 0 ? (
+                                    <div className="d-flex flex-column gap-2 mb-3">
+                                        {customerAlerts.slice(0, 3).map((alert) => (
+                                            <div
+                                                key={alert.id}
+                                                className={`small rounded px-2 py-1 ${
+                                                    alert.severity === 'danger'
+                                                        ? 'bg-danger-subtle text-danger-emphasis'
+                                                        : alert.severity ===
+                                                            'warning'
+                                                          ? 'bg-warning-subtle text-warning-emphasis'
+                                                          : 'bg-info-subtle text-info-emphasis'
+                                                }`}
+                                            >
+                                                <strong>{alert.label}</strong>
+                                                {alert.detail ? (
+                                                    <span>
+                                                        {': '}
+                                                        {alert.detail}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-muted small mb-3">
+                                        Brak alertów CRM.
+                                    </div>
+                                )}
+
+                                <div className="mb-2">
+                                    <strong className="small d-block mb-1">
+                                        Tagi
+                                    </strong>
+                                    {customerTags.length > 0 ? (
+                                        <div className="d-flex flex-wrap gap-1">
+                                            {customerTags.slice(0, 6).map((tag) => (
+                                                <span
+                                                    key={tag.id}
+                                                    className="badge text-bg-light border"
+                                                >
+                                                    {tag.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-muted small">
+                                            Brak tagów.
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <strong className="small d-block mb-1">
+                                        Grupy
+                                    </strong>
+                                    {customer.groups &&
+                                    customer.groups.length > 0 ? (
+                                        <div className="d-flex flex-wrap gap-1">
+                                            {customer.groups
+                                                .slice(0, 4)
+                                                .map((group) => (
+                                                    <span
+                                                        key={group.id}
+                                                        className="badge text-bg-light border"
+                                                    >
+                                                        {group.name}
+                                                    </span>
+                                                ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-muted small">
+                                            Brak grup.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Contact Info */}
                         <div className="salonbw-widget">
                             <div className="salonbw-widget__header">
