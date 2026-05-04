@@ -8,7 +8,7 @@ import {
     useUpdateCustomerNote,
 } from '@/hooks/useCustomers';
 import { useToast } from '@/contexts/ToastContext';
-import type { CustomerNote } from '@/types';
+import type { CustomerNote, NoteType } from '@/types';
 
 interface Props {
     customerId: number;
@@ -18,6 +18,21 @@ function formatDate(value: string) {
     return new Date(value).toLocaleString('pl-PL');
 }
 
+function noteTypeLabel(type: NoteType) {
+    switch (type) {
+        case 'warning':
+            return 'Ostrzeżenie';
+        case 'medical':
+            return 'Medyczna';
+        case 'preference':
+            return 'Preferencja';
+        case 'payment':
+            return 'Płatność';
+        default:
+            return 'Ogólna';
+    }
+}
+
 export default function CustomerNotesTab({ customerId }: Props) {
     const { data: notes = [], isLoading, error } = useCustomerNotes(customerId);
     const create = useCreateCustomerNote();
@@ -25,6 +40,8 @@ export default function CustomerNotesTab({ customerId }: Props) {
     const remove = useDeleteCustomerNote();
     const toast = useToast();
     const [content, setContent] = useState('');
+    const [noteType, setNoteType] = useState<NoteType>('general');
+    const [pinInAlerts, setPinInAlerts] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     const handleAdd = async () => {
@@ -34,9 +51,12 @@ export default function CustomerNotesTab({ customerId }: Props) {
             await create.mutateAsync({
                 customerId,
                 content: content.trim(),
-                type: 'general',
+                type: noteType,
+                isPinned: pinInAlerts,
             });
             setContent('');
+            setNoteType('general');
+            setPinInAlerts(false);
             toast.success('Dodano komentarz');
         } catch (e) {
             const message =
@@ -73,6 +93,39 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                 />
+                <div className="row g-2 mt-2">
+                    <div className="col-sm-6">
+                        <label className="form-label mb-1" htmlFor="noteType">
+                            Typ notatki
+                        </label>
+                        <select
+                            id="noteType"
+                            className="form-control"
+                            value={noteType}
+                            onChange={(e) =>
+                                setNoteType(e.target.value as NoteType)
+                            }
+                        >
+                            <option value="general">Ogólna</option>
+                            <option value="warning">Ostrzeżenie</option>
+                            <option value="medical">Medyczna</option>
+                            <option value="preference">Preferencja</option>
+                            <option value="payment">Płatność</option>
+                        </select>
+                    </div>
+                    <div className="col-sm-6 d-flex align-items-end">
+                        <label className="d-flex align-items-center gap-2 mb-0">
+                            <input
+                                type="checkbox"
+                                checked={pinInAlerts}
+                                onChange={(e) =>
+                                    setPinInAlerts(e.target.checked)
+                                }
+                            />
+                            <span>Pokaż w alertach recepcji</span>
+                        </label>
+                    </div>
+                </div>
                 <div className="customer-comments-actions">
                     <button
                         type="button"
@@ -144,6 +197,8 @@ function NoteRow({
     onTogglePin: () => Promise<void>;
     onDelete: () => Promise<void>;
 }) {
+    const noteType = noteTypeLabel(note.type);
+
     return (
         <div className="customer-comment-row">
             <div className="customer-comment-meta">
@@ -151,6 +206,7 @@ function NoteRow({
                 {note.createdBy?.name ? (
                     <span> · {note.createdBy.name}</span>
                 ) : null}
+                <span className="label label-default">{noteType}</span>
                 {note.isPinned ? (
                     <span className="label label-default customer-comment-pin">
                         przypięty
@@ -164,7 +220,7 @@ function NoteRow({
                     className="btn btn-default btn-xs"
                     onClick={() => void onTogglePin()}
                 >
-                    {note.isPinned ? 'odepnij' : 'przypnij'}
+                    {note.isPinned ? 'ukryj z alertów' : 'pokaż w alertach'}
                 </button>
                 <button
                     type="button"
