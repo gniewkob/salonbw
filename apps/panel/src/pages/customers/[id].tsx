@@ -15,6 +15,7 @@ import {
     useCustomerStatistics,
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
+import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import type { Customer, CustomerTag } from '@/types';
 import {
     CustomerStatisticsTab,
@@ -358,6 +359,7 @@ function CustomerSummaryView({
     stats: CustomerSummaryStats | null | undefined;
     history: CustomerHistory | null | undefined;
 }) {
+    const { alerts: customerAlerts } = useCustomerAlerts(customer.id);
     const upcomingVisits = Array.isArray(stats?.upcomingVisits)
         ? stats.upcomingVisits
         : [];
@@ -455,6 +457,45 @@ function CustomerSummaryView({
                                         ? groupsOrTags.join(', ')
                                         : 'nie podano'}
                                 </span>
+                            </div>
+                            <div className="row-col single-detail-row">
+                                <span className="lbl">kontekst CRM</span>
+                                <div>
+                                    {customerAlerts.length > 0 ? (
+                                        <div className="d-flex flex-wrap gap-1">
+                                            {customerAlerts
+                                                .slice(0, 3)
+                                                .map((alert) => (
+                                                    <span
+                                                        key={alert.id}
+                                                        className={`badge ${
+                                                            alert.severity ===
+                                                            'danger'
+                                                                ? 'bg-danger'
+                                                                : alert.severity ===
+                                                                    'warning'
+                                                                  ? 'bg-warning'
+                                                                  : 'bg-info'
+                                                        }`}
+                                                    >
+                                                        {alert.label}
+                                                    </span>
+                                                ))}
+                                        </div>
+                                    ) : (
+                                        <span className="light_text">
+                                            brak alertów
+                                        </span>
+                                    )}
+                                    <div className="mt-1">
+                                        <Link
+                                            href={`/customers/${customer.id}?tab_name=events_history`}
+                                            className="link-more"
+                                        >
+                                            Przejdź do timeline
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                             <div className="row-col single-detail-row">
                                 <span className="icon_box">
