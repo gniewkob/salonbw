@@ -6,6 +6,11 @@ import CustomerGalleryTab from '@/components/customers/CustomerGalleryTab';
 import CustomerFilesTab from '@/components/customers/CustomerFilesTab';
 import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
 
+jest.mock('@/components/customers/CustomerTimeline', () => ({
+    __esModule: true,
+    default: () => null,
+}));
+
 jest.mock('@/hooks/useSms', () => ({
     useSmsHistory: jest.fn(() => ({
         loading: false,

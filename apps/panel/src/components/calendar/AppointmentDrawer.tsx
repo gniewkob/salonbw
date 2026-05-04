@@ -8,6 +8,7 @@ import {
     useCustomers,
     useCustomerStatistics,
 } from '@/hooks/useCustomers';
+import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
@@ -113,6 +114,8 @@ export default function AppointmentDrawer({
         mode === 'edit' ? (appointment?.client?.id ?? null) : null;
     const { data: customerStats, isLoading: customerStatsLoading } =
         useCustomerStatistics(customerIdForInsights);
+    const { alerts: customerAlerts, isLoading: customerAlertsLoading } =
+        useCustomerAlerts(customerIdForInsights);
     const appointmentIdForSales =
         mode === 'edit' ? (appointment?.id ?? null) : null;
     const { data: appointmentSalesResponse } = useWarehouseSales({
@@ -649,6 +652,35 @@ export default function AppointmentDrawer({
                                     </div>
                                 )}
                             </div>
+                            {!customerAlertsLoading &&
+                            customerAlerts.length > 0 ? (
+                                <div className="mt-2 pt-2 border-top">
+                                    <strong>Alerty klienta</strong>
+                                    <div className="d-flex flex-column gap-1 mt-1">
+                                        {customerAlerts.map((alert) => (
+                                            <div
+                                                key={alert.id}
+                                                className={`small rounded px-2 py-1 ${
+                                                    alert.severity === 'danger'
+                                                        ? 'bg-danger-subtle text-danger-emphasis'
+                                                        : alert.severity ===
+                                                            'warning'
+                                                          ? 'bg-warning-subtle text-warning-emphasis'
+                                                          : 'bg-info-subtle text-info-emphasis'
+                                                }`}
+                                            >
+                                                <strong>{alert.label}</strong>
+                                                {alert.detail ? (
+                                                    <span>
+                                                        {': '}
+                                                        {alert.detail}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
                     )}
 

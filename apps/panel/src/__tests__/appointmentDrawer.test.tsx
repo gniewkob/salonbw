@@ -6,6 +6,7 @@ const cancelMock = jest.fn();
 const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
 const useWarehouseSalesMock = jest.fn();
+const useCustomerAlertsMock = jest.fn();
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ apiFetch: apiFetchMock }),
@@ -62,6 +63,10 @@ jest.mock('@/hooks/useWarehouseViews', () => ({
     useWarehouseSales: (...args: unknown[]) => useWarehouseSalesMock(...args),
 }));
 
+jest.mock('@/hooks/useCustomerAlerts', () => ({
+    useCustomerAlerts: (...args: unknown[]) => useCustomerAlertsMock(...args),
+}));
+
 jest.mock('@/components/calendar/FinalizationModal', () => ({
     __esModule: true,
     default: () => null,
@@ -74,7 +79,12 @@ describe('AppointmentDrawer', () => {
         completeMock.mockReset();
         updateStatusMock.mockReset();
         useWarehouseSalesMock.mockReset();
+        useCustomerAlertsMock.mockReset();
         useWarehouseSalesMock.mockReturnValue({ data: { items: [] } });
+        useCustomerAlertsMock.mockReturnValue({
+            alerts: [],
+            isLoading: false,
+        });
     });
 
     it('creates appointment in create mode', async () => {
@@ -228,5 +238,52 @@ describe('AppointmentDrawer', () => {
 
         const link = screen.getByRole('link', { name: 'Historia sprzedaży' });
         expect(link).toHaveAttribute('href', '/sales/history?appointmentId=42');
+    });
+
+    it('renders customer alerts when available', () => {
+        useCustomerAlertsMock.mockReturnValue({
+            isLoading: false,
+            alerts: [
+                {
+                    id: 'no-show',
+                    severity: 'warning',
+                    label: 'Historia no-show',
+                    detail: 'Liczba nieobecności: 1',
+                },
+            ],
+        });
+
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 42,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    paymentMethod: 'cash',
+                    paidAmount: 100,
+                    finalizedAt: '2026-05-01T11:00:00.000Z',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Alerty klienta')).toBeInTheDocument();
+        expect(screen.getByText(/Historia no-show/i)).toBeInTheDocument();
     });
 });

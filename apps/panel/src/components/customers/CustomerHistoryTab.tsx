@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCustomerEventHistory } from '@/hooks/useCustomers';
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import Link from 'next/link';
+import CustomerTimeline from './CustomerTimeline';
 
 interface Props {
     customerId: number;
@@ -240,6 +241,14 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             {customerId > 0 ? (
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
                     <div className="w-100">
+                        <div className="mb-3">
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                <div className="text-muted small">
+                                    timeline klienta
+                                </div>
+                            </div>
+                            <CustomerTimeline customerId={customerId} limit={15} />
+                        </div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
                                 sprzedaże klienta (

@@ -5,6 +5,7 @@ export { default as CustomerPersonalDataTab } from './CustomerPersonalDataTab';
 export { default as CustomerPersonalDataView } from './CustomerPersonalDataView';
 export { default as CustomerStatisticsTab } from './CustomerStatisticsTab';
 export { default as CustomerHistoryTab } from './CustomerHistoryTab';
+export { default as CustomerTimeline } from './CustomerTimeline';
 export { default as CustomerNotesTab } from './CustomerNotesTab';
 export { default as CustomerConsentsTab } from './CustomerConsentsTab';
 export { default as CustomerCommunicationTab } from './CustomerCommunicationTab';
