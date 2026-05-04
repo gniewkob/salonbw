@@ -243,9 +243,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <div className="w-100">
                         <div className="mb-3">
                             <div className="d-flex justify-content-between align-items-center mb-1">
-                                <h4 className="small mb-0">
-                                    Timeline klienta
-                                </h4>
+                                <h4 className="small mb-0">Timeline klienta</h4>
                             </div>
                             <div className="text-muted small mb-2">
                                 Szybki kontekst (wizyty, sprzedaże, notatki).
