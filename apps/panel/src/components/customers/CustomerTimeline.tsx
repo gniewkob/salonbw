@@ -31,6 +31,25 @@ function labelForType(type: 'appointment' | 'sale' | 'note') {
     return 'Notatka';
 }
 
+function statusLabel(status: string | undefined) {
+    switch (status) {
+        case 'completed':
+            return 'Zakończona';
+        case 'cancelled':
+            return 'Anulowana';
+        case 'no_show':
+            return 'No-show';
+        case 'in_progress':
+            return 'W trakcie';
+        case 'confirmed':
+            return 'Potwierdzona';
+        case 'scheduled':
+            return 'Zaplanowana';
+        default:
+            return status ?? '';
+    }
+}
+
 export default function CustomerTimeline({
     customerId,
     limit = 20,
@@ -87,8 +106,12 @@ export default function CustomerTimeline({
                             ) : null}
                             {item.type === 'note' ? (
                                 <div className="small mt-1">
-                                    {item.isPinned ? 'Przypięta: ' : ''}
-                                    {item.content}
+                                    {item.isPinned ? (
+                                        <span className="badge text-bg-warning me-1">
+                                            Przypięta
+                                        </span>
+                                    ) : null}
+                                    <span>{item.content}</span>
                                 </div>
                             ) : null}
                         </div>
@@ -97,7 +120,11 @@ export default function CustomerTimeline({
                                 {formatDateTime(item.date)}
                             </div>
                             {item.type === 'appointment' && item.status ? (
-                                <div className="small">{item.status}</div>
+                                <div className="small">
+                                    <span className="badge text-bg-light border">
+                                        {statusLabel(item.status)}
+                                    </span>
+                                </div>
                             ) : null}
                             {'amount' in item && formatCurrency(item.amount) ? (
                                 <div className="small fw-semibold">

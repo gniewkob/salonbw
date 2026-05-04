@@ -82,6 +82,62 @@ describe('CustomerTimeline', () => {
             'href',
             '/sales/history/301',
         );
+        expect(screen.getByText('Zakończona')).toBeInTheDocument();
+    });
+
+    it('uses stable tie-breakers when items have same timestamp', () => {
+        useCustomerEventHistoryMock.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: {
+                items: [
+                    {
+                        id: 11,
+                        date: '2026-05-05',
+                        time: '10:00',
+                        service: { id: 1, name: 'Wizyta A' },
+                        employee: { id: 2, name: 'Anna' },
+                        status: 'scheduled',
+                        price: 100,
+                    },
+                ],
+            },
+        });
+        useCustomerNotesMock.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: [
+                {
+                    id: 12,
+                    content: 'Ta sama data',
+                    type: 'warning',
+                    isPinned: false,
+                    createdAt: '2026-05-05T10:00:00.000Z',
+                },
+            ],
+        });
+        useCustomerLinkedSalesMock.mockReturnValue({
+            linkedSalesQuery: {
+                isLoading: false,
+                isError: false,
+                data: {
+                    items: [
+                        {
+                            id: 13,
+                            saleNumber: 'S-13',
+                            soldAt: '2026-05-05T10:00:00.000Z',
+                            totalGross: 150,
+                        },
+                    ],
+                },
+            },
+        });
+
+        render(<CustomerTimeline customerId={1} limit={10} />);
+
+        const labels = screen.getAllByText(/Notatka|Sprzedaż|Wizyta/);
+        expect(labels[0]).toHaveTextContent('Notatka');
+        expect(labels[1]).toHaveTextContent('Sprzedaż');
+        expect(labels[2]).toHaveTextContent('Wizyta');
     });
 });
-

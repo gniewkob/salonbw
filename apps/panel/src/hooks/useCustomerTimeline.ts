@@ -39,6 +39,12 @@ interface UseCustomerTimelineOptions {
     limit?: number;
 }
 
+const TIMELINE_TYPE_PRIORITY: Record<CustomerTimelineItem['type'], number> = {
+    note: 3,
+    sale: 2,
+    appointment: 1,
+};
+
 function noteTypeLabel(noteType: NoteType | undefined) {
     switch (noteType) {
         case 'warning':
@@ -122,9 +128,17 @@ export function useCustomerTimeline(
             },
         );
 
-        return [...appointmentItems, ...saleItems, ...noteItems].sort(
-            (a, b) => b.timestamp - a.timestamp,
-        );
+        return [...appointmentItems, ...saleItems, ...noteItems].sort((a, b) => {
+            if (b.timestamp !== a.timestamp) {
+                return b.timestamp - a.timestamp;
+            }
+            const typeDelta =
+                TIMELINE_TYPE_PRIORITY[b.type] - TIMELINE_TYPE_PRIORITY[a.type];
+            if (typeDelta !== 0) {
+                return typeDelta;
+            }
+            return b.id - a.id;
+        });
     }, [eventsQuery.data?.items, linkedSalesQuery.data?.items, notesQuery.data]);
 
     return {
@@ -137,4 +151,3 @@ export function useCustomerTimeline(
             eventsQuery.isError || notesQuery.isError || linkedSalesQuery.isError,
     };
 }
-
