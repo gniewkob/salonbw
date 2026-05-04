@@ -13,6 +13,29 @@ export type CustomerAlert = {
     source: 'stats' | 'note' | 'tag' | 'group';
 };
 
+const IMPORTANT_TAG_KEYWORDS = [
+    'vip',
+    'alerg',
+    'uczul',
+    'no-show',
+    'noshow',
+    'ryzyko',
+    'important',
+];
+
+function isImportantTag(name: string) {
+    const normalized = name.toLowerCase();
+    return IMPORTANT_TAG_KEYWORDS.some((keyword) =>
+        normalized.includes(keyword),
+    );
+}
+
+function severityWeight(severity: CustomerAlert['severity']) {
+    if (severity === 'danger') return 3;
+    if (severity === 'warning') return 2;
+    return 1;
+}
+
 export function useCustomerAlerts(customerId: number | null) {
     const { data: stats, isLoading: statsLoading } =
         useCustomerStatistics(customerId);
@@ -58,17 +81,19 @@ export function useCustomerAlerts(customerId: number | null) {
         });
     });
 
-    tags.slice(0, 3).forEach((tag) => {
-        alerts.push({
-            id: `tag-${tag.id}`,
-            severity: 'info',
-            label: 'Tag klienta',
-            detail: tag.name,
-            source: 'tag',
+    tags.filter((tag) => isImportantTag(tag.name))
+        .slice(0, 2)
+        .forEach((tag) => {
+            alerts.push({
+                id: `tag-${tag.id}`,
+                severity: 'warning',
+                label: 'Ważny tag klienta',
+                detail: tag.name,
+                source: 'tag',
+            });
         });
-    });
 
-    (customer?.groups ?? []).slice(0, 2).forEach((group) => {
+    (customer?.groups ?? []).slice(0, 1).forEach((group) => {
         alerts.push({
             id: `group-${group.id}`,
             severity: 'info',
@@ -78,9 +103,12 @@ export function useCustomerAlerts(customerId: number | null) {
         });
     });
 
+    const sortedAlerts = alerts
+        .sort((a, b) => severityWeight(b.severity) - severityWeight(a.severity))
+        .slice(0, 5);
+
     return {
-        alerts,
+        alerts: sortedAlerts,
         isLoading: statsLoading || notesLoading || tagsLoading || customerLoading,
     };
 }
-

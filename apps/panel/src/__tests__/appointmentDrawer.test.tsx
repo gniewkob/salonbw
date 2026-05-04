@@ -286,4 +286,43 @@ describe('AppointmentDrawer', () => {
         expect(screen.getByText('Alerty klienta')).toBeInTheDocument();
         expect(screen.getByText(/Historia no-show/i)).toBeInTheDocument();
     });
+
+    it('does not render customer alerts section when there are no alerts', () => {
+        useCustomerAlertsMock.mockReturnValue({
+            isLoading: false,
+            alerts: [],
+        });
+
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 42,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    paymentMethod: 'cash',
+                    paidAmount: 100,
+                    finalizedAt: '2026-05-01T11:00:00.000Z',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.queryByText('Alerty klienta')).not.toBeInTheDocument();
+    });
 });
