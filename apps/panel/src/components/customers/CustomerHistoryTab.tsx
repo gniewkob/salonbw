@@ -242,16 +242,20 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
                     <div className="w-100">
                         <div className="mb-3">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <div className="text-muted small">
-                                    timeline klienta
-                                </div>
+                            <div className="d-flex justify-content-between align-items-center mb-1">
+                                <strong className="small">
+                                    Timeline klienta
+                                </strong>
                             </div>
-                            <CustomerTimeline customerId={customerId} limit={15} />
+                            <div className="text-muted small mb-2">
+                                Szybki kontekst (wizyty, sprzedaże, notatki).
+                                Szczegółowe listy znajdziesz poniżej.
+                            </div>
+                            <CustomerTimeline customerId={customerId} limit={10} />
                         </div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
-                                sprzedaże klienta (
+                                szczegóły sprzedaży klienta (
                                 {typeof customerSales?.total === 'number'
                                     ? customerSales.total
                                     : 0}
@@ -319,6 +323,12 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     </div>
                 </div>
             ) : null}
+
+            <div className="customer-history-toolbar customer-history-toolbar--tight">
+                <div className="text-muted small">
+                    szczegóły historii wizyt
+                </div>
+            </div>
 
             {isLoading ? (
                 <div className="customer-loading">
