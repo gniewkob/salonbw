@@ -80,64 +80,68 @@ export default function CustomerTimeline({
 
     return (
         <div className="d-flex flex-column gap-2">
-            {items.map((item) => (
-                <div
-                    key={`${item.type}-${item.id}`}
-                    className="border rounded p-2 bg-white"
-                >
-                    <div className="d-flex justify-content-between align-items-start gap-2">
-                        <div>
-                            <div className="small text-muted">
-                                {labelForType(item.type)}
-                            </div>
-                            <div className="fw-semibold">
-                                {'href' in item && item.href ? (
-                                    <Link
-                                        href={item.href}
-                                        className="link-more"
-                                    >
-                                        {item.title}
-                                    </Link>
-                                ) : (
-                                    item.title
-                                )}
-                            </div>
-                            {'subtitle' in item && item.subtitle ? (
+            {items.map((item) => {
+                const amountLabel =
+                    'amount' in item ? formatCurrency(item.amount) : null;
+                return (
+                    <div
+                        key={`${item.type}-${item.id}`}
+                        className="border rounded p-2 bg-white"
+                    >
+                        <div className="d-flex justify-content-between align-items-start gap-2">
+                            <div>
                                 <div className="small text-muted">
-                                    {item.subtitle}
+                                    {labelForType(item.type)}
                                 </div>
-                            ) : null}
-                            {item.type === 'note' ? (
-                                <div className="small mt-1">
-                                    {item.isPinned ? (
-                                        <span className="badge text-bg-warning me-1">
-                                            Przypięta
-                                        </span>
-                                    ) : null}
-                                    <span>{item.content}</span>
+                                <div className="fw-semibold">
+                                    {'href' in item && item.href ? (
+                                        <Link
+                                            href={item.href}
+                                            className="link-more"
+                                        >
+                                            {item.title}
+                                        </Link>
+                                    ) : (
+                                        item.title
+                                    )}
                                 </div>
-                            ) : null}
-                        </div>
-                        <div className="text-end">
-                            <div className="small text-muted">
-                                {formatDateTime(item.date)}
+                                {'subtitle' in item && item.subtitle ? (
+                                    <div className="small text-muted">
+                                        {item.subtitle}
+                                    </div>
+                                ) : null}
+                                {item.type === 'note' ? (
+                                    <div className="small mt-1">
+                                        {item.isPinned ? (
+                                            <span className="badge text-bg-warning me-1">
+                                                Przypięta
+                                            </span>
+                                        ) : null}
+                                        <span>{item.content}</span>
+                                    </div>
+                                ) : null}
                             </div>
-                            {item.type === 'appointment' && item.status ? (
-                                <div className="small">
-                                    <span className="badge text-bg-light border">
-                                        {statusLabel(item.status)}
-                                    </span>
+                            <div className="text-end">
+                                <div className="small text-muted">
+                                    {formatDateTime(item.date)}
                                 </div>
-                            ) : null}
-                            {'amount' in item && formatCurrency(item.amount) ? (
-                                <div className="small fw-semibold">
-                                    {formatCurrency(item.amount)}
-                                </div>
-                            ) : null}
+                                {item.type === 'appointment' && item.status ? (
+                                    <div className="small">
+                                        <span className="badge text-bg-light border">
+                                            {statusLabel(item.status)}
+                                        </span>
+                                    </div>
+                                ) : null}
+                                {amountLabel ? (
+                                    <div className="small fw-semibold">
+                                        {amountLabel}
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

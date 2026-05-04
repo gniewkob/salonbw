@@ -243,9 +243,9 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <div className="w-100">
                         <div className="mb-3">
                             <div className="d-flex justify-content-between align-items-center mb-1">
-                                <strong className="small">
+                                <h4 className="small mb-0">
                                     Timeline klienta
-                                </strong>
+                                </h4>
                             </div>
                             <div className="text-muted small mb-2">
                                 Szybki kontekst (wizyty, sprzedaże, notatki).
@@ -258,7 +258,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                         </div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
-                                szczegóły sprzedaży klienta (
+                                Szczegóły sprzedaży klienta (
                                 {typeof customerSales?.total === 'number'
                                     ? customerSales.total
                                     : 0}
@@ -328,7 +328,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             ) : null}
 
             <div className="customer-history-toolbar customer-history-toolbar--tight">
-                <div className="text-muted small">szczegóły historii wizyt</div>
+                <div className="text-muted small">Szczegóły historii wizyt</div>
             </div>
 
             {isLoading ? (
