@@ -43,7 +43,8 @@ export function useCustomerAlerts(customerId: number | null) {
         useCustomerNotes(customerId);
     const { data: tags = [], isLoading: tagsLoading } =
         useTagsForCustomer(customerId);
-    const { data: customer, isLoading: customerLoading } = useCustomer(customerId);
+    const { data: customer, isLoading: customerLoading } =
+        useCustomer(customerId);
 
     const alerts: CustomerAlert[] = [];
 
@@ -67,9 +68,10 @@ export function useCustomerAlerts(customerId: number | null) {
     pinnedAlertNotes.forEach((note) => {
         alerts.push({
             id: `note-${note.id}`,
-            severity: note.type === 'warning' || note.type === 'medical'
-                ? 'danger'
-                : 'warning',
+            severity:
+                note.type === 'warning' || note.type === 'medical'
+                    ? 'danger'
+                    : 'warning',
             label:
                 note.type === 'medical'
                     ? 'Notatka medyczna'
@@ -109,6 +111,7 @@ export function useCustomerAlerts(customerId: number | null) {
 
     return {
         alerts: sortedAlerts,
-        isLoading: statsLoading || notesLoading || tagsLoading || customerLoading,
+        isLoading:
+            statsLoading || notesLoading || tagsLoading || customerLoading,
     };
 }

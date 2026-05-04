@@ -13,11 +13,9 @@ jest.mock('next/router', () => ({
 
 jest.mock('@/components/warehouse/WarehouseLayout', () => ({
     __esModule: true,
-    default: ({
-        children,
-    }: {
-        children: React.ReactNode;
-    }) => <div>{children}</div>,
+    default: ({ children }: { children: React.ReactNode }) => (
+        <div>{children}</div>
+    ),
 }));
 
 jest.mock('@/hooks/useWarehouseViews', () => ({

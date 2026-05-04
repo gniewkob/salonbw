@@ -48,9 +48,7 @@ export default function FinalizationModal({
     const [showProductPicker, setShowProductPicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-        null,
-    );
+    const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Fetch products for upselling
     const { data: productsResponse } = useQuery<ProductsResponse>({

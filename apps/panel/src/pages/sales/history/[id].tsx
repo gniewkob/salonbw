@@ -193,7 +193,7 @@ export default function WarehouseSaleDetailsPage() {
                                             `Klient #${sale.clientId}`}
                                     </Link>
                                 ) : (
-                                    sale.clientName ?? '-'
+                                    (sale.clientName ?? '-')
                                 )}
                             </div>
                             <div>
@@ -236,8 +236,7 @@ export default function WarehouseSaleDetailsPage() {
                                 ostatnia zmiana: {formatDate(sale.updatedAt)}
                             </div>
                             <div>
-                                suma brutto:{' '}
-                                {formatCurrency(sale.totalGross)}
+                                suma brutto: {formatCurrency(sale.totalGross)}
                             </div>
                             <div>
                                 sprzedaż źródłowa:{' '}

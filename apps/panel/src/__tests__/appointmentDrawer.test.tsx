@@ -376,9 +376,9 @@ describe('AppointmentDrawer', () => {
         );
 
         expect(screen.getByText('Notatka medyczna')).toBeInTheDocument();
-        expect(screen.getAllByText(/Alergia na lateks/i).length).toBeGreaterThan(
-            0,
-        );
+        expect(
+            screen.getAllByText(/Alergia na lateks/i).length,
+        ).toBeGreaterThan(0);
         expect(screen.getByText('Preferencja klienta')).toBeInTheDocument();
     });
 });

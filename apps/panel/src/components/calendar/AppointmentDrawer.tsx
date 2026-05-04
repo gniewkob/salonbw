@@ -593,7 +593,8 @@ export default function AppointmentDrawer({
                                                 )}
                                             </div>
                                         )}
-                                        {appointment.tipAmount !== undefined && (
+                                        {appointment.tipAmount !==
+                                            undefined && (
                                             <div>
                                                 Napiwek:{' '}
                                                 {formatCurrency(
@@ -636,7 +637,9 @@ export default function AppointmentDrawer({
                                         </div>
                                         <div>
                                             Łączne wydatki:{' '}
-                                            {customerStats.totalSpent.toFixed(2)}{' '}
+                                            {customerStats.totalSpent.toFixed(
+                                                2,
+                                            )}{' '}
                                             PLN
                                         </div>
                                         <div>

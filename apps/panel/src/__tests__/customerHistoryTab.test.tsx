@@ -42,11 +42,11 @@ describe('CustomerHistoryTab', () => {
 
         expect(screen.getByText('Timeline klienta')).toBeInTheDocument();
         expect(
-            screen.getByText(
-                /Szybki kontekst \(wizyty, sprzedaże, notatki\)/i,
-            ),
+            screen.getByText(/Szybki kontekst \(wizyty, sprzedaże, notatki\)/i),
         ).toBeInTheDocument();
-        expect(screen.getByTestId('customer-timeline-mock')).toBeInTheDocument();
+        expect(
+            screen.getByTestId('customer-timeline-mock'),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(/szczegóły sprzedaży klienta/i),
         ).toBeInTheDocument();
@@ -55,4 +55,3 @@ describe('CustomerHistoryTab', () => {
         ).toBeInTheDocument();
     });
 });
-

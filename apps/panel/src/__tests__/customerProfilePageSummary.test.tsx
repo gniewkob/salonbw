@@ -97,4 +97,3 @@ describe('Customer profile canonical summary', () => {
         ).toHaveAttribute('href', '/customers/123?tab_name=events_history');
     });
 });
-

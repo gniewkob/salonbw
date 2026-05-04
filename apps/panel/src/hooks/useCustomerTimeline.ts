@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
-import { useCustomerEventHistory, useCustomerNotes } from '@/hooks/useCustomers';
+import {
+    useCustomerEventHistory,
+    useCustomerNotes,
+} from '@/hooks/useCustomers';
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import type { NoteType } from '@/types';
 
@@ -115,7 +118,9 @@ export function useCustomerTimeline(
 
         const noteItems: CustomerTimelineItem[] = (notesQuery.data ?? []).map(
             (note) => {
-                const timestamp = Number.isNaN(new Date(note.createdAt).getTime())
+                const timestamp = Number.isNaN(
+                    new Date(note.createdAt).getTime(),
+                )
                     ? 0
                     : new Date(note.createdAt).getTime();
                 return {
@@ -131,18 +136,25 @@ export function useCustomerTimeline(
             },
         );
 
-        return [...appointmentItems, ...saleItems, ...noteItems].sort((a, b) => {
-            if (b.timestamp !== a.timestamp) {
-                return b.timestamp - a.timestamp;
-            }
-            const typeDelta =
-                TIMELINE_TYPE_PRIORITY[b.type] - TIMELINE_TYPE_PRIORITY[a.type];
-            if (typeDelta !== 0) {
-                return typeDelta;
-            }
-            return b.id - a.id;
-        });
-    }, [eventsQuery.data?.items, linkedSalesQuery.data?.items, notesQuery.data]);
+        return [...appointmentItems, ...saleItems, ...noteItems].sort(
+            (a, b) => {
+                if (b.timestamp !== a.timestamp) {
+                    return b.timestamp - a.timestamp;
+                }
+                const typeDelta =
+                    TIMELINE_TYPE_PRIORITY[b.type] -
+                    TIMELINE_TYPE_PRIORITY[a.type];
+                if (typeDelta !== 0) {
+                    return typeDelta;
+                }
+                return b.id - a.id;
+            },
+        );
+    }, [
+        eventsQuery.data?.items,
+        linkedSalesQuery.data?.items,
+        notesQuery.data,
+    ]);
 
     return {
         items,
@@ -151,6 +163,8 @@ export function useCustomerTimeline(
             notesQuery.isLoading ||
             linkedSalesQuery.isLoading,
         isError:
-            eventsQuery.isError || notesQuery.isError || linkedSalesQuery.isError,
+            eventsQuery.isError ||
+            notesQuery.isError ||
+            linkedSalesQuery.isError,
     };
 }

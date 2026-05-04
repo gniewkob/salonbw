@@ -41,10 +41,9 @@ export default function WarehouseSalesHistoryPage() {
     );
     const appointmentIdsFromQuery = Array.from(
         new Set(
-            (
-                Array.isArray(router.query.appointmentIds)
-                    ? router.query.appointmentIds[0]
-                    : router.query.appointmentIds || ''
+            (Array.isArray(router.query.appointmentIds)
+                ? router.query.appointmentIds[0]
+                : router.query.appointmentIds || ''
             )
                 .split(',')
                 .map((part) => Number(part.trim()))
@@ -90,14 +89,17 @@ export default function WarehouseSalesHistoryPage() {
     const from = total ? (safePage - 1) * PAGE_SIZE + 1 : 0;
     const to = total ? Math.min(safePage * PAGE_SIZE, total) : 0;
     const hasAppointmentFilters =
-        (Number.isFinite(appointmentIdFromQuery) && appointmentIdFromQuery > 0) ||
+        (Number.isFinite(appointmentIdFromQuery) &&
+            appointmentIdFromQuery > 0) ||
         appointmentIdsFromQuery.length > 0;
     const hasCustomerFilter =
         Number.isFinite(customerIdFromQuery) && customerIdFromQuery > 0;
 
     const clearAppointmentFilters = () => {
-        const { appointmentId, appointmentIds, customerId, ...restQuery } =
-            router.query;
+        const restQuery = { ...router.query };
+        delete restQuery.appointmentId;
+        delete restQuery.appointmentIds;
+        delete restQuery.customerId;
         void router.push(
             {
                 pathname: '/sales/history',
@@ -157,7 +159,8 @@ export default function WarehouseSalesHistoryPage() {
                                 ) : null}
                                 {appointmentIdsFromQuery.length > 0 ? (
                                     <span className="badge text-bg-info me-2 align-self-center">
-                                        Filtr: wizyty ({appointmentIdsFromQuery.length})
+                                        Filtr: wizyty (
+                                        {appointmentIdsFromQuery.length})
                                     </span>
                                 ) : null}
                                 {hasCustomerFilter ? (

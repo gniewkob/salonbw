@@ -251,7 +251,10 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                 Szybki kontekst (wizyty, sprzedaże, notatki).
                                 Szczegółowe listy znajdziesz poniżej.
                             </div>
-                            <CustomerTimeline customerId={customerId} limit={10} />
+                            <CustomerTimeline
+                                customerId={customerId}
+                                limit={10}
+                            />
                         </div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
@@ -325,9 +328,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             ) : null}
 
             <div className="customer-history-toolbar customer-history-toolbar--tight">
-                <div className="text-muted small">
-                    szczegóły historii wizyt
-                </div>
+                <div className="text-muted small">szczegóły historii wizyt</div>
             </div>
 
             {isLoading ? (

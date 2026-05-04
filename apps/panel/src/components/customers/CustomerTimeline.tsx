@@ -92,7 +92,10 @@ export default function CustomerTimeline({
                             </div>
                             <div className="fw-semibold">
                                 {'href' in item && item.href ? (
-                                    <Link href={item.href} className="link-more">
+                                    <Link
+                                        href={item.href}
+                                        className="link-more"
+                                    >
                                         {item.title}
                                     </Link>
                                 ) : (

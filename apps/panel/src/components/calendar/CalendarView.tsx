@@ -223,9 +223,8 @@ export default function CalendarView({
                         initialDate={currentDate}
                         events={fullCalendarEvents}
                         eventContent={(info) => {
-                            const original =
-                                info.event.extendedProps
-                                    .originalEvent as CalendarEvent;
+                            const original = info.event.extendedProps
+                                .originalEvent as CalendarEvent;
                             const employeeColor =
                                 original.employeeId !== undefined
                                     ? employees.find(

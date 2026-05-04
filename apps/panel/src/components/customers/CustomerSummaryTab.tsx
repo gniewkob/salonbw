@@ -321,7 +321,8 @@ export default function CustomerSummaryTab({
                                                     href={`/sales/history?customerId=${customer.id}`}
                                                     className="link-more"
                                                 >
-                                                    Zobacz wszystkie sprzedaże klienta
+                                                    Zobacz wszystkie sprzedaże
+                                                    klienta
                                                     {linkedSales &&
                                                     typeof linkedSales.total ===
                                                         'number'
@@ -350,27 +351,32 @@ export default function CustomerSummaryTab({
                             <div className="salonbw-widget__content">
                                 {customerAlerts.length > 0 ? (
                                     <div className="d-flex flex-column gap-2 mb-3">
-                                        {customerAlerts.slice(0, 3).map((alert) => (
-                                            <div
-                                                key={alert.id}
-                                                className={`small rounded px-2 py-1 ${
-                                                    alert.severity === 'danger'
-                                                        ? 'bg-danger-subtle text-danger-emphasis'
-                                                        : alert.severity ===
-                                                            'warning'
-                                                          ? 'bg-warning-subtle text-warning-emphasis'
-                                                          : 'bg-info-subtle text-info-emphasis'
-                                                }`}
-                                            >
-                                                <strong>{alert.label}</strong>
-                                                {alert.detail ? (
-                                                    <span>
-                                                        {': '}
-                                                        {alert.detail}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        ))}
+                                        {customerAlerts
+                                            .slice(0, 3)
+                                            .map((alert) => (
+                                                <div
+                                                    key={alert.id}
+                                                    className={`small rounded px-2 py-1 ${
+                                                        alert.severity ===
+                                                        'danger'
+                                                            ? 'bg-danger-subtle text-danger-emphasis'
+                                                            : alert.severity ===
+                                                                'warning'
+                                                              ? 'bg-warning-subtle text-warning-emphasis'
+                                                              : 'bg-info-subtle text-info-emphasis'
+                                                    }`}
+                                                >
+                                                    <strong>
+                                                        {alert.label}
+                                                    </strong>
+                                                    {alert.detail ? (
+                                                        <span>
+                                                            {': '}
+                                                            {alert.detail}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            ))}
                                     </div>
                                 ) : (
                                     <div className="text-muted small mb-3">
@@ -384,14 +390,16 @@ export default function CustomerSummaryTab({
                                     </strong>
                                     {customerTags.length > 0 ? (
                                         <div className="d-flex flex-wrap gap-1">
-                                            {customerTags.slice(0, 6).map((tag) => (
-                                                <span
-                                                    key={tag.id}
-                                                    className="badge text-bg-light border"
-                                                >
-                                                    {tag.name}
-                                                </span>
-                                            ))}
+                                            {customerTags
+                                                .slice(0, 6)
+                                                .map((tag) => (
+                                                    <span
+                                                        key={tag.id}
+                                                        className="badge text-bg-light border"
+                                                    >
+                                                        {tag.name}
+                                                    </span>
+                                                ))}
                                         </div>
                                     ) : (
                                         <div className="text-muted small">
