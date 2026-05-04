@@ -88,7 +88,10 @@ export function useCustomerTimeline(
                 subtitle: visit.employee?.name ?? undefined,
                 status: visit.status,
                 amount: visit.price,
-                href: `/sales/history?appointmentId=${visit.id}`,
+                href:
+                    visit.status === 'completed'
+                        ? `/sales/history?appointmentId=${visit.id}`
+                        : undefined,
             };
         });
 

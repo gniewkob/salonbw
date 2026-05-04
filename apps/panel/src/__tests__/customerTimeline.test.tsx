@@ -140,4 +140,54 @@ describe('CustomerTimeline', () => {
         expect(labels[1]).toHaveTextContent('Sprzedaż');
         expect(labels[2]).toHaveTextContent('Wizyta');
     });
+
+    it('does not link non-completed appointments to sales history', () => {
+        useCustomerEventHistoryMock.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: {
+                items: [
+                    {
+                        id: 501,
+                        date: '2026-05-01',
+                        time: '10:00',
+                        service: { id: 1, name: 'Konsultacja' },
+                        employee: { id: 2, name: 'Anna' },
+                        status: 'scheduled',
+                        price: 0,
+                    },
+                    {
+                        id: 502,
+                        date: '2026-05-01',
+                        time: '09:00',
+                        service: { id: 1, name: 'Koloryzacja' },
+                        employee: { id: 2, name: 'Anna' },
+                        status: 'completed',
+                        price: 200,
+                    },
+                ],
+            },
+        });
+        useCustomerNotesMock.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: [],
+        });
+        useCustomerLinkedSalesMock.mockReturnValue({
+            linkedSalesQuery: {
+                isLoading: false,
+                isError: false,
+                data: { items: [] },
+            },
+        });
+
+        render(<CustomerTimeline customerId={1} limit={10} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Konsultacja' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Koloryzacja' }),
+        ).toHaveAttribute('href', '/sales/history?appointmentId=502');
+    });
 });
