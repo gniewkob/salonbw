@@ -169,4 +169,97 @@ describe('CalendarNextPage', () => {
             ),
         );
     });
+
+    it('reuses cached customer alert stats and fetches only missing customers', async () => {
+        routerMock.query = {};
+
+        let events = [
+            {
+                id: 100,
+                type: 'appointment',
+                title: 'Wizyta 1',
+                startTime: '2026-05-07T09:00:00.000Z',
+                endTime: '2026-05-07T09:45:00.000Z',
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 5,
+                clientName: 'Jan Kowalski',
+                status: 'scheduled',
+            },
+        ];
+
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events,
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/customers/5/statistics') {
+                return { noShowVisits: 1 };
+            }
+            if (endpoint === '/customers/6/statistics') {
+                return { noShowVisits: 2 };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        const { rerender } = render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/customers/5/statistics',
+            ),
+        );
+
+        // Same customer in a new render should be served from cache.
+        events = [
+            {
+                ...events[0],
+                id: 101,
+                title: 'Wizyta 2',
+            },
+        ];
+        rerender(<CalendarNextPage />);
+
+        await waitFor(() => {
+            const customer5Calls = apiFetchMock.mock.calls.filter(
+                (call: unknown[]) => call[0] === '/customers/5/statistics',
+            );
+            expect(customer5Calls).toHaveLength(1);
+        });
+
+        // Adding a new customer should fetch only the missing customer.
+        events = [
+            ...events,
+            {
+                id: 102,
+                type: 'appointment',
+                title: 'Wizyta 3',
+                startTime: '2026-05-07T11:00:00.000Z',
+                endTime: '2026-05-07T11:45:00.000Z',
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 6,
+                clientName: 'Adam Nowak',
+                status: 'scheduled',
+            },
+        ];
+        rerender(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/customers/6/statistics',
+            ),
+        );
+    });
 });
