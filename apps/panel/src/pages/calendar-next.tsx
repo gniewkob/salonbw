@@ -35,6 +35,9 @@ export default function CalendarNextPage() {
     const router = useRouter();
     const { role, apiFetch } = useAuth();
     const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
+    const customerAlertCacheRef = useRef<
+        Record<number, 'warning' | 'danger' | null>
+    >({});
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
@@ -189,60 +192,82 @@ export default function CalendarNextPage() {
         };
     }, [router.query.appointmentId, appointmentsById, apiFetch]);
 
-    useEffect(() => {
-        const uniqueCustomerIds = Array.from(
-            new Set(
-                (data?.events ?? [])
-                    .filter(
-                        (event) =>
-                            event.type === 'appointment' &&
-                            Number(event.clientId) > 0,
-                    )
-                    .map((event) => Number(event.clientId)),
+    const visibleCustomerIds = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    (data?.events ?? [])
+                        .filter(
+                            (event) =>
+                                event.type === 'appointment' &&
+                                Number(event.clientId) > 0,
+                        )
+                        .map((event) => Number(event.clientId)),
+                ),
             ),
-        );
+        [data?.events],
+    );
 
-        if (uniqueCustomerIds.length === 0) {
+    useEffect(() => {
+        if (visibleCustomerIds.length === 0) {
             setCustomerAlertSeverityById({});
             return;
         }
 
+        const currentFromCache: Record<number, 'warning' | 'danger'> = {};
+        const missingCustomerIds: number[] = [];
+
+        for (const customerId of visibleCustomerIds) {
+            if (customerId in customerAlertCacheRef.current) {
+                const cached = customerAlertCacheRef.current[customerId];
+                if (cached) currentFromCache[customerId] = cached;
+            } else {
+                missingCustomerIds.push(customerId);
+            }
+        }
+
+        setCustomerAlertSeverityById(currentFromCache);
+        if (missingCustomerIds.length === 0) return;
+
         let cancelled = false;
 
         void Promise.all(
-            uniqueCustomerIds.map(async (customerId) => {
+            missingCustomerIds.map(async (customerId) => {
                 try {
                     const stats = await apiFetch<CustomerStatistics>(
                         `/customers/${customerId}/statistics`,
                     );
-                    if (stats.noShowVisits > 0) {
-                        return {
-                            customerId,
-                            severity:
-                                stats.noShowVisits >= 2
-                                    ? ('danger' as const)
-                                    : ('warning' as const),
-                        };
-                    }
+                    const severity =
+                        stats.noShowVisits >= 2
+                            ? ('danger' as const)
+                            : stats.noShowVisits > 0
+                              ? ('warning' as const)
+                              : null;
+                    return { customerId, severity };
                 } catch {
-                    // Ignore per-customer alert fetch errors for calendar card indicators.
+                    return { customerId, severity: null };
                 }
-                return null;
             }),
         ).then((entries) => {
             if (cancelled) return;
-            const next: Record<number, 'warning' | 'danger'> = {};
+
             for (const entry of entries) {
-                if (!entry) continue;
-                next[entry.customerId] = entry.severity;
+                customerAlertCacheRef.current[entry.customerId] =
+                    entry.severity;
             }
-            setCustomerAlertSeverityById(next);
+
+            const nextVisible: Record<number, 'warning' | 'danger'> = {};
+            for (const customerId of visibleCustomerIds) {
+                const cached = customerAlertCacheRef.current[customerId];
+                if (cached) nextVisible[customerId] = cached;
+            }
+            setCustomerAlertSeverityById(nextVisible);
         });
 
         return () => {
             cancelled = true;
         };
-    }, [data?.events, apiFetch]);
+    }, [visibleCustomerIds, apiFetch]);
 
     const updateCalendarQuery = (
         next: Partial<{
