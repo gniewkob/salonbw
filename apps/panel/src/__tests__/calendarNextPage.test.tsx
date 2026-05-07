@@ -40,16 +40,10 @@ jest.mock('@/components/calendar/CalendarView', () => ({
     default: () => <div>calendar-view</div>,
 }));
 
+const useCalendarMock = jest.fn();
+
 jest.mock('@/hooks/useCalendar', () => ({
-    useCalendar: () => ({
-        data: {
-            events: [],
-            employees: [],
-            dateRange: { start: '2026-01-01', end: '2026-01-02' },
-        },
-        loading: false,
-        refetch: jest.fn(),
-    }),
+    useCalendar: (...args: unknown[]) => useCalendarMock(...args),
     useCalendarMutations: () => ({
         rescheduleAppointment: { mutateAsync: jest.fn() },
         checkConflicts: jest.fn().mockResolvedValue({ hasConflict: false }),
@@ -75,11 +69,21 @@ describe('CalendarNextPage', () => {
     beforeEach(() => {
         pushMock.mockReset();
         apiFetchMock.mockReset();
+        useCalendarMock.mockReset();
         apiFetchMock.mockResolvedValue({
             id: 42,
             startTime: '2026-05-07T10:00:00.000Z',
             endTime: '2026-05-07T10:45:00.000Z',
             status: 'scheduled',
+        });
+        useCalendarMock.mockReturnValue({
+            data: {
+                events: [],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
         });
     });
 
@@ -94,5 +98,39 @@ describe('CalendarNextPage', () => {
                 'open:42',
             ),
         );
+    });
+
+    it('opens drawer from calendar event map without fallback fetch', async () => {
+        useCalendarMock.mockReturnValueOnce({
+            data: {
+                events: [
+                    {
+                        id: 42,
+                        type: 'appointment',
+                        title: 'Strzyżenie',
+                        startTime: '2026-05-07T10:00:00.000Z',
+                        endTime: '2026-05-07T10:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 5,
+                        clientName: 'Jan Kowalski',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
+                'open:42',
+            ),
+        );
+        expect(apiFetchMock).not.toHaveBeenCalledWith('/appointments/42');
     });
 });
