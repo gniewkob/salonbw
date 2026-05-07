@@ -106,4 +106,119 @@ describe('useCustomerAlerts', () => {
         const { result } = renderHook(() => useCustomerAlerts(123));
         expect(result.current.isLoading).toBe(true);
     });
+
+    it('maps pinned warning to danger alert and noShowVisits >= 2 to danger', () => {
+        useCustomerStatisticsMock.mockReturnValue({
+            data: { noShowVisits: 2 },
+            isLoading: false,
+        });
+        useCustomerNotesMock.mockReturnValue({
+            data: [
+                {
+                    id: 21,
+                    type: 'warning',
+                    content: 'Klient konfliktowy',
+                    isPinned: true,
+                },
+            ],
+            isLoading: false,
+        });
+
+        const { result } = renderHook(() => useCustomerAlerts(123));
+        const alerts = result.current.alerts;
+
+        expect(alerts).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    source: 'stats',
+                    label: 'Historia no-show',
+                    severity: 'danger',
+                }),
+                expect.objectContaining({
+                    source: 'note',
+                    label: 'Notatka ostrzegawcza',
+                    detail: 'Klient konfliktowy',
+                    severity: 'danger',
+                }),
+            ]),
+        );
+    });
+
+    it('includes important tags and enforces top-5 severity ordering', () => {
+        useCustomerStatisticsMock.mockReturnValue({
+            data: { noShowVisits: 3 },
+            isLoading: false,
+        });
+        useCustomerNotesMock.mockReturnValue({
+            data: [
+                {
+                    id: 31,
+                    type: 'medical',
+                    content: 'Alergia na lateks',
+                    isPinned: true,
+                },
+                {
+                    id: 32,
+                    type: 'warning',
+                    content: 'Wymagana przedpłata',
+                    isPinned: true,
+                },
+                {
+                    id: 33,
+                    type: 'preference',
+                    content: 'Bez amoniaku',
+                    isPinned: true,
+                },
+            ],
+            isLoading: false,
+        });
+        useTagsForCustomerMock.mockReturnValue({
+            data: [
+                { id: 1, name: 'VIP', createdAt: '2026-01-01T00:00:00.000Z' },
+                {
+                    id: 2,
+                    name: 'Alergia skórna',
+                    createdAt: '2026-01-01T00:00:00.000Z',
+                },
+                {
+                    id: 3,
+                    name: 'Zwykły tag',
+                    createdAt: '2026-01-01T00:00:00.000Z',
+                },
+            ],
+            isLoading: false,
+        });
+        useCustomerMock.mockReturnValue({
+            data: {
+                groups: [
+                    {
+                        id: 91,
+                        name: 'Newsletter',
+                    },
+                ],
+            },
+            isLoading: false,
+        });
+
+        const { result } = renderHook(() => useCustomerAlerts(123));
+        const alerts = result.current.alerts;
+
+        expect(alerts.length).toBeLessThanOrEqual(5);
+        expect(
+            alerts.some(
+                (alert) =>
+                    alert.source === 'tag' && alert.detail?.includes('VIP'),
+            ),
+        ).toBe(true);
+        expect(
+            alerts.some(
+                (alert) =>
+                    alert.source === 'tag' &&
+                    alert.detail?.includes('Zwykły tag'),
+            ),
+        ).toBe(false);
+        // Top-5 keeps highest severity first (danger), dropping low-priority info/group alerts.
+        expect(alerts[0]?.severity).toBe('danger');
+        expect(alerts.some((alert) => alert.source === 'group')).toBe(false);
+    });
 });
