@@ -21,6 +21,7 @@ const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
 interface CalendarViewProps {
     events: CalendarEvent[];
     employees: Array<{ id: number; name: string; color?: string }>;
+    customerAlertSeverityById?: Record<number, 'info' | 'warning' | 'danger'>;
     loading?: boolean;
     onEventClick: (event: CalendarEvent) => void;
     onEventDrop: (
@@ -57,6 +58,7 @@ function toDateKey(value: Date): string {
 export default function CalendarView({
     events,
     employees,
+    customerAlertSeverityById = {},
     loading,
     onEventClick,
     onEventDrop,
@@ -225,6 +227,17 @@ export default function CalendarView({
                         eventContent={(info) => {
                             const original = info.event.extendedProps
                                 .originalEvent as CalendarEvent;
+                            const alertSeverity =
+                                original.clientId !== undefined
+                                    ? customerAlertSeverityById[
+                                          original.clientId
+                                      ]
+                                    : undefined;
+                            const enrichedEvent: CalendarEvent = {
+                                ...original,
+                                customerAlertSeverity: alertSeverity,
+                                hasCustomerAlerts: Boolean(alertSeverity),
+                            };
                             const employeeColor =
                                 original.employeeId !== undefined
                                     ? employees.find(
@@ -235,7 +248,7 @@ export default function CalendarView({
                                     : undefined;
                             return (
                                 <EventCard
-                                    event={original}
+                                    event={enrichedEvent}
                                     employeeColor={employeeColor}
                                     onClick={onEventClick}
                                 />

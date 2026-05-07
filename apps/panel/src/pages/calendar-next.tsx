@@ -11,6 +11,7 @@ import type {
     Appointment,
     CalendarEvent,
     CalendarView as CalendarViewType,
+    CustomerStatistics,
 } from '@/types';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 
@@ -39,6 +40,9 @@ export default function CalendarNextPage() {
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
         [],
     );
+    const [customerAlertSeverityById, setCustomerAlertSeverityById] = useState<
+        Record<number, 'warning' | 'danger'>
+    >({});
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -185,6 +189,61 @@ export default function CalendarNextPage() {
         };
     }, [router.query.appointmentId, appointmentsById, apiFetch]);
 
+    useEffect(() => {
+        const uniqueCustomerIds = Array.from(
+            new Set(
+                (data?.events ?? [])
+                    .filter(
+                        (event) =>
+                            event.type === 'appointment' &&
+                            Number(event.clientId) > 0,
+                    )
+                    .map((event) => Number(event.clientId)),
+            ),
+        );
+
+        if (uniqueCustomerIds.length === 0) {
+            setCustomerAlertSeverityById({});
+            return;
+        }
+
+        let cancelled = false;
+
+        void Promise.all(
+            uniqueCustomerIds.map(async (customerId) => {
+                try {
+                    const stats = await apiFetch<CustomerStatistics>(
+                        `/customers/${customerId}/statistics`,
+                    );
+                    if (stats.noShowVisits > 0) {
+                        return {
+                            customerId,
+                            severity:
+                                stats.noShowVisits >= 2
+                                    ? ('danger' as const)
+                                    : ('warning' as const),
+                        };
+                    }
+                } catch {
+                    // Ignore per-customer alert fetch errors for calendar card indicators.
+                }
+                return null;
+            }),
+        ).then((entries) => {
+            if (cancelled) return;
+            const next: Record<number, 'warning' | 'danger'> = {};
+            for (const entry of entries) {
+                if (!entry) continue;
+                next[entry.customerId] = entry.severity;
+            }
+            setCustomerAlertSeverityById(next);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [data?.events, apiFetch]);
+
     const updateCalendarQuery = (
         next: Partial<{
             date: string;
@@ -285,6 +344,9 @@ export default function CalendarNextPage() {
                         <CalendarView
                             events={data?.events ?? []}
                             employees={data?.employees ?? []}
+                            customerAlertSeverityById={
+                                customerAlertSeverityById
+                            }
                             loading={loading}
                             onEventClick={handleEventClick}
                             onEventDrop={handleEventDrop}

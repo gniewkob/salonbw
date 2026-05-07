@@ -365,6 +365,8 @@ export interface CalendarEvent {
     status?: string;
     paymentStatus?: string;
     paymentMethod?: PaymentMethod;
+    customerAlertSeverity?: 'info' | 'warning' | 'danger';
+    hasCustomerAlerts?: boolean;
     blockType?: TimeBlockType;
     notes?: string;
     allDay?: boolean;

@@ -53,6 +53,12 @@ const STATUS_LABELS: Record<string, string> = {
     no_show: 'No-show',
 };
 
+const ALERT_BADGE_STYLES: Record<'info' | 'warning' | 'danger', string> = {
+    info: 'bg-info-subtle text-info-emphasis',
+    warning: 'bg-warning-subtle text-warning-emphasis',
+    danger: 'bg-danger-subtle text-danger-emphasis',
+};
+
 export default function EventCard({
     event,
     employeeColor = '#4A90D9',
@@ -70,6 +76,9 @@ export default function EventCard({
             : null;
 
     const statusStyle = event.status ? (STATUS_STYLES[event.status] ?? '') : '';
+    const alertSeverity =
+        event.customerAlertSeverity ??
+        (event.hasCustomerAlerts ? 'warning' : undefined);
 
     return (
         <div
@@ -135,6 +144,13 @@ export default function EventCard({
                                         : event.paymentStatus === 'partial'
                                           ? 'Częściowo opłacona'
                                           : 'Nieopłacona'}
+                                </span>
+                            ) : null}
+                            {alertSeverity ? (
+                                <span
+                                    className={`badge ${ALERT_BADGE_STYLES[alertSeverity]}`}
+                                >
+                                    Alert CRM
                                 </span>
                             ) : null}
                         </div>
