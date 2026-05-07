@@ -207,6 +207,14 @@ export default function CalendarNextPage() {
         });
     };
 
+    const clearAppointmentDeepLink = () => {
+        const query = { ...router.query } as Record<string, string>;
+        delete query.appointmentId;
+        void router.push({ pathname: router.pathname, query }, undefined, {
+            shallow: true,
+        });
+    };
+
     const handleEventDrop = async (
         eventId: number,
         newStart: Date,
@@ -319,12 +327,13 @@ export default function CalendarNextPage() {
                     initialStartTime={drawer.initialStartTime}
                     initialEndTime={drawer.initialEndTime}
                     initialEmployeeId={drawer.initialEmployeeId}
-                    onClose={() =>
+                    onClose={() => {
+                        clearAppointmentDeepLink();
                         setDrawer((current) => ({
                             ...current,
                             open: false,
-                        }))
-                    }
+                        }));
+                    }}
                     onSaved={() => {
                         void refetch();
                     }}

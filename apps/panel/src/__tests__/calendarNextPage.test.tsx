@@ -1,16 +1,17 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import CalendarNextPage from '@/pages/calendar-next';
 import type { ReactNode } from 'react';
 
 const pushMock = jest.fn();
 const apiFetchMock = jest.fn();
+const routerMock = {
+    query: { appointmentId: '42' } as Record<string, string>,
+    pathname: '/calendar-next',
+    push: pushMock,
+};
 
 jest.mock('next/router', () => ({
-    useRouter: () => ({
-        query: { appointmentId: '42' },
-        pathname: '/calendar-next',
-        push: pushMock,
-    }),
+    useRouter: () => routerMock,
 }));
 
 jest.mock('@/contexts/AuthContext', () => ({
@@ -55,12 +56,17 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
     default: ({
         open,
         appointment,
+        onClose,
     }: {
         open: boolean;
         appointment?: { id?: number } | null;
+        onClose: () => void;
     }) => (
         <div data-testid="appointment-drawer">
             {open ? `open:${appointment?.id ?? 'none'}` : 'closed'}
+            <button type="button" onClick={onClose}>
+                close-drawer
+            </button>
         </div>
     ),
 }));
@@ -70,6 +76,7 @@ describe('CalendarNextPage', () => {
         pushMock.mockReset();
         apiFetchMock.mockReset();
         useCalendarMock.mockReset();
+        routerMock.query = { appointmentId: '42' };
         apiFetchMock.mockResolvedValue({
             id: 42,
             startTime: '2026-05-07T10:00:00.000Z',
@@ -132,5 +139,34 @@ describe('CalendarNextPage', () => {
             ),
         );
         expect(apiFetchMock).not.toHaveBeenCalledWith('/appointments/42');
+    });
+
+    it('clears appointmentId from URL when drawer is closed', async () => {
+        routerMock.query = {
+            appointmentId: '42',
+            date: '2026-05-07',
+            view: 'day',
+        };
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
+                'open:42',
+            ),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'close-drawer' }));
+
+        await waitFor(() =>
+            expect(pushMock).toHaveBeenCalledWith(
+                {
+                    pathname: '/calendar-next',
+                    query: { date: '2026-05-07', view: 'day' },
+                },
+                undefined,
+                { shallow: true },
+            ),
+        );
     });
 });
