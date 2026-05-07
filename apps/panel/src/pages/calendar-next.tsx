@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -32,7 +32,8 @@ function toDateParam(value: Date): string {
 
 export default function CalendarNextPage() {
     const router = useRouter();
-    const { role } = useAuth();
+    const { role, apiFetch } = useAuth();
+    const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
@@ -138,6 +139,51 @@ export default function CalendarNextPage() {
             setCurrentView(viewParam);
         }
     }, [router.query.view]);
+
+    useEffect(() => {
+        const appointmentIdParam = Array.isArray(router.query.appointmentId)
+            ? router.query.appointmentId[0]
+            : router.query.appointmentId;
+        if (!appointmentIdParam) {
+            handledDeepLinkAppointmentIdRef.current = null;
+            return;
+        }
+
+        const appointmentId = Number(appointmentIdParam);
+        if (!Number.isFinite(appointmentId) || appointmentId <= 0) return;
+        if (handledDeepLinkAppointmentIdRef.current === appointmentId) return;
+
+        const appointmentFromCalendar = appointmentsById.get(appointmentId);
+        if (appointmentFromCalendar) {
+            setDrawer({
+                open: true,
+                mode: 'edit',
+                appointment: appointmentFromCalendar,
+            });
+            handledDeepLinkAppointmentIdRef.current = appointmentId;
+            return;
+        }
+
+        let cancelled = false;
+
+        void apiFetch<Appointment>(`/appointments/${appointmentId}`)
+            .then((appointment) => {
+                if (cancelled) return;
+                setDrawer({
+                    open: true,
+                    mode: 'edit',
+                    appointment,
+                });
+                handledDeepLinkAppointmentIdRef.current = appointmentId;
+            })
+            .catch(() => {
+                // Ignore deep-link fetch errors and keep calendar usable.
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [router.query.appointmentId, appointmentsById, apiFetch]);
 
     const updateCalendarQuery = (
         next: Partial<{
