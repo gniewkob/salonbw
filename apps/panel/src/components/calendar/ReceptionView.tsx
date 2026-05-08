@@ -331,6 +331,7 @@ export default function ReceptionView({
                                       ]
                                     : undefined
                                 : undefined;
+                            const isInProgress = status === 'in_progress';
 
                             return (
                                 <tr
@@ -338,12 +339,23 @@ export default function ReceptionView({
                                     className={`${isOverdue ? 'salonbw-reception-row--overdue' : ''} ${isRowPending ? 'salonbw-reception-row--processing' : ''}`}
                                 >
                                     <td className="salonbw-reception-time">
-                                        {formatTime(appointment.startTime)}
-                                        {isOverdue && (
-                                            <span className="salonbw-reception-overdue-badge">
-                                                opóźnienie
+                                        <div className="d-flex flex-column gap-1">
+                                            <span>
+                                                {formatTime(
+                                                    appointment.startTime,
+                                                )}
                                             </span>
-                                        )}
+                                            {isInProgress ? (
+                                                <span className="badge text-bg-success">
+                                                    Do finalizacji
+                                                </span>
+                                            ) : null}
+                                            {isOverdue ? (
+                                                <span className="badge text-bg-danger">
+                                                    Opóźniona
+                                                </span>
+                                            ) : null}
+                                        </div>
                                     </td>
                                     <td>
                                         <div className="salonbw-reception-client">
@@ -358,19 +370,19 @@ export default function ReceptionView({
                                                 </div>
                                             )}
                                             {alertSeverity ? (
-                                                <div
-                                                    className={`small mt-1 ${
+                                                <span
+                                                    className={`badge mt-1 ${
                                                         alertSeverity ===
                                                         'danger'
-                                                            ? 'text-danger'
+                                                            ? 'text-bg-danger'
                                                             : alertSeverity ===
                                                                 'warning'
-                                                              ? 'text-warning-emphasis'
-                                                              : 'text-info-emphasis'
+                                                              ? 'text-bg-warning'
+                                                              : 'text-bg-info'
                                                     }`}
                                                 >
                                                     Alert CRM
-                                                </div>
+                                                </span>
                                             ) : null}
                                         </div>
                                     </td>

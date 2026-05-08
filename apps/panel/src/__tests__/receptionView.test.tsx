@@ -284,7 +284,12 @@ describe('ReceptionView', () => {
         );
 
         const readSummaryValue = (label: string) => {
-            const labelElement = screen.getByText(label);
+            const labelElement = screen
+                .getAllByText(label)
+                .find((element) =>
+                    element.classList.contains('salonbw-reception-summary__label'),
+                );
+            if (!labelElement) return null;
             const item = labelElement.closest(
                 '.salonbw-reception-summary__item',
             );
@@ -293,7 +298,7 @@ describe('ReceptionView', () => {
                 ?.textContent;
         };
 
-        expect(screen.getByText('Do finalizacji')).toBeInTheDocument();
+        expect(screen.getAllByText('Do finalizacji').length).toBeGreaterThan(0);
         expect(screen.getByText('Z alertem CRM')).toBeInTheDocument();
         expect(screen.getByText('Opóźnione')).toBeInTheDocument();
         expect(screen.getByText('Alert CRM')).toBeInTheDocument();
@@ -425,5 +430,8 @@ describe('ReceptionView', () => {
         expect(rowText[1]).toContain('W trakcie');
         expect(rowText[2]).toContain('Z alertem');
         expect(rowText[3]).toContain('Zwykła przyszła');
+        expect(screen.getAllByText('Opóźniona').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Do finalizacji').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Alert CRM').length).toBeGreaterThan(0);
     });
 });
