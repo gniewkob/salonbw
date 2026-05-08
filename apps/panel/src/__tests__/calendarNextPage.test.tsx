@@ -721,6 +721,91 @@ describe('CalendarNextPage', () => {
         });
     });
 
+    it('keeps per-customer fallback pending guard when batch request fails', async () => {
+        routerMock.query = {};
+
+        let events = [
+            {
+                id: 801,
+                type: 'appointment',
+                title: 'Wizyta fallback',
+                startTime: '2026-05-07T09:00:00.000Z',
+                endTime: '2026-05-07T09:45:00.000Z',
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 7,
+                clientName: 'Klient 7',
+                status: 'scheduled',
+            },
+        ];
+
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events,
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        let resolveFallback:
+            | ((value: { noShowVisits: number }) => void)
+            | null = null;
+        const pendingFallback = new Promise<{ noShowVisits: number }>(
+            (resolve) => {
+                resolveFallback = resolve;
+            },
+        );
+
+        apiFetchMock.mockImplementation((endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return Promise.reject(new Error('Batch failed'));
+            }
+            if (endpoint === '/customers/7/statistics') {
+                return pendingFallback;
+            }
+            return Promise.resolve({
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            });
+        });
+
+        const { rerender } = render(<CalendarNextPage />);
+
+        await waitFor(() => {
+            const batchCalls = apiFetchMock.mock.calls.filter((call) =>
+                String(call[0]).startsWith('/customers/statistics/batch'),
+            );
+            expect(batchCalls.length).toBeGreaterThanOrEqual(1);
+        });
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/customers/7/statistics',
+            ),
+        );
+
+        events = [{ ...events[0], id: 802, title: 'Wizyta fallback rerender' }];
+        rerender(<CalendarNextPage />);
+
+        const fallbackCallsDuringPending = apiFetchMock.mock.calls.filter(
+            (call: unknown[]) => call[0] === '/customers/7/statistics',
+        );
+        expect(fallbackCallsDuringPending).toHaveLength(1);
+
+        resolveFallback?.({ noShowVisits: 0 });
+
+        await waitFor(() => {
+            const fallbackCallsAfterResolve = apiFetchMock.mock.calls.filter(
+                (call: unknown[]) => call[0] === '/customers/7/statistics',
+            );
+            expect(fallbackCallsAfterResolve).toHaveLength(1);
+        });
+    });
+
     it('updates reception priority filter results after time tick', async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date('2026-05-07T12:00:00.000Z'));

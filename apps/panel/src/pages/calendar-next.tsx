@@ -449,7 +449,7 @@ export default function CalendarNextPage() {
                     return { customerId, severity, success: true as const };
                 });
             } catch {
-                return fetchPerCustomerFallback();
+                return await fetchPerCustomerFallback();
             } finally {
                 for (const customerId of missingCustomerIds) {
                     pendingCustomerAlertFetchesRef.current.delete(customerId);
