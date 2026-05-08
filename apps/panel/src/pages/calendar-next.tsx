@@ -7,6 +7,11 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
+import {
+    hasCustomerAlert,
+    isOverdueAppointmentAt,
+    isPriorityAppointment,
+} from '@/components/calendar/receptionUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import type {
     Appointment,
@@ -43,20 +48,6 @@ function areAlertMapsEqual(
         if (left[Number(key)] !== right[Number(key)]) return false;
     }
     return true;
-}
-
-function isOverdueAppointmentAt(appointment: Appointment, now: Date): boolean {
-    const status = appointment.status ?? 'scheduled';
-    if (status !== 'scheduled') return false;
-    const startTime = new Date(appointment.startTime);
-    if (Number.isNaN(startTime.getTime())) return false;
-
-    return (
-        startTime.getFullYear() === now.getFullYear() &&
-        startTime.getMonth() === now.getMonth() &&
-        startTime.getDate() === now.getDate() &&
-        startTime.getTime() < now.getTime()
-    );
 }
 
 export default function CalendarNextPage() {
@@ -148,14 +139,15 @@ export default function CalendarNextPage() {
         return list.filter((appointment) => {
             const status = appointment.status ?? 'scheduled';
             const paymentStatus = appointment.paymentStatus ?? 'unpaid';
-            const customerId = appointment.client?.id;
-            const hasAlert =
-                customerId !== undefined
-                    ? Boolean(customerAlertSeverityById[customerId])
-                    : false;
-            const isOverdue = isOverdueAppointmentAt(appointment, now);
-            const isPriority =
-                isOverdue || status === 'in_progress' || hasAlert;
+            const hasAlert = hasCustomerAlert(
+                appointment,
+                customerAlertSeverityById,
+            );
+            const isPriority = isPriorityAppointment(
+                appointment,
+                now,
+                customerAlertSeverityById,
+            );
 
             if (
                 receptionStatusFilter !== 'all' &&
