@@ -9,6 +9,7 @@ import { useAppointmentMutations } from '@/hooks/useAppointments';
 interface ReceptionViewProps {
     appointments: Appointment[];
     loading?: boolean;
+    onChanged?: () => void;
 }
 
 type StatusConfig = {
@@ -61,6 +62,7 @@ const ACTION_LABELS: Record<string, { label: string; className: string }> = {
 export default function ReceptionView({
     appointments,
     loading,
+    onChanged,
 }: ReceptionViewProps) {
     const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
@@ -105,6 +107,7 @@ export default function ReceptionView({
                 default:
                     console.warn('Unknown action:', action);
             }
+            onChanged?.();
         } catch (error) {
             console.error('Action failed:', error);
             alert('Wystąpił błąd podczas aktualizacji wizyty');

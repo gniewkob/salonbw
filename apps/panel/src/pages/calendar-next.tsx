@@ -6,6 +6,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
+import ReceptionView from '@/components/calendar/ReceptionView';
 import { useAuth } from '@/contexts/AuthContext';
 import type {
     Appointment,
@@ -31,6 +32,19 @@ function toDateParam(value: Date): string {
     return `${year}-${month}-${day}`;
 }
 
+function areAlertMapsEqual(
+    left: Record<number, 'warning' | 'danger'>,
+    right: Record<number, 'warning' | 'danger'>,
+): boolean {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    if (leftKeys.length !== rightKeys.length) return false;
+    for (const key of leftKeys) {
+        if (left[Number(key)] !== right[Number(key)]) return false;
+    }
+    return true;
+}
+
 export default function CalendarNextPage() {
     const router = useRouter();
     const { role, apiFetch } = useAuth();
@@ -46,6 +60,9 @@ export default function CalendarNextPage() {
     const [customerAlertSeverityById, setCustomerAlertSeverityById] = useState<
         Record<number, 'warning' | 'danger'>
     >({});
+    const [receptionStatusFilter, setReceptionStatusFilter] = useState('all');
+    const [receptionPaymentFilter, setReceptionPaymentFilter] = useState('all');
+    const [receptionAlertFilter, setReceptionAlertFilter] = useState(false);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -106,6 +123,53 @@ export default function CalendarNextPage() {
             appointment: appointment ?? null,
         });
     };
+
+    const receptionAppointments = useMemo(() => {
+        const list = Array.from(appointmentsById.values());
+
+        return list.filter((appointment) => {
+            const status = appointment.status ?? 'scheduled';
+            const paymentStatus = appointment.paymentStatus ?? 'unpaid';
+            const customerId = appointment.client?.id;
+            const hasAlert =
+                customerId !== undefined
+                    ? Boolean(customerAlertSeverityById[customerId])
+                    : false;
+
+            if (
+                receptionStatusFilter !== 'all' &&
+                status !== receptionStatusFilter
+            ) {
+                return false;
+            }
+
+            if (
+                receptionPaymentFilter === 'unpaid' &&
+                paymentStatus === 'paid'
+            ) {
+                return false;
+            }
+
+            if (
+                receptionPaymentFilter === 'to_finalize' &&
+                status !== 'in_progress'
+            ) {
+                return false;
+            }
+
+            if (receptionAlertFilter && !hasAlert) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [
+        appointmentsById,
+        customerAlertSeverityById,
+        receptionStatusFilter,
+        receptionPaymentFilter,
+        receptionAlertFilter,
+    ]);
 
     useEffect(() => {
         const dateParam = Array.isArray(router.query.date)
@@ -210,7 +274,9 @@ export default function CalendarNextPage() {
 
     useEffect(() => {
         if (visibleCustomerIds.length === 0) {
-            setCustomerAlertSeverityById({});
+            setCustomerAlertSeverityById((current) =>
+                Object.keys(current).length === 0 ? current : {},
+            );
             return;
         }
 
@@ -226,7 +292,11 @@ export default function CalendarNextPage() {
             }
         }
 
-        setCustomerAlertSeverityById(currentFromCache);
+        setCustomerAlertSeverityById((current) =>
+            areAlertMapsEqual(current, currentFromCache)
+                ? current
+                : currentFromCache,
+        );
         if (missingCustomerIds.length === 0) return;
 
         let cancelled = false;
@@ -261,7 +331,9 @@ export default function CalendarNextPage() {
                 const cached = customerAlertCacheRef.current[customerId];
                 if (cached) nextVisible[customerId] = cached;
             }
-            setCustomerAlertSeverityById(nextVisible);
+            setCustomerAlertSeverityById((current) =>
+                areAlertMapsEqual(current, nextVisible) ? current : nextVisible,
+            );
         });
 
         return () => {
@@ -366,44 +438,145 @@ export default function CalendarNextPage() {
                     </div>
 
                     <div className="px-3 pb-3">
-                        <CalendarView
-                            events={data?.events ?? []}
-                            employees={data?.employees ?? []}
-                            customerAlertSeverityById={
-                                customerAlertSeverityById
-                            }
-                            loading={loading}
-                            onEventClick={handleEventClick}
-                            onEventDrop={handleEventDrop}
-                            onDateSelect={(start, end, employeeId) =>
-                                setDrawer({
-                                    open: true,
-                                    mode: 'create',
-                                    appointment: null,
-                                    initialStartTime: start,
-                                    initialEndTime: end,
-                                    initialEmployeeId: employeeId,
-                                })
-                            }
-                            onViewChange={(nextView) => {
-                                setCurrentView(nextView);
-                                updateCalendarQuery({ view: nextView });
-                            }}
-                            onEmployeeFilterChange={(ids) => {
-                                setSelectedEmployeeIds(ids);
-                                updateCalendarQuery({ employeeIds: ids });
-                            }}
-                            onDateChange={(date) => {
-                                setCurrentDate(date);
-                                updateCalendarQuery({
-                                    date: toDateParam(date),
-                                });
-                            }}
-                            currentDate={currentDate}
-                            currentView={currentView}
-                            selectedEmployeeIds={selectedEmployeeIds}
-                            hideSidebar
-                        />
+                        {currentView === 'reception' ? (
+                            <div className="d-flex flex-column gap-3">
+                                <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
+                                    <div>
+                                        <label
+                                            className="form-label form-label-sm mb-1"
+                                            htmlFor="reception-status-filter"
+                                        >
+                                            Status
+                                        </label>
+                                        <select
+                                            id="reception-status-filter"
+                                            className="form-select form-select-sm"
+                                            value={receptionStatusFilter}
+                                            onChange={(event) =>
+                                                setReceptionStatusFilter(
+                                                    event.target.value,
+                                                )
+                                            }
+                                        >
+                                            <option value="all">
+                                                Wszystkie
+                                            </option>
+                                            <option value="scheduled">
+                                                Zaplanowane
+                                            </option>
+                                            <option value="confirmed">
+                                                Potwierdzone
+                                            </option>
+                                            <option value="in_progress">
+                                                W trakcie
+                                            </option>
+                                            <option value="completed">
+                                                Zakończone
+                                            </option>
+                                            <option value="cancelled">
+                                                Anulowane
+                                            </option>
+                                            <option value="no_show">
+                                                No-show
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label
+                                            className="form-label form-label-sm mb-1"
+                                            htmlFor="reception-payment-filter"
+                                        >
+                                            Płatność
+                                        </label>
+                                        <select
+                                            id="reception-payment-filter"
+                                            className="form-select form-select-sm"
+                                            value={receptionPaymentFilter}
+                                            onChange={(event) =>
+                                                setReceptionPaymentFilter(
+                                                    event.target.value,
+                                                )
+                                            }
+                                        >
+                                            <option value="all">
+                                                Wszystkie
+                                            </option>
+                                            <option value="unpaid">
+                                                Nieopłacone
+                                            </option>
+                                            <option value="to_finalize">
+                                                Do finalizacji
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div className="form-check pb-2">
+                                        <input
+                                            id="reception-alert-filter"
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={receptionAlertFilter}
+                                            onChange={(event) =>
+                                                setReceptionAlertFilter(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <label
+                                            className="form-check-label small"
+                                            htmlFor="reception-alert-filter"
+                                        >
+                                            Tylko z alertem CRM
+                                        </label>
+                                    </div>
+                                </div>
+                                <ReceptionView
+                                    appointments={receptionAppointments}
+                                    loading={loading}
+                                    onChanged={() => {
+                                        void refetch();
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <CalendarView
+                                events={data?.events ?? []}
+                                employees={data?.employees ?? []}
+                                customerAlertSeverityById={
+                                    customerAlertSeverityById
+                                }
+                                loading={loading}
+                                onEventClick={handleEventClick}
+                                onEventDrop={handleEventDrop}
+                                onDateSelect={(start, end, employeeId) =>
+                                    setDrawer({
+                                        open: true,
+                                        mode: 'create',
+                                        appointment: null,
+                                        initialStartTime: start,
+                                        initialEndTime: end,
+                                        initialEmployeeId: employeeId,
+                                    })
+                                }
+                                onViewChange={(nextView) => {
+                                    setCurrentView(nextView);
+                                    updateCalendarQuery({ view: nextView });
+                                }}
+                                onEmployeeFilterChange={(ids) => {
+                                    setSelectedEmployeeIds(ids);
+                                    updateCalendarQuery({ employeeIds: ids });
+                                }}
+                                onDateChange={(date) => {
+                                    setCurrentDate(date);
+                                    updateCalendarQuery({
+                                        date: toDateParam(date),
+                                    });
+                                }}
+                                currentDate={currentDate}
+                                currentView={currentView}
+                                selectedEmployeeIds={selectedEmployeeIds}
+                                hideSidebar
+                            />
+                        )}
                     </div>
                 </div>
 

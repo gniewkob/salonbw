@@ -41,6 +41,13 @@ jest.mock('@/components/calendar/CalendarView', () => ({
     default: () => <div>calendar-view</div>,
 }));
 
+jest.mock('@/components/calendar/ReceptionView', () => ({
+    __esModule: true,
+    default: ({ appointments }: { appointments: Array<{ id: number }> }) => (
+        <div>reception-view:{appointments.length}</div>
+    ),
+}));
+
 const useCalendarMock = jest.fn();
 
 jest.mock('@/hooks/useCalendar', () => ({
@@ -261,5 +268,36 @@ describe('CalendarNextPage', () => {
                 '/customers/6/statistics',
             ),
         );
+    });
+
+    it('renders reception agenda view when view=reception', () => {
+        routerMock.query = { view: 'reception' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarNextPage />);
+
+        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+        expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
     });
 });
