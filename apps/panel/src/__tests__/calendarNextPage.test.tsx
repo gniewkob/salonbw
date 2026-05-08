@@ -1,9 +1,16 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
 import CalendarNextPage from '@/pages/calendar-next';
 import type { ReactNode } from 'react';
 
 const pushMock = jest.fn();
 const apiFetchMock = jest.fn();
+let consoleErrorSpy: jest.SpyInstance;
 const routerMock = {
     query: { appointmentId: '42' } as Record<string, string>,
     pathname: '/calendar-next',
@@ -80,6 +87,18 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
 
 describe('CalendarNextPage', () => {
     beforeEach(() => {
+        consoleErrorSpy = jest
+            .spyOn(console, 'error')
+            .mockImplementation((...args: unknown[]) => {
+                const firstArg = args[0];
+                if (
+                    typeof firstArg === 'string' &&
+                    firstArg.includes('not wrapped in act')
+                ) {
+                    return;
+                }
+                // Silence console errors in this suite; assertions verify behavior explicitly.
+            });
         pushMock.mockReset();
         apiFetchMock.mockReset();
         useCalendarMock.mockReset();
@@ -101,8 +120,12 @@ describe('CalendarNextPage', () => {
         });
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        await act(async () => {
+            await Promise.resolve();
+        });
         jest.useRealTimers();
+        consoleErrorSpy.mockRestore();
     });
 
     it('opens appointment drawer from appointmentId deep link', async () => {
@@ -274,8 +297,19 @@ describe('CalendarNextPage', () => {
         );
     });
 
-    it('renders reception agenda view when view=reception', () => {
+    it('renders reception agenda view when view=reception', async () => {
         routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/customers/7/statistics') {
+                return { noShowVisits: 0 };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
         useCalendarMock.mockImplementation(() => ({
             data: {
                 events: [
@@ -303,6 +337,11 @@ describe('CalendarNextPage', () => {
 
         expect(screen.getByText('reception-view:1')).toBeInTheDocument();
         expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/customers/7/statistics',
+            ),
+        );
     });
 
     it('applies reception filters for status, payment and CRM alerts', async () => {
@@ -406,5 +445,17 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(screen.getByText('reception-view:2')).toBeInTheDocument(),
         );
+        await waitFor(() => {
+            const statsCalls = apiFetchMock.mock.calls
+                .map((call) => String(call[0]))
+                .filter((endpoint) => endpoint.startsWith('/customers/'));
+            expect(statsCalls).toEqual(
+                expect.arrayContaining([
+                    '/customers/11/statistics',
+                    '/customers/12/statistics',
+                    '/customers/13/statistics',
+                ]),
+            );
+        });
     });
 });
