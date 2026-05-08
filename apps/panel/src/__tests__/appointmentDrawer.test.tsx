@@ -73,6 +73,28 @@ jest.mock('@/components/calendar/FinalizationModal', () => ({
 }));
 
 describe('AppointmentDrawer', () => {
+    const buildAppointment = (status: string) => ({
+        id: 42,
+        startTime: '2026-05-01T10:00:00.000Z',
+        endTime: '2026-05-01T10:45:00.000Z',
+        status,
+        paymentMethod: 'cash',
+        paidAmount: 100,
+        finalizedAt: '2026-05-01T11:00:00.000Z',
+        employee: { id: 2, name: 'Anna' },
+        client: { id: 5, name: 'Jan Kowalski' },
+        service: {
+            id: 10,
+            name: 'Strzyżenie',
+            duration: 45,
+            price: 120,
+            priceType: 'fixed',
+            isActive: true,
+            onlineBooking: true,
+            sortOrder: 0,
+        },
+    });
+
     beforeEach(() => {
         apiFetchMock.mockReset();
         cancelMock.mockReset();
@@ -380,6 +402,115 @@ describe('AppointmentDrawer', () => {
             screen.getAllByText(/Alergia na lateks/i).length,
         ).toBeGreaterThan(0);
         expect(screen.getByText('Preferencja klienta')).toBeInTheDocument();
+    });
+
+    it('shows scheduled actions for scheduled appointment', () => {
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('scheduled')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: 'Potwierdź' })).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'Rozpocznij' }),
+        ).toBeVisible();
+        expect(screen.getByRole('button', { name: 'No-show' })).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'Anuluj wizytę' }),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Finalizuj wizytę' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows confirmed actions for confirmed appointment', () => {
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('confirmed')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Potwierdź' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Rozpocznij' }),
+        ).toBeVisible();
+        expect(screen.getByRole('button', { name: 'No-show' })).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'Anuluj wizytę' }),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Finalizuj wizytę' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows finalize action only for in_progress appointment', () => {
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('in_progress')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Potwierdź' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Rozpocznij' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'No-show' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Anuluj wizytę' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Finalizuj wizytę' }),
+        ).toBeVisible();
+    });
+
+    it('hides status actions for completed appointment', () => {
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('completed')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Potwierdź' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Rozpocznij' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'No-show' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Finalizuj wizytę' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Anuluj wizytę' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /sprzedaży|historia sprzedaży/i }),
+        ).toBeVisible();
     });
 
     it('renders operational sections in edit mode', () => {
