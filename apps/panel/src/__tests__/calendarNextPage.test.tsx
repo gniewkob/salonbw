@@ -586,4 +586,62 @@ describe('CalendarNextPage', () => {
             expect(retryCalls.length).toBeGreaterThanOrEqual(2);
         });
     });
+
+    it('updates reception priority filter results after time tick', async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-05-07T12:00:00.000Z'));
+        routerMock.query = { view: 'reception' };
+
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 501,
+                        type: 'appointment',
+                        title: 'Wizyta tick',
+                        startTime: '2026-05-07T12:30:00.000Z',
+                        endTime: '2026-05-07T13:00:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 51,
+                        clientName: 'Klient Tick',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/customers/51/statistics') {
+                return { noShowVisits: 0 };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByLabelText('Tylko priorytetowe'));
+        expect(screen.getByText('reception-view:0')).toBeInTheDocument();
+
+        await act(async () => {
+            jest.advanceTimersByTime(31 * 60 * 1000);
+        });
+
+        await waitFor(() =>
+            expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
+        );
+    });
 });
