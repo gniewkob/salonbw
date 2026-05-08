@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
 import ReceptionView from '@/components/calendar/ReceptionView';
 
 const cancelMock = jest.fn();
@@ -435,5 +441,40 @@ describe('ReceptionView', () => {
         expect(screen.getAllByText('Opóźniona').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Do finalizacji').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Alert CRM').length).toBeGreaterThan(0);
+    });
+
+    it('recomputes overdue badges over time without manual refresh', () => {
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 60,
+                        startTime: '2026-05-01T12:30:00.000Z',
+                        endTime: '2026-05-01T13:00:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 110, name: 'Klient Czasowy' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 30,
+                            price: 100,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.queryByText('Opóźniona')).not.toBeInTheDocument();
+
+        act(() => {
+            jest.advanceTimersByTime(31 * 60 * 1000);
+        });
+
+        expect(screen.getByText('Opóźniona')).toBeInTheDocument();
     });
 });

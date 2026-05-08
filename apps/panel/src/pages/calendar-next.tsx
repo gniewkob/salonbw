@@ -45,6 +45,20 @@ function areAlertMapsEqual(
     return true;
 }
 
+function isOverdueAppointmentAt(appointment: Appointment, now: Date): boolean {
+    const status = appointment.status ?? 'scheduled';
+    if (status !== 'scheduled') return false;
+    const startTime = new Date(appointment.startTime);
+    if (Number.isNaN(startTime.getTime())) return false;
+
+    return (
+        startTime.getFullYear() === now.getFullYear() &&
+        startTime.getMonth() === now.getMonth() &&
+        startTime.getDate() === now.getDate() &&
+        startTime.getTime() < now.getTime()
+    );
+}
+
 export default function CalendarNextPage() {
     const router = useRouter();
     const { role, apiFetch } = useAuth();
@@ -63,6 +77,9 @@ export default function CalendarNextPage() {
     const [receptionStatusFilter, setReceptionStatusFilter] = useState('all');
     const [receptionPaymentFilter, setReceptionPaymentFilter] = useState('all');
     const [receptionAlertFilter, setReceptionAlertFilter] = useState(false);
+    const [receptionPriorityFilter, setReceptionPriorityFilter] =
+        useState(false);
+    const [receptionNowTick, setReceptionNowTick] = useState(() => Date.now());
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -126,6 +143,7 @@ export default function CalendarNextPage() {
 
     const receptionAppointments = useMemo(() => {
         const list = Array.from(appointmentsById.values());
+        const now = new Date(receptionNowTick);
 
         return list.filter((appointment) => {
             const status = appointment.status ?? 'scheduled';
@@ -135,6 +153,9 @@ export default function CalendarNextPage() {
                 customerId !== undefined
                     ? Boolean(customerAlertSeverityById[customerId])
                     : false;
+            const isOverdue = isOverdueAppointmentAt(appointment, now);
+            const isPriority =
+                isOverdue || status === 'in_progress' || hasAlert;
 
             if (
                 receptionStatusFilter !== 'all' &&
@@ -161,6 +182,10 @@ export default function CalendarNextPage() {
                 return false;
             }
 
+            if (receptionPriorityFilter && !isPriority) {
+                return false;
+            }
+
             return true;
         });
     }, [
@@ -169,7 +194,21 @@ export default function CalendarNextPage() {
         receptionStatusFilter,
         receptionPaymentFilter,
         receptionAlertFilter,
+        receptionPriorityFilter,
+        receptionNowTick,
     ]);
+
+    useEffect(() => {
+        if (currentView !== 'reception') return;
+
+        const timerId = window.setInterval(() => {
+            setReceptionNowTick(Date.now());
+        }, 60_000);
+
+        return () => {
+            window.clearInterval(timerId);
+        };
+    }, [currentView]);
 
     useEffect(() => {
         const dateParam = Array.isArray(router.query.date)
@@ -534,6 +573,25 @@ export default function CalendarNextPage() {
                                             htmlFor="reception-alert-filter"
                                         >
                                             Tylko z alertem CRM
+                                        </label>
+                                    </div>
+                                    <div className="form-check pb-2">
+                                        <input
+                                            id="reception-priority-filter"
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={receptionPriorityFilter}
+                                            onChange={(event) =>
+                                                setReceptionPriorityFilter(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <label
+                                            className="form-check-label small"
+                                            htmlFor="reception-priority-filter"
+                                        >
+                                            Tylko priorytetowe
                                         </label>
                                     </div>
                                 </div>

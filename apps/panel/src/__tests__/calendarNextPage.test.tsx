@@ -302,6 +302,8 @@ describe('CalendarNextPage', () => {
     });
 
     it('applies reception filters for status, payment and CRM alerts', async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-05-07T12:00:00.000Z'));
         routerMock.query = { view: 'reception' };
 
         useCalendarMock.mockImplementation(() => ({
@@ -393,5 +395,14 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
         );
+
+        fireEvent.click(screen.getByLabelText('Tylko z alertem CRM'));
+        fireEvent.click(screen.getByLabelText('Tylko priorytetowe'));
+
+        await waitFor(() =>
+            expect(screen.getByText('reception-view:2')).toBeInTheDocument(),
+        );
+
+        jest.useRealTimers();
     });
 });

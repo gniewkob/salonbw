@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { Appointment, AppointmentStatus } from '@/types';
@@ -83,7 +83,18 @@ export default function ReceptionView({
     } | null>(null);
     const [actionErrorByAppointmentId, setActionErrorByAppointmentId] =
         useState<Record<number, string>>({});
-    const now = new Date();
+    const [nowTick, setNowTick] = useState(() => Date.now());
+    const now = new Date(nowTick);
+
+    useEffect(() => {
+        const timerId = window.setInterval(() => {
+            setNowTick(Date.now());
+        }, 60_000);
+
+        return () => {
+            window.clearInterval(timerId);
+        };
+    }, []);
 
     const isOverdueAppointment = (appointment: Appointment) => {
         if ((appointment.status ?? 'scheduled') !== 'scheduled') return false;
