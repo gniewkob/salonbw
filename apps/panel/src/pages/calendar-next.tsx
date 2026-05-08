@@ -405,10 +405,13 @@ export default function CalendarNextPage() {
             }
 
             if (hasFailures) {
-                console.warn('[calendar-next] customer alert stats fetch failed', {
-                    failedCustomerIds,
-                    failedCount: failedCustomerIds.length,
-                });
+                console.warn(
+                    '[calendar-next] customer alert stats fetch failed',
+                    {
+                        failedCustomerIds,
+                        failedCount: failedCustomerIds.length,
+                    },
+                );
             }
 
             const nextVisible: ReceptionAlertSeverityByCustomerId = {};
