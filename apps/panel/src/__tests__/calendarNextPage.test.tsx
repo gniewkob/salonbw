@@ -101,6 +101,10 @@ describe('CalendarNextPage', () => {
         });
     });
 
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
     it('opens appointment drawer from appointmentId deep link', async () => {
         render(<CalendarNextPage />);
 
@@ -402,7 +406,5 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(screen.getByText('reception-view:2')).toBeInTheDocument(),
         );
-
-        jest.useRealTimers();
     });
 });

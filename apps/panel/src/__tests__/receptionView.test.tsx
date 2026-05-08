@@ -477,4 +477,38 @@ describe('ReceptionView', () => {
 
         expect(screen.getByText('Opóźniona')).toBeInTheDocument();
     });
+
+    it('cleans up overdue refresh interval on unmount', () => {
+        const clearIntervalSpy = jest.spyOn(window, 'clearInterval');
+
+        const { unmount } = render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 61,
+                        startTime: '2026-05-01T11:00:00.000Z',
+                        endTime: '2026-05-01T11:30:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 111, name: 'Klient Timer' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 30,
+                            price: 100,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+            />,
+        );
+
+        unmount();
+
+        expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
+        clearIntervalSpy.mockRestore();
+    });
 });
