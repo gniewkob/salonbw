@@ -77,6 +77,8 @@ export default function CalendarNextPage() {
     const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
     const [customerAlertStatsError, setCustomerAlertStatsError] =
         useState(false);
+    const [customerAlertStatsRetryToken, setCustomerAlertStatsRetryToken] =
+        useState(0);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -408,7 +410,7 @@ export default function CalendarNextPage() {
                 areAlertMapsEqual(current, nextVisible) ? current : nextVisible,
             );
         });
-    }, [visibleCustomerIds, apiFetch]);
+    }, [visibleCustomerIds, apiFetch, customerAlertStatsRetryToken]);
 
     const updateCalendarQuery = (
         next: Partial<{
@@ -446,6 +448,20 @@ export default function CalendarNextPage() {
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,
         });
+    };
+
+    const retryCustomerAlertStats = () => {
+        const nextCache = { ...customerAlertCacheRef.current };
+        for (const customerId of visibleCustomerIdsRef.current) {
+            delete nextCache[customerId];
+        }
+        customerAlertCacheRef.current = nextCache;
+        pendingCustomerAlertFetchesRef.current.clear();
+        setCustomerAlertStatsError(false);
+        setCustomerAlertSeverityById((current) =>
+            Object.keys(current).length === 0 ? current : {},
+        );
+        setCustomerAlertStatsRetryToken((current) => current + 1);
     };
 
     const handleEventDrop = async (
@@ -524,9 +540,18 @@ export default function CalendarNextPage() {
                             <div className="d-flex flex-column gap-3">
                                 {customerAlertStatsError ? (
                                     <div className="alert alert-warning py-2 mb-0">
-                                        Część alertów CRM jest chwilowo
-                                        niedostępna. Spróbujemy ponownie przy
-                                        kolejnym odświeżeniu widoku.
+                                        <div>
+                                            Część alertów CRM jest chwilowo
+                                            niedostępna. Spróbujemy ponownie
+                                            przy kolejnym odświeżeniu widoku.
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-warning btn-sm mt-2"
+                                            onClick={retryCustomerAlertStats}
+                                        >
+                                            Ponów teraz
+                                        </button>
                                     </div>
                                 ) : null}
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">

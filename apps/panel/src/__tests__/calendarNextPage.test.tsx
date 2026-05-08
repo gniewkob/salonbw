@@ -412,6 +412,60 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('retries customer CRM stats fetch when user clicks "Ponów teraz"', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/customers/7/statistics') {
+                throw new Error('Stats temporary failure');
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Ponów teraz' }),
+            ).toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ponów teraz' }));
+
+        await waitFor(() => {
+            const statsCalls = apiFetchMock.mock.calls.filter(
+                (call: unknown[]) => call[0] === '/customers/7/statistics',
+            );
+            expect(statsCalls.length).toBeGreaterThanOrEqual(2);
+        });
+    });
+
     it('applies reception filters for status, payment and CRM alerts', async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date('2026-05-07T12:00:00.000Z'));
