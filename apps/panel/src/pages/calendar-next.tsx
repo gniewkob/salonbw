@@ -55,10 +55,13 @@ function areAlertMapsEqual(
 export default function CalendarNextPage() {
     const router = useRouter();
     const { role, apiFetch } = useAuth();
+    const isMountedRef = useRef(true);
+    const visibleCustomerIdsRef = useRef<number[]>([]);
     const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
     const customerAlertCacheRef = useRef<
         Record<number, Exclude<ReceptionAlertSeverity, 'info'> | null>
     >({});
+    const pendingCustomerAlertFetchesRef = useRef<Set<number>>(new Set());
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
@@ -77,6 +80,13 @@ export default function CalendarNextPage() {
         mode: 'create',
         appointment: null,
     });
+
+    useEffect(
+        () => () => {
+            isMountedRef.current = false;
+        },
+        [],
+    );
 
     const { data, loading, refetch } = useCalendar({
         date: toDateParam(currentDate),
@@ -305,6 +315,10 @@ export default function CalendarNextPage() {
     );
 
     useEffect(() => {
+        visibleCustomerIdsRef.current = visibleCustomerIds;
+    }, [visibleCustomerIds]);
+
+    useEffect(() => {
         if (visibleCustomerIds.length === 0) {
             setCustomerAlertSeverityById((current) =>
                 Object.keys(current).length === 0 ? current : {},
@@ -320,7 +334,9 @@ export default function CalendarNextPage() {
                 const cached = customerAlertCacheRef.current[customerId];
                 if (cached) currentFromCache[customerId] = cached;
             } else {
-                missingCustomerIds.push(customerId);
+                if (!pendingCustomerAlertFetchesRef.current.has(customerId)) {
+                    missingCustomerIds.push(customerId);
+                }
             }
         }
 
@@ -331,7 +347,9 @@ export default function CalendarNextPage() {
         );
         if (missingCustomerIds.length === 0) return;
 
-        let cancelled = false;
+        for (const customerId of missingCustomerIds) {
+            pendingCustomerAlertFetchesRef.current.add(customerId);
+        }
 
         void Promise.all(
             missingCustomerIds.map(async (customerId) => {
@@ -345,32 +363,35 @@ export default function CalendarNextPage() {
                             : stats.noShowVisits > 0
                               ? ('warning' as const)
                               : null;
-                    return { customerId, severity };
+                    return { customerId, severity, success: true as const };
                 } catch {
-                    return { customerId, severity: null };
+                    return {
+                        customerId,
+                        severity: null,
+                        success: false as const,
+                    };
+                } finally {
+                    pendingCustomerAlertFetchesRef.current.delete(customerId);
                 }
             }),
         ).then((entries) => {
-            if (cancelled) return;
-
             for (const entry of entries) {
-                customerAlertCacheRef.current[entry.customerId] =
-                    entry.severity;
+                if (entry.success) {
+                    customerAlertCacheRef.current[entry.customerId] =
+                        entry.severity;
+                }
             }
 
             const nextVisible: ReceptionAlertSeverityByCustomerId = {};
-            for (const customerId of visibleCustomerIds) {
+            for (const customerId of visibleCustomerIdsRef.current) {
                 const cached = customerAlertCacheRef.current[customerId];
                 if (cached) nextVisible[customerId] = cached;
             }
+            if (!isMountedRef.current) return;
             setCustomerAlertSeverityById((current) =>
                 areAlertMapsEqual(current, nextVisible) ? current : nextVisible,
             );
         });
-
-        return () => {
-            cancelled = true;
-        };
     }, [visibleCustomerIds, apiFetch]);
 
     const updateCalendarQuery = (

@@ -462,4 +462,128 @@ describe('CalendarNextPage', () => {
             );
         });
     });
+
+    it('guards concurrent customer stats fetches and retries after failure', async () => {
+        routerMock.query = {};
+
+        let events = [
+            {
+                id: 401,
+                type: 'appointment',
+                title: 'Wizyta A',
+                startTime: '2026-05-07T09:00:00.000Z',
+                endTime: '2026-05-07T09:45:00.000Z',
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 99,
+                clientName: 'Klient 99',
+                status: 'scheduled',
+            },
+        ];
+
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events,
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        let resolveFirst: ((value: { noShowVisits: number }) => void) | null =
+            null;
+        const firstPending = new Promise<{ noShowVisits: number }>(
+            (resolve) => {
+                resolveFirst = resolve;
+            },
+        );
+        let firstCall = true;
+
+        apiFetchMock.mockImplementation((endpoint: string) => {
+            if (endpoint === '/customers/99/statistics') {
+                if (firstCall) {
+                    firstCall = false;
+                    return firstPending;
+                }
+                return Promise.resolve({ noShowVisits: 1 });
+            }
+            return Promise.resolve({
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            });
+        });
+
+        const { rerender } = render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/customers/99/statistics',
+            ),
+        );
+
+        // Re-render while the first fetch is still pending: should not trigger a duplicate call.
+        events = [{ ...events[0], id: 402, title: 'Wizyta B' }];
+        rerender(<CalendarNextPage />);
+
+        const callsDuringPending = apiFetchMock.mock.calls.filter(
+            (call: unknown[]) => call[0] === '/customers/99/statistics',
+        );
+        expect(callsDuringPending).toHaveLength(1);
+
+        resolveFirst?.({ noShowVisits: 0 });
+        await waitFor(() => {
+            const callsAfterResolve = apiFetchMock.mock.calls.filter(
+                (call: unknown[]) => call[0] === '/customers/99/statistics',
+            );
+            expect(callsAfterResolve).toHaveLength(1);
+        });
+
+        // Failure should not be cached forever: changing to a fresh view should retry.
+        apiFetchMock.mockImplementation((endpoint: string) => {
+            if (endpoint === '/customers/100/statistics') {
+                return Promise.reject(new Error('Temporary stats failure'));
+            }
+            return Promise.resolve({
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            });
+        });
+
+        events = [
+            {
+                id: 403,
+                type: 'appointment',
+                title: 'Wizyta C',
+                startTime: '2026-05-07T12:00:00.000Z',
+                endTime: '2026-05-07T12:45:00.000Z',
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 100,
+                clientName: 'Klient 100',
+                status: 'scheduled',
+            },
+        ];
+        rerender(<CalendarNextPage />);
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/customers/100/statistics',
+            ),
+        );
+
+        // Trigger another render with the same failing customer; retry should happen.
+        events = [{ ...events[0], id: 404, title: 'Wizyta D' }];
+        rerender(<CalendarNextPage />);
+
+        await waitFor(() => {
+            const retryCalls = apiFetchMock.mock.calls.filter(
+                (call: unknown[]) => call[0] === '/customers/100/statistics',
+            );
+            expect(retryCalls.length).toBeGreaterThanOrEqual(2);
+        });
+    });
 });
