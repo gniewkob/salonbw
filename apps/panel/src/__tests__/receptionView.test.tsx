@@ -287,7 +287,9 @@ describe('ReceptionView', () => {
             const labelElement = screen
                 .getAllByText(label)
                 .find((element) =>
-                    element.classList.contains('salonbw-reception-summary__label'),
+                    element.classList.contains(
+                        'salonbw-reception-summary__label',
+                    ),
                 );
             if (!labelElement) return null;
             const item = labelElement.closest(
