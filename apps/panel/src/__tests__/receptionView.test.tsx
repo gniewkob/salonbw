@@ -274,10 +274,21 @@ describe('ReceptionView', () => {
             />,
         );
 
+        const readSummaryValue = (label: string) => {
+            const labelElement = screen.getByText(label);
+            const item = labelElement.closest('.salonbw-reception-summary__item');
+            if (!item) return null;
+            return item.querySelector('.salonbw-reception-summary__value')
+                ?.textContent;
+        };
+
         expect(screen.getByText('Do finalizacji')).toBeInTheDocument();
         expect(screen.getByText('Z alertem CRM')).toBeInTheDocument();
         expect(screen.getByText('Opóźnione')).toBeInTheDocument();
         expect(screen.getByText('Alert CRM')).toBeInTheDocument();
+        expect(readSummaryValue('Do finalizacji')).toBe('1');
+        expect(readSummaryValue('Z alertem CRM')).toBe('1');
+        expect(readSummaryValue('Opóźnione')).toBe('1');
     });
 
     it('opens appointment from reception row', () => {
