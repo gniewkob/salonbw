@@ -300,4 +300,95 @@ describe('CalendarNextPage', () => {
         expect(screen.getByText('reception-view:1')).toBeInTheDocument();
         expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
     });
+
+    it('applies reception filters for status, payment and CRM alerts', async () => {
+        routerMock.query = { view: 'reception' };
+
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 301,
+                        type: 'appointment',
+                        title: 'A',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 11,
+                        clientName: 'Klient 11',
+                        status: 'scheduled',
+                    },
+                    {
+                        id: 302,
+                        type: 'appointment',
+                        title: 'B',
+                        startTime: '2026-05-07T10:00:00.000Z',
+                        endTime: '2026-05-07T10:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 12,
+                        clientName: 'Klient 12',
+                        status: 'in_progress',
+                    },
+                    {
+                        id: 303,
+                        type: 'appointment',
+                        title: 'C',
+                        startTime: '2026-05-07T11:00:00.000Z',
+                        endTime: '2026-05-07T11:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 13,
+                        clientName: 'Klient 13',
+                        status: 'completed',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/customers/11/statistics') return { noShowVisits: 0 };
+            if (endpoint === '/customers/12/statistics') return { noShowVisits: 2 };
+            if (endpoint === '/customers/13/statistics') return { noShowVisits: 0 };
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(screen.getByText('reception-view:3')).toBeInTheDocument(),
+        );
+
+        fireEvent.change(screen.getByLabelText('Status'), {
+            target: { value: 'in_progress' },
+        });
+        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText('Status'), {
+            target: { value: 'all' },
+        });
+        fireEvent.change(screen.getByLabelText('Płatność'), {
+            target: { value: 'to_finalize' },
+        });
+        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText('Płatność'), {
+            target: { value: 'all' },
+        });
+        fireEvent.click(screen.getByLabelText('Tylko z alertem CRM'));
+
+        await waitFor(() =>
+            expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
+        );
+    });
 });
