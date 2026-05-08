@@ -12,6 +12,7 @@ const pushMock = jest.fn();
 const apiFetchMock = jest.fn();
 let consoleErrorSpy: jest.SpyInstance;
 let originalConsoleError: typeof console.error;
+let consoleWarnSpy: jest.SpyInstance;
 const routerMock = {
     query: { appointmentId: '42' } as Record<string, string>,
     pathname: '/calendar-next',
@@ -103,6 +104,9 @@ describe('CalendarNextPage', () => {
                     ...(args as Parameters<typeof console.error>),
                 );
             });
+        consoleWarnSpy = jest
+            .spyOn(console, 'warn')
+            .mockImplementation(() => undefined);
         pushMock.mockReset();
         apiFetchMock.mockReset();
         useCalendarMock.mockReset();
@@ -130,6 +134,7 @@ describe('CalendarNextPage', () => {
         });
         jest.useRealTimers();
         consoleErrorSpy.mockRestore();
+        consoleWarnSpy.mockRestore();
     });
 
     it('opens appointment drawer from appointmentId deep link', async () => {
@@ -159,6 +164,10 @@ describe('CalendarNextPage', () => {
         );
         expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
             'closed',
+        );
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+            '[calendar-next] deep-link fetch failed',
+            { appointmentId: 42 },
         );
     });
 
@@ -409,6 +418,13 @@ describe('CalendarNextPage', () => {
                     'Część alertów CRM jest chwilowo niedostępna. Spróbujemy ponownie przy kolejnym odświeżeniu widoku.',
                 ),
             ).toBeInTheDocument(),
+        );
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+            '[calendar-next] customer alert stats fetch failed',
+            {
+                failedCustomerIds: [7],
+                failedCount: 1,
+            },
         );
     });
 

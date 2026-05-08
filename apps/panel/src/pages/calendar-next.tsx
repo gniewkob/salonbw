@@ -298,6 +298,9 @@ export default function CalendarNextPage() {
             })
             .catch(() => {
                 if (cancelled) return;
+                console.warn('[calendar-next] deep-link fetch failed', {
+                    appointmentId,
+                });
                 setDeepLinkError(
                     'Nie udało się otworzyć wizyty z linku. Spróbuj ponownie.',
                 );
@@ -390,13 +393,22 @@ export default function CalendarNextPage() {
             }),
         ).then((entries) => {
             let hasFailures = false;
+            const failedCustomerIds: number[] = [];
             for (const entry of entries) {
                 if (entry.success) {
                     customerAlertCacheRef.current[entry.customerId] =
                         entry.severity;
                 } else {
                     hasFailures = true;
+                    failedCustomerIds.push(entry.customerId);
                 }
+            }
+
+            if (hasFailures) {
+                console.warn('[calendar-next] customer alert stats fetch failed', {
+                    failedCustomerIds,
+                    failedCount: failedCustomerIds.length,
+                });
             }
 
             const nextVisible: ReceptionAlertSeverityByCustomerId = {};
