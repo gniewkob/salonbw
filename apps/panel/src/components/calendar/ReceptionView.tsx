@@ -83,9 +83,34 @@ export default function ReceptionView({
     } | null>(null);
     const [actionErrorByAppointmentId, setActionErrorByAppointmentId] =
         useState<Record<number, string>>({});
+    const now = new Date();
 
-    // Sort appointments by start time
+    const isOverdueAppointment = (appointment: Appointment) => {
+        if ((appointment.status ?? 'scheduled') !== 'scheduled') return false;
+        const startTime = parseISO(appointment.startTime);
+        return isToday(startTime) && isPast(startTime) && startTime < now;
+    };
+
+    const hasCustomerAlert = (appointment: Appointment) => {
+        const customerId = appointment.client?.id;
+        return customerId
+            ? Boolean(customerAlertSeverityByCustomerId[customerId])
+            : false;
+    };
+
+    const getAppointmentPriority = (appointment: Appointment) => {
+        if (isOverdueAppointment(appointment)) return 0;
+        if ((appointment.status ?? 'scheduled') === 'in_progress') return 1;
+        if (hasCustomerAlert(appointment)) return 2;
+        return 3;
+    };
+
+    // Sort appointments by operational priority, then by time.
     const sortedAppointments = [...appointments].sort((a, b) => {
+        const priorityDiff =
+            getAppointmentPriority(a) - getAppointmentPriority(b);
+        if (priorityDiff !== 0) return priorityDiff;
+
         return (
             new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
         );
@@ -200,21 +225,11 @@ export default function ReceptionView({
         },
         {} as Record<string, number>,
     );
-    const now = new Date();
     const toFinalizeCount = appointments.filter(
         (appointment) => appointment.status === 'in_progress',
     ).length;
-    const withAlertCount = appointments.filter((appointment) => {
-        const customerId = appointment.client?.id;
-        return customerId
-            ? Boolean(customerAlertSeverityByCustomerId[customerId])
-            : false;
-    }).length;
-    const overdueCount = appointments.filter((appointment) => {
-        if ((appointment.status ?? 'scheduled') !== 'scheduled') return false;
-        const startTime = parseISO(appointment.startTime);
-        return isToday(startTime) && isPast(startTime) && startTime < now;
-    }).length;
+    const withAlertCount = appointments.filter(hasCustomerAlert).length;
+    const overdueCount = appointments.filter(isOverdueAppointment).length;
 
     return (
         <div className="salonbw-reception-view">
@@ -308,15 +323,13 @@ export default function ReceptionView({
                                 STATUS_CONFIG.scheduled;
                             const isRowPending =
                                 pendingAction?.appointmentId === appointment.id;
-                            const startTime = parseISO(appointment.startTime);
-                            const isOverdue =
-                                isPast(startTime) &&
-                                isToday(startTime) &&
-                                status === 'scheduled';
-                            const alertSeverity = appointment.client?.id
-                                ? customerAlertSeverityByCustomerId[
-                                      appointment.client.id
-                                  ]
+                            const isOverdue = isOverdueAppointment(appointment);
+                            const alertSeverity = hasCustomerAlert(appointment)
+                                ? appointment.client?.id
+                                    ? customerAlertSeverityByCustomerId[
+                                          appointment.client.id
+                                      ]
+                                    : undefined
                                 : undefined;
 
                             return (

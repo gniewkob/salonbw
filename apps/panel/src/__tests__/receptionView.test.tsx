@@ -12,6 +12,15 @@ jest.mock('@/hooks/useAppointments', () => ({
 }));
 
 describe('ReceptionView', () => {
+    beforeAll(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-05-01T12:00:00.000Z'));
+    });
+
+    afterAll(() => {
+        jest.useRealTimers();
+    });
+
     beforeEach(() => {
         cancelMock.mockReset();
         updateStatusMock.mockReset();
@@ -276,7 +285,9 @@ describe('ReceptionView', () => {
 
         const readSummaryValue = (label: string) => {
             const labelElement = screen.getByText(label);
-            const item = labelElement.closest('.salonbw-reception-summary__item');
+            const item = labelElement.closest(
+                '.salonbw-reception-summary__item',
+            );
             if (!item) return null;
             return item.querySelector('.salonbw-reception-summary__value')
                 ?.textContent;
@@ -322,5 +333,97 @@ describe('ReceptionView', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Otwórz' }));
         expect(onOpenAppointment).toHaveBeenCalledWith(40);
+    });
+
+    it('prioritizes overdue, in_progress and CRM-alert appointments in order', () => {
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 50,
+                        startTime: '2026-05-01T14:00:00.000Z',
+                        endTime: '2026-05-01T14:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 100, name: 'Zwykła przyszła' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                    {
+                        id: 51,
+                        startTime: '2026-05-01T13:00:00.000Z',
+                        endTime: '2026-05-01T13:45:00.000Z',
+                        status: 'in_progress',
+                        client: { id: 101, name: 'W trakcie' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                    {
+                        id: 52,
+                        startTime: '2026-05-01T15:00:00.000Z',
+                        endTime: '2026-05-01T15:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 102, name: 'Z alertem' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                    {
+                        id: 53,
+                        startTime: '2026-05-01T09:00:00.000Z',
+                        endTime: '2026-05-01T09:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 103, name: 'Opóźniona' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+                customerAlertSeverityByCustomerId={{
+                    102: 'warning',
+                }}
+            />,
+        );
+
+        const rows = screen.getAllByRole('row').slice(1);
+        const rowText = rows.map((row) => row.textContent ?? '');
+
+        expect(rowText[0]).toContain('Opóźniona');
+        expect(rowText[1]).toContain('W trakcie');
+        expect(rowText[2]).toContain('Z alertem');
+        expect(rowText[3]).toContain('Zwykła przyszła');
     });
 });
