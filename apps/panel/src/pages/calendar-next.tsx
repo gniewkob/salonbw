@@ -74,6 +74,9 @@ export default function CalendarNextPage() {
     const [receptionPriorityFilter, setReceptionPriorityFilter] =
         useState(false);
     const [receptionNowTick, setReceptionNowTick] = useState(() => Date.now());
+    const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
+    const [customerAlertStatsError, setCustomerAlertStatsError] =
+        useState(false);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -258,6 +261,7 @@ export default function CalendarNextPage() {
             : router.query.appointmentId;
         if (!appointmentIdParam) {
             handledDeepLinkAppointmentIdRef.current = null;
+            setDeepLinkError(null);
             return;
         }
 
@@ -267,6 +271,7 @@ export default function CalendarNextPage() {
 
         const appointmentFromCalendar = appointmentsById.get(appointmentId);
         if (appointmentFromCalendar) {
+            setDeepLinkError(null);
             setDrawer({
                 open: true,
                 mode: 'edit',
@@ -281,6 +286,7 @@ export default function CalendarNextPage() {
         void apiFetch<Appointment>(`/appointments/${appointmentId}`)
             .then((appointment) => {
                 if (cancelled) return;
+                setDeepLinkError(null);
                 setDrawer({
                     open: true,
                     mode: 'edit',
@@ -289,7 +295,10 @@ export default function CalendarNextPage() {
                 handledDeepLinkAppointmentIdRef.current = appointmentId;
             })
             .catch(() => {
-                // Ignore deep-link fetch errors and keep calendar usable.
+                if (cancelled) return;
+                setDeepLinkError(
+                    'Nie udało się otworzyć wizyty z linku. Spróbuj ponownie.',
+                );
             });
 
         return () => {
@@ -319,6 +328,7 @@ export default function CalendarNextPage() {
 
     useEffect(() => {
         if (visibleCustomerIds.length === 0) {
+            setCustomerAlertStatsError(false);
             setCustomerAlertSeverityById((current) =>
                 Object.keys(current).length === 0 ? current : {},
             );
@@ -344,7 +354,10 @@ export default function CalendarNextPage() {
                 ? current
                 : currentFromCache,
         );
-        if (missingCustomerIds.length === 0) return;
+        if (missingCustomerIds.length === 0) {
+            setCustomerAlertStatsError(false);
+            return;
+        }
 
         for (const customerId of missingCustomerIds) {
             pendingCustomerAlertFetchesRef.current.add(customerId);
@@ -374,10 +387,13 @@ export default function CalendarNextPage() {
                 }
             }),
         ).then((entries) => {
+            let hasFailures = false;
             for (const entry of entries) {
                 if (entry.success) {
                     customerAlertCacheRef.current[entry.customerId] =
                         entry.severity;
+                } else {
+                    hasFailures = true;
                 }
             }
 
@@ -387,6 +403,7 @@ export default function CalendarNextPage() {
                 if (cached) nextVisible[customerId] = cached;
             }
             if (!isMountedRef.current) return;
+            setCustomerAlertStatsError(hasFailures);
             setCustomerAlertSeverityById((current) =>
                 areAlertMapsEqual(current, nextVisible) ? current : nextVisible,
             );
@@ -498,8 +515,20 @@ export default function CalendarNextPage() {
                     </div>
 
                     <div className="px-3 pb-3">
+                        {deepLinkError ? (
+                            <div className="alert alert-warning py-2 mb-2">
+                                {deepLinkError}
+                            </div>
+                        ) : null}
                         {currentView === 'reception' ? (
                             <div className="d-flex flex-column gap-3">
+                                {customerAlertStatsError ? (
+                                    <div className="alert alert-warning py-2 mb-0">
+                                        Część alertów CRM jest chwilowo
+                                        niedostępna. Trwa automatyczna próba
+                                        ponowienia.
+                                    </div>
+                                ) : null}
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
                                         <label

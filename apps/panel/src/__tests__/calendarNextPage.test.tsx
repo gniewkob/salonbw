@@ -145,6 +145,23 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('shows warning when appointment deep link fetch fails', async () => {
+        apiFetchMock.mockRejectedValueOnce(new Error('Deep link failed'));
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Nie udało się otworzyć wizyty z linku. Spróbuj ponownie.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
+            'closed',
+        );
+    });
+
     it('opens drawer from calendar event map without fallback fetch', async () => {
         useCalendarMock.mockReturnValueOnce({
             data: {
@@ -345,6 +362,53 @@ describe('CalendarNextPage', () => {
             expect(apiFetchMock).toHaveBeenCalledWith(
                 '/customers/7/statistics',
             ),
+        );
+    });
+
+    it('shows warning when customer CRM stats are temporarily unavailable', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/customers/7/statistics') {
+                throw new Error('Stats temporary failure');
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Część alertów CRM jest chwilowo niedostępna. Trwa automatyczna próba ponowienia.',
+                ),
+            ).toBeInTheDocument(),
         );
     });
 
