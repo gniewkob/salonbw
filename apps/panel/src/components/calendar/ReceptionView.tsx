@@ -18,6 +18,8 @@ type StatusConfig = {
     actions: string[];
 };
 
+type ActionKey = 'confirm' | 'start' | 'complete' | 'cancel' | 'no_show';
+
 const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     scheduled: {
         label: 'Zaplanowana',
@@ -66,7 +68,11 @@ export default function ReceptionView({
 }: ReceptionViewProps) {
     const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
-    const [processingId, setProcessingId] = useState<number | null>(null);
+    const [pendingAction, setPendingAction] = useState<{
+        appointmentId: number;
+        action: ActionKey;
+    } | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
 
     // Sort appointments by start time
     const sortedAppointments = [...appointments].sort((a, b) => {
@@ -75,8 +81,12 @@ export default function ReceptionView({
         );
     });
 
-    const handleAction = async (appointment: Appointment, action: string) => {
-        setProcessingId(appointment.id);
+    const handleAction = async (
+        appointment: Appointment,
+        action: ActionKey,
+    ) => {
+        setPendingAction({ appointmentId: appointment.id, action });
+        setActionError(null);
         try {
             switch (action) {
                 case 'cancel':
@@ -110,9 +120,13 @@ export default function ReceptionView({
             onChanged?.();
         } catch (error) {
             console.error('Action failed:', error);
-            alert('Wystąpił błąd podczas aktualizacji wizyty');
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Wystąpił błąd podczas aktualizacji wizyty';
+            setActionError(message);
         }
-        setProcessingId(null);
+        setPendingAction(null);
     };
 
     const getStatusBadge = (status: AppointmentStatus | string) => {
@@ -170,6 +184,11 @@ export default function ReceptionView({
 
     return (
         <div className="salonbw-reception-view">
+            {actionError ? (
+                <div className="alert alert-danger py-2">
+                    Wystąpił błąd podczas aktualizacji wizyty: {actionError}
+                </div>
+            ) : null}
             {/* Summary */}
             <div className="salonbw-reception-summary">
                 <div className="salonbw-reception-summary__item">
@@ -234,8 +253,8 @@ export default function ReceptionView({
                             const config =
                                 STATUS_CONFIG[status] ||
                                 STATUS_CONFIG.scheduled;
-                            const isProcessing =
-                                processingId === appointment.id;
+                            const isRowPending =
+                                pendingAction?.appointmentId === appointment.id;
                             const startTime = parseISO(appointment.startTime);
                             const isOverdue =
                                 isPast(startTime) &&
@@ -245,7 +264,7 @@ export default function ReceptionView({
                             return (
                                 <tr
                                     key={appointment.id}
-                                    className={`${isOverdue ? 'salonbw-reception-row--overdue' : ''} ${isProcessing ? 'salonbw-reception-row--processing' : ''}`}
+                                    className={`${isOverdue ? 'salonbw-reception-row--overdue' : ''} ${isRowPending ? 'salonbw-reception-row--processing' : ''}`}
                                 >
                                     <td className="salonbw-reception-time">
                                         {formatTime(appointment.startTime)}
@@ -283,6 +302,11 @@ export default function ReceptionView({
                                             {config.actions.map((action) => {
                                                 const actionConfig =
                                                     ACTION_LABELS[action];
+                                                const isActionPending =
+                                                    pendingAction?.appointmentId ===
+                                                        appointment.id &&
+                                                    pendingAction.action ===
+                                                        action;
                                                 return (
                                                     <button
                                                         key={action}
@@ -291,12 +315,14 @@ export default function ReceptionView({
                                                         onClick={() =>
                                                             void handleAction(
                                                                 appointment,
-                                                                action,
+                                                                action as ActionKey,
                                                             )
                                                         }
-                                                        disabled={isProcessing}
+                                                        disabled={isRowPending}
                                                     >
-                                                        {actionConfig.label}
+                                                        {isActionPending
+                                                            ? 'Trwa...'
+                                                            : actionConfig.label}
                                                     </button>
                                                 );
                                             })}
