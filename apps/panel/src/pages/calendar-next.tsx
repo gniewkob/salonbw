@@ -405,6 +405,7 @@ export default function CalendarNextPage() {
             try {
                 const params = new URLSearchParams();
                 params.set('ids', missingCustomerIds.join(','));
+                params.set('scope', 'alerts');
                 const query = params.toString();
                 const response =
                     await apiFetch<CustomerStatisticsBatchResponse>(

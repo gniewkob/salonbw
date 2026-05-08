@@ -53,6 +53,8 @@ interface FavoriteProductRow {
     count: string | number | null;
 }
 
+type CustomerStatisticsBatchScope = 'full' | 'alerts';
+
 @Injectable()
 export class CustomerStatisticsService {
     constructor(
@@ -409,6 +411,7 @@ export class CustomerStatisticsService {
     async getStatisticsBatch(
         customerIds: number[],
         options?: { from?: string; to?: string },
+        scope: CustomerStatisticsBatchScope = 'full',
     ): Promise<
         Array<{ customerId: number; statistics: CustomerStatistics | null }>
     > {
@@ -421,6 +424,10 @@ export class CustomerStatisticsService {
         ).slice(0, 100);
 
         if (uniqueIds.length === 0) return [];
+
+        if (scope === 'alerts') {
+            return this.getAlertStatisticsBatch(uniqueIds, options);
+        }
 
         const items = await Promise.all(
             uniqueIds.map(async (customerId) => {
@@ -440,6 +447,72 @@ export class CustomerStatisticsService {
         );
 
         return items;
+    }
+
+    private buildAlertStatistics(noShowVisits: number): CustomerStatistics {
+        return {
+            totalVisits: 0,
+            completedVisits: 0,
+            cancelledVisits: 0,
+            noShowVisits,
+            totalSpent: 0,
+            serviceSpent: 0,
+            productSpent: 0,
+            averageSpent: 0,
+            lastVisitDate: null,
+            firstVisitDate: null,
+            favoriteServices: [],
+            favoriteEmployees: [],
+            favoriteProducts: [],
+            visitsByMonth: [],
+        };
+    }
+
+    private async getAlertStatisticsBatch(
+        customerIds: number[],
+        options?: { from?: string; to?: string },
+    ): Promise<Array<{ customerId: number; statistics: CustomerStatistics }>> {
+        const { from, toExclusive } = this.parseRange(options);
+        const qb = this.appointmentsRepo
+            .createQueryBuilder('apt')
+            .select('apt.clientId', 'customerId')
+            .addSelect(
+                'SUM(CASE WHEN apt.status = :noShowStatus THEN 1 ELSE 0 END)',
+                'noShowVisits',
+            )
+            .where('apt.clientId IN (:...customerIds)', { customerIds })
+            .groupBy('apt.clientId')
+            .setParameter('noShowStatus', AppointmentStatus.NoShow);
+
+        if (from) {
+            qb.andWhere('apt.startTime >= :from', { from });
+        }
+        if (toExclusive) {
+            qb.andWhere('apt.startTime < :to', { to: toExclusive });
+        }
+
+        const rows = (await qb.getRawMany()) as Array<{
+            customerId: string | number;
+            noShowVisits: string | number | null;
+        }>;
+        const byCustomerId = new Map<number, number>();
+        for (const row of rows) {
+            const customerId = Number(row.customerId);
+            const noShowVisits = Number(row.noShowVisits ?? 0);
+            if (Number.isInteger(customerId) && customerId > 0) {
+                byCustomerId.set(
+                    customerId,
+                    Number.isFinite(noShowVisits) ? noShowVisits : 0,
+                );
+            }
+        }
+
+        return customerIds.map((customerId) => ({
+            customerId,
+            statistics: this.buildAlertStatistics(
+                byCustomerId.get(customerId) ?? 0,
+            ),
+        }));
     }
 
     async getEventHistory(

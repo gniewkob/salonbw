@@ -13,7 +13,12 @@ describe('CustomerStatisticsService', () => {
             where: jest.fn().mockReturnThis(),
             orderBy: jest.fn().mockReturnThis(),
             andWhere: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            addSelect: jest.fn().mockReturnThis(),
+            groupBy: jest.fn().mockReturnThis(),
+            setParameter: jest.fn().mockReturnThis(),
             getMany: jest.fn(),
+            getRawMany: jest.fn(),
         };
 
         const repo = {
@@ -157,6 +162,47 @@ describe('CustomerStatisticsService', () => {
                 spent: 120,
                 serviceSpent: 120,
                 productSpent: 0,
+            },
+        ]);
+    });
+
+    it('uses aggregated query for alerts batch scope', async () => {
+        const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
+        const usersRepo = {} as Repository<User>;
+        const service = new CustomerStatisticsService(
+            appointmentsRepo,
+            usersRepo,
+        );
+
+        qb.getRawMany.mockResolvedValue([
+            { customerId: '7', noShowVisits: '2' },
+            { customerId: '8', noShowVisits: '0' },
+        ]);
+
+        const batch = await service.getStatisticsBatch(
+            [7, 8, 9],
+            undefined,
+            'alerts',
+        );
+
+        expect(qb.select).toHaveBeenCalledWith('apt.clientId', 'customerId');
+        expect(qb.groupBy).toHaveBeenCalledWith('apt.clientId');
+        expect(qb.setParameter).toHaveBeenCalledWith(
+            'noShowStatus',
+            AppointmentStatus.NoShow,
+        );
+        expect(batch).toEqual([
+            {
+                customerId: 7,
+                statistics: expect.objectContaining({ noShowVisits: 2 }),
+            },
+            {
+                customerId: 8,
+                statistics: expect.objectContaining({ noShowVisits: 0 }),
+            },
+            {
+                customerId: 9,
+                statistics: expect.objectContaining({ noShowVisits: 0 }),
             },
         ]);
     });

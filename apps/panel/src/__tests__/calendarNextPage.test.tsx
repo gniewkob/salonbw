@@ -330,8 +330,10 @@ describe('CalendarNextPage', () => {
     it('renders reception agenda view when view=reception', async () => {
         routerMock.query = { view: 'reception' };
         apiFetchMock.mockImplementation(async (endpoint: string) => {
-            if (endpoint === '/customers/7/statistics') {
-                return { noShowVisits: 0 };
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [{ customerId: 7, statistics: { noShowVisits: 0 } }],
+                };
             }
             return {
                 id: 42,
@@ -369,8 +371,13 @@ describe('CalendarNextPage', () => {
         expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith(
-                '/customers/7/statistics',
+                expect.stringContaining(
+                    '/customers/statistics/batch?ids=7&scope=alerts',
+                ),
             ),
+        );
+        expect(apiFetchMock).not.toHaveBeenCalledWith(
+            '/customers/7/statistics',
         );
     });
 

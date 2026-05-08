@@ -126,17 +126,24 @@ export class CustomersController {
         @Query('ids') ids?: string,
         @Query('from') from?: string,
         @Query('to') to?: string,
+        @Query('scope') scope?: string,
     ) {
         const customerIds = (ids ?? '')
             .split(',')
             .map((value) => Number(value.trim()))
             .filter((value) => Number.isInteger(value) && value > 0);
 
+        const normalizedScope = scope === 'alerts' ? 'alerts' : 'full';
+
         return this.statisticsService
-            .getStatisticsBatch(customerIds, {
-                from,
-                to,
-            })
+            .getStatisticsBatch(
+                customerIds,
+                {
+                    from,
+                    to,
+                },
+                normalizedScope,
+            )
             .then((items) => ({ items }));
     }
 

@@ -41,6 +41,25 @@ describe('CustomersController', () => {
                 from: '2026-05-01',
                 to: '2026-05-31',
             },
+            'full',
+        );
+    });
+
+    it('passes alerts scope for batch request when provided', async () => {
+        await controller.getStatisticsBatch(
+            '7,8',
+            undefined,
+            undefined,
+            'alerts',
+        );
+
+        expect(statisticsService.getStatisticsBatch).toHaveBeenCalledWith(
+            [7, 8],
+            {
+                from: undefined,
+                to: undefined,
+            },
+            'alerts',
         );
     });
 });
