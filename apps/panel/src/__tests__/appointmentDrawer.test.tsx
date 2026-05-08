@@ -283,7 +283,7 @@ describe('AppointmentDrawer', () => {
             />,
         );
 
-        expect(screen.getByText('Alerty klienta')).toBeInTheDocument();
+        expect(screen.getByText('Alerty')).toBeInTheDocument();
         expect(screen.getByText(/Historia no-show/i)).toBeInTheDocument();
     });
 
@@ -323,7 +323,7 @@ describe('AppointmentDrawer', () => {
             />,
         );
 
-        expect(screen.queryByText('Alerty klienta')).not.toBeInTheDocument();
+        expect(screen.queryByText('Alerty')).not.toBeInTheDocument();
     });
 
     it('renders pinned medical/warning/preference alerts', () => {
@@ -380,5 +380,52 @@ describe('AppointmentDrawer', () => {
             screen.getAllByText(/Alergia na lateks/i).length,
         ).toBeGreaterThan(0);
         expect(screen.getByText('Preferencja klienta')).toBeInTheDocument();
+    });
+
+    it('renders operational sections in edit mode', () => {
+        const { container } = render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 52,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    paymentMethod: 'cash',
+                    paidAmount: 100,
+                    finalizedAt: '2026-05-01T11:00:00.000Z',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Wizyta')).toBeInTheDocument();
+        expect(screen.getAllByText('Klient').length).toBeGreaterThan(0);
+        expect(screen.getByText('Sprzedaż')).toBeInTheDocument();
+        expect(screen.getByText('Akcje')).toBeInTheDocument();
+
+        const sectionHeadings = Array.from(
+            container.querySelectorAll('strong.d-block.mb-2'),
+        ).map((element) => element.textContent?.trim());
+        expect(sectionHeadings).toEqual([
+            'Wizyta',
+            'Klient',
+            'Sprzedaż',
+            'Akcje',
+        ]);
     });
 });

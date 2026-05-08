@@ -180,6 +180,7 @@ export default function AppointmentDrawer({
         Number(employeeId) > 0 &&
         Number(serviceId) > 0 &&
         Number(clientId) > 0;
+    const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
     const canConfirm = currentStatus === 'scheduled';
     const canStart =
@@ -343,50 +344,95 @@ export default function AppointmentDrawer({
                 </div>
 
                 <div className="p-3 d-flex flex-column gap-3">
-                    <div>
-                        <label
-                            className="form-label"
-                            htmlFor="appointment-start-time"
-                        >
-                            Start wizyty
-                        </label>
-                        <input
-                            id="appointment-start-time"
-                            type="datetime-local"
-                            className="form-control"
-                            value={startTime}
-                            onChange={(event) =>
-                                setStartTime(event.target.value)
-                            }
-                        />
+                    <div className="rounded border p-2">
+                        <strong className="d-block mb-2">Wizyta</strong>
+                        <div>
+                            <label
+                                className="form-label"
+                                htmlFor="appointment-start-time"
+                            >
+                                Start wizyty
+                            </label>
+                            <input
+                                id="appointment-start-time"
+                                type="datetime-local"
+                                className="form-control"
+                                value={startTime}
+                                onChange={(event) =>
+                                    setStartTime(event.target.value)
+                                }
+                            />
+                        </div>
+                        <div className="mt-2">
+                            <label
+                                className="form-label"
+                                htmlFor="appointment-employee"
+                            >
+                                Pracownik
+                            </label>
+                            <select
+                                id="appointment-employee"
+                                className="form-select"
+                                value={employeeId}
+                                onChange={(event) =>
+                                    setEmployeeId(Number(event.target.value))
+                                }
+                                disabled={isEditMode}
+                            >
+                                <option value="">Wybierz pracownika</option>
+                                {employees.map((employee: Employee) => (
+                                    <option
+                                        key={employee.id}
+                                        value={employee.id}
+                                    >
+                                        {employee.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mt-2">
+                            <label
+                                className="form-label"
+                                htmlFor="appointment-service"
+                            >
+                                Usługa
+                            </label>
+                            <select
+                                id="appointment-service"
+                                className="form-select"
+                                value={serviceId}
+                                onChange={(event) =>
+                                    setServiceId(Number(event.target.value))
+                                }
+                                disabled={isEditMode}
+                            >
+                                <option value="">Wybierz usługę</option>
+                                {services.map((service: Service) => (
+                                    <option key={service.id} value={service.id}>
+                                        {service.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {selectedService && (
+                                <div className="form-text">
+                                    Czas: {selectedService.duration} min, cena:{' '}
+                                    {selectedService.price.toFixed(2)} PLN
+                                </div>
+                            )}
+                        </div>
+                        {appointment ? (
+                            <div className="mt-2 pt-2 border-top small">
+                                <div>Status: {appointment.status ?? '-'}</div>
+                                <div>
+                                    Płatność:{' '}
+                                    {appointment.paymentStatus ?? 'nieopłacona'}
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
 
-                    <div>
-                        <label
-                            className="form-label"
-                            htmlFor="appointment-employee"
-                        >
-                            Pracownik
-                        </label>
-                        <select
-                            id="appointment-employee"
-                            className="form-select"
-                            value={employeeId}
-                            onChange={(event) =>
-                                setEmployeeId(Number(event.target.value))
-                            }
-                            disabled={mode === 'edit'}
-                        >
-                            <option value="">Wybierz pracownika</option>
-                            {employees.map((employee: Employee) => (
-                                <option key={employee.id} value={employee.id}>
-                                    {employee.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
+                    <div className="rounded border p-2">
+                        <strong className="d-block mb-2">Klient</strong>
                         <label
                             className="form-label"
                             htmlFor="appointment-client"
@@ -412,7 +458,7 @@ export default function AppointmentDrawer({
                             onChange={(event) =>
                                 setClientId(Number(event.target.value))
                             }
-                            disabled={mode === 'edit'}
+                            disabled={isEditMode}
                         >
                             <option value="">Wybierz klienta</option>
                             {customers.map((customer: Customer) => (
@@ -512,106 +558,8 @@ export default function AppointmentDrawer({
                                 </div>
                             </div>
                         )}
-                    </div>
-
-                    <div>
-                        <label
-                            className="form-label"
-                            htmlFor="appointment-service"
-                        >
-                            Usługa
-                        </label>
-                        <select
-                            id="appointment-service"
-                            className="form-select"
-                            value={serviceId}
-                            onChange={(event) =>
-                                setServiceId(Number(event.target.value))
-                            }
-                            disabled={mode === 'edit'}
-                        >
-                            <option value="">Wybierz usługę</option>
-                            {services.map((service: Service) => (
-                                <option key={service.id} value={service.id}>
-                                    {service.name}
-                                </option>
-                            ))}
-                        </select>
-                        {selectedService && (
-                            <div className="form-text">
-                                Czas: {selectedService.duration} min, cena:{' '}
-                                {selectedService.price.toFixed(2)} PLN
-                            </div>
-                        )}
-                    </div>
-
-                    {appointment && (
-                        <div className="rounded border bg-light p-2 small">
-                            <div>Status: {appointment.status ?? '-'}</div>
-                            <div>
-                                Płatność:{' '}
-                                {appointment.paymentStatus ?? 'nieopłacona'}
-                            </div>
-                            {(appointment.finalizedAt ||
-                                appointment.paymentMethod ||
-                                appointment.paidAmount !== undefined) && (
-                                <div className="mt-2 pt-2 border-top">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                        <strong>Podsumowanie sprzedaży</strong>
-                                        <Link
-                                            href={
-                                                linkedSaleId
-                                                    ? `/sales/history/${linkedSaleId}`
-                                                    : appointment.id
-                                                      ? `/sales/history?appointmentId=${appointment.id}`
-                                                      : '/sales/history'
-                                            }
-                                            className="btn btn-sm btn-outline-secondary"
-                                        >
-                                            {linkedSaleId
-                                                ? 'Szczegóły sprzedaży'
-                                                : 'Historia sprzedaży'}
-                                        </Link>
-                                    </div>
-                                    <div className="mt-1">
-                                        <div>
-                                            Metoda:{' '}
-                                            {appointment.paymentMethod ??
-                                                'brak danych'}
-                                        </div>
-                                        <div>
-                                            Zapłacono:{' '}
-                                            {formatCurrency(
-                                                appointment.paidAmount,
-                                            )}
-                                        </div>
-                                        {appointment.discount !== undefined && (
-                                            <div>
-                                                Rabat:{' '}
-                                                {formatCurrency(
-                                                    appointment.discount,
-                                                )}
-                                            </div>
-                                        )}
-                                        {appointment.tipAmount !==
-                                            undefined && (
-                                            <div>
-                                                Napiwek:{' '}
-                                                {formatCurrency(
-                                                    appointment.tipAmount,
-                                                )}
-                                            </div>
-                                        )}
-                                        <div>
-                                            Finalizacja:{' '}
-                                            {formatDateTime(
-                                                appointment.finalizedAt,
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="mt-2 pt-2 border-top">
+                        {appointment ? (
+                            <div className="mt-2 pt-2 border-top small">
                                 <div className="d-flex align-items-center justify-content-between">
                                     <strong>Podgląd klienta</strong>
                                     {appointment.client?.id ? (
@@ -655,37 +603,91 @@ export default function AppointmentDrawer({
                                     </div>
                                 )}
                             </div>
-                            {!customerAlertsLoading &&
-                            customerAlerts.length > 0 ? (
-                                <div className="mt-2 pt-2 border-top">
-                                    <strong>Alerty klienta</strong>
-                                    <div className="d-flex flex-column gap-1 mt-1">
-                                        {customerAlerts.map((alert) => (
-                                            <div
-                                                key={alert.id}
-                                                className={`small rounded px-2 py-1 ${
-                                                    alert.severity === 'danger'
-                                                        ? 'bg-danger-subtle text-danger-emphasis'
-                                                        : alert.severity ===
-                                                            'warning'
-                                                          ? 'bg-warning-subtle text-warning-emphasis'
-                                                          : 'bg-info-subtle text-info-emphasis'
-                                                }`}
-                                            >
-                                                <strong>{alert.label}</strong>
-                                                {alert.detail ? (
-                                                    <span>
-                                                        {': '}
-                                                        {alert.detail}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        ))}
+                        ) : null}
+                    </div>
+
+                    {appointment &&
+                    !customerAlertsLoading &&
+                    customerAlerts.length > 0 ? (
+                        <div className="rounded border p-2">
+                            <strong className="d-block mb-2">Alerty</strong>
+                            <div className="d-flex flex-column gap-1">
+                                {customerAlerts.map((alert) => (
+                                    <div
+                                        key={alert.id}
+                                        className={`small rounded px-2 py-1 ${
+                                            alert.severity === 'danger'
+                                                ? 'bg-danger-subtle text-danger-emphasis'
+                                                : alert.severity === 'warning'
+                                                  ? 'bg-warning-subtle text-warning-emphasis'
+                                                  : 'bg-info-subtle text-info-emphasis'
+                                        }`}
+                                    >
+                                        <strong>{alert.label}</strong>
+                                        {alert.detail ? (
+                                            <span>
+                                                {': '}
+                                                {alert.detail}
+                                            </span>
+                                        ) : null}
                                     </div>
-                                </div>
-                            ) : null}
+                                ))}
+                            </div>
                         </div>
-                    )}
+                    ) : null}
+
+                    {appointment &&
+                    (appointment.finalizedAt ||
+                        appointment.paymentMethod ||
+                        appointment.paidAmount !== undefined) ? (
+                        <div className="rounded border p-2 small">
+                            <div className="d-flex align-items-center justify-content-between">
+                                <strong className="d-block mb-2">
+                                    Sprzedaż
+                                </strong>
+                                <Link
+                                    href={
+                                        linkedSaleId
+                                            ? `/sales/history/${linkedSaleId}`
+                                            : appointment.id
+                                              ? `/sales/history?appointmentId=${appointment.id}`
+                                              : '/sales/history'
+                                    }
+                                    className="btn btn-sm btn-outline-secondary"
+                                >
+                                    {linkedSaleId
+                                        ? 'Szczegóły sprzedaży'
+                                        : 'Historia sprzedaży'}
+                                </Link>
+                            </div>
+                            <div className="mt-1">
+                                <div>
+                                    Metoda:{' '}
+                                    {appointment.paymentMethod ?? 'brak danych'}
+                                </div>
+                                <div>
+                                    Zapłacono:{' '}
+                                    {formatCurrency(appointment.paidAmount)}
+                                </div>
+                                {appointment.discount !== undefined && (
+                                    <div>
+                                        Rabat:{' '}
+                                        {formatCurrency(appointment.discount)}
+                                    </div>
+                                )}
+                                {appointment.tipAmount !== undefined && (
+                                    <div>
+                                        Napiwek:{' '}
+                                        {formatCurrency(appointment.tipAmount)}
+                                    </div>
+                                )}
+                                <div>
+                                    Finalizacja:{' '}
+                                    {formatDateTime(appointment.finalizedAt)}
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
 
                     {error && (
                         <div className="alert alert-danger py-2 mb-0">
@@ -693,91 +695,98 @@ export default function AppointmentDrawer({
                         </div>
                     )}
 
-                    <div className="d-flex flex-wrap gap-2">
-                        {mode === 'create' ? (
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={() => void handleCreate()}
-                                disabled={!canSaveCreate || saving}
-                            >
-                                {saving ? 'Zapisywanie…' : 'Utwórz wizytę'}
-                            </button>
-                        ) : (
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={() => void handleUpdate()}
-                                disabled={saving || !startTime}
-                            >
-                                {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
-                            </button>
-                        )}
+                    <div className="rounded border p-2">
+                        <strong className="d-block mb-2">Akcje</strong>
+                        <div className="d-flex flex-wrap gap-2">
+                            {mode === 'create' ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={() => void handleCreate()}
+                                    disabled={!canSaveCreate || saving}
+                                >
+                                    {saving ? 'Zapisywanie…' : 'Utwórz wizytę'}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={() => void handleUpdate()}
+                                    disabled={saving || !startTime}
+                                >
+                                    {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
+                                </button>
+                            )}
 
-                        {mode === 'edit' && appointment?.id ? (
-                            <>
-                                {canConfirm ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-primary"
-                                        onClick={() =>
-                                            void handleStatusChange('confirmed')
-                                        }
-                                        disabled={saving}
-                                    >
-                                        Potwierdź
-                                    </button>
-                                ) : null}
-                                {canStart ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() =>
-                                            void handleStatusChange(
-                                                'in_progress',
-                                            )
-                                        }
-                                        disabled={saving}
-                                    >
-                                        Rozpocznij
-                                    </button>
-                                ) : null}
-                                {canNoShow ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-warning"
-                                        onClick={() =>
-                                            void handleStatusChange('no_show')
-                                        }
-                                        disabled={saving}
-                                    >
-                                        No-show
-                                    </button>
-                                ) : null}
-                                {canComplete ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-success"
-                                        onClick={() =>
-                                            setFinalizationOpen(true)
-                                        }
-                                        disabled={saving}
-                                    >
-                                        Finalizuj wizytę
-                                    </button>
-                                ) : null}
-                                {canCancel ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-danger"
-                                        onClick={() => void handleCancel()}
-                                        disabled={saving}
-                                    >
-                                        Anuluj wizytę
-                                    </button>
-                                ) : null}
-                            </>
-                        ) : null}
+                            {mode === 'edit' && appointment?.id ? (
+                                <>
+                                    {canConfirm ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-primary"
+                                            onClick={() =>
+                                                void handleStatusChange(
+                                                    'confirmed',
+                                                )
+                                            }
+                                            disabled={saving}
+                                        >
+                                            Potwierdź
+                                        </button>
+                                    ) : null}
+                                    {canStart ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() =>
+                                                void handleStatusChange(
+                                                    'in_progress',
+                                                )
+                                            }
+                                            disabled={saving}
+                                        >
+                                            Rozpocznij
+                                        </button>
+                                    ) : null}
+                                    {canNoShow ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-warning"
+                                            onClick={() =>
+                                                void handleStatusChange(
+                                                    'no_show',
+                                                )
+                                            }
+                                            disabled={saving}
+                                        >
+                                            No-show
+                                        </button>
+                                    ) : null}
+                                    {canComplete ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-success"
+                                            onClick={() =>
+                                                setFinalizationOpen(true)
+                                            }
+                                            disabled={saving}
+                                        >
+                                            Finalizuj wizytę
+                                        </button>
+                                    ) : null}
+                                    {canCancel ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-danger"
+                                            onClick={() => void handleCancel()}
+                                            disabled={saving}
+                                        >
+                                            Anuluj wizytę
+                                        </button>
+                                    ) : null}
+                                </>
+                            ) : null}
+                        </div>
                     </div>
                 </div>
             </div>
