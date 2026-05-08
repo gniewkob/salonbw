@@ -352,9 +352,12 @@ describe('CalendarNextPage', () => {
         }));
 
         apiFetchMock.mockImplementation(async (endpoint: string) => {
-            if (endpoint === '/customers/11/statistics') return { noShowVisits: 0 };
-            if (endpoint === '/customers/12/statistics') return { noShowVisits: 2 };
-            if (endpoint === '/customers/13/statistics') return { noShowVisits: 0 };
+            if (endpoint === '/customers/11/statistics')
+                return { noShowVisits: 0 };
+            if (endpoint === '/customers/12/statistics')
+                return { noShowVisits: 2 };
+            if (endpoint === '/customers/13/statistics')
+                return { noShowVisits: 0 };
             return {
                 id: 42,
                 startTime: '2026-05-07T10:00:00.000Z',
