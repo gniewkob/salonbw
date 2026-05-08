@@ -11,6 +11,7 @@ import type { ReactNode } from 'react';
 const pushMock = jest.fn();
 const apiFetchMock = jest.fn();
 let consoleErrorSpy: jest.SpyInstance;
+let originalConsoleError: typeof console.error;
 const routerMock = {
     query: { appointmentId: '42' } as Record<string, string>,
     pathname: '/calendar-next',
@@ -87,6 +88,7 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
 
 describe('CalendarNextPage', () => {
     beforeEach(() => {
+        originalConsoleError = console.error;
         consoleErrorSpy = jest
             .spyOn(console, 'error')
             .mockImplementation((...args: unknown[]) => {
@@ -97,7 +99,9 @@ describe('CalendarNextPage', () => {
                 ) {
                     return;
                 }
-                // Silence console errors in this suite; assertions verify behavior explicitly.
+                originalConsoleError(
+                    ...(args as Parameters<typeof console.error>),
+                );
             });
         pushMock.mockReset();
         apiFetchMock.mockReset();
