@@ -540,10 +540,16 @@ export default function CalendarNextPage() {
                                 <ReceptionView
                                     appointments={receptionAppointments}
                                     loading={loading}
+                                    customerAlertSeverityByCustomerId={
+                                        customerAlertSeverityById
+                                    }
                                     onChanged={() => {
                                         void refetch();
                                     }}
                                     onOpenFinalizeAppointment={(id) => {
+                                        openAppointmentDeepLink(id);
+                                    }}
+                                    onOpenAppointment={(id) => {
                                         openAppointmentDeepLink(id);
                                     }}
                                 />

@@ -11,6 +11,11 @@ interface ReceptionViewProps {
     loading?: boolean;
     onChanged?: () => void;
     onOpenFinalizeAppointment?: (appointmentId: number) => void;
+    onOpenAppointment?: (appointmentId: number) => void;
+    customerAlertSeverityByCustomerId?: Record<
+        number,
+        'info' | 'warning' | 'danger'
+    >;
 }
 
 type StatusConfig = {
@@ -67,6 +72,8 @@ export default function ReceptionView({
     loading,
     onChanged,
     onOpenFinalizeAppointment,
+    onOpenAppointment,
+    customerAlertSeverityByCustomerId = {},
 }: ReceptionViewProps) {
     const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
@@ -193,6 +200,21 @@ export default function ReceptionView({
         },
         {} as Record<string, number>,
     );
+    const now = new Date();
+    const toFinalizeCount = appointments.filter(
+        (appointment) => appointment.status === 'in_progress',
+    ).length;
+    const withAlertCount = appointments.filter((appointment) => {
+        const customerId = appointment.client?.id;
+        return customerId
+            ? Boolean(customerAlertSeverityByCustomerId[customerId])
+            : false;
+    }).length;
+    const overdueCount = appointments.filter((appointment) => {
+        if ((appointment.status ?? 'scheduled') !== 'scheduled') return false;
+        const startTime = parseISO(appointment.startTime);
+        return isToday(startTime) && isPast(startTime) && startTime < now;
+    }).length;
 
     return (
         <div className="salonbw-reception-view">
@@ -238,6 +260,30 @@ export default function ReceptionView({
                         Zakończonych
                     </span>
                 </div>
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--in-progress">
+                    <span className="salonbw-reception-summary__value">
+                        {toFinalizeCount}
+                    </span>
+                    <span className="salonbw-reception-summary__label">
+                        Do finalizacji
+                    </span>
+                </div>
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--confirmed">
+                    <span className="salonbw-reception-summary__value">
+                        {withAlertCount}
+                    </span>
+                    <span className="salonbw-reception-summary__label">
+                        Z alertem CRM
+                    </span>
+                </div>
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--scheduled">
+                    <span className="salonbw-reception-summary__value">
+                        {overdueCount}
+                    </span>
+                    <span className="salonbw-reception-summary__label">
+                        Opóźnione
+                    </span>
+                </div>
             </div>
 
             {/* Appointments Table */}
@@ -267,6 +313,11 @@ export default function ReceptionView({
                                 isPast(startTime) &&
                                 isToday(startTime) &&
                                 status === 'scheduled';
+                            const alertSeverity = appointment.client?.id
+                                ? customerAlertSeverityByCustomerId[
+                                      appointment.client.id
+                                  ]
+                                : undefined;
 
                             return (
                                 <tr
@@ -293,6 +344,21 @@ export default function ReceptionView({
                                                     {appointment.client.phone}
                                                 </div>
                                             )}
+                                            {alertSeverity ? (
+                                                <div
+                                                    className={`small mt-1 ${
+                                                        alertSeverity ===
+                                                        'danger'
+                                                            ? 'text-danger'
+                                                            : alertSeverity ===
+                                                                'warning'
+                                                              ? 'text-warning-emphasis'
+                                                              : 'text-info-emphasis'
+                                                    }`}
+                                                >
+                                                    Alert CRM
+                                                </div>
+                                            ) : null}
                                         </div>
                                     </td>
                                     <td>{appointment.service?.name || '-'}</td>
@@ -306,6 +372,18 @@ export default function ReceptionView({
                                     <td>{getStatusBadge(status)}</td>
                                     <td>
                                         <div className="salonbw-reception-actions">
+                                            <button
+                                                type="button"
+                                                className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
+                                                onClick={() =>
+                                                    onOpenAppointment?.(
+                                                        appointment.id,
+                                                    )
+                                                }
+                                                disabled={isRowPending}
+                                            >
+                                                Otwórz
+                                            </button>
                                             {config.actions.map((action) => {
                                                 const actionConfig =
                                                     ACTION_LABELS[action];

@@ -170,9 +170,7 @@ describe('ReceptionView', () => {
 
         fireEvent.click(confirmButtons[1]);
 
-        await waitFor(() =>
-            expect(updateStatusMock).toHaveBeenCalledTimes(2),
-        );
+        await waitFor(() => expect(updateStatusMock).toHaveBeenCalledTimes(2));
 
         const rows = screen.getAllByRole('row');
         expect(rows[1]).toHaveTextContent(
@@ -219,5 +217,99 @@ describe('ReceptionView', () => {
         expect(onOpenFinalizeAppointment).toHaveBeenCalledWith(3);
         expect(updateStatusMock).not.toHaveBeenCalled();
         expect(cancelMock).not.toHaveBeenCalled();
+    });
+
+    it('shows operational summary metrics and CRM alert badge', () => {
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 30,
+                        startTime: new Date(
+                            Date.now() - 60 * 60 * 1000,
+                        ).toISOString(),
+                        endTime: new Date(
+                            Date.now() - 30 * 60 * 1000,
+                        ).toISOString(),
+                        status: 'scheduled',
+                        client: { id: 10, name: 'Klient A' },
+                        service: {
+                            id: 20,
+                            name: 'Usługa A',
+                            duration: 30,
+                            price: 100,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 5, name: 'Pracownik A' },
+                    },
+                    {
+                        id: 31,
+                        startTime: new Date(Date.now() + 60 * 60 * 1000)
+                            .toISOString()
+                            .toString(),
+                        endTime: new Date(Date.now() + 90 * 60 * 1000)
+                            .toISOString()
+                            .toString(),
+                        status: 'in_progress',
+                        client: { id: 11, name: 'Klient B' },
+                        service: {
+                            id: 21,
+                            name: 'Usługa B',
+                            duration: 30,
+                            price: 120,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 6, name: 'Pracownik B' },
+                    },
+                ]}
+                customerAlertSeverityByCustomerId={{
+                    10: 'danger',
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Do finalizacji')).toBeInTheDocument();
+        expect(screen.getByText('Z alertem CRM')).toBeInTheDocument();
+        expect(screen.getByText('Opóźnione')).toBeInTheDocument();
+        expect(screen.getByText('Alert CRM')).toBeInTheDocument();
+    });
+
+    it('opens appointment from reception row', () => {
+        const onOpenAppointment = jest.fn();
+
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 40,
+                        startTime: '2026-05-01T12:00:00.000Z',
+                        endTime: '2026-05-01T12:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 7, name: 'Katarzyna Zielińska' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+                onOpenAppointment={onOpenAppointment}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Otwórz' }));
+        expect(onOpenAppointment).toHaveBeenCalledWith(40);
     });
 });
