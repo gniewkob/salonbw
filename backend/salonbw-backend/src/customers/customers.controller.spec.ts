@@ -6,8 +6,10 @@ import { CustomerMediaService } from './customer-media.service';
 describe('CustomersController', () => {
     let controller: CustomersController;
     let statisticsService: jest.Mocked<CustomerStatisticsService>;
+    let dateNowSpy: jest.SpyInstance<number, []>;
 
     beforeEach(() => {
+        dateNowSpy = jest.spyOn(Date, 'now');
         statisticsService = {
             getStatisticsBatch: jest
                 .fn()
@@ -24,7 +26,12 @@ describe('CustomersController', () => {
         );
     });
 
+    afterEach(() => {
+        dateNowSpy.mockRestore();
+    });
+
     it('parses batch ids and delegates to statistics service', async () => {
+        dateNowSpy.mockReturnValueOnce(1000).mockReturnValueOnce(1100);
         await expect(
             controller.getStatisticsBatch(
                 '1, 2, abc, 0, 2, -1',
@@ -46,6 +53,7 @@ describe('CustomersController', () => {
     });
 
     it('passes alerts scope for batch request when provided', async () => {
+        dateNowSpy.mockReturnValueOnce(2000).mockReturnValueOnce(2050);
         await controller.getStatisticsBatch(
             '7,8',
             undefined,
@@ -64,6 +72,7 @@ describe('CustomersController', () => {
     });
 
     it('limits ids to max batch size and logs normalization warning', async () => {
+        dateNowSpy.mockReturnValueOnce(3000).mockReturnValueOnce(3050);
         const warnSpy = jest.fn();
         (controller as unknown as { logger: { warn: jest.Mock } }).logger.warn =
             warnSpy;
@@ -93,6 +102,70 @@ describe('CustomersController', () => {
                 rawTokenCount: 120,
                 uniqueCount: 100,
                 scope: 'alerts',
+            }),
+        );
+    });
+
+    it('logs batch telemetry for non-slow requests', async () => {
+        dateNowSpy.mockReturnValueOnce(4000).mockReturnValueOnce(4200);
+        const logSpy = jest.fn();
+        const warnSpy = jest.fn();
+        (
+            controller as unknown as {
+                logger: { log: jest.Mock; warn: jest.Mock };
+            }
+        ).logger.log = logSpy;
+        (
+            controller as unknown as {
+                logger: { log: jest.Mock; warn: jest.Mock };
+            }
+        ).logger.warn = warnSpy;
+
+        await controller.getStatisticsBatch(
+            '1,2,3',
+            undefined,
+            undefined,
+            'alerts',
+        );
+
+        expect(logSpy).toHaveBeenCalledWith(
+            'customer statistics batch served',
+            expect.objectContaining({
+                idsCount: 3,
+                scope: 'alerts',
+                durationMs: 200,
+                resultCount: 1,
+            }),
+        );
+        expect(warnSpy).not.toHaveBeenCalledWith(
+            'customer statistics batch slow',
+            expect.anything(),
+        );
+    });
+
+    it('logs slow batch telemetry as warning', async () => {
+        dateNowSpy.mockReturnValueOnce(5000).mockReturnValueOnce(6005);
+        const warnSpy = jest.fn();
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock };
+            }
+        ).logger.warn = warnSpy;
+
+        await controller.getStatisticsBatch(
+            '1,2,3,4',
+            undefined,
+            undefined,
+            'alerts',
+        );
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            'customer statistics batch slow',
+            expect.objectContaining({
+                idsCount: 4,
+                scope: 'alerts',
+                durationMs: 1005,
+                resultCount: 1,
             }),
         );
     });

@@ -72,6 +72,7 @@ import {
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CustomersController {
     private static readonly MAX_BATCH_IDS = 100;
+    private static readonly SLOW_BATCH_THRESHOLD_MS = 800;
     private readonly logger = new Logger(CustomersController.name);
 
     constructor(
@@ -170,6 +171,7 @@ export class CustomersController {
             this.parseBatchIds(ids);
 
         const normalizedScope = scope === 'alerts' ? 'alerts' : 'full';
+        const startedAt = Date.now();
 
         if (
             invalidTokenCount > 0 ||
@@ -192,7 +194,26 @@ export class CustomersController {
                 },
                 normalizedScope,
             )
-            .then((items) => ({ items }));
+            .then((items) => {
+                const durationMs = Date.now() - startedAt;
+                const payload = {
+                    idsCount: customerIds.length,
+                    scope: normalizedScope,
+                    durationMs,
+                    resultCount: items.length,
+                };
+
+                if (durationMs >= CustomersController.SLOW_BATCH_THRESHOLD_MS) {
+                    this.logger.warn('customer statistics batch slow', payload);
+                } else {
+                    this.logger.log(
+                        'customer statistics batch served',
+                        payload,
+                    );
+                }
+
+                return { items };
+            });
     }
 
     @Get(':id/statistics')
