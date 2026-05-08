@@ -525,8 +525,8 @@ export default function CalendarNextPage() {
                                 {customerAlertStatsError ? (
                                     <div className="alert alert-warning py-2 mb-0">
                                         Część alertów CRM jest chwilowo
-                                        niedostępna. Trwa automatyczna próba
-                                        ponowienia.
+                                        niedostępna. Spróbujemy ponownie przy
+                                        kolejnym odświeżeniu widoku.
                                     </div>
                                 ) : null}
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">

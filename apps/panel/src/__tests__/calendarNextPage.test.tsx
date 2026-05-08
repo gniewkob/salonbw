@@ -406,7 +406,7 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(
                 screen.getByText(
-                    'Część alertów CRM jest chwilowo niedostępna. Trwa automatyczna próba ponowienia.',
+                    'Część alertów CRM jest chwilowo niedostępna. Spróbujemy ponownie przy kolejnym odświeżeniu widoku.',
                 ),
             ).toBeInTheDocument(),
         );
