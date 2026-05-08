@@ -15,6 +15,7 @@ import {
     UseGuards,
     UseInterceptors,
     UploadedFile,
+    Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -70,11 +71,48 @@ import {
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CustomersController {
+    private static readonly MAX_BATCH_IDS = 100;
+    private readonly logger = new Logger(CustomersController.name);
+
     constructor(
         private readonly customersService: CustomersService,
         private readonly statisticsService: CustomerStatisticsService,
         private readonly mediaService: CustomerMediaService,
     ) {}
+
+    private parseBatchIds(ids?: string): {
+        customerIds: number[];
+        invalidTokenCount: number;
+        rawTokenCount: number;
+    } {
+        const rawTokens = (ids ?? '')
+            .split(',')
+            .map((value) => value.trim())
+            .filter((value) => value.length > 0);
+
+        const validIds: number[] = [];
+        let invalidTokenCount = 0;
+        for (const token of rawTokens) {
+            const numeric = Number(token);
+            if (Number.isInteger(numeric) && numeric > 0) {
+                validIds.push(numeric);
+            } else {
+                invalidTokenCount += 1;
+            }
+        }
+
+        const uniqueIds = Array.from(new Set(validIds));
+        const customerIds = uniqueIds.slice(
+            0,
+            CustomersController.MAX_BATCH_IDS,
+        );
+
+        return {
+            customerIds,
+            invalidTokenCount,
+            rawTokenCount: rawTokens.length,
+        };
+    }
 
     // ==================== CUSTOMERS ====================
 
@@ -128,12 +166,22 @@ export class CustomersController {
         @Query('to') to?: string,
         @Query('scope') scope?: string,
     ) {
-        const customerIds = (ids ?? '')
-            .split(',')
-            .map((value) => Number(value.trim()))
-            .filter((value) => Number.isInteger(value) && value > 0);
+        const { customerIds, invalidTokenCount, rawTokenCount } =
+            this.parseBatchIds(ids);
 
         const normalizedScope = scope === 'alerts' ? 'alerts' : 'full';
+
+        if (
+            invalidTokenCount > 0 ||
+            customerIds.length < rawTokenCount - invalidTokenCount
+        ) {
+            this.logger.warn('customer statistics batch ids normalized', {
+                rawTokenCount,
+                invalidTokenCount,
+                uniqueCount: customerIds.length,
+                scope: normalizedScope,
+            });
+        }
 
         return this.statisticsService
             .getStatisticsBatch(

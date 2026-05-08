@@ -36,7 +36,7 @@ describe('CustomersController', () => {
         });
 
         expect(statisticsService.getStatisticsBatch).toHaveBeenCalledWith(
-            [1, 2, 2],
+            [1, 2],
             {
                 from: '2026-05-01',
                 to: '2026-05-31',
@@ -60,6 +60,40 @@ describe('CustomersController', () => {
                 to: undefined,
             },
             'alerts',
+        );
+    });
+
+    it('limits ids to max batch size and logs normalization warning', async () => {
+        const warnSpy = jest.fn();
+        (controller as unknown as { logger: { warn: jest.Mock } }).logger.warn =
+            warnSpy;
+
+        const ids = Array.from(
+            { length: 120 },
+            (_, index) => `${index + 1}`,
+        ).join(',');
+        await controller.getStatisticsBatch(
+            ids,
+            undefined,
+            undefined,
+            'alerts',
+        );
+
+        expect(statisticsService.getStatisticsBatch).toHaveBeenCalledWith(
+            Array.from({ length: 100 }, (_, index) => index + 1),
+            {
+                from: undefined,
+                to: undefined,
+            },
+            'alerts',
+        );
+        expect(warnSpy).toHaveBeenCalledWith(
+            'customer statistics batch ids normalized',
+            expect.objectContaining({
+                rawTokenCount: 120,
+                uniqueCount: 100,
+                scope: 'alerts',
+            }),
         );
     });
 });
