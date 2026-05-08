@@ -119,6 +119,27 @@ export class CustomersController {
 
     // ==================== STATISTICS ====================
 
+    @Get('statistics/batch')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Get customer statistics in batch' })
+    getStatisticsBatch(
+        @Query('ids') ids?: string,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const customerIds = (ids ?? '')
+            .split(',')
+            .map((value) => Number(value.trim()))
+            .filter((value) => Number.isInteger(value) && value > 0);
+
+        return this.statisticsService
+            .getStatisticsBatch(customerIds, {
+                from,
+                to,
+            })
+            .then((items) => ({ items }));
+    }
+
     @Get(':id/statistics')
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer statistics' })

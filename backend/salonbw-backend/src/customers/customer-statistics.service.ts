@@ -406,6 +406,42 @@ export class CustomerStatisticsService {
         };
     }
 
+    async getStatisticsBatch(
+        customerIds: number[],
+        options?: { from?: string; to?: string },
+    ): Promise<
+        Array<{ customerId: number; statistics: CustomerStatistics | null }>
+    > {
+        const uniqueIds = Array.from(
+            new Set(
+                customerIds.filter(
+                    (id) => Number.isInteger(id) && Number(id) > 0,
+                ),
+            ),
+        ).slice(0, 100);
+
+        if (uniqueIds.length === 0) return [];
+
+        const items = await Promise.all(
+            uniqueIds.map(async (customerId) => {
+                try {
+                    const statistics = await this.getStatistics(
+                        customerId,
+                        options,
+                    );
+                    return { customerId, statistics };
+                } catch {
+                    return {
+                        customerId,
+                        statistics: null,
+                    };
+                }
+            }),
+        );
+
+        return items;
+    }
+
     async getEventHistory(
         customerId: number,
         options?: {

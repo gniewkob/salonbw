@@ -31,6 +31,15 @@ interface DrawerState {
     initialEmployeeId?: number;
 }
 
+interface CustomerStatisticsBatchItem {
+    customerId: number;
+    statistics: CustomerStatistics | null;
+}
+
+interface CustomerStatisticsBatchResponse {
+    items: CustomerStatisticsBatchItem[];
+}
+
 function toDateParam(value: Date): string {
     const year = value.getFullYear();
     const month = `${value.getMonth() + 1}`.padStart(2, '0');
@@ -368,30 +377,87 @@ export default function CalendarNextPage() {
             pendingCustomerAlertFetchesRef.current.add(customerId);
         }
 
-        void Promise.all(
-            missingCustomerIds.map(async (customerId) => {
-                try {
-                    const stats = await apiFetch<CustomerStatistics>(
-                        `/customers/${customerId}/statistics`,
+        const fetchPerCustomerFallback = async () =>
+            Promise.all(
+                missingCustomerIds.map(async (customerId) => {
+                    try {
+                        const stats = await apiFetch<CustomerStatistics>(
+                            `/customers/${customerId}/statistics`,
+                        );
+                        const severity =
+                            stats.noShowVisits >= 2
+                                ? ('danger' as const)
+                                : stats.noShowVisits > 0
+                                  ? ('warning' as const)
+                                  : null;
+                        return { customerId, severity, success: true as const };
+                    } catch {
+                        return {
+                            customerId,
+                            severity: null,
+                            success: false as const,
+                        };
+                    }
+                }),
+            );
+
+        const fetchMissingCustomerStats = async () => {
+            try {
+                const params = new URLSearchParams();
+                params.set('ids', missingCustomerIds.join(','));
+                const query = params.toString();
+                const response =
+                    await apiFetch<CustomerStatisticsBatchResponse>(
+                        `/customers/statistics/batch${query ? `?${query}` : ''}`,
                     );
+
+                if (!response || !Array.isArray(response.items)) {
+                    throw new Error('Invalid batch response');
+                }
+
+                const itemsByCustomerId = new Map<
+                    number,
+                    CustomerStatistics | null
+                >();
+                for (const item of response.items) {
+                    if (
+                        item &&
+                        Number.isInteger(item.customerId) &&
+                        item.customerId > 0
+                    ) {
+                        itemsByCustomerId.set(item.customerId, item.statistics);
+                    }
+                }
+
+                return missingCustomerIds.map((customerId) => {
+                    const stats = itemsByCustomerId.get(customerId);
+                    if (!stats) {
+                        return {
+                            customerId,
+                            severity: null,
+                            success: false as const,
+                        };
+                    }
+
                     const severity =
                         stats.noShowVisits >= 2
                             ? ('danger' as const)
                             : stats.noShowVisits > 0
                               ? ('warning' as const)
                               : null;
+
                     return { customerId, severity, success: true as const };
-                } catch {
-                    return {
-                        customerId,
-                        severity: null,
-                        success: false as const,
-                    };
-                } finally {
+                });
+            } catch {
+                return fetchPerCustomerFallback();
+            } finally {
+                for (const customerId of missingCustomerIds) {
                     pendingCustomerAlertFetchesRef.current.delete(customerId);
                 }
-            }),
-        ).then((entries) => {
+            }
+        };
+
+        void fetchMissingCustomerStats().then((entries) => {
             let hasFailures = false;
             const failedCustomerIds: number[] = [];
             for (const entry of entries) {
