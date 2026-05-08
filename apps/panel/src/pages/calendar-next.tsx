@@ -9,7 +9,6 @@ import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
 import {
     hasCustomerAlert,
-    isOverdueAppointmentAt,
     isPriorityAppointment,
 } from '@/components/calendar/receptionUtils';
 import { useAuth } from '@/contexts/AuthContext';
