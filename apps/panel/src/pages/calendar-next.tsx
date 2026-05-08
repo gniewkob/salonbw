@@ -363,6 +363,14 @@ export default function CalendarNextPage() {
         });
     };
 
+    const openAppointmentDeepLink = (appointmentId: number) => {
+        const query = { ...router.query } as Record<string, string>;
+        query.appointmentId = String(appointmentId);
+        void router.push({ pathname: router.pathname, query }, undefined, {
+            shallow: true,
+        });
+    };
+
     const clearAppointmentDeepLink = () => {
         const query = { ...router.query } as Record<string, string>;
         delete query.appointmentId;
@@ -534,6 +542,9 @@ export default function CalendarNextPage() {
                                     loading={loading}
                                     onChanged={() => {
                                         void refetch();
+                                    }}
+                                    onOpenFinalizeAppointment={(id) => {
+                                        openAppointmentDeepLink(id);
                                     }}
                                 />
                             </div>

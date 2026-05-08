@@ -10,6 +10,7 @@ interface ReceptionViewProps {
     appointments: Appointment[];
     loading?: boolean;
     onChanged?: () => void;
+    onOpenFinalizeAppointment?: (appointmentId: number) => void;
 }
 
 type StatusConfig = {
@@ -18,7 +19,7 @@ type StatusConfig = {
     actions: string[];
 };
 
-type ActionKey = 'confirm' | 'start' | 'complete' | 'cancel' | 'no_show';
+type ActionKey = 'confirm' | 'start' | 'finalize' | 'cancel' | 'no_show';
 
 const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     scheduled: {
@@ -34,7 +35,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     in_progress: {
         label: 'W trakcie',
         className: 'salonbw-status--in-progress',
-        actions: ['complete', 'cancel'],
+        actions: ['finalize', 'cancel'],
     },
     completed: {
         label: 'Zakończona',
@@ -56,7 +57,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
 const ACTION_LABELS: Record<string, { label: string; className: string }> = {
     confirm: { label: 'Potwierdź', className: 'salonbw-btn--success' },
     start: { label: 'Rozpocznij', className: 'salonbw-btn--primary' },
-    complete: { label: 'Zakończ', className: 'salonbw-btn--success' },
+    finalize: { label: 'Finalizuj', className: 'salonbw-btn--success' },
     cancel: { label: 'Anuluj', className: 'salonbw-btn--danger' },
     no_show: { label: 'Nieobecny', className: 'salonbw-btn--warning' },
 };
@@ -65,8 +66,9 @@ export default function ReceptionView({
     appointments,
     loading,
     onChanged,
+    onOpenFinalizeAppointment,
 }: ReceptionViewProps) {
-    const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
+    const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
     const [pendingAction, setPendingAction] = useState<{
         appointmentId: number;
@@ -85,15 +87,17 @@ export default function ReceptionView({
         appointment: Appointment,
         action: ActionKey,
     ) => {
+        if (action === 'finalize') {
+            onOpenFinalizeAppointment?.(appointment.id);
+            return;
+        }
+
         setPendingAction({ appointmentId: appointment.id, action });
         setActionError(null);
         try {
             switch (action) {
                 case 'cancel':
                     await cancelAppointment.mutateAsync(appointment.id);
-                    break;
-                case 'complete':
-                    await completeAppointment.mutateAsync(appointment.id);
                     break;
                 case 'start':
                     // Start = change status to in_progress

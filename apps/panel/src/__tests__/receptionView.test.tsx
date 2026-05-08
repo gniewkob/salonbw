@@ -2,13 +2,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ReceptionView from '@/components/calendar/ReceptionView';
 
 const cancelMock = jest.fn();
-const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
 
 jest.mock('@/hooks/useAppointments', () => ({
     useAppointmentMutations: () => ({
         cancelAppointment: { mutateAsync: cancelMock },
-        completeAppointment: { mutateAsync: completeMock },
         updateAppointmentStatus: { mutateAsync: updateStatusMock },
     }),
 }));
@@ -16,7 +14,6 @@ jest.mock('@/hooks/useAppointments', () => ({
 describe('ReceptionView', () => {
     beforeEach(() => {
         cancelMock.mockReset();
-        completeMock.mockReset();
         updateStatusMock.mockReset();
     });
 
@@ -104,5 +101,41 @@ describe('ReceptionView', () => {
             ).toBeInTheDocument(),
         );
         consoleErrorSpy.mockRestore();
+    });
+
+    it('routes in_progress appointment to finalize flow callback', () => {
+        const onOpenFinalizeAppointment = jest.fn();
+
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 3,
+                        startTime: '2026-05-01T12:00:00.000Z',
+                        endTime: '2026-05-01T12:45:00.000Z',
+                        status: 'in_progress',
+                        client: { id: 7, name: 'Katarzyna Zielińska' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+                onOpenFinalizeAppointment={onOpenFinalizeAppointment}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Finalizuj' }));
+
+        expect(onOpenFinalizeAppointment).toHaveBeenCalledWith(3);
+        expect(updateStatusMock).not.toHaveBeenCalled();
+        expect(cancelMock).not.toHaveBeenCalled();
     });
 });
