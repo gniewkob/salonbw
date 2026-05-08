@@ -74,7 +74,8 @@ export default function ReceptionView({
         appointmentId: number;
         action: ActionKey;
     } | null>(null);
-    const [actionError, setActionError] = useState<string | null>(null);
+    const [actionErrorByAppointmentId, setActionErrorByAppointmentId] =
+        useState<Record<number, string>>({});
 
     // Sort appointments by start time
     const sortedAppointments = [...appointments].sort((a, b) => {
@@ -93,7 +94,11 @@ export default function ReceptionView({
         }
 
         setPendingAction({ appointmentId: appointment.id, action });
-        setActionError(null);
+        setActionErrorByAppointmentId((current) => {
+            const next = { ...current };
+            delete next[appointment.id];
+            return next;
+        });
         try {
             switch (action) {
                 case 'cancel':
@@ -128,7 +133,10 @@ export default function ReceptionView({
                 error instanceof Error
                     ? error.message
                     : 'Wystąpił błąd podczas aktualizacji wizyty';
-            setActionError(message);
+            setActionErrorByAppointmentId((current) => ({
+                ...current,
+                [appointment.id]: message,
+            }));
         }
         setPendingAction(null);
     };
@@ -188,11 +196,6 @@ export default function ReceptionView({
 
     return (
         <div className="salonbw-reception-view">
-            {actionError ? (
-                <div className="alert alert-danger py-2">
-                    Wystąpił błąd podczas aktualizacji wizyty: {actionError}
-                </div>
-            ) : null}
             {/* Summary */}
             <div className="salonbw-reception-summary">
                 <div className="salonbw-reception-summary__item">
@@ -336,6 +339,19 @@ export default function ReceptionView({
                                                 </span>
                                             )}
                                         </div>
+                                        {actionErrorByAppointmentId[
+                                            appointment.id
+                                        ] ? (
+                                            <div className="small text-danger mt-1">
+                                                Wystąpił błąd podczas
+                                                aktualizacji wizyty:{' '}
+                                                {
+                                                    actionErrorByAppointmentId[
+                                                        appointment.id
+                                                    ]
+                                                }
+                                            </div>
+                                        ) : null}
                                     </td>
                                 </tr>
                             );

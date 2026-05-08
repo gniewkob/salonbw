@@ -103,6 +103,88 @@ describe('ReceptionView', () => {
         consoleErrorSpy.mockRestore();
     });
 
+    it('scopes inline error to failed appointment row', async () => {
+        const consoleErrorSpy = jest
+            .spyOn(console, 'error')
+            .mockImplementation(() => undefined);
+
+        updateStatusMock
+            .mockRejectedValueOnce(new Error('Backend failed for first'))
+            .mockResolvedValueOnce(undefined);
+
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 20,
+                        startTime: '2026-05-01T11:00:00.000Z',
+                        endTime: '2026-05-01T11:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 6, name: 'Anna Nowak' },
+                        service: {
+                            id: 11,
+                            name: 'Koloryzacja',
+                            duration: 45,
+                            price: 180,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 3, name: 'Ewa' },
+                    },
+                    {
+                        id: 21,
+                        startTime: '2026-05-01T12:00:00.000Z',
+                        endTime: '2026-05-01T12:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 7, name: 'Kasia Kowal' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 150,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+            />,
+        );
+
+        const confirmButtons = screen.getAllByRole('button', {
+            name: 'Potwierdź',
+        });
+        fireEvent.click(confirmButtons[0]);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    /Wystąpił błąd podczas aktualizacji wizyty: Backend failed for first/i,
+                ),
+            ).toBeInTheDocument(),
+        );
+
+        fireEvent.click(confirmButtons[1]);
+
+        await waitFor(() =>
+            expect(updateStatusMock).toHaveBeenCalledTimes(2),
+        );
+
+        const rows = screen.getAllByRole('row');
+        expect(rows[1]).toHaveTextContent(
+            /Wystąpił błąd podczas aktualizacji wizyty: Backend failed for first/i,
+        );
+        expect(rows[2]).not.toHaveTextContent(
+            /Wystąpił błąd podczas aktualizacji wizyty: Backend failed for first/i,
+        );
+
+        consoleErrorSpy.mockRestore();
+    });
+
     it('routes in_progress appointment to finalize flow callback', () => {
         const onOpenFinalizeAppointment = jest.fn();
 
