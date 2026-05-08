@@ -169,4 +169,36 @@ describe('CustomersController', () => {
             }),
         );
     });
+
+    it('logs failure telemetry for batch request errors and rethrows', async () => {
+        dateNowSpy.mockReturnValueOnce(7000).mockReturnValueOnce(7600);
+        const warnSpy = jest.fn();
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock };
+            }
+        ).logger.warn = warnSpy;
+        statisticsService.getStatisticsBatch.mockRejectedValueOnce(
+            new Error('Batch failure'),
+        );
+
+        await expect(
+            controller.getStatisticsBatch(
+                '1,2,3',
+                undefined,
+                undefined,
+                'alerts',
+            ),
+        ).rejects.toThrow('Batch failure');
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            'customer statistics batch failed',
+            expect.objectContaining({
+                idsCount: 3,
+                scope: 'alerts',
+                durationMs: 600,
+                errorType: 'Error',
+            }),
+        );
+    });
 });

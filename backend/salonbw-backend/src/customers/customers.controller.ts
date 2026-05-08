@@ -213,6 +213,17 @@ export class CustomersController {
                 }
 
                 return { items };
+            })
+            .catch((error: unknown) => {
+                const durationMs = Date.now() - startedAt;
+                this.logger.warn('customer statistics batch failed', {
+                    idsCount: customerIds.length,
+                    scope: normalizedScope,
+                    durationMs,
+                    errorType:
+                        error instanceof Error ? error.name : 'UnknownError',
+                });
+                throw error;
             });
     }
 
