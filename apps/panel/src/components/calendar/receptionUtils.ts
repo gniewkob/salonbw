@@ -1,4 +1,4 @@
-import type { Appointment } from '@/types';
+import type { Appointment, ReceptionAlertSeverityByCustomerId } from '@/types';
 
 export function isOverdueAppointmentAt(
     appointment: Appointment,
@@ -20,7 +20,7 @@ export function isOverdueAppointmentAt(
 
 export function hasCustomerAlert(
     appointment: Appointment,
-    customerAlertSeverityByCustomerId: Record<number, unknown>,
+    customerAlertSeverityByCustomerId: ReceptionAlertSeverityByCustomerId,
 ): boolean {
     const customerId = appointment.client?.id;
     return customerId
@@ -31,7 +31,7 @@ export function hasCustomerAlert(
 export function getAppointmentPriority(
     appointment: Appointment,
     now: Date,
-    customerAlertSeverityByCustomerId: Record<number, unknown>,
+    customerAlertSeverityByCustomerId: ReceptionAlertSeverityByCustomerId,
 ): number {
     if (isOverdueAppointmentAt(appointment, now)) return 0;
     if ((appointment.status ?? 'scheduled') === 'in_progress') return 1;
@@ -43,7 +43,7 @@ export function getAppointmentPriority(
 export function isPriorityAppointment(
     appointment: Appointment,
     now: Date,
-    customerAlertSeverityByCustomerId: Record<number, unknown>,
+    customerAlertSeverityByCustomerId: ReceptionAlertSeverityByCustomerId,
 ): boolean {
     return (
         isOverdueAppointmentAt(appointment, now) ||

@@ -1,5 +1,9 @@
 import { format } from 'date-fns';
-import type { CalendarEvent, TimeBlockType } from '@/types';
+import type {
+    CalendarEvent,
+    ReceptionAlertSeverity,
+    TimeBlockType,
+} from '@/types';
 
 interface EventCardProps {
     event: CalendarEvent;
@@ -53,7 +57,7 @@ const STATUS_LABELS: Record<string, string> = {
     no_show: 'No-show',
 };
 
-const ALERT_BADGE_STYLES: Record<'info' | 'warning' | 'danger', string> = {
+const ALERT_BADGE_STYLES: Record<ReceptionAlertSeverity, string> = {
     info: 'bg-info-subtle text-info-emphasis',
     warning: 'bg-warning-subtle text-warning-emphasis',
     danger: 'bg-danger-subtle text-danger-emphasis',

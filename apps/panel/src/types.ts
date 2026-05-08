@@ -349,6 +349,11 @@ export interface TimeBlock {
 }
 
 export type CalendarEventType = 'appointment' | 'time_block';
+export type ReceptionAlertSeverity = 'info' | 'warning' | 'danger';
+export type ReceptionAlertSeverityByCustomerId = Record<
+    number,
+    ReceptionAlertSeverity
+>;
 
 export interface CalendarEvent {
     id: number;
@@ -365,7 +370,7 @@ export interface CalendarEvent {
     status?: string;
     paymentStatus?: string;
     paymentMethod?: PaymentMethod;
-    customerAlertSeverity?: 'info' | 'warning' | 'danger';
+    customerAlertSeverity?: ReceptionAlertSeverity;
     hasCustomerAlerts?: boolean;
     blockType?: TimeBlockType;
     notes?: string;

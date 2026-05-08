@@ -5,7 +5,11 @@ import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
 import EventCard from './EventCard';
-import type { CalendarEvent, CalendarView as CalendarViewType } from '@/types';
+import type {
+    CalendarEvent,
+    CalendarView as CalendarViewType,
+    ReceptionAlertSeverityByCustomerId,
+} from '@/types';
 import type FullCalendarComponent from '@fullcalendar/react';
 
 // Dynamic import with no SSR to avoid hydration mismatches
@@ -21,7 +25,7 @@ const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
 interface CalendarViewProps {
     events: CalendarEvent[];
     employees: Array<{ id: number; name: string; color?: string }>;
-    customerAlertSeverityById?: Record<number, 'info' | 'warning' | 'danger'>;
+    customerAlertSeverityById?: ReceptionAlertSeverityByCustomerId;
     loading?: boolean;
     onEventClick: (event: CalendarEvent) => void;
     onEventDrop: (

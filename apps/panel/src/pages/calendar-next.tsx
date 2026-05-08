@@ -18,6 +18,8 @@ import type {
     CalendarEvent,
     CalendarView as CalendarViewType,
     CustomerStatistics,
+    ReceptionAlertSeverity,
+    ReceptionAlertSeverityByCustomerId,
 } from '@/types';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 
@@ -38,8 +40,8 @@ function toDateParam(value: Date): string {
 }
 
 function areAlertMapsEqual(
-    left: Record<number, 'warning' | 'danger'>,
-    right: Record<number, 'warning' | 'danger'>,
+    left: ReceptionAlertSeverityByCustomerId,
+    right: ReceptionAlertSeverityByCustomerId,
 ): boolean {
     const leftKeys = Object.keys(left);
     const rightKeys = Object.keys(right);
@@ -55,16 +57,15 @@ export default function CalendarNextPage() {
     const { role, apiFetch } = useAuth();
     const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
     const customerAlertCacheRef = useRef<
-        Record<number, 'warning' | 'danger' | null>
+        Record<number, Exclude<ReceptionAlertSeverity, 'info'> | null>
     >({});
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
         [],
     );
-    const [customerAlertSeverityById, setCustomerAlertSeverityById] = useState<
-        Record<number, 'warning' | 'danger'>
-    >({});
+    const [customerAlertSeverityById, setCustomerAlertSeverityById] =
+        useState<ReceptionAlertSeverityByCustomerId>({});
     const [receptionStatusFilter, setReceptionStatusFilter] = useState('all');
     const [receptionPaymentFilter, setReceptionPaymentFilter] = useState('all');
     const [receptionAlertFilter, setReceptionAlertFilter] = useState(false);
@@ -311,7 +312,7 @@ export default function CalendarNextPage() {
             return;
         }
 
-        const currentFromCache: Record<number, 'warning' | 'danger'> = {};
+        const currentFromCache: ReceptionAlertSeverityByCustomerId = {};
         const missingCustomerIds: number[] = [];
 
         for (const customerId of visibleCustomerIds) {
@@ -357,7 +358,7 @@ export default function CalendarNextPage() {
                     entry.severity;
             }
 
-            const nextVisible: Record<number, 'warning' | 'danger'> = {};
+            const nextVisible: ReceptionAlertSeverityByCustomerId = {};
             for (const customerId of visibleCustomerIds) {
                 const cached = customerAlertCacheRef.current[customerId];
                 if (cached) nextVisible[customerId] = cached;

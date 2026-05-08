@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import type { Appointment, AppointmentStatus } from '@/types';
+import type {
+    Appointment,
+    AppointmentStatus,
+    ReceptionAlertSeverityByCustomerId,
+} from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import {
     getAppointmentPriority,
@@ -17,10 +21,7 @@ interface ReceptionViewProps {
     onChanged?: () => void;
     onOpenFinalizeAppointment?: (appointmentId: number) => void;
     onOpenAppointment?: (appointmentId: number) => void;
-    customerAlertSeverityByCustomerId?: Record<
-        number,
-        'info' | 'warning' | 'danger'
-    >;
+    customerAlertSeverityByCustomerId?: ReceptionAlertSeverityByCustomerId;
 }
 
 type StatusConfig = {
