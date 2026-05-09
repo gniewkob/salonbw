@@ -11,6 +11,7 @@ Operational note (2026-05-09):
 - Added incident issue quality guard (required fields, status allowlist, title prefix, dedup key format) before ticket create/update.
 - Added incident lifecycle guard: automation now reopens closed matching incidents (same dedup marker) and appends occurrence comments instead of creating duplicate issues.
 - Added hourly SLA reminder workflow `.github/workflows/ops_batch_stats_incident_sla.yml` to comment on stale open batch-stats incidents (>6h inactivity) with per-day deduplicated reminders.
+- Added incident closure guard workflow `.github/workflows/ops_batch_stats_incident_closure_guard.yml` to reopen closed batch-stats incidents missing `root cause` or `mitigation` notes.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

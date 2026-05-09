@@ -157,6 +157,7 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
   Incident quality guard validates mandatory evidence fields, status whitelist, title prefix, and dedup key format before issue creation/update.
   Lifecycle guard reuses the same dedup marker across issue states: if matching issue is closed, automation reopens it and appends a new occurrence comment instead of creating a duplicate ticket.
 - **SLA reminder automation:** workflow `.github/workflows/ops_batch_stats_incident_sla.yml` runs hourly and comments on stale open incidents (`ops,incident,batch-stats`) if no activity for >6h. It adds one reminder comment per day using an internal marker.
+- **Incident closure guard:** workflow `.github/workflows/ops_batch_stats_incident_closure_guard.yml` validates closed `ops,incident,batch-stats` issues. If closure notes do not include both `root cause` and `mitigation`, it reopens the issue and posts a guard comment.
 
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 

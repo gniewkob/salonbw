@@ -1,0 +1,105 @@
+name: Ops Batch Stats Incident Closure Guard
+
+on:
+  issues:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Optional issue number for manual validation"
+        required: false
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  closure-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate closure quality and reopen if required
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const issueNumberInput = context.payload.inputs?.issue_number;
+            const issueNumber = issueNumberInput
+              ? Number(issueNumberInput)
+              : context.payload.issue?.number;
+
+            if (!issueNumber || Number.isNaN(issueNumber)) {
+              core.info("No issue number provided; skipping.");
+              return;
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: issueNumber,
+            });
+
+            const labels = (issue.labels || []).map((l) =>
+              typeof l === "string" ? l : l.name,
+            );
+            const requiredLabels = ["ops", "incident", "batch-stats"];
+            const isBatchIncident = requiredLabels.every((name) => labels.includes(name));
+            if (!isBatchIncident) {
+              core.info(`Issue #${issue.number} is not a batch incident; skipping.`);
+              return;
+            }
+
+            if (issue.state !== "closed") {
+              core.info(`Issue #${issue.number} is not closed; skipping.`);
+              return;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: issue.number,
+              per_page: 100,
+            });
+
+            const combinedText = [
+              issue.body || "",
+              ...comments.map((c) => c.body || ""),
+            ]
+              .join("\n")
+              .toLowerCase();
+
+            const hasRootCause =
+              combinedText.includes("root cause") || combinedText.includes("root-cause");
+            const hasMitigation = combinedText.includes("mitigation");
+
+            if (hasRootCause && hasMitigation) {
+              core.info(`Issue #${issue.number} has closure evidence.`);
+              return;
+            }
+
+            const missing = [];
+            if (!hasRootCause) missing.push("root cause");
+            if (!hasMitigation) missing.push("mitigation");
+
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: issue.number,
+              state: "open",
+            });
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issue.number,
+              body: [
+                "<!-- closure-guard-reopen -->",
+                "Incident closure guard reopened this issue.",
+                `Missing closure evidence: ${missing.join(", ")}.`,
+                "Please add mitigation and root cause notes, then close again.",
+              ].join("\n"),
+            });
+
+            core.setOutput("reopened", "true");
