@@ -129,6 +129,24 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
 - **Email failure rate:** `sum(rate(salonbw_emails_sent_total{status="failed"}[15m])) / max(sum(rate(salonbw_emails_sent_total[15m])), 1)` > 0.2 ⇒ Slack warn.
 - **Client JS errors:** `count_over_time({context="frontend",level="error"}[10m]) > 25` ⇒ create dashboard panel and Slack alert.
 
+##### Batch customer statistics (reception) alert routing policy
+
+- **Scope:** `GET /customers/statistics/batch` telemetry events:
+  - `customer statistics batch slow`
+  - `customer statistics batch failed`
+  - `customer statistics batch failure burst`
+- **Noise policy:** fast-success telemetry (`customer statistics batch served`) stays disabled in production.
+- **Routing matrix:**
+  - `slow` warning (`durationMs >= 800`) -> Loki/Grafana panel only, no page.
+  - `failed` warning (`HttpException` 4xx) -> Slack `#ops-alerts` warn digest, no page.
+  - `failed` error (5xx/unexpected error) -> On-call channel immediate alert.
+  - `failure burst` error (`>=5` failures in `5m`) -> On-call channel immediate alert + incident note in `docs/AGENT_STATUS.md`.
+- **Starter Loki queries:**
+  - Slow: `{service="salonbw-backend"} |= "customer statistics batch slow"`
+  - Failed: `{service="salonbw-backend"} |= "customer statistics batch failed"`
+  - Burst: `{service="salonbw-backend"} |= "customer statistics batch failure burst"`
+- **Action target:** acknowledge alert, validate reception panel impact (`/calendar-next?view=reception`), trigger `Ponów teraz` retry check, then investigate backend exceptions.
+
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 
 #### 5.4 On-call procedure

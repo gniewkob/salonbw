@@ -51,6 +51,18 @@ This document defines alert thresholds, severity levels, and response playbooks 
 | Response Time (p99) | >2s | >5s | May indicate outlier queries |
 | Availability | <99.5% | <99% | SLA target: 99.9% |
 
+#### Reception batch telemetry routing
+| Event | Warning | Critical | Routing policy |
+|--------|---------|----------|----------------|
+| `customer statistics batch slow` | `durationMs >= 800` | - | Observability-only (Grafana/Loki), no paging |
+| `customer statistics batch failed` (4xx) | any | - | Slack warn in `#ops-alerts`, no paging |
+| `customer statistics batch failed` (5xx/unexpected) | - | any | Immediate on-call alert |
+| `customer statistics batch failure burst` | - | `>=5 failures in 5m` | Immediate on-call alert + incident record |
+
+Operational note:
+- In production, fast-success batch telemetry is intentionally suppressed to reduce log noise.
+- During an active incident, verify reception behaviour on `/calendar-next?view=reception` and confirm manual retry (`Ponów teraz`) path works.
+
 #### Database
 | Metric | Warning | Critical | Notes |
 |--------|---------|----------|-------|
