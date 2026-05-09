@@ -192,23 +192,49 @@ jobs:
             const { data: issues } = await github.rest.issues.listForRepo({
               owner,
               repo,
-              state: "open",
+              state: "all",
               per_page: 100,
               labels: "ops,incident,batch-stats",
             });
 
-            const existing = issues.find((i) => (i.body || "").includes(marker));
-            if (existing) {
+            const openExisting = issues.find(
+              (i) => i.state === "open" && (i.body || "").includes(marker),
+            );
+            if (openExisting) {
               await github.rest.issues.createComment({
                 owner,
                 repo,
-                issue_number: existing.number,
+                issue_number: openExisting.number,
                 body: [
                   `New occurrence detected from run ${runUrl}.`,
                   `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
                 ].join('\n'),
               });
-              core.info(`Updated existing issue #${existing.number}`);
+              core.info(`Updated existing open issue #${openExisting.number}`);
+              return;
+            }
+
+            const closedExisting = issues.find(
+              (i) => i.state === "closed" && (i.body || "").includes(marker),
+            );
+            if (closedExisting) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: closedExisting.number,
+                state: "open",
+              });
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: closedExisting.number,
+                body: [
+                  `Incident reopened due to new occurrence from run ${runUrl}.`,
+                  `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
+                ].join('\n'),
+              });
+              core.info(`Reopened existing issue #${closedExisting.number}`);
               return;
             }
 
