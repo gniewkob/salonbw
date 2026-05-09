@@ -156,6 +156,7 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
 - **Incident ticket automation:** workflow `.github/workflows/ops_batch_stats_incident_ticket.yml` listens for failed `Ops Batch Stats Alerts` runs, downloads evidence artifact, and creates/updates an incident issue (`ops`, `incident`, `batch-stats`) using a daily dedup key (`reason + date`).
   Incident quality guard validates mandatory evidence fields, status whitelist, title prefix, and dedup key format before issue creation/update.
   Lifecycle guard reuses the same dedup marker across issue states: if matching issue is closed, automation reopens it and appends a new occurrence comment instead of creating a duplicate ticket.
+- **SLA reminder automation:** workflow `.github/workflows/ops_batch_stats_incident_sla.yml` runs hourly and comments on stale open incidents (`ops,incident,batch-stats`) if no activity for >6h. It adds one reminder comment per day using an internal marker.
 
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 
