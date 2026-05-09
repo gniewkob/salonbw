@@ -62,6 +62,7 @@ This document defines alert thresholds, severity levels, and response playbooks 
 Operational note:
 - In production, fast-success batch telemetry is intentionally suppressed to reduce log noise.
 - During an active incident, verify reception behaviour on `/calendar-next?view=reception` and confirm manual retry (`Ponów teraz`) path works.
+- Scheduled enforcement is handled by GitHub Actions workflow `.github/workflows/ops_batch_stats_alerts.yml` (10-minute cadence, Loki-based checks).
 
 #### Database
 | Metric | Warning | Critical | Notes |

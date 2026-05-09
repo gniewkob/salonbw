@@ -146,6 +146,10 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
   - Failed: `{service="salonbw-backend"} |= "customer statistics batch failed"`
   - Burst: `{service="salonbw-backend"} |= "customer statistics batch failure burst"`
 - **Action target:** acknowledge alert, validate reception panel impact (`/calendar-next?view=reception`), trigger `Ponów teraz` retry check, then investigate backend exceptions.
+- **Automation hook:** workflow `.github/workflows/ops_batch_stats_alerts.yml` runs every 10 minutes and evaluates the above telemetry in Loki. It fails on:
+  - `customer statistics batch failure burst` > 0
+  - `customer statistics batch failed` (`level=error`) >= 3 in 10m
+  Warning-only signals (`slow`, controlled 4xx failures) are reported in run summary without failing.
 
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 

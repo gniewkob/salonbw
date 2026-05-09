@@ -1,0 +1,33 @@
+name: Ops Batch Stats Alerts
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '*/10 * * * *'
+
+jobs:
+  check-batch-telemetry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify tooling
+        run: |
+          set -euo pipefail
+          jq --version
+          curl --version
+
+      - name: Evaluate reception batch telemetry signals
+        env:
+          LOKI_QUERY_URL: ${{ secrets.LOKI_QUERY_URL }}
+          LOKI_BASIC_AUTH: ${{ secrets.LOKI_BASIC_AUTH }}
+          LOOKBACK_WINDOW: 10m
+          CRITICAL_ERROR_THRESHOLD: 3
+        run: |
+          set -euo pipefail
+          if [ -z "${LOKI_QUERY_URL}" ]; then
+            export LOKI_QUERY_URL="https://observability.salon-bw.pl/loki/api/v1/query"
+          fi
+          ./scripts/check-batch-telemetry-alerts.sh
