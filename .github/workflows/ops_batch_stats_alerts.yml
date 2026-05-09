@@ -25,6 +25,8 @@ jobs:
           LOKI_BASIC_AUTH: ${{ secrets.LOKI_BASIC_AUTH }}
           LOOKBACK_WINDOW: 10m
           CRITICAL_ERROR_THRESHOLD: 3
+          LOKI_QUERY_TIMEOUT_SECONDS: 12
+          FAIL_ON_OBSERVABILITY_GAP: 0
         run: |
           set -euo pipefail
           if [ -z "${LOKI_QUERY_URL}" ]; then

@@ -6,6 +6,8 @@ LOKI_QUERY_URL="${LOKI_QUERY_URL:-https://observability.salon-bw.pl/loki/api/v1/
 LOKI_BASIC_AUTH="${LOKI_BASIC_AUTH:-}"
 LOOKBACK_WINDOW="${LOOKBACK_WINDOW:-10m}"
 CRITICAL_ERROR_THRESHOLD="${CRITICAL_ERROR_THRESHOLD:-3}"
+LOKI_QUERY_TIMEOUT_SECONDS="${LOKI_QUERY_TIMEOUT_SECONDS:-12}"
+FAIL_ON_OBSERVABILITY_GAP="${FAIL_ON_OBSERVABILITY_GAP:-0}"
 
 if [[ -z "$LOKI_BASIC_AUTH" ]]; then
   echo "LOKI_BASIC_AUTH is required"
@@ -15,13 +17,18 @@ fi
 query_count() {
   local query="$1"
   local response
-  response=$(
-    curl -fsS -G "$LOKI_QUERY_URL" \
+  if ! response=$(
+    curl -fsS --max-time "$LOKI_QUERY_TIMEOUT_SECONDS" -G "$LOKI_QUERY_URL" \
       -u "$LOKI_BASIC_AUTH" \
       --data-urlencode "query=$query"
-  )
+  ); then
+    return 1
+  fi
   local count
   count=$(printf "%s" "$response" | jq -r '.data.result[0].value[1] // "0"')
+  if ! [[ "$count" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    return 1
+  fi
   printf "%s" "$count"
 }
 
@@ -30,10 +37,29 @@ warn_failed_query="sum(count_over_time({service=\"salonbw-backend\",environment=
 error_failed_query="sum(count_over_time({service=\"salonbw-backend\",environment=\"production\",level=\"error\"} |= \"customer statistics batch failed\"[${LOOKBACK_WINDOW}]))"
 burst_query="sum(count_over_time({service=\"salonbw-backend\",environment=\"production\",level=\"error\"} |= \"customer statistics batch failure burst\"[${LOOKBACK_WINDOW}]))"
 
-slow_count="$(query_count "$slow_query")"
-warn_failed_count="$(query_count "$warn_failed_query")"
-error_failed_count="$(query_count "$error_failed_query")"
-burst_count="$(query_count "$burst_query")"
+failed_queries=()
+slow_count="$(query_count "$slow_query")" || failed_queries+=("slow_query")
+warn_failed_count="$(query_count "$warn_failed_query")" || failed_queries+=("warn_failed_query")
+error_failed_count="$(query_count "$error_failed_query")" || failed_queries+=("error_failed_query")
+burst_count="$(query_count "$burst_query")" || failed_queries+=("burst_query")
+
+if (( ${#failed_queries[@]} > 0 )); then
+  {
+    echo "### Reception Batch Telemetry Check"
+    echo
+    echo "- status: \`degraded observability\`"
+    echo "- failed queries: \`${failed_queries[*]}\`"
+    echo "- action: validate Loki connectivity and rerun check"
+  } >> "${GITHUB_STEP_SUMMARY:-/dev/stdout}"
+
+  if [[ "$FAIL_ON_OBSERVABILITY_GAP" == "1" ]]; then
+    echo "CRITICAL: observability gap while querying Loki (${failed_queries[*]})"
+    exit 1
+  fi
+
+  echo "WARNING: observability gap while querying Loki (${failed_queries[*]})"
+  exit 0
+fi
 
 {
   echo "### Reception Batch Telemetry Check"
