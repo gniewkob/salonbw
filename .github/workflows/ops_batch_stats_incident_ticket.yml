@@ -38,6 +38,7 @@ jobs:
           fi
 
       - name: Download evidence artifact from source run
+        id: evidence
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -53,8 +54,9 @@ jobs:
           )
 
           if [ -z "${ARTIFACT_ID}" ] || [ "${ARTIFACT_ID}" = "null" ]; then
-            echo "No evidence artifact found for run ${RUN_ID}"
-            exit 1
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "No evidence artifact found for run ${RUN_ID}; fallback mode enabled"
+            exit 0
           fi
 
           curl -fsS -L \
@@ -66,28 +68,40 @@ jobs:
           unzip -o evidence.zip
           test -f batch-telemetry-evidence.json
           jq -e . batch-telemetry-evidence.json >/dev/null
+          echo "available=true" >> "$GITHUB_OUTPUT"
 
       - name: Prepare incident payload
         id: incident
         env:
           RUN_ID: ${{ steps.source.outputs.run_id }}
+          EVIDENCE_AVAILABLE: ${{ steps.evidence.outputs.available }}
         run: |
           set -euo pipefail
-          jq -e '
-            ((.status|type)=="string") and
-            ((.action|type)=="string") and
-            ((.reason|type)=="string") and
-            ((.config.lookbackWindow|type)=="string") and
-            ((.counts.failedError5xxOrUnexpected|type)=="number" or .counts.failedError5xxOrUnexpected == null) and
-            ((.counts.failureBurstError|type)=="number" or .counts.failureBurstError == null)
-          ' batch-telemetry-evidence.json >/dev/null
+          if [ "${EVIDENCE_AVAILABLE}" = "true" ]; then
+            jq -e '
+              ((.status|type)=="string") and
+              ((.action|type)=="string") and
+              ((.reason|type)=="string") and
+              ((.config.lookbackWindow|type)=="string") and
+              ((.counts.failedError5xxOrUnexpected|type)=="number" or .counts.failedError5xxOrUnexpected == null) and
+              ((.counts.failureBurstError|type)=="number" or .counts.failureBurstError == null)
+            ' batch-telemetry-evidence.json >/dev/null
 
-          STATUS=$(jq -r '.status' batch-telemetry-evidence.json)
-          ACTION=$(jq -r '.action' batch-telemetry-evidence.json)
-          REASON=$(jq -r '.reason' batch-telemetry-evidence.json)
-          WINDOW=$(jq -r '.config.lookbackWindow' batch-telemetry-evidence.json)
-          ERROR_FAILED=$(jq -r '.counts.failedError5xxOrUnexpected // 0' batch-telemetry-evidence.json)
-          BURST=$(jq -r '.counts.failureBurstError // 0' batch-telemetry-evidence.json)
+            STATUS=$(jq -r '.status' batch-telemetry-evidence.json)
+            ACTION=$(jq -r '.action' batch-telemetry-evidence.json)
+            REASON=$(jq -r '.reason' batch-telemetry-evidence.json)
+            WINDOW=$(jq -r '.config.lookbackWindow' batch-telemetry-evidence.json)
+            ERROR_FAILED=$(jq -r '.counts.failedError5xxOrUnexpected // 0' batch-telemetry-evidence.json)
+            BURST=$(jq -r '.counts.failureBurstError // 0' batch-telemetry-evidence.json)
+          else
+            STATUS="critical"
+            ACTION="investigate-artifact-gap"
+            REASON="missing_evidence_artifact"
+            WINDOW="unknown"
+            ERROR_FAILED="0"
+            BURST="0"
+          fi
+
           DATE_KEY=$(date -u +%Y-%m-%d)
           REASON_KEY=$(printf "%s" "$REASON" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-')
 
@@ -108,6 +122,7 @@ jobs:
             echo "error_failed=${ERROR_FAILED}"
             echo "burst=${BURST}"
             echo "run_id=${RUN_ID}"
+            echo "evidence_available=${EVIDENCE_AVAILABLE:-false}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Validate incident issue quality payload
@@ -118,6 +133,7 @@ jobs:
           ACTION: ${{ steps.incident.outputs.action }}
           REASON: ${{ steps.incident.outputs.reason }}
           WINDOW: ${{ steps.incident.outputs.window }}
+          EVIDENCE_AVAILABLE: ${{ steps.incident.outputs.evidence_available }}
         run: |
           set -euo pipefail
 
@@ -127,6 +143,7 @@ jobs:
           test -n "${ACTION}"
           test -n "${REASON}"
           test -n "${WINDOW}"
+          test -n "${EVIDENCE_AVAILABLE}"
 
           case "${STATUS}" in
             critical|warning|degraded_observability|ok|config_error) ;;
@@ -158,6 +175,7 @@ jobs:
           ERROR_FAILED: ${{ steps.incident.outputs.error_failed }}
           BURST: ${{ steps.incident.outputs.burst }}
           SOURCE_RUN_ID: ${{ steps.incident.outputs.run_id }}
+          EVIDENCE_AVAILABLE: ${{ steps.incident.outputs.evidence_available }}
         with:
           script: |
             const owner = context.repo.owner;
@@ -171,6 +189,7 @@ jobs:
             const errorFailed = process.env.ERROR_FAILED;
             const burst = process.env.BURST;
             const sourceRunId = process.env.SOURCE_RUN_ID;
+            const evidenceAvailable = process.env.EVIDENCE_AVAILABLE === "true";
             const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${sourceRunId}`;
 
             const marker = `<!-- ${dedupKey} -->`;
@@ -185,10 +204,11 @@ jobs:
               `- failed error count (5xx/unexpected): \`${errorFailed}\``,
               `- failure burst count: \`${burst}\``,
               `- source run: ${runUrl}`,
+              `- evidence artifact available: \`${evidenceAvailable}\``,
               ``,
               `### Required actions`,
               `1. Validate reception impact on \`/calendar-next?view=reception\`.`,
-              `2. Open telemetry evidence artifact from the source run.`,
+              `2. Open telemetry evidence artifact from the source run${evidenceAvailable ? "." : " (missing in this occurrence; investigate workflow artifact path)."} `,
               `3. Complete the resolution template sections below before closing.`,
               `4. Update \`docs/AGENT_STATUS.md\` when incident is resolved.`,
               ``,
