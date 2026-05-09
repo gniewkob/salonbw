@@ -5,6 +5,7 @@ _Last updated: 2026-03-19 (P1+P2 route coverage is implemented, but parity statu
 Operational note (2026-05-09):
 - Added reception batch telemetry alert-routing policy to runbooks: `slow` stays observability-only, controlled `4xx` failures are Slack warns, `5xx/unexpected` failures are on-call alerts, and `failure burst` (`>=5` in `5m`) is immediate on-call escalation with incident note requirement.
 - Added scheduled workflow `.github/workflows/ops_batch_stats_alerts.yml` (10-minute cadence) to evaluate Loki telemetry for reception batch stats and fail on critical signals (`failure burst` or repeated `failed` errors).
+- Added alert evidence artifact output (`batch-telemetry-evidence.json`) to each scheduled telemetry check run for auditable alert decisions.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

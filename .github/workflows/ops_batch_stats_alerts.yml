@@ -27,9 +27,19 @@ jobs:
           CRITICAL_ERROR_THRESHOLD: 3
           LOKI_QUERY_TIMEOUT_SECONDS: 12
           FAIL_ON_OBSERVABILITY_GAP: 0
+          EVIDENCE_PATH: batch-telemetry-evidence.json
         run: |
           set -euo pipefail
           if [ -z "${LOKI_QUERY_URL}" ]; then
             export LOKI_QUERY_URL="https://observability.salon-bw.pl/loki/api/v1/query"
           fi
           ./scripts/check-batch-telemetry-alerts.sh
+
+      - name: Upload telemetry evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-telemetry-evidence-${{ github.run_id }}
+          path: batch-telemetry-evidence.json
+          if-no-files-found: warn
+          retention-days: 14

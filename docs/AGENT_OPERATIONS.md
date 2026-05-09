@@ -151,6 +151,7 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
   - `customer statistics batch failed` (`level=error`) >= 3 in 10m
   Warning-only signals (`slow`, controlled 4xx failures) are reported in run summary without failing.
   If Loki query itself is unavailable, the check reports `degraded observability` (non-failing by default) to reduce false-positive pages caused by telemetry transport gaps.
+  Each run uploads `batch-telemetry-evidence.json` as a GitHub artifact (14-day retention) for audit evidence and post-incident review.
 
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 
