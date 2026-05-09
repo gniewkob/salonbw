@@ -7,6 +7,7 @@ describe('CustomersController', () => {
     let controller: CustomersController;
     let statisticsService: jest.Mocked<CustomerStatisticsService>;
     let dateNowSpy: jest.SpyInstance<number, []>;
+    const originalNodeEnv = process.env.NODE_ENV;
 
     beforeEach(() => {
         dateNowSpy = jest.spyOn(Date, 'now');
@@ -28,6 +29,7 @@ describe('CustomersController', () => {
 
     afterEach(() => {
         dateNowSpy.mockRestore();
+        process.env.NODE_ENV = originalNodeEnv;
     });
 
     it('parses batch ids and delegates to statistics service', async () => {
@@ -199,6 +201,39 @@ describe('CustomersController', () => {
                 durationMs: 600,
                 errorType: 'Error',
             }),
+        );
+    });
+
+    it('does not log fast success telemetry in production', async () => {
+        process.env.NODE_ENV = 'production';
+        dateNowSpy.mockReturnValueOnce(8000).mockReturnValueOnce(8100);
+        const logSpy = jest.fn();
+        const warnSpy = jest.fn();
+        (
+            controller as unknown as {
+                logger: { log: jest.Mock; warn: jest.Mock };
+            }
+        ).logger.log = logSpy;
+        (
+            controller as unknown as {
+                logger: { log: jest.Mock; warn: jest.Mock };
+            }
+        ).logger.warn = warnSpy;
+
+        await controller.getStatisticsBatch(
+            '1,2',
+            undefined,
+            undefined,
+            'alerts',
+        );
+
+        expect(warnSpy).not.toHaveBeenCalledWith(
+            'customer statistics batch slow',
+            expect.anything(),
+        );
+        expect(logSpy).not.toHaveBeenCalledWith(
+            'customer statistics batch served',
+            expect.anything(),
         );
     });
 });

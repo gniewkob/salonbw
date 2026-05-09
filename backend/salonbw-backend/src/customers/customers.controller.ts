@@ -115,6 +115,10 @@ export class CustomersController {
         };
     }
 
+    private shouldLogFastSuccessTelemetry(): boolean {
+        return process.env.NODE_ENV !== 'production';
+    }
+
     // ==================== CUSTOMERS ====================
 
     @Get()
@@ -205,7 +209,7 @@ export class CustomersController {
 
                 if (durationMs >= CustomersController.SLOW_BATCH_THRESHOLD_MS) {
                     this.logger.warn('customer statistics batch slow', payload);
-                } else {
+                } else if (this.shouldLogFastSuccessTelemetry()) {
                     this.logger.log(
                         'customer statistics batch served',
                         payload,
