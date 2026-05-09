@@ -10,6 +10,10 @@ on:
         description: "Optional source run id to backfill from"
         required: false
 
+concurrency:
+  group: ops-batch-stats-incident-ticket-${{ github.event.workflow_run.id || github.event.inputs.source_run_id || github.run_id }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   actions: read

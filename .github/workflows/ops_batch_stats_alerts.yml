@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '*/10 * * * *'
 
+concurrency:
+  group: ops-batch-stats-alerts
+  cancel-in-progress: false
+
 jobs:
   check-batch-telemetry:
     runs-on: ubuntu-latest

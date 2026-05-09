@@ -13,6 +13,7 @@ Operational note (2026-05-09):
 - Added hourly SLA reminder workflow `.github/workflows/ops_batch_stats_incident_sla.yml` to comment on stale open batch-stats incidents (>6h inactivity) with per-day deduplicated reminders.
 - Added incident closure guard workflow `.github/workflows/ops_batch_stats_incident_closure_guard.yml` to reopen closed batch-stats incidents missing `root cause` or `mitigation` notes.
 - Added incident resolution template `.github/ISSUE_TEMPLATE/ops-batch-stats-incident-resolution.md` and embedded matching sections in auto-created incident issues.
+- Added concurrency guards across batch telemetry ops workflows to reduce race conditions and duplicate issue mutations under overlapping schedules/retries.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

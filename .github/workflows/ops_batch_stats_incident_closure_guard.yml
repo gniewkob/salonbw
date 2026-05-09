@@ -9,6 +9,10 @@ on:
         description: "Optional issue number for manual validation"
         required: false
 
+concurrency:
+  group: ops-batch-stats-closure-guard-${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
+  cancel-in-progress: false
+
 permissions:
   issues: write
   contents: read

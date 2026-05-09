@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '7 * * * *'
 
+concurrency:
+  group: ops-batch-stats-incident-sla
+  cancel-in-progress: false
+
 permissions:
   issues: write
   contents: read

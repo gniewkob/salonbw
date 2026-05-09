@@ -153,12 +153,15 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
   If Loki query itself is unavailable, the check reports `degraded observability` (non-failing by default) to reduce false-positive pages caused by telemetry transport gaps.
   Each run uploads `batch-telemetry-evidence.json` as a GitHub artifact (14-day retention) for audit evidence and post-incident review.
   The workflow validates evidence schema before upload (`generatedAt/status/action/reason/config/counts/failedQueries/queries/exitCode`) to prevent malformed audit artifacts.
+  Concurrency guard serializes scheduled runs to prevent overlapping checks and duplicate alert transitions.
 - **Incident ticket automation:** workflow `.github/workflows/ops_batch_stats_incident_ticket.yml` listens for failed `Ops Batch Stats Alerts` runs, downloads evidence artifact, and creates/updates an incident issue (`ops`, `incident`, `batch-stats`) using a daily dedup key (`reason + date`).
   Incident quality guard validates mandatory evidence fields, status whitelist, title prefix, and dedup key format before issue creation/update.
   Lifecycle guard reuses the same dedup marker across issue states: if matching issue is closed, automation reopens it and appends a new occurrence comment instead of creating a duplicate ticket.
+  Concurrency guard keys runs by source run/id to prevent duplicate ticket mutations under retried/parallel dispatches.
 - **Resolution template:** `.github/ISSUE_TEMPLATE/ops-batch-stats-incident-resolution.md` defines the required closure structure (`Mitigation`, `Root Cause`, `Verification`, `Follow-up`). Auto-created incidents include matching sections by default.
 - **SLA reminder automation:** workflow `.github/workflows/ops_batch_stats_incident_sla.yml` runs hourly and comments on stale open incidents (`ops,incident,batch-stats`) if no activity for >6h. It adds one reminder comment per day using an internal marker.
 - **Incident closure guard:** workflow `.github/workflows/ops_batch_stats_incident_closure_guard.yml` validates closed `ops,incident,batch-stats` issues. If closure notes do not include both `root cause` and `mitigation`, it reopens the issue and posts a guard comment.
+  Both workflows now include concurrency groups to avoid race conditions on issue comments/state updates.
 
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 
