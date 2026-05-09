@@ -16,6 +16,7 @@ import {
     UseInterceptors,
     UploadedFile,
     Logger,
+    HttpException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -73,7 +74,10 @@ import {
 export class CustomersController {
     private static readonly MAX_BATCH_IDS = 100;
     private static readonly SLOW_BATCH_THRESHOLD_MS = 800;
+    private static readonly FAILURE_BURST_WINDOW_MS = 5 * 60 * 1000;
+    private static readonly FAILURE_BURST_THRESHOLD = 5;
     private readonly logger = new Logger(CustomersController.name);
+    private batchFailureTimestamps: number[] = [];
 
     constructor(
         private readonly customersService: CustomersService,
@@ -117,6 +121,25 @@ export class CustomersController {
 
     private shouldLogFastSuccessTelemetry(): boolean {
         return process.env.NODE_ENV !== 'production';
+    }
+
+    private shouldLogBatchFailureAsError(error: unknown): boolean {
+        if (error instanceof HttpException) {
+            return error.getStatus() >= 500;
+        }
+        return true;
+    }
+
+    private registerBatchFailureAndCheckBurst(nowTs: number): boolean {
+        const minTs = nowTs - CustomersController.FAILURE_BURST_WINDOW_MS;
+        this.batchFailureTimestamps = this.batchFailureTimestamps.filter(
+            (ts) => ts >= minTs,
+        );
+        this.batchFailureTimestamps.push(nowTs);
+        return (
+            this.batchFailureTimestamps.length >=
+            CustomersController.FAILURE_BURST_THRESHOLD
+        );
     }
 
     // ==================== CUSTOMERS ====================
@@ -220,13 +243,39 @@ export class CustomersController {
             })
             .catch((error: unknown) => {
                 const durationMs = Date.now() - startedAt;
-                this.logger.warn('customer statistics batch failed', {
+                const payload = {
                     idsCount: customerIds.length,
                     scope: normalizedScope,
                     durationMs,
                     errorType:
                         error instanceof Error ? error.name : 'UnknownError',
-                });
+                };
+
+                if (this.shouldLogBatchFailureAsError(error)) {
+                    this.logger.error(
+                        'customer statistics batch failed',
+                        payload,
+                    );
+                } else {
+                    this.logger.warn(
+                        'customer statistics batch failed',
+                        payload,
+                    );
+                }
+
+                if (this.registerBatchFailureAndCheckBurst(Date.now())) {
+                    this.logger.error(
+                        'customer statistics batch failure burst',
+                        {
+                            windowMs:
+                                CustomersController.FAILURE_BURST_WINDOW_MS,
+                            threshold:
+                                CustomersController.FAILURE_BURST_THRESHOLD,
+                            recentFailures: this.batchFailureTimestamps.length,
+                            scope: normalizedScope,
+                        },
+                    );
+                }
                 throw error;
             });
     }

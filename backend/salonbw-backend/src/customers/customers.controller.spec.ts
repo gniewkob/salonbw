@@ -2,6 +2,7 @@ import { CustomersController } from './customers.controller';
 import { CustomerStatisticsService } from './customer-statistics.service';
 import { CustomersService } from './customers.service';
 import { CustomerMediaService } from './customer-media.service';
+import { BadRequestException } from '@nestjs/common';
 
 describe('CustomersController', () => {
     let controller: CustomersController;
@@ -173,13 +174,22 @@ describe('CustomersController', () => {
     });
 
     it('logs failure telemetry for batch request errors and rethrows', async () => {
-        dateNowSpy.mockReturnValueOnce(7000).mockReturnValueOnce(7600);
+        dateNowSpy
+            .mockReturnValueOnce(7000)
+            .mockReturnValueOnce(7600)
+            .mockReturnValueOnce(7600);
         const warnSpy = jest.fn();
+        const errorSpy = jest.fn();
         (
             controller as unknown as {
-                logger: { warn: jest.Mock };
+                logger: { warn: jest.Mock; error: jest.Mock };
             }
         ).logger.warn = warnSpy;
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock; error: jest.Mock };
+            }
+        ).logger.error = errorSpy;
         statisticsService.getStatisticsBatch.mockRejectedValueOnce(
             new Error('Batch failure'),
         );
@@ -193,13 +203,103 @@ describe('CustomersController', () => {
             ),
         ).rejects.toThrow('Batch failure');
 
-        expect(warnSpy).toHaveBeenCalledWith(
+        expect(errorSpy).toHaveBeenCalledWith(
             'customer statistics batch failed',
             expect.objectContaining({
                 idsCount: 3,
                 scope: 'alerts',
                 durationMs: 600,
                 errorType: 'Error',
+            }),
+        );
+    });
+
+    it('logs controlled 4xx failures as warning', async () => {
+        dateNowSpy
+            .mockReturnValueOnce(9000)
+            .mockReturnValueOnce(9100)
+            .mockReturnValueOnce(9100);
+        const warnSpy = jest.fn();
+        const errorSpy = jest.fn();
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock; error: jest.Mock };
+            }
+        ).logger.warn = warnSpy;
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock; error: jest.Mock };
+            }
+        ).logger.error = errorSpy;
+        statisticsService.getStatisticsBatch.mockRejectedValueOnce(
+            new BadRequestException('Invalid ids'),
+        );
+
+        await expect(
+            controller.getStatisticsBatch(
+                '1,2,3',
+                undefined,
+                undefined,
+                'alerts',
+            ),
+        ).rejects.toThrow('Invalid ids');
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            'customer statistics batch failed',
+            expect.objectContaining({
+                idsCount: 3,
+                scope: 'alerts',
+                durationMs: 100,
+                errorType: 'BadRequestException',
+            }),
+        );
+        expect(errorSpy).not.toHaveBeenCalledWith(
+            'customer statistics batch failed',
+            expect.anything(),
+        );
+    });
+
+    it('logs failure burst when threshold is exceeded', async () => {
+        const warnSpy = jest.fn();
+        const errorSpy = jest.fn();
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock; error: jest.Mock };
+            }
+        ).logger.warn = warnSpy;
+        (
+            controller as unknown as {
+                logger: { warn: jest.Mock; error: jest.Mock };
+            }
+        ).logger.error = errorSpy;
+
+        for (let index = 0; index < 5; index += 1) {
+            const now = 10000 + index * 100;
+            dateNowSpy
+                .mockReturnValueOnce(now)
+                .mockReturnValueOnce(now + 20)
+                .mockReturnValueOnce(now + 20);
+            statisticsService.getStatisticsBatch.mockRejectedValueOnce(
+                new Error(`Batch failure ${index}`),
+            );
+
+            await expect(
+                controller.getStatisticsBatch(
+                    '1,2,3',
+                    undefined,
+                    undefined,
+                    'alerts',
+                ),
+            ).rejects.toThrow(`Batch failure ${index}`);
+        }
+
+        expect(errorSpy).toHaveBeenCalledWith(
+            'customer statistics batch failure burst',
+            expect.objectContaining({
+                windowMs: 5 * 60 * 1000,
+                threshold: 5,
+                recentFailures: 5,
+                scope: 'alerts',
             }),
         );
     });
