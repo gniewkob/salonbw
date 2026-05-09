@@ -8,6 +8,7 @@ Operational note (2026-05-09):
 - Added alert evidence artifact output (`batch-telemetry-evidence.json`) to each scheduled telemetry check run for auditable alert decisions.
 - Added evidence schema guard in workflow/script so malformed telemetry artifacts fail validation before upload.
 - Added automated incident-ticket workflow `.github/workflows/ops_batch_stats_incident_ticket.yml` to create/update GitHub incident issues from failed batch-telemetry runs using artifact evidence and daily dedup keys.
+- Added incident issue quality guard (required fields, status allowlist, title prefix, dedup key format) before ticket create/update.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
