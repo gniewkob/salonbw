@@ -1,0 +1,172 @@
+name: Ops Batch Stats Incident Ticket
+
+on:
+  workflow_run:
+    workflows: ["Ops Batch Stats Alerts"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: "Optional source run id to backfill from"
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  incident-ticket:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'failure')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Resolve source run
+        id: source
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.source_run_id }}" ]; then
+            echo "run_id=${{ github.event.inputs.source_run_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_id=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download evidence artifact from source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          API="https://api.github.com/repos/${{ github.repository }}"
+          ARTIFACT_ID=$(
+            curl -fsS -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${API}/actions/runs/${RUN_ID}/artifacts" \
+            | jq -r '.artifacts[] | select(.name | startswith("batch-telemetry-evidence-")) | .id' \
+            | head -n1
+          )
+
+          if [ -z "${ARTIFACT_ID}" ] || [ "${ARTIFACT_ID}" = "null" ]; then
+            echo "No evidence artifact found for run ${RUN_ID}"
+            exit 1
+          fi
+
+          curl -fsS -L \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            -o evidence.zip
+
+          unzip -o evidence.zip
+          test -f batch-telemetry-evidence.json
+          jq -e . batch-telemetry-evidence.json >/dev/null
+
+      - name: Prepare incident payload
+        id: incident
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          STATUS=$(jq -r '.status' batch-telemetry-evidence.json)
+          ACTION=$(jq -r '.action' batch-telemetry-evidence.json)
+          REASON=$(jq -r '.reason' batch-telemetry-evidence.json)
+          WINDOW=$(jq -r '.config.lookbackWindow' batch-telemetry-evidence.json)
+          ERROR_FAILED=$(jq -r '.counts.failedError5xxOrUnexpected // 0' batch-telemetry-evidence.json)
+          BURST=$(jq -r '.counts.failureBurstError // 0' batch-telemetry-evidence.json)
+          DATE_KEY=$(date -u +%Y-%m-%d)
+
+          TITLE="[OPS][batch-stats] ${STATUS} ${REASON} (${DATE_KEY})"
+          DEDUP_KEY="ops-batch-stats|${REASON}|${DATE_KEY}"
+
+          {
+            echo "title=${TITLE}"
+            echo "dedup_key=${DEDUP_KEY}"
+            echo "status=${STATUS}"
+            echo "action=${ACTION}"
+            echo "reason=${REASON}"
+            echo "window=${WINDOW}"
+            echo "error_failed=${ERROR_FAILED}"
+            echo "burst=${BURST}"
+            echo "run_id=${RUN_ID}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update incident issue
+        uses: actions/github-script@v7
+        env:
+          ISSUE_TITLE: ${{ steps.incident.outputs.title }}
+          DEDUP_KEY: ${{ steps.incident.outputs.dedup_key }}
+          STATUS: ${{ steps.incident.outputs.status }}
+          ACTION: ${{ steps.incident.outputs.action }}
+          REASON: ${{ steps.incident.outputs.reason }}
+          WINDOW: ${{ steps.incident.outputs.window }}
+          ERROR_FAILED: ${{ steps.incident.outputs.error_failed }}
+          BURST: ${{ steps.incident.outputs.burst }}
+          SOURCE_RUN_ID: ${{ steps.incident.outputs.run_id }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const dedupKey = process.env.DEDUP_KEY;
+            const title = process.env.ISSUE_TITLE;
+            const status = process.env.STATUS;
+            const action = process.env.ACTION;
+            const reason = process.env.REASON;
+            const window = process.env.WINDOW;
+            const errorFailed = process.env.ERROR_FAILED;
+            const burst = process.env.BURST;
+            const sourceRunId = process.env.SOURCE_RUN_ID;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${sourceRunId}`;
+
+            const marker = `<!-- ${dedupKey} -->`;
+            const body = [
+              marker,
+              `## Ops Incident: Batch Telemetry Alert`,
+              ``,
+              `- status: \`${status}\``,
+              `- action: \`${action}\``,
+              `- reason: \`${reason}\``,
+              `- lookback window: \`${window}\``,
+              `- failed error count (5xx/unexpected): \`${errorFailed}\``,
+              `- failure burst count: \`${burst}\``,
+              `- source run: ${runUrl}`,
+              ``,
+              `### Required actions`,
+              `1. Validate reception impact on \`/calendar-next?view=reception\`.`,
+              `2. Open telemetry evidence artifact from the source run.`,
+              `3. Add mitigation + root cause notes in this issue.`,
+              `4. Update \`docs/AGENT_STATUS.md\` when incident is resolved.`,
+            ].join('\n');
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+              labels: "ops,incident,batch-stats",
+            });
+
+            const existing = issues.find((i) => (i.body || "").includes(marker));
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body: [
+                  `New occurrence detected from run ${runUrl}.`,
+                  `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
+                ].join('\n'),
+              });
+              core.info(`Updated existing issue #${existing.number}`);
+              return;
+            }
+
+            const created = await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body,
+              labels: ["ops", "incident", "batch-stats"],
+            });
+            core.info(`Created issue #${created.data.number}`);
