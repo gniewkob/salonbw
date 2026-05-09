@@ -150,10 +150,11 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
   - `customer statistics batch failure burst` > 0
   - `customer statistics batch failed` (`level=error`) >= 3 in 10m
   Warning-only signals (`slow`, controlled 4xx failures) are reported in run summary without failing.
-  If Loki query itself is unavailable, the check reports `degraded observability` (non-failing by default) to reduce false-positive pages caused by telemetry transport gaps.
+  If Loki query itself is unavailable, or `LOKI_BASIC_AUTH` is missing, the check reports `degraded observability` (non-failing by default) to reduce false-positive pages caused by telemetry transport/config gaps.
   Each run uploads `batch-telemetry-evidence.json` as a GitHub artifact (14-day retention) for audit evidence and post-incident review.
   The workflow validates evidence schema before upload (`generatedAt/status/action/reason/config/counts/failedQueries/queries/exitCode`) to prevent malformed audit artifacts.
   Concurrency guard serializes scheduled runs to prevent overlapping checks and duplicate alert transitions.
+  Workflow explicitly opts into Node 24 action runtime (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`) to avoid Node 20 deprecation drift.
 - **Incident ticket automation:** workflow `.github/workflows/ops_batch_stats_incident_ticket.yml` listens for failed `Ops Batch Stats Alerts` runs, downloads evidence artifact, and creates/updates an incident issue (`ops`, `incident`, `batch-stats`) using a daily dedup key (`reason + date`).
   Incident quality guard validates mandatory evidence fields, status whitelist, title prefix, and dedup key format before issue creation/update.
   Lifecycle guard reuses the same dedup marker across issue states: if matching issue is closed, automation reopens it and appends a new occurrence comment instead of creating a duplicate ticket.

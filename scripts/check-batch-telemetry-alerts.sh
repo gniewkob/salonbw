@@ -116,8 +116,33 @@ query_count() {
 
 if [[ -z "$LOKI_BASIC_AUTH" ]]; then
   echo "LOKI_BASIC_AUTH is required"
-  write_evidence "config_error" "fix-workflow-secrets" 2 "[]" "null" "null" "null" "null" "missing_loki_basic_auth"
-  exit 2
+  {
+    echo "### Reception Batch Telemetry Check"
+    echo
+    echo "- status: \`degraded observability\`"
+    echo "- reason: \`missing_loki_basic_auth\`"
+    echo "- action: set \`LOKI_BASIC_AUTH\` secret and rerun check"
+  } >> "${GITHUB_STEP_SUMMARY:-/dev/stdout}"
+
+  if [[ "$FAIL_ON_OBSERVABILITY_GAP" == "1" ]]; then
+    write_evidence \
+      "critical" \
+      "fix-workflow-secrets" \
+      1 \
+      "[]" \
+      "null" "null" "null" "null" \
+      "missing_loki_basic_auth"
+    exit 1
+  fi
+
+  write_evidence \
+    "degraded_observability" \
+    "fix-workflow-secrets" \
+    0 \
+    "[]" \
+    "null" "null" "null" "null" \
+    "missing_loki_basic_auth"
+  exit 0
 fi
 
 failed_queries=()
