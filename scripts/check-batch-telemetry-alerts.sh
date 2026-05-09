@@ -81,6 +81,19 @@ write_evidence() {
       },
       exitCode: $exitCode
     }' > "$EVIDENCE_PATH"
+
+  jq -e '
+    ((.generatedAt|type)=="string") and
+    ((.status|type)=="string") and
+    ((.action|type)=="string") and
+    ((.reason|type)=="string") and
+    ((.config|type)=="object") and
+    ((.counts|type)=="object") and
+    ((.failedQueries|type)=="array") and
+    ((.queries|type)=="object") and
+    ((.exitCode|type)=="number") and
+    (.queries | has("slow") and has("failedWarn") and has("failedError") and has("burst"))
+  ' "$EVIDENCE_PATH" >/dev/null
 }
 
 query_count() {

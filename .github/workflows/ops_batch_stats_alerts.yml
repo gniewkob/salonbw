@@ -35,6 +35,24 @@ jobs:
           fi
           ./scripts/check-batch-telemetry-alerts.sh
 
+      - name: Validate telemetry evidence schema
+        if: always()
+        run: |
+          set -euo pipefail
+          test -f batch-telemetry-evidence.json
+          jq -e '
+            ((.generatedAt|type)=="string") and
+            ((.status|type)=="string") and
+            ((.action|type)=="string") and
+            ((.reason|type)=="string") and
+            ((.config|type)=="object") and
+            ((.counts|type)=="object") and
+            ((.failedQueries|type)=="array") and
+            ((.queries|type)=="object") and
+            ((.exitCode|type)=="number") and
+            (.queries | has("slow") and has("failedWarn") and has("failedError") and has("burst"))
+          ' batch-telemetry-evidence.json >/dev/null
+
       - name: Upload telemetry evidence artifact
         if: always()
         uses: actions/upload-artifact@v4
