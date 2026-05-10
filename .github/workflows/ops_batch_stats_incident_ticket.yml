@@ -45,13 +45,77 @@ jobs:
         run: |
           set -euo pipefail
           API="https://api.github.com/repos/${{ github.repository }}"
+          GH_API_MAX_ATTEMPTS=6
+          GH_API_BASE_DELAY_SECONDS=2
+
+          github_api_get() {
+            local url="$1"
+            local output_path="$2"
+            local attempt=1
+
+            while (( attempt <= GH_API_MAX_ATTEMPTS )); do
+              local headers_file body_file
+              headers_file="$(mktemp)"
+              body_file="$(mktemp)"
+
+              local http_code
+              http_code=$(
+                curl -sS -L \
+                  -D "$headers_file" \
+                  -o "$body_file" \
+                  -H "Authorization: Bearer ${GH_TOKEN}" \
+                  -H "Accept: application/vnd.github+json" \
+                  "$url" \
+                  -w "%{http_code}"
+              ) || http_code="000"
+
+              if [[ "$http_code" =~ ^2[0-9]{2}$ ]]; then
+                mv "$body_file" "$output_path"
+                rm -f "$headers_file"
+                return 0
+              fi
+
+              local remaining reset now sleep_for
+              remaining=$(awk -F': ' 'tolower($1)=="x-ratelimit-remaining" {gsub("\r","",$2); print $2}' "$headers_file" | tail -n1)
+              reset=$(awk -F': ' 'tolower($1)=="x-ratelimit-reset" {gsub("\r","",$2); print $2}' "$headers_file" | tail -n1)
+              now=$(date +%s)
+              sleep_for=$(( GH_API_BASE_DELAY_SECONDS * attempt ))
+
+              if [[ "$http_code" == "403" && "$remaining" == "0" && "$reset" =~ ^[0-9]+$ ]]; then
+                sleep_for=$(( reset - now + 2 ))
+                if (( sleep_for < GH_API_BASE_DELAY_SECONDS )); then
+                  sleep_for=$GH_API_BASE_DELAY_SECONDS
+                fi
+                echo "GitHub API rate-limit hit for ${url}. Waiting ${sleep_for}s before retry (attempt ${attempt}/${GH_API_MAX_ATTEMPTS})."
+              else
+                echo "GitHub API request failed for ${url} with HTTP ${http_code}. Retrying in ${sleep_for}s (attempt ${attempt}/${GH_API_MAX_ATTEMPTS})."
+              fi
+
+              rm -f "$headers_file" "$body_file"
+
+              if (( attempt == GH_API_MAX_ATTEMPTS )); then
+                return 1
+              fi
+
+              sleep "$sleep_for"
+              attempt=$(( attempt + 1 ))
+            done
+
+            return 1
+          }
+
+          list_artifacts_json="$(mktemp)"
+          if ! github_api_get "${API}/actions/runs/${RUN_ID}/artifacts" "$list_artifacts_json"; then
+            echo "Failed to fetch artifacts list from GitHub API after retries"
+            exit 1
+          fi
+
           ARTIFACT_ID=$(
-            curl -fsS -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "${API}/actions/runs/${RUN_ID}/artifacts" \
+            cat "$list_artifacts_json" \
             | jq -r '.artifacts[] | select(.name | startswith("batch-telemetry-evidence-")) | .id' \
             | head -n1
           )
+          rm -f "$list_artifacts_json"
 
           if [ -z "${ARTIFACT_ID}" ] || [ "${ARTIFACT_ID}" = "null" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
@@ -59,11 +123,10 @@ jobs:
             exit 0
           fi
 
-          curl -fsS -L \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "${API}/actions/artifacts/${ARTIFACT_ID}/zip" \
-            -o evidence.zip
+          if ! github_api_get "${API}/actions/artifacts/${ARTIFACT_ID}/zip" evidence.zip; then
+            echo "Failed to download evidence artifact ${ARTIFACT_ID} after retries"
+            exit 1
+          fi
 
           unzip -o evidence.zip
           test -f batch-telemetry-evidence.json
@@ -178,6 +241,50 @@ jobs:
           EVIDENCE_AVAILABLE: ${{ steps.incident.outputs.evidence_available }}
         with:
           script: |
+            async function sleep(ms) {
+              return new Promise((resolve) => setTimeout(resolve, ms));
+            }
+
+            async function withGithubRetry(fn, label) {
+              const maxAttempts = 6;
+              const baseDelayMs = 2000;
+
+              for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+                try {
+                  return await fn();
+                } catch (error) {
+                  const status = error?.status;
+                  const message = String(error?.message || "");
+                  const headers = error?.response?.headers || {};
+                  const isRateLimit =
+                    status === 429 ||
+                    (status === 403 &&
+                      (message.toLowerCase().includes("rate limit") ||
+                        message.toLowerCase().includes("secondary rate limit")));
+                  const isTransient =
+                    status === 502 || status === 503 || status === 504 || status === 500;
+                  const retriable = isRateLimit || isTransient;
+
+                  if (!retriable || attempt === maxAttempts) {
+                    throw error;
+                  }
+
+                  let delayMs = baseDelayMs * attempt;
+                  const resetRaw = headers["x-ratelimit-reset"];
+                  if (isRateLimit && resetRaw && /^\d+$/.test(String(resetRaw))) {
+                    const resetEpochMs = Number(resetRaw) * 1000;
+                    const nowMs = Date.now();
+                    delayMs = Math.max(resetEpochMs - nowMs + 2000, delayMs);
+                  }
+
+                  core.warning(
+                    `${label} failed with status=${status ?? "unknown"} on attempt ${attempt}/${maxAttempts}. Retrying in ${Math.ceil(delayMs / 1000)}s.`,
+                  );
+                  await sleep(delayMs);
+                }
+              }
+            }
+
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const dedupKey = process.env.DEDUP_KEY;
@@ -230,27 +337,35 @@ jobs:
               `- [ ] Runbook/status update (\`docs/AGENT_STATUS.md\`)`,
             ].join('\n');
 
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner,
-              repo,
-              state: "all",
-              per_page: 100,
-              labels: "ops,incident,batch-stats",
-            });
+            const { data: issues } = await withGithubRetry(
+              () =>
+                github.rest.issues.listForRepo({
+                  owner,
+                  repo,
+                  state: "all",
+                  per_page: 100,
+                  labels: "ops,incident,batch-stats",
+                }),
+              "issues.listForRepo",
+            );
 
             const openExisting = issues.find(
               (i) => i.state === "open" && (i.body || "").includes(marker),
             );
             if (openExisting) {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: openExisting.number,
-                body: [
-                  `New occurrence detected from run ${runUrl}.`,
-                  `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
-                ].join('\n'),
-              });
+              await withGithubRetry(
+                () =>
+                  github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: openExisting.number,
+                    body: [
+                      `New occurrence detected from run ${runUrl}.`,
+                      `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
+                    ].join('\n'),
+                  }),
+                "issues.createComment(openExisting)",
+              );
               core.info(`Updated existing open issue #${openExisting.number}`);
               return;
             }
@@ -259,31 +374,43 @@ jobs:
               (i) => i.state === "closed" && (i.body || "").includes(marker),
             );
             if (closedExisting) {
-              await github.rest.issues.update({
-                owner,
-                repo,
-                issue_number: closedExisting.number,
-                state: "open",
-              });
+              await withGithubRetry(
+                () =>
+                  github.rest.issues.update({
+                    owner,
+                    repo,
+                    issue_number: closedExisting.number,
+                    state: "open",
+                  }),
+                "issues.update(reopen)",
+              );
 
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: closedExisting.number,
-                body: [
-                  `Incident reopened due to new occurrence from run ${runUrl}.`,
-                  `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
-                ].join('\n'),
-              });
+              await withGithubRetry(
+                () =>
+                  github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: closedExisting.number,
+                    body: [
+                      `Incident reopened due to new occurrence from run ${runUrl}.`,
+                      `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
+                    ].join('\n'),
+                  }),
+                "issues.createComment(closedExisting)",
+              );
               core.info(`Reopened existing issue #${closedExisting.number}`);
               return;
             }
 
-            const created = await github.rest.issues.create({
-              owner,
-              repo,
-              title,
-              body,
-              labels: ["ops", "incident", "batch-stats"],
-            });
+            const created = await withGithubRetry(
+              () =>
+                github.rest.issues.create({
+                  owner,
+                  repo,
+                  title,
+                  body,
+                  labels: ["ops", "incident", "batch-stats"],
+                }),
+              "issues.create",
+            );
             core.info(`Created issue #${created.data.number}`);
