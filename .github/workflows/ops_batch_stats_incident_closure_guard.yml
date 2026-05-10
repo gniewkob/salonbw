@@ -33,6 +33,9 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const dryRun = String(context.payload.inputs?.dry_run || "false").toLowerCase() === "true";
+            const workflowName = process.env.GITHUB_WORKFLOW || "Ops Batch Stats Incident Closure Guard";
+            const workflowRunId = process.env.GITHUB_RUN_ID || "unknown";
+            const sourceEvent = context.eventName;
 
             const issueNumberInput = context.payload.inputs?.issue_number;
             const issueNumber = issueNumberInput
@@ -117,9 +120,11 @@ jobs:
               issue_number: issue.number,
               body: [
                 "<!-- closure-guard-reopen -->",
+                `<!-- ops-automation:incident-closure-guard:${workflowRunId}:issue-${issue.number} -->`,
                 "Incident closure guard reopened this issue.",
                 `Missing closure evidence: ${missing.join(", ")}.`,
                 "Please add mitigation and root cause notes, then close again.",
+                `workflow=\`${workflowName}\`, workflow_run_id=\`${workflowRunId}\`, source_event=\`${sourceEvent}\`, dry_run=\`${dryRun}\`.`,
               ].join("\n"),
             });
 

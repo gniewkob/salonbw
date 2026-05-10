@@ -23,6 +23,7 @@ Operational note (2026-05-09):
 - Recorded first successful manual drill run: `Ops Batch Stats Drill` run `25638247213` (`result=pass`, checks: `synthetic_fixtures`, `dry_run_guards`), artifact `ops-batch-stats-drill-report-25638247213`.
 - Added ops workflow permissions hardening: explicit least-privilege `permissions` on alerts workflow and documented permissions matrix/rationale in `docs/AGENT_OPERATIONS.md`.
 - Added secrets/input preflight guards for ops workflows: clearer manual-dispatch validation in incident ticket flow and explicit telemetry env diagnostics in alerts flow (without secret value exposure).
+- Standardized workflow mutation audit trail markers/metadata across incident automation comments and issue body (`workflow`, `workflow_run_id`, `source_event`, `dry_run`, plus dedup/source run context where applicable).
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

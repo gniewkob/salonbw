@@ -39,6 +39,9 @@ jobs:
             const now = new Date();
             const cutoff = new Date(now.getTime() - slaHours * 60 * 60 * 1000);
             const dayMarker = `<!-- sla-reminder:${now.toISOString().slice(0, 10)} -->`;
+            const workflowName = process.env.GITHUB_WORKFLOW || "Ops Batch Stats Incident SLA";
+            const workflowRunId = process.env.GITHUB_RUN_ID || "unknown";
+            const sourceEvent = context.eventName;
 
             const { data: issues } = await github.rest.issues.listForRepo({
               owner,
@@ -90,8 +93,10 @@ jobs:
                 issue_number: issue.number,
                 body: [
                   dayMarker,
+                  `<!-- ops-automation:incident-sla:${workflowRunId}:issue-${issue.number} -->`,
                   `SLA reminder: this incident is open and inactive for more than ${slaHours}h.`,
                   `Please update mitigation/progress or close if resolved.`,
+                  `workflow=\`${workflowName}\`, workflow_run_id=\`${workflowRunId}\`, source_event=\`${sourceEvent}\`, dry_run=\`${dryRun}\`.`,
                 ].join("\n"),
               });
               remindedCount += 1;

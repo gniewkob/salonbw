@@ -376,11 +376,16 @@ jobs:
             const sourceRunId = process.env.SOURCE_RUN_ID;
             const evidenceAvailable = process.env.EVIDENCE_AVAILABLE === "true";
             const dryRun = String(process.env.DRY_RUN || "false").toLowerCase() === "true";
+            const sourceEvent = context.eventName;
+            const workflowName = process.env.GITHUB_WORKFLOW || "Ops Batch Stats Incident Ticket";
+            const workflowRunId = process.env.GITHUB_RUN_ID || "unknown";
             const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${sourceRunId}`;
+            const automationMarker = `<!-- ops-automation:incident-ticket:${workflowRunId}:${dedupKey} -->`;
 
             const marker = `<!-- ${dedupKey} -->`;
             const body = [
               marker,
+              automationMarker,
               `## Ops Incident: Batch Telemetry Alert`,
               ``,
               `- status: \`${status}\``,
@@ -391,6 +396,10 @@ jobs:
               `- failure burst count: \`${burst}\``,
               `- source run: ${runUrl}`,
               `- evidence artifact available: \`${evidenceAvailable}\``,
+              `- workflow: \`${workflowName}\``,
+              `- workflow run id: \`${workflowRunId}\``,
+              `- source event: \`${sourceEvent}\``,
+              `- dry run: \`${dryRun}\``,
               ``,
               `### Required actions`,
               `1. Validate reception impact on \`/calendar-next?view=reception\`.`,
@@ -449,8 +458,10 @@ jobs:
                     repo,
                     issue_number: openExisting.number,
                     body: [
+                      automationMarker,
                       `New occurrence detected from run ${runUrl}.`,
                       `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
+                      `workflow=\`${workflowName}\`, workflow_run_id=\`${workflowRunId}\`, dedup_key=\`${dedupKey}\`, source_event=\`${sourceEvent}\`, dry_run=\`${dryRun}\`.`,
                     ].join('\n'),
                   }),
                 "issues.createComment(openExisting)",
@@ -491,8 +502,10 @@ jobs:
                     repo,
                     issue_number: closedExisting.number,
                     body: [
+                      automationMarker,
                       `Incident reopened due to new occurrence from run ${runUrl}.`,
                       `status=\`${status}\`, reason=\`${reason}\`, errorFailed=\`${errorFailed}\`, burst=\`${burst}\`.`,
+                      `workflow=\`${workflowName}\`, workflow_run_id=\`${workflowRunId}\`, dedup_key=\`${dedupKey}\`, source_event=\`${sourceEvent}\`, dry_run=\`${dryRun}\`.`,
                     ].join('\n'),
                   }),
                 "issues.createComment(closedExisting)",

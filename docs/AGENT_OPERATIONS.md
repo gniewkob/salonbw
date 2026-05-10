@@ -186,6 +186,22 @@ Policy:
 - `ops_batch_stats_incident_ticket.yml` manual dispatch must fail fast with clear input errors when neither `source_run_id` nor synthetic fixture is provided.
 - Invalid `synthetic_fixture` values must fail before any API mutation step.
 - Preflight errors should be deterministic and operator-readable (no ambiguous bash failures).
+
+##### Workflow mutation audit trail standard
+
+For any automated issue mutation (create/update/reopen/comment), include:
+- automation marker (`<!-- ops-automation:<workflow>:<run_id>:... -->`)
+- `workflow`
+- `workflow_run_id`
+- `source_event`
+- `dry_run`
+- `dedup_key` (where applicable, incident ticket flow)
+- source run URL/id for telemetry incidents
+
+Current implementation:
+- `ops_batch_stats_incident_ticket.yml`: standard marker and metadata on issue body + occurrence/reopen comments.
+- `ops_batch_stats_incident_sla.yml`: standard marker and metadata on SLA reminder comments.
+- `ops_batch_stats_incident_closure_guard.yml`: standard marker and metadata on reopen comments.
 - **Drill mode (safe validation):**
   - `incident_ticket`: `workflow_dispatch` supports `dry_run=true` and synthetic fixture input `synthetic_fixture=critical|degraded_observability|missing_evidence`.
   - `incident_sla`: `workflow_dispatch` supports `dry_run=true` (no reminder comments are posted).
