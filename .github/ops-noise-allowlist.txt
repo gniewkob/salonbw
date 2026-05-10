@@ -1,4 +1,6 @@
-# Known non-blocking noise patterns that should not fail the guard.
-# Keep this list minimal and review regularly.
+# Known non-blocking runtime/deprecation noise patterns.
+# Keep minimal and review periodically.
 
-# No entries by default (strict mode).
+# Transitional GitHub annotation while JS actions move from Node 20 to forced Node 24 runtime.
+Node\.js 20 (is deprecated|actions are deprecated)
+forced to run on Node\.js 24

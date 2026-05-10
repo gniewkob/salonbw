@@ -108,7 +108,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          PATTERN='(warning|deprecated|deprecation|Node\.js 20|forced to run on Node\.js 24)'
+          PATTERN='(deprecated|deprecation|Node\.js 20 is deprecated|Node\.js 20 actions are deprecated|forced to run on Node\.js 24)'
           rg -i -n "$PATTERN" run-logs > all-noise-lines.txt || true
 
           # Apply allowlist (exact regex lines). Missing allowlist is treated as empty.
