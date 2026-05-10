@@ -1,0 +1,99 @@
+name: Ops Batch Stats Drill
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ops-batch-stats-drill-${{ github.run_id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  drill-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [critical, degraded_observability, missing_evidence]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate synthetic fixture path
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+        run: |
+          set -euo pipefail
+
+          if [ "$FIXTURE" = "missing_evidence" ]; then
+            STATUS="critical"
+            ACTION="investigate-artifact-gap"
+            REASON="missing_evidence_artifact"
+          else
+            FILE="scripts/fixtures/batch-telemetry-evidence-${FIXTURE//_/-}.json"
+            test -f "$FILE"
+            jq -e . "$FILE" >/dev/null
+            STATUS=$(jq -r '.status' "$FILE")
+            ACTION=$(jq -r '.action' "$FILE")
+            REASON=$(jq -r '.reason' "$FILE")
+          fi
+
+          case "$STATUS" in
+            critical|warning|degraded_observability|ok|config_error) ;;
+            *)
+              echo "Unsupported status: $STATUS"
+              exit 1
+              ;;
+          esac
+
+          echo "fixture=$FIXTURE status=$STATUS action=$ACTION reason=$REASON"
+
+  drill-guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify dry-run guards are present
+        run: |
+          set -euo pipefail
+          rg -n "dry_run" .github/workflows/ops_batch_stats_incident_ticket.yml
+          rg -n "dry_run" .github/workflows/ops_batch_stats_incident_sla.yml
+          rg -n "dry_run" .github/workflows/ops_batch_stats_incident_closure_guard.yml
+          rg -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_ticket.yml
+          rg -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_sla.yml
+          rg -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_closure_guard.yml
+
+  drill-report:
+    needs: [drill-fixtures, drill-guards]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Build drill report
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg runId "${{ github.run_id }}" \
+            --arg sha "${{ github.sha }}" \
+            '{
+              generatedAt: $generatedAt,
+              runId: $runId,
+              sha: $sha,
+              result: "pass",
+              checks: [
+                "synthetic_fixtures",
+                "dry_run_guards"
+              ]
+            }' > ops-batch-stats-drill-report.json
+
+      - name: Upload drill report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-batch-stats-drill-report-${{ github.run_id }}
+          path: ops-batch-stats-drill-report.json
+          retention-days: 14
