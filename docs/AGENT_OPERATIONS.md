@@ -187,6 +187,22 @@ Policy:
 - Invalid `synthetic_fixture` values must fail before any API mutation step.
 - Preflight errors should be deterministic and operator-readable (no ambiguous bash failures).
 
+##### Workflow warning/deprecation post-check
+
+- Workflow `.github/workflows/ops_workflow_noise_guard.yml` scans completed ops workflow logs for warning/deprecation/runtime-noise patterns.
+- Trigger mode:
+  - automatic via `workflow_run` for ops workflows,
+  - manual via `workflow_dispatch` (`source_run_id`).
+- Output artifact:
+  - `ops-workflow-noise-report-<run_id>` with:
+    - `ops-workflow-noise-report.json`
+    - `all-noise-lines.txt`
+    - `unexpected-noise-lines.txt`
+- Allowlist:
+  - `.github/ops-noise-allowlist.txt` (regex lines, minimal by policy).
+- Guard behavior:
+  - fails only on **unexpected** noise after allowlist filtering.
+
 ##### Workflow mutation audit trail standard
 
 For any automated issue mutation (create/update/reopen/comment), include:

@@ -1,0 +1,4 @@
+# Known non-blocking noise patterns that should not fail the guard.
+# Keep this list minimal and review regularly.
+
+# No entries by default (strict mode).

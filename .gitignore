@@ -94,6 +94,7 @@ archive/
 #Ignore cursor AI rules
 .cursor/rules/codacy.mdc
 *.txt
+!.github/ops-noise-allowlist.txt
 *.log
 
 # Versum dump and static preview - reference only

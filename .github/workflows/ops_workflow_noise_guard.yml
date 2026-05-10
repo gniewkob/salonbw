@@ -1,0 +1,164 @@
+name: Ops Workflow Noise Guard
+
+on:
+  workflow_run:
+    workflows:
+      - "Ops Batch Stats Alerts"
+      - "Ops Batch Stats Incident Ticket"
+      - "Ops Batch Stats Incident SLA"
+      - "Ops Batch Stats Incident Closure Guard"
+      - "Ops Batch Stats Drill"
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: "Optional run id to inspect"
+        required: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: ops-workflow-noise-guard-${{ github.event.workflow_run.id || github.event.inputs.source_run_id || github.run_id }}
+  cancel-in-progress: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  scan-noise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve source run id
+        id: source
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.source_run_id }}" ]; then
+            echo "run_id=${{ github.event.inputs.source_run_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_id=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download logs archive from GitHub API
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          API="https://api.github.com/repos/${{ github.repository }}"
+          MAX_ATTEMPTS=6
+          BASE_DELAY=2
+
+          if ! echo "$RUN_ID" | grep -Eq '^[0-9]+$'; then
+            echo "Invalid run id: $RUN_ID"
+            exit 1
+          fi
+
+          download_with_retry() {
+            local url="$1"
+            local out="$2"
+            local attempt=1
+
+            while (( attempt <= MAX_ATTEMPTS )); do
+              headers_file="$(mktemp)"
+              body_file="$(mktemp)"
+              http_code=$(curl -sS -L -D "$headers_file" -o "$body_file" \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                "$url" -w "%{http_code}") || http_code="000"
+
+              if [[ "$http_code" =~ ^2[0-9]{2}$ ]]; then
+                mv "$body_file" "$out"
+                rm -f "$headers_file"
+                return 0
+              fi
+
+              remaining=$(awk -F': ' 'tolower($1)=="x-ratelimit-remaining" {gsub("\r","",$2); print $2}' "$headers_file" | tail -n1)
+              reset=$(awk -F': ' 'tolower($1)=="x-ratelimit-reset" {gsub("\r","",$2); print $2}' "$headers_file" | tail -n1)
+              now=$(date +%s)
+              sleep_for=$(( BASE_DELAY * attempt ))
+
+              if [[ "$http_code" == "403" && "$remaining" == "0" && "$reset" =~ ^[0-9]+$ ]]; then
+                sleep_for=$(( reset - now + 2 ))
+                if (( sleep_for < BASE_DELAY )); then
+                  sleep_for=$BASE_DELAY
+                fi
+              fi
+
+              rm -f "$headers_file" "$body_file"
+              if (( attempt == MAX_ATTEMPTS )); then
+                return 1
+              fi
+              sleep "$sleep_for"
+              attempt=$(( attempt + 1 ))
+            done
+            return 1
+          }
+
+          download_with_retry "${API}/actions/runs/${RUN_ID}/logs" run-logs.zip
+          unzip -o run-logs.zip -d run-logs >/dev/null
+
+      - name: Scan logs for warning/deprecation noise
+        id: scan
+        run: |
+          set -euo pipefail
+
+          PATTERN='(warning|deprecated|deprecation|Node\.js 20|forced to run on Node\.js 24)'
+          rg -i -n "$PATTERN" run-logs > all-noise-lines.txt || true
+
+          # Apply allowlist (exact regex lines). Missing allowlist is treated as empty.
+          cp all-noise-lines.txt unexpected-noise-lines.txt
+          if [ -f .github/ops-noise-allowlist.txt ]; then
+            while IFS= read -r allow; do
+              [ -z "$allow" ] && continue
+              [[ "$allow" =~ ^# ]] && continue
+              tmp="$(mktemp)"
+              rg -v -i "$allow" unexpected-noise-lines.txt > "$tmp" || true
+              mv "$tmp" unexpected-noise-lines.txt
+            done < .github/ops-noise-allowlist.txt
+          fi
+
+          TOTAL=$(wc -l < all-noise-lines.txt | tr -d ' ')
+          UNEXPECTED=$(wc -l < unexpected-noise-lines.txt | tr -d ' ')
+
+          jq -n \
+            --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg runId "${{ steps.source.outputs.run_id }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --argjson total "$TOTAL" \
+            --argjson unexpected "$UNEXPECTED" \
+            '{generatedAt:$generatedAt, runId:$runId, workflow:$workflow, totalMatches:$total, unexpectedMatches:$unexpected}' > ops-workflow-noise-report.json
+
+          {
+            echo "### Ops Workflow Noise Guard"
+            echo
+            echo "- source run id: \\`${{ steps.source.outputs.run_id }}\\`"
+            echo "- total matches: \\`${TOTAL}\\`"
+            echo "- unexpected matches: \\`${UNEXPECTED}\\`"
+            echo "- allowlist: \\`.github/ops-noise-allowlist.txt\\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "unexpected=$UNEXPECTED" >> "$GITHUB_OUTPUT"
+
+      - name: Upload noise report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-workflow-noise-report-${{ github.run_id }}
+          path: |
+            ops-workflow-noise-report.json
+            all-noise-lines.txt
+            unexpected-noise-lines.txt
+          retention-days: 14
+
+      - name: Fail on unexpected noise
+        if: ${{ steps.scan.outputs.unexpected != '0' }}
+        run: |
+          echo "Unexpected warning/deprecation noise detected in source run logs."
+          echo "Inspect artifact ops-workflow-noise-report-${{ github.run_id }}"
+          exit 1
