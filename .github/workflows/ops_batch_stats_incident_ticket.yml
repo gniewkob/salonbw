@@ -47,6 +47,34 @@ jobs:
             echo "run_id=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Preflight workflow inputs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SOURCE_RUN_ID: ${{ github.event.inputs.source_run_id || '' }}
+          SYNTHETIC_FIXTURE: ${{ github.event.inputs.synthetic_fixture || 'none' }}
+          RESOLVED_RUN_ID: ${{ steps.source.outputs.run_id }}
+        run: |
+          set -euo pipefail
+
+          case "$SYNTHETIC_FIXTURE" in
+            none|critical|degraded_observability|missing_evidence) ;;
+            *)
+              echo "Invalid synthetic_fixture: $SYNTHETIC_FIXTURE"
+              echo "Allowed values: none|critical|degraded_observability|missing_evidence"
+              exit 1
+              ;;
+          esac
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$SYNTHETIC_FIXTURE" = "none" ] && [ -z "$SOURCE_RUN_ID" ]; then
+            echo "Invalid manual dispatch input: provide source_run_id or set synthetic_fixture to critical|degraded_observability|missing_evidence."
+            exit 1
+          fi
+
+          if [ -z "$RESOLVED_RUN_ID" ]; then
+            echo "Resolved source run id is empty."
+            exit 1
+          fi
+
       - name: Prepare synthetic evidence fixture
         id: synthetic
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.synthetic_fixture || 'none') != 'none' }}
@@ -85,6 +113,14 @@ jobs:
           RUN_ID: ${{ steps.source.outputs.run_id }}
         run: |
           set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "GitHub token is missing in workflow context."
+            exit 1
+          fi
+          if ! echo "$RUN_ID" | grep -Eq '^[0-9]+$'; then
+            echo "Resolved run id is not numeric: $RUN_ID"
+            exit 1
+          fi
           API="https://api.github.com/repos/${{ github.repository }}"
           GH_API_MAX_ATTEMPTS=6
           GH_API_BASE_DELAY_SECONDS=2

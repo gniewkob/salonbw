@@ -29,6 +29,26 @@ jobs:
           jq --version
           curl --version
 
+      - name: Preflight telemetry configuration
+        env:
+          LOKI_QUERY_URL: ${{ secrets.LOKI_QUERY_URL }}
+          LOKI_BASIC_AUTH: ${{ secrets.LOKI_BASIC_AUTH }}
+          FAIL_ON_OBSERVABILITY_GAP: 0
+        run: |
+          set -euo pipefail
+          if [ -z "${LOKI_QUERY_URL:-}" ]; then
+            echo "LOKI_QUERY_URL not set in secrets; default endpoint fallback will be used."
+          fi
+
+          if [ -z "${LOKI_BASIC_AUTH:-}" ]; then
+            echo "LOKI_BASIC_AUTH not set; check will run in degraded_observability mode unless FAIL_ON_OBSERVABILITY_GAP=1."
+          fi
+
+          if ! echo "${FAIL_ON_OBSERVABILITY_GAP}" | grep -Eq '^(0|1)$'; then
+            echo "FAIL_ON_OBSERVABILITY_GAP must be 0 or 1."
+            exit 1
+          fi
+
       - name: Evaluate reception batch telemetry signals
         env:
           LOKI_QUERY_URL: ${{ secrets.LOKI_QUERY_URL }}

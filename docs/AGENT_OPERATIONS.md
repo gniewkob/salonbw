@@ -179,6 +179,13 @@ Policy:
 - Keep `permissions` explicit in every ops workflow.
 - Grant `issues: write` only to workflows that mutate issues.
 - Grant `actions: read` only where Actions API artifact reads are required (`incident_ticket`).
+
+##### Secrets / environment preflight policy
+
+- `ops_batch_stats_alerts.yml` must preflight telemetry env/secrets and print clear diagnostics without exposing secret values.
+- `ops_batch_stats_incident_ticket.yml` manual dispatch must fail fast with clear input errors when neither `source_run_id` nor synthetic fixture is provided.
+- Invalid `synthetic_fixture` values must fail before any API mutation step.
+- Preflight errors should be deterministic and operator-readable (no ambiguous bash failures).
 - **Drill mode (safe validation):**
   - `incident_ticket`: `workflow_dispatch` supports `dry_run=true` and synthetic fixture input `synthetic_fixture=critical|degraded_observability|missing_evidence`.
   - `incident_sla`: `workflow_dispatch` supports `dry_run=true` (no reminder comments are posted).
