@@ -8,6 +8,10 @@ on:
       issue_number:
         description: "Optional issue number for manual validation"
         required: false
+      dry_run:
+        description: "When true, do not reopen issue or add comments"
+        required: false
+        default: "false"
 
 concurrency:
   group: ops-batch-stats-closure-guard-${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
@@ -28,6 +32,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const dryRun = String(context.payload.inputs?.dry_run || "false").toLowerCase() === "true";
 
             const issueNumberInput = context.payload.inputs?.issue_number;
             const issueNumber = issueNumberInput
@@ -86,6 +91,18 @@ jobs:
             const missing = [];
             if (!hasRootCause) missing.push("root cause");
             if (!hasMitigation) missing.push("mitigation");
+
+            if (dryRun) {
+              core.notice(`DRY_RUN: would reopen issue #${issue.number} and add closure-guard comment (missing: ${missing.join(", ")})`);
+              core.summary
+                .addHeading("Batch Stats Incident Closure Guard")
+                .addRaw(`Dry run mode: true\n`)
+                .addRaw(`Issue number: #${issue.number}\n`)
+                .addRaw(`Missing closure evidence: ${missing.join(", ")}\n`)
+                .write();
+              core.setOutput("reopened", "false");
+              return;
+            }
 
             await github.rest.issues.update({
               owner,

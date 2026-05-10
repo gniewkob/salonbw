@@ -9,6 +9,10 @@ on:
       source_run_id:
         description: "Optional source run id to backfill from"
         required: false
+      dry_run:
+        description: "When true, do not create/update/reopen/comment GitHub issues"
+        required: false
+        default: "false"
 
 concurrency:
   group: ops-batch-stats-incident-ticket-${{ github.event.workflow_run.id || github.event.inputs.source_run_id || github.run_id }}
@@ -239,6 +243,7 @@ jobs:
           BURST: ${{ steps.incident.outputs.burst }}
           SOURCE_RUN_ID: ${{ steps.incident.outputs.run_id }}
           EVIDENCE_AVAILABLE: ${{ steps.incident.outputs.evidence_available }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         with:
           script: |
             async function sleep(ms) {
@@ -297,6 +302,7 @@ jobs:
             const burst = process.env.BURST;
             const sourceRunId = process.env.SOURCE_RUN_ID;
             const evidenceAvailable = process.env.EVIDENCE_AVAILABLE === "true";
+            const dryRun = String(process.env.DRY_RUN || "false").toLowerCase() === "true";
             const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${sourceRunId}`;
 
             const marker = `<!-- ${dedupKey} -->`;
@@ -353,6 +359,16 @@ jobs:
               (i) => i.state === "open" && (i.body || "").includes(marker),
             );
             if (openExisting) {
+              if (dryRun) {
+                core.notice(`DRY_RUN: would add occurrence comment to open issue #${openExisting.number}`);
+                core.summary
+                  .addHeading("Incident Ticket Dry Run")
+                  .addRaw(`Action: comment on existing open issue #${openExisting.number}\n`)
+                  .addRaw(`Run: ${runUrl}\n`)
+                  .write();
+                return;
+              }
+
               await withGithubRetry(
                 () =>
                   github.rest.issues.createComment({
@@ -374,6 +390,16 @@ jobs:
               (i) => i.state === "closed" && (i.body || "").includes(marker),
             );
             if (closedExisting) {
+              if (dryRun) {
+                core.notice(`DRY_RUN: would reopen closed issue #${closedExisting.number} and add occurrence comment`);
+                core.summary
+                  .addHeading("Incident Ticket Dry Run")
+                  .addRaw(`Action: reopen + comment on issue #${closedExisting.number}\n`)
+                  .addRaw(`Run: ${runUrl}\n`)
+                  .write();
+                return;
+              }
+
               await withGithubRetry(
                 () =>
                   github.rest.issues.update({
@@ -399,6 +425,18 @@ jobs:
                 "issues.createComment(closedExisting)",
               );
               core.info(`Reopened existing issue #${closedExisting.number}`);
+              return;
+            }
+
+            if (dryRun) {
+              core.notice("DRY_RUN: would create a new incident issue");
+              core.summary
+                .addHeading("Incident Ticket Dry Run")
+                .addRaw(`Action: create new issue\n`)
+                .addRaw(`Title: ${title}\n`)
+                .addRaw(`Dedup key: ${dedupKey}\n`)
+                .addRaw(`Run: ${runUrl}\n`)
+                .write();
               return;
             }
 

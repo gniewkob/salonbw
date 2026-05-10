@@ -1,7 +1,12 @@
 name: Ops Batch Stats Incident SLA
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "When true, do not post SLA reminder comments"
+        required: false
+        default: "false"
   schedule:
     - cron: '7 * * * *'
 
@@ -23,12 +28,14 @@ jobs:
         env:
           SLA_HOURS: "6"
           LABELS: "ops,incident,batch-stats"
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const slaHours = Number(process.env.SLA_HOURS || "6");
             const labels = process.env.LABELS || "ops,incident,batch-stats";
+            const dryRun = String(process.env.DRY_RUN || "false").toLowerCase() === "true";
             const now = new Date();
             const cutoff = new Date(now.getTime() - slaHours * 60 * 60 * 1000);
             const dayMarker = `<!-- sla-reminder:${now.toISOString().slice(0, 10)} -->`;
@@ -43,6 +50,7 @@ jobs:
 
             let remindedCount = 0;
             let checkedCount = 0;
+            let plannedCount = 0;
 
             for (const issue of issues) {
               checkedCount += 1;
@@ -70,6 +78,12 @@ jobs:
                 continue;
               }
 
+              if (dryRun) {
+                plannedCount += 1;
+                core.notice(`DRY_RUN: would post SLA reminder on issue #${issue.number}`);
+                continue;
+              }
+
               await github.rest.issues.createComment({
                 owner,
                 repo,
@@ -86,6 +100,8 @@ jobs:
             core.summary
               .addHeading("Batch Stats Incident SLA")
               .addRaw(`Checked open issues: ${checkedCount}\n`)
+              .addRaw(`Dry run mode: ${dryRun}\n`)
+              .addRaw(`Reminders planned: ${plannedCount}\n`)
               .addRaw(`Reminders posted: ${remindedCount}\n`)
               .addRaw(`SLA threshold (hours): ${slaHours}\n`)
               .write();

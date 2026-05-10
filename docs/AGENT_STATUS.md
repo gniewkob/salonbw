@@ -16,6 +16,7 @@ Operational note (2026-05-09):
 - Added concurrency guards across batch telemetry ops workflows to reduce race conditions and duplicate issue mutations under overlapping schedules/retries.
 - Added missing-artifact fallback in incident-ticket automation so failed alert runs without evidence artifact still produce/update incident issues with `missing_evidence_artifact` reason.
 - Added GitHub API rate-limit resilience in incident-ticket workflow: artifact download now retries with backoff and rate-limit reset handling, and issue create/update/comment/list calls retry on `403/429` and transient `5xx`.
+- Added `dry_run` drill mode for incident automation workflows (`incident_ticket`, `incident_sla`, `incident_closure_guard`) so manual validation can execute full decision paths without mutating GitHub issues.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
