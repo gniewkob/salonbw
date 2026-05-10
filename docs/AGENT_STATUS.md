@@ -18,6 +18,7 @@ Operational note (2026-05-09):
 - Added GitHub API rate-limit resilience in incident-ticket workflow: artifact download now retries with backoff and rate-limit reset handling, and issue create/update/comment/list calls retry on `403/429` and transient `5xx`.
 - Added `dry_run` drill mode for incident automation workflows (`incident_ticket`, `incident_sla`, `incident_closure_guard`) so manual validation can execute full decision paths without mutating GitHub issues.
 - Added synthetic evidence fixture mode for `ops_batch_stats_incident_ticket` (`critical`, `degraded_observability`, `missing_evidence`) using local fixtures in `scripts/fixtures/` for deterministic incident automation drills.
+- Added Sprint 18 drill checklist to `docs/AGENT_OPERATIONS.md` covering safe `dry_run` execution for incident ticket/SLA/closure workflows and explicit non-mutation acceptance criteria.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

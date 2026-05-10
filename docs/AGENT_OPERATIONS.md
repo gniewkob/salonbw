@@ -164,6 +164,40 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
 - **SLA reminder automation:** workflow `.github/workflows/ops_batch_stats_incident_sla.yml` runs hourly and comments on stale open incidents (`ops,incident,batch-stats`) if no activity for >6h. It adds one reminder comment per day using an internal marker.
 - **Incident closure guard:** workflow `.github/workflows/ops_batch_stats_incident_closure_guard.yml` validates closed `ops,incident,batch-stats` issues. If closure notes do not include both `root cause` and `mitigation`, it reopens the issue and posts a guard comment.
   Both workflows now include concurrency groups to avoid race conditions on issue comments/state updates.
+- **Drill mode (safe validation):**
+  - `incident_ticket`: `workflow_dispatch` supports `dry_run=true` and synthetic fixture input `synthetic_fixture=critical|degraded_observability|missing_evidence`.
+  - `incident_sla`: `workflow_dispatch` supports `dry_run=true` (no reminder comments are posted).
+  - `incident_closure_guard`: `workflow_dispatch` supports `dry_run=true` (no reopen/comment mutation).
+
+##### Incident automation drill checklist (no production incident required)
+
+1. **Run incident ticket dry-run with synthetic critical fixture**
+   - `gh workflow run "Ops Batch Stats Incident Ticket" --ref master -f dry_run=true -f synthetic_fixture=critical`
+   - PASS: run succeeds and summary contains "Incident Ticket Dry Run" + planned action.
+   - PASS: no new `ops,incident,batch-stats` issue is created/updated.
+
+2. **Run incident ticket dry-run with synthetic degraded observability fixture**
+   - `gh workflow run "Ops Batch Stats Incident Ticket" --ref master -f dry_run=true -f synthetic_fixture=degraded_observability`
+   - PASS: run succeeds and payload route is `status=degraded_observability`.
+   - PASS: no GitHub issue mutation.
+
+3. **Run incident ticket dry-run with synthetic missing evidence path**
+   - `gh workflow run "Ops Batch Stats Incident Ticket" --ref master -f dry_run=true -f synthetic_fixture=missing_evidence`
+   - PASS: fallback reason is `missing_evidence_artifact`.
+   - PASS: no GitHub issue mutation.
+
+4. **Run SLA reminder dry-run**
+   - `gh workflow run "Ops Batch Stats Incident SLA" --ref master -f dry_run=true`
+   - PASS: summary shows `Dry run mode: true` and `Reminders planned`.
+   - PASS: no new SLA reminder comments on incident issues.
+
+5. **Run closure guard dry-run**
+   - `gh workflow run "Ops Batch Stats Incident Closure Guard" --ref master -f dry_run=true -f issue_number=<existing_incident_issue_number>`
+   - PASS: summary includes missing closure evidence assessment.
+   - PASS: issue state remains unchanged (no reopen) and no guard comment is posted.
+
+6. **Document drill**
+   - Add a short note to `docs/AGENT_STATUS.md` with date, run IDs, and PASS/FAIL outcome.
 
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 
