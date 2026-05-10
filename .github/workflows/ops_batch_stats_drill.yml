@@ -3,6 +3,9 @@ name: Ops Batch Stats Drill
 on:
   workflow_dispatch: {}
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 concurrency:
   group: ops-batch-stats-drill-${{ github.run_id }}
   cancel-in-progress: false
@@ -61,12 +64,12 @@ jobs:
       - name: Verify dry-run guards are present
         run: |
           set -euo pipefail
-          rg -n "dry_run" .github/workflows/ops_batch_stats_incident_ticket.yml
-          rg -n "dry_run" .github/workflows/ops_batch_stats_incident_sla.yml
-          rg -n "dry_run" .github/workflows/ops_batch_stats_incident_closure_guard.yml
-          rg -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_ticket.yml
-          rg -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_sla.yml
-          rg -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_closure_guard.yml
+          grep -n "dry_run" .github/workflows/ops_batch_stats_incident_ticket.yml
+          grep -n "dry_run" .github/workflows/ops_batch_stats_incident_sla.yml
+          grep -n "dry_run" .github/workflows/ops_batch_stats_incident_closure_guard.yml
+          grep -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_ticket.yml
+          grep -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_sla.yml
+          grep -n "DRY_RUN: would" .github/workflows/ops_batch_stats_incident_closure_guard.yml
 
   drill-report:
     needs: [drill-fixtures, drill-guards]
