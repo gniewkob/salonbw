@@ -164,6 +164,21 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
 - **SLA reminder automation:** workflow `.github/workflows/ops_batch_stats_incident_sla.yml` runs hourly and comments on stale open incidents (`ops,incident,batch-stats`) if no activity for >6h. It adds one reminder comment per day using an internal marker.
 - **Incident closure guard:** workflow `.github/workflows/ops_batch_stats_incident_closure_guard.yml` validates closed `ops,incident,batch-stats` issues. If closure notes do not include both `root cause` and `mitigation`, it reopens the issue and posts a guard comment.
   Both workflows now include concurrency groups to avoid race conditions on issue comments/state updates.
+
+##### Ops workflow permissions matrix (least privilege)
+
+| Workflow | contents | actions | issues | Rationale |
+| --- | --- | --- | --- | --- |
+| `ops_batch_stats_alerts.yml` | `read` | `none` | `none` | Reads repo script and uploads telemetry evidence artifact; no issue mutation. |
+| `ops_batch_stats_incident_ticket.yml` | `read` | `read` | `write` | Reads source-run artifacts via Actions API and creates/updates incident issues. |
+| `ops_batch_stats_incident_sla.yml` | `read` | `none` | `write` | Reads and comments on stale incident issues. |
+| `ops_batch_stats_incident_closure_guard.yml` | `read` | `none` | `write` | Reads closed incident issues and reopens/comments when closure evidence is missing. |
+| `ops_batch_stats_drill.yml` | `read` | `none` | `none` | Validates fixtures/guards and publishes drill report artifact only. |
+
+Policy:
+- Keep `permissions` explicit in every ops workflow.
+- Grant `issues: write` only to workflows that mutate issues.
+- Grant `actions: read` only where Actions API artifact reads are required (`incident_ticket`).
 - **Drill mode (safe validation):**
   - `incident_ticket`: `workflow_dispatch` supports `dry_run=true` and synthetic fixture input `synthetic_fixture=critical|degraded_observability|missing_evidence`.
   - `incident_sla`: `workflow_dispatch` supports `dry_run=true` (no reminder comments are posted).

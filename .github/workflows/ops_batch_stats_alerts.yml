@@ -12,6 +12,9 @@ concurrency:
   group: ops-batch-stats-alerts
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   check-batch-telemetry:
     runs-on: ubuntu-latest

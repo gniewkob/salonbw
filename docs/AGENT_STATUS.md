@@ -21,6 +21,7 @@ Operational note (2026-05-09):
 - Added Sprint 18 drill checklist to `docs/AGENT_OPERATIONS.md` covering safe `dry_run` execution for incident ticket/SLA/closure workflows and explicit non-mutation acceptance criteria.
 - Added workflow `.github/workflows/ops_batch_stats_drill.yml` to run deterministic drill checks (synthetic fixtures + dry-run guard verification) and publish `ops-batch-stats-drill-report.json` artifact.
 - Recorded first successful manual drill run: `Ops Batch Stats Drill` run `25638247213` (`result=pass`, checks: `synthetic_fixtures`, `dry_run_guards`), artifact `ops-batch-stats-drill-report-25638247213`.
+- Added ops workflow permissions hardening: explicit least-privilege `permissions` on alerts workflow and documented permissions matrix/rationale in `docs/AGENT_OPERATIONS.md`.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
