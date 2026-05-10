@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-05-10T11:45:00Z",
+  "status": "degraded_observability",
+  "action": "validate-loki-connectivity",
+  "reason": "observability_gap",
+  "config": {
+    "lokiQueryUrl": "https://observability.salon-bw.pl/loki/api/v1/query",
+    "lookbackWindow": "10m",
+    "criticalErrorThreshold": 3,
+    "lokiQueryTimeoutSeconds": 12,
+    "failOnObservabilityGap": false
+  },
+  "counts": {
+    "slowWarn": null,
+    "failedWarn4xx": null,
+    "failedError5xxOrUnexpected": null,
+    "failureBurstError": null
+  },
+  "failedQueries": ["error_failed_query"],
+  "queries": {
+    "slow": "sum(count_over_time(...))",
+    "failedWarn": "sum(count_over_time(...))",
+    "failedError": "sum(count_over_time(...))",
+    "burst": "sum(count_over_time(...))"
+  },
+  "exitCode": 0
+}

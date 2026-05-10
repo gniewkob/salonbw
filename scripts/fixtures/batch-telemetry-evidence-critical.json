@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-05-10T11:45:00Z",
+  "status": "critical",
+  "action": "escalate-on-call",
+  "reason": "error_failed_threshold_exceeded",
+  "config": {
+    "lokiQueryUrl": "https://observability.salon-bw.pl/loki/api/v1/query",
+    "lookbackWindow": "10m",
+    "criticalErrorThreshold": 3,
+    "lokiQueryTimeoutSeconds": 12,
+    "failOnObservabilityGap": false
+  },
+  "counts": {
+    "slowWarn": 2,
+    "failedWarn4xx": 1,
+    "failedError5xxOrUnexpected": 4,
+    "failureBurstError": 0
+  },
+  "failedQueries": [],
+  "queries": {
+    "slow": "sum(count_over_time(...))",
+    "failedWarn": "sum(count_over_time(...))",
+    "failedError": "sum(count_over_time(...))",
+    "burst": "sum(count_over_time(...))"
+  },
+  "exitCode": 1
+}

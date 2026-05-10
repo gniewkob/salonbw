@@ -9,6 +9,10 @@ on:
       source_run_id:
         description: "Optional source run id to backfill from"
         required: false
+      synthetic_fixture:
+        description: "Optional synthetic evidence fixture: none|critical|degraded_observability|missing_evidence"
+        required: false
+        default: "none"
       dry_run:
         description: "When true, do not create/update/reopen/comment GitHub issues"
         required: false
@@ -35,14 +39,47 @@ jobs:
         id: source
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.source_run_id }}" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.synthetic_fixture || 'none' }}" != "none" ]; then
+            echo "run_id=synthetic-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.source_run_id }}" ]; then
             echo "run_id=${{ github.event.inputs.source_run_id }}" >> "$GITHUB_OUTPUT"
           else
             echo "run_id=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Prepare synthetic evidence fixture
+        id: synthetic
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.synthetic_fixture || 'none') != 'none' }}
+        env:
+          SYNTHETIC_FIXTURE: ${{ github.event.inputs.synthetic_fixture || 'none' }}
+        run: |
+          set -euo pipefail
+          case "$SYNTHETIC_FIXTURE" in
+            critical)
+              cp scripts/fixtures/batch-telemetry-evidence-critical.json batch-telemetry-evidence.json
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              ;;
+            degraded_observability)
+              cp scripts/fixtures/batch-telemetry-evidence-degraded-observability.json batch-telemetry-evidence.json
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              ;;
+            missing_evidence)
+              rm -f batch-telemetry-evidence.json
+              echo "available=false" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unsupported synthetic fixture: $SYNTHETIC_FIXTURE"
+              exit 1
+              ;;
+          esac
+
+          if [ "$SYNTHETIC_FIXTURE" != "missing_evidence" ]; then
+            jq -e . batch-telemetry-evidence.json >/dev/null
+          fi
+
       - name: Download evidence artifact from source run
         id: evidence
+        if: ${{ github.event_name != 'workflow_dispatch' || (github.event.inputs.synthetic_fixture || 'none') == 'none' }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -141,7 +178,7 @@ jobs:
         id: incident
         env:
           RUN_ID: ${{ steps.source.outputs.run_id }}
-          EVIDENCE_AVAILABLE: ${{ steps.evidence.outputs.available }}
+          EVIDENCE_AVAILABLE: ${{ steps.synthetic.outputs.available || steps.evidence.outputs.available || 'false' }}
         run: |
           set -euo pipefail
           if [ "${EVIDENCE_AVAILABLE}" = "true" ]; then
