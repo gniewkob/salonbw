@@ -11,7 +11,10 @@ import {
     hasCustomerAlert,
     isPriorityAppointment,
 } from '@/components/calendar/receptionUtils';
-import { trackReceptionAction } from '@/components/calendar/receptionTelemetry';
+import {
+    configureReceptionTelemetryTransport,
+    trackReceptionAction,
+} from '@/components/calendar/receptionTelemetry';
 import { useAuth } from '@/contexts/AuthContext';
 import type {
     Appointment,
@@ -111,6 +114,20 @@ export default function CalendarNextPage() {
             selectedEmployeeIds.length > 0 ? selectedEmployeeIds : undefined,
     });
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
+
+    useEffect(() => {
+        configureReceptionTelemetryTransport((payload) =>
+            apiFetch('/reception/operational-events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }),
+        );
+
+        return () => {
+            configureReceptionTelemetryTransport(null);
+        };
+    }, [apiFetch]);
 
     const appointmentsById = useMemo(() => {
         const map = new Map<number, Appointment>();

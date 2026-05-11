@@ -18,6 +18,28 @@ interface TrackReceptionActionInput {
     source?: 'reception_view' | 'appointment_drawer' | 'calendar';
 }
 
+interface ReceptionOperationalEventPayload {
+    eventName: 'reception_operational_action';
+    action: ReceptionActionName;
+    appointmentId: number;
+    source: 'reception_view' | 'appointment_drawer' | 'calendar';
+    occurredAt: string;
+    customerId?: number;
+    customerAlertSeverity?: ReceptionAlertSeverity;
+}
+
+type ReceptionTelemetrySender = (
+    payload: ReceptionOperationalEventPayload,
+) => Promise<unknown>;
+
+let receptionTelemetrySender: ReceptionTelemetrySender | null = null;
+
+export function configureReceptionTelemetryTransport(
+    sender: ReceptionTelemetrySender | null,
+) {
+    receptionTelemetrySender = sender;
+}
+
 export function trackReceptionAction({
     action,
     appointmentId,
@@ -43,6 +65,28 @@ export function trackReceptionAction({
     }
 
     trackEvent('reception_operational_action', payload);
+
+    if (!source || !receptionTelemetrySender) {
+        return;
+    }
+
+    const backendPayload: ReceptionOperationalEventPayload = {
+        eventName: 'reception_operational_action',
+        action,
+        appointmentId,
+        source,
+        occurredAt: new Date().toISOString(),
+    };
+
+    if (typeof customerId === 'number' && customerId > 0) {
+        backendPayload.customerId = customerId;
+    }
+
+    if (customerAlertSeverity) {
+        backendPayload.customerAlertSeverity = customerAlertSeverity;
+    }
+
+    void receptionTelemetrySender(backendPayload).catch(() => {});
 }
 
 export function getAppointmentCustomerId(
