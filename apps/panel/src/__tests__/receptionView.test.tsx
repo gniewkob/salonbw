@@ -90,6 +90,9 @@ describe('ReceptionView', () => {
                 source: 'reception_view',
             }),
         );
+        expect(trackEventMock.mock.calls[0][1]).not.toHaveProperty(
+            'customerAlertSeverity',
+        );
     });
 
     it('renders inline error when action fails', async () => {
@@ -376,6 +379,50 @@ describe('ReceptionView', () => {
                 action: 'open_appointment_drawer',
                 appointmentId: 40,
                 customerId: 7,
+                source: 'reception_view',
+            }),
+        );
+        expect(trackEventMock.mock.calls[0][1]).not.toHaveProperty(
+            'customerAlertSeverity',
+        );
+    });
+
+    it('tracks CRM alert severity for reception actions when alert exists', () => {
+        render(
+            <ReceptionView
+                appointments={[
+                    {
+                        id: 41,
+                        startTime: '2026-05-01T12:00:00.000Z',
+                        endTime: '2026-05-01T12:45:00.000Z',
+                        status: 'scheduled',
+                        client: { id: 8, name: 'Alertowy Klient' },
+                        service: {
+                            id: 12,
+                            name: 'Modelowanie',
+                            duration: 45,
+                            price: 140,
+                            priceType: 'fixed',
+                            isActive: true,
+                            onlineBooking: true,
+                            sortOrder: 0,
+                        },
+                        employee: { id: 4, name: 'Magda' },
+                    },
+                ]}
+                customerAlertSeverityByCustomerId={{ 8: 'warning' }}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Otwórz' }));
+
+        expect(trackEventMock).toHaveBeenCalledWith(
+            'reception_operational_action',
+            expect.objectContaining({
+                action: 'open_appointment_drawer',
+                appointmentId: 41,
+                customerId: 8,
+                customerAlertSeverity: 'warning',
                 source: 'reception_view',
             }),
         );

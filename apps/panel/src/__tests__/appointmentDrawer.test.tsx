@@ -7,6 +7,11 @@ const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
 const useWarehouseSalesMock = jest.fn();
 const useCustomerAlertsMock = jest.fn();
+const trackEventMock = jest.fn();
+
+jest.mock('@/utils/analytics', () => ({
+    trackEvent: (...args: unknown[]) => trackEventMock(...args),
+}));
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ apiFetch: apiFetchMock }),
@@ -102,6 +107,7 @@ describe('AppointmentDrawer', () => {
         updateStatusMock.mockReset();
         useWarehouseSalesMock.mockReset();
         useCustomerAlertsMock.mockReset();
+        trackEventMock.mockReset();
         useWarehouseSalesMock.mockReturnValue({ data: { items: [] } });
         useCustomerAlertsMock.mockReturnValue({
             alerts: [],
@@ -558,5 +564,69 @@ describe('AppointmentDrawer', () => {
             'Sprzedaż',
             'Akcje',
         ]);
+    });
+
+    it('tracks CRM alert severity for drawer actions when alerts exist', () => {
+        useCustomerAlertsMock.mockReturnValue({
+            isLoading: false,
+            alerts: [
+                {
+                    id: 'note-1',
+                    severity: 'danger',
+                    label: 'Notatka medyczna',
+                    detail: 'Alergia na lateks',
+                },
+            ],
+        });
+
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('completed')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('link', { name: 'Historia sprzedaży' }));
+
+        expect(trackEventMock).toHaveBeenCalledWith(
+            'reception_operational_action',
+            expect.objectContaining({
+                action: 'open_sale_detail',
+                appointmentId: 42,
+                customerId: 5,
+                customerAlertSeverity: 'danger',
+                source: 'appointment_drawer',
+            }),
+        );
+    });
+
+    it('does not track CRM alert severity for drawer actions without alerts', () => {
+        render(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('completed')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('link', { name: 'Historia sprzedaży' }));
+
+        expect(trackEventMock).toHaveBeenCalledWith(
+            'reception_operational_action',
+            expect.objectContaining({
+                action: 'open_sale_detail',
+                appointmentId: 42,
+                customerId: 5,
+                source: 'appointment_drawer',
+            }),
+        );
+        expect(trackEventMock.mock.calls[0][1]).not.toHaveProperty(
+            'customerAlertSeverity',
+        );
     });
 });

@@ -119,11 +119,16 @@ export default function ReceptionView({
         appointment: Appointment,
         action: ActionKey,
     ) => {
+        const customerAlertSeverity = appointment.client?.id
+            ? customerAlertSeverityByCustomerId[appointment.client.id]
+            : undefined;
+
         if (action === 'finalize') {
             trackReceptionAction({
                 action: 'finalize_via_drawer',
                 appointmentId: appointment.id,
                 customerId: appointment.client?.id,
+                customerAlertSeverity,
                 source: 'reception_view',
             });
             onOpenFinalizeAppointment?.(appointment.id);
@@ -151,6 +156,7 @@ export default function ReceptionView({
                         action: 'start_appointment',
                         appointmentId: appointment.id,
                         customerId: appointment.client?.id,
+                        customerAlertSeverity,
                         source: 'reception_view',
                     });
                     break;
@@ -163,6 +169,7 @@ export default function ReceptionView({
                         action: 'confirm_appointment',
                         appointmentId: appointment.id,
                         customerId: appointment.client?.id,
+                        customerAlertSeverity,
                         source: 'reception_view',
                     });
                     break;
@@ -175,6 +182,7 @@ export default function ReceptionView({
                         action: 'mark_no_show',
                         appointmentId: appointment.id,
                         customerId: appointment.client?.id,
+                        customerAlertSeverity,
                         source: 'reception_view',
                     });
                     break;
@@ -434,6 +442,14 @@ export default function ReceptionView({
                                                 type="button"
                                                 className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
                                                 onClick={() => {
+                                                    const customerAlertSeverity =
+                                                        appointment.client?.id
+                                                            ? customerAlertSeverityByCustomerId[
+                                                                  appointment
+                                                                      .client
+                                                                      .id
+                                                              ]
+                                                            : undefined;
                                                     trackReceptionAction({
                                                         action: 'open_appointment_drawer',
                                                         appointmentId:
@@ -441,6 +457,7 @@ export default function ReceptionView({
                                                         customerId:
                                                             appointment.client
                                                                 ?.id,
+                                                        customerAlertSeverity,
                                                         source: 'reception_view',
                                                     });
                                                     onOpenAppointment?.(

@@ -63,6 +63,15 @@ function formatCurrency(value: number | null | undefined): string {
     }).format(normalized)} PLN`;
 }
 
+function getHighestAlertSeverity(
+    alerts: Array<{ severity: 'info' | 'warning' | 'danger' }>,
+): 'info' | 'warning' | 'danger' | undefined {
+    if (alerts.some((alert) => alert.severity === 'danger')) return 'danger';
+    if (alerts.some((alert) => alert.severity === 'warning')) return 'warning';
+    if (alerts.some((alert) => alert.severity === 'info')) return 'info';
+    return undefined;
+}
+
 export default function AppointmentDrawer({
     open,
     mode,
@@ -120,6 +129,10 @@ export default function AppointmentDrawer({
         useCustomerStatistics(customerIdForInsights);
     const { alerts: customerAlerts, isLoading: customerAlertsLoading } =
         useCustomerAlerts(customerIdForInsights);
+    const customerAlertSeverity = useMemo(
+        () => getHighestAlertSeverity(customerAlerts),
+        [customerAlerts],
+    );
     const appointmentIdForSales =
         mode === 'edit' ? (appointment?.id ?? null) : null;
     const { data: appointmentSalesResponse } = useWarehouseSales({
@@ -325,6 +338,7 @@ export default function AppointmentDrawer({
                 action,
                 appointmentId: appointment.id,
                 customerId: getAppointmentCustomerId(appointment),
+                customerAlertSeverity,
                 source: 'appointment_drawer',
             });
             onSaved();
@@ -589,6 +603,7 @@ export default function AppointmentDrawer({
                                                         appointment.id,
                                                     customerId:
                                                         appointment.client?.id,
+                                                    customerAlertSeverity,
                                                     source: 'appointment_drawer',
                                                 })
                                             }
@@ -688,6 +703,7 @@ export default function AppointmentDrawer({
                                                 getAppointmentCustomerId(
                                                     appointment,
                                                 ),
+                                            customerAlertSeverity,
                                             source: 'appointment_drawer',
                                         })
                                     }
@@ -812,6 +828,7 @@ export default function AppointmentDrawer({
                                                         getAppointmentCustomerId(
                                                             appointment,
                                                         ),
+                                                    customerAlertSeverity,
                                                     source: 'appointment_drawer',
                                                 });
                                                 setFinalizationOpen(true);

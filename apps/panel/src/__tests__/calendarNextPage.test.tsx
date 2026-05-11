@@ -172,7 +172,7 @@ describe('CalendarNextPage', () => {
     });
 
     it('opens drawer from calendar event map without fallback fetch', async () => {
-        useCalendarMock.mockReturnValueOnce({
+        useCalendarMock.mockImplementation(() => ({
             data: {
                 events: [
                     {
@@ -193,7 +193,7 @@ describe('CalendarNextPage', () => {
             },
             loading: false,
             refetch: jest.fn(),
-        });
+        }));
 
         render(<CalendarNextPage />);
 
