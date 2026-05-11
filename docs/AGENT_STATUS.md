@@ -28,6 +28,7 @@ Operational note (2026-05-09):
 - Added workflow `.github/workflows/ops_workflow_noise_guard.yml` for post-run warning/deprecation scanning with strict-by-default allowlist (`.github/ops-noise-allowlist.txt`) and noise report artifact output.
 - Recorded first successful manual noise-guard run: `Ops Workflow Noise Guard` run `25655043815` (source run `25653746343`, `unexpectedMatches=0`, `totalMatches=0`), artifact `ops-workflow-noise-report-25655043815`.
 - Added static ops workflow regression guard script `scripts/check-ops-workflows.sh` and wired it into `CI` as `Ops Workflow Regression Checks` to fail on critical workflow guard regressions (permissions/concurrency/dry-run/evidence/allowlist/docs matrix).
+- Added fixture schema regression guard script `scripts/validate-batch-telemetry-fixtures.sh` and wired it into `CI` as `Ops Fixture Schema Regression Checks` to fail on broken synthetic evidence fixtures (`status/action/reason/config.lookbackWindow/counts/queries/exitCode`).
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
