@@ -446,8 +446,7 @@ export default function ReceptionView({
                                                         appointment.client?.id
                                                             ? customerAlertSeverityByCustomerId[
                                                                   appointment
-                                                                      .client
-                                                                      .id
+                                                                      .client.id
                                                               ]
                                                             : undefined;
                                                     trackReceptionAction({

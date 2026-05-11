@@ -589,7 +589,9 @@ describe('AppointmentDrawer', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('link', { name: 'Historia sprzedaży' }));
+        fireEvent.click(
+            screen.getByRole('link', { name: 'Historia sprzedaży' }),
+        );
 
         expect(trackEventMock).toHaveBeenCalledWith(
             'reception_operational_action',
@@ -614,7 +616,9 @@ describe('AppointmentDrawer', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('link', { name: 'Historia sprzedaży' }));
+        fireEvent.click(
+            screen.getByRole('link', { name: 'Historia sprzedaży' }),
+        );
 
         expect(trackEventMock).toHaveBeenCalledWith(
             'reception_operational_action',
