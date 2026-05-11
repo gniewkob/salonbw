@@ -89,6 +89,8 @@ export default function CalendarNextPage() {
         useState(false);
     const [customerAlertStatsRetryToken, setCustomerAlertStatsRetryToken] =
         useState(0);
+    const [receptionActionsOnAlertsCount, setReceptionActionsOnAlertsCount] =
+        useState(0);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -226,6 +228,30 @@ export default function CalendarNextPage() {
         receptionNowTick,
     ]);
 
+    const receptionDailySummary = useMemo(() => {
+        const allAppointments = Array.from(appointmentsById.values());
+        const toFinalize = allAppointments.filter(
+            (appointment) => appointment.status === 'in_progress',
+        ).length;
+        const noShow = allAppointments.filter(
+            (appointment) => appointment.status === 'no_show',
+        ).length;
+        const withAlert = allAppointments.filter((appointment) =>
+            hasCustomerAlert(appointment, customerAlertSeverityById),
+        ).length;
+
+        return {
+            toFinalize,
+            noShow,
+            withAlert,
+            actionsOnAlerts: receptionActionsOnAlertsCount,
+        };
+    }, [
+        appointmentsById,
+        customerAlertSeverityById,
+        receptionActionsOnAlertsCount,
+    ]);
+
     useEffect(() => {
         if (currentView !== 'reception') return;
 
@@ -237,6 +263,10 @@ export default function CalendarNextPage() {
             window.clearInterval(timerId);
         };
     }, [currentView]);
+
+    useEffect(() => {
+        setReceptionActionsOnAlertsCount(0);
+    }, [currentDate, currentView, selectedEmployeeIds]);
 
     useEffect(() => {
         const dateParam = Array.isArray(router.query.date)
@@ -648,6 +678,57 @@ export default function CalendarNextPage() {
                                         </button>
                                     </div>
                                 ) : null}
+                                <div
+                                    className="row row-cols-2 row-cols-lg-4 g-2 mb-2"
+                                    data-testid="reception-daily-summary"
+                                >
+                                    <div className="col">
+                                        <div className="border rounded p-2 h-100">
+                                            <div className="small text-muted">
+                                                Do finalizacji
+                                            </div>
+                                            <div className="fw-semibold">
+                                                {
+                                                    receptionDailySummary.toFinalize
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col">
+                                        <div className="border rounded p-2 h-100">
+                                            <div className="small text-muted">
+                                                No-show
+                                            </div>
+                                            <div className="fw-semibold">
+                                                {receptionDailySummary.noShow}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col">
+                                        <div className="border rounded p-2 h-100">
+                                            <div className="small text-muted">
+                                                Z alertem CRM
+                                            </div>
+                                            <div className="fw-semibold">
+                                                {
+                                                    receptionDailySummary.withAlert
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col">
+                                        <div className="border rounded p-2 h-100">
+                                            <div className="small text-muted">
+                                                Akcje na alertach
+                                            </div>
+                                            <div className="fw-semibold">
+                                                {
+                                                    receptionDailySummary.actionsOnAlerts
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
                                         <label
@@ -762,6 +843,13 @@ export default function CalendarNextPage() {
                                     customerAlertSeverityByCustomerId={
                                         customerAlertSeverityById
                                     }
+                                    onActionTracked={(params) => {
+                                        if (!params.customerAlertSeverity)
+                                            return;
+                                        setReceptionActionsOnAlertsCount(
+                                            (current) => current + 1,
+                                        );
+                                    }}
                                     onChanged={() => {
                                         void refetch();
                                     }}

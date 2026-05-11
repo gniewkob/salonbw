@@ -52,8 +52,48 @@ jest.mock('@/components/calendar/CalendarView', () => ({
 
 jest.mock('@/components/calendar/ReceptionView', () => ({
     __esModule: true,
-    default: ({ appointments }: { appointments: Array<{ id: number }> }) => (
-        <div>reception-view:{appointments.length}</div>
+    default: ({
+        appointments,
+        onActionTracked,
+    }: {
+        appointments: Array<{ id: number }>;
+        onActionTracked?: (params: {
+            appointmentId: number;
+            action:
+                | 'open_appointment_drawer'
+                | 'confirm_appointment'
+                | 'start_appointment'
+                | 'mark_no_show'
+                | 'finalize_via_drawer';
+            customerAlertSeverity?: 'info' | 'warning' | 'danger';
+        }) => void;
+    }) => (
+        <div>
+            <div>reception-view:{appointments.length}</div>
+            <button
+                type="button"
+                onClick={() =>
+                    onActionTracked?.({
+                        appointmentId: 302,
+                        action: 'start_appointment',
+                        customerAlertSeverity: 'warning',
+                    })
+                }
+            >
+                track-alert-action
+            </button>
+            <button
+                type="button"
+                onClick={() =>
+                    onActionTracked?.({
+                        appointmentId: 301,
+                        action: 'open_appointment_drawer',
+                    })
+                }
+            >
+                track-non-alert-action
+            </button>
+        </div>
     ),
 }));
 
@@ -602,6 +642,118 @@ describe('CalendarNextPage', () => {
                 ]),
             );
         });
+    });
+
+    it('renders daily reception summary counters without double counting across filters', async () => {
+        routerMock.query = { view: 'reception' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 401,
+                        type: 'appointment',
+                        title: 'S1',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 21,
+                        clientName: 'Klient 21',
+                        status: 'in_progress',
+                    },
+                    {
+                        id: 402,
+                        type: 'appointment',
+                        title: 'S2',
+                        startTime: '2026-05-07T10:00:00.000Z',
+                        endTime: '2026-05-07T10:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 22,
+                        clientName: 'Klient 22',
+                        status: 'no_show',
+                    },
+                    {
+                        id: 403,
+                        type: 'appointment',
+                        title: 'S3',
+                        startTime: '2026-05-07T11:00:00.000Z',
+                        endTime: '2026-05-07T11:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 23,
+                        clientName: 'Klient 23',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 21, statistics: { noShowVisits: 0 } },
+                        { customerId: 22, statistics: { noShowVisits: 2 } },
+                        { customerId: 23, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        const summary = screen.getByTestId('reception-daily-summary');
+        const readSummaryValue = (label: string) => {
+            const labelElement = Array.from(
+                summary.querySelectorAll('.small.text-muted'),
+            ).find((element) => element.textContent?.trim() === label);
+            const card = labelElement?.closest('.border.rounded.p-2.h-100');
+            return (
+                card?.querySelector('.fw-semibold')?.textContent?.trim() ?? null
+            );
+        };
+        await waitFor(() =>
+            expect(summary).toHaveTextContent('Do finalizacji'),
+        );
+        expect(summary).toHaveTextContent('No-show');
+        expect(summary).toHaveTextContent('Z alertem CRM');
+        expect(summary).toHaveTextContent('Akcje na alertach');
+        expect(readSummaryValue('Do finalizacji')).toBe('1');
+        expect(readSummaryValue('No-show')).toBe('1');
+        await waitFor(() =>
+            expect(readSummaryValue('Z alertem CRM')).toBe('1'),
+        );
+        expect(readSummaryValue('Akcje na alertach')).toBe('0');
+
+        fireEvent.change(screen.getByLabelText('Status'), {
+            target: { value: 'in_progress' },
+        });
+        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+        // Summary should be based on all daily appointments, not filtered list.
+        expect(readSummaryValue('Do finalizacji')).toBe('1');
+        expect(readSummaryValue('No-show')).toBe('1');
+        expect(readSummaryValue('Z alertem CRM')).toBe('1');
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'track-alert-action' }),
+        );
+        expect(readSummaryValue('Akcje na alertach')).toBe('1');
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'track-non-alert-action' }),
+        );
+        // Non-alert action should not increment the metric.
+        expect(readSummaryValue('Akcje na alertach')).toBe('1');
     });
 
     it('guards concurrent customer stats fetches and retries after failure', async () => {

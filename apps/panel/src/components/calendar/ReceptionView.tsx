@@ -6,6 +6,7 @@ import { pl } from 'date-fns/locale';
 import type {
     Appointment,
     AppointmentStatus,
+    ReceptionAlertSeverity,
     ReceptionAlertSeverityByCustomerId,
 } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
@@ -22,6 +23,16 @@ interface ReceptionViewProps {
     onChanged?: () => void;
     onOpenFinalizeAppointment?: (appointmentId: number) => void;
     onOpenAppointment?: (appointmentId: number) => void;
+    onActionTracked?: (params: {
+        appointmentId: number;
+        action:
+            | 'open_appointment_drawer'
+            | 'confirm_appointment'
+            | 'start_appointment'
+            | 'mark_no_show'
+            | 'finalize_via_drawer';
+        customerAlertSeverity?: ReceptionAlertSeverity;
+    }) => void;
     customerAlertSeverityByCustomerId?: ReceptionAlertSeverityByCustomerId;
 }
 
@@ -80,6 +91,7 @@ export default function ReceptionView({
     onChanged,
     onOpenFinalizeAppointment,
     onOpenAppointment,
+    onActionTracked,
     customerAlertSeverityByCustomerId = {},
 }: ReceptionViewProps) {
     const { cancelAppointment, updateAppointmentStatus } =
@@ -131,6 +143,11 @@ export default function ReceptionView({
                 customerAlertSeverity,
                 source: 'reception_view',
             });
+            onActionTracked?.({
+                action: 'finalize_via_drawer',
+                appointmentId: appointment.id,
+                customerAlertSeverity,
+            });
             onOpenFinalizeAppointment?.(appointment.id);
             return;
         }
@@ -159,6 +176,11 @@ export default function ReceptionView({
                         customerAlertSeverity,
                         source: 'reception_view',
                     });
+                    onActionTracked?.({
+                        action: 'start_appointment',
+                        appointmentId: appointment.id,
+                        customerAlertSeverity,
+                    });
                     break;
                 case 'confirm':
                     await updateAppointmentStatus.mutateAsync({
@@ -172,6 +194,11 @@ export default function ReceptionView({
                         customerAlertSeverity,
                         source: 'reception_view',
                     });
+                    onActionTracked?.({
+                        action: 'confirm_appointment',
+                        appointmentId: appointment.id,
+                        customerAlertSeverity,
+                    });
                     break;
                 case 'no_show':
                     await updateAppointmentStatus.mutateAsync({
@@ -184,6 +211,11 @@ export default function ReceptionView({
                         customerId: appointment.client?.id,
                         customerAlertSeverity,
                         source: 'reception_view',
+                    });
+                    onActionTracked?.({
+                        action: 'mark_no_show',
+                        appointmentId: appointment.id,
+                        customerAlertSeverity,
                     });
                     break;
                 default:
@@ -458,6 +490,12 @@ export default function ReceptionView({
                                                                 ?.id,
                                                         customerAlertSeverity,
                                                         source: 'reception_view',
+                                                    });
+                                                    onActionTracked?.({
+                                                        action: 'open_appointment_drawer',
+                                                        appointmentId:
+                                                            appointment.id,
+                                                        customerAlertSeverity,
                                                     });
                                                     onOpenAppointment?.(
                                                         appointment.id,
