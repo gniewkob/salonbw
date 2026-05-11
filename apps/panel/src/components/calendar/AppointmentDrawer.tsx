@@ -12,6 +12,10 @@ import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
+import {
+    getAppointmentCustomerId,
+    trackReceptionAction,
+} from './receptionTelemetry';
 import FinalizationModal from './FinalizationModal';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -311,6 +315,18 @@ export default function AppointmentDrawer({
                 id: appointment.id,
                 status,
             });
+            const action =
+                status === 'confirmed'
+                    ? 'confirm_appointment'
+                    : status === 'in_progress'
+                      ? 'start_appointment'
+                      : 'mark_no_show';
+            trackReceptionAction({
+                action,
+                appointmentId: appointment.id,
+                customerId: getAppointmentCustomerId(appointment),
+                source: 'appointment_drawer',
+            });
             onSaved();
             onClose();
         } catch (err) {
@@ -566,6 +582,16 @@ export default function AppointmentDrawer({
                                         <Link
                                             href={`/customers/${appointment.client.id}`}
                                             className="btn btn-sm btn-outline-primary"
+                                            onClick={() =>
+                                                trackReceptionAction({
+                                                    action: 'open_customer_profile',
+                                                    appointmentId:
+                                                        appointment.id,
+                                                    customerId:
+                                                        appointment.client?.id,
+                                                    source: 'appointment_drawer',
+                                                })
+                                            }
                                         >
                                             Otwórz kartę klienta
                                         </Link>
@@ -654,6 +680,17 @@ export default function AppointmentDrawer({
                                               : '/sales/history'
                                     }
                                     className="btn btn-sm btn-outline-secondary"
+                                    onClick={() =>
+                                        trackReceptionAction({
+                                            action: 'open_sale_detail',
+                                            appointmentId: appointment.id,
+                                            customerId:
+                                                getAppointmentCustomerId(
+                                                    appointment,
+                                                ),
+                                            source: 'appointment_drawer',
+                                        })
+                                    }
                                 >
                                     {linkedSaleId
                                         ? 'Szczegóły sprzedaży'
@@ -766,9 +803,19 @@ export default function AppointmentDrawer({
                                         <button
                                             type="button"
                                             className="btn btn-outline-success"
-                                            onClick={() =>
-                                                setFinalizationOpen(true)
-                                            }
+                                            onClick={() => {
+                                                trackReceptionAction({
+                                                    action: 'finalize_via_drawer',
+                                                    appointmentId:
+                                                        appointment.id,
+                                                    customerId:
+                                                        getAppointmentCustomerId(
+                                                            appointment,
+                                                        ),
+                                                    source: 'appointment_drawer',
+                                                });
+                                                setFinalizationOpen(true);
+                                            }}
                                             disabled={saving}
                                         >
                                             Finalizuj wizytę

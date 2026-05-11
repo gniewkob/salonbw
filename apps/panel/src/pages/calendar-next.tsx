@@ -11,6 +11,7 @@ import {
     hasCustomerAlert,
     isPriorityAppointment,
 } from '@/components/calendar/receptionUtils';
+import { trackReceptionAction } from '@/components/calendar/receptionTelemetry';
 import { useAuth } from '@/contexts/AuthContext';
 import type {
     Appointment,
@@ -148,6 +149,17 @@ export default function CalendarNextPage() {
     const handleEventClick = (event: CalendarEvent) => {
         if (event.type !== 'appointment') return;
         const appointment = appointmentsById.get(event.id);
+        trackReceptionAction({
+            action: 'open_appointment_drawer',
+            appointmentId: event.id,
+            customerId: event.clientId ?? appointment?.client?.id ?? null,
+            customerAlertSeverity:
+                event.customerAlertSeverity ??
+                (event.clientId
+                    ? customerAlertSeverityById[event.clientId]
+                    : undefined),
+            source: 'calendar',
+        });
 
         setDrawer({
             open: true,

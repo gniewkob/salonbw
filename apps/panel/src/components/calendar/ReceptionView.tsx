@@ -14,6 +14,7 @@ import {
     hasCustomerAlert,
     isOverdueAppointmentAt,
 } from './receptionUtils';
+import { trackReceptionAction } from './receptionTelemetry';
 
 interface ReceptionViewProps {
     appointments: Appointment[];
@@ -119,6 +120,12 @@ export default function ReceptionView({
         action: ActionKey,
     ) => {
         if (action === 'finalize') {
+            trackReceptionAction({
+                action: 'finalize_via_drawer',
+                appointmentId: appointment.id,
+                customerId: appointment.client?.id,
+                source: 'reception_view',
+            });
             onOpenFinalizeAppointment?.(appointment.id);
             return;
         }
@@ -140,17 +147,35 @@ export default function ReceptionView({
                         id: appointment.id,
                         status: 'in_progress',
                     });
+                    trackReceptionAction({
+                        action: 'start_appointment',
+                        appointmentId: appointment.id,
+                        customerId: appointment.client?.id,
+                        source: 'reception_view',
+                    });
                     break;
                 case 'confirm':
                     await updateAppointmentStatus.mutateAsync({
                         id: appointment.id,
                         status: 'confirmed',
                     });
+                    trackReceptionAction({
+                        action: 'confirm_appointment',
+                        appointmentId: appointment.id,
+                        customerId: appointment.client?.id,
+                        source: 'reception_view',
+                    });
                     break;
                 case 'no_show':
                     await updateAppointmentStatus.mutateAsync({
                         id: appointment.id,
                         status: 'no_show',
+                    });
+                    trackReceptionAction({
+                        action: 'mark_no_show',
+                        appointmentId: appointment.id,
+                        customerId: appointment.client?.id,
+                        source: 'reception_view',
                     });
                     break;
                 default:
@@ -408,11 +433,20 @@ export default function ReceptionView({
                                             <button
                                                 type="button"
                                                 className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
-                                                onClick={() =>
+                                                onClick={() => {
+                                                    trackReceptionAction({
+                                                        action: 'open_appointment_drawer',
+                                                        appointmentId:
+                                                            appointment.id,
+                                                        customerId:
+                                                            appointment.client
+                                                                ?.id,
+                                                        source: 'reception_view',
+                                                    });
                                                     onOpenAppointment?.(
                                                         appointment.id,
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                                 disabled={isRowPending}
                                             >
                                                 Otwórz

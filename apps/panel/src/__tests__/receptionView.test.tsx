@@ -9,6 +9,11 @@ import ReceptionView from '@/components/calendar/ReceptionView';
 
 const cancelMock = jest.fn();
 const updateStatusMock = jest.fn();
+const trackEventMock = jest.fn();
+
+jest.mock('@/utils/analytics', () => ({
+    trackEvent: (...args: unknown[]) => trackEventMock(...args),
+}));
 
 jest.mock('@/hooks/useAppointments', () => ({
     useAppointmentMutations: () => ({
@@ -30,6 +35,7 @@ describe('ReceptionView', () => {
     beforeEach(() => {
         cancelMock.mockReset();
         updateStatusMock.mockReset();
+        trackEventMock.mockReset();
     });
 
     it('shows pending state for clicked action and restores label after success', async () => {
@@ -74,6 +80,15 @@ describe('ReceptionView', () => {
             expect(
                 screen.getByRole('button', { name: 'Rozpocznij' }),
             ).toBeVisible(),
+        );
+        expect(trackEventMock).toHaveBeenCalledWith(
+            'reception_operational_action',
+            expect.objectContaining({
+                action: 'start_appointment',
+                appointmentId: 1,
+                customerId: 5,
+                source: 'reception_view',
+            }),
         );
     });
 
@@ -232,6 +247,15 @@ describe('ReceptionView', () => {
         expect(onOpenFinalizeAppointment).toHaveBeenCalledWith(3);
         expect(updateStatusMock).not.toHaveBeenCalled();
         expect(cancelMock).not.toHaveBeenCalled();
+        expect(trackEventMock).toHaveBeenCalledWith(
+            'reception_operational_action',
+            expect.objectContaining({
+                action: 'finalize_via_drawer',
+                appointmentId: 3,
+                customerId: 7,
+                source: 'reception_view',
+            }),
+        );
     });
 
     it('shows operational summary metrics and CRM alert badge', () => {
@@ -346,6 +370,15 @@ describe('ReceptionView', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Otwórz' }));
         expect(onOpenAppointment).toHaveBeenCalledWith(40);
+        expect(trackEventMock).toHaveBeenCalledWith(
+            'reception_operational_action',
+            expect.objectContaining({
+                action: 'open_appointment_drawer',
+                appointmentId: 40,
+                customerId: 7,
+                source: 'reception_view',
+            }),
+        );
     });
 
     it('prioritizes overdue, in_progress and CRM-alert appointments in order', () => {
