@@ -2,12 +2,14 @@ name: Ops Batch Stats Drill
 
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '17 3 * * 1'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 concurrency:
-  group: ops-batch-stats-drill-${{ github.run_id }}
+  group: ops-batch-stats-drill
   cancel-in-progress: false
 
 permissions:

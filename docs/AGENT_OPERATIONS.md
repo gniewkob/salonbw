@@ -225,6 +225,7 @@ Current implementation:
   - `incident_ticket`: `workflow_dispatch` supports `dry_run=true` and synthetic fixture input `synthetic_fixture=critical|degraded_observability|missing_evidence`.
   - `incident_sla`: `workflow_dispatch` supports `dry_run=true` (no reminder comments are posted).
   - `incident_closure_guard`: `workflow_dispatch` supports `dry_run=true` (no reopen/comment mutation).
+  - `ops_batch_stats_drill.yml`: runs on manual dispatch and scheduled cadence (weekly, Monday 03:17 UTC) to continuously verify fixture and guard integrity.
 
 ##### Incident automation drill checklist (no production incident required)
 
