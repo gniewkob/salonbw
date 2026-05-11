@@ -53,10 +53,21 @@ jobs:
       - name: Validate batch telemetry evidence fixtures
         run: bash scripts/validate-batch-telemetry-fixtures.sh
 
+  ops-docs-consistency:
+    name: Ops Workflow Docs Consistency Checks
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5 # v4
+
+      - name: Validate ops workflow docs consistency
+        run: bash scripts/check-ops-workflow-docs-consistency.sh
+
   frontend:
     name: Frontend (${{ matrix.app }})
     runs-on: ubuntu-latest
-    needs: [secret-scan, ops-workflow-regression, ops-fixture-regression]
+    needs: [secret-scan, ops-workflow-regression, ops-fixture-regression, ops-docs-consistency]
     strategy:
       fail-fast: false
       matrix:
