@@ -257,6 +257,25 @@ Current implementation:
 6. **Document drill**
    - Add a short note to `docs/AGENT_STATUS.md` with date, run IDs, and PASS/FAIL outcome.
 
+##### Drill failure incident policy
+
+- Scope: `Ops Batch Stats Drill` workflow failures indicate an operations-automation integrity problem unless proven otherwise.
+- Interpretation:
+  - **drill failure** = failure in ops automation controls/fixtures/guards/runbook alignment.
+  - **not automatically** = production app/reception/API outage.
+- Default routing:
+  - owner: `ops/platform`
+  - labels: `ops`, `automation`, `drill-failure`
+- Required triage evidence (before escalation to app teams):
+  1. workflow logs from failed `Ops Batch Stats Drill` run
+  2. drill artifact `ops-batch-stats-drill-report-<run_id>`
+  3. failure class identification:
+     - fixture validation failure,
+     - dry-run guard regression,
+     - workflow/runtime/dependency regression
+- Escalation rule:
+  - escalate to app/backend owners only when drill evidence shows real product-path impact (not just ops automation harness failure).
+
 Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
 
 #### 5.4 On-call procedure

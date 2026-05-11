@@ -31,6 +31,7 @@ Operational note (2026-05-09):
 - Added fixture schema regression guard script `scripts/validate-batch-telemetry-fixtures.sh` and wired it into `CI` as `Ops Fixture Schema Regression Checks` to fail on broken synthetic evidence fixtures (`status/action/reason/config.lookbackWindow/counts/queries/exitCode`).
 - Added docs consistency guard script `scripts/check-ops-workflow-docs-consistency.sh` and wired it into `CI` to enforce that all `.github/workflows/ops_*.yml` files are documented in both `docs/AGENT_OPERATIONS.md` and `docs/AGENT_STATUS.md` (including legacy/manual `ops_probe_panel.yml` and `ops_maintenance.yml`).
 - Added scheduled cadence for `.github/workflows/ops_batch_stats_drill.yml` (weekly Monday 03:17 UTC) with stable concurrency guard (`ops-batch-stats-drill`) to keep drill validation continuously exercised.
+- Added drill failure incident policy to `docs/AGENT_OPERATIONS.md`: drill failure is treated as ops automation incident by default (owner `ops/platform`, labels `ops,automation,drill-failure`) with mandatory triage on workflow logs + drill report artifact before any app-level escalation.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
