@@ -891,6 +891,174 @@ describe('CalendarNextPage', () => {
         expect(readSummaryValue('Akcje na alertach')).toBe('1');
     });
 
+    it('renders reception insights panel from persisted range endpoint', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 471,
+                        type: 'appointment',
+                        title: 'Insights',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 51,
+                        clientName: 'Klient 51',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 51, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 8,
+                    actionsOnAlerts: 2,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 30,
+                        actionsOnAlerts: 9,
+                        alertActionRate: 30,
+                    },
+                    byAction: [
+                        {
+                            action: 'start_appointment',
+                            actionsTotal: 10,
+                            actionsOnAlerts: 4,
+                            alertActionRate: 40,
+                        },
+                        {
+                            action: 'confirm_appointment',
+                            actionsTotal: 8,
+                            actionsOnAlerts: 2,
+                            alertActionRate: 25,
+                        },
+                    ],
+                    byDay: [
+                        {
+                            day: '2026-05-06',
+                            actionsTotal: 5,
+                            actionsOnAlerts: 1,
+                            alertActionRate: 20,
+                        },
+                        {
+                            day: '2026-05-07',
+                            actionsTotal: 6,
+                            actionsOnAlerts: 2,
+                            alertActionRate: 33,
+                        },
+                    ],
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('reception-insights-panel'),
+            ).toHaveTextContent('Insights operacyjne (7 dni)'),
+        );
+        expect(screen.getByText('Akcje łącznie')).toBeInTheDocument();
+        expect(screen.getByText('% akcji na alertach')).toBeInTheDocument();
+        expect(screen.getByText('30')).toBeInTheDocument();
+        expect(screen.getByText('9')).toBeInTheDocument();
+        expect(screen.getByText('30%')).toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.some(
+                (call: unknown[]) =>
+                    String(call[0]).startsWith(
+                        '/reception/operational-insights?from=',
+                    ) && String(call[0]).includes('&to='),
+            ),
+        ).toBe(true);
+    });
+
+    it('shows neutral reception insights fallback when range endpoint fails', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 481,
+                        type: 'appointment',
+                        title: 'Insights fallback',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 52,
+                        clientName: 'Klient 52',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 52, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                throw new Error('insights unavailable');
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Brak danych dla wybranego zakresu.'),
+            ).toBeInTheDocument(),
+        );
+    });
+
     it('guards concurrent customer stats fetches and retries after failure', async () => {
         routerMock.query = {};
 

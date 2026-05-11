@@ -7,6 +7,7 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
+import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import {
     hasCustomerAlert,
     isPriorityAppointment,
@@ -48,6 +49,32 @@ interface ReceptionOperationalSummaryResponse {
     date: string;
     actionsTotal: number;
     actionsOnAlerts: number;
+}
+
+interface ReceptionOperationalInsightsByActionItem {
+    action: string;
+    actionsTotal: number;
+    actionsOnAlerts: number;
+    alertActionRate: number;
+}
+
+interface ReceptionOperationalInsightsByDayItem {
+    day: string;
+    actionsTotal: number;
+    actionsOnAlerts: number;
+    alertActionRate: number;
+}
+
+interface ReceptionOperationalInsightsResponse {
+    from: string;
+    to: string;
+    summary: {
+        actionsTotal: number;
+        actionsOnAlerts: number;
+        alertActionRate: number;
+    };
+    byAction: ReceptionOperationalInsightsByActionItem[];
+    byDay: ReceptionOperationalInsightsByDayItem[];
 }
 
 function toDateParam(value: Date): string {
@@ -104,6 +131,20 @@ export default function CalendarNextPage() {
         useState<number | null>(null);
     const [persistedActionsTotalCount, setPersistedActionsTotalCount] =
         useState<number | null>(null);
+    const [receptionInsightsLoading, setReceptionInsightsLoading] =
+        useState(false);
+    const [receptionInsightsError, setReceptionInsightsError] = useState(false);
+    const [receptionInsightsSummary, setReceptionInsightsSummary] = useState<{
+        actionsTotal: number;
+        actionsOnAlerts: number;
+        alertActionRate: number;
+    } | null>(null);
+    const [receptionInsightsByAction, setReceptionInsightsByAction] = useState<
+        ReceptionOperationalInsightsByActionItem[]
+    >([]);
+    const [receptionInsightsByDay, setReceptionInsightsByDay] = useState<
+        ReceptionOperationalInsightsByDayItem[]
+    >([]);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -322,6 +363,52 @@ export default function CalendarNextPage() {
                 if (cancelled) return;
                 setPersistedActionsTotalCount(null);
                 setPersistedActionsOnAlertsCount(null);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, currentDate, currentView]);
+
+    useEffect(() => {
+        if (currentView !== 'reception') {
+            setReceptionInsightsLoading(false);
+            setReceptionInsightsError(false);
+            setReceptionInsightsSummary(null);
+            setReceptionInsightsByAction([]);
+            setReceptionInsightsByDay([]);
+            return;
+        }
+
+        const rangeEnd = toDateParam(currentDate);
+        const rangeStartDate = new Date(currentDate);
+        rangeStartDate.setDate(rangeStartDate.getDate() - 6);
+        const rangeStart = toDateParam(rangeStartDate);
+        let cancelled = false;
+
+        setReceptionInsightsLoading(true);
+        setReceptionInsightsError(false);
+
+        void apiFetch<ReceptionOperationalInsightsResponse>(
+            `/reception/operational-insights?from=${encodeURIComponent(rangeStart)}&to=${encodeURIComponent(rangeEnd)}`,
+        )
+            .then((insights) => {
+                if (cancelled) return;
+                setReceptionInsightsSummary(insights.summary ?? null);
+                setReceptionInsightsByAction(insights.byAction ?? []);
+                setReceptionInsightsByDay(insights.byDay ?? []);
+                setReceptionInsightsError(false);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setReceptionInsightsSummary(null);
+                setReceptionInsightsByAction([]);
+                setReceptionInsightsByDay([]);
+                setReceptionInsightsError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setReceptionInsightsLoading(false);
             });
 
         return () => {
@@ -790,6 +877,24 @@ export default function CalendarNextPage() {
                                         </div>
                                     </div>
                                 </div>
+                                <ReceptionInsightsPanel
+                                    loading={receptionInsightsLoading}
+                                    error={receptionInsightsError}
+                                    actionsTotal={
+                                        receptionInsightsSummary?.actionsTotal ??
+                                        null
+                                    }
+                                    actionsOnAlerts={
+                                        receptionInsightsSummary?.actionsOnAlerts ??
+                                        null
+                                    }
+                                    alertActionRate={
+                                        receptionInsightsSummary?.alertActionRate ??
+                                        null
+                                    }
+                                    byAction={receptionInsightsByAction}
+                                    byDay={receptionInsightsByDay}
+                                />
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
                                         <label
