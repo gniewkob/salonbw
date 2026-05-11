@@ -11,6 +11,7 @@ describe('ReceptionService', () => {
         repo = {
             create: jest.fn(),
             save: jest.fn(),
+            query: jest.fn(),
         } as unknown as jest.Mocked<Repository<ReceptionOperationalEvent>>;
 
         service = new ReceptionService(repo);
@@ -189,5 +190,100 @@ describe('ReceptionService', () => {
             actionsTotal: 0,
             actionsOnAlerts: 0,
         });
+    });
+
+    it('returns operational insights for date range using DB aggregates', async () => {
+        repo.query
+            .mockResolvedValueOnce([{ actionsTotal: 10, actionsOnAlerts: 4 }])
+            .mockResolvedValueOnce([
+                {
+                    action: 'start_appointment',
+                    actionsTotal: 6,
+                    actionsOnAlerts: 3,
+                },
+                {
+                    action: 'mark_no_show',
+                    actionsTotal: 4,
+                    actionsOnAlerts: 1,
+                },
+            ])
+            .mockResolvedValueOnce([
+                { day: '2026-05-01', actionsTotal: 5, actionsOnAlerts: 2 },
+                { day: '2026-05-02', actionsTotal: 5, actionsOnAlerts: 2 },
+            ]);
+
+        const result = await service.getOperationalInsights(
+            '2026-05-01',
+            '2026-05-02',
+        );
+
+        expect(result).toEqual({
+            from: '2026-05-01',
+            to: '2026-05-02',
+            summary: {
+                actionsTotal: 10,
+                actionsOnAlerts: 4,
+                alertActionRate: 0.4,
+            },
+            byAction: [
+                {
+                    action: 'start_appointment',
+                    actionsTotal: 6,
+                    actionsOnAlerts: 3,
+                    alertActionRate: 0.5,
+                },
+                {
+                    action: 'mark_no_show',
+                    actionsTotal: 4,
+                    actionsOnAlerts: 1,
+                    alertActionRate: 0.25,
+                },
+            ],
+            byDay: [
+                {
+                    day: '2026-05-01',
+                    actionsTotal: 5,
+                    actionsOnAlerts: 2,
+                    alertActionRate: 0.4,
+                },
+                {
+                    day: '2026-05-02',
+                    actionsTotal: 5,
+                    actionsOnAlerts: 2,
+                    alertActionRate: 0.4,
+                },
+            ],
+        });
+
+        expect(repo.query).toHaveBeenNthCalledWith(
+            1,
+            expect.stringContaining('COUNT(*)::int AS "actionsTotal"'),
+            [
+                'reception_operational_action',
+                new Date('2026-05-01T00:00:00.000'),
+                new Date('2026-05-03T00:00:00.000'),
+            ],
+        );
+        expect(repo.query).toHaveBeenCalledTimes(3);
+    });
+
+    it('returns zero-safe insights when totals are empty', async () => {
+        repo.query
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([]);
+
+        const result = await service.getOperationalInsights(
+            '2026-05-01',
+            '2026-05-01',
+        );
+
+        expect(result.summary).toEqual({
+            actionsTotal: 0,
+            actionsOnAlerts: 0,
+            alertActionRate: 0,
+        });
+        expect(result.byAction).toEqual([]);
+        expect(result.byDay).toEqual([]);
     });
 });

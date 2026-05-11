@@ -17,6 +17,7 @@ describe('ReceptionController', () => {
         service = {
             createOperationalEvent: jest.fn(),
             getOperationalSummary: jest.fn(),
+            getOperationalInsights: jest.fn(),
         } as unknown as jest.Mocked<ReceptionService>;
 
         controller = new ReceptionController(service);
@@ -116,6 +117,84 @@ describe('ReceptionController', () => {
         const roles = Reflect.getMetadata(
             ROLES_KEY,
             ReceptionController.prototype.getOperationalSummary,
+        ) as Role[];
+
+        expect(roles).toEqual([
+            Role.Admin,
+            Role.Employee,
+            Role.Receptionist,
+        ]);
+    });
+
+    it('delegates operational insights range query to service', async () => {
+        service.getOperationalInsights.mockResolvedValueOnce({
+            from: '2026-05-01',
+            to: '2026-05-07',
+            summary: {
+                actionsTotal: 7,
+                actionsOnAlerts: 3,
+                alertActionRate: 3 / 7,
+            },
+            byAction: [],
+            byDay: [],
+        });
+
+        await controller.getOperationalInsights({
+            from: '2026-05-01',
+            to: '2026-05-07',
+        });
+
+        expect(service.getOperationalInsights).toHaveBeenCalledWith(
+            '2026-05-01',
+            '2026-05-07',
+        );
+    });
+
+    it('rejects invalid operational insights date format', () => {
+        expect(() =>
+            controller.getOperationalInsights({
+                from: '2026/05/01',
+                to: '2026-05-07',
+            }),
+        ).toThrow(BadRequestException);
+    });
+
+    it('rejects operational insights range longer than 31 days', () => {
+        expect(() =>
+            controller.getOperationalInsights({
+                from: '2026-05-01',
+                to: '2026-06-15',
+            }),
+        ).toThrow(BadRequestException);
+    });
+
+    it('rejects operational insights when from is later than to', () => {
+        expect(() =>
+            controller.getOperationalInsights({
+                from: '2026-05-08',
+                to: '2026-05-07',
+            }),
+        ).toThrow(BadRequestException);
+    });
+
+    it('exposes GET /reception/operational-insights endpoint', () => {
+        const methodPath = Reflect.getMetadata(
+            PATH_METADATA,
+            ReceptionController.prototype.getOperationalInsights,
+        );
+        const method = Reflect.getMetadata(
+            METHOD_METADATA,
+            ReceptionController.prototype.getOperationalInsights,
+        );
+
+        expect(methodPath).toBe('operational-insights');
+        expect(method).toBe(0);
+    });
+
+    it('requires Admin/Employee/Receptionist roles on insights endpoint', () => {
+        const roles = Reflect.getMetadata(
+            ROLES_KEY,
+            ReceptionController.prototype.getOperationalInsights,
         ) as Role[];
 
         expect(roles).toEqual([
