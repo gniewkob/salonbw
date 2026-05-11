@@ -47,6 +47,7 @@ import { FinanceModule } from './finance/finance.module';
 import { VersumCompatModule } from './versum-compat/versum-compat.module';
 import { ContentModule } from './content/content.module';
 import { AuthSocialModule } from './auth-social/auth-social.module';
+import { ReceptionModule } from './reception/reception.module';
 
 @Module({
     imports: [
@@ -135,6 +136,7 @@ import { AuthSocialModule } from './auth-social/auth-social.module';
         FinanceModule,
         VersumCompatModule,
         ContentModule,
+        ReceptionModule,
     ],
     controllers: [AppController, HealthController, DatabaseController],
     providers: [
