@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload telemetry evidence artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: batch-telemetry-evidence-${{ github.run_id }}
           path: batch-telemetry-evidence.json
