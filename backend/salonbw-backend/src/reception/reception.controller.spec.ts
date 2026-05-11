@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { BadRequestException } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -15,6 +16,7 @@ describe('ReceptionController', () => {
     beforeEach(() => {
         service = {
             createOperationalEvent: jest.fn(),
+            getOperationalSummary: jest.fn(),
         } as unknown as jest.Mocked<ReceptionService>;
 
         controller = new ReceptionController(service);
@@ -67,6 +69,53 @@ describe('ReceptionController', () => {
         const roles = Reflect.getMetadata(
             ROLES_KEY,
             ReceptionController.prototype.createOperationalEvent,
+        ) as Role[];
+
+        expect(roles).toEqual([
+            Role.Admin,
+            Role.Employee,
+            Role.Receptionist,
+        ]);
+    });
+
+    it('delegates operational summary query to service', async () => {
+        service.getOperationalSummary.mockResolvedValueOnce({
+            date: '2026-05-11',
+            actionsTotal: 4,
+            actionsOnAlerts: 2,
+        });
+
+        await controller.getOperationalSummary({ date: '2026-05-11' });
+
+        expect(service.getOperationalSummary).toHaveBeenCalledWith(
+            '2026-05-11',
+        );
+    });
+
+    it('rejects invalid operational summary date', async () => {
+        expect(() =>
+            controller.getOperationalSummary({ date: '11-05-2026' }),
+        ).toThrow(BadRequestException);
+    });
+
+    it('exposes GET /reception/operational-summary endpoint', () => {
+        const methodPath = Reflect.getMetadata(
+            PATH_METADATA,
+            ReceptionController.prototype.getOperationalSummary,
+        );
+        const method = Reflect.getMetadata(
+            METHOD_METADATA,
+            ReceptionController.prototype.getOperationalSummary,
+        );
+
+        expect(methodPath).toBe('operational-summary');
+        expect(method).toBe(0);
+    });
+
+    it('requires Admin/Employee/Receptionist roles on summary endpoint', () => {
+        const roles = Reflect.getMetadata(
+            ROLES_KEY,
+            ReceptionController.prototype.getOperationalSummary,
         ) as Role[];
 
         expect(roles).toEqual([

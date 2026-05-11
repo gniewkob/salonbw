@@ -44,6 +44,12 @@ interface CustomerStatisticsBatchResponse {
     items: CustomerStatisticsBatchItem[];
 }
 
+interface ReceptionOperationalSummaryResponse {
+    date: string;
+    actionsTotal: number;
+    actionsOnAlerts: number;
+}
+
 function toDateParam(value: Date): string {
     const year = value.getFullYear();
     const month = `${value.getMonth() + 1}`.padStart(2, '0');
@@ -94,6 +100,10 @@ export default function CalendarNextPage() {
         useState(0);
     const [receptionActionsOnAlertsCount, setReceptionActionsOnAlertsCount] =
         useState(0);
+    const [persistedActionsOnAlertsCount, setPersistedActionsOnAlertsCount] =
+        useState<number | null>(null);
+    const [persistedActionsTotalCount, setPersistedActionsTotalCount] =
+        useState<number | null>(null);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -261,11 +271,16 @@ export default function CalendarNextPage() {
             toFinalize,
             noShow,
             withAlert,
-            actionsOnAlerts: receptionActionsOnAlertsCount,
+            actionsTotal: persistedActionsTotalCount ?? 0,
+            actionsOnAlerts:
+                (persistedActionsOnAlertsCount ?? 0) +
+                receptionActionsOnAlertsCount,
         };
     }, [
         appointmentsById,
         customerAlertSeverityById,
+        persistedActionsOnAlertsCount,
+        persistedActionsTotalCount,
         receptionActionsOnAlertsCount,
     ]);
 
@@ -284,6 +299,35 @@ export default function CalendarNextPage() {
     useEffect(() => {
         setReceptionActionsOnAlertsCount(0);
     }, [currentDate, currentView, selectedEmployeeIds]);
+
+    useEffect(() => {
+        if (currentView !== 'reception') {
+            setPersistedActionsOnAlertsCount(null);
+            setPersistedActionsTotalCount(null);
+            return;
+        }
+
+        const date = toDateParam(currentDate);
+        let cancelled = false;
+
+        void apiFetch<ReceptionOperationalSummaryResponse>(
+            `/reception/operational-summary?date=${encodeURIComponent(date)}`,
+        )
+            .then((summary) => {
+                if (cancelled) return;
+                setPersistedActionsTotalCount(summary.actionsTotal ?? 0);
+                setPersistedActionsOnAlertsCount(summary.actionsOnAlerts ?? 0);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setPersistedActionsTotalCount(null);
+                setPersistedActionsOnAlertsCount(null);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, currentDate, currentView]);
 
     useEffect(() => {
         const dateParam = Array.isArray(router.query.date)

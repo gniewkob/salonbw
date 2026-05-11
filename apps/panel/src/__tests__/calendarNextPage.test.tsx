@@ -756,6 +756,141 @@ describe('CalendarNextPage', () => {
         expect(readSummaryValue('Akcje na alertach')).toBe('1');
     });
 
+    it('uses persisted reception summary baseline and increments alert actions locally', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 451,
+                        type: 'appointment',
+                        title: 'Persisted',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 31,
+                        clientName: 'Klient 31',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 31, statistics: { noShowVisits: 1 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 10,
+                    actionsOnAlerts: 4,
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+        const summary = screen.getByTestId('reception-daily-summary');
+        const readSummaryValue = (label: string) => {
+            const labelElement = Array.from(
+                summary.querySelectorAll('.small.text-muted'),
+            ).find((element) => element.textContent?.trim() === label);
+            const card = labelElement?.closest('.border.rounded.p-2.h-100');
+            return (
+                card?.querySelector('.fw-semibold')?.textContent?.trim() ?? null
+            );
+        };
+
+        await waitFor(() =>
+            expect(readSummaryValue('Akcje na alertach')).toBe('4'),
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'track-alert-action' }),
+        );
+        expect(readSummaryValue('Akcje na alertach')).toBe('5');
+    });
+
+    it('falls back to frontend-only counter when persisted summary endpoint fails', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 461,
+                        type: 'appointment',
+                        title: 'Fallback',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 41,
+                        clientName: 'Klient 41',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 41, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                throw new Error('summary unavailable');
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        const summary = screen.getByTestId('reception-daily-summary');
+        const readSummaryValue = (label: string) => {
+            const labelElement = Array.from(
+                summary.querySelectorAll('.small.text-muted'),
+            ).find((element) => element.textContent?.trim() === label);
+            const card = labelElement?.closest('.border.rounded.p-2.h-100');
+            return (
+                card?.querySelector('.fw-semibold')?.textContent?.trim() ?? null
+            );
+        };
+
+        await waitFor(() =>
+            expect(readSummaryValue('Akcje na alertach')).toBe('0'),
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'track-alert-action' }),
+        );
+        expect(readSummaryValue('Akcje na alertach')).toBe('1');
+    });
+
     it('guards concurrent customer stats fetches and retries after failure', async () => {
         routerMock.query = {};
 

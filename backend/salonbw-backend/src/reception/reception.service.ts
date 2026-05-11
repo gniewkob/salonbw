@@ -16,6 +16,12 @@ export interface ReceptionOperationalEventResponse {
     createdAt: Date;
 }
 
+export interface ReceptionOperationalSummaryResponse {
+    date: string;
+    actionsTotal: number;
+    actionsOnAlerts: number;
+}
+
 @Injectable()
 export class ReceptionService {
     constructor(
@@ -50,6 +56,34 @@ export class ReceptionService {
             source: saved.source,
             occurredAt: saved.occurredAt,
             createdAt: saved.createdAt,
+        };
+    }
+
+    async getOperationalSummary(
+        date: string,
+    ): Promise<ReceptionOperationalSummaryResponse> {
+        const start = new Date(`${date}T00:00:00.000`);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+
+        const raw = await this.receptionEventsRepo
+            .createQueryBuilder('event')
+            .select('COUNT(*)', 'actionsTotal')
+            .addSelect(
+                'COUNT(event.customerAlertSeverity)',
+                'actionsOnAlerts',
+            )
+            .where('event.eventName = :eventName', {
+                eventName: 'reception_operational_action',
+            })
+            .andWhere('event.occurredAt >= :start', { start })
+            .andWhere('event.occurredAt < :end', { end })
+            .getRawOne<{ actionsTotal: string; actionsOnAlerts: string }>();
+
+        return {
+            date,
+            actionsTotal: Number(raw?.actionsTotal ?? 0),
+            actionsOnAlerts: Number(raw?.actionsOnAlerts ?? 0),
         };
     }
 }

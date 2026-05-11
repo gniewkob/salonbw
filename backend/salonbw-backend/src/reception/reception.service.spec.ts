@@ -117,4 +117,77 @@ describe('ReceptionService', () => {
         expect(payload.clientName).toBeUndefined();
         expect(payload.notes).toBeUndefined();
     });
+
+    it('returns daily operational summary counts', async () => {
+        const whereMock = jest.fn().mockReturnThis();
+        const andWhereMock = jest.fn().mockReturnThis();
+        const selectMock = jest.fn().mockReturnThis();
+        const addSelectMock = jest.fn().mockReturnThis();
+        const getRawOneMock = jest.fn().mockResolvedValue({
+            actionsTotal: '7',
+            actionsOnAlerts: '3',
+        });
+        const qbMock = {
+            select: selectMock,
+            addSelect: addSelectMock,
+            where: whereMock,
+            andWhere: andWhereMock,
+            getRawOne: getRawOneMock,
+        };
+        (
+            repo as unknown as { createQueryBuilder: jest.Mock }
+        ).createQueryBuilder = jest.fn().mockReturnValue(qbMock);
+
+        const result = await service.getOperationalSummary('2026-05-11');
+
+        expect(result).toEqual({
+            date: '2026-05-11',
+            actionsTotal: 7,
+            actionsOnAlerts: 3,
+        });
+        expect(selectMock).toHaveBeenCalledWith('COUNT(*)', 'actionsTotal');
+        expect(addSelectMock).toHaveBeenCalledWith(
+            'COUNT(event.customerAlertSeverity)',
+            'actionsOnAlerts',
+        );
+        expect(whereMock).toHaveBeenCalledWith(
+            'event.eventName = :eventName',
+            { eventName: 'reception_operational_action' },
+        );
+        expect(andWhereMock).toHaveBeenNthCalledWith(
+            1,
+            'event.occurredAt >= :start',
+            expect.objectContaining({
+                start: new Date('2026-05-11T00:00:00.000'),
+            }),
+        );
+        expect(andWhereMock).toHaveBeenNthCalledWith(
+            2,
+            'event.occurredAt < :end',
+            expect.objectContaining({
+                end: new Date('2026-05-12T00:00:00.000'),
+            }),
+        );
+    });
+
+    it('defaults summary counts to zero when query returns empty', async () => {
+        const qbMock = {
+            select: jest.fn().mockReturnThis(),
+            addSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getRawOne: jest.fn().mockResolvedValue(undefined),
+        };
+        (
+            repo as unknown as { createQueryBuilder: jest.Mock }
+        ).createQueryBuilder = jest.fn().mockReturnValue(qbMock);
+
+        const result = await service.getOperationalSummary('2026-05-11');
+
+        expect(result).toEqual({
+            date: '2026-05-11',
+            actionsTotal: 0,
+            actionsOnAlerts: 0,
+        });
+    });
 });
