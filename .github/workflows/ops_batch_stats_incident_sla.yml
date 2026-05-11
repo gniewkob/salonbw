@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: SLA reminder for stale incident issues
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           SLA_HOURS: "6"
           LABELS: "ops,incident,batch-stats"
