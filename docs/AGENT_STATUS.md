@@ -27,6 +27,7 @@ Operational note (2026-05-09):
 - Extended Node 24 actions runtime opt-in (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`) across all ops incident workflows to reduce deprecation warning noise and keep runtime behavior consistent.
 - Added workflow `.github/workflows/ops_workflow_noise_guard.yml` for post-run warning/deprecation scanning with strict-by-default allowlist (`.github/ops-noise-allowlist.txt`) and noise report artifact output.
 - Recorded first successful manual noise-guard run: `Ops Workflow Noise Guard` run `25655043815` (source run `25653746343`, `unexpectedMatches=0`, `totalMatches=0`), artifact `ops-workflow-noise-report-25655043815`.
+- Added static ops workflow regression guard script `scripts/check-ops-workflows.sh` and wired it into `CI` as `Ops Workflow Regression Checks` to fail on critical workflow guard regressions (permissions/concurrency/dry-run/evidence/allowlist/docs matrix).
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

@@ -31,10 +31,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  ops-workflow-regression:
+    name: Ops Workflow Regression Checks
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5 # v4
+
+      - name: Run ops workflow static guard checks
+        run: bash scripts/check-ops-workflows.sh
+
   frontend:
     name: Frontend (${{ matrix.app }})
     runs-on: ubuntu-latest
-    needs: secret-scan
+    needs: [secret-scan, ops-workflow-regression]
     strategy:
       fail-fast: false
       matrix:
