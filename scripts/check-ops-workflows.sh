@@ -25,7 +25,15 @@ require_pattern() {
   local file="$1"
   local pattern="$2"
   local description="$3"
-  if ! rg -q "$pattern" "$file"; then
+  if command -v rg >/dev/null 2>&1; then
+    if rg -q "$pattern" "$file"; then
+      return 0
+    fi
+  elif grep -Eq "$pattern" "$file"; then
+    return 0
+  fi
+
+  if ! grep -Eq "$pattern" "$file"; then
     echo "ERROR: $description (file: $file, pattern: $pattern)" >&2
     exit 1
   fi
