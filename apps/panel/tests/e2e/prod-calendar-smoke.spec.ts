@@ -142,4 +142,109 @@ test.describe('PROD smoke: calendar compat migration', () => {
             ),
         ).toEqual([]);
     });
+
+    test('calendar-next reception renders insights panel without crash', async ({
+        page,
+    }) => {
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(page.locator('[data-testid="calendar-next-page"]')).toBeVisible();
+        await expect(
+            page.locator('[data-testid="reception-insights-panel"]'),
+        ).toBeVisible();
+    });
+
+    test('calendar-next reception shows neutral fallback when operational-insights is unavailable', async ({
+        page,
+    }) => {
+        await page.route('**/reception/operational-insights**', async (route) => {
+            await route.abort('failed');
+        });
+
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="reception-insights-panel"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('text=Brak danych dla wybranego zakresu.'),
+        ).toBeVisible();
+    });
+
+    test('calendar-next reception CTA updates filters at UI level', async ({
+        page,
+    }) => {
+        await page.route('**/reception/operational-insights**', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 20,
+                        actionsOnAlerts: 12,
+                        alertActionRate: 0.6,
+                    },
+                    byAction: [
+                        {
+                            action: 'start_appointment',
+                            actionsTotal: 7,
+                            actionsOnAlerts: 4,
+                            alertActionRate: 0.57,
+                        },
+                    ],
+                    byDay: [
+                        {
+                            day: '2026-05-06',
+                            actionsTotal: 10,
+                            actionsOnAlerts: 3,
+                            alertActionRate: 0.3,
+                        },
+                        {
+                            day: '2026-05-07',
+                            actionsTotal: 10,
+                            actionsOnAlerts: 5,
+                            alertActionRate: 0.5,
+                        },
+                    ],
+                }),
+            });
+        });
+
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="reception-insights-panel"]'),
+        ).toBeVisible();
+
+        await expect(
+            page.locator('button:has-text("Włącz filtr Tylko priorytetowe")'),
+        ).toBeVisible();
+        await page.click('button:has-text("Włącz filtr Tylko priorytetowe")');
+        await expect(page.locator('#reception-priority-filter')).toBeChecked();
+
+        await expect(
+            page.locator('button:has-text("Przejdź do wizyt z alertem CRM")'),
+        ).toBeVisible();
+        await page.click('button:has-text("Przejdź do wizyt z alertem CRM")');
+        await expect(page.locator('#reception-alert-filter')).toBeChecked();
+
+        await expect(
+            page.locator('button:has-text("Sprawdź wizyty do finalizacji")'),
+        ).toBeVisible();
+        await page.click('button:has-text("Sprawdź wizyty do finalizacji")');
+        await expect(page.locator('#reception-status-filter')).toHaveValue(
+            'in_progress',
+        );
+        await expect(page.locator('#reception-payment-filter')).toHaveValue(
+            'to_finalize',
+        );
+    });
 });
