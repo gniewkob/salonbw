@@ -1165,6 +1165,15 @@ describe('CalendarNextPage', () => {
         expect(
             screen.getByText('Sprawdź wizyty do finalizacji'),
         ).toBeInTheDocument();
+        expect(
+            screen.getByText('60% akcji dotyczy alertów CRM.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Udział alertów wzrósł z 30% do 50%.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Najczęstsza akcja: rozpoczęcie wizyty.'),
+        ).toBeInTheDocument();
         expect(screen.getByText('reception-view:2')).toBeInTheDocument();
 
         fireEvent.click(screen.getByText('Przejdź do wizyt z alertem CRM'));

@@ -9,6 +9,16 @@ interface ReceptionInsightsByDayItem {
     actionsOnAlerts: number;
 }
 
+const ACTION_LABELS: Record<string, string> = {
+    open_appointment_drawer: 'otwarcie wizyty',
+    confirm_appointment: 'potwierdzenie wizyty',
+    start_appointment: 'rozpoczęcie wizyty',
+    mark_no_show: 'oznaczenie no-show',
+    finalize_via_drawer: 'finalizacja wizyty',
+    open_customer_profile: 'otwarcie profilu klienta',
+    open_sale_detail: 'otwarcie szczegółu sprzedaży',
+};
+
 interface ReceptionInsightsPanelProps {
     loading: boolean;
     error: boolean;
@@ -69,6 +79,7 @@ export default function ReceptionInsightsPanel({
     const recommendations: Array<{
         id: string;
         label: string;
+        reason: string;
         cta: string;
         onClick?: () => void;
     }> = [];
@@ -77,6 +88,7 @@ export default function ReceptionInsightsPanel({
         recommendations.push({
             id: 'priority',
             label: 'Wysoki udział akcji na alertach CRM.',
+            reason: `${formatPercent(alertActionRate)} akcji dotyczy alertów CRM.`,
             cta: 'Włącz filtr Tylko priorytetowe',
             onClick: onEnablePriorityFilter,
         });
@@ -86,6 +98,7 @@ export default function ReceptionInsightsPanel({
         recommendations.push({
             id: 'alerts',
             label: 'Trend alertów CRM rośnie względem poprzedniego dnia.',
+            reason: `Udział alertów wzrósł z ${formatPercent(previousRate)} do ${formatPercent(latestRate)}.`,
             cta: 'Przejdź do wizyt z alertem CRM',
             onClick: onEnableAlertFilter,
         });
@@ -95,6 +108,7 @@ export default function ReceptionInsightsPanel({
         recommendations.push({
             id: 'finalize',
             label: 'Najczęstszą akcją jest rozpoczęcie wizyty.',
+            reason: `Najczęstsza akcja: ${ACTION_LABELS[dominantAction] ?? dominantAction}.`,
             cta: 'Sprawdź wizyty do finalizacji',
             onClick: onShowToFinalize,
         });
@@ -198,6 +212,9 @@ export default function ReceptionInsightsPanel({
                                 {recommendations.map((item) => (
                                     <li key={item.id} className="small">
                                         <span>{item.label}</span>{' '}
+                                        <span className="text-muted">
+                                            {item.reason}
+                                        </span>{' '}
                                         <button
                                             type="button"
                                             className="btn btn-link btn-sm p-0 align-baseline"
