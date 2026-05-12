@@ -77,6 +77,119 @@ interface ReceptionOperationalInsightsResponse {
     byDay: ReceptionOperationalInsightsByDayItem[];
 }
 
+function toSafeNonNegativeNumber(value: unknown): number {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return 0;
+    }
+    return value < 0 ? 0 : value;
+}
+
+function normalizeAlertRateFraction(
+    value: unknown,
+    actionsTotal: number,
+    actionsOnAlerts: number,
+): number {
+    if (actionsTotal > 0) {
+        return Math.min(Math.max(actionsOnAlerts / actionsTotal, 0), 1);
+    }
+
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return 0;
+    }
+
+    if (value > 1) {
+        return Math.min(Math.max(value / 100, 0), 1);
+    }
+
+    return Math.min(Math.max(value, 0), 1);
+}
+
+function normalizeOperationalInsightsResponse(
+    value: unknown,
+): ReceptionOperationalInsightsResponse {
+    const fallback: ReceptionOperationalInsightsResponse = {
+        from: '',
+        to: '',
+        summary: {
+            actionsTotal: 0,
+            actionsOnAlerts: 0,
+            alertActionRate: 0,
+        },
+        byAction: [],
+        byDay: [],
+    };
+
+    if (!value || typeof value !== 'object') {
+        return fallback;
+    }
+
+    const payload = value as Partial<ReceptionOperationalInsightsResponse>;
+    const summaryRaw = payload.summary;
+    const summaryActionsTotal = toSafeNonNegativeNumber(
+        summaryRaw?.actionsTotal,
+    );
+    const summaryActionsOnAlerts = Math.min(
+        toSafeNonNegativeNumber(summaryRaw?.actionsOnAlerts),
+        summaryActionsTotal,
+    );
+
+    const byAction = Array.isArray(payload.byAction)
+        ? payload.byAction.map((item) => {
+              const actionsTotal = toSafeNonNegativeNumber(item?.actionsTotal);
+              const actionsOnAlerts = Math.min(
+                  toSafeNonNegativeNumber(item?.actionsOnAlerts),
+                  actionsTotal,
+              );
+              return {
+                  action: typeof item?.action === 'string' ? item.action : '-',
+                  actionsTotal,
+                  actionsOnAlerts,
+                  alertActionRate: normalizeAlertRateFraction(
+                      item?.alertActionRate,
+                      actionsTotal,
+                      actionsOnAlerts,
+                  ),
+              };
+          })
+        : [];
+
+    const byDay = Array.isArray(payload.byDay)
+        ? payload.byDay.map((item) => {
+              const actionsTotal = toSafeNonNegativeNumber(item?.actionsTotal);
+              const actionsOnAlerts = Math.min(
+                  toSafeNonNegativeNumber(item?.actionsOnAlerts),
+                  actionsTotal,
+              );
+              return {
+                  day: typeof item?.day === 'string' ? item.day : '-',
+                  actionsTotal,
+                  actionsOnAlerts,
+                  alertActionRate: normalizeAlertRateFraction(
+                      item?.alertActionRate,
+                      actionsTotal,
+                      actionsOnAlerts,
+                  ),
+              };
+          })
+        : [];
+
+    return {
+        from: typeof payload.from === 'string' ? payload.from : '',
+        to: typeof payload.to === 'string' ? payload.to : '',
+        summary: {
+            actionsTotal: summaryActionsTotal,
+            actionsOnAlerts: summaryActionsOnAlerts,
+            alertActionRate: normalizeAlertRateFraction(
+                summaryRaw?.alertActionRate,
+                summaryActionsTotal,
+                summaryActionsOnAlerts,
+            ),
+        },
+        byAction,
+        byDay,
+    };
+}
+
 function toDateParam(value: Date): string {
     const year = value.getFullYear();
     const month = `${value.getMonth() + 1}`.padStart(2, '0');
@@ -394,9 +507,11 @@ export default function CalendarNextPage() {
         )
             .then((insights) => {
                 if (cancelled) return;
-                setReceptionInsightsSummary(insights.summary ?? null);
-                setReceptionInsightsByAction(insights.byAction ?? []);
-                setReceptionInsightsByDay(insights.byDay ?? []);
+                const normalized =
+                    normalizeOperationalInsightsResponse(insights);
+                setReceptionInsightsSummary(normalized.summary);
+                setReceptionInsightsByAction(normalized.byAction);
+                setReceptionInsightsByDay(normalized.byDay);
                 setReceptionInsightsError(false);
             })
             .catch(() => {
