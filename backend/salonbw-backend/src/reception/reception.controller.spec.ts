@@ -18,6 +18,7 @@ describe('ReceptionController', () => {
             createOperationalEvent: jest.fn(),
             getOperationalSummary: jest.fn(),
             getOperationalInsights: jest.fn(),
+            getFollowUpCandidates: jest.fn(),
         } as unknown as jest.Mocked<ReceptionService>;
 
         controller = new ReceptionController(service);

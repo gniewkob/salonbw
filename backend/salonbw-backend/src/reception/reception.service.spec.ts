@@ -1,20 +1,29 @@
 import { Repository } from 'typeorm';
+import { Appointment } from '../appointments/appointment.entity';
 import { CreateReceptionOperationalEventDto } from './dto/create-reception-operational-event.dto';
 import { ReceptionOperationalEvent } from './entities/reception-operational-event.entity';
 import { ReceptionService } from './reception.service';
 
 describe('ReceptionService', () => {
     let service: ReceptionService;
+    let appointmentsRepo: jest.Mocked<Repository<Appointment>>;
     let repo: jest.Mocked<Repository<ReceptionOperationalEvent>>;
 
     beforeEach(() => {
+        appointmentsRepo = {
+            query: jest.fn(),
+        } as unknown as jest.Mocked<Repository<Appointment>>;
+
         repo = {
             create: jest.fn(),
             save: jest.fn(),
             query: jest.fn(),
         } as unknown as jest.Mocked<Repository<ReceptionOperationalEvent>>;
 
-        service = new ReceptionService(repo);
+        service = new ReceptionService(
+            appointmentsRepo,
+            repo,
+        );
     });
 
     afterEach(() => {
@@ -285,5 +294,70 @@ describe('ReceptionService', () => {
         });
         expect(result.byAction).toEqual([]);
         expect(result.byDay).toEqual([]);
+    });
+
+    it('returns prioritized follow-up candidates for a day', async () => {
+        appointmentsRepo.query
+            .mockResolvedValueOnce([
+                { customerId: 12, appointmentId: 1201 },
+                { customerId: 14, appointmentId: 1401 },
+            ])
+            .mockResolvedValueOnce([
+                { customerId: 11, appointmentId: 1101 },
+                { customerId: 12, appointmentId: 1202 },
+            ])
+            .mockResolvedValueOnce([{ customerId: 15, appointmentId: 1501 }]);
+
+        const result = await service.getFollowUpCandidates('2026-05-12');
+
+        expect(result).toEqual([
+            {
+                customerId: 11,
+                appointmentId: 1101,
+                reason: 'stale_in_progress',
+                priority: 'critical',
+                suggestedAction: 'finalize_or_update_status',
+            },
+            {
+                customerId: 12,
+                appointmentId: 1202,
+                reason: 'stale_in_progress',
+                priority: 'critical',
+                suggestedAction: 'finalize_or_update_status',
+            },
+            {
+                customerId: 12,
+                appointmentId: 1201,
+                reason: 'recent_no_show',
+                priority: 'high',
+                suggestedAction: 'contact_customer',
+            },
+            {
+                customerId: 14,
+                appointmentId: 1401,
+                reason: 'recent_no_show',
+                priority: 'high',
+                suggestedAction: 'contact_customer',
+            },
+            {
+                customerId: 15,
+                appointmentId: 1501,
+                reason: 'high_risk_no_contact',
+                priority: 'medium',
+                suggestedAction: 'review_customer_timeline',
+            },
+        ]);
+        expect(appointmentsRepo.query).toHaveBeenCalledTimes(3);
+    });
+
+    it('skips malformed follow-up rows and returns empty by default', async () => {
+        appointmentsRepo.query
+            .mockResolvedValueOnce([{ customerId: null, appointmentId: null }])
+            .mockResolvedValueOnce([{ customerId: 'abc', appointmentId: 1 }])
+            .mockResolvedValueOnce([]);
+
+        const result = await service.getFollowUpCandidates('2026-05-12');
+
+        expect(result).toEqual([]);
     });
 });
