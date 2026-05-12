@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+const REQUIRED_LOGIN_ENV = ['PANEL_LOGIN_EMAIL', 'PANEL_LOGIN_PASSWORD'] as const;
+const missingLoginEnv = REQUIRED_LOGIN_ENV.filter((name) => !process.env[name]);
+
 function requireEnv(name: string): string {
     const v = process.env[name];
     if (!v) throw new Error(`Missing required env var: ${name}`);
@@ -62,8 +65,8 @@ test.describe('PROD smoke: calendar compat migration', () => {
     test.setTimeout(180_000);
 
     test.skip(
-        !process.env.PANEL_LOGIN_EMAIL || !process.env.PANEL_LOGIN_PASSWORD,
-        'Requires PANEL_LOGIN_EMAIL and PANEL_LOGIN_PASSWORD',
+        missingLoginEnv.length > 0,
+        `Skipped: missing required login env (${missingLoginEnv.join(', ')})`,
     );
 
     test('calendar uses salonbw asset aliases and avoids graphql 201 compat errors', async ({
@@ -159,7 +162,9 @@ test.describe('PROD smoke: calendar compat migration', () => {
     test('calendar-next reception shows neutral fallback when operational-insights is unavailable', async ({
         page,
     }) => {
-        await page.route('**/reception/operational-insights**', async (route) => {
+        const interceptedInsightsUrls: string[] = [];
+        await page.route('**/api/reception/operational-insights**', async (route) => {
+            interceptedInsightsUrls.push(route.request().url());
             await route.abort('failed');
         });
 
@@ -173,12 +178,20 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await expect(
             page.locator('text=Brak danych dla wybranego zakresu.'),
         ).toBeVisible();
+        expect(interceptedInsightsUrls.length).toBeGreaterThan(0);
+        expect(
+            interceptedInsightsUrls.every((url) =>
+                url.includes('/api/reception/operational-insights'),
+            ),
+        ).toBe(true);
     });
 
     test('calendar-next reception CTA updates filters at UI level', async ({
         page,
     }) => {
-        await page.route('**/reception/operational-insights**', async (route) => {
+        const interceptedInsightsUrls: string[] = [];
+        await page.route('**/api/reception/operational-insights**', async (route) => {
+            interceptedInsightsUrls.push(route.request().url());
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -246,5 +259,11 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await expect(page.locator('#reception-payment-filter')).toHaveValue(
             'to_finalize',
         );
+        expect(interceptedInsightsUrls.length).toBeGreaterThan(0);
+        expect(
+            interceptedInsightsUrls.every((url) =>
+                url.includes('/api/reception/operational-insights'),
+            ),
+        ).toBe(true);
     });
 });
