@@ -938,20 +938,20 @@ describe('CalendarNextPage', () => {
                     summary: {
                         actionsTotal: 30,
                         actionsOnAlerts: 9,
-                        alertActionRate: 30,
+                        alertActionRate: 0.3,
                     },
                     byAction: [
                         {
                             action: 'start_appointment',
                             actionsTotal: 10,
                             actionsOnAlerts: 4,
-                            alertActionRate: 40,
+                            alertActionRate: 0.4,
                         },
                         {
                             action: 'confirm_appointment',
                             actionsTotal: 8,
                             actionsOnAlerts: 2,
-                            alertActionRate: 25,
+                            alertActionRate: 0.25,
                         },
                     ],
                     byDay: [
@@ -959,13 +959,13 @@ describe('CalendarNextPage', () => {
                             day: '2026-05-06',
                             actionsTotal: 5,
                             actionsOnAlerts: 1,
-                            alertActionRate: 20,
+                            alertActionRate: 0.2,
                         },
                         {
                             day: '2026-05-07',
                             actionsTotal: 6,
                             actionsOnAlerts: 2,
-                            alertActionRate: 33,
+                            alertActionRate: 0.33,
                         },
                     ],
                 };
