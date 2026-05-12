@@ -1166,6 +1166,9 @@ describe('CalendarNextPage', () => {
             screen.getByText('Sprawdź wizyty do finalizacji'),
         ).toBeInTheDocument();
         expect(
+            screen.getAllByText('Przejdź do wizyt z alertem CRM'),
+        ).toHaveLength(1);
+        expect(
             screen.getByText('60% akcji dotyczy alertów CRM.'),
         ).toBeInTheDocument();
         expect(
@@ -1180,6 +1183,11 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
         );
+        expect(
+            screen.getByRole('button', {
+                name: 'Przejdź do wizyt z alertem CRM',
+            }),
+        ).toBeDisabled();
     });
 
     it('shows no urgent recommendations for neutral insights', async () => {
@@ -1362,6 +1370,7 @@ describe('CalendarNextPage', () => {
         // byDay clamped to 3/3
         expect(screen.getByText('2026-05-07')).toBeInTheDocument();
         expect(screen.getByText('(3/3)')).toBeInTheDocument();
+        expect(screen.queryByText(/undefined|NaN/i)).not.toBeInTheDocument();
     });
 
     it('guards concurrent customer stats fetches and retries after failure', async () => {

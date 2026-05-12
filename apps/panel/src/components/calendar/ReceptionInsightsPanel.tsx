@@ -30,6 +30,9 @@ interface ReceptionInsightsPanelProps {
     onEnablePriorityFilter?: () => void;
     onEnableAlertFilter?: () => void;
     onShowToFinalize?: () => void;
+    isPriorityFilterActive?: boolean;
+    isAlertFilterActive?: boolean;
+    isToFinalizeFilterActive?: boolean;
 }
 
 function formatPercent(value: number | null): string {
@@ -50,6 +53,9 @@ export default function ReceptionInsightsPanel({
     onEnablePriorityFilter,
     onEnableAlertFilter,
     onShowToFinalize,
+    isPriorityFilterActive = false,
+    isAlertFilterActive = false,
+    isToFinalizeFilterActive = false,
 }: ReceptionInsightsPanelProps) {
     const hasData =
         typeof actionsTotal === 'number' &&
@@ -82,35 +88,55 @@ export default function ReceptionInsightsPanel({
         reason: string;
         cta: string;
         onClick?: () => void;
+        disabled?: boolean;
     }> = [];
+    const recommendationIds = new Set<string>();
+
+    const addRecommendation = (item: {
+        id: string;
+        label: string;
+        reason: string;
+        cta: string;
+        onClick?: () => void;
+        disabled?: boolean;
+    }) => {
+        if (recommendationIds.has(item.id)) {
+            return;
+        }
+        recommendationIds.add(item.id);
+        recommendations.push(item);
+    };
 
     if (typeof alertActionRate === 'number' && alertActionRate >= 0.5) {
-        recommendations.push({
+        addRecommendation({
             id: 'priority',
             label: 'Wysoki udział akcji na alertach CRM.',
             reason: `${formatPercent(alertActionRate)} akcji dotyczy alertów CRM.`,
             cta: 'Włącz filtr Tylko priorytetowe',
             onClick: onEnablePriorityFilter,
+            disabled: isPriorityFilterActive,
         });
     }
 
     if (isAlertTrendRising) {
-        recommendations.push({
+        addRecommendation({
             id: 'alerts',
             label: 'Trend alertów CRM rośnie względem poprzedniego dnia.',
             reason: `Udział alertów wzrósł z ${formatPercent(previousRate)} do ${formatPercent(latestRate)}.`,
             cta: 'Przejdź do wizyt z alertem CRM',
             onClick: onEnableAlertFilter,
+            disabled: isAlertFilterActive,
         });
     }
 
     if (dominantAction === 'start_appointment') {
-        recommendations.push({
+        addRecommendation({
             id: 'finalize',
             label: 'Najczęstszą akcją jest rozpoczęcie wizyty.',
             reason: `Najczęstsza akcja: ${ACTION_LABELS[dominantAction] ?? dominantAction}.`,
             cta: 'Sprawdź wizyty do finalizacji',
             onClick: onShowToFinalize,
+            disabled: isToFinalizeFilterActive,
         });
     }
 
@@ -219,6 +245,7 @@ export default function ReceptionInsightsPanel({
                                             type="button"
                                             className="btn btn-link btn-sm p-0 align-baseline"
                                             onClick={item.onClick}
+                                            disabled={item.disabled}
                                         >
                                             {item.cta}
                                         </button>

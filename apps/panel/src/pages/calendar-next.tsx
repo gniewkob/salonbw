@@ -1021,6 +1021,15 @@ export default function CalendarNextPage() {
                                             'to_finalize',
                                         );
                                     }}
+                                    isPriorityFilterActive={
+                                        receptionPriorityFilter
+                                    }
+                                    isAlertFilterActive={receptionAlertFilter}
+                                    isToFinalizeFilterActive={
+                                        receptionStatusFilter ===
+                                            'in_progress' &&
+                                        receptionPaymentFilter === 'to_finalize'
+                                    }
                                 />
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
