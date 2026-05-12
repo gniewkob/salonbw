@@ -44,6 +44,15 @@ Runtime guardrails:
 - test suite is skipped with explicit reason when required login env is missing,
 - request interception for fallback/CTA checks is limited to `/api/reception/operational-insights`.
 
+PASS criteria for production validation:
+- `/calendar-next?view=reception` loads for authenticated operator without crash,
+- insights panel (`[data-testid="reception-insights-panel"]`) is visible,
+- fallback message is rendered when `/api/reception/operational-insights` is unavailable,
+- CTA actions update filters in UI:
+  - `Włącz filtr Tylko priorytetowe` -> `#reception-priority-filter` checked,
+  - `Przejdź do wizyt z alertem CRM` -> `#reception-alert-filter` checked,
+  - `Sprawdź wizyty do finalizacji` -> `#reception-status-filter=in_progress` and `#reception-payment-filter=to_finalize`.
+
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.

@@ -42,6 +42,10 @@ Operational note (2026-05-09):
   - explicit skip reason when login env is missing (`PANEL_LOGIN_EMAIL`, `PANEL_LOGIN_PASSWORD`),
   - narrowed request interception scope to `/api/reception/operational-insights`,
   - assertions that interception does not match unrelated endpoints.
+- Added production validation checklist for reception insights smoke in `docs/AGENT_OPERATIONS.md`:
+  - authenticated render check for `/calendar-next?view=reception`,
+  - fallback check when `/api/reception/operational-insights` is unavailable,
+  - CTA-to-filter checks for `priority`, `alert CRM`, and `to_finalize` UI state.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
