@@ -1,6 +1,8 @@
 import { Repository } from 'typeorm';
 import { Appointment } from '../appointments/appointment.entity';
+import { CreateCrmFollowUpActionDto } from './dto/create-crm-follow-up-action.dto';
 import { CreateReceptionOperationalEventDto } from './dto/create-reception-operational-event.dto';
+import { CrmFollowUpAction } from './entities/crm-follow-up-action.entity';
 import { ReceptionOperationalEvent } from './entities/reception-operational-event.entity';
 import { ReceptionService } from './reception.service';
 
@@ -8,6 +10,7 @@ describe('ReceptionService', () => {
     let service: ReceptionService;
     let appointmentsRepo: jest.Mocked<Repository<Appointment>>;
     let repo: jest.Mocked<Repository<ReceptionOperationalEvent>>;
+    let followUpActionsRepo: jest.Mocked<Repository<CrmFollowUpAction>>;
 
     beforeEach(() => {
         appointmentsRepo = {
@@ -20,9 +23,15 @@ describe('ReceptionService', () => {
             query: jest.fn(),
         } as unknown as jest.Mocked<Repository<ReceptionOperationalEvent>>;
 
+        followUpActionsRepo = {
+            create: jest.fn(),
+            save: jest.fn(),
+        } as unknown as jest.Mocked<Repository<CrmFollowUpAction>>;
+
         service = new ReceptionService(
             appointmentsRepo,
             repo,
+            followUpActionsRepo,
         );
     });
 
@@ -359,5 +368,78 @@ describe('ReceptionService', () => {
         const result = await service.getFollowUpCandidates('2026-05-12');
 
         expect(result).toEqual([]);
+    });
+
+    it('saves follow-up action and defaults occurredAt when missing', async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-05-12T10:00:00.000Z'));
+
+        const dto: CreateCrmFollowUpActionDto = {
+            customerId: 123,
+            appointmentId: 456,
+            candidateReason: 'recent_no_show',
+            action: 'contacted',
+        };
+
+        followUpActionsRepo.create.mockImplementation(
+            (payload) => payload as CrmFollowUpAction,
+        );
+        followUpActionsRepo.save.mockImplementation(async (entity) => ({
+            id: 1,
+            createdAt: new Date('2026-05-12T10:00:01.000Z'),
+            ...entity,
+        }));
+
+        const result = await service.createFollowUpAction(dto);
+
+        expect(followUpActionsRepo.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                customerId: 123,
+                appointmentId: 456,
+                candidateReason: 'recent_no_show',
+                action: 'contacted',
+                note: null,
+                occurredAt: new Date('2026-05-12T10:00:00.000Z'),
+            }),
+        );
+        expect(result).toEqual(
+            expect.objectContaining({
+                customerId: 123,
+                appointmentId: 456,
+                candidateReason: 'recent_no_show',
+                action: 'contacted',
+                note: null,
+            }),
+        );
+    });
+
+    it('preserves provided follow-up action occurredAt and trims note', async () => {
+        const dto: CreateCrmFollowUpActionDto = {
+            customerId: 123,
+            appointmentId: 456,
+            candidateReason: 'stale_in_progress',
+            action: 'escalated',
+            note: '  Requires manager callback  ',
+            occurredAt: '2026-05-12T11:00:00.000Z',
+        };
+
+        followUpActionsRepo.create.mockImplementation(
+            (payload) => payload as CrmFollowUpAction,
+        );
+        followUpActionsRepo.save.mockImplementation(async (entity) => ({
+            id: 2,
+            createdAt: new Date('2026-05-12T11:00:01.000Z'),
+            ...entity,
+        }));
+
+        const result = await service.createFollowUpAction(dto);
+
+        expect(followUpActionsRepo.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                note: 'Requires manager callback',
+                occurredAt: new Date('2026-05-12T11:00:00.000Z'),
+            }),
+        );
+        expect(result.occurredAt.toISOString()).toBe('2026-05-12T11:00:00.000Z');
     });
 });

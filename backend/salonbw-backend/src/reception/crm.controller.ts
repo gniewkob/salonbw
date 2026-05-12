@@ -1,7 +1,9 @@
 import {
     BadRequestException,
+    Body,
     Controller,
     Get,
+    Post,
     Query,
     UseGuards,
 } from '@nestjs/common';
@@ -10,8 +12,10 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
+import { CreateCrmFollowUpActionDto } from './dto/create-crm-follow-up-action.dto';
 import { ReceptionFollowUpCandidatesQueryDto } from './dto/reception-follow-up-candidates-query.dto';
 import {
+    CrmFollowUpActionResponse,
     ReceptionFollowUpCandidate,
     ReceptionService,
 } from './reception.service';
@@ -22,6 +26,15 @@ import {
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CrmController {
     constructor(private readonly receptionService: ReceptionService) {}
+
+    @Post('follow-up-actions')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Capture CRM follow-up action' })
+    createFollowUpAction(
+        @Body() dto: CreateCrmFollowUpActionDto,
+    ): Promise<CrmFollowUpActionResponse> {
+        return this.receptionService.createFollowUpAction(dto);
+    }
 
     @Get('follow-up-candidates')
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)

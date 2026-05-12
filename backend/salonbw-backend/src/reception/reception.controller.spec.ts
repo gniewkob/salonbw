@@ -15,6 +15,7 @@ describe('ReceptionController', () => {
 
     beforeEach(() => {
         service = {
+            createFollowUpAction: jest.fn(),
             createOperationalEvent: jest.fn(),
             getOperationalSummary: jest.fn(),
             getOperationalInsights: jest.fn(),

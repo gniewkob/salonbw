@@ -5,8 +5,11 @@ import {
     AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { Repository } from 'typeorm';
+import { CreateCrmFollowUpActionDto } from './dto/create-crm-follow-up-action.dto';
 import { CreateReceptionOperationalEventDto } from './dto/create-reception-operational-event.dto';
+import { CrmFollowUpAction } from './entities/crm-follow-up-action.entity';
 import { ReceptionOperationalEvent } from './entities/reception-operational-event.entity';
+import { type CrmFollowUpAction as CrmFollowUpActionType } from './reception.constants';
 
 export interface ReceptionOperationalEventResponse {
     id: number;
@@ -48,6 +51,17 @@ export interface ReceptionOperationalInsightsResponse {
     }>;
 }
 
+export interface CrmFollowUpActionResponse {
+    id: number;
+    customerId: number;
+    appointmentId: number;
+    candidateReason: ReceptionFollowUpReason;
+    action: CrmFollowUpActionType;
+    note: string | null;
+    occurredAt: Date;
+    createdAt: Date;
+}
+
 export type ReceptionFollowUpReason =
     | 'recent_no_show'
     | 'stale_in_progress'
@@ -74,7 +88,39 @@ export class ReceptionService {
         private readonly appointmentsRepo: Repository<Appointment>,
         @InjectRepository(ReceptionOperationalEvent)
         private readonly receptionEventsRepo: Repository<ReceptionOperationalEvent>,
+        @InjectRepository(CrmFollowUpAction)
+        private readonly crmFollowUpActionsRepo: Repository<CrmFollowUpAction>,
     ) {}
+
+    async createFollowUpAction(
+        dto: CreateCrmFollowUpActionDto,
+    ): Promise<CrmFollowUpActionResponse> {
+        const occurredAt = dto.occurredAt
+            ? new Date(dto.occurredAt)
+            : new Date();
+
+        const action = this.crmFollowUpActionsRepo.create({
+            customerId: dto.customerId,
+            appointmentId: dto.appointmentId,
+            candidateReason: dto.candidateReason,
+            action: dto.action,
+            note: dto.note?.trim() ? dto.note.trim() : null,
+            occurredAt,
+        });
+
+        const saved = await this.crmFollowUpActionsRepo.save(action);
+
+        return {
+            id: saved.id,
+            customerId: saved.customerId,
+            appointmentId: saved.appointmentId,
+            candidateReason: saved.candidateReason,
+            action: saved.action,
+            note: saved.note,
+            occurredAt: saved.occurredAt,
+            createdAt: saved.createdAt,
+        };
+    }
 
     async createOperationalEvent(
         dto: CreateReceptionOperationalEventDto,
