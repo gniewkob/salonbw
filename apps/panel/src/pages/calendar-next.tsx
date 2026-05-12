@@ -86,6 +86,18 @@ interface ReceptionFollowUpCandidate {
     suggestedAction: string;
 }
 
+type ReceptionFollowUpAction =
+    | 'contacted'
+    | 'deferred'
+    | 'dismissed'
+    | 'escalated';
+
+type ReceptionFollowUpActionState = {
+    status: 'pending' | 'success' | 'error';
+    action: ReceptionFollowUpAction;
+    message?: string;
+};
+
 const FOLLOW_UP_REASON_VALUES = [
     'recent_no_show',
     'stale_in_progress',
@@ -368,6 +380,10 @@ export default function CalendarNextPage() {
     const [receptionFollowUpError, setReceptionFollowUpError] = useState(false);
     const [receptionFollowUpCandidates, setReceptionFollowUpCandidates] =
         useState<ReceptionFollowUpCandidate[]>([]);
+    const [
+        receptionFollowUpActionStateByKey,
+        setReceptionFollowUpActionStateByKey,
+    ] = useState<Record<string, ReceptionFollowUpActionState>>({});
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -598,6 +614,7 @@ export default function CalendarNextPage() {
             setReceptionFollowUpLoading(false);
             setReceptionFollowUpError(false);
             setReceptionFollowUpCandidates([]);
+            setReceptionFollowUpActionStateByKey({});
             return;
         }
 
@@ -631,6 +648,49 @@ export default function CalendarNextPage() {
             cancelled = true;
         };
     }, [apiFetch, currentDate, currentView]);
+
+    const handleCaptureFollowUpAction = (
+        candidate: ReceptionFollowUpCandidate,
+        action: ReceptionFollowUpAction,
+    ) => {
+        if (candidate.appointmentId === null) {
+            return;
+        }
+
+        const candidateKey = `${candidate.customerId}:${candidate.reason}`;
+        setReceptionFollowUpActionStateByKey((current) => ({
+            ...current,
+            [candidateKey]: { status: 'pending', action },
+        }));
+
+        void apiFetch('/crm/follow-up-actions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customerId: candidate.customerId,
+                appointmentId: candidate.appointmentId,
+                candidateReason: candidate.reason,
+                action,
+                occurredAt: new Date().toISOString(),
+            }),
+        })
+            .then(() => {
+                setReceptionFollowUpActionStateByKey((current) => ({
+                    ...current,
+                    [candidateKey]: { status: 'success', action },
+                }));
+            })
+            .catch(() => {
+                setReceptionFollowUpActionStateByKey((current) => ({
+                    ...current,
+                    [candidateKey]: {
+                        status: 'error',
+                        action,
+                        message: 'Nie udało się zapisać akcji follow-up.',
+                    },
+                }));
+            });
+    };
 
     useEffect(() => {
         if (currentView !== 'reception') {
@@ -1184,12 +1244,18 @@ export default function CalendarNextPage() {
                                     loading={receptionFollowUpLoading}
                                     error={receptionFollowUpError}
                                     candidates={receptionFollowUpCandidates}
+                                    actionStateByCandidateKey={
+                                        receptionFollowUpActionStateByKey
+                                    }
                                     onOpenAppointment={(id) => {
                                         openAppointmentDeepLink(id);
                                     }}
                                     onOpenCustomer={(id) => {
                                         void router.push(`/customers/${id}`);
                                     }}
+                                    onCaptureFollowUpAction={
+                                        handleCaptureFollowUpAction
+                                    }
                                 />
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>

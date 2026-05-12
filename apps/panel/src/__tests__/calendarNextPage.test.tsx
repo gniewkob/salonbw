@@ -1165,6 +1165,194 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('captures follow-up action and marks candidate as handled on success', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 611,
+                        type: 'appointment',
+                        title: 'Follow-up action success',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 91,
+                        clientName: 'Klient 91',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 91, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 0,
+                        actionsOnAlerts: 0,
+                        alertActionRate: 0,
+                    },
+                    byAction: [],
+                    byDay: [],
+                };
+            }
+            if (endpoint.startsWith('/crm/follow-up-candidates')) {
+                return [
+                    {
+                        customerId: 91,
+                        appointmentId: 611,
+                        reason: 'recent_no_show',
+                        priority: 'high',
+                        suggestedAction: 'contact_customer',
+                    },
+                ];
+            }
+            if (endpoint === '/crm/follow-up-actions') {
+                return { id: 1 };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(screen.getByText('Klient #91')).toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Oznacz kontakt' }));
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/crm/follow-up-actions',
+                expect.objectContaining({
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                }),
+            ),
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByText('Wykonano: Kontakt wykonany'),
+            ).toBeInTheDocument(),
+        );
+    });
+
+    it('shows non-blocking error when follow-up action capture fails', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 612,
+                        type: 'appointment',
+                        title: 'Follow-up action failure',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 92,
+                        clientName: 'Klient 92',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 92, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 0,
+                        actionsOnAlerts: 0,
+                        alertActionRate: 0,
+                    },
+                    byAction: [],
+                    byDay: [],
+                };
+            }
+            if (endpoint.startsWith('/crm/follow-up-candidates')) {
+                return [
+                    {
+                        customerId: 92,
+                        appointmentId: 612,
+                        reason: 'stale_in_progress',
+                        priority: 'critical',
+                        suggestedAction: 'finalize_or_update_status',
+                    },
+                ];
+            }
+            if (endpoint === '/crm/follow-up-actions') {
+                throw new Error('save failed');
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(screen.getByText('Klient #92')).toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Odrocz' }));
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Nie udało się zapisać akcji follow-up.'),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText('Klient #92')).toBeInTheDocument();
+    });
+
     it('shows neutral follow-up fallback when endpoint fails', async () => {
         routerMock.query = { view: 'reception', date: '2026-05-07' };
         useCalendarMock.mockImplementation(() => ({

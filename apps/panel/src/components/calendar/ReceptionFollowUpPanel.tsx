@@ -6,12 +6,29 @@ interface ReceptionFollowUpCandidate {
     suggestedAction: string;
 }
 
+type ReceptionFollowUpAction =
+    | 'contacted'
+    | 'deferred'
+    | 'dismissed'
+    | 'escalated';
+
+type ReceptionFollowUpActionState = {
+    status: 'pending' | 'success' | 'error';
+    action: ReceptionFollowUpAction;
+    message?: string;
+};
+
 interface ReceptionFollowUpPanelProps {
     loading: boolean;
     error: boolean;
     candidates: ReceptionFollowUpCandidate[];
     onOpenAppointment?: (appointmentId: number) => void;
     onOpenCustomer?: (customerId: number) => void;
+    onCaptureFollowUpAction?: (
+        candidate: ReceptionFollowUpCandidate,
+        action: ReceptionFollowUpAction,
+    ) => void;
+    actionStateByCandidateKey?: Record<string, ReceptionFollowUpActionState>;
 }
 
 const PRIORITY_LABELS: Record<ReceptionFollowUpCandidate['priority'], string> =
@@ -36,12 +53,29 @@ const REASON_LABELS: Record<ReceptionFollowUpCandidate['reason'], string> = {
     high_risk_no_contact: 'Wysokie ryzyko bez kontaktu',
 };
 
+const FOLLOW_UP_ACTION_LABELS: Record<ReceptionFollowUpAction, string> = {
+    contacted: 'Oznacz kontakt',
+    deferred: 'Odrocz',
+    dismissed: 'Pomiń',
+    escalated: 'Eskaluj',
+};
+
+const FOLLOW_UP_ACTION_RESULT_LABELS: Record<ReceptionFollowUpAction, string> =
+    {
+        contacted: 'Kontakt wykonany',
+        deferred: 'Odroczono',
+        dismissed: 'Pominięto',
+        escalated: 'Wymaga eskalacji',
+    };
+
 export default function ReceptionFollowUpPanel({
     loading,
     error,
     candidates,
     onOpenAppointment,
     onOpenCustomer,
+    onCaptureFollowUpAction,
+    actionStateByCandidateKey,
 }: ReceptionFollowUpPanelProps) {
     return (
         <div
@@ -66,9 +100,16 @@ export default function ReceptionFollowUpPanel({
                 <ul className="list-group list-group-flush">
                     {candidates.slice(0, 5).map((candidate) => {
                         const appointmentId = candidate.appointmentId;
+                        const candidateKey = `${candidate.customerId}:${candidate.reason}`;
+                        const actionState =
+                            actionStateByCandidateKey?.[candidateKey];
+                        const isActionPending =
+                            actionState?.status === 'pending';
+                        const isActionHandled =
+                            actionState?.status === 'success';
                         return (
                             <li
-                                key={`${candidate.customerId}:${candidate.reason}`}
+                                key={candidateKey}
                                 className="list-group-item px-0 py-2"
                             >
                                 <div className="d-flex justify-content-between align-items-start gap-2">
@@ -116,6 +157,54 @@ export default function ReceptionFollowUpPanel({
                                         Otwórz klienta
                                     </button>
                                 </div>
+                                <div className="d-flex flex-wrap gap-2 mt-2">
+                                    {(
+                                        Object.keys(
+                                            FOLLOW_UP_ACTION_LABELS,
+                                        ) as ReceptionFollowUpAction[]
+                                    ).map((action) => (
+                                        <button
+                                            key={action}
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            disabled={
+                                                appointmentId === null ||
+                                                isActionPending ||
+                                                isActionHandled
+                                            }
+                                            onClick={() =>
+                                                onCaptureFollowUpAction?.(
+                                                    candidate,
+                                                    action,
+                                                )
+                                            }
+                                        >
+                                            {FOLLOW_UP_ACTION_LABELS[action]}
+                                        </button>
+                                    ))}
+                                </div>
+                                {actionState?.status === 'success' ? (
+                                    <div className="small text-success mt-2">
+                                        Wykonano:{' '}
+                                        {
+                                            FOLLOW_UP_ACTION_RESULT_LABELS[
+                                                actionState.action
+                                            ]
+                                        }
+                                    </div>
+                                ) : null}
+                                {actionState?.status === 'error' ? (
+                                    <div className="small text-danger mt-2">
+                                        {actionState.message ??
+                                            'Nie udało się zapisać akcji follow-up.'}
+                                    </div>
+                                ) : null}
+                                {appointmentId === null ? (
+                                    <div className="small text-muted mt-2">
+                                        Akcje follow-up niedostępne bez
+                                        powiązanej wizyty.
+                                    </div>
+                                ) : null}
                             </li>
                         );
                     })}
