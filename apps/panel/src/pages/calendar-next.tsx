@@ -86,6 +86,23 @@ interface ReceptionFollowUpCandidate {
     suggestedAction: string;
 }
 
+const FOLLOW_UP_REASON_VALUES = [
+    'recent_no_show',
+    'stale_in_progress',
+    'high_risk_no_contact',
+] as const;
+
+const FOLLOW_UP_PRIORITY_VALUES = ['critical', 'high', 'medium'] as const;
+
+const FOLLOW_UP_PRIORITY_SCORE: Record<
+    ReceptionFollowUpCandidate['priority'],
+    number
+> = {
+    critical: 3,
+    high: 2,
+    medium: 1,
+};
+
 function toSafeNonNegativeNumber(value: unknown): number {
     if (typeof value !== 'number' || Number.isNaN(value)) {
         return 0;
@@ -197,6 +214,85 @@ function normalizeOperationalInsightsResponse(
         byAction,
         byDay,
     };
+}
+
+function normalizeFollowUpCandidatesResponse(
+    value: unknown,
+): ReceptionFollowUpCandidate[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    const deduped = new Map<string, ReceptionFollowUpCandidate>();
+
+    for (const item of value) {
+        if (!item || typeof item !== 'object') continue;
+        const row = item as Partial<ReceptionFollowUpCandidate>;
+
+        const customerId = Number(row.customerId);
+        if (!Number.isInteger(customerId) || customerId <= 0) {
+            continue;
+        }
+
+        const reason = FOLLOW_UP_REASON_VALUES.includes(
+            row.reason as (typeof FOLLOW_UP_REASON_VALUES)[number],
+        )
+            ? (row.reason as ReceptionFollowUpCandidate['reason'])
+            : 'high_risk_no_contact';
+
+        const priority = FOLLOW_UP_PRIORITY_VALUES.includes(
+            row.priority as (typeof FOLLOW_UP_PRIORITY_VALUES)[number],
+        )
+            ? (row.priority as ReceptionFollowUpCandidate['priority'])
+            : 'medium';
+
+        const suggestedAction =
+            typeof row.suggestedAction === 'string' &&
+            row.suggestedAction.trim().length > 0
+                ? row.suggestedAction.trim()
+                : 'review_customer_timeline';
+
+        const parsedAppointmentId = Number(row.appointmentId);
+        const appointmentId =
+            Number.isInteger(parsedAppointmentId) && parsedAppointmentId > 0
+                ? parsedAppointmentId
+                : null;
+
+        const candidate: ReceptionFollowUpCandidate = {
+            customerId,
+            appointmentId,
+            reason,
+            priority,
+            suggestedAction,
+        };
+
+        const dedupKey = `${customerId}:${reason}`;
+        const existing = deduped.get(dedupKey);
+        if (!existing) {
+            deduped.set(dedupKey, candidate);
+            continue;
+        }
+
+        const existingScore = FOLLOW_UP_PRIORITY_SCORE[existing.priority];
+        const candidateScore = FOLLOW_UP_PRIORITY_SCORE[candidate.priority];
+        if (
+            candidateScore > existingScore ||
+            (candidateScore === existingScore &&
+                existing.appointmentId === null &&
+                candidate.appointmentId !== null)
+        ) {
+            deduped.set(dedupKey, candidate);
+        }
+    }
+
+    return Array.from(deduped.values()).sort((left, right) => {
+        const priorityDiff =
+            FOLLOW_UP_PRIORITY_SCORE[right.priority] -
+            FOLLOW_UP_PRIORITY_SCORE[left.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+
+        return left.customerId - right.customerId;
+    });
 }
 
 function toDateParam(value: Date): string {
@@ -516,10 +612,9 @@ export default function CalendarNextPage() {
         )
             .then((candidates) => {
                 if (cancelled) return;
-                if (!Array.isArray(candidates)) {
-                    throw new Error('Invalid follow-up response');
-                }
-                setReceptionFollowUpCandidates(candidates);
+                const normalized =
+                    normalizeFollowUpCandidatesResponse(candidates);
+                setReceptionFollowUpCandidates(normalized);
                 setReceptionFollowUpError(false);
             })
             .catch(() => {

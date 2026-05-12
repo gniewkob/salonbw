@@ -1237,6 +1237,119 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('normalizes malformed follow-up payload and deduplicates customer+reason', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 603,
+                        type: 'appointment',
+                        title: 'Follow-up malformed',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 83,
+                        clientName: 'Klient 83',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 83, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 0,
+                        actionsOnAlerts: 0,
+                        alertActionRate: 0,
+                    },
+                    byAction: [],
+                    byDay: [],
+                };
+            }
+            if (endpoint.startsWith('/crm/follow-up-candidates')) {
+                return [
+                    {
+                        customerId: 83,
+                        appointmentId: 603,
+                        reason: 'recent_no_show',
+                        priority: 'high',
+                        suggestedAction: 'contact_customer',
+                    },
+                    {
+                        customerId: 83,
+                        appointmentId: 604,
+                        reason: 'recent_no_show',
+                        priority: 'critical',
+                        suggestedAction: '',
+                    },
+                    {
+                        customerId: 'oops',
+                        appointmentId: 605,
+                        reason: 'stale_in_progress',
+                        priority: 'critical',
+                        suggestedAction: 'finalize',
+                    },
+                    {
+                        customerId: 84,
+                        appointmentId: -1,
+                        reason: 'legacy_unknown_reason',
+                        priority: 'legacy_unknown_priority',
+                    },
+                ];
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('reception-follow-up-panel'),
+            ).toHaveTextContent('Kandydaci follow-up CRM'),
+        );
+
+        expect(screen.getByText('Klient #83')).toBeInTheDocument();
+        expect(screen.getByText('Klient #84')).toBeInTheDocument();
+        expect(screen.getByText('Krytyczny')).toBeInTheDocument();
+        expect(screen.getByText('Średni')).toBeInTheDocument();
+        expect(
+            screen.getByText('Wysokie ryzyko bez kontaktu'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByText('Sugerowana akcja: review_customer_timeline'),
+        ).toHaveLength(2);
+        expect(screen.queryByText('Otwórz wizytę #-1')).not.toBeInTheDocument();
+        expect(screen.getAllByText('Klient #83')).toHaveLength(1);
+    });
+
     it('renders actionable recommendations and CTA updates reception filters', async () => {
         routerMock.query = { view: 'reception', date: '2026-05-07' };
         useCalendarMock.mockImplementation(() => ({
