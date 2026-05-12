@@ -306,6 +306,70 @@ describe('ReceptionService', () => {
         expect(result.byDay).toEqual([]);
     });
 
+    it('returns follow-up action audit summary for date range', async () => {
+        followUpActionsRepo.query
+            .mockResolvedValueOnce([{ actionsTotal: 5 }])
+            .mockResolvedValueOnce([
+                { action: 'contacted', count: 3 },
+                { action: 'deferred', count: 2 },
+            ])
+            .mockResolvedValueOnce([
+                { reason: 'recent_no_show', count: 4 },
+                { reason: 'stale_in_progress', count: 1 },
+            ])
+            .mockResolvedValueOnce([
+                { day: '2026-05-01', count: 2 },
+                { day: '2026-05-02', count: 3 },
+            ]);
+
+        const result = await service.getFollowUpActionAuditSummary(
+            '2026-05-01',
+            '2026-05-02',
+        );
+
+        expect(result).toEqual({
+            from: '2026-05-01',
+            to: '2026-05-02',
+            actionsTotal: 5,
+            byAction: [
+                { action: 'contacted', count: 3 },
+                { action: 'deferred', count: 2 },
+            ],
+            byReason: [
+                { reason: 'recent_no_show', count: 4 },
+                { reason: 'stale_in_progress', count: 1 },
+            ],
+            byDay: [
+                { day: '2026-05-01', count: 2 },
+                { day: '2026-05-02', count: 3 },
+            ],
+        });
+
+        expect(followUpActionsRepo.query).toHaveBeenCalledTimes(4);
+    });
+
+    it('returns zero-safe follow-up action audit summary when empty', async () => {
+        followUpActionsRepo.query
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([]);
+
+        const result = await service.getFollowUpActionAuditSummary(
+            '2026-05-01',
+            '2026-05-01',
+        );
+
+        expect(result).toEqual({
+            from: '2026-05-01',
+            to: '2026-05-01',
+            actionsTotal: 0,
+            byAction: [],
+            byReason: [],
+            byDay: [],
+        });
+    });
+
     it('returns prioritized follow-up candidates for a day', async () => {
         appointmentsRepo.query
             .mockResolvedValueOnce([

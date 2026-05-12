@@ -16,6 +16,7 @@ describe('CrmController', () => {
     beforeEach(() => {
         service = {
             createFollowUpAction: jest.fn(),
+            getFollowUpActionAuditSummary: jest.fn(),
             createOperationalEvent: jest.fn(),
             getOperationalSummary: jest.fn(),
             getOperationalInsights: jest.fn(),
@@ -65,6 +66,45 @@ describe('CrmController', () => {
         ).toThrow(BadRequestException);
     });
 
+    it('delegates follow-up audit summary query to service', async () => {
+        service.getFollowUpActionAuditSummary.mockResolvedValueOnce({
+            from: '2026-05-01',
+            to: '2026-05-07',
+            actionsTotal: 3,
+            byAction: [],
+            byReason: [],
+            byDay: [],
+        });
+
+        await controller.getFollowUpActionAuditSummary({
+            from: '2026-05-01',
+            to: '2026-05-07',
+        });
+
+        expect(service.getFollowUpActionAuditSummary).toHaveBeenCalledWith(
+            '2026-05-01',
+            '2026-05-07',
+        );
+    });
+
+    it('rejects invalid follow-up audit date range', () => {
+        expect(() =>
+            controller.getFollowUpActionAuditSummary({
+                from: '2026/05/01',
+                to: '2026-05-07',
+            }),
+        ).toThrow(BadRequestException);
+    });
+
+    it('rejects follow-up audit range longer than 31 days', () => {
+        expect(() =>
+            controller.getFollowUpActionAuditSummary({
+                from: '2026-05-01',
+                to: '2026-06-15',
+            }),
+        ).toThrow(BadRequestException);
+    });
+
     it('exposes GET /crm/follow-up-candidates endpoint', () => {
         expect(Reflect.getMetadata(PATH_METADATA, CrmController)).toBe('crm');
 
@@ -78,6 +118,20 @@ describe('CrmController', () => {
         );
 
         expect(methodPath).toBe('follow-up-candidates');
+        expect(method).toBe(0);
+    });
+
+    it('exposes GET /crm/follow-up-actions endpoint', () => {
+        const methodPath = Reflect.getMetadata(
+            PATH_METADATA,
+            CrmController.prototype.getFollowUpActionAuditSummary,
+        );
+        const method = Reflect.getMetadata(
+            METHOD_METADATA,
+            CrmController.prototype.getFollowUpActionAuditSummary,
+        );
+
+        expect(methodPath).toBe('follow-up-actions');
         expect(method).toBe(0);
     });
 
@@ -112,6 +166,19 @@ describe('CrmController', () => {
         const roles = Reflect.getMetadata(
             ROLES_KEY,
             CrmController.prototype.createFollowUpAction,
+        ) as Role[];
+
+        expect(roles).toEqual([
+            Role.Admin,
+            Role.Employee,
+            Role.Receptionist,
+        ]);
+    });
+
+    it('requires Admin/Employee/Receptionist roles on follow-up audit endpoint', () => {
+        const roles = Reflect.getMetadata(
+            ROLES_KEY,
+            CrmController.prototype.getFollowUpActionAuditSummary,
         ) as Role[];
 
         expect(roles).toEqual([

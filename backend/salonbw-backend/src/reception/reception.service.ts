@@ -62,6 +62,24 @@ export interface CrmFollowUpActionResponse {
     createdAt: Date;
 }
 
+export interface CrmFollowUpActionAuditSummaryResponse {
+    from: string;
+    to: string;
+    actionsTotal: number;
+    byAction: Array<{
+        action: CrmFollowUpActionType;
+        count: number;
+    }>;
+    byReason: Array<{
+        reason: ReceptionFollowUpReason;
+        count: number;
+    }>;
+    byDay: Array<{
+        day: string;
+        count: number;
+    }>;
+}
+
 export type ReceptionFollowUpReason =
     | 'recent_no_show'
     | 'stale_in_progress'
@@ -119,6 +137,83 @@ export class ReceptionService {
             note: saved.note,
             occurredAt: saved.occurredAt,
             createdAt: saved.createdAt,
+        };
+    }
+
+    async getFollowUpActionAuditSummary(
+        from: string,
+        to: string,
+    ): Promise<CrmFollowUpActionAuditSummaryResponse> {
+        const start = new Date(`${from}T00:00:00.000`);
+        const endExclusive = new Date(`${to}T00:00:00.000`);
+        endExclusive.setDate(endExclusive.getDate() + 1);
+
+        const summaryRows = await this.crmFollowUpActionsRepo.query(
+            `SELECT COUNT(*)::int AS "actionsTotal"
+             FROM crm_follow_up_actions
+             WHERE "occurredAt" >= $1
+               AND "occurredAt" < $2`,
+            [start, endExclusive],
+        );
+
+        const byActionRows = await this.crmFollowUpActionsRepo.query(
+            `SELECT
+                "action" AS "action",
+                COUNT(*)::int AS "count"
+             FROM crm_follow_up_actions
+             WHERE "occurredAt" >= $1
+               AND "occurredAt" < $2
+             GROUP BY "action"
+             ORDER BY "count" DESC, "action" ASC`,
+            [start, endExclusive],
+        );
+
+        const byReasonRows = await this.crmFollowUpActionsRepo.query(
+            `SELECT
+                "candidateReason" AS "reason",
+                COUNT(*)::int AS "count"
+             FROM crm_follow_up_actions
+             WHERE "occurredAt" >= $1
+               AND "occurredAt" < $2
+             GROUP BY "candidateReason"
+             ORDER BY "count" DESC, "candidateReason" ASC`,
+            [start, endExclusive],
+        );
+
+        const byDayRows = await this.crmFollowUpActionsRepo.query(
+            `SELECT
+                TO_CHAR(DATE("occurredAt"), 'YYYY-MM-DD') AS "day",
+                COUNT(*)::int AS "count"
+             FROM crm_follow_up_actions
+             WHERE "occurredAt" >= $1
+               AND "occurredAt" < $2
+             GROUP BY DATE("occurredAt")
+             ORDER BY DATE("occurredAt") ASC`,
+            [start, endExclusive],
+        );
+
+        return {
+            from,
+            to,
+            actionsTotal: Number(summaryRows?.[0]?.actionsTotal ?? 0),
+            byAction: (byActionRows ?? []).map(
+                (row: { action: CrmFollowUpActionType; count: number }) => ({
+                    action: row.action,
+                    count: Number(row.count ?? 0),
+                }),
+            ),
+            byReason: (byReasonRows ?? []).map(
+                (row: { reason: ReceptionFollowUpReason; count: number }) => ({
+                    reason: row.reason,
+                    count: Number(row.count ?? 0),
+                }),
+            ),
+            byDay: (byDayRows ?? []).map(
+                (row: { day: string; count: number }) => ({
+                    day: row.day,
+                    count: Number(row.count ?? 0),
+                }),
+            ),
         };
     }
 
