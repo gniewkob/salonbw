@@ -18,6 +18,32 @@ gh run view <run-id> --log | tail
 
 All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are populated (SSH key, mydevil host/user, optional API URLs, `NPM_TOKEN`).
 
+## 1.1 Production smoke: Reception Insights (`calendar-next`)
+
+Scope:
+- logged-in smoke for `/calendar-next?view=reception`,
+- insights panel render,
+- fallback when `/api/reception/operational-insights` is unavailable,
+- CTA-to-filter UI flow (`priority`, `alert CRM`, `to_finalize`).
+
+Required environment variables:
+- `PANEL_LOGIN_EMAIL`
+- `PANEL_LOGIN_PASSWORD`
+
+Manual run:
+
+```bash
+cd apps/panel
+PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl \
+PANEL_LOGIN_EMAIL='[EMAIL]' \
+PANEL_LOGIN_PASSWORD='[PASSWORD]' \
+pnpm exec playwright test tests/e2e/prod-calendar-smoke.spec.ts --project=desktop-1366
+```
+
+Runtime guardrails:
+- test suite is skipped with explicit reason when required login env is missing,
+- request interception for fallback/CTA checks is limited to `/api/reception/operational-insights`.
+
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.

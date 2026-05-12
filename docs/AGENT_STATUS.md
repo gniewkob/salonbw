@@ -34,6 +34,14 @@ Operational note (2026-05-09):
 - Added drill failure incident policy to `docs/AGENT_OPERATIONS.md`: drill failure is treated as ops automation incident by default (owner `ops/platform`, labels `ops,automation,drill-failure`) with mandatory triage on workflow logs + drill report artifact before any app-level escalation.
 - Recorded first post-scheduling drill execution (manual equivalent): `Ops Batch Stats Drill` run `25670568738` (`result=pass`, checks: `synthetic_fixtures`, `dry_run_guards`), artifact `ops-batch-stats-drill-report-25670568738`.
 - Added reception operational action tracking in calendar workflows (`open_appointment_drawer`, `confirm/start/no_show`, `finalize_via_drawer`, `open_customer_profile`, `open_sale_detail`) with non-sensitive payload (`action`, `appointmentId`, optional `customerId`, source) and regression coverage in panel tests.
+- Added production smoke coverage for reception insights on `/calendar-next?view=reception` in `tests/e2e/prod-calendar-smoke.spec.ts`:
+  - logged-in render smoke for insights panel,
+  - fallback verification when `/api/reception/operational-insights` is unavailable,
+  - UI CTA smoke for reception filters (`priority`, `alert CRM`, `to_finalize`).
+- Added production smoke runtime guardrails for reception insights:
+  - explicit skip reason when login env is missing (`PANEL_LOGIN_EMAIL`, `PANEL_LOGIN_PASSWORD`),
+  - narrowed request interception scope to `/api/reception/operational-insights`,
+  - assertions that interception does not match unrelated endpoints.
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.
