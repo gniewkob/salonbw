@@ -8,6 +8,7 @@ import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
+import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import {
     hasCustomerAlert,
     isPriorityAppointment,
@@ -75,6 +76,14 @@ interface ReceptionOperationalInsightsResponse {
     };
     byAction: ReceptionOperationalInsightsByActionItem[];
     byDay: ReceptionOperationalInsightsByDayItem[];
+}
+
+interface ReceptionFollowUpCandidate {
+    customerId: number;
+    appointmentId: number | null;
+    reason: 'recent_no_show' | 'stale_in_progress' | 'high_risk_no_contact';
+    priority: 'critical' | 'high' | 'medium';
+    suggestedAction: string;
 }
 
 function toSafeNonNegativeNumber(value: unknown): number {
@@ -258,6 +267,11 @@ export default function CalendarNextPage() {
     const [receptionInsightsByDay, setReceptionInsightsByDay] = useState<
         ReceptionOperationalInsightsByDayItem[]
     >([]);
+    const [receptionFollowUpLoading, setReceptionFollowUpLoading] =
+        useState(false);
+    const [receptionFollowUpError, setReceptionFollowUpError] = useState(false);
+    const [receptionFollowUpCandidates, setReceptionFollowUpCandidates] =
+        useState<ReceptionFollowUpCandidate[]>([]);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -476,6 +490,46 @@ export default function CalendarNextPage() {
                 if (cancelled) return;
                 setPersistedActionsTotalCount(null);
                 setPersistedActionsOnAlertsCount(null);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, currentDate, currentView]);
+
+    useEffect(() => {
+        if (currentView !== 'reception') {
+            setReceptionFollowUpLoading(false);
+            setReceptionFollowUpError(false);
+            setReceptionFollowUpCandidates([]);
+            return;
+        }
+
+        const date = toDateParam(currentDate);
+        let cancelled = false;
+
+        setReceptionFollowUpLoading(true);
+        setReceptionFollowUpError(false);
+
+        void apiFetch<ReceptionFollowUpCandidate[]>(
+            `/crm/follow-up-candidates?date=${encodeURIComponent(date)}`,
+        )
+            .then((candidates) => {
+                if (cancelled) return;
+                if (!Array.isArray(candidates)) {
+                    throw new Error('Invalid follow-up response');
+                }
+                setReceptionFollowUpCandidates(candidates);
+                setReceptionFollowUpError(false);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setReceptionFollowUpCandidates([]);
+                setReceptionFollowUpError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setReceptionFollowUpLoading(false);
             });
 
         return () => {
@@ -1030,6 +1084,17 @@ export default function CalendarNextPage() {
                                             'in_progress' &&
                                         receptionPaymentFilter === 'to_finalize'
                                     }
+                                />
+                                <ReceptionFollowUpPanel
+                                    loading={receptionFollowUpLoading}
+                                    error={receptionFollowUpError}
+                                    candidates={receptionFollowUpCandidates}
+                                    onOpenAppointment={(id) => {
+                                        openAppointmentDeepLink(id);
+                                    }}
+                                    onOpenCustomer={(id) => {
+                                        void router.push(`/customers/${id}`);
+                                    }}
                                 />
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
