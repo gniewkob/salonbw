@@ -387,7 +387,71 @@ export class ReceptionService {
             score: 1,
         });
 
+        const contactSuppressionStart = new Date(dayEnd);
+        contactSuppressionStart.setDate(contactSuppressionStart.getDate() - 7);
+
+        const handledRows = await this.crmFollowUpActionsRepo.query(
+            `SELECT
+                act."customerId" AS "customerId",
+                act."candidateReason" AS "candidateReason",
+                act."action" AS "action"
+             FROM crm_follow_up_actions act
+             WHERE (
+                    act."action" = $1
+                    AND act."occurredAt" >= $2
+                    AND act."occurredAt" < $3
+                )
+                OR (
+                    act."action" IN ($4, $5)
+                    AND act."occurredAt" >= $6
+                    AND act."occurredAt" < $3
+                )`,
+            [
+                'contacted',
+                contactSuppressionStart,
+                dayEnd,
+                'dismissed',
+                'deferred',
+                dayStart,
+            ],
+        );
+
+        const suppressedKeys = new Set<string>();
+        for (const row of handledRows ?? []) {
+            if (!row || typeof row !== 'object') continue;
+            const action = (row as { action?: unknown }).action;
+            if (
+                action !== 'contacted' &&
+                action !== 'dismissed' &&
+                action !== 'deferred'
+            ) {
+                continue;
+            }
+            const candidateReason = (row as { candidateReason?: unknown })
+                .candidateReason;
+            if (
+                candidateReason !== 'recent_no_show' &&
+                candidateReason !== 'stale_in_progress' &&
+                candidateReason !== 'high_risk_no_contact'
+            ) {
+                continue;
+            }
+
+            const customerId = Number((row as { customerId?: unknown }).customerId);
+            if (!Number.isInteger(customerId) || customerId <= 0) {
+                continue;
+            }
+
+            suppressedKeys.add(`${customerId}:${candidateReason}`);
+        }
+
         return Array.from(scored.values())
+            .filter(
+                (candidate) =>
+                    !suppressedKeys.has(
+                        `${candidate.customerId}:${candidate.reason}`,
+                    ),
+            )
             .sort((a, b) => b.score - a.score)
             .map(({ score: _score, ...candidate }) => candidate);
     }

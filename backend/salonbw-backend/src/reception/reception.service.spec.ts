@@ -26,6 +26,7 @@ describe('ReceptionService', () => {
         followUpActionsRepo = {
             create: jest.fn(),
             save: jest.fn(),
+            query: jest.fn(),
         } as unknown as jest.Mocked<Repository<CrmFollowUpAction>>;
 
         service = new ReceptionService(
@@ -316,6 +317,7 @@ describe('ReceptionService', () => {
                 { customerId: 12, appointmentId: 1202 },
             ])
             .mockResolvedValueOnce([{ customerId: 15, appointmentId: 1501 }]);
+        followUpActionsRepo.query.mockResolvedValueOnce([]);
 
         const result = await service.getFollowUpCandidates('2026-05-12');
 
@@ -357,6 +359,7 @@ describe('ReceptionService', () => {
             },
         ]);
         expect(appointmentsRepo.query).toHaveBeenCalledTimes(3);
+        expect(followUpActionsRepo.query).toHaveBeenCalledTimes(1);
     });
 
     it('skips malformed follow-up rows and returns empty by default', async () => {
@@ -364,10 +367,56 @@ describe('ReceptionService', () => {
             .mockResolvedValueOnce([{ customerId: null, appointmentId: null }])
             .mockResolvedValueOnce([{ customerId: 'abc', appointmentId: 1 }])
             .mockResolvedValueOnce([]);
+        followUpActionsRepo.query.mockResolvedValueOnce([]);
 
         const result = await service.getFollowUpCandidates('2026-05-12');
 
         expect(result).toEqual([]);
+    });
+
+    it('suppresses handled candidates by follow-up actions policy', async () => {
+        appointmentsRepo.query
+            .mockResolvedValueOnce([
+                { customerId: 12, appointmentId: 1201 },
+                { customerId: 14, appointmentId: 1401 },
+            ])
+            .mockResolvedValueOnce([{ customerId: 11, appointmentId: 1101 }])
+            .mockResolvedValueOnce([{ customerId: 15, appointmentId: 1501 }]);
+
+        followUpActionsRepo.query.mockResolvedValueOnce([
+            {
+                customerId: 12,
+                candidateReason: 'recent_no_show',
+                action: 'contacted',
+            },
+            {
+                customerId: 11,
+                candidateReason: 'stale_in_progress',
+                action: 'deferred',
+            },
+            {
+                customerId: 15,
+                candidateReason: 'high_risk_no_contact',
+                action: 'dismissed',
+            },
+            {
+                customerId: 14,
+                candidateReason: 'recent_no_show',
+                action: 'escalated',
+            },
+        ]);
+
+        const result = await service.getFollowUpCandidates('2026-05-12');
+
+        expect(result).toEqual([
+            {
+                customerId: 14,
+                appointmentId: 1401,
+                reason: 'recent_no_show',
+                priority: 'high',
+                suggestedAction: 'contact_customer',
+            },
+        ]);
     });
 
     it('saves follow-up action and defaults occurredAt when missing', async () => {
