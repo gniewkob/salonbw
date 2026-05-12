@@ -17,6 +17,9 @@ interface ReceptionInsightsPanelProps {
     alertActionRate: number | null;
     byAction: ReceptionInsightsByActionItem[];
     byDay: ReceptionInsightsByDayItem[];
+    onEnablePriorityFilter?: () => void;
+    onEnableAlertFilter?: () => void;
+    onShowToFinalize?: () => void;
 }
 
 function formatPercent(value: number | null): string {
@@ -34,6 +37,9 @@ export default function ReceptionInsightsPanel({
     alertActionRate,
     byAction,
     byDay,
+    onEnablePriorityFilter,
+    onEnableAlertFilter,
+    onShowToFinalize,
 }: ReceptionInsightsPanelProps) {
     const hasData =
         typeof actionsTotal === 'number' &&
@@ -42,6 +48,57 @@ export default function ReceptionInsightsPanel({
 
     const topActions = byAction.slice(0, 3);
     const dayTrend = byDay.slice(-7);
+    const dominantAction = topActions[0]?.action;
+    const previousDay =
+        dayTrend.length >= 2 ? dayTrend[dayTrend.length - 2] : null;
+    const latestDay =
+        dayTrend.length >= 1 ? dayTrend[dayTrend.length - 1] : null;
+    const previousRate =
+        previousDay && previousDay.actionsTotal > 0
+            ? previousDay.actionsOnAlerts / previousDay.actionsTotal
+            : null;
+    const latestRate =
+        latestDay && latestDay.actionsTotal > 0
+            ? latestDay.actionsOnAlerts / latestDay.actionsTotal
+            : null;
+    const isAlertTrendRising =
+        previousRate !== null &&
+        latestRate !== null &&
+        latestRate - previousRate >= 0.15;
+
+    const recommendations: Array<{
+        id: string;
+        label: string;
+        cta: string;
+        onClick?: () => void;
+    }> = [];
+
+    if (typeof alertActionRate === 'number' && alertActionRate >= 0.5) {
+        recommendations.push({
+            id: 'priority',
+            label: 'Wysoki udział akcji na alertach CRM.',
+            cta: 'Włącz filtr Tylko priorytetowe',
+            onClick: onEnablePriorityFilter,
+        });
+    }
+
+    if (isAlertTrendRising) {
+        recommendations.push({
+            id: 'alerts',
+            label: 'Trend alertów CRM rośnie względem poprzedniego dnia.',
+            cta: 'Przejdź do wizyt z alertem CRM',
+            onClick: onEnableAlertFilter,
+        });
+    }
+
+    if (dominantAction === 'start_appointment') {
+        recommendations.push({
+            id: 'finalize',
+            label: 'Najczęstszą akcją jest rozpoczęcie wizyty.',
+            cta: 'Sprawdź wizyty do finalizacji',
+            onClick: onShowToFinalize,
+        });
+    }
 
     return (
         <div
@@ -123,6 +180,31 @@ export default function ReceptionInsightsPanel({
                                         </span>{' '}
                                         ({item.actionsOnAlerts}/
                                         {item.actionsTotal})
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                    <div>
+                        <div className="small text-muted mb-1">
+                            Co zrobić teraz
+                        </div>
+                        {recommendations.length === 0 ? (
+                            <div className="small text-muted">
+                                Brak pilnych rekomendacji.
+                            </div>
+                        ) : (
+                            <ul className="mb-0 ps-3 d-flex flex-column gap-1">
+                                {recommendations.map((item) => (
+                                    <li key={item.id} className="small">
+                                        <span>{item.label}</span>{' '}
+                                        <button
+                                            type="button"
+                                            className="btn btn-link btn-sm p-0 align-baseline"
+                                            onClick={item.onClick}
+                                        >
+                                            {item.cta}
+                                        </button>
                                     </li>
                                 ))}
                             </ul>

@@ -1059,6 +1059,209 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('renders actionable recommendations and CTA updates reception filters', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 501,
+                        type: 'appointment',
+                        title: 'Alerted',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 61,
+                        clientName: 'Klient 61',
+                        status: 'scheduled',
+                    },
+                    {
+                        id: 502,
+                        type: 'appointment',
+                        title: 'No alert',
+                        startTime: '2026-05-07T10:00:00.000Z',
+                        endTime: '2026-05-07T10:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 62,
+                        clientName: 'Klient 62',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 61, statistics: { noShowVisits: 2 } },
+                        { customerId: 62, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 12,
+                    actionsOnAlerts: 7,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 20,
+                        actionsOnAlerts: 12,
+                        alertActionRate: 0.6,
+                    },
+                    byAction: [
+                        {
+                            action: 'start_appointment',
+                            actionsTotal: 7,
+                            actionsOnAlerts: 4,
+                            alertActionRate: 0.57,
+                        },
+                    ],
+                    byDay: [
+                        {
+                            day: '2026-05-06',
+                            actionsTotal: 10,
+                            actionsOnAlerts: 3,
+                            alertActionRate: 0.3,
+                        },
+                        {
+                            day: '2026-05-07',
+                            actionsTotal: 10,
+                            actionsOnAlerts: 5,
+                            alertActionRate: 0.5,
+                        },
+                    ],
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Włącz filtr Tylko priorytetowe'),
+            ).toBeInTheDocument(),
+        );
+        expect(
+            screen.getByText('Przejdź do wizyt z alertem CRM'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Sprawdź wizyty do finalizacji'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('reception-view:2')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Przejdź do wizyt z alertem CRM'));
+        await waitFor(() =>
+            expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
+        );
+    });
+
+    it('shows no urgent recommendations for neutral insights', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 511,
+                        type: 'appointment',
+                        title: 'Neutral',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 71,
+                        clientName: 'Klient 71',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 71, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 3,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 10,
+                        actionsOnAlerts: 2,
+                        alertActionRate: 0.2,
+                    },
+                    byAction: [
+                        {
+                            action: 'open_appointment_drawer',
+                            actionsTotal: 6,
+                            actionsOnAlerts: 1,
+                            alertActionRate: 0.16,
+                        },
+                    ],
+                    byDay: [
+                        {
+                            day: '2026-05-06',
+                            actionsTotal: 5,
+                            actionsOnAlerts: 1,
+                            alertActionRate: 0.2,
+                        },
+                        {
+                            day: '2026-05-07',
+                            actionsTotal: 5,
+                            actionsOnAlerts: 1,
+                            alertActionRate: 0.2,
+                        },
+                    ],
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Brak pilnych rekomendacji.'),
+            ).toBeInTheDocument(),
+        );
+    });
+
     it('normalizes malformed insights payload to safe values', async () => {
         routerMock.query = { view: 'reception', date: '2026-05-07' };
         useCalendarMock.mockImplementation(() => ({

@@ -1009,6 +1009,18 @@ export default function CalendarNextPage() {
                                     }
                                     byAction={receptionInsightsByAction}
                                     byDay={receptionInsightsByDay}
+                                    onEnablePriorityFilter={() => {
+                                        setReceptionPriorityFilter(true);
+                                    }}
+                                    onEnableAlertFilter={() => {
+                                        setReceptionAlertFilter(true);
+                                    }}
+                                    onShowToFinalize={() => {
+                                        setReceptionStatusFilter('in_progress');
+                                        setReceptionPaymentFilter(
+                                            'to_finalize',
+                                        );
+                                    }}
                                 />
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
