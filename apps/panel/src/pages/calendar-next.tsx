@@ -9,6 +9,7 @@ import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
+import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
 import {
     hasCustomerAlert,
     isPriorityAppointment,
@@ -84,6 +85,30 @@ interface ReceptionFollowUpCandidate {
     reason: 'recent_no_show' | 'stale_in_progress' | 'high_risk_no_contact';
     priority: 'critical' | 'high' | 'medium';
     suggestedAction: string;
+}
+
+interface ReceptionFollowUpAuditByActionItem {
+    action: string;
+    count: number;
+}
+
+interface ReceptionFollowUpAuditByReasonItem {
+    reason: string;
+    count: number;
+}
+
+interface ReceptionFollowUpAuditByDayItem {
+    day: string;
+    count: number;
+}
+
+interface ReceptionFollowUpAuditResponse {
+    from: string;
+    to: string;
+    actionsTotal: number;
+    byAction: ReceptionFollowUpAuditByActionItem[];
+    byReason: ReceptionFollowUpAuditByReasonItem[];
+    byDay: ReceptionFollowUpAuditByDayItem[];
 }
 
 type ReceptionFollowUpAction =
@@ -307,6 +332,60 @@ function normalizeFollowUpCandidatesResponse(
     });
 }
 
+function normalizeFollowUpAuditResponse(
+    value: unknown,
+): ReceptionFollowUpAuditResponse {
+    const fallback: ReceptionFollowUpAuditResponse = {
+        from: '',
+        to: '',
+        actionsTotal: 0,
+        byAction: [],
+        byReason: [],
+        byDay: [],
+    };
+
+    if (!value || typeof value !== 'object') {
+        return fallback;
+    }
+
+    const payload = value as Partial<ReceptionFollowUpAuditResponse>;
+    const byAction = Array.isArray(payload.byAction)
+        ? payload.byAction
+              .filter((item) => Boolean(item && typeof item === 'object'))
+              .map((item) => ({
+                  action: typeof item.action === 'string' ? item.action : '-',
+                  count: toSafeNonNegativeNumber(item.count),
+              }))
+        : [];
+
+    const byReason = Array.isArray(payload.byReason)
+        ? payload.byReason
+              .filter((item) => Boolean(item && typeof item === 'object'))
+              .map((item) => ({
+                  reason: typeof item.reason === 'string' ? item.reason : '-',
+                  count: toSafeNonNegativeNumber(item.count),
+              }))
+        : [];
+
+    const byDay = Array.isArray(payload.byDay)
+        ? payload.byDay
+              .filter((item) => Boolean(item && typeof item === 'object'))
+              .map((item) => ({
+                  day: typeof item.day === 'string' ? item.day : '-',
+                  count: toSafeNonNegativeNumber(item.count),
+              }))
+        : [];
+
+    return {
+        from: typeof payload.from === 'string' ? payload.from : '',
+        to: typeof payload.to === 'string' ? payload.to : '',
+        actionsTotal: toSafeNonNegativeNumber(payload.actionsTotal),
+        byAction,
+        byReason,
+        byDay,
+    };
+}
+
 function toDateParam(value: Date): string {
     const year = value.getFullYear();
     const month = `${value.getMonth() + 1}`.padStart(2, '0');
@@ -384,6 +463,10 @@ export default function CalendarNextPage() {
         receptionFollowUpActionStateByKey,
         setReceptionFollowUpActionStateByKey,
     ] = useState<Record<string, ReceptionFollowUpActionState>>({});
+    const [followUpAuditLoading, setFollowUpAuditLoading] = useState(false);
+    const [followUpAuditError, setFollowUpAuditError] = useState(false);
+    const [followUpAuditSummary, setFollowUpAuditSummary] =
+        useState<ReceptionFollowUpAuditResponse | null>(null);
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -642,6 +725,48 @@ export default function CalendarNextPage() {
             .finally(() => {
                 if (cancelled) return;
                 setReceptionFollowUpLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, currentDate, currentView]);
+
+    useEffect(() => {
+        if (currentView !== 'reception') {
+            setFollowUpAuditLoading(false);
+            setFollowUpAuditError(false);
+            setFollowUpAuditSummary(null);
+            return;
+        }
+
+        const rangeEnd = toDateParam(currentDate);
+        const rangeStartDate = new Date(currentDate);
+        rangeStartDate.setDate(rangeStartDate.getDate() - 6);
+        const rangeStart = toDateParam(rangeStartDate);
+        let cancelled = false;
+
+        setFollowUpAuditLoading(true);
+        setFollowUpAuditError(false);
+
+        void apiFetch<ReceptionFollowUpAuditResponse>(
+            `/crm/follow-up-actions?from=${encodeURIComponent(rangeStart)}&to=${encodeURIComponent(rangeEnd)}`,
+        )
+            .then((summary) => {
+                if (cancelled) return;
+                setFollowUpAuditSummary(
+                    normalizeFollowUpAuditResponse(summary),
+                );
+                setFollowUpAuditError(false);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setFollowUpAuditSummary(null);
+                setFollowUpAuditError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setFollowUpAuditLoading(false);
             });
 
         return () => {
@@ -1256,6 +1381,21 @@ export default function CalendarNextPage() {
                                     onCaptureFollowUpAction={
                                         handleCaptureFollowUpAction
                                     }
+                                />
+                                <ReceptionFollowUpAuditPanel
+                                    loading={followUpAuditLoading}
+                                    error={followUpAuditError}
+                                    actionsTotal={
+                                        followUpAuditSummary?.actionsTotal ??
+                                        null
+                                    }
+                                    byAction={
+                                        followUpAuditSummary?.byAction ?? []
+                                    }
+                                    byReason={
+                                        followUpAuditSummary?.byReason ?? []
+                                    }
+                                    byDay={followUpAuditSummary?.byDay ?? []}
                                 />
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>

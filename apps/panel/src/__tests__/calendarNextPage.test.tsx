@@ -1059,6 +1059,155 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('renders follow-up action audit panel from persisted range endpoint', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 491,
+                        type: 'appointment',
+                        title: 'Follow-up audit',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 53,
+                        clientName: 'Klient 53',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 53, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 0,
+                        actionsOnAlerts: 0,
+                        alertActionRate: 0,
+                    },
+                    byAction: [],
+                    byDay: [],
+                };
+            }
+            if (endpoint.startsWith('/crm/follow-up-actions?from=')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    actionsTotal: 6,
+                    byAction: [
+                        { action: 'contacted', count: 3 },
+                        { action: 'deferred', count: 2 },
+                    ],
+                    byReason: [{ reason: 'recent_no_show', count: 4 }],
+                    byDay: [{ day: '2026-05-07', count: 2 }],
+                };
+            }
+            return [];
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('reception-follow-up-audit-panel'),
+            ).toHaveTextContent('Audyt follow-up (7 dni)'),
+        );
+        expect(screen.getByText('Akcje follow-up łącznie')).toBeInTheDocument();
+        expect(screen.getByText('6')).toBeInTheDocument();
+        expect(screen.getByText('Kontakt wykonany')).toBeInTheDocument();
+        expect(screen.getByText('Niedawne no-show')).toBeInTheDocument();
+        expect(screen.getByText('2026-05-07')).toBeInTheDocument();
+    });
+
+    it('shows follow-up audit fallback when audit endpoint fails', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 492,
+                        type: 'appointment',
+                        title: 'Follow-up audit fallback',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 54,
+                        clientName: 'Klient 54',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 54, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 0,
+                        actionsOnAlerts: 0,
+                        alertActionRate: 0,
+                    },
+                    byAction: [],
+                    byDay: [],
+                };
+            }
+            if (endpoint.startsWith('/crm/follow-up-actions?from=')) {
+                throw new Error('audit unavailable');
+            }
+            return [];
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Audyt follow-up chwilowo niedostępny.'),
+            ).toBeInTheDocument(),
+        );
+    });
+
     it('renders follow-up candidates panel and supports open actions', async () => {
         routerMock.query = { view: 'reception', date: '2026-05-07' };
         useCalendarMock.mockImplementation(() => ({
