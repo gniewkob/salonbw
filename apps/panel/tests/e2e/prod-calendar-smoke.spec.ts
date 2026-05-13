@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const REQUIRED_LOGIN_ENV = ['PANEL_LOGIN_EMAIL', 'PANEL_LOGIN_PASSWORD'] as const;
+const REQUIRED_LOGIN_ENV = [
+    'PANEL_LOGIN_EMAIL',
+    'PANEL_LOGIN_PASSWORD',
+] as const;
 const missingLoginEnv = REQUIRED_LOGIN_ENV.filter((name) => !process.env[name]);
 
 function requireEnv(name: string): string {
@@ -18,7 +21,11 @@ async function login(page: any) {
         await page.waitForLoadState('domcontentloaded');
         await page.waitForLoadState('networkidle').catch(() => null);
 
-        if (!/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+        if (
+            !/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(
+                page.url(),
+            )
+        ) {
             return;
         }
 
@@ -34,13 +41,19 @@ async function login(page: any) {
         await passwordInput.first().fill(password);
 
         await Promise.all([
-            page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => null),
+            page
+                .waitForNavigation({ waitUntil: 'networkidle' })
+                .catch(() => null),
             page.click(
                 'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
             ),
         ]);
 
-        if (!/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+        if (
+            !/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(
+                page.url(),
+            )
+        ) {
             return;
         }
 
@@ -153,7 +166,9 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await page.goto('/calendar-next?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
-        await expect(page.locator('[data-testid="calendar-next-page"]')).toBeVisible();
+        await expect(
+            page.locator('[data-testid="calendar-next-page"]'),
+        ).toBeVisible();
         await expect(
             page.locator('[data-testid="reception-insights-panel"]'),
         ).toBeVisible();
@@ -163,10 +178,13 @@ test.describe('PROD smoke: calendar compat migration', () => {
         page,
     }) => {
         const interceptedInsightsUrls: string[] = [];
-        await page.route('**/api/reception/operational-insights**', async (route) => {
-            interceptedInsightsUrls.push(route.request().url());
-            await route.abort('failed');
-        });
+        await page.route(
+            '**/api/reception/operational-insights**',
+            async (route) => {
+                interceptedInsightsUrls.push(route.request().url());
+                await route.abort('failed');
+            },
+        );
 
         await login(page);
         await page.goto('/calendar-next?view=reception');
@@ -190,44 +208,47 @@ test.describe('PROD smoke: calendar compat migration', () => {
         page,
     }) => {
         const interceptedInsightsUrls: string[] = [];
-        await page.route('**/api/reception/operational-insights**', async (route) => {
-            interceptedInsightsUrls.push(route.request().url());
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({
-                    from: '2026-05-01',
-                    to: '2026-05-07',
-                    summary: {
-                        actionsTotal: 20,
-                        actionsOnAlerts: 12,
-                        alertActionRate: 0.6,
-                    },
-                    byAction: [
-                        {
-                            action: 'start_appointment',
-                            actionsTotal: 7,
-                            actionsOnAlerts: 4,
-                            alertActionRate: 0.57,
+        await page.route(
+            '**/api/reception/operational-insights**',
+            async (route) => {
+                interceptedInsightsUrls.push(route.request().url());
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        from: '2026-05-01',
+                        to: '2026-05-07',
+                        summary: {
+                            actionsTotal: 20,
+                            actionsOnAlerts: 12,
+                            alertActionRate: 0.6,
                         },
-                    ],
-                    byDay: [
-                        {
-                            day: '2026-05-06',
-                            actionsTotal: 10,
-                            actionsOnAlerts: 3,
-                            alertActionRate: 0.3,
-                        },
-                        {
-                            day: '2026-05-07',
-                            actionsTotal: 10,
-                            actionsOnAlerts: 5,
-                            alertActionRate: 0.5,
-                        },
-                    ],
-                }),
-            });
-        });
+                        byAction: [
+                            {
+                                action: 'start_appointment',
+                                actionsTotal: 7,
+                                actionsOnAlerts: 4,
+                                alertActionRate: 0.57,
+                            },
+                        ],
+                        byDay: [
+                            {
+                                day: '2026-05-06',
+                                actionsTotal: 10,
+                                actionsOnAlerts: 3,
+                                alertActionRate: 0.3,
+                            },
+                            {
+                                day: '2026-05-07',
+                                actionsTotal: 10,
+                                actionsOnAlerts: 5,
+                                alertActionRate: 0.5,
+                            },
+                        ],
+                    }),
+                });
+            },
+        );
 
         await login(page);
         await page.goto('/calendar-next?view=reception');
@@ -265,5 +286,141 @@ test.describe('PROD smoke: calendar compat migration', () => {
                 url.includes('/api/reception/operational-insights'),
             ),
         ).toBe(true);
+    });
+
+    test('calendar-next reception renders follow-up candidates/audit and captures follow-up action', async ({
+        page,
+    }) => {
+        const candidatesUrls: string[] = [];
+        const auditUrls: string[] = [];
+        const capturedFollowUpActions: Array<Record<string, unknown>> = [];
+
+        await page.route('**/api/crm/follow-up-candidates**', async (route) => {
+            candidatesUrls.push(route.request().url());
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify([
+                    {
+                        customerId: 321,
+                        appointmentId: 654,
+                        reason: 'recent_no_show',
+                        priority: 'high',
+                        suggestedAction: 'call_customer',
+                    },
+                ]),
+            });
+        });
+
+        await page.route(
+            '**/api/crm/follow-up-actions?from=**',
+            async (route) => {
+                auditUrls.push(route.request().url());
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        from: '2026-05-01',
+                        to: '2026-05-07',
+                        actionsTotal: 4,
+                        byAction: [{ action: 'contacted', count: 2 }],
+                        byReason: [{ reason: 'recent_no_show', count: 3 }],
+                        byDay: [{ day: '2026-05-07', count: 1 }],
+                    }),
+                });
+            },
+        );
+
+        await page.route('**/api/crm/follow-up-actions', async (route) => {
+            if (route.request().method() !== 'POST') {
+                await route.continue();
+                return;
+            }
+            const body = route.request().postDataJSON();
+            capturedFollowUpActions.push(body as Record<string, unknown>);
+            await route.fulfill({
+                status: 201,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    id: 1,
+                    ...body,
+                    createdAt: new Date().toISOString(),
+                }),
+            });
+        });
+
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="reception-follow-up-panel"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('[data-testid="reception-follow-up-audit-panel"]'),
+        ).toBeVisible();
+        await expect(page.locator('text=Klient #321')).toBeVisible();
+        await expect(
+            page.locator('text=Akcje follow-up łącznie'),
+        ).toBeVisible();
+        await expect(page.locator('text=4')).toBeVisible();
+
+        await page.click('button:has-text("Oznacz kontakt")');
+        await expect(
+            page.locator('text=Wykonano: Kontakt wykonany'),
+        ).toBeVisible();
+
+        expect(candidatesUrls.length).toBeGreaterThan(0);
+        expect(auditUrls.length).toBeGreaterThan(0);
+        expect(capturedFollowUpActions.length).toBeGreaterThan(0);
+        expect(capturedFollowUpActions[0]?.action).toBe('contacted');
+        expect(capturedFollowUpActions[0]?.customerId).toBe(321);
+    });
+
+    test('calendar-next reception shows follow-up candidates fallback when endpoint is unavailable', async ({
+        page,
+    }) => {
+        const interceptedCandidatesUrls: string[] = [];
+        await page.route('**/api/crm/follow-up-candidates**', async (route) => {
+            interceptedCandidatesUrls.push(route.request().url());
+            await route.abort('failed');
+        });
+
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="reception-follow-up-panel"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('text=Kandydaci follow-up chwilowo niedostępni.'),
+        ).toBeVisible();
+        expect(interceptedCandidatesUrls.length).toBeGreaterThan(0);
+    });
+
+    test('calendar-next reception shows follow-up audit fallback when endpoint is unavailable', async ({
+        page,
+    }) => {
+        const interceptedAuditUrls: string[] = [];
+        await page.route(
+            '**/api/crm/follow-up-actions?from=**',
+            async (route) => {
+                interceptedAuditUrls.push(route.request().url());
+                await route.abort('failed');
+            },
+        );
+
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="reception-follow-up-audit-panel"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('text=Audyt follow-up chwilowo niedostępny.'),
+        ).toBeVisible();
+        expect(interceptedAuditUrls.length).toBeGreaterThan(0);
     });
 });

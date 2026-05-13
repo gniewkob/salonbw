@@ -38,6 +38,10 @@ Operational note (2026-05-09):
   - logged-in render smoke for insights panel,
   - fallback verification when `/api/reception/operational-insights` is unavailable,
   - UI CTA smoke for reception filters (`priority`, `alert CRM`, `to_finalize`).
+- Extended production smoke coverage for CRM follow-up on `/calendar-next?view=reception` in `tests/e2e/prod-calendar-smoke.spec.ts`:
+  - follow-up candidates panel render and action capture path (`POST /api/crm/follow-up-actions`),
+  - follow-up candidates fallback when `/api/crm/follow-up-candidates` is unavailable,
+  - follow-up audit fallback when `/api/crm/follow-up-actions?from=...&to=...` is unavailable.
 - Added production smoke runtime guardrails for reception insights:
   - explicit skip reason when login env is missing (`PANEL_LOGIN_EMAIL`, `PANEL_LOGIN_PASSWORD`),
   - narrowed request interception scope to `/api/reception/operational-insights`,
