@@ -50,6 +50,12 @@ Operational note (2026-05-09):
   - authenticated render check for `/calendar-next?view=reception`,
   - fallback check when `/api/reception/operational-insights` is unavailable,
   - CTA-to-filter checks for `priority`, `alert CRM`, and `to_finalize` UI state.
+- Added production validation checklist for CRM follow-up smoke in `docs/AGENT_OPERATIONS.md`:
+  - follow-up candidates panel render,
+  - follow-up action capture path,
+  - follow-up audit panel render,
+  - fallback checks for `/api/crm/follow-up-candidates` and `/api/crm/follow-up-actions?from=...&to=...`,
+  - required login env (`PANEL_LOGIN_EMAIL`, `PANEL_LOGIN_PASSWORD`).
 
 Operational note (2026-04-30):
 - `.github/workflows/ci.yml` now runs a mandatory `Secret Scan (Gitleaks)` job on push/PR (`main`, `master`) before build/audit jobs; detected secrets now fail CI.

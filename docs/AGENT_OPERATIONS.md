@@ -53,6 +53,46 @@ PASS criteria for production validation:
   - `Przejdź do wizyt z alertem CRM` -> `#reception-alert-filter` checked,
   - `Sprawdź wizyty do finalizacji` -> `#reception-status-filter=in_progress` and `#reception-payment-filter=to_finalize`.
 
+## 1.2 Production smoke: CRM Follow-up (`calendar-next`)
+
+Scope:
+- logged-in smoke for `/calendar-next?view=reception`,
+- follow-up candidates panel render,
+- follow-up action capture path (`POST /api/crm/follow-up-actions`),
+- follow-up audit panel render (7-day range),
+- fallback when `/api/crm/follow-up-candidates` is unavailable,
+- fallback when `/api/crm/follow-up-actions?from=...&to=...` is unavailable.
+
+Required environment variables:
+- `PANEL_LOGIN_EMAIL`
+- `PANEL_LOGIN_PASSWORD`
+
+Manual run:
+
+```bash
+cd apps/panel
+PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl \
+PANEL_LOGIN_EMAIL='[EMAIL]' \
+PANEL_LOGIN_PASSWORD='[PASSWORD]' \
+pnpm exec playwright test tests/e2e/prod-calendar-smoke.spec.ts --project=desktop-1366
+```
+
+Runtime guardrails:
+- test suite is skipped with explicit reason when required login env is missing,
+- request interception for follow-up fallback checks is limited to:
+  - `/api/crm/follow-up-candidates`,
+  - `/api/crm/follow-up-actions?from=...&to=...`.
+
+PASS criteria for production validation:
+- `/calendar-next?view=reception` loads for authenticated operator without crash,
+- candidates panel (`[data-testid="reception-follow-up-panel"]`) is visible,
+- audit panel (`[data-testid="reception-follow-up-audit-panel"]`) is visible,
+- action capture path works (e.g. `Oznacz kontakt`) and row shows handled state,
+- fallback message is rendered when candidates endpoint is unavailable:
+  - `Kandydaci follow-up chwilowo niedostępni.`,
+- fallback message is rendered when audit endpoint is unavailable:
+  - `Audyt follow-up chwilowo niedostępny.`
+
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.
