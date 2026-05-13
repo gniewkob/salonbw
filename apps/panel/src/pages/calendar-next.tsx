@@ -349,37 +349,62 @@ function normalizeFollowUpAuditResponse(
     }
 
     const payload = value as Partial<ReceptionFollowUpAuditResponse>;
-    const byAction = Array.isArray(payload.byAction)
-        ? payload.byAction
-              .filter((item) => Boolean(item && typeof item === 'object'))
-              .map((item) => ({
-                  action: typeof item.action === 'string' ? item.action : '-',
-                  count: toSafeNonNegativeNumber(item.count),
-              }))
-        : [];
+    const actionsTotal = toSafeNonNegativeNumber(payload.actionsTotal);
+    const clampCount = (count: number) =>
+        actionsTotal > 0 ? Math.min(count, actionsTotal) : count;
 
-    const byReason = Array.isArray(payload.byReason)
-        ? payload.byReason
-              .filter((item) => Boolean(item && typeof item === 'object'))
-              .map((item) => ({
-                  reason: typeof item.reason === 'string' ? item.reason : '-',
-                  count: toSafeNonNegativeNumber(item.count),
-              }))
-        : [];
+    const byActionMap = new Map<string, number>();
+    if (Array.isArray(payload.byAction)) {
+        for (const item of payload.byAction) {
+            if (!item || typeof item !== 'object') continue;
+            const action =
+                typeof item.action === 'string' && item.action.trim().length > 0
+                    ? item.action.trim()
+                    : '-';
+            const count = clampCount(toSafeNonNegativeNumber(item.count));
+            byActionMap.set(action, (byActionMap.get(action) ?? 0) + count);
+        }
+    }
+    const byAction = Array.from(byActionMap.entries())
+        .map(([action, count]) => ({ action, count: clampCount(count) }))
+        .sort((left, right) => right.count - left.count);
 
-    const byDay = Array.isArray(payload.byDay)
-        ? payload.byDay
-              .filter((item) => Boolean(item && typeof item === 'object'))
-              .map((item) => ({
-                  day: typeof item.day === 'string' ? item.day : '-',
-                  count: toSafeNonNegativeNumber(item.count),
-              }))
-        : [];
+    const byReasonMap = new Map<string, number>();
+    if (Array.isArray(payload.byReason)) {
+        for (const item of payload.byReason) {
+            if (!item || typeof item !== 'object') continue;
+            const reason =
+                typeof item.reason === 'string' && item.reason.trim().length > 0
+                    ? item.reason.trim()
+                    : '-';
+            const count = clampCount(toSafeNonNegativeNumber(item.count));
+            byReasonMap.set(reason, (byReasonMap.get(reason) ?? 0) + count);
+        }
+    }
+    const byReason = Array.from(byReasonMap.entries())
+        .map(([reason, count]) => ({ reason, count: clampCount(count) }))
+        .sort((left, right) => right.count - left.count);
+
+    const byDayMap = new Map<string, number>();
+    if (Array.isArray(payload.byDay)) {
+        for (const item of payload.byDay) {
+            if (!item || typeof item !== 'object') continue;
+            const day =
+                typeof item.day === 'string' && item.day.trim().length > 0
+                    ? item.day.trim()
+                    : '-';
+            const count = clampCount(toSafeNonNegativeNumber(item.count));
+            byDayMap.set(day, (byDayMap.get(day) ?? 0) + count);
+        }
+    }
+    const byDay = Array.from(byDayMap.entries())
+        .map(([day, count]) => ({ day, count: clampCount(count) }))
+        .sort((left, right) => left.day.localeCompare(right.day));
 
     return {
         from: typeof payload.from === 'string' ? payload.from : '',
         to: typeof payload.to === 'string' ? payload.to : '',
-        actionsTotal: toSafeNonNegativeNumber(payload.actionsTotal),
+        actionsTotal,
         byAction,
         byReason,
         byDay,

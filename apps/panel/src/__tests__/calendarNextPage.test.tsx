@@ -1208,6 +1208,104 @@ describe('CalendarNextPage', () => {
         );
     });
 
+    it('normalizes malformed follow-up audit payloads safely', async () => {
+        routerMock.query = { view: 'reception', date: '2026-05-07' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 493,
+                        type: 'appointment',
+                        title: 'Follow-up audit malformed',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 55,
+                        clientName: 'Klient 55',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [
+                        { customerId: 55, statistics: { noShowVisits: 0 } },
+                    ],
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-summary')) {
+                return {
+                    date: '2026-05-07',
+                    actionsTotal: 0,
+                    actionsOnAlerts: 0,
+                };
+            }
+            if (endpoint.startsWith('/reception/operational-insights')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    summary: {
+                        actionsTotal: 0,
+                        actionsOnAlerts: 0,
+                        alertActionRate: 0,
+                    },
+                    byAction: [],
+                    byDay: [],
+                };
+            }
+            if (endpoint.startsWith('/crm/follow-up-actions?from=')) {
+                return {
+                    from: '2026-05-01',
+                    to: '2026-05-07',
+                    actionsTotal: 5,
+                    byAction: [
+                        { action: 'contacted', count: 2 },
+                        { action: 'contacted', count: 5 },
+                        { action: '', count: -4 },
+                    ],
+                    byReason: [
+                        { reason: 'recent_no_show', count: 1 },
+                        { reason: 'recent_no_show', count: 9 },
+                        { reason: null, count: 2 },
+                    ],
+                    byDay: [
+                        { day: '2026-05-07', count: 1 },
+                        { day: '2026-05-07', count: 8 },
+                        { day: undefined, count: 3 },
+                    ],
+                };
+            }
+            return [];
+        });
+
+        render(<CalendarNextPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('reception-follow-up-audit-panel'),
+            ).toHaveTextContent('Audyt follow-up (7 dni)'),
+        );
+
+        // dedup + clamp by action => contacted 2 + 5 clamped to max actionsTotal(5)
+        expect(screen.getByText('Kontakt wykonany')).toBeInTheDocument();
+        expect(screen.getByText('Inna akcja')).toBeInTheDocument();
+        // fallback reason label for malformed reason
+        expect(screen.getByText('Inny powód')).toBeInTheDocument();
+        // dedup by day and fallback key for malformed day
+        expect(screen.getByText('2026-05-07')).toBeInTheDocument();
+        expect(screen.getByText('-')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/undefined|\bNaN\b/i),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders follow-up candidates panel and supports open actions', async () => {
         routerMock.query = { view: 'reception', date: '2026-05-07' };
         useCalendarMock.mockImplementation(() => ({

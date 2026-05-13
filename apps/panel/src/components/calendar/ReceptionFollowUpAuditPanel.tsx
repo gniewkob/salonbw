@@ -28,12 +28,14 @@ const ACTION_LABELS: Record<string, string> = {
     dismissed: 'Pominięto',
     escalated: 'Eskalowano',
 };
+const UNKNOWN_ACTION_LABEL = 'Inna akcja';
 
 const REASON_LABELS: Record<string, string> = {
     recent_no_show: 'Niedawne no-show',
     stale_in_progress: 'Wizyta zbyt długo w trakcie',
     high_risk_no_contact: 'Wysokie ryzyko bez kontaktu',
 };
+const UNKNOWN_REASON_LABEL = 'Inny powód';
 
 export default function ReceptionFollowUpAuditPanel({
     loading,
@@ -79,7 +81,7 @@ export default function ReceptionFollowUpAuditPanel({
                                     <li key={item.action} className="small">
                                         <span className="fw-semibold">
                                             {ACTION_LABELS[item.action] ??
-                                                item.action}
+                                                UNKNOWN_ACTION_LABEL}
                                         </span>{' '}
                                         ({item.count})
                                     </li>
@@ -99,7 +101,7 @@ export default function ReceptionFollowUpAuditPanel({
                                     <li key={item.reason} className="small">
                                         <span className="fw-semibold">
                                             {REASON_LABELS[item.reason] ??
-                                                item.reason}
+                                                UNKNOWN_REASON_LABEL}
                                         </span>{' '}
                                         ({item.count})
                                     </li>
