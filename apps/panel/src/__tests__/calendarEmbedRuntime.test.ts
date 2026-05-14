@@ -8,10 +8,7 @@ import {
 
 describe('calendar embed runtime compat', () => {
     it('publishes SalonBWConfig and preserves VersumConfig alias', () => {
-        const script = buildCalendarEmbedScript(
-            buildCalendarEmbedConfig(17),
-            'token-123',
-        );
+        const script = buildCalendarEmbedScript(buildCalendarEmbedConfig(17));
 
         expect(script).toContain('window.SalonBWConfig =');
         expect(script).toContain('window.VersumConfig = window.SalonBWConfig;');
@@ -19,10 +16,7 @@ describe('calendar embed runtime compat', () => {
     });
 
     it('rewrites calendar views requests to local runtime endpoints', () => {
-        const script = buildCalendarEmbedScript(
-            buildCalendarEmbedConfig(17),
-            'token-123',
-        );
+        const script = buildCalendarEmbedScript(buildCalendarEmbedConfig(17));
 
         expect(script).toContain("return '/api/runtime/calendar-views';");
         expect(script).toContain("return '/api/runtime/calendar-views/list';");
@@ -32,19 +26,16 @@ describe('calendar embed runtime compat', () => {
         );
     });
 
-    it('adds authorization to compat API traffic only', () => {
-        const script = buildCalendarEmbedScript(
-            buildCalendarEmbedConfig(17),
-            'token-123',
-        );
+    it('does not embed any bearer token or authorization logic in the script', () => {
+        // Compat URLs (/events, /graphql, /settings/timetable, /track_new_events)
+        // are rewritten to /api/* via next.config rewrites and the proxy at
+        // /api/[...path].ts injects the bearer from the httpOnly cookie.
+        // The embed must not carry the token itself.
+        const script = buildCalendarEmbedScript(buildCalendarEmbedConfig(17));
 
-        expect(script).toContain("rewrittenUrl.includes('/events')");
-        expect(script).toContain("rewrittenUrl.includes('/graphql')");
-        expect(script).toContain(
-            "rewrittenUrl.includes('/settings/timetable')",
-        );
-        expect(script).toContain("rewrittenUrl.includes('/track_new_events')");
-        expect(script).toContain("Authorization', 'Bearer ' + token");
+        expect(script).not.toContain('Authorization');
+        expect(script).not.toContain('Bearer');
+        expect(script).not.toMatch(/const\s+token\s*=/);
     });
 
     it('rewrites vendored asset paths to salonbw aliases in served html', () => {

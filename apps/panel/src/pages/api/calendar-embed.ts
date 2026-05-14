@@ -188,19 +188,20 @@ async function fetchCalendarEmbedProfile(accessToken: string) {
     }
 }
 
-export function buildCalendarEmbedScript(
-    config: CalendarEmbedConfig,
-    accessToken: string,
-) {
+export function buildCalendarEmbedScript(config: CalendarEmbedConfig) {
+    // Auth is handled by the same-origin proxy at `/api/[...path].ts`, which
+    // injects `Authorization: Bearer <token>` from the `accessToken` cookie.
+    // Compat URLs (`/events/*`, `/graphql`, `/settings/timetable/*`,
+    // `/track_new_events.json`) are rewritten to `/api/...` via next.config
+    // rewrites, so the embed must not — and does not — carry the bearer.
     return `
 <script>
 // Expose SalonBW config while preserving the legacy global expected by vendored runtime
 window.SalonBWConfig = ${JSON.stringify(config)};
 window.VersumConfig = window.SalonBWConfig;
 
-// Intercept fetch to add Authorization header
+// Rewrite a small set of calendar-view URLs to local runtime endpoints.
 (function() {
-    const token = '${accessToken}';
     const rewriteCalendarViewUrl = function(url, method) {
         if (typeof url !== 'string') return url;
         const upperMethod = (method || 'GET').toUpperCase();
@@ -226,51 +227,19 @@ window.VersumConfig = window.SalonBWConfig;
     const originalFetch = window.fetch;
     window.fetch = function(url, options) {
         options = options || {};
-        options.headers = options.headers || {};
         const rewrittenUrl = rewriteCalendarViewUrl(
             typeof url === 'string' ? url : String(url),
             options.method
         );
-
-        // Add Authorization header for API calls
-        if (typeof rewrittenUrl === 'string' && (
-            rewrittenUrl.includes('/events') ||
-            rewrittenUrl.includes('/graphql') ||
-            rewrittenUrl.includes('/settings/timetable') ||
-            rewrittenUrl.includes('/track_new_events')
-        )) {
-            if (options.headers instanceof Headers) {
-                options.headers.set('Authorization', 'Bearer ' + token);
-            } else {
-                options.headers['Authorization'] = 'Bearer ' + token;
-            }
-        }
-
         return originalFetch.call(this, rewrittenUrl, options);
     };
 
-    // Also intercept XMLHttpRequest
     const originalXHROpen = XMLHttpRequest.prototype.open;
-    const originalXHRSend = XMLHttpRequest.prototype.send;
-
     XMLHttpRequest.prototype.open = function(method, url) {
         const rewrittenUrl = rewriteCalendarViewUrl(url, method);
-        this._url = rewrittenUrl;
         const args = Array.prototype.slice.call(arguments);
         args[1] = rewrittenUrl;
         return originalXHROpen.apply(this, args);
-    };
-
-    XMLHttpRequest.prototype.send = function() {
-        if (this._url && (
-            this._url.includes('/events') ||
-            this._url.includes('/graphql') ||
-            this._url.includes('/settings/timetable') ||
-            this._url.includes('/track_new_events')
-        )) {
-            this.setRequestHeader('Authorization', 'Bearer ' + token);
-        }
-        return originalXHRSend.apply(this, arguments);
     };
 })();
 </script>
@@ -345,10 +314,11 @@ export default async function handler(
         html = html.replace(/"user_id":userId/g, `"user_id":${userId}`);
 
         const ourConfig = buildCalendarEmbedConfig(userId);
-        const configScript = buildCalendarEmbedScript(ourConfig, accessToken);
+        const configScript = buildCalendarEmbedScript(ourConfig);
         html = html.replace('</head>', `${configScript}</head>`);
 
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Cache-Control', 'private, no-store');
         res.status(200).send(html);
     } catch (error) {
         console.error('Calendar embed error:', error);
