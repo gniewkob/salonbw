@@ -123,4 +123,86 @@ describe('FollowUpStatisticsPage', () => {
             'Odroczono',
         );
     });
+
+    it('normalizes malformed payload, deduplicates rows and applies fallback labels', async () => {
+        apiFetchMock.mockResolvedValue({
+            from: '2026-05-07',
+            to: '2026-05-13',
+            actionsTotal: 5,
+            byAction: [
+                { action: 'contacted', count: 3 },
+                { action: 'contacted', count: 9 },
+                { action: '', count: -2 },
+            ],
+            byReason: [
+                { reason: 'recent_no_show', count: 2 },
+                { reason: 'recent_no_show', count: 9 },
+                { reason: null, count: 4 },
+            ],
+            byDay: [
+                { day: '2026-05-13', count: 1 },
+                { day: '2026-05-13', count: 9 },
+                { day: undefined, count: 3 },
+            ],
+        });
+
+        render(<FollowUpStatisticsPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('follow-up-audit-page'),
+            ).toHaveTextContent('Kontakt wykonany (5)'),
+        );
+        expect(screen.getByTestId('follow-up-audit-page')).toHaveTextContent(
+            'Inna akcja (0)',
+        );
+        expect(screen.getByTestId('follow-up-audit-page')).toHaveTextContent(
+            'Niedawne no-show (5)',
+        );
+        expect(screen.getByTestId('follow-up-audit-page')).toHaveTextContent(
+            'Inny powód (4)',
+        );
+        expect(screen.getByTestId('follow-up-audit-page')).toHaveTextContent(
+            '2026-05-13 (5)',
+        );
+        expect(screen.getByTestId('follow-up-audit-page')).toHaveTextContent(
+            '- (3)',
+        );
+    });
+
+    it('validates date range and blocks fetch for invalid range', async () => {
+        render(<FollowUpStatisticsPage />);
+
+        await waitFor(() => expect(apiFetchMock).toHaveBeenCalledTimes(1));
+
+        fireEvent.change(screen.getByLabelText('Od'), {
+            target: { value: '2026-05-20' },
+        });
+        fireEvent.change(screen.getByLabelText('Do'), {
+            target: { value: '2026-05-10' },
+        });
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('follow-up-audit-page'),
+            ).toHaveTextContent('Data "Od" nie może być późniejsza niż "Do".'),
+        );
+
+        const callsAfterInvalidOrder = apiFetchMock.mock.calls.length;
+
+        fireEvent.change(screen.getByLabelText('Do'), {
+            target: { value: '2026-06-25' },
+        });
+        fireEvent.change(screen.getByLabelText('Od'), {
+            target: { value: '2026-05-01' },
+        });
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('follow-up-audit-page'),
+            ).toHaveTextContent('Maksymalny zakres to 31 dni.'),
+        );
+
+        expect(apiFetchMock.mock.calls.length).toBe(callsAfterInvalidOrder);
+    });
 });

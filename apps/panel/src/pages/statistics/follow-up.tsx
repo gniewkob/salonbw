@@ -59,6 +59,61 @@ function toSafeNonNegativeNumber(value: unknown): number {
     return value < 0 ? 0 : value;
 }
 
+function parseDateOnly(value: string): Date | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const date = new Date(`${value}T00:00:00.000`);
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
+}
+
+function validateDateRange(from: string, to: string): string | null {
+    const fromDate = parseDateOnly(from);
+    const toDate = parseDateOnly(to);
+    if (!fromDate || !toDate) {
+        return 'Nieprawidłowy zakres dat.';
+    }
+    if (fromDate.getTime() > toDate.getTime()) {
+        return 'Data "Od" nie może być późniejsza niż "Do".';
+    }
+    const diffDays = Math.floor(
+        (toDate.getTime() - fromDate.getTime()) / (24 * 60 * 60 * 1000),
+    );
+    if (diffDays > 30) {
+        return 'Maksymalny zakres to 31 dni.';
+    }
+    return null;
+}
+
+function aggregateByKey(
+    value: unknown,
+    keyField: string,
+    defaultKey: string,
+    maxValue: number,
+): Array<{ key: string; count: number }> {
+    if (!Array.isArray(value)) return [];
+    const map = new Map<string, number>();
+
+    for (const item of value) {
+        if (!item || typeof item !== 'object') continue;
+        const row = item as Record<string, unknown>;
+        const keyRaw = row[keyField];
+        const key =
+            typeof keyRaw === 'string' && keyRaw.trim().length > 0
+                ? keyRaw.trim()
+                : defaultKey;
+        const count = toSafeNonNegativeNumber(row.count);
+        const next = (map.get(key) ?? 0) + count;
+        map.set(key, maxValue > 0 ? Math.min(next, maxValue) : next);
+    }
+
+    return Array.from(map.entries())
+        .map(([key, count]) => ({ key, count }))
+        .sort(
+            (left, right) =>
+                right.count - left.count || left.key.localeCompare(right.key),
+        );
+}
+
 function normalizeAuditResponse(value: unknown): FollowUpAuditResponse {
     const fallback: FollowUpAuditResponse = {
         from: '',
@@ -72,41 +127,30 @@ function normalizeAuditResponse(value: unknown): FollowUpAuditResponse {
 
     const payload = value as Partial<FollowUpAuditResponse>;
     const actionsTotal = toSafeNonNegativeNumber(payload.actionsTotal);
-    const byAction = Array.isArray(payload.byAction)
-        ? payload.byAction
-              .filter((item) => Boolean(item && typeof item === 'object'))
-              .map((item) => ({
-                  action:
-                      typeof item.action === 'string' && item.action.trim()
-                          ? item.action.trim()
-                          : '-',
-                  count: toSafeNonNegativeNumber(item.count),
-              }))
-        : [];
-
-    const byReason = Array.isArray(payload.byReason)
-        ? payload.byReason
-              .filter((item) => Boolean(item && typeof item === 'object'))
-              .map((item) => ({
-                  reason:
-                      typeof item.reason === 'string' && item.reason.trim()
-                          ? item.reason.trim()
-                          : '-',
-                  count: toSafeNonNegativeNumber(item.count),
-              }))
-        : [];
-
-    const byDay = Array.isArray(payload.byDay)
-        ? payload.byDay
-              .filter((item) => Boolean(item && typeof item === 'object'))
-              .map((item) => ({
-                  day:
-                      typeof item.day === 'string' && item.day.trim()
-                          ? item.day.trim()
-                          : '-',
-                  count: toSafeNonNegativeNumber(item.count),
-              }))
-        : [];
+    const byAction = aggregateByKey(
+        payload.byAction,
+        'action',
+        '-',
+        actionsTotal,
+    ).map(({ key, count }) => ({
+        action: key,
+        count,
+    }));
+    const byReason = aggregateByKey(
+        payload.byReason,
+        'reason',
+        '-',
+        actionsTotal,
+    ).map(({ key, count }) => ({
+        reason: key,
+        count,
+    }));
+    const byDay = aggregateByKey(payload.byDay, 'day', '-', actionsTotal)
+        .map(({ key, count }) => ({
+            day: key,
+            count,
+        }))
+        .sort((left, right) => left.day.localeCompare(right.day));
 
     return {
         from: typeof payload.from === 'string' ? payload.from : '',
@@ -127,9 +171,15 @@ export default function FollowUpStatisticsPage() {
     const [error, setError] = useState(false);
     const [summary, setSummary] = useState<FollowUpAuditResponse | null>(null);
     const [refreshToken, setRefreshToken] = useState(0);
+    const rangeError = useMemo(() => validateDateRange(from, to), [from, to]);
 
     useEffect(() => {
         if (!role) return;
+        if (rangeError) {
+            setLoading(false);
+            setError(false);
+            return;
+        }
         let cancelled = false;
         setLoading(true);
         setError(false);
@@ -154,7 +204,7 @@ export default function FollowUpStatisticsPage() {
         return () => {
             cancelled = true;
         };
-    }, [apiFetch, from, role, to, refreshToken]);
+    }, [apiFetch, from, role, to, refreshToken, rangeError]);
 
     if (!role) return null;
 
@@ -183,10 +233,14 @@ export default function FollowUpStatisticsPage() {
                     </div>
                     <div className="d-flex flex-wrap gap-2">
                         <div>
-                            <label className="form-label form-label-sm mb-1">
+                            <label
+                                className="form-label form-label-sm mb-1"
+                                htmlFor="follow-up-from"
+                            >
                                 Od
                             </label>
                             <input
+                                id="follow-up-from"
                                 className="form-control form-control-sm"
                                 type="date"
                                 value={from}
@@ -196,10 +250,14 @@ export default function FollowUpStatisticsPage() {
                             />
                         </div>
                         <div>
-                            <label className="form-label form-label-sm mb-1">
+                            <label
+                                className="form-label form-label-sm mb-1"
+                                htmlFor="follow-up-to"
+                            >
                                 Do
                             </label>
                             <input
+                                id="follow-up-to"
                                 className="form-control form-control-sm"
                                 type="date"
                                 value={to}
@@ -223,18 +281,21 @@ export default function FollowUpStatisticsPage() {
                         Ładowanie audytu follow-up...
                     </div>
                 ) : null}
+                {!loading && rangeError ? (
+                    <div className="alert alert-warning">{rangeError}</div>
+                ) : null}
                 {!loading && error ? (
                     <div className="alert alert-warning">
                         Audyt follow-up chwilowo niedostępny.
                     </div>
                 ) : null}
-                {!loading && !error && !hasData ? (
+                {!loading && !error && !rangeError && !hasData ? (
                     <div className="alert alert-light border">
                         Brak danych dla wybranego zakresu.
                     </div>
                 ) : null}
 
-                {hasData ? (
+                {hasData && !rangeError ? (
                     <div className="d-flex flex-column gap-3">
                         <div className="row g-2">
                             <div className="col-12 col-md-4">
