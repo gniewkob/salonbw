@@ -159,11 +159,11 @@ test.describe('PROD smoke: calendar compat migration', () => {
         ).toEqual([]);
     });
 
-    test('calendar-next reception renders insights panel without crash', async ({
+    test('calendar reception renders insights panel without crash', async ({
         page,
     }) => {
         await login(page);
-        await page.goto('/calendar-next?view=reception');
+        await page.goto('/calendar?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
@@ -174,7 +174,20 @@ test.describe('PROD smoke: calendar compat migration', () => {
         ).toBeVisible();
     });
 
-    test('calendar-next reception shows neutral fallback when operational-insights is unavailable', async ({
+    test('legacy calendar-next route redirects to canonical calendar route', async ({
+        page,
+    }) => {
+        await login(page);
+        await page.goto('/calendar-next?view=reception');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(page).toHaveURL(/\/calendar\?view=reception$/);
+        await expect(
+            page.locator('[data-testid="reception-insights-panel"]'),
+        ).toBeVisible();
+    });
+
+    test('calendar reception shows neutral fallback when operational-insights is unavailable', async ({
         page,
     }) => {
         const interceptedInsightsUrls: string[] = [];
@@ -187,7 +200,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         );
 
         await login(page);
-        await page.goto('/calendar-next?view=reception');
+        await page.goto('/calendar?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
@@ -204,7 +217,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         ).toBe(true);
     });
 
-    test('calendar-next reception CTA updates filters at UI level', async ({
+    test('calendar reception CTA updates filters at UI level', async ({
         page,
     }) => {
         const interceptedInsightsUrls: string[] = [];
@@ -251,7 +264,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         );
 
         await login(page);
-        await page.goto('/calendar-next?view=reception');
+        await page.goto('/calendar?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
@@ -288,7 +301,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         ).toBe(true);
     });
 
-    test('calendar-next reception renders follow-up candidates/audit and captures follow-up action', async ({
+    test('calendar reception renders follow-up candidates/audit and captures follow-up action', async ({
         page,
     }) => {
         const candidatesUrls: string[] = [];
@@ -350,7 +363,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         });
 
         await login(page);
-        await page.goto('/calendar-next?view=reception');
+        await page.goto('/calendar?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
@@ -377,7 +390,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         expect(capturedFollowUpActions[0]?.customerId).toBe(321);
     });
 
-    test('calendar-next reception shows follow-up candidates fallback when endpoint is unavailable', async ({
+    test('calendar reception shows follow-up candidates fallback when endpoint is unavailable', async ({
         page,
     }) => {
         const interceptedCandidatesUrls: string[] = [];
@@ -387,7 +400,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         });
 
         await login(page);
-        await page.goto('/calendar-next?view=reception');
+        await page.goto('/calendar?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
@@ -399,7 +412,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         expect(interceptedCandidatesUrls.length).toBeGreaterThan(0);
     });
 
-    test('calendar-next reception shows follow-up audit fallback when endpoint is unavailable', async ({
+    test('calendar reception shows follow-up audit fallback when endpoint is unavailable', async ({
         page,
     }) => {
         const interceptedAuditUrls: string[] = [];
@@ -412,7 +425,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         );
 
         await login(page);
-        await page.goto('/calendar-next?view=reception');
+        await page.goto('/calendar?view=reception');
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
