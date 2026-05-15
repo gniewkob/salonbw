@@ -1,8 +1,13 @@
 import type { paths } from '@salonbw/api';
-import type { Product as LocalProduct, ProductCategory } from '@/types';
+import type { Product as LocalProduct } from '@/types';
 import { useList } from './useList';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+
+// `useProductCategories` lives in `./useWarehouseViews` — it talks to
+// `/product-categories/tree`, the actual backend endpoint. An older copy of
+// this hook used to hit `/products/categories` (which 404s — the backend
+// `ProductsController` has `@Get(':id')` that captures "categories" as an id
+// and rejects it) and treated `apiFetch` as if it returned a raw Response.
+// Import from `./useWarehouseViews` instead.
 
 type ProductsResponse =
     paths['/products']['get']['responses']['200']['content']['application/json'];
@@ -15,14 +20,4 @@ export function useProducts() {
     return useList<Product>('/products');
 }
 
-export function useProductCategories() {
-    const { apiFetch } = useAuth();
-    return useQuery<ProductCategory[]>({
-        queryKey: ['product-categories'],
-        queryFn: async () => {
-            const res = (await apiFetch('/products/categories')) as Response;
-            if (!res.ok) throw new Error('Failed to fetch product categories');
-            return res.json();
-        },
-    });
-}
+export { useProductCategories } from './useWarehouseViews';
