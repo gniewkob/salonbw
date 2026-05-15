@@ -47,27 +47,38 @@ export default function WorkTimeReportPage() {
     );
     const [data, setData] = useState<WorkTimeReport[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
-        void fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dateRange]);
-
-    const fetchData = async () => {
+        let cancelled = false;
         setIsLoading(true);
-        try {
-            const result = await apiFetch<WorkTimeReport[]>(
-                `/statistics/worktime?range=${dateRange}`,
-            );
-            setData(result);
-            if (result.length > 0 && !selectedEmployee) {
-                setSelectedEmployee(result[0].employeeId);
-            }
-        } catch (error) {
-            console.error('Failed to fetch work time report:', error);
-        }
-        setIsLoading(false);
-    };
+        setError(false);
+        apiFetch<WorkTimeReport[]>(
+            `/statistics/worktime?range=${encodeURIComponent(dateRange)}`,
+        )
+            .then((result) => {
+                if (cancelled) return;
+                const list = Array.isArray(result) ? result : [];
+                setData(list);
+                if (list.length > 0) {
+                    setSelectedEmployee(
+                        (current) => current ?? list[0].employeeId,
+                    );
+                }
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setData([]);
+                setError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setIsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, dateRange]);
 
     if (!role) return null;
 
@@ -113,6 +124,10 @@ export default function WorkTimeReportPage() {
 
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
+                    ) : error ? (
+                        <div className="alert alert-warning">
+                            Raport czasu pracy chwilowo niedostępny.
+                        </div>
                     ) : (
                         <>
                             {/* Total Stats */}

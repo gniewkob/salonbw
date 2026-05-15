@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
 import SalonShell from '@/components/salon/SalonShell';
@@ -39,32 +39,41 @@ const toNumber = (value: unknown): number => {
 };
 
 export default function EmployeeActivityPage() {
-    const { role } = useAuth();
+    const { role, apiFetch } = useAuth();
     const [selectedDate, setSelectedDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
     const [data, setData] = useState<EmployeeActivitySummary | null>(null);
     const [loading, setLoading] = useState(false);
-
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(
-                `/api/statistics/employees/activity?date=${selectedDate}`,
-            );
-            if (res.ok) {
-                const json = (await res.json()) as EmployeeActivitySummary;
-                setData(json);
-            }
-        } catch (error) {
-            console.error('Failed to fetch employee activity:', error);
-        }
-        setLoading(false);
-    }, [selectedDate]);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
-        void fetchData();
-    }, [fetchData]);
+        let cancelled = false;
+        setLoading(true);
+        setError(false);
+        // Use apiFetch (not raw fetch) so the request rides the same
+        // bearer / refresh / CSRF flow as the rest of the panel instead
+        // of going anonymously through the Next.js proxy.
+        apiFetch<EmployeeActivitySummary>(
+            `/statistics/employees/activity?date=${encodeURIComponent(selectedDate)}`,
+        )
+            .then((json) => {
+                if (cancelled) return;
+                setData(json);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setData(null);
+                setError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, selectedDate]);
 
     const navigateDate = (direction: 'prev' | 'next') => {
         const current = new Date(selectedDate);
@@ -125,6 +134,10 @@ export default function EmployeeActivityPage() {
 
                 {loading ? (
                     <div className="salonbw-muted p-20">Ładowanie...</div>
+                ) : error ? (
+                    <div className="alert alert-warning">
+                        Raport aktywności chwilowo niedostępny.
+                    </div>
                 ) : (
                     <div className="stats-tabs">
                         <ul>

@@ -104,6 +104,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLogoutCallback(() => {
             void handleLogout();
         });
+        // On unmount (or before a new effect run), reset the module-level
+        // callback so a stale closure from an unmounted AuthProvider can't
+        // call `setState` on this dead instance during fast-refresh or
+        // tests that mount/unmount providers between cases.
+        return () => {
+            setLogoutCallback(() => {});
+        };
     }, [handleLogout]);
     useEffect(() => {
         setCsrfToken(readCsrfCookie());
@@ -143,9 +150,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(u);
             setRole(u.role);
             setIsAuthenticated(true);
-        } catch {
-            setIsAuthenticated(false);
-            clearSessionState();
+        } catch (error) {
+            // Only treat real auth failures (401/403) as "not logged in".
+            // Transient 5xx, 502, or network blips should NOT log the user
+            // out — they just mean we couldn't reach the profile endpoint
+            // this time. Keep existing session state so the next request
+            // can recover.
+            const status = (error as { status?: number } | null)?.status;
+            const isAuthFailure = status === 401 || status === 403;
+            if (isAuthFailure) {
+                setIsAuthenticated(false);
+                clearSessionState();
+            }
         }
     }, [client, clearSessionState]);
 

@@ -10,9 +10,12 @@ const ENABLED =
     process.env.NEXT_PUBLIC_ENABLE_CLIENT_LOGS !== 'false' &&
     typeof window !== 'undefined';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '/api';
-const CLIENT_LOG_URL = `${API_BASE}/logs/client`;
-const LOG_TOKEN = process.env.NEXT_PUBLIC_LOG_TOKEN;
+// Always go through the same-origin proxy at /api/[...path], NOT directly to
+// NEXT_PUBLIC_API_URL. The proxy attaches the x-log-token server-side from
+// `CLIENT_LOG_TOKEN` env, so we never ship the token in the JS bundle (it
+// used to be exposed as NEXT_PUBLIC_LOG_TOKEN — world-readable to anyone
+// inspecting bundle output).
+const CLIENT_LOG_URL = '/api/logs/client';
 
 export async function logClientError(payload: ClientLogPayload) {
     if (!ENABLED) return;
@@ -21,7 +24,6 @@ export async function logClientError(payload: ClientLogPayload) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(LOG_TOKEN ? { 'x-log-token': LOG_TOKEN } : {}),
             },
             body: JSON.stringify({
                 ...payload,

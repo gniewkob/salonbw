@@ -57,24 +57,31 @@ export default function WarehouseValuePage() {
     const { role, apiFetch } = useAuth();
     const [stats, setStats] = useState<ValueStats | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const [refreshToken, setRefreshToken] = useState(0);
 
     useEffect(() => {
-        void fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const fetchData = async () => {
+        let cancelled = false;
         setIsLoading(true);
-        try {
-            const data = await apiFetch<ValueStats>(
-                '/statistics/warehouse/value',
-            );
-            setStats(data);
-        } catch (error) {
-            console.error('Failed to fetch value stats:', error);
-        }
-        setIsLoading(false);
-    };
+        setError(false);
+        apiFetch<ValueStats>('/statistics/warehouse/value')
+            .then((data) => {
+                if (cancelled) return;
+                setStats(data);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setStats(null);
+                setError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setIsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, refreshToken]);
 
     if (!role) return null;
 
@@ -95,9 +102,9 @@ export default function WarehouseValuePage() {
                             Raport wartości produktów
                         </h1>
                         <button
-                            onClick={() => {
-                                void fetchData();
-                            }}
+                            onClick={() =>
+                                setRefreshToken((value) => value + 1)
+                            }
                             className="salonbw-btn salonbw-btn--default"
                             disabled={isLoading}
                         >
@@ -107,6 +114,10 @@ export default function WarehouseValuePage() {
 
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
+                    ) : error ? (
+                        <div className="alert alert-warning">
+                            Raport wartości chwilowo niedostępny.
+                        </div>
                     ) : stats ? (
                         <>
                             {/* KPI */}

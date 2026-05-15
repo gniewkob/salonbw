@@ -73,6 +73,18 @@ export default async function handler(
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
+    // For the client-log ingest endpoint, attach the shared CLIENT_LOG_TOKEN
+    // server-side so it never has to land in the JS bundle as a public env
+    // var. If the env is unset, the proxy forwards without the header and
+    // the backend will accept the request iff its CLIENT_LOG_TOKEN is also
+    // unset (no token, no check).
+    if (targetPath === '/logs/client') {
+        const logToken = process.env.CLIENT_LOG_TOKEN;
+        if (logToken && !headers['x-log-token']) {
+            headers['x-log-token'] = logToken;
+        }
+    }
+
     const body: Uint8Array | undefined = isBodyAllowed
         ? await readRawBody(req)
         : undefined;

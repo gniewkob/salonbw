@@ -111,11 +111,17 @@ export class ApiClient {
             options.baseUrl ??
             process.env.NEXT_PUBLIC_API_URL ??
             "http://localhost:3000";
-        console.log("[ApiClient] Init", {
-            env: process.env.NEXT_PUBLIC_API_URL,
-            optionsBase: options.baseUrl,
-            rawBase,
-        });
+        if (this.debugEnabled()) {
+            // Only emit construction telemetry when debug is enabled; this
+            // used to be an unconditional `console.log` that leaked the
+            // configured API URL into every browser console.
+            // eslint-disable-next-line no-console
+            console.debug("[ApiClient] Init", {
+                env: process.env.NEXT_PUBLIC_API_URL,
+                optionsBase: options.baseUrl,
+                rawBase,
+            });
+        }
         try {
             const u = new URL(rawBase);
             this.baseUrl =

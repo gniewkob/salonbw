@@ -45,24 +45,32 @@ export default function CustomersReturning() {
     const [dateRange, setDateRange] = useState('this_month');
     const [stats, setStats] = useState<ReturningStats | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
-        void fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dateRange]);
-
-    const fetchData = async () => {
+        let cancelled = false;
         setIsLoading(true);
-        try {
-            const data = await apiFetch<ReturningStats>(
-                `/statistics/customers/returning?range=${dateRange}`,
-            );
-            setStats(data);
-        } catch (error) {
-            console.error('Failed to fetch returning stats:', error);
-        }
-        setIsLoading(false);
-    };
+        setError(false);
+        apiFetch<ReturningStats>(
+            `/statistics/customers/returning?range=${encodeURIComponent(dateRange)}`,
+        )
+            .then((data) => {
+                if (cancelled) return;
+                setStats(data);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setStats(null);
+                setError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setIsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, dateRange]);
 
     if (!role) return null;
 
@@ -105,6 +113,10 @@ export default function CustomersReturning() {
 
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
+                    ) : error ? (
+                        <div className="alert alert-warning">
+                            Statystyki powracalności chwilowo niedostępne.
+                        </div>
                     ) : stats ? (
                         <>
                             {/* KPI Cards */}

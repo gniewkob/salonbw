@@ -1,10 +1,26 @@
 import { ApiClient } from './apiClient';
+import type { ApiError } from '@salonbw/api';
 import { User } from '@/types';
 
 let logoutCallback: () => void = () => {};
 
 export function setLogoutCallback(cb: () => void) {
     logoutCallback = cb;
+}
+
+// Re-wrap an unknown error as an Error while preserving ApiError.status, so
+// callers (login forms, retry logic, telemetry) can still differentiate
+// 400 (invalid credentials) from 401 (unauthorized) from 5xx (transient).
+function rethrowWithStatus(err: unknown, fallbackMessage: string): never {
+    if (err instanceof Error) {
+        const wrapped: ApiError = new Error(err.message);
+        const status = (err as ApiError).status;
+        if (typeof status === 'number') {
+            wrapped.status = status;
+        }
+        throw wrapped;
+    }
+    throw new Error(fallbackMessage);
 }
 
 const client = new ApiClient(
@@ -66,7 +82,7 @@ export async function login(
         });
         return mapTokens(raw);
     } catch (err: unknown) {
-        throw new Error(err instanceof Error ? err.message : 'Login failed');
+        rethrowWithStatus(err, 'Login failed');
     }
 }
 
@@ -78,9 +94,7 @@ export async function register(data: RegisterData): Promise<User> {
             body: JSON.stringify(data),
         });
     } catch (err: unknown) {
-        throw new Error(
-            err instanceof Error ? err.message : 'Registration failed',
-        );
+        rethrowWithStatus(err, 'Registration failed');
     }
 }
 
@@ -97,9 +111,7 @@ export async function refreshToken(): Promise<AuthTokens> {
         });
         return mapTokens(raw);
     } catch (err: unknown) {
-        throw new Error(
-            err instanceof Error ? err.message : 'Token refresh failed',
-        );
+        rethrowWithStatus(err, 'Token refresh failed');
     }
 }
 
