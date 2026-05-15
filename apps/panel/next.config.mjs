@@ -1,8 +1,48 @@
-// CSP is now handled by middleware.ts with nonce generation
-// Only include static security headers here
+// Static security headers applied to every panel response.
+//
+// CSP notes:
+// - `script-src` keeps `'unsafe-inline'` and `'unsafe-eval'` because the
+//   vendored Versum calendar bundle served at /api/calendar-embed contains
+//   ~96 KB of inline scripts and uses eval-style patterns. Tightening this
+//   requires nonce-based CSP and a refactor of the embed runtime; tracked
+//   separately.
+// - `frame-ancestors 'self'` allows panel.salon-bw.pl to iframe its own
+//   /api/calendar-embed (see apps/panel/src/pages/calendar.tsx). Matches the
+//   `X-Frame-Options: SAMEORIGIN` set below.
+// - `connect-src` lists the origins the SPA legitimately talks to:
+//   - 'self' covers the same-origin proxy at /api/[...path]
+//   - https://api.salon-bw.pl is the direct API origin used when
+//     NEXT_PUBLIC_API_URL points there (CORS, credentials: 'include')
+//   - sentry.io ingest hosts for error/perf telemetry
+//   - google-analytics for gtag (only loaded when NEXT_PUBLIC_GA_ID is set)
+// - `object-src 'none'`, `base-uri 'self'`, `form-action 'self' …` shut
+//   down the highest-impact injection primitives even when inline scripts
+//   are allowed.
+const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+    "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' blob:",
+    "connect-src 'self' https://api.salon-bw.pl https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://www.google-analytics.com",
+    "frame-src 'self'",
+    "frame-ancestors 'self'",
+    "form-action 'self' https://api.salon-bw.pl",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    'upgrade-insecure-requests',
+].join('; ');
+
 const securityHeaders = [
     { key: 'X-Content-Type-Options', value: 'nosniff' },
-    { key: 'X-Frame-Options', value: 'DENY' },
+    // SAMEORIGIN (not DENY) — required for the /calendar page to iframe
+    // /api/calendar-embed. Matches CSP `frame-ancestors 'self'`. Used to
+    // emit conflicting DENY (global) + SAMEORIGIN (per-route), which
+    // browsers resolve to the most restrictive value (DENY).
+    { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
     {
         key: 'Permissions-Policy',
@@ -12,6 +52,7 @@ const securityHeaders = [
         key: 'Strict-Transport-Security',
         value: 'max-age=63072000; includeSubDomains; preload',
     },
+    { key: 'Content-Security-Policy', value: csp },
 ];
 
 /** @type {import('next').NextConfig} */
@@ -350,17 +391,11 @@ const nextConfig = {
     },
     async headers() {
         const rules = [
-            // Global security headers
+            // Global security headers (X-Frame-Options is SAMEORIGIN here, so
+            // /api/calendar-embed no longer needs a per-route override).
             {
                 source: '/(.*)',
                 headers: securityHeaders,
-            },
-            // Allow the calendar embed to be framed by the same origin
-            {
-                source: '/api/calendar-embed',
-                headers: [
-                    { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-                ],
             },
             // Cache aggressively for fingerprinted Next.js assets
             {
