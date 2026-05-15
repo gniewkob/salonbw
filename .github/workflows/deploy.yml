@@ -246,12 +246,9 @@ jobs:
           if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
              P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
              N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
-             # FORCE Standard Path for Panel (User Requirement)
+             # FORCE Standard Path + App Name for Panel (must match file-step relink target)
              P_PANEL="apps/nodejs/panelbw"
-             N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_STAGING }}"
-             if [ -z "$N_PANEL" ]; then
-               N_PANEL="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}"
-             fi
+             N_PANEL="panel.salon-bw.pl"
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
              P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
@@ -259,12 +256,9 @@ jobs:
           else
              P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
              N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
-             # FORCE Standard Path for Panel (User Requirement)
+             # FORCE Standard Path + App Name for Panel (must match file-step relink target)
              P_PANEL="apps/nodejs/panelbw"
-             N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_PRODUCTION }}"
-             if [ -z "$N_PANEL" ]; then
-               N_PANEL="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}"
-             fi
+             N_PANEL="panel.salon-bw.pl"
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
              P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
@@ -1123,8 +1117,8 @@ jobs:
         run: |
           APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
           REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
-          echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
+          echo "Restarting $APP_NAME (Passenger) + touching panel.salon-bw.pl restart.txt as safety net..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME' || echo 'devil restart returned non-zero (continuing)'; touch /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs/tmp/restart.txt && echo 'Touched panel.salon-bw.pl/tmp/restart.txt'"
 
       - name: Restart app (landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
