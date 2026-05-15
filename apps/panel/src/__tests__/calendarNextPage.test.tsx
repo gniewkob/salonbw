@@ -529,6 +529,68 @@ describe('CalendarNextPage', () => {
         });
     });
 
+    it('skips per-customer fallback when batch fails with more than 5 missing customers', async () => {
+        routerMock.query = { view: 'reception' };
+        const events = [];
+        for (let i = 1; i <= 8; i++) {
+            events.push({
+                id: 300 + i,
+                type: 'appointment',
+                title: `Wizyta ${i}`,
+                startTime: '2026-05-07T09:00:00.000Z',
+                endTime: '2026-05-07T09:45:00.000Z',
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 100 + i,
+                clientName: `Klient ${i}`,
+                status: 'scheduled',
+            });
+        }
+
+        // Batch endpoint returns an invalid shape so the catch path runs.
+        // No per-customer mock is set; if the code falls back to per-
+        // customer GETs we'd see 8 calls — exactly the N+1 we want to
+        // avoid for large views.
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return { invalid: 'shape' };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events,
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarNextPage />);
+
+        // Error banner appears (alerts marked failed).
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Część alertów CRM jest chwilowo niedostępna. Spróbujemy ponownie przy kolejnym odświeżeniu widoku.',
+                ),
+            ).toBeInTheDocument(),
+        );
+
+        // No per-customer GETs were issued — only the single batch call.
+        const perCustomerCalls = apiFetchMock.mock.calls.filter(
+            (call: unknown[]) =>
+                /^\/customers\/\d+\/statistics$/.test(String(call[0])),
+        );
+        expect(perCustomerCalls).toHaveLength(0);
+    });
+
     it('applies reception filters for status, payment and CRM alerts', async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date('2026-05-07T12:00:00.000Z'));

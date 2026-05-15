@@ -1041,6 +1041,17 @@ export default function CalendarNextPage() {
             pendingCustomerAlertFetchesRef.current.add(customerId);
         }
 
+        // If the batch endpoint fails we fall back to per-customer GETs
+        // (one round-trip per missing customer). That's the original
+        // behaviour, but it turns one bad batch into N requests every
+        // re-render — for a daily reception view that's 30–50 calls each
+        // tick. Cap the fallback at a small N so the cost of a persistent
+        // batch failure stays bounded; above the cap, surface the failure
+        // via `customerAlertStatsError` and let the user hit the retry
+        // button (which bumps `customerAlertStatsRetryToken`) once the
+        // backend is healthy.
+        const FALLBACK_MAX_CUSTOMERS = 5;
+
         const fetchPerCustomerFallback = async () =>
             Promise.all(
                 missingCustomerIds.map(async (customerId) => {
@@ -1114,6 +1125,16 @@ export default function CalendarNextPage() {
                     return { customerId, severity, success: true as const };
                 });
             } catch {
+                if (missingCustomerIds.length > FALLBACK_MAX_CUSTOMERS) {
+                    // Too many missing customers — skip the fan-out and
+                    // mark them all failed so the UI shows the retry
+                    // banner instead of hammering the backend.
+                    return missingCustomerIds.map((customerId) => ({
+                        customerId,
+                        severity: null,
+                        success: false as const,
+                    }));
+                }
                 return await fetchPerCustomerFallback();
             } finally {
                 for (const customerId of missingCustomerIds) {
