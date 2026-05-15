@@ -110,22 +110,33 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                         <SalonSvgSprites />
                         {isAnalyticsEnabled() && (
                             <>
-                                {/* GA4 loader */}
+                                {/* GA4 loader (external, CSP-safe).
+                                    `onLoad` runs in the React bundle (no
+                                    inline <script>), so we can keep
+                                    `script-src 'self'` instead of pulling
+                                    in `'unsafe-inline'` just for the gtag
+                                    bootstrap. */}
                                 <Script
                                     src={`https://www.googletagmanager.com/gtag/js?id=${getGAId()}`}
                                     strategy="afterInteractive"
+                                    onLoad={() => {
+                                        const w = window as unknown as {
+                                            dataLayer?: unknown[];
+                                            gtag?: (...args: unknown[]) => void;
+                                        };
+                                        w.dataLayer = w.dataLayer || [];
+                                        w.gtag = function gtag(
+                                            ...args: unknown[]
+                                        ) {
+                                            (w.dataLayer ?? []).push(args);
+                                        };
+                                        w.gtag('js', new Date());
+                                        w.gtag('config', getGAId(), {
+                                            send_page_view: false,
+                                            anonymize_ip: true,
+                                        });
+                                    }}
                                 />
-                                <Script
-                                    id="ga4-init"
-                                    strategy="afterInteractive"
-                                >
-                                    {`
-                                    window.dataLayer = window.dataLayer || [];
-                                    function gtag(){dataLayer.push(arguments);}
-                                    gtag('js', new Date());
-                                    gtag('config', '${getGAId()}', { send_page_view: false, anonymize_ip: true });
-                                `}
-                                </Script>
                             </>
                         )}
                         <RouteProgress />

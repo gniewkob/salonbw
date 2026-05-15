@@ -1,16 +1,21 @@
 // Static security headers applied to every panel response.
 //
 // CSP notes:
-// - `script-src` keeps `'unsafe-inline'` because Next.js Pages router
-//   ships inline hydration scripts and __NEXT_DATA__ via _document.tsx.
-//   Eliminating that requires per-request nonces in middleware + a
-//   _document override; tracked as a separate follow-up. `'unsafe-eval'`
-//   was previously required by the vendored Versum calendar embed at
-//   /api/calendar-embed and is now removed — nothing else in the panel
-//   needs `eval` / `Function(string)`.
-// - `frame-ancestors 'none'`: no internal iframe of panel pages after
-//   the calendar embed deletion. Matches `X-Frame-Options: DENY`.
-// - `frame-src 'none'`: panel does not embed any third-party iframes.
+// - `script-src` is strict: `'self'` + GA loaders. `'unsafe-inline'` and
+//   `'unsafe-eval'` are NOT present. Next.js Pages router in this panel
+//   does not emit inline `<script>` blocks (the only one that used to
+//   exist was the gtag bootstrap; it now runs via `onLoad` from the
+//   external gtag.js script, which sits inside the React bundle and
+//   does not need an inline `<script>` element). `__NEXT_DATA__` is
+//   served with `type="application/json"` and so does not match
+//   `script-src` per spec.
+// - `style-src` still keeps `'unsafe-inline'`: many UI libraries
+//   (react-datepicker, recharts, etc.) emit inline `style=...` props.
+//   That's a real attack surface (no `expression()` in modern browsers)
+//   but constrained enough to live with until a styled-components/JSS
+//   migration replaces inline styles.
+// - `frame-ancestors 'none'` / `frame-src 'none'`: no embed of, or by,
+//   the panel after the vendored Versum calendar deletion.
 // - `connect-src` lists the origins the SPA legitimately talks to:
 //   - 'self' covers the same-origin proxy at /api/[...path]
 //   - https://api.salon-bw.pl is the direct API origin used when
@@ -18,11 +23,10 @@
 //   - sentry.io ingest hosts for error/perf telemetry
 //   - google-analytics for gtag (only loaded when NEXT_PUBLIC_GA_ID is set)
 // - `object-src 'none'`, `base-uri 'self'`, `form-action 'self' …` shut
-//   down the highest-impact injection primitives even when inline scripts
-//   are allowed.
+//   down the highest-impact injection primitives.
 const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+    "script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: blob: https:",
