@@ -67,6 +67,11 @@ const REPORTS: NavItem[] = [
         href: '/statistics/worktime',
     },
     {
+        id: 'follow-up-audit',
+        label: 'Audyt follow-up CRM',
+        href: '/statistics/follow-up',
+    },
+    {
         id: 'comments',
         label: 'Komentarze',
         href: '/statistics/comments',
