@@ -20,13 +20,18 @@ Use the workflow inputs to deploy only the app that changed and restart only tha
 gh workflow run deploy.yml -f ref=master -f target=panel -f environment=production
 
 # Landing only
-gh workflow run deploy.yml -f ref=master -f target=public -f environment=production
+gh workflow run deploy.yml -f ref=master -f target=landing -f environment=production
 
 # API only
 gh workflow run deploy.yml -f ref=master -f target=api -f environment=production
+
+# Everything in one dispatch (api migrations run before frontend restarts)
+gh workflow run deploy.yml -f ref=master -f target=all -f environment=production
 ```
 
-On `push`, the workflow detects changed paths and skips apps that did not change.
+Canonical target names: `landing | panel | api | all | probe`. Aliases preserved for backward compatibility: `public` = `landing`, `dashboard` = `panel`, `admin` = `panel`.
+
+On `push`, the workflow detects changed paths via `dorny/paths-filter` and skips apps that did not change. The path-filter outputs feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags used by manual dispatches.
 
 ## 1. Prerequisites
 

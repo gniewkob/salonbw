@@ -121,7 +121,7 @@ cd /usr/home/vetternkraft/apps/nodejs/panelbw
    ```bash
    gh workflow run deploy.yml \
      -f ref=a98d923d \
-     -f target=dashboard \
+     -f target=panel \
      -f environment=production
    ```
 
@@ -148,7 +148,7 @@ cd /usr/home/vetternkraft/apps/nodejs/panelbw
    ```bash
    gh workflow run deploy.yml \
      -f ref=<LAST_KNOWN_GOOD_COMMIT> \
-     -f target=public \
+     -f target=landing \
      -f environment=production
    ```
 

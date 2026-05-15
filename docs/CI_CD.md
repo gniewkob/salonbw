@@ -64,23 +64,27 @@ Deploy only the app that changed and restart only that domain:
 gh workflow run deploy.yml -f ref=master -f target=panel -f environment=production
 
 # Landing only
-gh workflow run deploy.yml -f ref=master -f target=public -f environment=production
+gh workflow run deploy.yml -f ref=master -f target=landing -f environment=production
 
 # API only
 gh workflow run deploy.yml -f ref=master -f target=api -f environment=production
+
+# Everything in one dispatch (api migrations run before frontend restarts)
+gh workflow run deploy.yml -f ref=master -f target=all -f environment=production
 ```
 
-On `push`, the workflow detects changed paths and skips apps that did not change.
+On `push`, the workflow detects changed paths via `dorny/paths-filter` and skips apps that did not change. The path-filter outputs feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags used by manual dispatches.
 
 #### Inputs and variables
 
-- Inputs: `ref` (branch/tag/SHA), `target` (`api|public|dashboard|admin`*), optional `api_url`, optional `remote_path`, optional `app_name`. (`dashboard` = panel; `admin` legacy.)
-- Repo variables (production only):
+- Inputs: `ref` (branch/tag/SHA), `target` (canonical: `landing | panel | api | all | probe`; aliases: `public` = `landing`, `dashboard`/`admin` = `panel`), optional `api_url`, optional `remote_path`, optional `app_name`.
+- Resolution centralized in `Resolve deploy destination` which emits boolean outputs `deploy_landing` / `deploy_panel` / `deploy_api`. Every conditional step reads those.
+- Panel app name + path are **hard-coded** in the workflow (`panel.salon-bw.pl` / `apps/nodejs/panelbw`) — no repo variables required for panel.
+- Repo variables (production only, still used):
   - API: `MYDEVIL_API_REMOTE_PATH_PRODUCTION`, `MYDEVIL_API_APP_NAME_PRODUCTION`
-  - PUBLIC: `MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION`, `MYDEVIL_PUBLIC_APP_NAME_PRODUCTION`
-  - DASHBOARD: `MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION`, `MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION` (panel.salon-bw.pl)
-  - ADMIN: `MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION`, `MYDEVIL_ADMIN_APP_NAME_PRODUCTION` (legacy)
-  - Generic fallbacks: `MYDEVIL_REMOTE_PATH_PRODUCTION`, `MYDEVIL_APP_NAME_PRODUCTION`
+  - LANDING: `MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION`, `MYDEVIL_PUBLIC_APP_NAME_PRODUCTION`
+  - Generic fallbacks (used when LANDING vars unset): `MYDEVIL_REMOTE_PATH_PRODUCTION`, `MYDEVIL_APP_NAME_PRODUCTION`
+- Removed vars (no longer read by workflow as of 2026-05-15): `MYDEVIL_DASHBOARD_*`, `MYDEVIL_ADMIN_*`. Do not reintroduce.
 
 #### Observability baked into deploy
 

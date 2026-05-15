@@ -118,7 +118,7 @@ Swagger is disabled by default; set `ENABLE_SWAGGER=true` in the backend environ
 
 Production deploys use a single consolidated workflow: `Deploy (hosting)` at `.github/workflows/deploy.yml`.
 
-- Targets: `api`, `public`, `dashboard`, `admin`
+- Canonical targets: `landing`, `panel`, `api`, `all`, `probe`. Aliases preserved for backward compatibility: `public` = `landing`, `dashboard` / `admin` = `panel`.
 - Inputs: `ref` (branch/tag/SHA), optional `api_url`, optional `remote_path`, optional `app_name`
 - The workflow runs against the production environment and performs automated smoke checks.
 
@@ -128,19 +128,21 @@ Quick CLI examples:
 # API (backend)
 gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
 
-# Frontends
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=public
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=dashboard
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=admin
+# Frontends (each domain managed separately)
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=landing  # dev.salon-bw.pl
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=panel    # panel.salon-bw.pl
+
+# Everything in one dispatch (api migrations run before frontend restarts)
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=all
 ```
+
+Resolution is centralized in the `Resolve deploy destination` step, which emits boolean outputs `deploy_landing` / `deploy_panel` / `deploy_api` that drive every conditional step. Panel app name and path are hard-coded in the workflow (`panel.salon-bw.pl` / `apps/nodejs/panelbw`) — no repo variables needed for panel.
 
 Defaults can be supplied via repository variables (production):
 
 - `hosting_API_REMOTE_PATH_PRODUCTION`, `hosting_API_APP_NAME_PRODUCTION`
-- `hosting_PUBLIC_REMOTE_PATH_PRODUCTION`, `hosting_PUBLIC_APP_NAME_PRODUCTION`
-- `hosting_DASHBOARD_REMOTE_PATH_PRODUCTION`, `hosting_DASHBOARD_APP_NAME_PRODUCTION` (dashboard uses `panel.hosting domain`)
-- `hosting_ADMIN_REMOTE_PATH_PRODUCTION`, `hosting_ADMIN_APP_NAME_PRODUCTION`
-- Generic fallbacks: `hosting_REMOTE_PATH_PRODUCTION`, `hosting_APP_NAME_PRODUCTION`
+- `hosting_PUBLIC_REMOTE_PATH_PRODUCTION`, `hosting_PUBLIC_APP_NAME_PRODUCTION` (landing)
+- Generic fallbacks (used when LANDING vars unset): `hosting_REMOTE_PATH_PRODUCTION`, `hosting_APP_NAME_PRODUCTION`
 
 Manual instructions and infrastructure quirks (e.g. Passenger wrappers touching `tmp/restart.txt`) are in [`docs/DEPLOYMENT_hosting.md`](docs/DEPLOYMENT_hosting.md). CI/CD details and required secrets are in [`docs/CI_CD.md`](docs/CI_CD.md).
 

@@ -7,7 +7,7 @@ This runbook captures the minimum context an AI agent (or on-call human) needs t
 | Workflow | Purpose | Required Inputs | Production defaults | Dispatch example |
 | --- | --- | --- | --- | --- |
 | `ci.yml` | Lint, test, build (frontend + backend) | none | n/a | `gh workflow run ci.yml -r master` |
-| `deploy.yml` (Deploy MyDevil) | Deploy target (api/public/dashboard/admin*) | `ref`, `target`, optional `api_url`, optional `remote_path`, optional `app_name` | see repo variables below | `gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api` |
+| `deploy.yml` (Deploy MyDevil) | Deploy target (`landing` \| `panel` \| `api` \| `all` \| `probe`; aliases: `public`=`landing`, `dashboard`/`admin`=`panel`) | `ref`, `target`, optional `api_url`, optional `remote_path`, optional `app_name` | see repo variables below | `gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api` |
 
 Monitor progress with:
 
@@ -102,15 +102,17 @@ PASS criteria for production validation:
    gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
    ```
 
-3. **Dispatch frontends** (public → dashboard):
-   - `public` → `dev.salon-bw.pl` (landing / wizytówka)
-   - `dashboard` → `panel.salon-bw.pl` (Versum clone)
+3. **Dispatch frontends** (landing → panel), or use `target=all` to deploy api+landing+panel together (api migrations run before any frontend restart):
+   - `landing` → `dev.salon-bw.pl` (landing / wizytówka)
+   - `panel`   → `panel.salon-bw.pl` (Versum clone)
 
    ```bash
-   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=public
-   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=dashboard
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=landing
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=panel
+   # or, instead of the three dispatches in steps 2–3:
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=all
    ```
-   \* `admin` target is legacy; do not use unless explicitly required.
+   \* Aliases: `public`=`landing`, `dashboard`=`panel`, `admin`=`panel`. Prefer canonical names in new scripts.
 4. **Monitor logs**:
    - API: look for tar upload + `npm22 ci --omit=dev` finishing, `OK: /healthz`.
    - Public/Panel: Next.js build plus standalone runtime install. Warnings about Node engines on mydevil (Node 18) are expected.

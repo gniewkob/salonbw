@@ -1,6 +1,13 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-19 (P1+P2 route coverage is implemented, but parity status is mixed: `exact`, `aliased`, and `invent` routes coexist; implemented does not equal DONE 1:1)_
+_Last updated: 2026-05-15 (deploy target resolver centralized; canonical per-domain + `all` targets)_
+
+Operational note (2026-05-15):
+- Fixed `target=dashboard` deploy bug where `Resolve deploy destination` resolved `APP_NAME_PANEL` via the `MYDEVIL_PANEL_APP_NAME_* → MYDEVIL_DASHBOARD_APP_NAME_* → MYDEVIL_APP_NAME_*` fallback chain to `dev.salon-bw.pl`, causing `devil www restart` to hit the dev preview Passenger app while files landed in `apps/nodejs/panelbw` (panel.salon-bw.pl symlink target). Effect: new CSP / X-Frame-Options headers stayed stale on `panel.salon-bw.pl` until a manual `touch tmp/restart.txt`. Reproduced on run `25906130929`. Validated fix on dispatch `25908197752` (target=dashboard) and `25910232101` (target=all). Commits: `0dc3a178`, `d8d69729`.
+- Refactored `.github/workflows/deploy.yml` target resolution to three boolean outputs (`deploy_landing` / `deploy_panel` / `deploy_api`) computed once in `Resolve deploy destination`. Replaces ~35 duplicated long expressions with one source of truth. Canonical targets: `landing | panel | api | all | probe` (`type: choice` enum). Aliases preserved (`public` = `landing`, `dashboard` / `admin` = `panel`). New `target=all` deploys api + landing + panel in a single dispatch; api migrations run before frontend restarts.
+- Hard-coded `APP_NAME_PANEL=panel.salon-bw.pl` and `REMOTE_PATH_PANEL=apps/nodejs/panelbw` in workflow so the panel restart target can no longer diverge from the file-step relink target. Added safety-net `touch panel.salon-bw.pl/public_nodejs/tmp/restart.txt` after every `devil www restart`.
+- Repo variables cleanup (no longer referenced by the workflow): deleted `MYDEVIL_DASHBOARD_APP_NAME_{PRODUCTION,STAGING}`, `MYDEVIL_DASHBOARD_REMOTE_PATH_{PRODUCTION,STAGING}`, `MYDEVIL_ADMIN_APP_NAME_PRODUCTION`, `MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION`, `TEST_VIEW`. Active variables for production deploys: `MYDEVIL_API_*`, `MYDEVIL_PUBLIC_*` (landing), `MYDEVIL_APP_NAME_PRODUCTION` / `MYDEVIL_REMOTE_PATH_PRODUCTION` generic fallbacks used by the landing branch.
+- Docs synced: `Agent.md` §2, `docs/CI_CD.md`, `docs/DEPLOYMENT_MYDEVIL.md`, `docs/AGENT_OPERATIONS.md`, `docs/ROLLBACK_PROCEDURE.md` updated to canonical target vocabulary and the new resolver outputs.
 
 Operational note (2026-05-09):
 - Added reception batch telemetry alert-routing policy to runbooks: `slow` stays observability-only, controlled `4xx` failures are Slack warns, `5xx/unexpected` failures are on-call alerts, and `failure burst` (`>=5` in `5m`) is immediate on-call escalation with incident note requirement.
