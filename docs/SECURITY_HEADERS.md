@@ -2,41 +2,83 @@
 
 This document outlines the HTTP response headers and crawler directives applied by the Next.js apps (landing + panel).
 
-## Global HTTP Headers
+Last reviewed: 2026-05-15 (panel hardening pass — see `docs/PANEL_HARDENING_2026-05.md`).
+
+## Global HTTP Headers (panel)
 
 ### Content Security Policy (CSP)
 
-**NEW (2025-11-01):** CSP is now dynamically generated with nonces via `apps/landing/src/middleware.ts` and `apps/panel/src/middleware.ts` for enhanced security.
+CSP is **statically configured** in `apps/panel/next.config.mjs` via
+the `securityHeaders` array. There is no middleware-based nonce
+generation today — this used to be promised by a stale comment in
+`next.config.mjs` that pointed at `middleware.ts`, but no nonce code
+ever existed there. The misleading comment was removed in commit
+`19d01beb` and replaced with the documentation below.
 
-**Strict CSP Configuration:**
-- `default-src 'self'` - Only allow resources from same origin
-- `script-src 'self' 'nonce-{random}' 'strict-dynamic' https:` - **No unsafe-inline or unsafe-eval**
-- `style-src 'self' 'nonce-{random}' https:` - Nonce-based styles
-- `img-src 'self' data: blob: https:` - Allow images from trusted sources
-- `media-src 'self' https:` - Media from HTTPS only
-- `font-src 'self' data:` - Fonts from same origin or data URIs
-- `connect-src 'self' https: wss:` - API and WebSocket connections
-- `frame-src 'self' https://*.google.com https://*.gstatic.com` - Trusted embeds only
-- `frame-ancestors 'none'` - Prevent clickjacking
-- `form-action 'self'` - Forms submit to same origin only
-- `base-uri 'self'` - Restrict base tag URLs
-- `upgrade-insecure-requests` - Auto-upgrade HTTP to HTTPS
-- `report-uri {API_URL}/csp-report` - Violation reporting endpoint
+**Current panel CSP:**
 
-**How it works:**
-1. Middleware generates a unique nonce for each request
-2. Nonce is passed to `<Head>` and `<NextScript>` via `_document.tsx`
-3. Next.js automatically applies nonces to `<Script>` components
-4. CSP violations are logged to backend at `/csp-report`
+```
+default-src 'self';
+script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+img-src 'self' data: blob: https:;
+media-src 'self' blob:;
+connect-src 'self' https://api.salon-bw.pl https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://www.google-analytics.com;
+frame-src 'none';
+frame-ancestors 'none';
+form-action 'self' https://api.salon-bw.pl;
+base-uri 'self';
+object-src 'none';
+worker-src 'self' blob:;
+manifest-src 'self';
+upgrade-insecure-requests
+```
 
-### Static Security Headers
+#### Why each directive is shaped the way it is
 
-Configured in `apps/landing/next.config.mjs` and `apps/panel/next.config.mjs`:
+- **`script-src`** — no `'unsafe-inline'`, no `'unsafe-eval'`. The
+  panel emits only external `<script src=...>` tags (Next.js
+  `_next/static/*` chunks) plus a `__NEXT_DATA__` block served as
+  `type="application/json"`, which CSP `script-src` does not match.
+  The only previous inline script (gtag bootstrap) was moved into a
+  `Script onLoad={...}` handler in `apps/panel/src/pages/_app.tsx`
+  in commit `0a447c39`.
+- **`style-src`** keeps `'unsafe-inline'` because UI libraries
+  (react-datepicker, recharts, Bootstrap) ship inline `style="…"`
+  props. Replacing them needs a CSS-in-JS migration that is out of
+  scope here.
+- **`frame-src 'none'` + `frame-ancestors 'none'`** — the panel
+  does not host, and is not embedded by, any iframe after the
+  vendored Versum calendar embed (`/api/calendar-embed`) was
+  deleted in commit `c5555384`. Matches `X-Frame-Options: DENY`.
+- **`connect-src`** — explicitly lists every origin the SPA talks
+  to: `'self'` (the same-origin proxy at `/api/[...path]`),
+  `https://api.salon-bw.pl` (direct API origin used when
+  `NEXT_PUBLIC_API_URL` points there), Sentry ingest hosts, and
+  Google Analytics.
+- **`object-src 'none'`, `base-uri 'self'`, `form-action 'self'
+  https://api.salon-bw.pl`** — close the highest-impact injection
+  primitives even if a future XSS bypasses script-src.
+
+### Static Security Headers (panel)
+
+Configured in `apps/panel/next.config.mjs`:
+
 - `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
+- `X-Frame-Options: DENY` (matches CSP `frame-ancestors 'none'`).
+  This used to emit a conflicting `SAMEORIGIN` override for
+  `/api/calendar-embed`; both were removed in `c5555384`.
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()`
 - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
+
+## Landing CSP
+
+The landing app retains a separate, more permissive CSP because it
+must embed third-party widgets (booking, social embeds, etc.).
+See `apps/landing/next.config.mjs` for the canonical list. The
+hardening described above applies to the panel only.
 
 ## Performance Caching
 
@@ -47,6 +89,8 @@ Additional caching headers are applied to reduce bandwidth and improve page load
 - `/assets/*` – `Cache-Control: public, max-age=31536000, immutable`
 
 These targets are fingerprinted or versioned, making them safe to cache for a year. HTML and API responses remain non-cacheable by default.
+
+The embed handler at `/api/calendar-embed` no longer exists (deleted in `c5555384`); the previous note about caching that response is obsolete.
 
 ## Panel / Auth Protections
 
@@ -75,3 +119,19 @@ Update the disallow list if new sensitive sections are added (e.g. `/admin/`). P
 2. In development, inspect responses via browser devtools or `curl -I http://localhost:3000/` (landing) and the panel dev port to validate headers.
 3. For `/dashboard` or `/auth` paths on the panel domain, confirm the `X-Robots-Tag` header is present.
 4. Fetch `/robots.txt` to verify crawler directives.
+5. Smoke the live CSP on the panel:
+
+```bash
+curl -sI "https://panel.salon-bw.pl/auth/login?cb=$(uuidgen)" \
+  | grep -iE "content-security|x-frame"
+```
+
+Expect `script-src` without `'unsafe-inline'` / `'unsafe-eval'`,
+`X-Frame-Options: DENY`, and `frame-ancestors 'none'`.
+
+## Future work
+
+The remaining `'unsafe-inline'` on `style-src` is the next obvious
+tightening. It requires moving inline `style="…"` props off of
+react-datepicker / recharts / Bootstrap usage to className-driven
+styles, or shipping nonces from middleware. Tracked separately.
