@@ -176,6 +176,42 @@ pnpm tsc --noEmit
 - If lint --fix doesn't resolve all issues, manually fix remaining errors before commit
 - Run checks for ALL packages that have modified files
 
+## 12a. Pre-change OpenBrain checklist (mandatory for agents)
+
+Before touching code matching any trigger phrase below, run
+`brain_search` for related memories first. Reasoning: a 2026-05
+session found that comments and docs drift from code (CSP claim
+that didn't exist, NEXT_PUBLIC_LOG_TOKEN bundle leak, etc.).
+Memory contains the actual decisions — searching first prevents
+re-litigating settled architecture.
+
+**Trigger phrases → `brain_search "<phrase>" domain=build`:**
+
+| Phrase / file pattern | Query keywords |
+|---|---|
+| `accessToken`, `refreshToken`, `Cookies.set`, `httpOnly` | `auth httpOnly token storage` |
+| `CSP`, `Content-Security-Policy`, `script-src`, `unsafe-inline` | `csp script-src directive rationale` |
+| `NEXT_PUBLIC_*` (especially with TOKEN/KEY/SECRET) | `NEXT_PUBLIC secret bundle leak` |
+| `middleware.ts`, security headers | `middleware csp nonce` |
+| `useEffect` with `fetch`/`apiFetch` | `useEffect cancelled flag race` |
+| New `apiFetch<T>('/...')` call | `endpoint contract panel backend` |
+| `Sentry.init`, `beforeSend`, replays | `sentry pii scrubber` |
+| Batch endpoint with per-item fallback | `n+1 fallback cap` |
+| `console.log` / debug instrumentation | `console.log production leak` |
+| `try { } catch { logout() }` patterns | `fetchProfile error handling 401 5xx` |
+
+**Reference memories (high-value, durable):**
+- `b92ad3ad-9584-43da-87e5-48681974fd05` — SalonBW 2026-05 hardening
+  (9 commits + decisions, full session reference)
+- 7 Rules in `build` domain tagged `agent-rule`
+- 7 Patterns in `build` domain tagged `pattern`
+- Anti-patterns catalog tagged `anti-pattern`
+- MyDevil Passenger diagnostics runbook tagged `runbook`
+
+If `brain_search` returns nothing relevant, the change is genuinely
+new territory — write a new Rule/CodeSnippet memory after
+implementing, so future agents can find it.
+
 ## 13. Development Phase Testing Strategy
 
 **Local (before commit)**:
