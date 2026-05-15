@@ -6,16 +6,13 @@ const BACKEND_URL = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
 const LOCAL_ROUTES = new Set(['calendar-embed', 'runtime', 'gallery', '_diag']);
 
 export function normalizeCompatStatus(
-    targetPath: string,
+    _targetPath: string,
     status: number,
 ): number {
-    // Vendored calendar runtime expects success responses from GraphQL reads as 200.
-    // Some backend stacks return 201 for POST /graphql, which the legacy client treats
-    // as an error despite receiving a valid payload.
-    if (targetPath === '/graphql' && status === 201) {
-        return 200;
-    }
-
+    // No-op since the vendored Versum calendar embed at /api/calendar-embed
+    // was removed; the only consumer of the 201→200 GraphQL hack is gone.
+    // The function is kept (rather than inlined) so callers don't have to
+    // change and the test contract stays stable.
     return status;
 }
 

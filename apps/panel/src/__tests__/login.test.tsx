@@ -31,7 +31,7 @@ describe('LoginPage', () => {
         fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
         await waitFor(() => expect(login).toHaveBeenCalled());
         await waitFor(() => expect(apiFetch).toHaveBeenCalled());
-        expect(push).toHaveBeenCalledWith('/calendar-next');
+        expect(push).toHaveBeenCalledWith('/calendar');
     });
 
     it('shows validation error', async () => {

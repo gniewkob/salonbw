@@ -5,11 +5,7 @@ export function getPostLoginRoute(role: Role | null | undefined): string {
         return '/dashboard';
     }
 
-    if (role === 'admin' || role === 'receptionist') {
-        return '/calendar-next';
-    }
-
-    if (role === 'employee') {
+    if (role === 'admin' || role === 'receptionist' || role === 'employee') {
         return '/calendar';
     }
 

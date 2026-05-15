@@ -26,9 +26,7 @@ describe('Home redirect', () => {
             }),
         );
         render(<HomePage />);
-        await waitFor(() =>
-            expect(replace).toHaveBeenCalledWith('/calendar-next'),
-        );
+        await waitFor(() => expect(replace).toHaveBeenCalledWith('/calendar'));
     });
 
     it('redirects to login when not authenticated', async () => {

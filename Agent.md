@@ -86,7 +86,31 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
   - `COOKIE_DOMAIN=salon-bw.pl`
   - `FRONTEND_URL=https://dev.salon-bw.pl,https://panel.salon-bw.pl`
   - `JWT_SECRET` / `JWT_REFRESH_SECRET`
+  - `CLIENT_LOG_TOKEN` — shared secret for `/logs/client` ingest; the
+    panel posts client-side error logs through the same-origin proxy at
+    `/api/logs/client` and the proxy injects this header server-side.
+    Must never live in any `NEXT_PUBLIC_*` env var.
 - Never commit secrets. See `docs/ENV.md`.
+
+### Cookie scope — SSO is intentional, not a leak
+- API issues auth cookies (`accessToken`, `refreshToken`, `sbw_auth`,
+  `XSRF-TOKEN`) with `Domain=.salon-bw.pl`. A login on `dev.salon-bw.pl`
+  therefore authenticates the user on `panel.salon-bw.pl` and vice
+  versa. This is **the intended SSO setup**, not a misconfiguration:
+  - `salon-bw.pl` (and `dev.salon-bw.pl` as its preview) is the public
+    landing page.
+  - `panel.salon-bw.pl` is where staff/admin log in to the CRM.
+  - One session, one identity, across all `.salon-bw.pl` subdomains.
+- Do not scope cookies per-host without coordinating across all
+  frontends — that would break the login → panel handoff users rely on.
+
+### Token storage
+- `accessToken` and `refreshToken` live in httpOnly cookies set by the
+  backend on `/auth/login`. The panel **must not** mirror them into
+  `localStorage` or set them via `js-cookie`; the only client-visible
+  hint that "a session exists" is the non-HttpOnly `sbw_auth` cookie.
+- The browser-readable CSRF token is `XSRF-TOKEN`; the panel attaches
+  it as `X-XSRF-TOKEN` for non-GET requests in `ApiClient.execute`.
 
 ## 7. DB migrations
 - Prefer running migrations via deploy workflow.

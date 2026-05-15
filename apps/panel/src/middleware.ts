@@ -5,16 +5,8 @@ export function isPublicDashboardAssetPath(path: string) {
     return (
         path.startsWith('/_next') ||
         path.startsWith('/assets') ||
-        path.startsWith('/salonbw-calendar') ||
-        path.startsWith('/salonbw-vendor') ||
-        path.startsWith('/versum-calendar') ||
-        path.startsWith('/versum-vendor') ||
         path.startsWith('/favicon.ico') ||
         path.startsWith('/api') ||
-        path.startsWith('/events') ||
-        path.startsWith('/graphql') ||
-        path.startsWith('/settings/timetable/schedules') ||
-        path.startsWith('/track_new_events.json') ||
         path.startsWith('/icon')
     );
 }

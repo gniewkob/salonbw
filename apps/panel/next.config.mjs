@@ -1,14 +1,16 @@
 // Static security headers applied to every panel response.
 //
 // CSP notes:
-// - `script-src` keeps `'unsafe-inline'` and `'unsafe-eval'` because the
-//   vendored Versum calendar bundle served at /api/calendar-embed contains
-//   ~96 KB of inline scripts and uses eval-style patterns. Tightening this
-//   requires nonce-based CSP and a refactor of the embed runtime; tracked
-//   separately.
-// - `frame-ancestors 'self'` allows panel.salon-bw.pl to iframe its own
-//   /api/calendar-embed (see apps/panel/src/pages/calendar.tsx). Matches the
-//   `X-Frame-Options: SAMEORIGIN` set below.
+// - `script-src` keeps `'unsafe-inline'` because Next.js Pages router
+//   ships inline hydration scripts and __NEXT_DATA__ via _document.tsx.
+//   Eliminating that requires per-request nonces in middleware + a
+//   _document override; tracked as a separate follow-up. `'unsafe-eval'`
+//   was previously required by the vendored Versum calendar embed at
+//   /api/calendar-embed and is now removed — nothing else in the panel
+//   needs `eval` / `Function(string)`.
+// - `frame-ancestors 'none'`: no internal iframe of panel pages after
+//   the calendar embed deletion. Matches `X-Frame-Options: DENY`.
+// - `frame-src 'none'`: panel does not embed any third-party iframes.
 // - `connect-src` lists the origins the SPA legitimately talks to:
 //   - 'self' covers the same-origin proxy at /api/[...path]
 //   - https://api.salon-bw.pl is the direct API origin used when
@@ -20,14 +22,14 @@
 //   are allowed.
 const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob:",
     "connect-src 'self' https://api.salon-bw.pl https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://www.google-analytics.com",
-    "frame-src 'self'",
-    "frame-ancestors 'self'",
+    "frame-src 'none'",
+    "frame-ancestors 'none'",
     "form-action 'self' https://api.salon-bw.pl",
     "base-uri 'self'",
     "object-src 'none'",
@@ -38,11 +40,10 @@ const csp = [
 
 const securityHeaders = [
     { key: 'X-Content-Type-Options', value: 'nosniff' },
-    // SAMEORIGIN (not DENY) — required for the /calendar page to iframe
-    // /api/calendar-embed. Matches CSP `frame-ancestors 'self'`. Used to
-    // emit conflicting DENY (global) + SAMEORIGIN (per-route), which
-    // browsers resolve to the most restrictive value (DENY).
-    { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+    // DENY — after deleting the vendored calendar embed there is no
+    // legitimate same-origin iframe of panel pages. Matches the CSP
+    // `frame-ancestors 'none'` directive above.
+    { key: 'X-Frame-Options', value: 'DENY' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
     {
         key: 'Permissions-Policy',
@@ -85,36 +86,12 @@ const nextConfig = {
     typedRoutes: false,
     async rewrites() {
         const rules = [
-            // Legacy source compatibility aliases (vendored calendar runtime uses these in some flows)
-            // Note: Next rewrites do not reliably chain, so map to `/api/*` directly.
-            {
-                source: '/salonblackandwhite/events/:path*',
-                destination: '/api/events/:path*',
-            },
-            {
-                source: '/salonblackandwhite/settings/timetable/schedules/:path*',
-                destination: '/api/settings/timetable/schedules/:path*',
-            },
-            {
-                source: '/salonblackandwhite/track_new_events.json',
-                destination: '/api/track_new_events.json',
-            },
-            {
-                source: '/salonblackandwhite/graphql',
-                destination: '/api/graphql',
-            },
-            {
-                source: '/salonbw-calendar/:path*',
-                destination: '/versum-calendar/:path*',
-            },
-            {
-                source: '/salonbw-vendor/:path*',
-                destination: '/versum-vendor/:path*',
-            },
-
-            // Calendar embed is handled by `src/pages/calendar.tsx`, which replaces the document
-            // with HTML served by `/api/calendar-embed` to avoid hydration conflicts.
             // Legacy source paths (from `panel.versum.com/<slug>/customers*`)
+            // The vendored Versum calendar embed used to live under
+            // /salonbw-{calendar,vendor}/ + /salonblackandwhite/{events,graphql,
+            // track_new_events,settings/timetable/schedules} — those rewrites
+            // were removed together with /api/calendar-embed; the React
+            // calendar at /calendar uses native backend endpoints.
             {
                 source: '/salonblackandwhite/customers',
                 destination: '/customers',
@@ -261,22 +238,12 @@ const nextConfig = {
                 source: '/statistics/dashboard',
                 destination: '/statistics',
             },
-            {
-                source: '/events/:path*',
-                destination: '/api/events/:path*',
-            },
-            {
-                source: '/settings/timetable/schedules/:path*',
-                destination: '/api/settings/timetable/schedules/:path*',
-            },
-            {
-                source: '/track_new_events.json',
-                destination: '/api/track_new_events.json',
-            },
-            {
-                source: '/graphql',
-                destination: '/api/graphql',
-            },
+            // /events, /graphql, /track_new_events.json,
+            // /settings/timetable/schedules/* used to be rewritten to /api/*
+            // because the vendored Versum calendar embed called them as
+            // top-level paths. After deleting /api/calendar-embed those
+            // rewrites are unused — the React calendar talks to the
+            // backend through the canonical /api/* proxy directly.
             {
                 source: '/fresh_chat_user',
                 destination: '/api/fresh_chat_user',
@@ -296,6 +263,15 @@ const nextConfig = {
     },
     async redirects() {
         return [
+            // /calendar-next was the React port that lived alongside the
+            // vendored Versum embed at /calendar. The embed is gone, the
+            // React port took /calendar's slot — keep this redirect so old
+            // bookmarks / browser history still land on the right page.
+            {
+                source: '/calendar-next',
+                destination: '/calendar',
+                permanent: true,
+            },
             // Legacy customers aliases (compat)
             {
                 source: '/clients',

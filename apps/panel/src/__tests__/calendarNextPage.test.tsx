@@ -5,7 +5,7 @@ import {
     screen,
     waitFor,
 } from '@testing-library/react';
-import CalendarNextPage from '@/pages/calendar-next';
+import CalendarNextPage from '@/pages/calendar';
 import type { ReactNode } from 'react';
 
 const pushMock = jest.fn();
@@ -15,7 +15,7 @@ let originalConsoleError: typeof console.error;
 let consoleWarnSpy: jest.SpyInstance;
 const routerMock = {
     query: { appointmentId: '42' } as Record<string, string>,
-    pathname: '/calendar-next',
+    pathname: '/calendar',
     push: pushMock,
 };
 
@@ -206,7 +206,7 @@ describe('CalendarNextPage', () => {
             'closed',
         );
         expect(consoleWarnSpy).toHaveBeenCalledWith(
-            '[calendar-next] deep-link fetch failed',
+            '[calendar] deep-link fetch failed',
             { appointmentId: 42 },
         );
     });
@@ -265,7 +265,7 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(pushMock).toHaveBeenCalledWith(
                 {
-                    pathname: '/calendar-next',
+                    pathname: '/calendar',
                     query: { date: '2026-05-07', view: 'day' },
                 },
                 undefined,
@@ -467,7 +467,7 @@ describe('CalendarNextPage', () => {
             ).toBeInTheDocument(),
         );
         expect(consoleWarnSpy).toHaveBeenCalledWith(
-            '[calendar-next] customer alert stats fetch failed',
+            '[calendar] customer alert stats fetch failed',
             {
                 failedCustomerIds: [7],
                 failedCount: 1,
@@ -1394,7 +1394,7 @@ describe('CalendarNextPage', () => {
         await waitFor(() =>
             expect(pushMock).toHaveBeenCalledWith(
                 {
-                    pathname: '/calendar-next',
+                    pathname: '/calendar',
                     query: {
                         view: 'reception',
                         date: '2026-05-07',

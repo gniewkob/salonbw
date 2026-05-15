@@ -1,13 +1,14 @@
 import { normalizeCompatStatus } from '@/pages/api/[...path]';
 
 describe('api proxy compat status normalization', () => {
-    it('normalizes graphql 201 responses to 200 for vendored runtime', () => {
-        expect(normalizeCompatStatus('/graphql', 201)).toBe(200);
-    });
+    // normalizeCompatStatus used to remap POST /graphql 201 → 200 for the
+    // vendored Versum calendar embed. The embed was removed; the function
+    // is now a passthrough kept only for caller stability.
 
-    it('does not change non-graphql statuses', () => {
-        expect(normalizeCompatStatus('/events', 201)).toBe(201);
+    it('is a passthrough for all statuses', () => {
+        expect(normalizeCompatStatus('/graphql', 201)).toBe(201);
         expect(normalizeCompatStatus('/graphql', 200)).toBe(200);
+        expect(normalizeCompatStatus('/events', 201)).toBe(201);
         expect(
             normalizeCompatStatus('/settings/timetable/schedules/1', 200),
         ).toBe(200);
