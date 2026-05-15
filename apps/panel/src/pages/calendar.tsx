@@ -431,7 +431,7 @@ function areAlertMapsEqual(
     return true;
 }
 
-export default function CalendarNextPage() {
+export default function CalendarPage() {
     const router = useRouter();
     const { role, apiFetch } = useAuth();
     const isMountedRef = useRef(true);

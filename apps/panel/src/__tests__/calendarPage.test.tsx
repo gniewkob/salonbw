@@ -5,7 +5,7 @@ import {
     screen,
     waitFor,
 } from '@testing-library/react';
-import CalendarNextPage from '@/pages/calendar';
+import CalendarPage from '@/pages/calendar';
 import type { ReactNode } from 'react';
 
 const pushMock = jest.fn();
@@ -127,7 +127,7 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
     ),
 }));
 
-describe('CalendarNextPage', () => {
+describe('CalendarPage', () => {
     beforeEach(() => {
         originalConsoleError = console.error;
         consoleErrorSpy = jest
@@ -178,7 +178,7 @@ describe('CalendarNextPage', () => {
     });
 
     it('opens appointment drawer from appointmentId deep link', async () => {
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith('/appointments/42'),
@@ -193,7 +193,7 @@ describe('CalendarNextPage', () => {
     it('shows warning when appointment deep link fetch fails', async () => {
         apiFetchMock.mockRejectedValueOnce(new Error('Deep link failed'));
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -235,7 +235,7 @@ describe('CalendarNextPage', () => {
             refetch: jest.fn(),
         }));
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
@@ -252,7 +252,7 @@ describe('CalendarNextPage', () => {
             view: 'day',
         };
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
@@ -317,7 +317,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        const { rerender } = render(<CalendarNextPage />);
+        const { rerender } = render(<CalendarPage />);
 
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith(
@@ -333,7 +333,7 @@ describe('CalendarNextPage', () => {
                 title: 'Wizyta 2',
             },
         ];
-        rerender(<CalendarNextPage />);
+        rerender(<CalendarPage />);
 
         await waitFor(() => {
             const customer5Calls = apiFetchMock.mock.calls.filter(
@@ -358,7 +358,7 @@ describe('CalendarNextPage', () => {
                 status: 'scheduled',
             },
         ];
-        rerender(<CalendarNextPage />);
+        rerender(<CalendarPage />);
 
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith(
@@ -405,7 +405,7 @@ describe('CalendarNextPage', () => {
             refetch: jest.fn(),
         }));
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         expect(screen.getByText('reception-view:1')).toBeInTheDocument();
         expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
@@ -457,7 +457,7 @@ describe('CalendarNextPage', () => {
             refetch: jest.fn(),
         }));
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -511,7 +511,7 @@ describe('CalendarNextPage', () => {
             refetch: jest.fn(),
         }));
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -572,7 +572,7 @@ describe('CalendarNextPage', () => {
             refetch: jest.fn(),
         }));
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         // Error banner appears (alerts marked failed).
         await waitFor(() =>
@@ -658,7 +658,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(screen.getByText('reception-view:3')).toBeInTheDocument(),
@@ -772,7 +772,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         const summary = screen.getByTestId('reception-daily-summary');
         const readSummaryValue = (label: string) => {
@@ -865,7 +865,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
         const summary = screen.getByTestId('reception-daily-summary');
         const readSummaryValue = (label: string) => {
             const labelElement = Array.from(
@@ -930,7 +930,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         const summary = screen.getByTestId('reception-daily-summary');
         const readSummaryValue = (label: string) => {
@@ -1040,7 +1040,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1112,7 +1112,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1189,7 +1189,7 @@ describe('CalendarNextPage', () => {
             return [];
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1261,7 +1261,7 @@ describe('CalendarNextPage', () => {
             return [];
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1347,7 +1347,7 @@ describe('CalendarNextPage', () => {
             return [];
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1439,7 +1439,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1548,7 +1548,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(screen.getByText('Klient #91')).toBeInTheDocument(),
@@ -1646,7 +1646,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(screen.getByText('Klient #92')).toBeInTheDocument(),
@@ -1725,7 +1725,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1825,7 +1825,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -1940,7 +1940,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -2058,7 +2058,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -2142,7 +2142,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(
@@ -2214,7 +2214,7 @@ describe('CalendarNextPage', () => {
             });
         });
 
-        const { rerender } = render(<CalendarNextPage />);
+        const { rerender } = render(<CalendarPage />);
 
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith(
@@ -2224,7 +2224,7 @@ describe('CalendarNextPage', () => {
 
         // Re-render while the first fetch is still pending: should not trigger a duplicate call.
         events = [{ ...events[0], id: 402, title: 'Wizyta B' }];
-        rerender(<CalendarNextPage />);
+        rerender(<CalendarPage />);
 
         const callsDuringPending = apiFetchMock.mock.calls.filter(
             (call: unknown[]) => call[0] === '/customers/99/statistics',
@@ -2266,7 +2266,7 @@ describe('CalendarNextPage', () => {
                 status: 'scheduled',
             },
         ];
-        rerender(<CalendarNextPage />);
+        rerender(<CalendarPage />);
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith(
                 '/customers/100/statistics',
@@ -2275,7 +2275,7 @@ describe('CalendarNextPage', () => {
 
         // Trigger another render with the same failing customer; retry should happen.
         events = [{ ...events[0], id: 404, title: 'Wizyta D' }];
-        rerender(<CalendarNextPage />);
+        rerender(<CalendarPage />);
 
         await waitFor(() => {
             const retryCalls = apiFetchMock.mock.calls.filter(
@@ -2337,7 +2337,7 @@ describe('CalendarNextPage', () => {
             });
         });
 
-        const { rerender } = render(<CalendarNextPage />);
+        const { rerender } = render(<CalendarPage />);
 
         await waitFor(() => {
             const batchCalls = apiFetchMock.mock.calls.filter((call) =>
@@ -2353,7 +2353,7 @@ describe('CalendarNextPage', () => {
         );
 
         events = [{ ...events[0], id: 802, title: 'Wizyta fallback rerender' }];
-        rerender(<CalendarNextPage />);
+        rerender(<CalendarPage />);
 
         const fallbackCallsDuringPending = apiFetchMock.mock.calls.filter(
             (call: unknown[]) => call[0] === '/customers/7/statistics',
@@ -2410,7 +2410,7 @@ describe('CalendarNextPage', () => {
             };
         });
 
-        render(<CalendarNextPage />);
+        render(<CalendarPage />);
 
         await waitFor(() =>
             expect(screen.getByText('reception-view:1')).toBeInTheDocument(),
