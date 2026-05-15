@@ -436,4 +436,68 @@ test.describe('PROD smoke: calendar compat migration', () => {
         ).toBeVisible();
         expect(interceptedAuditUrls.length).toBeGreaterThan(0);
     });
+
+    test('follow-up manager view renders and supports manual refresh', async ({
+        page,
+    }) => {
+        const interceptedAuditUrls: string[] = [];
+        await page.route(
+            '**/api/crm/follow-up-actions?from=**',
+            async (route) => {
+                interceptedAuditUrls.push(route.request().url());
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        from: '2026-05-01',
+                        to: '2026-05-07',
+                        actionsTotal: 4,
+                        byAction: [{ action: 'contacted', count: 2 }],
+                        byReason: [{ reason: 'recent_no_show', count: 3 }],
+                        byDay: [{ day: '2026-05-07', count: 1 }],
+                    }),
+                });
+            },
+        );
+
+        await login(page);
+        await page.goto('/statistics/follow-up');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="follow-up-audit-page"]'),
+        ).toBeVisible();
+        await expect(page.locator('text=Akcje follow-up łącznie')).toBeVisible();
+        await expect(page.locator('text=4')).toBeVisible();
+
+        await page.click('button:has-text("Odśwież")');
+        await expect
+            .poll(() => interceptedAuditUrls.length, { timeout: 20_000 })
+            .toBeGreaterThan(1);
+    });
+
+    test('follow-up manager view shows fallback when audit endpoint is unavailable', async ({
+        page,
+    }) => {
+        const interceptedAuditUrls: string[] = [];
+        await page.route(
+            '**/api/crm/follow-up-actions?from=**',
+            async (route) => {
+                interceptedAuditUrls.push(route.request().url());
+                await route.abort('failed');
+            },
+        );
+
+        await login(page);
+        await page.goto('/statistics/follow-up');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="follow-up-audit-page"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('text=Audyt follow-up chwilowo niedostępny.'),
+        ).toBeVisible();
+        expect(interceptedAuditUrls.length).toBeGreaterThan(0);
+    });
 });
