@@ -14,20 +14,36 @@ Keep it short, actionable, and update it after any infra or deployment change.
 
 ## 2. Deployments (preferred)
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).
-- Order: API first, then frontends.
+- Order: API first, then frontends — or use `target=all` to run everything in one dispatch (API migrations run before frontend restarts).
 - Deploy transfers are timeout-guarded (scp/rsync) to prevent indefinite hangs during bundle upload.
 - Remote dependency installation in deploy workflow is retry-guarded (up to 3 attempts) for transient npm/network failures on MyDevil.
 - Frontend bundle upload is optimized for FreeBSD transfer limits: no `node_modules` in tarball; dependencies are installed remotely post-extract (`npm22` preferred, fallback `npm`).
-- Push-triggered deploy follow-up steps are now scoped to the actually changed app(s): landing-only smoke/log collection no longer runs for panel/API-only pushes, and SSH-dependent diagnostics are skipped if SSH setup never succeeded.
+- Push-triggered deploy follow-up steps are scoped to the actually changed app(s) via `dorny/paths-filter` outputs that feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags used by manual dispatches.
+
+### Targets (workflow_dispatch input)
+
+| Canonical | Aliases | What it does | Domain restarted |
+|---|---|---|---|
+| `landing` | `public` | Build + upload `apps/landing`, restart landing Passenger | `dev.salon-bw.pl` |
+| `panel` | `dashboard`, `admin` | Build + upload `apps/panel`, restart panel Passenger + safety-net `touch tmp/restart.txt` | `panel.salon-bw.pl` |
+| `api` | — | Build + upload backend, run DB migrations, restart api | `api.salon-bw.pl` |
+| `all` | — | All three above in a single run | all three |
+| `probe` | — | Connectivity probe only (separate job) | none |
+
+Resolution is centralized in the `Resolve deploy destination` step which emits `deploy_landing` / `deploy_panel` / `deploy_api` booleans; every conditional step reads those, so adding/renaming a target only needs an edit in the resolver.
 
 ```bash
-# API (deploy first)
+# Single domain
 gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=landing
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=panel
 
-# Frontends (after API)
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=public
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=dashboard
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=admin
+# Everything at once
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=all
+
+# Subset of two (no comma-list support — fire two dispatches)
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=panel
 
 # Monitor
 gh run list --workflow .github/workflows/deploy.yml --limit 5
