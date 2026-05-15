@@ -81,8 +81,7 @@ export class SalesController {
     @ApiQuery({
         name: 'appointmentIds',
         required: false,
-        description:
-            'Filter by related appointment ids (comma separated list)',
+        description: 'Filter by related appointment ids (comma separated list)',
     })
     @ApiQuery({
         name: 'customerId',

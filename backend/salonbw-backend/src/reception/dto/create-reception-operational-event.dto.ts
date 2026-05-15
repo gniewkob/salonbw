@@ -1,11 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-    IsDateString,
-    IsIn,
-    IsInt,
-    IsOptional,
-    Min,
-} from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import {
     RECEPTION_ACTIONS,
     RECEPTION_ALERT_SEVERITIES,

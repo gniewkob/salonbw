@@ -1116,7 +1116,10 @@ export class RetailService {
                 });
             }
         }
-        if (Number.isFinite(params.customerId) && Number(params.customerId) > 0) {
+        if (
+            Number.isFinite(params.customerId) &&
+            Number(params.customerId) > 0
+        ) {
             qb.andWhere('sale.clientId = :customerId', {
                 customerId: Number(params.customerId),
             });

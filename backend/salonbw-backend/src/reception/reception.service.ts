@@ -532,7 +532,9 @@ export class ReceptionService {
                 continue;
             }
 
-            const customerId = Number((row as { customerId?: unknown }).customerId);
+            const customerId = Number(
+                (row as { customerId?: unknown }).customerId,
+            );
             if (!Number.isInteger(customerId) || customerId <= 0) {
                 continue;
             }

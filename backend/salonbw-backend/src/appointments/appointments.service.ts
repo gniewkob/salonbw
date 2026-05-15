@@ -676,7 +676,7 @@ export class AppointmentsService {
                                 clientName:
                                     customerName.length > 0
                                         ? customerName
-                                        : appointment.client.name ?? null,
+                                        : (appointment.client.name ?? null),
                             },
                             user,
                         );

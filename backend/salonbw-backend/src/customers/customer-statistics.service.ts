@@ -491,10 +491,7 @@ export class CustomerStatisticsService {
             qb.andWhere('apt.startTime < :to', { to: toExclusive });
         }
 
-        const rows = (await qb.getRawMany()) as Array<{
-            customerId: string | number;
-            noShowVisits: string | number | null;
-        }>;
+        const rows = await qb.getRawMany();
         const byCustomerId = new Map<number, number>();
         for (const row of rows) {
             const customerId = Number(row.customerId);

@@ -57,7 +57,9 @@ export class ReceptionController {
 
     @Get('operational-insights')
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
-    @ApiOperation({ summary: 'Get reception operational insights for date range' })
+    @ApiOperation({
+        summary: 'Get reception operational insights for date range',
+    })
     getOperationalInsights(
         @Query() query: ReceptionOperationalInsightsQueryDto,
     ): Promise<ReceptionOperationalInsightsResponse> {
@@ -78,7 +80,10 @@ export class ReceptionController {
         const fromDate = new Date(`${from}T00:00:00.000`);
         const toDate = new Date(`${to}T00:00:00.000`);
 
-        if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+        if (
+            Number.isNaN(fromDate.getTime()) ||
+            Number.isNaN(toDate.getTime())
+        ) {
             throw new BadRequestException(
                 'from and to must be valid dates in YYYY-MM-DD',
             );
