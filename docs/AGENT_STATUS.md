@@ -41,11 +41,11 @@ Operational note (2026-05-09):
 - Added drill failure incident policy to `docs/AGENT_OPERATIONS.md`: drill failure is treated as ops automation incident by default (owner `ops/platform`, labels `ops,automation,drill-failure`) with mandatory triage on workflow logs + drill report artifact before any app-level escalation.
 - Recorded first post-scheduling drill execution (manual equivalent): `Ops Batch Stats Drill` run `25670568738` (`result=pass`, checks: `synthetic_fixtures`, `dry_run_guards`), artifact `ops-batch-stats-drill-report-25670568738`.
 - Added reception operational action tracking in calendar workflows (`open_appointment_drawer`, `confirm/start/no_show`, `finalize_via_drawer`, `open_customer_profile`, `open_sale_detail`) with non-sensitive payload (`action`, `appointmentId`, optional `customerId`, source) and regression coverage in panel tests.
-- Added production smoke coverage for reception insights on `/calendar-next?view=reception` in `tests/e2e/prod-calendar-smoke.spec.ts`:
+- Added production smoke coverage for reception insights on `/calendar?view=reception` in `tests/e2e/prod-calendar-smoke.spec.ts`:
   - logged-in render smoke for insights panel,
   - fallback verification when `/api/reception/operational-insights` is unavailable,
   - UI CTA smoke for reception filters (`priority`, `alert CRM`, `to_finalize`).
-- Extended production smoke coverage for CRM follow-up on `/calendar-next?view=reception` in `tests/e2e/prod-calendar-smoke.spec.ts`:
+- Extended production smoke coverage for CRM follow-up on `/calendar?view=reception` in `tests/e2e/prod-calendar-smoke.spec.ts`:
   - follow-up candidates panel render and action capture path (`POST /api/crm/follow-up-actions`),
   - follow-up candidates fallback when `/api/crm/follow-up-candidates` is unavailable,
   - follow-up audit fallback when `/api/crm/follow-up-actions?from=...&to=...` is unavailable.
@@ -54,9 +54,10 @@ Operational note (2026-05-09):
   - narrowed request interception scope to `/api/reception/operational-insights`,
   - assertions that interception does not match unrelated endpoints.
 - Added production validation checklist for reception insights smoke in `docs/AGENT_OPERATIONS.md`:
-  - authenticated render check for `/calendar-next?view=reception`,
+  - authenticated render check for `/calendar?view=reception`,
   - fallback check when `/api/reception/operational-insights` is unavailable,
   - CTA-to-filter checks for `priority`, `alert CRM`, and `to_finalize` UI state.
+- Canonical reception route is now `/calendar?view=reception`; `/calendar-next?view=reception` remains legacy redirect compatibility.
 - Added production validation checklist for CRM follow-up smoke in `docs/AGENT_OPERATIONS.md`:
   - follow-up candidates panel render,
   - follow-up action capture path,

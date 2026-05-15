@@ -18,10 +18,10 @@ gh run view <run-id> --log | tail
 
 All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are populated (SSH key, mydevil host/user, optional API URLs, `NPM_TOKEN`).
 
-## 1.1 Production smoke: Reception Insights (`calendar-next`)
+## 1.1 Production smoke: Reception Insights (`calendar`)
 
 Scope:
-- logged-in smoke for `/calendar-next?view=reception`,
+- logged-in smoke for `/calendar?view=reception`,
 - insights panel render,
 - fallback when `/api/reception/operational-insights` is unavailable,
 - CTA-to-filter UI flow (`priority`, `alert CRM`, `to_finalize`).
@@ -45,18 +45,19 @@ Runtime guardrails:
 - request interception for fallback/CTA checks is limited to `/api/reception/operational-insights`.
 
 PASS criteria for production validation:
-- `/calendar-next?view=reception` loads for authenticated operator without crash,
+- `/calendar?view=reception` loads for authenticated operator without crash,
 - insights panel (`[data-testid="reception-insights-panel"]`) is visible,
 - fallback message is rendered when `/api/reception/operational-insights` is unavailable,
 - CTA actions update filters in UI:
   - `Włącz filtr Tylko priorytetowe` -> `#reception-priority-filter` checked,
   - `Przejdź do wizyt z alertem CRM` -> `#reception-alert-filter` checked,
   - `Sprawdź wizyty do finalizacji` -> `#reception-status-filter=in_progress` and `#reception-payment-filter=to_finalize`.
+- legacy compatibility: `/calendar-next?view=reception` redirects to `/calendar?view=reception`.
 
-## 1.2 Production smoke: CRM Follow-up (`calendar-next`)
+## 1.2 Production smoke: CRM Follow-up (`calendar`)
 
 Scope:
-- logged-in smoke for `/calendar-next?view=reception`,
+- logged-in smoke for `/calendar?view=reception`,
 - follow-up candidates panel render,
 - follow-up action capture path (`POST /api/crm/follow-up-actions`),
 - follow-up audit panel render (7-day range),
@@ -84,7 +85,7 @@ Runtime guardrails:
   - `/api/crm/follow-up-actions?from=...&to=...`.
 
 PASS criteria for production validation:
-- `/calendar-next?view=reception` loads for authenticated operator without crash,
+- `/calendar?view=reception` loads for authenticated operator without crash,
 - candidates panel (`[data-testid="reception-follow-up-panel"]`) is visible,
 - audit panel (`[data-testid="reception-follow-up-audit-panel"]`) is visible,
 - action capture path works (e.g. `Oznacz kontakt`) and row shows handled state,
@@ -92,6 +93,7 @@ PASS criteria for production validation:
   - `Kandydaci follow-up chwilowo niedostępni.`,
 - fallback message is rendered when audit endpoint is unavailable:
   - `Audyt follow-up chwilowo niedostępny.`
+- legacy compatibility: `/calendar-next?view=reception` redirects to `/calendar?view=reception`.
 
 ## 2. Deployment Flow
 
@@ -222,7 +224,7 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
   - Slow: `{service="salonbw-backend"} |= "customer statistics batch slow"`
   - Failed: `{service="salonbw-backend"} |= "customer statistics batch failed"`
   - Burst: `{service="salonbw-backend"} |= "customer statistics batch failure burst"`
-- **Action target:** acknowledge alert, validate reception panel impact (`/calendar-next?view=reception`), trigger `Ponów teraz` retry check, then investigate backend exceptions.
+- **Action target:** acknowledge alert, validate reception panel impact (`/calendar?view=reception`), trigger `Ponów teraz` retry check, then investigate backend exceptions.
 - **Automation hook:** workflow `.github/workflows/ops_batch_stats_alerts.yml` runs every 10 minutes and evaluates the above telemetry in Loki. It fails on:
   - `customer statistics batch failure burst` > 0
   - `customer statistics batch failed` (`level=error`) >= 3 in 10m
