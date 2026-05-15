@@ -17,7 +17,7 @@ describe('Home redirect', () => {
         mockedUseAuth.mockReset();
     });
 
-    it('redirects to calendar-next for admin role', async () => {
+    it('redirects to calendar for admin role', async () => {
         mockedUseAuth.mockReturnValue(
             createAuthValue({
                 initialized: true,

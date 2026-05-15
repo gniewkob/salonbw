@@ -1,5 +1,7 @@
 # 11 — Implementation Backlog
 
+> Legacy note (historical): backlog entries mentioning `calendar-next` and `calendar-next.tsx` describe the pre-consolidation plan.
+
 ## Epic 1 — Panel shell unification
 
 | ID | Epic | Task | Description | Files likely affected | Backend needed | Priority | Acceptance criteria |

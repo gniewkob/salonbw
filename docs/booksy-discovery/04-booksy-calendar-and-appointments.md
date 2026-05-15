@@ -1,5 +1,7 @@
 # 04 — Booksy-like Calendar & Appointments (Target for SalonBW)
 
+> Legacy note (historical): this target design was written before canonical routing was consolidated on `/calendar`.
+
 ## 4.1 Widoki kalendarza
 
 | Widok | Układ | Kolumny | Godziny | Pracownicy | Wizyty | Akcje | Filtry | UX notes |

@@ -1,5 +1,7 @@
 # 07 — Gap Analysis: SalonBW vs Versum-like vs Booksy-like
 
+> Legacy note (historical): references to `calendar-next` describe a completed migration phase.
+
 | Moduł | Obecny SalonBW | Versum-like docs | Booksy-like target | Gap | Rekomendacja | Priorytet |
 | --- | --- | --- | --- | --- | --- | --- |
 | calendar | `/calendar` iframe + compat | copy-first runtime parity | natywny shared-shell calendar | bardzo duży | `calendar-next` + switch strategy | P0 |

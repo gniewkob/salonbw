@@ -167,7 +167,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await page.waitForLoadState('domcontentloaded');
 
         await expect(
-            page.locator('[data-testid="calendar-next-page"]'),
+            page.locator('[data-testid="calendar-page"]'),
         ).toBeVisible();
         await expect(
             page.locator('[data-testid="reception-insights-panel"]'),

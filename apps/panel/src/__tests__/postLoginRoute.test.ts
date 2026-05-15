@@ -1,12 +1,12 @@
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 
 describe('getPostLoginRoute', () => {
-    it('routes admin and receptionist to calendar-next', () => {
+    it('routes admin and receptionist to calendar', () => {
         expect(getPostLoginRoute('admin')).toBe('/calendar');
         expect(getPostLoginRoute('receptionist')).toBe('/calendar');
     });
 
-    it('keeps employee on legacy calendar during transition', () => {
+    it('routes employee to calendar', () => {
         expect(getPostLoginRoute('employee')).toBe('/calendar');
     });
 

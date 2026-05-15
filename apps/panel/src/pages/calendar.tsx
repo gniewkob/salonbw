@@ -1267,7 +1267,7 @@ export default function CalendarNextPage() {
     return (
         <RouteGuard permission="nav:calendar">
             <SalonShell role={role}>
-                <div className="salonbw-page" data-testid="calendar-next-page">
+                <div className="salonbw-page" data-testid="calendar-page">
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_calendar"
                         items={[{ label: 'Kalendarz (Next)' }]}

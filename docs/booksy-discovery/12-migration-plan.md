@@ -1,5 +1,7 @@
 # 12 — Migration Plan
 
+> Legacy note (historical): this plan documents the transition period before `/calendar-next` was redirected to canonical `/calendar`.
+
 ## Cel
 
 Migracja kalendarza i wizyt z minimalnym ryzykiem operacyjnym salonu.

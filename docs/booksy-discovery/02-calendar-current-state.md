@@ -1,5 +1,7 @@
 # 02 — Calendar Current State (Legacy vs Native)
 
+> Legacy note (historical): this file captures the pre-consolidation architecture and intentionally references `calendar-next`.
+
 ## Jak działa dziś `/calendar`
 
 1. Użytkownik otwiera `/calendar`.

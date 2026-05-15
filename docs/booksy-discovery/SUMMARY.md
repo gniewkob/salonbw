@@ -1,5 +1,7 @@
 # SUMMARY — Booksy-like Discovery dla SalonBW
 
+> Legacy note (historical): this discovery snapshot predates the `/calendar-next` -> `/calendar` route consolidation.
+
 ## 1. Co dziś jest największym problemem UX?
 
 Największy problem to `calendar` jako pełnoekranowy `iframe` poza `SalonShell`, co rozbija spójność nawigacji, stanów i przepływów operacyjnych.
