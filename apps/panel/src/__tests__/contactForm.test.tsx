@@ -9,7 +9,6 @@ describe('ContactForm', () => {
             ok: true,
             json: () => ({}),
         }) as jest.MockedFunction<typeof fetch>;
-        process.env.NEXT_PUBLIC_CONTACT_RECIPIENT = 'kontakt@salon-bw.pl';
     });
 
     it('posts form data', async () => {
@@ -30,23 +29,14 @@ describe('ContactForm', () => {
         fireEvent.click(screen.getByRole('button', { name: /send/i }));
         await waitFor(() => expect(global.fetch).toHaveBeenCalled());
         expect(global.fetch).toHaveBeenCalledWith(
-            `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
+            `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
             expect.objectContaining({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    to: 'kontakt@salon-bw.pl',
-                    subject: 'Zapytanie ze strony - John',
-                    template:
-                        '<p><strong>Imię:</strong> {{name}}</p>' +
-                        '<p><strong>Email:</strong> {{email}}</p>' +
-                        '<p><strong>Wiadomość:</strong></p>' +
-                        '<p>{{message}}</p>',
-                    data: {
-                        name: 'John',
-                        email: 'john@example.com',
-                        message: 'Hello',
-                    },
+                    name: 'John',
+                    replyTo: 'john@example.com',
+                    message: 'Hello',
                 }),
             }),
         );
