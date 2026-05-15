@@ -1270,7 +1270,7 @@ export default function CalendarPage() {
                 <div className="salonbw-page" data-testid="calendar-page">
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_calendar"
-                        items={[{ label: 'Kalendarz (Next)' }]}
+                        items={[{ label: 'Kalendarz' }]}
                     />
 
                     <div className="d-flex align-items-center justify-content-between gap-2 px-3 pb-2">
