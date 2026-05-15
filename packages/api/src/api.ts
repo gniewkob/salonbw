@@ -94,6 +94,12 @@ export interface ApiClientOptions {
 export class ApiClient {
     private readonly baseUrl: string;
     private readonly defaultHeaders: HeadersInit;
+    // Shared promise that deduplicates concurrent /auth/refresh attempts.
+    // Without this, N concurrent 401 responses fan out into N parallel
+    // POST /auth/refresh calls. With rotating refresh tokens, all but the
+    // first lose to the rotation and return 401 (or "token reused"),
+    // triggering an unnecessary logout from an otherwise-recoverable state.
+    private refreshInFlight: Promise<AuthTokens | null> | null = null;
 
     constructor(
         private readonly getAccessToken: () => string | null,
@@ -207,6 +213,15 @@ export class ApiClient {
     }
 
     private async refreshTokens(): Promise<AuthTokens | null> {
+        if (!this.refreshInFlight) {
+            this.refreshInFlight = this.performRefresh().finally(() => {
+                this.refreshInFlight = null;
+            });
+        }
+        return this.refreshInFlight;
+    }
+
+    private async performRefresh(): Promise<AuthTokens | null> {
         const refreshToken = this.getRefreshToken();
         // Even if localStorage has no refresh token, attempt the request anyway.
         // The backend can read the refresh token from HTTP-only cookies (SSO flow
@@ -310,8 +325,13 @@ export class ApiClient {
             const tokens = await this.refreshTokens();
             if (tokens) {
                 headers.set("Authorization", `Bearer ${tokens.accessToken}`);
+                // Reuse mergedInit so the retry preserves the same method,
+                // body, and any caller-supplied baseInit (e.g. CSRF header
+                // bag from AuthContext). Previously we spread `init`, which
+                // dropped baseInit and could downgrade non-GET retries.
                 const retryResponse = await fetch(this.buildUrl(endpoint), {
-                    ...init,
+                    ...mergedInit,
+                    method,
                     headers,
                     credentials: "include",
                 });
