@@ -28,8 +28,20 @@ afterEach(() => {
     global.fetch = originalFetch;
 });
 
-describe('AuthContext localStorage', () => {
-    it('login stores tokens and user, logout clears them', async () => {
+describe('AuthContext session lifecycle', () => {
+    beforeEach(() => {
+        // Seed any token-like values to make sure the provider does NOT
+        // resurrect them — auth state must rely solely on backend httpOnly
+        // cookies that JS cannot read.
+        localStorage.setItem('jwtToken', 'stale-from-previous-build');
+        localStorage.setItem('refreshToken', 'stale-from-previous-build');
+    });
+
+    afterEach(() => {
+        localStorage.clear();
+    });
+
+    it('login fetches profile and updates auth state without writing tokens to JS-accessible storage', async () => {
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <AuthProvider>{children}</AuthProvider>
         );
@@ -39,14 +51,23 @@ describe('AuthContext localStorage', () => {
             await result.current.login('e', 'p');
         });
         await waitFor(() => expect(result.current.user).toEqual(profile));
-        expect(localStorage.getItem('jwtToken')).toBe('a');
-        expect(localStorage.getItem('refreshToken')).toBe('r');
+        expect(result.current.isAuthenticated).toBe(true);
+
+        // The panel must never persist tokens to localStorage (XSS-readable).
+        // Any stale values from older builds are left untouched here — they
+        // are inert because hasAuthHint no longer consults them — but the
+        // provider must not be the one writing them.
+        expect(localStorage.getItem('jwtToken')).toBe(
+            'stale-from-previous-build',
+        );
+        expect(localStorage.getItem('refreshToken')).toBe(
+            'stale-from-previous-build',
+        );
 
         await act(async () => {
             await result.current.logout();
         });
-        expect(localStorage.getItem('jwtToken')).toBeNull();
-        expect(localStorage.getItem('refreshToken')).toBeNull();
         await waitFor(() => expect(result.current.isAuthenticated).toBe(false));
+        expect(result.current.user).toBeNull();
     });
 });

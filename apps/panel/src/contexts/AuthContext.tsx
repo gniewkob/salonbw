@@ -8,7 +8,7 @@ import {
     useState,
 } from 'react';
 import Cookies from 'js-cookie';
-import { ApiClient, type AuthTokens } from '@/api/apiClient';
+import { ApiClient } from '@/api/apiClient';
 import {
     login as apiLogin,
     register as apiRegister,
@@ -33,34 +33,11 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const ACCESS_TOKEN_KEY = 'jwtToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-
-const readLocalStorageValue = (key: string): string | null => {
-    if (typeof window === 'undefined') {
-        return null;
-    }
-    try {
-        return window.localStorage.getItem(key);
-    } catch {
-        return null;
-    }
-};
-
-const writeLocalStorageValue = (key: string, value: string | null) => {
-    if (typeof window === 'undefined') {
-        return;
-    }
-    try {
-        if (value === null) {
-            window.localStorage.removeItem(key);
-        } else {
-            window.localStorage.setItem(key, value);
-        }
-    } catch {
-        // ignore storage failures (private mode, etc.)
-    }
-};
+// Auth tokens (`accessToken`, `refreshToken`) are managed exclusively by the
+// backend as httpOnly cookies (see auth.service.ts:setAuthCookies). The panel
+// must NOT write them from JS — doing so would overwrite the httpOnly version
+// with a JS-readable one and downgrade security. ApiClient relies on
+// `credentials: 'include'` so the browser attaches cookies automatically.
 
 const readCsrfCookie = () => {
     if (typeof document === 'undefined') {
@@ -76,13 +53,9 @@ const hasAuthHint = () => {
     if (typeof window === 'undefined') {
         return false;
     }
-    // Note: accessToken and refreshToken are httpOnly, so Cookies.get() won't work
-    // We check sbw_auth (set by backend) and XSRF-TOKEN (also set by backend, not httpOnly)
-    const cookieAuth = Cookies.get('sbw_auth');
-    const csrfToken = Cookies.get('XSRF-TOKEN');
-    const storageToken = readLocalStorageValue(ACCESS_TOKEN_KEY);
-
-    return Boolean(cookieAuth || csrfToken || storageToken);
+    // `sbw_auth` and `XSRF-TOKEN` are non-httpOnly markers set by the backend
+    // alongside the httpOnly access/refresh tokens.
+    return Boolean(Cookies.get('sbw_auth') || Cookies.get('XSRF-TOKEN'));
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -91,28 +64,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [initialized, setInitialized] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
-    const persistTokens = useCallback((nextTokens: AuthTokens | null) => {
-        const cookieOptions = window.location.hostname.includes('salon-bw.pl')
-            ? { domain: '.salon-bw.pl', path: '/' }
-            : { path: '/' };
 
-        if (nextTokens) {
-            Cookies.set('accessToken', nextTokens.accessToken, cookieOptions);
-            Cookies.set('sbw_auth', 'true', cookieOptions);
-        } else {
-            Cookies.remove('accessToken', cookieOptions);
-            Cookies.remove('refreshToken', cookieOptions);
-            Cookies.remove('sbw_auth', cookieOptions);
-            Cookies.remove('token', cookieOptions);
-        }
-
-        writeLocalStorageValue(
-            ACCESS_TOKEN_KEY,
-            nextTokens?.accessToken ?? null,
-        );
-        // Refresh token is stored in an httpOnly cookie by the backend;
-        // keeping it in localStorage is a security risk (XSS-readable).
-        writeLocalStorageValue(REFRESH_TOKEN_KEY, null);
+    const clearClientAuthCookies = useCallback(() => {
+        // Defensive only: the backend clears these on /auth/logout. We mirror
+        // it locally so a stale React tree doesn't think it's still logged in
+        // before the redirect lands.
+        const opts = { path: '/' };
+        Cookies.remove('accessToken', opts);
+        Cookies.remove('refreshToken', opts);
+        Cookies.remove('sbw_auth', opts);
+        Cookies.remove('XSRF-TOKEN', opts);
     }, []);
 
     const clearSessionState = useCallback(() => {
@@ -120,8 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(null);
         setIsAuthenticated(false);
         setCsrfToken(undefined);
-        persistTokens(null);
-    }, [persistTokens]);
+        clearClientAuthCookies();
+    }, [clearClientAuthCookies]);
 
     const handleLogout = useCallback(async () => {
         try {
@@ -150,16 +111,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const client = useMemo(() => {
         return new ApiClient(
-            () => {
-                const cookieToken = Cookies.get('accessToken');
-                return cookieToken || readLocalStorageValue(ACCESS_TOKEN_KEY);
-            },
+            // Access token lives in an httpOnly cookie and is sent automatically
+            // via `credentials: 'include'`. No JS-readable copy.
+            () => null,
             () => {
                 void handleLogout();
             },
-            (nextTokens) => {
-                persistTokens(nextTokens);
-            },
+            undefined,
             {
                 // Add CSRF token to requests
                 requestInit: csrfToken
@@ -171,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     : undefined,
             },
         );
-    }, [csrfToken, handleLogout, persistTokens]);
+    }, [csrfToken, handleLogout]);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -202,8 +160,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string) => {
-        const authTokens = await apiLogin({ email, password });
-        persistTokens(authTokens);
+        // Backend issues httpOnly cookies (accessToken, refreshToken, XSRF-TOKEN,
+        // sbw_auth) via Set-Cookie on /auth/login. We only need the CSRF token
+        // from the non-httpOnly cookie and a profile fetch to populate React state.
+        await apiLogin({ email, password });
         setCsrfToken(readCsrfCookie());
         await fetchProfile();
     };
@@ -215,8 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = async () => {
         try {
-            const authTokens = await apiRefreshToken();
-            persistTokens(authTokens);
+            await apiRefreshToken();
             setCsrfToken(readCsrfCookie());
             await fetchProfile();
         } catch (err) {

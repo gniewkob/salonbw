@@ -1,5 +1,4 @@
 import { ApiClient } from './apiClient';
-import Cookies from 'js-cookie';
 import { User } from '@/types';
 
 let logoutCallback: () => void = () => {};
@@ -87,17 +86,14 @@ export async function register(data: RegisterData): Promise<User> {
 
 export async function refreshToken(): Promise<AuthTokens> {
     try {
-        const refreshToken =
-            (typeof localStorage !== 'undefined'
-                ? localStorage.getItem(REFRESH_TOKEN_KEY)
-                : null) ||
-            (typeof document !== 'undefined'
-                ? Cookies.get(REFRESH_TOKEN_KEY)
-                : null);
+        // The refresh token lives in an httpOnly cookie set by the backend.
+        // `credentials: 'include'` on the ApiClient request attaches it; the
+        // backend `/auth/refresh` controller reads `req.cookies.refreshToken`
+        // when the body is empty.
         const raw = await client.request<ServerTokens>('/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
+            body: JSON.stringify({}),
         });
         return mapTokens(raw);
     } catch (err: unknown) {

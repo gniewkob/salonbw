@@ -13,7 +13,15 @@ module.exports = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
     },
-    modulePathIgnorePatterns: ['<rootDir>/.next/'],
+    modulePathIgnorePatterns: [
+        '<rootDir>/.next/',
+        // Prevent jest-haste-map "duplicate manual mock" collisions with sibling
+        // apps that vendor the same packages (e.g. apps/landing/vendor/picocolors
+        // vs apps/panel/vendor/picocolors). Without this, running any panel test
+        // whose filename also exists in landing's __tests__ would fail at
+        // module-map build time.
+        '<rootDir>/../landing/',
+    ],
     coverageThreshold: {
         global: {
             statements: 70,
