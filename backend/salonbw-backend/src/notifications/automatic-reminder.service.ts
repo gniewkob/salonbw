@@ -79,12 +79,11 @@ export class AutomaticReminderService {
             `Found ${appointments.length} appointments needing reminders`,
         );
 
-        const results: ReminderResult[] = [];
-
-        for (const appointment of appointments) {
-            const result = await this.processAppointmentReminder(appointment);
-            results.push(result);
-        }
+        const results = await Promise.all(
+            appointments.map((appointment) =>
+                this.processAppointmentReminder(appointment),
+            ),
+        );
 
         // Log summary
         const successful = results.filter(
@@ -274,11 +273,11 @@ export class AutomaticReminderService {
             `Manual trigger: Found ${appointments.length} appointments in next ${hours} hours`,
         );
 
-        const results: ReminderResult[] = [];
-        for (const appointment of appointments) {
-            const result = await this.processAppointmentReminder(appointment);
-            results.push(result);
-        }
+        const results = await Promise.all(
+            appointments.map((appointment) =>
+                this.processAppointmentReminder(appointment),
+            ),
+        );
 
         return results;
     }
