@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { ContentSection } from '../../content/entities/content-section.entity';
 
 export default class ContentSectionsSeed {
@@ -173,12 +173,17 @@ export default class ContentSectionsSeed {
             },
         ];
 
+        const sectionKeys = sections.map((s) => s.key);
+        const existingSections = await repo.find({
+            where: { key: In(sectionKeys) },
+        });
+
+        const existingKeys = new Set(existingSections.map((s) => s.key));
+        const sectionsToCreate: ContentSection[] = [];
+
         for (const section of sections) {
-            const existing = await repo.findOne({
-                where: { key: section.key },
-            });
-            if (!existing) {
-                await repo.save(
+            if (!existingKeys.has(section.key)) {
+                sectionsToCreate.push(
                     repo.create({
                         key: section.key,
                         description: section.description,
@@ -186,10 +191,16 @@ export default class ContentSectionsSeed {
                         isActive: true,
                     }),
                 );
-                console.log(`✓ Content section created: ${section.key}`);
             } else {
                 console.log(`- Content section already exists: ${section.key}`);
             }
+        }
+
+        if (sectionsToCreate.length > 0) {
+            await repo.save(sectionsToCreate);
+            sectionsToCreate.forEach((s) => {
+                console.log(`✓ Content section created: ${s.key}`);
+            });
         }
 
         console.log('\n✓ Content sections seeding completed!');
