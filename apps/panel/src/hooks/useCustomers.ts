@@ -172,6 +172,79 @@ export interface CustomerFollowUpActionsResponse {
     items: CustomerFollowUpActionItem[];
 }
 
+function normalizeFollowUpActionItem(
+    value: unknown,
+): CustomerFollowUpActionItem | null {
+    if (!value || typeof value !== 'object') return null;
+    const row = value as Record<string, unknown>;
+
+    const id = Number(row.id);
+    if (!Number.isInteger(id) || id <= 0) return null;
+
+    const action =
+        typeof row.action === 'string' && row.action.trim().length > 0
+            ? row.action.trim()
+            : 'unknown_action';
+    const candidateReason =
+        typeof row.candidateReason === 'string' &&
+        row.candidateReason.trim().length > 0
+            ? row.candidateReason.trim()
+            : 'unknown_reason';
+    const occurredAt =
+        typeof row.occurredAt === 'string' && row.occurredAt.trim().length > 0
+            ? row.occurredAt
+            : '';
+
+    const appointmentIdRaw = Number(row.appointmentId);
+    const appointmentId =
+        Number.isInteger(appointmentIdRaw) && appointmentIdRaw > 0
+            ? appointmentIdRaw
+            : 0;
+
+    return {
+        id,
+        appointmentId,
+        candidateReason,
+        action,
+        occurredAt,
+    };
+}
+
+function normalizeCustomerFollowUpActionsResponse(
+    value: unknown,
+    customerId: number | null,
+): CustomerFollowUpActionsResponse {
+    const fallbackCustomerId =
+        Number.isInteger(customerId) && customerId !== null && customerId > 0
+            ? customerId
+            : 0;
+    if (!value || typeof value !== 'object') {
+        return {
+            customerId: fallbackCustomerId,
+            items: [],
+        };
+    }
+    const payload = value as Record<string, unknown>;
+    const payloadCustomerId = Number(payload.customerId);
+    const normalizedCustomerId =
+        Number.isInteger(payloadCustomerId) && payloadCustomerId > 0
+            ? payloadCustomerId
+            : fallbackCustomerId;
+
+    const items = Array.isArray(payload.items)
+        ? payload.items
+              .map(normalizeFollowUpActionItem)
+              .filter(
+                  (item): item is CustomerFollowUpActionItem => item !== null,
+              )
+        : [];
+
+    return {
+        customerId: normalizedCustomerId,
+        items,
+    };
+}
+
 export function useCustomerFollowUpActions(
     customerId: number | null,
     limit = 10,
@@ -179,10 +252,15 @@ export function useCustomerFollowUpActions(
     const { apiFetch } = useAuth();
     return useQuery<CustomerFollowUpActionsResponse>({
         queryKey: ['customer-follow-up-actions', customerId, limit],
-        queryFn: () =>
-            apiFetch<CustomerFollowUpActionsResponse>(
+        queryFn: async () => {
+            const response = await apiFetch<unknown>(
                 `/crm/customers/${customerId}/follow-up-actions?limit=${limit}`,
-            ),
+            );
+            return normalizeCustomerFollowUpActionsResponse(
+                response,
+                customerId,
+            );
+        },
         enabled: customerId !== null,
     });
 }
