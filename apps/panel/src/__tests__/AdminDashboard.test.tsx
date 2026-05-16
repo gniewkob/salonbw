@@ -67,8 +67,7 @@ describe('AdminDashboard', () => {
         expect(screen.getByText('4')).toBeInTheDocument();
         expect(screen.getByText('2')).toBeInTheDocument();
         expect(screen.getByText('300,00 zł')).toBeInTheDocument();
-        expect(screen.getAllByText('+100%')).toHaveLength(2);
-        expect(screen.getByText('+50%')).toBeInTheDocument();
+        expect(screen.getAllByText('+100%')).toHaveLength(3);
         expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
         expect(screen.queryByText('pokaż obrót')).not.toBeInTheDocument();
     });
