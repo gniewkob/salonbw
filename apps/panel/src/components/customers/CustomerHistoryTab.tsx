@@ -25,6 +25,8 @@ const FOLLOW_UP_REASON_LABELS: Record<string, string> = {
     stale_in_progress: 'Wizyta zbyt długo w trakcie',
     high_risk_no_contact: 'Wysokie ryzyko bez kontaktu',
 };
+const UNKNOWN_FOLLOW_UP_ACTION_LABEL = 'Nieznana akcja';
+const UNKNOWN_FOLLOW_UP_REASON_LABEL = 'Nieznany powód';
 
 function toIsoDate(d: Date) {
     const yyyy = d.getFullYear();
@@ -318,12 +320,14 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                             <td>
                                                 {FOLLOW_UP_ACTION_LABELS[
                                                     item.action
-                                                ] ?? item.action}
+                                                ] ??
+                                                    UNKNOWN_FOLLOW_UP_ACTION_LABEL}
                                             </td>
                                             <td>
                                                 {FOLLOW_UP_REASON_LABELS[
                                                     item.candidateReason
-                                                ] ?? item.candidateReason}
+                                                ] ??
+                                                    UNKNOWN_FOLLOW_UP_REASON_LABEL}
                                             </td>
                                             <td>
                                                 {item.appointmentId > 0

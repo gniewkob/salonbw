@@ -90,4 +90,43 @@ describe('CustomerHistoryTab', () => {
             screen.getByText(/szczegóły historii wizyt/i),
         ).toBeInTheDocument();
     });
+
+    it('renders empty follow-up state for malformed payload items', () => {
+        mockUseCustomerFollowUpActions.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: { customerId: 123, items: null },
+        });
+
+        render(<CustomerHistoryTab customerId={123} />);
+
+        expect(screen.getByText('Brak działań follow-up.')).toBeInTheDocument();
+        expect(
+            screen.getByText(/szczegóły historii wizyt/i),
+        ).toBeInTheDocument();
+    });
+
+    it('renders fallback labels for unknown action and reason', () => {
+        mockUseCustomerFollowUpActions.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: {
+                customerId: 123,
+                items: [
+                    {
+                        id: 1,
+                        appointmentId: 456,
+                        candidateReason: 'unknown_reason_code',
+                        action: 'unknown_action_code',
+                        occurredAt: '2026-05-16T10:00:00.000Z',
+                    },
+                ],
+            },
+        });
+
+        render(<CustomerHistoryTab customerId={123} />);
+
+        expect(screen.getByText('Nieznana akcja')).toBeInTheDocument();
+        expect(screen.getByText('Nieznany powód')).toBeInTheDocument();
+    });
 });
