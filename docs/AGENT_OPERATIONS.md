@@ -30,6 +30,17 @@ gh run view <run-id> --log | tail
   - `layout`
   - `auth logout/refresh harness`
 
+### 1.0a Focused regression commands (panel)
+
+Use this command set for quick panel regression verification:
+
+```bash
+pnpm --filter @salonbw/panel test
+pnpm --filter @salonbw/panel test -- customersCrashGuards AdminDashboard auth authStorage layout
+pnpm --filter @salonbw/panel typecheck
+pnpm --filter @salonbw/panel lint
+```
+
 All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are populated (SSH key, mydevil host/user, optional API URLs, `NPM_TOKEN`).
 
 ## 1.1 Production smoke: Reception Insights (`calendar`)
