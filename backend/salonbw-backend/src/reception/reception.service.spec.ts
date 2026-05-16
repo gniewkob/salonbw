@@ -348,6 +348,63 @@ describe('ReceptionService', () => {
         expect(followUpActionsRepo.query).toHaveBeenCalledTimes(4);
     });
 
+    it('returns latest follow-up actions for a customer sorted by occurredAt DESC', async () => {
+        followUpActionsRepo.query.mockResolvedValueOnce([
+            {
+                id: 10,
+                appointmentId: 901,
+                candidateReason: 'recent_no_show',
+                action: 'contacted',
+                occurredAt: '2026-05-16T10:00:00.000Z',
+                note: 'should not be in response',
+            },
+            {
+                id: 9,
+                appointmentId: 900,
+                candidateReason: 'stale_in_progress',
+                action: 'deferred',
+                occurredAt: '2026-05-15T09:00:00.000Z',
+                note: 'should not be in response',
+            },
+        ]);
+
+        const result = await service.getCustomerFollowUpActions(123, 10);
+
+        expect(followUpActionsRepo.query).toHaveBeenCalledWith(
+            expect.stringContaining('WHERE "customerId" = $1'),
+            [123, 10],
+        );
+        expect(result.customerId).toBe(123);
+        expect(result.items).toEqual([
+            {
+                id: 10,
+                appointmentId: 901,
+                candidateReason: 'recent_no_show',
+                action: 'contacted',
+                occurredAt: new Date('2026-05-16T10:00:00.000Z'),
+            },
+            {
+                id: 9,
+                appointmentId: 900,
+                candidateReason: 'stale_in_progress',
+                action: 'deferred',
+                occurredAt: new Date('2026-05-15T09:00:00.000Z'),
+            },
+        ]);
+        expect((result.items[0] as { note?: unknown }).note).toBeUndefined();
+    });
+
+    it('returns empty customer follow-up actions list when there are no rows', async () => {
+        followUpActionsRepo.query.mockResolvedValueOnce([]);
+
+        const result = await service.getCustomerFollowUpActions(555, 5);
+
+        expect(result).toEqual({
+            customerId: 555,
+            items: [],
+        });
+    });
+
     it('returns zero-safe follow-up action audit summary when empty', async () => {
         followUpActionsRepo.query
             .mockResolvedValueOnce([])

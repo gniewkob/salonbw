@@ -3,6 +3,8 @@ import {
     Body,
     Controller,
     Get,
+    Param,
+    ParseIntPipe,
     Post,
     Query,
     UseGuards,
@@ -18,6 +20,7 @@ import { ReceptionFollowUpCandidatesQueryDto } from './dto/reception-follow-up-c
 import {
     CrmFollowUpActionAuditSummaryResponse,
     CrmFollowUpActionResponse,
+    CrmCustomerFollowUpActionsResponse,
     ReceptionFollowUpCandidate,
     ReceptionService,
 } from './reception.service';
@@ -28,6 +31,8 @@ import {
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CrmController {
     private static readonly MAX_AUDIT_RANGE_DAYS = 31;
+    private static readonly DEFAULT_CUSTOMER_ACTIONS_LIMIT = 10;
+    private static readonly MAX_CUSTOMER_ACTIONS_LIMIT = 50;
 
     constructor(private readonly receptionService: ReceptionService) {}
 
@@ -38,6 +43,37 @@ export class CrmController {
         @Body() dto: CreateCrmFollowUpActionDto,
     ): Promise<CrmFollowUpActionResponse> {
         return this.receptionService.createFollowUpAction(dto);
+    }
+
+    @Get('customers/:customerId/follow-up-actions')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Get latest follow-up actions for customer' })
+    getCustomerFollowUpActions(
+        @Param('customerId', ParseIntPipe) customerId: number,
+        @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    ): Promise<CrmCustomerFollowUpActionsResponse> {
+        if (!Number.isInteger(customerId) || customerId <= 0) {
+            throw new BadRequestException(
+                'customerId must be a positive integer',
+            );
+        }
+
+        const resolvedLimit =
+            limit ?? CrmController.DEFAULT_CUSTOMER_ACTIONS_LIMIT;
+        if (
+            !Number.isInteger(resolvedLimit) ||
+            resolvedLimit <= 0 ||
+            resolvedLimit > CrmController.MAX_CUSTOMER_ACTIONS_LIMIT
+        ) {
+            throw new BadRequestException(
+                `limit must be an integer between 1 and ${CrmController.MAX_CUSTOMER_ACTIONS_LIMIT}`,
+            );
+        }
+
+        return this.receptionService.getCustomerFollowUpActions(
+            customerId,
+            resolvedLimit,
+        );
     }
 
     @Get('follow-up-actions')

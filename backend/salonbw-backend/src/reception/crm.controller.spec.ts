@@ -16,6 +16,7 @@ describe('CrmController', () => {
     beforeEach(() => {
         service = {
             createFollowUpAction: jest.fn(),
+            getCustomerFollowUpActions: jest.fn(),
             getFollowUpActionAuditSummary: jest.fn(),
             createOperationalEvent: jest.fn(),
             getOperationalSummary: jest.fn(),
@@ -58,6 +59,49 @@ describe('CrmController', () => {
         await controller.createFollowUpAction(payload);
 
         expect(service.createFollowUpAction).toHaveBeenCalledWith(payload);
+    });
+
+    it('delegates customer follow-up actions query to service with default limit', async () => {
+        service.getCustomerFollowUpActions.mockResolvedValueOnce({
+            customerId: 123,
+            items: [],
+        });
+
+        await controller.getCustomerFollowUpActions(123);
+
+        expect(service.getCustomerFollowUpActions).toHaveBeenCalledWith(
+            123,
+            10,
+        );
+    });
+
+    it('delegates customer follow-up actions query to service with custom limit', async () => {
+        service.getCustomerFollowUpActions.mockResolvedValueOnce({
+            customerId: 123,
+            items: [],
+        });
+
+        await controller.getCustomerFollowUpActions(123, 25);
+
+        expect(service.getCustomerFollowUpActions).toHaveBeenCalledWith(
+            123,
+            25,
+        );
+    });
+
+    it('rejects invalid customerId for customer follow-up actions endpoint', () => {
+        expect(() =>
+            controller.getCustomerFollowUpActions(0),
+        ).toThrow(BadRequestException);
+    });
+
+    it('rejects invalid limit for customer follow-up actions endpoint', () => {
+        expect(() =>
+            controller.getCustomerFollowUpActions(123, 0),
+        ).toThrow(BadRequestException);
+        expect(() =>
+            controller.getCustomerFollowUpActions(123, 51),
+        ).toThrow(BadRequestException);
     });
 
     it('rejects invalid follow-up date', () => {
@@ -135,6 +179,20 @@ describe('CrmController', () => {
         expect(method).toBe(0);
     });
 
+    it('exposes GET /crm/customers/:customerId/follow-up-actions endpoint', () => {
+        const methodPath = Reflect.getMetadata(
+            PATH_METADATA,
+            CrmController.prototype.getCustomerFollowUpActions,
+        );
+        const method = Reflect.getMetadata(
+            METHOD_METADATA,
+            CrmController.prototype.getCustomerFollowUpActions,
+        );
+
+        expect(methodPath).toBe('customers/:customerId/follow-up-actions');
+        expect(method).toBe(0);
+    });
+
     it('exposes POST /crm/follow-up-actions endpoint', () => {
         const methodPath = Reflect.getMetadata(
             PATH_METADATA,
@@ -179,6 +237,19 @@ describe('CrmController', () => {
         const roles = Reflect.getMetadata(
             ROLES_KEY,
             CrmController.prototype.getFollowUpActionAuditSummary,
+        ) as Role[];
+
+        expect(roles).toEqual([
+            Role.Admin,
+            Role.Employee,
+            Role.Receptionist,
+        ]);
+    });
+
+    it('requires Admin/Employee/Receptionist roles on customer follow-up actions endpoint', () => {
+        const roles = Reflect.getMetadata(
+            ROLES_KEY,
+            CrmController.prototype.getCustomerFollowUpActions,
         ) as Role[];
 
         expect(roles).toEqual([

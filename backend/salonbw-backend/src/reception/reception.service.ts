@@ -80,6 +80,19 @@ export interface CrmFollowUpActionAuditSummaryResponse {
     }>;
 }
 
+export interface CrmCustomerFollowUpActionResponseItem {
+    id: number;
+    appointmentId: number;
+    candidateReason: ReceptionFollowUpReason;
+    action: CrmFollowUpActionType;
+    occurredAt: Date;
+}
+
+export interface CrmCustomerFollowUpActionsResponse {
+    customerId: number;
+    items: CrmCustomerFollowUpActionResponseItem[];
+}
+
 export type ReceptionFollowUpReason =
     | 'recent_no_show'
     | 'stale_in_progress'
@@ -212,6 +225,44 @@ export class ReceptionService {
                 (row: { day: string; count: number }) => ({
                     day: row.day,
                     count: Number(row.count ?? 0),
+                }),
+            ),
+        };
+    }
+
+    async getCustomerFollowUpActions(
+        customerId: number,
+        limit: number,
+    ): Promise<CrmCustomerFollowUpActionsResponse> {
+        const rows = await this.crmFollowUpActionsRepo.query(
+            `SELECT
+                "id" AS "id",
+                "appointmentId" AS "appointmentId",
+                "candidateReason" AS "candidateReason",
+                "action" AS "action",
+                "occurredAt" AS "occurredAt"
+             FROM crm_follow_up_actions
+             WHERE "customerId" = $1
+             ORDER BY "occurredAt" DESC
+             LIMIT $2`,
+            [customerId, limit],
+        );
+
+        return {
+            customerId,
+            items: (rows ?? []).map(
+                (row: {
+                    id: number | string;
+                    appointmentId: number | string;
+                    candidateReason: ReceptionFollowUpReason;
+                    action: CrmFollowUpActionType;
+                    occurredAt: string | Date;
+                }) => ({
+                    id: Number(row.id),
+                    appointmentId: Number(row.appointmentId),
+                    candidateReason: row.candidateReason,
+                    action: row.action,
+                    occurredAt: new Date(row.occurredAt),
                 }),
             ),
         };
