@@ -144,6 +144,23 @@ export class VersumCompatService {
                 ? employeeIds
                 : await this.getDefaultEmployeeIds();
 
+        const timetables = await this.timetablesRepository.find({
+            where: {
+                employeeId: In(ids),
+                isActive: true,
+            },
+            order: {
+                validFrom: 'DESC',
+            },
+        });
+
+        const timetableMap = new Map<number, Timetable>();
+        for (const t of timetables) {
+            if (!timetableMap.has(t.employeeId)) {
+                timetableMap.set(t.employeeId, t);
+            }
+        }
+
         const range = this.getScheduleRange(date, period);
         const result: Record<
             string,
@@ -158,8 +175,11 @@ export class VersumCompatService {
             const employee: Record<string, unknown> = {};
 
             for (const employeeId of ids) {
-                employee[String(employeeId)] =
-                    await this.getEmployeeDaySchedule(employeeId, day);
+                const timetable = timetableMap.get(employeeId);
+                employee[String(employeeId)] = this.calculateDaySegments(
+                    timetable,
+                    day,
+                );
             }
 
             result[dateKey] = {
@@ -812,17 +832,7 @@ export class VersumCompatService {
         };
     }
 
-    private async getEmployeeDaySchedule(employeeId: number, date: Date) {
-        const timetable = await this.timetablesRepository.findOne({
-            where: {
-                employeeId,
-                isActive: true,
-            },
-            order: {
-                validFrom: 'DESC',
-            },
-        });
-
+    private calculateDaySegments(timetable: Timetable | undefined, date: Date) {
         const dayOfWeek = this.toIsoDayOfWeek(date);
         const openSlots = (timetable?.slots ?? [])
             .filter((slot) => slot.dayOfWeek === dayOfWeek && !slot.isBreak)
