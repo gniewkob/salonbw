@@ -620,6 +620,15 @@ export class RetailService {
             let totalNet = 0;
             let totalGross = 0;
             const dirtyProducts = new Set<number>();
+            const saleItems: WarehouseSaleItem[] = [];
+            const processingContexts: {
+                product: Product;
+                item: NormalizedSaleItem;
+                discountGross: number;
+                saleItem: WarehouseSaleItem;
+                stockBefore: number;
+                stockAfter: number;
+            }[] = [];
 
             for (const item of items) {
                 const product = productsById.get(item.product.id);
@@ -647,6 +656,7 @@ export class RetailService {
 
                 const stockBefore = product.stock;
                 product.stock -= item.quantity;
+                const stockAfter = product.stock;
                 dirtyProducts.add(product.id);
 
                 const saleItem = manager.create(WarehouseSaleItem, {
@@ -663,8 +673,34 @@ export class RetailService {
                     totalNet: this.roundMoney(lineNet),
                     totalGross: this.roundMoney(lineGross),
                 });
-                await manager.save(saleItem);
+                saleItems.push(saleItem);
+                processingContexts.push({
+                    product,
+                    item,
+                    discountGross,
+                    saleItem,
+                    stockBefore,
+                    stockAfter,
+                });
 
+                totalDiscount += discountGross;
+                totalNet += lineNet;
+                totalGross += lineGross;
+            }
+
+            if (saleItems.length > 0) {
+                await manager.save(saleItems);
+            }
+
+            for (const ctx of processingContexts) {
+                const {
+                    product,
+                    item,
+                    discountGross,
+                    saleItem,
+                    stockBefore,
+                    stockAfter,
+                } = ctx;
                 try {
                     if (writeProductSales) {
                         const productSaleId = await this.insertProductSale(
@@ -726,12 +762,8 @@ export class RetailService {
                     );
                 }
 
-                totalDiscount += discountGross;
-                totalNet += lineNet;
-                totalGross += lineGross;
-
                 this.logger.debug(
-                    `Recorded sale item product=${product.id} quantity=${item.quantity} stockBefore=${stockBefore} stockAfter=${product.stock}`,
+                    `Recorded sale item product=${product.id} quantity=${item.quantity} stockBefore=${stockBefore} stockAfter=${stockAfter}`,
                 );
             }
 
@@ -905,6 +937,15 @@ export class RetailService {
             let totalDiscount = 0;
             let totalNet = 0;
             let totalGross = 0;
+            const reversalItems: WarehouseSaleItem[] = [];
+            const processingContexts: {
+                selection: ReversalSelection;
+                product: Product | null;
+                lineDiscount: number;
+                reversalItem: WarehouseSaleItem;
+                stockBefore: number | null;
+                stockAfter: number | null;
+            }[] = [];
 
             for (const selection of selections) {
                 const sourceItem = selection.sourceItem;
@@ -929,8 +970,12 @@ export class RetailService {
                     Number(sourceItem.totalGross ?? 0) * selection.proportion,
                 );
 
+                let stockBefore: number | null = null;
+                let stockAfter: number | null = null;
                 if (restock && product) {
+                    stockBefore = product.stock;
                     product.stock += selection.quantity;
+                    stockAfter = product.stock;
                     dirtyProducts.add(product.id);
                 }
 
@@ -948,7 +993,35 @@ export class RetailService {
                     totalNet: -lineNet,
                     totalGross: -lineGross,
                 });
-                await manager.save(reversalItem);
+                reversalItems.push(reversalItem);
+                processingContexts.push({
+                    selection,
+                    product,
+                    lineDiscount,
+                    reversalItem,
+                    stockBefore,
+                    stockAfter,
+                });
+
+                totalDiscount += -lineDiscount;
+                totalNet += -lineNet;
+                totalGross += -lineGross;
+            }
+
+            if (reversalItems.length > 0) {
+                await manager.save(reversalItems);
+            }
+
+            for (const ctx of processingContexts) {
+                const {
+                    selection,
+                    product,
+                    lineDiscount,
+                    reversalItem,
+                    stockBefore,
+                    stockAfter,
+                } = ctx;
+                const sourceItem = selection.sourceItem;
 
                 let reversalProductSaleId: number | null = null;
                 if (writeProductSales && sourceItem.productId) {
@@ -1001,9 +1074,11 @@ export class RetailService {
                     );
                 }
 
-                totalDiscount += -lineDiscount;
-                totalNet += -lineNet;
-                totalGross += -lineGross;
+                if (restock && sourceItem.productId) {
+                    this.logger.debug(
+                        `Recorded reversal item product=${sourceItem.productId} quantity=${-selection.quantity} stockBefore=${stockBefore} stockAfter=${stockAfter}`,
+                    );
+                }
             }
 
             if (dirtyProducts.size > 0) {
@@ -1209,6 +1284,14 @@ export class RetailService {
             created.usageNumber = this.formatUsageNumber(created.id);
             await manager.save(created);
             const dirtyProducts = new Set<number>();
+            const usageItems: WarehouseUsageItem[] = [];
+            const processingContexts: {
+                product: Product;
+                item: CreateUsageDto['items'][number];
+                stockBefore: number;
+                stockAfter: number;
+                usageItem: WarehouseUsageItem;
+            }[] = [];
 
             for (const item of dto.items) {
                 const product = lockedProductsById.get(item.productId);
@@ -1241,8 +1324,22 @@ export class RetailService {
                     stockBefore,
                     stockAfter,
                 });
-                await manager.save(usageItem);
+                usageItems.push(usageItem);
+                processingContexts.push({
+                    product,
+                    item,
+                    stockBefore,
+                    stockAfter,
+                    usageItem,
+                });
+            }
 
+            if (usageItems.length > 0) {
+                await manager.save(usageItems);
+            }
+
+            for (const ctx of processingContexts) {
+                const { product, item, stockBefore, stockAfter } = ctx;
                 if (writeInventoryMovements && !isPlanned) {
                     await this.insertInventoryMovement(
                         manager,
@@ -1255,6 +1352,10 @@ export class RetailService {
                         actor.id ?? null,
                     );
                 }
+
+                this.logger.debug(
+                    `Recorded usage item product=${product.id} quantity=${item.quantity} stockBefore=${stockBefore} stockAfter=${stockAfter}`,
+                );
             }
 
             if (!isPlanned && dirtyProducts.size > 0) {
