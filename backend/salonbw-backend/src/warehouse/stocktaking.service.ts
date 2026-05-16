@@ -4,7 +4,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Stocktaking, StocktakingStatus } from './entities/stocktaking.entity';
 import { StocktakingItem } from './entities/stocktaking-item.entity';
 import {
@@ -253,6 +253,24 @@ export class StocktakingService {
             );
         }
 
+        const itemsToSave: StocktakingItem[] = [];
+        const productIdsToFetch = dto.items
+            .filter(
+                (itemDto) =>
+                    !stocktaking.items.some(
+                        (i) => i.productId === itemDto.productId,
+                    ),
+            )
+            .map((itemDto) => itemDto.productId);
+
+        const products =
+            productIdsToFetch.length > 0
+                ? await this.productRepository.find({
+                      where: { id: In(productIdsToFetch) },
+                  })
+                : [];
+        const productMap = new Map(products.map((p) => [p.id, p]));
+
         for (const itemDto of dto.items) {
             const existingItem = stocktaking.items.find(
                 (i) => i.productId === itemDto.productId,
@@ -266,12 +284,10 @@ export class StocktakingService {
                 if (itemDto.notes) {
                     existingItem.notes = itemDto.notes;
                 }
-                await this.stocktakingItemRepository.save(existingItem);
+                itemsToSave.push(existingItem);
             } else {
                 // Add new item
-                const product = await this.productRepository.findOne({
-                    where: { id: itemDto.productId },
-                });
+                const product = productMap.get(itemDto.productId);
                 if (!product) {
                     throw new NotFoundException(
                         `Produkt o ID ${itemDto.productId} nie istnieje`,
@@ -286,8 +302,12 @@ export class StocktakingService {
                     difference: itemDto.countedQuantity - product.stock,
                     notes: itemDto.notes,
                 });
-                await this.stocktakingItemRepository.save(item);
+                itemsToSave.push(item);
             }
+        }
+
+        if (itemsToSave.length > 0) {
+            await this.stocktakingItemRepository.save(itemsToSave);
         }
 
         return this.findOne(id);
@@ -351,32 +371,43 @@ export class StocktakingService {
 
         await this.dataSource.transaction(async (manager) => {
             if (applyDifferences) {
-                for (const item of stocktaking.items) {
-                    if (item.difference === null || item.difference === 0)
-                        continue;
+                const itemsWithDifferences = stocktaking.items.filter(
+                    (item) => item.difference !== null && item.difference !== 0,
+                );
 
-                    const product = await manager.findOne(Product, {
-                        where: { id: item.productId },
+                if (itemsWithDifferences.length > 0) {
+                    const productIds = itemsWithDifferences.map(
+                        (item) => item.productId,
+                    );
+                    const products = await manager.find(Product, {
+                        where: { id: In(productIds) },
                     });
-                    if (!product) continue;
+                    const productMap = new Map(
+                        products.map((p) => [p.id, p]),
+                    );
 
-                    const quantityBefore = product.stock;
-                    product.stock = item.countedQuantity!;
+                    for (const item of itemsWithDifferences) {
+                        const product = productMap.get(item.productId);
+                        if (!product) continue;
 
-                    await manager.save(product);
+                        const quantityBefore = product.stock;
+                        product.stock = item.countedQuantity!;
 
-                    // Create movement record
-                    const movement = manager.create(ProductMovement, {
-                        productId: item.productId,
-                        movementType: MovementType.Stocktaking,
-                        quantity: item.difference,
-                        quantityBefore,
-                        quantityAfter: product.stock,
-                        stocktakingId: stocktaking.id,
-                        createdById: actor.id,
-                        notes: `Inwentaryzacja ${stocktaking.stocktakingNumber}`,
-                    });
-                    await manager.save(movement);
+                        await manager.save(product);
+
+                        // Create movement record
+                        const movement = manager.create(ProductMovement, {
+                            productId: item.productId,
+                            movementType: MovementType.Stocktaking,
+                            quantity: item.difference!,
+                            quantityBefore,
+                            quantityAfter: product.stock,
+                            stocktakingId: stocktaking.id,
+                            createdById: actor.id,
+                            notes: `Inwentaryzacja ${stocktaking.stocktakingNumber}`,
+                        });
+                        await manager.save(movement);
+                    }
                 }
             }
 
