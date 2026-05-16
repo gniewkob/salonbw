@@ -74,11 +74,7 @@ describe('ReceptionController', () => {
             ReceptionController.prototype.createOperationalEvent,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 
     it('delegates operational summary query to service', async () => {
@@ -121,11 +117,7 @@ describe('ReceptionController', () => {
             ReceptionController.prototype.getOperationalSummary,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 
     it('delegates operational insights range query to service', async () => {
@@ -199,11 +191,7 @@ describe('ReceptionController', () => {
             ReceptionController.prototype.getOperationalInsights,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 });
 
@@ -292,9 +280,9 @@ describe('CreateReceptionOperationalEventDto validation', () => {
 
         const errors = await validate(dto);
 
-        expect(
-            errors.some((error) => error.property === 'appointmentId'),
-        ).toBe(true);
+        expect(errors.some((error) => error.property === 'appointmentId')).toBe(
+            true,
+        );
         expect(errors.some((error) => error.property === 'customerId')).toBe(
             true,
         );

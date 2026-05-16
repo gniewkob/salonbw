@@ -34,18 +34,37 @@ async function seed() {
     const reviewRepo = AppDataSource.getRepository(Review);
 
     // Get existing employees
-    const employees = await userRepo.find({ where: { role: Role.Employee } });
+    let employees = await userRepo.find({ where: { role: Role.Employee } });
     if (employees.length === 0) {
-        console.log('❌ No employees found. Please create employees first.');
-        process.exit(1);
+        const adminHash = await bcrypt.hash('admin123', 10);
+        const [admin] = userRepo.create([{
+            name: 'Admin',
+            email: 'admin@test.pl',
+            phone: '123456789',
+            role: Role.Employee,
+            password: adminHash,
+            gender: Gender.Male,
+            commissionBase: 40
+        } as any]);
+        await userRepo.save(admin);
+        employees = [admin];
     }
     console.log(`👥 Found ${employees.length} employees`);
 
     // Get existing services
-    const services = await serviceRepo.find();
+    let services = await serviceRepo.find();
     if (services.length === 0) {
-        console.log('❌ No services found. Please run import:services first.');
-        process.exit(1);
+        const [service] = serviceRepo.create([{
+            name: 'Strzyżenie',
+            description: 'Strzyżenie męskie',
+            duration: 60,
+            price: 100,
+            isActive: true,
+            isOnline: true,
+            isPromoted: false
+        } as any]);
+        await serviceRepo.save(service);
+        services = [service];
     }
     console.log(`💇 Found ${services.length} services`);
 
@@ -87,6 +106,7 @@ async function seed() {
                     password: passwordHash,
                     gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
                     createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),
+                    commissionBase: 0,
                 } as any,
             ]);
             newClientsToCreate.push(newClient);
@@ -108,8 +128,11 @@ async function seed() {
 
     // Create appointments for last 3 months
     console.log('📅 Creating appointments...');
+    console.time('Appointments Seeding Optimized');
     const today = new Date();
-    const appointments: any[] = [];
+    const appointmentsToCreate: Appointment[] = [];
+    const pendingCommissions: { index: number; entity: Commission }[] = [];
+    const pendingReviews: { index: number; entity: Review }[] = [];
 
     for (let i = 0; i < 200; i++) {
         const date = subDays(today, Math.floor(Math.random() * 90));
@@ -142,7 +165,7 @@ async function seed() {
             status = AppointmentStatus.NoShow;
         }
 
-        const appointment = appointmentRepo.create({
+        const [appointment] = appointmentRepo.create([{
             startTime,
             endTime: new Date(startTime.getTime() + (service?.duration || 60) * 60000),
             status,
@@ -155,30 +178,28 @@ async function seed() {
             paymentMethod,
             finalizedAt,
             notes: Math.random() > 0.8 ? 'Notatka do wizyty testowej' : null,
-        } as any);
+        } as any]);
 
-        await appointmentRepo.save(appointment);
-        appointments.push(appointment);
+        appointmentsToCreate.push(appointment);
+        const currentIndex = appointmentsToCreate.length - 1;
 
         // Create commission for completed appointments
         if (status === AppointmentStatus.Completed) {
             const commissionPercent = employee.commissionBase || 30;
             const commissionAmount = ((paidAmount || 0) * commissionPercent) / 100;
             
-            const commission = commissionRepo.create({
+            const [commission] = commissionRepo.create([{
                 employee,
-                appointment,
                 amount: commissionAmount,
                 percent: commissionPercent,
                 createdAt: finalizedAt || startTime,
-            } as any);
-            await commissionRepo.save(commission);
+            } as any]);
+            pendingCommissions.push({ index: currentIndex, entity: commission });
         }
 
         // Create review for some completed appointments (35%)
         if (status === AppointmentStatus.Completed && Math.random() < 0.35) {
-            const review = reviewRepo.create({
-                appointment,
+            const [review] = reviewRepo.create([{
                 client,
                 employee,
                 rating: 3 + Math.floor(Math.random() * 3), // 3-5 stars
@@ -192,10 +213,30 @@ async function seed() {
                     'Na pewno wrócę',
                     'Polecam każdemu'
                 ][Math.floor(Math.random() * 8)],
-            } as any);
-            await reviewRepo.save(review);
+            } as any]);
+            pendingReviews.push({ index: currentIndex, entity: review });
         }
     }
+
+    const appointments = await appointmentRepo.save(appointmentsToCreate);
+
+    if (pendingCommissions.length > 0) {
+        const commissionsToCreate = pendingCommissions.map(pc => {
+            pc.entity.appointment = appointments[pc.index];
+            return pc.entity;
+        });
+        await commissionRepo.save(commissionsToCreate);
+    }
+
+    if (pendingReviews.length > 0) {
+        const reviewsToCreate = pendingReviews.map(pr => {
+            pr.entity.appointment = appointments[pr.index];
+            return pr.entity;
+        });
+        await reviewRepo.save(reviewsToCreate);
+    }
+
+    console.timeEnd('Appointments Seeding Optimized');
     console.log(`✅ Created ${appointments.length} appointments with commissions and reviews`);
 
     // Summary stats
