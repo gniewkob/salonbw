@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 jest.mock('@/api/auth', () => ({
     login: jest.fn().mockResolvedValue({ accessToken: 'a', refreshToken: 'r' }),
     register: jest.fn(),
+    logout: jest.fn().mockResolvedValue(undefined),
     refreshToken: jest.fn(),
     REFRESH_TOKEN_KEY: 'refreshToken',
     setLogoutCallback: jest.fn(),
@@ -64,9 +65,13 @@ describe('AuthContext session lifecycle', () => {
             'stale-from-previous-build',
         );
 
+        const consoleErrorSpy = jest
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
         await act(async () => {
             await result.current.logout();
         });
+        consoleErrorSpy.mockRestore();
         await waitFor(() => expect(result.current.isAuthenticated).toBe(false));
         expect(result.current.user).toBeNull();
     });

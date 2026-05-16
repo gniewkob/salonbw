@@ -42,9 +42,13 @@ describe('auth flow', () => {
             expect(clients[0].name).toBe('John');
         });
 
+        const consoleErrorSpy = jest
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
         await act(async () => {
             await result.current.logout();
         });
+        consoleErrorSpy.mockRestore();
         expect(result.current.isAuthenticated).toBe(false);
     });
 
@@ -61,9 +65,13 @@ describe('auth flow', () => {
         const { refreshToken: refreshMock } = require('@/api/auth');
         (refreshMock as jest.Mock).mockRejectedValueOnce(new Error('fail'));
 
+        const consoleErrorSpy = jest
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
         await act(async () => {
             await expect(result.current.refresh()).rejects.toThrow();
         });
+        consoleErrorSpy.mockRestore();
 
         expect(result.current.isAuthenticated).toBe(false);
     });
