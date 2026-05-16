@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import { User, Gender } from '../src/users/user.entity';
 import { Role } from '../src/users/role.enum';
@@ -69,22 +69,39 @@ async function seed() {
         { name: 'Monika Kozłowska', email: 'monika.k@test.pl', phone: '500100114' },
     ];
 
-    const clients: User[] = [];
+    const emails = clientsData.map((c) => c.email);
+    const existingClients = await userRepo.find({
+        where: { email: In(emails) },
+    });
+    const existingClientsMap = new Map(existingClients.map((c) => [c.email, c]));
+
+    const passwordHash = await bcrypt.hash('test123', 10);
+    const newClientsToCreate: User[] = [];
+
     for (const clientData of clientsData) {
-        let client = await userRepo.findOne({ where: { email: clientData.email } });
-        if (!client) {
+        if (!existingClientsMap.has(clientData.email)) {
             const newClient = userRepo.create({
                 ...clientData,
                 role: Role.Client,
-                password: await bcrypt.hash('test123', 10),
+                password: passwordHash,
                 gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
                 createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),
             } as any);
-            const saved = await userRepo.save(newClient);
-            client = Array.isArray(saved) ? saved[0] : saved;
+            newClientsToCreate.push(newClient);
         }
-        if (client) clients.push(client);
     }
+
+    if (newClientsToCreate.length > 0) {
+        const savedNewClients = await userRepo.save(newClientsToCreate);
+        const savedArray = Array.isArray(savedNewClients)
+            ? savedNewClients
+            : [savedNewClients];
+        savedArray.forEach((c) => existingClientsMap.set(c.email, c));
+    }
+
+    const clients = clientsData
+        .map((c) => existingClientsMap.get(c.email))
+        .filter((c): c is User => !!c);
     console.log(`✅ ${clients.length} clients ready`);
 
     // Create appointments for last 3 months
