@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { DataSource, IsNull } from 'typeorm';
+import { DataSource, IsNull, In } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import path from 'path';
 import * as XLSX from 'xlsx';
@@ -229,20 +229,52 @@ async function run() {
     let created = 0;
     let updated = 0;
 
+    // --- Performance Optimization: Pre-load categories to avoid N+1 queries ---
+    const uniqueCategoryNames = new Set<string>();
+    for (const service of servicesMap.values()) {
+        if (service.categoryName) {
+            uniqueCategoryNames.add(service.categoryName);
+        }
+    }
+
+    const categoriesMap = new Map<string, ServiceCategory>();
+    if (uniqueCategoryNames.size > 0) {
+        const categoryNamesArr = Array.from(uniqueCategoryNames);
+
+        // Fetch existing categories
+        const existingCategories = await categoryRepo.find({
+            where: { name: In(categoryNamesArr) },
+        });
+
+        for (const cat of existingCategories) {
+            categoriesMap.set(cat.name, cat);
+        }
+
+        // Determine which categories are missing and create them
+        const missingCategoryNames = categoryNamesArr.filter(
+            (name) => !categoriesMap.has(name),
+        );
+
+        if (missingCategoryNames.length > 0) {
+            const newCategories = missingCategoryNames.map((name) =>
+                categoryRepo.create({
+                    name,
+                    sortOrder: 0,
+                    isActive: true,
+                }),
+            );
+            const savedCategories = await categoryRepo.save(newCategories);
+            for (const cat of savedCategories) {
+                categoriesMap.set(cat.name, cat);
+            }
+        }
+    }
+    // --------------------------------------------------------------------------
+
     for (const service of servicesMap.values()) {
         let category: ServiceCategory | null = null;
         if (service.categoryName) {
-            category = await categoryRepo.findOne({
-                where: { name: service.categoryName },
-            });
-            if (!category) {
-                category = categoryRepo.create({
-                    name: service.categoryName,
-                    sortOrder: 0,
-                    isActive: true,
-                });
-                category = await categoryRepo.save(category);
-            }
+            category = categoriesMap.get(service.categoryName) || null;
         }
 
         const existing = await serviceRepo.findOne({
