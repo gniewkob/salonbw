@@ -47,6 +47,16 @@ jest.mock('@/hooks/useCustomers', () => ({
     })),
 }));
 
+jest.mock('@/hooks/useCustomerLinkedSales', () => ({
+    useCustomerLinkedSales: jest.fn(() => ({
+        linkedSalesQuery: {
+            data: null,
+            isLoading: false,
+            isError: false,
+        },
+    })),
+}));
+
 jest.mock('@/hooks/useCustomerMedia', () => ({
     getBrowserApiBase: jest.fn(() => '/api'),
     useCustomerGallery: jest.fn(() => ({

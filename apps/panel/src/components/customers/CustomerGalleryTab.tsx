@@ -11,11 +11,8 @@ interface Props {
 }
 
 export default function CustomerGalleryTab({ customerId }: Props) {
-    const {
-        data: images = [],
-        isLoading,
-        error,
-    } = useCustomerGallery(customerId);
+    const { data, isLoading, error } = useCustomerGallery(customerId);
+    const images = useMemo(() => (Array.isArray(data) ? data : []), [data]);
     const upload = useUploadCustomerGalleryImage(customerId);
     const del = useDeleteCustomerGalleryImage(customerId);
 

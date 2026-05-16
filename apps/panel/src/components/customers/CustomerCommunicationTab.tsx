@@ -66,6 +66,12 @@ export default function CustomerCommunicationTab({ customer }: Props) {
         historyChannel === 'sms' ? smsHistory.loading : emailHistory.loading;
     const historyError =
         historyChannel === 'sms' ? smsHistory.error : emailHistory.error;
+    const smsItems = Array.isArray(smsHistory.data?.items)
+        ? smsHistory.data.items
+        : [];
+    const emailItems = Array.isArray(emailHistory.data?.items)
+        ? emailHistory.data.items
+        : [];
 
     return (
         <div className="customer-tab-content customer-communication-tab">
@@ -290,7 +296,7 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                         Nie udało się załadować historii komunikacji.
                     </div>
                 ) : historyChannel === 'sms' ? (
-                    smsHistory.data.items.length === 0 ? (
+                    smsItems.length === 0 ? (
                         <div className="customer-empty-state">
                             Brak wysłanych SMS do tego klienta.
                         </div>
@@ -304,7 +310,7 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {smsHistory.data.items.map((item) => (
+                                {smsItems.map((item) => (
                                     <tr key={`sms-${item.id}`}>
                                         <td>
                                             {fmtDateTime(
@@ -320,7 +326,7 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                             </tbody>
                         </table>
                     )
-                ) : emailHistory.data.items.length === 0 ? (
+                ) : emailItems.length === 0 ? (
                     <div className="customer-empty-state">
                         Brak wysłanych emaili do tego klienta.
                     </div>
@@ -335,7 +341,7 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                             </tr>
                         </thead>
                         <tbody>
-                            {emailHistory.data.items.map((item) => (
+                            {emailItems.map((item) => (
                                 <tr key={`email-${item.id}`}>
                                     <td>
                                         {fmtDateTime(

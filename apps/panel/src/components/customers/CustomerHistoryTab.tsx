@@ -135,8 +135,9 @@ export default function CustomerHistoryTab({ customerId }: Props) {
     const toItem = Math.min(page * PAGE_SIZE, data?.total || 0);
 
     const itemsByMonth = (() => {
+        const historyItems = Array.isArray(data?.items) ? data.items : [];
         const map = new Map<string, NonNullable<typeof data>['items']>();
-        for (const item of data?.items ?? []) {
+        for (const item of historyItems) {
             const key = item.date.slice(0, 7);
             const existing = map.get(key);
             if (existing) existing.push(item);
@@ -337,7 +338,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                 <div className="customer-error">
                     <p>Nie udało się załadować historii wizyt</p>
                 </div>
-            ) : data.items.length === 0 ? (
+            ) : !Array.isArray(data.items) || data.items.length === 0 ? (
                 <div className="customer-empty-state">Brak historii wizyt.</div>
             ) : (
                 <div className="customer-history-list">
