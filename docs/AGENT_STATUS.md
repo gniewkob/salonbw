@@ -17,6 +17,10 @@ Operational note (2026-05-16) — Sprint 36 closeout (panel regression stabiliza
   - CI run `25959793984` -> `completed/success`
   - Deploy (MyDevil) run `25959793981` -> `completed/success`
 
+Operational note (2026-05-16) — Sprint 38 Step 1 (CI panel baseline coverage):
+- CI workflow (`.github/workflows/ci.yml`) previously covered panel `lint` and `typecheck/build`, but did not run `pnpm --filter @salonbw/panel test`.
+- Added a minimal `Panel tests` step in the existing `frontend` job for `matrix.app == dashboard`, so CI now validates the panel regression baseline (`test` + `typecheck` + `lint`) without adding any new workflow.
+
 Operational note (2026-05-15):
 - Fixed `target=dashboard` deploy bug where `Resolve deploy destination` resolved `APP_NAME_PANEL` via the `MYDEVIL_PANEL_APP_NAME_* → MYDEVIL_DASHBOARD_APP_NAME_* → MYDEVIL_APP_NAME_*` fallback chain to `dev.salon-bw.pl`, causing `devil www restart` to hit the dev preview Passenger app while files landed in `apps/nodejs/panelbw` (panel.salon-bw.pl symlink target). Effect: new CSP / X-Frame-Options headers stayed stale on `panel.salon-bw.pl` until a manual `touch tmp/restart.txt`. Reproduced on run `25906130929`. Validated fix on dispatch `25908197752` (target=dashboard) and `25910232101` (target=all). Commits: `0dc3a178`, `d8d69729`.
 - Refactored `.github/workflows/deploy.yml` target resolution to three boolean outputs (`deploy_landing` / `deploy_panel` / `deploy_api`) computed once in `Resolve deploy destination`. Replaces ~35 duplicated long expressions with one source of truth. Canonical targets: `landing | panel | api | all | probe` (`type: choice` enum). Aliases preserved (`public` = `landing`, `dashboard` / `admin` = `panel`). New `target=all` deploys api + landing + panel in a single dispatch; api migrations run before frontend restarts.

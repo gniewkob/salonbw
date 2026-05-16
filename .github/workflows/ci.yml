@@ -207,6 +207,10 @@ jobs:
           APP: ${{ matrix.app }}
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
 
+      - name: Panel tests
+        if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
+        run: pnpm --filter @salonbw/panel test
+
   backend:
     name: Backend API
     runs-on: ubuntu-latest
