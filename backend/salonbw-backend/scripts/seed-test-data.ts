@@ -86,7 +86,7 @@ async function seed() {
                 password: passwordHash,
                 gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
                 createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),
-            } as any);
+            } as any) as User;
             newClientsToCreate.push(newClient);
         }
     }
