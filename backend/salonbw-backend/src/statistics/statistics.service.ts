@@ -636,6 +636,74 @@ export class StatisticsService {
             where: { role: Role.Employee },
         });
 
+        if (employees.length === 0) {
+            return {
+                date: format(from, 'yyyy-MM-dd'),
+                employees: [],
+                totals: {
+                    serviceRevenue: 0,
+                    serviceCommission: 0,
+                    productRevenue: 0,
+                    productCommission: 0,
+                    totalRevenue: 0,
+                    totalCommission: 0,
+                },
+            };
+        }
+
+        const employeeIds = employees.map((e) => e.id);
+
+        // Optimized: Get all appointment stats in one query using aggregation
+        const appointmentStats = await this.appointmentRepository
+            .createQueryBuilder('appointment')
+            .leftJoin('appointment.service', 'service')
+            .leftJoin('appointment.serviceVariant', 'serviceVariant')
+            .select('appointment.employeeId', 'employeeId')
+            .addSelect(
+                'SUM(COALESCE(appointment.paidAmount, serviceVariant.price, service.price, 0))',
+                'revenue',
+            )
+            .where('appointment.employeeId IN (:...employeeIds)', {
+                employeeIds,
+            })
+            .andWhere('appointment.startTime BETWEEN :from AND :to', {
+                from,
+                to,
+            })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
+            .groupBy('appointment.employeeId')
+            .getRawMany();
+
+        // Optimized: Get all commission stats in one query using aggregation
+        const commissionStats = await this.commissionRepository
+            .createQueryBuilder('commission')
+            .innerJoin('commission.employee', 'employee')
+            .select('employee.id', 'employeeId')
+            .addSelect('SUM(commission.amount)', 'totalCommission')
+            .where('employee.id IN (:...employeeIds)', { employeeIds })
+            .andWhere('commission.createdAt BETWEEN :from AND :to', {
+                from,
+                to,
+            })
+            .groupBy('employee.id')
+            .getRawMany();
+
+        // Create lookups for faster processing
+        const revenueMap = new Map<number, number>(
+            appointmentStats.map((s) => [
+                Number(s.employeeId),
+                parseFloat(s.revenue) || 0,
+            ]),
+        );
+        const commissionMap = new Map<number, number>(
+            commissionStats.map((s) => [
+                Number(s.employeeId),
+                parseFloat(s.totalCommission) || 0,
+            ]),
+        );
+
         const employeesReport: CommissionReport[] = [];
         let totalServiceRevenue = 0;
         let totalServiceCommission = 0;
@@ -643,37 +711,8 @@ export class StatisticsService {
         let totalProductCommission = 0;
 
         for (const employee of employees) {
-            // Get completed appointments for employee in date range
-            const appointments = await this.appointmentRepository.find({
-                where: {
-                    employee: { id: employee.id },
-                    startTime: Between(from, to),
-                    status: AppointmentStatus.Completed,
-                },
-                relations: ['service', 'serviceVariant'],
-            });
-
-            const serviceRevenue = appointments.reduce(
-                (sum, a) => sum + this.resolveAppointmentPrice(a),
-                0,
-            );
-
-            // Get commissions for employee in date range
-            const commissions = await this.commissionRepository
-                .createQueryBuilder('commission')
-                .where('commission.employeeId = :employeeId', {
-                    employeeId: employee.id,
-                })
-                .andWhere('commission.createdAt BETWEEN :from AND :to', {
-                    from,
-                    to,
-                })
-                .getMany();
-
-            const serviceCommission = commissions.reduce(
-                (sum, c) => sum + Number(c.amount),
-                0,
-            );
+            const serviceRevenue = revenueMap.get(employee.id) || 0;
+            const serviceCommission = commissionMap.get(employee.id) || 0;
 
             // TODO: Product sales - when retail module is ready
             const productRevenue = 0;
