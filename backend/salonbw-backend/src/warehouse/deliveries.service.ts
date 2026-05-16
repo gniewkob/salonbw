@@ -4,7 +4,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Delivery, DeliveryStatus } from './entities/delivery.entity';
 import { DeliveryItem } from './entities/delivery-item.entity';
 import {
@@ -266,11 +266,16 @@ export class DeliveriesService {
         }
 
         await this.dataSource.transaction(async (manager) => {
+            // Preload all products to avoid N+1 queries
+            const productIds = delivery.items.map((item) => item.productId);
+            const products = await manager.find(Product, {
+                where: { id: In(productIds) },
+            });
+            const productMap = new Map(products.map((p) => [p.id, p]));
+
             // Update product stocks and create movements
             for (const item of delivery.items) {
-                const product = await manager.findOne(Product, {
-                    where: { id: item.productId },
-                });
+                const product = productMap.get(item.productId);
                 if (!product) continue;
 
                 const quantityBefore = product.stock;
