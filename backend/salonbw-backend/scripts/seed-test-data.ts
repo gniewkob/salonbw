@@ -157,46 +157,60 @@ async function seed() {
             notes: Math.random() > 0.8 ? 'Notatka do wizyty testowej' : null,
         } as any);
 
-        await appointmentRepo.save(appointment);
         appointments.push(appointment);
+    }
 
-        // Create commission for completed appointments
-        if (status === AppointmentStatus.Completed) {
-            const commissionPercent = employee.commissionBase || 30;
-            const commissionAmount = ((paidAmount || 0) * commissionPercent) / 100;
+    // Bulk save appointments
+    const savedAppointments = await appointmentRepo.save(appointments);
+
+    const commissions: any[] = [];
+    const reviews: any[] = [];
+
+    for (const appointment of savedAppointments) {
+        if (appointment.status === AppointmentStatus.Completed) {
+            const commissionPercent = appointment.employee.commissionBase || 30;
+            const commissionAmount = ((appointment.paidAmount || 0) * commissionPercent) / 100;
             
             const commission = commissionRepo.create({
-                employee,
+                employee: appointment.employee,
                 appointment,
                 amount: commissionAmount,
                 percent: commissionPercent,
-                createdAt: finalizedAt || startTime,
+                createdAt: appointment.finalizedAt || appointment.startTime,
             } as any);
-            await commissionRepo.save(commission);
-        }
+            commissions.push(commission);
 
-        // Create review for some completed appointments (35%)
-        if (status === AppointmentStatus.Completed && Math.random() < 0.35) {
-            const review = reviewRepo.create({
-                appointment,
-                client,
-                employee,
-                rating: 3 + Math.floor(Math.random() * 3), // 3-5 stars
-                comment: [
-                    'Świetna obsługa!',
-                    'Bardzo polecam',
-                    'Profesjonalnie wykonana usługa',
-                    'Miła atmosfera',
-                    'Jestem zadowolona',
-                    'Super fryzura!',
-                    'Na pewno wrócę',
-                    'Polecam każdemu'
-                ][Math.floor(Math.random() * 8)],
-            } as any);
-            await reviewRepo.save(review);
+            if (Math.random() < 0.35) {
+                const review = reviewRepo.create({
+                    appointment,
+                    client: appointment.client,
+                    employee: appointment.employee,
+                    rating: 3 + Math.floor(Math.random() * 3), // 3-5 stars
+                    comment: [
+                        'Świetna obsługa!',
+                        'Bardzo polecam',
+                        'Profesjonalnie wykonana usługa',
+                        'Miła atmosfera',
+                        'Jestem zadowolona',
+                        'Super fryzura!',
+                        'Na pewno wrócę',
+                        'Polecam każdemu'
+                    ][Math.floor(Math.random() * 8)],
+                } as any);
+                reviews.push(review);
+            }
         }
     }
-    console.log(`✅ Created ${appointments.length} appointments with commissions and reviews`);
+
+    // Bulk save commissions and reviews
+    if (commissions.length > 0) {
+        await commissionRepo.save(commissions);
+    }
+    if (reviews.length > 0) {
+        await reviewRepo.save(reviews);
+    }
+
+    console.log(`✅ Created ${savedAppointments.length} appointments with ${commissions.length} commissions and ${reviews.length} reviews`);
 
     // Summary stats
     const completedAppointments = appointments.filter((a: any) => a.status === AppointmentStatus.Completed).length;
