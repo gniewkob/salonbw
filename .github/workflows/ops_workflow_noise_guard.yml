@@ -28,6 +28,7 @@ permissions:
 
 jobs:
   scan-noise:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -45,6 +46,7 @@ jobs:
           fi
 
       - name: Download logs archive from GitHub API
+        id: logs
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -101,9 +103,23 @@ jobs:
           }
 
           download_with_retry "${API}/actions/runs/${RUN_ID}/logs" run-logs.zip
+          if [ ! -s run-logs.zip ]; then
+            echo "has_logs=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Ops Workflow Noise Guard"
+              echo
+              echo "- source run id: \`${RUN_ID}\`"
+              echo "- status: \`skipped\`"
+              echo "- reason: empty logs archive from API"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           unzip -o run-logs.zip -d run-logs >/dev/null
+          echo "has_logs=true" >> "$GITHUB_OUTPUT"
 
       - name: Scan logs for warning/deprecation noise
+        if: ${{ steps.logs.outputs.has_logs == 'true' }}
         id: scan
         run: |
           set -euo pipefail
@@ -157,7 +173,7 @@ jobs:
           retention-days: 14
 
       - name: Fail on unexpected noise
-        if: ${{ steps.scan.outputs.unexpected != '0' }}
+        if: ${{ steps.logs.outputs.has_logs == 'true' && steps.scan.outputs.unexpected != '0' }}
         run: |
           echo "Unexpected warning/deprecation noise detected in source run logs."
           echo "Inspect artifact ops-workflow-noise-report-${{ github.run_id }}"
