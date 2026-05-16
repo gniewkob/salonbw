@@ -86,7 +86,7 @@ async function seed() {
                 password: passwordHash,
                 gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
                 createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),
-            } as any) as User;
+            } as any) as unknown as User;
             newClientsToCreate.push(newClient);
         }
     }
@@ -153,7 +153,7 @@ async function seed() {
             paymentMethod,
             finalizedAt,
             notes: Math.random() > 0.8 ? 'Notatka do wizyty testowej' : null,
-        } as any);
+        } as any) as unknown as Appointment;
 
         await appointmentRepo.save(appointment);
         appointments.push(appointment);
@@ -169,7 +169,7 @@ async function seed() {
                 amount: commissionAmount,
                 percent: commissionPercent,
                 createdAt: finalizedAt || startTime,
-            } as any);
+            } as any) as unknown as Commission;
             await commissionRepo.save(commission);
         }
 
@@ -190,7 +190,7 @@ async function seed() {
                     'Na pewno wrócę',
                     'Polecam każdemu'
                 ][Math.floor(Math.random() * 8)],
-            } as any);
+            } as any) as unknown as Review;
             await reviewRepo.save(review);
         }
     }
