@@ -16,6 +16,20 @@ gh run list --workflow .github/workflows/deploy.yml --limit 5
 gh run view <run-id> --log | tail
 ```
 
+### 1.0 Panel regression baseline (2026-05-16)
+
+- Baseline SHA: `e6b032134e21138d5c80524c321a489e70e141e2`
+- Baseline result: `pnpm --filter @salonbw/panel test` -> `70/70 suites`, `212/212 tests`
+- Validation contract:
+  - `pnpm --filter @salonbw/panel test`
+  - `pnpm --filter @salonbw/panel typecheck`
+  - `pnpm --filter @salonbw/panel lint` (warnings allowed, errors not allowed)
+- Stabilized regression areas:
+  - `AdminDashboard`
+  - `customersCrashGuards`
+  - `layout`
+  - `auth logout/refresh harness`
+
 All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are populated (SSH key, mydevil host/user, optional API URLs, `NPM_TOKEN`).
 
 ## 1.1 Production smoke: Reception Insights (`calendar`)

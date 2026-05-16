@@ -1,6 +1,21 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-05-15 (deploy target resolver centralized; canonical per-domain + `all` targets)_
+_Last updated: 2026-05-16 (panel green regression baseline recorded after Sprint 36)_
+
+Operational note (2026-05-16) — Sprint 36 closeout (panel regression stabilization):
+- Baseline commit on `master`: `e6b032134e21138d5c80524c321a489e70e141e2` (`test(panel): stabilize auth logout regression tests`).
+- Full panel regression suite is green locally:
+  - `pnpm --filter @salonbw/panel test` -> `70/70` suites, `212/212` tests.
+  - `pnpm --filter @salonbw/panel typecheck` -> success.
+  - `pnpm --filter @salonbw/panel lint` -> success (`warnings only`, `0 errors`).
+- Closed historical panel regression areas:
+  - `AdminDashboard`
+  - `customersCrashGuards`
+  - `layout`
+  - `auth logout/refresh harness`
+- Production pipeline validation for the baseline SHA:
+  - CI run `25959793984` -> `completed/success`
+  - Deploy (MyDevil) run `25959793981` -> `completed/success`
 
 Operational note (2026-05-15):
 - Fixed `target=dashboard` deploy bug where `Resolve deploy destination` resolved `APP_NAME_PANEL` via the `MYDEVIL_PANEL_APP_NAME_* → MYDEVIL_DASHBOARD_APP_NAME_* → MYDEVIL_APP_NAME_*` fallback chain to `dev.salon-bw.pl`, causing `devil www restart` to hit the dev preview Passenger app while files landed in `apps/nodejs/panelbw` (panel.salon-bw.pl symlink target). Effect: new CSP / X-Frame-Options headers stayed stale on `panel.salon-bw.pl` until a manual `touch tmp/restart.txt`. Reproduced on run `25906130929`. Validated fix on dispatch `25908197752` (target=dashboard) and `25910232101` (target=all). Commits: `0dc3a178`, `d8d69729`.
