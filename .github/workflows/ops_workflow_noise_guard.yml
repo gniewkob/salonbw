@@ -105,6 +105,15 @@ jobs:
           download_with_retry "${API}/actions/runs/${RUN_ID}/logs" run-logs.zip
           if [ ! -s run-logs.zip ]; then
             echo "has_logs=false" >> "$GITHUB_OUTPUT"
+            : > all-noise-lines.txt
+            : > unexpected-noise-lines.txt
+            jq -n \
+              --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              --arg runId "${RUN_ID}" \
+              --arg workflow "${{ github.workflow }}" \
+              --arg status "skipped" \
+              --arg reason "empty logs archive from API" \
+              '{generatedAt:$generatedAt, runId:$runId, workflow:$workflow, status:$status, reason:$reason, totalMatches:0, unexpectedMatches:0}' > ops-workflow-noise-report.json
             {
               echo "### Ops Workflow Noise Guard"
               echo
@@ -117,6 +126,15 @@ jobs:
 
           if ! unzip -t run-logs.zip >/dev/null 2>&1; then
             echo "has_logs=false" >> "$GITHUB_OUTPUT"
+            : > all-noise-lines.txt
+            : > unexpected-noise-lines.txt
+            jq -n \
+              --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              --arg runId "${RUN_ID}" \
+              --arg workflow "${{ github.workflow }}" \
+              --arg status "skipped" \
+              --arg reason "logs archive is empty or invalid" \
+              '{generatedAt:$generatedAt, runId:$runId, workflow:$workflow, status:$status, reason:$reason, totalMatches:0, unexpectedMatches:0}' > ops-workflow-noise-report.json
             {
               echo "### Ops Workflow Noise Guard"
               echo
