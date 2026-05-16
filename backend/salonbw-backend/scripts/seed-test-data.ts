@@ -80,13 +80,15 @@ async function seed() {
 
     for (const clientData of clientsData) {
         if (!existingClientsMap.has(clientData.email)) {
-            const newClient = userRepo.create({
-                ...clientData,
-                role: Role.Client,
-                password: passwordHash,
-                gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
-                createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),
-            } as any) as User;
+            const [newClient] = userRepo.create([
+                {
+                    ...clientData,
+                    role: Role.Client,
+                    password: passwordHash,
+                    gender: Math.random() > 0.5 ? Gender.Female : Gender.Male,
+                    createdAt: subDays(new Date(), Math.floor(Math.random() * 180)),
+                } as any,
+            ]);
             newClientsToCreate.push(newClient);
         }
     }
