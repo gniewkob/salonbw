@@ -115,6 +115,18 @@ jobs:
             exit 0
           fi
 
+          if ! unzip -t run-logs.zip >/dev/null 2>&1; then
+            echo "has_logs=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Ops Workflow Noise Guard"
+              echo
+              echo "- source run id: \`${RUN_ID}\`"
+              echo "- status: \`skipped\`"
+              echo "- reason: logs archive is empty or invalid"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           unzip -o run-logs.zip -d run-logs >/dev/null
           echo "has_logs=true" >> "$GITHUB_OUTPUT"
 
