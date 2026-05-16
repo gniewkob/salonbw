@@ -1,18 +1,15 @@
 import { DataSource } from 'typeorm';
 import ContentSectionsSeed from './content-sections.seed';
-import * as fs from 'fs';
-import * as path from 'path';
 
-describe('ContentSectionsSeed Benchmark', () => {
+describe('ContentSectionsSeed', () => {
     let mockRepository: any;
     let mockDataSource: any;
 
     beforeEach(() => {
         mockRepository = {
-            findOne: jest.fn().mockResolvedValue(null),
             find: jest.fn().mockResolvedValue([]),
             create: jest.fn((dto) => dto),
-            save: jest.fn().mockResolvedValue({}),
+            save: jest.fn().mockResolvedValue([]),
         };
 
         mockDataSource = {
@@ -26,16 +23,15 @@ describe('ContentSectionsSeed Benchmark', () => {
         jest.restoreAllMocks();
     });
 
-    it('measures baseline performance (calls to database)', async () => {
+    it('loads existing sections once and saves missing sections in batch', async () => {
         const seed = new ContentSectionsSeed();
         await seed.run(mockDataSource as unknown as DataSource);
 
-        const results = `
-Baseline Benchmark:
-findOne calls: ${mockRepository.findOne.mock.calls.length}
-find calls: ${mockRepository.find.mock.calls.length}
-save calls: ${mockRepository.save.mock.calls.length}
-`;
-        fs.writeFileSync(path.join(__dirname, 'benchmark_results.txt'), results);
+        expect(mockRepository.find).toHaveBeenCalledTimes(1);
+        expect(mockRepository.save).toHaveBeenCalledTimes(1);
+
+        const savedPayload = mockRepository.save.mock.calls[0][0];
+        expect(Array.isArray(savedPayload)).toBe(true);
+        expect(savedPayload.length).toBeGreaterThan(0);
     });
 });
