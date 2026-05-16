@@ -159,6 +159,34 @@ export function useCustomerEventHistory(
     });
 }
 
+export interface CustomerFollowUpActionItem {
+    id: number;
+    appointmentId: number;
+    candidateReason: string;
+    action: string;
+    occurredAt: string;
+}
+
+export interface CustomerFollowUpActionsResponse {
+    customerId: number;
+    items: CustomerFollowUpActionItem[];
+}
+
+export function useCustomerFollowUpActions(
+    customerId: number | null,
+    limit = 10,
+) {
+    const { apiFetch } = useAuth();
+    return useQuery<CustomerFollowUpActionsResponse>({
+        queryKey: ['customer-follow-up-actions', customerId, limit],
+        queryFn: () =>
+            apiFetch<CustomerFollowUpActionsResponse>(
+                `/crm/customers/${customerId}/follow-up-actions?limit=${limit}`,
+            ),
+        enabled: customerId !== null,
+    });
+}
+
 // ==================== NOTES ====================
 
 export function useCustomerNotes(customerId: number | null) {

@@ -45,6 +45,14 @@ jest.mock('@/hooks/useCustomers', () => ({
             offset: 0,
         },
     })),
+    useCustomerFollowUpActions: jest.fn(() => ({
+        isLoading: false,
+        isError: false,
+        data: {
+            customerId: 1,
+            items: [],
+        },
+    })),
 }));
 
 jest.mock('@/hooks/useCustomerLinkedSales', () => ({

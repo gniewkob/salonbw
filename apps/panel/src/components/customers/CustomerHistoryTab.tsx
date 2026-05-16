@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { useCustomerEventHistory } from '@/hooks/useCustomers';
+import {
+    useCustomerEventHistory,
+    useCustomerFollowUpActions,
+} from '@/hooks/useCustomers';
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import Link from 'next/link';
 import CustomerTimeline from './CustomerTimeline';
@@ -11,6 +14,17 @@ interface Props {
 const PAGE_SIZE = 20;
 
 type StatusFilter = 'all' | 'upcoming' | 'completed' | 'cancelled' | 'no_show';
+const FOLLOW_UP_ACTION_LABELS: Record<string, string> = {
+    contacted: 'Kontakt wykonany',
+    deferred: 'Odroczono',
+    dismissed: 'Pominięto',
+    escalated: 'Eskalowano',
+};
+const FOLLOW_UP_REASON_LABELS: Record<string, string> = {
+    recent_no_show: 'Niedawne no-show',
+    stale_in_progress: 'Wizyta zbyt długo w trakcie',
+    high_risk_no_contact: 'Wysokie ryzyko bez kontaktu',
+};
 
 function toIsoDate(d: Date) {
     const yyyy = d.getFullYear();
@@ -31,6 +45,13 @@ function formatDate(dateStr: string | null | undefined) {
     const dt = new Date(dateStr);
     if (Number.isNaN(dt.getTime())) return '-';
     return dt.toLocaleDateString('pl-PL');
+}
+
+function formatDateTime(dateStr: string | null | undefined) {
+    if (!dateStr) return '-';
+    const dt = new Date(dateStr);
+    if (Number.isNaN(dt.getTime())) return '-';
+    return dt.toLocaleString('pl-PL');
 }
 
 function paymentMethodLabel(value: string | null | undefined) {
@@ -129,6 +150,10 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         isLoading: customerSalesLoading,
         isError: customerSalesError,
     } = linkedSalesQuery;
+    const followUpActionsQuery = useCustomerFollowUpActions(customerId, 10);
+    const followUpActions = Array.isArray(followUpActionsQuery.data?.items)
+        ? followUpActionsQuery.data.items
+        : [];
 
     const totalPages = Math.max(1, Math.ceil((data?.total || 0) / PAGE_SIZE));
     const fromItem = (data?.total || 0) > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
@@ -255,6 +280,61 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                 limit={10}
                             />
                         </div>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <div className="text-muted small">
+                                Ostatnie działania follow-up
+                            </div>
+                        </div>
+                        {followUpActionsQuery.isLoading ? (
+                            <div className="text-muted small">
+                                Ładowanie działań follow-up...
+                            </div>
+                        ) : followUpActionsQuery.isError ? (
+                            <div className="text-danger small">
+                                Nie udało się załadować działań follow-up.
+                            </div>
+                        ) : followUpActions.length === 0 ? (
+                            <div className="text-muted small">
+                                Brak działań follow-up.
+                            </div>
+                        ) : (
+                            <table className="salonbw-table fs-12 mb-3">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Akcja</th>
+                                        <th>Powód</th>
+                                        <th>Wizyta</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {followUpActions.map((item) => (
+                                        <tr key={item.id}>
+                                            <td>
+                                                {formatDateTime(
+                                                    item.occurredAt,
+                                                )}
+                                            </td>
+                                            <td>
+                                                {FOLLOW_UP_ACTION_LABELS[
+                                                    item.action
+                                                ] ?? item.action}
+                                            </td>
+                                            <td>
+                                                {FOLLOW_UP_REASON_LABELS[
+                                                    item.candidateReason
+                                                ] ?? item.candidateReason}
+                                            </td>
+                                            <td>
+                                                {item.appointmentId > 0
+                                                    ? `#${item.appointmentId}`
+                                                    : '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
                                 Szczegóły sprzedaży klienta (
