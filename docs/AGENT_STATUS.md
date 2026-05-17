@@ -39,6 +39,18 @@ Operational note (2026-05-17) — Sprint 45 Step 3 (post-patch dependency alert 
 - Remaining backlog: `123`, `125`, `126` (`xlsx` high cluster), `181` (`file-type` medium), `198`/`199` (`picomatch`), `216` (`@nestjs/core`).
 - No app/backend/workflow changes in this step (docs-only verification).
 
+Operational note (2026-05-17) — Sprint 46 Step 1 (xlsx remediation assessment):
+- Added dedicated assessment report: `docs/SECURITY_XLSX_REMEDIATION.md`.
+- Code-level inventory confirms `xlsx` usage is limited to manual backend import scripts:
+  - `scripts/import-products.ts`,
+  - `scripts/import-services.ts`.
+- No CI/deploy workflow references these scripts as default release/runtime steps.
+- Risk posture documented as tooling/operational exposure (manual import path), not API request-path runtime.
+- Recommended remediation path:
+  - target: remove `xlsx` from backend package graph (CSV/JSON import path),
+  - interim: strict operational controls for trusted import files.
+- No dependency/source/workflow changes in this step (analysis + docs only).
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,
