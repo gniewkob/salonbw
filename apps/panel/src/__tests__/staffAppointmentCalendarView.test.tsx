@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
 
 const cancelMock = jest.fn();
@@ -40,20 +46,32 @@ describe('StaffAppointmentCalendarView', () => {
     });
 
     it('renders active appointment row and action buttons', () => {
-        render(<StaffAppointmentCalendarView appointments={[baseAppointment]} />);
+        render(
+            <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
+        );
 
         expect(screen.getByText('Strzyżenie')).toBeInTheDocument();
         expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Rozpocznij' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'No-show' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Anuluj' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Otwórz' })).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Rozpocznij' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'No-show' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Anuluj' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Otwórz' }),
+        ).toBeInTheDocument();
     });
 
     it('calls updateAppointmentStatus(... in_progress) on Rozpocznij', async () => {
         updateStatusMock.mockResolvedValueOnce(undefined);
 
-        render(<StaffAppointmentCalendarView appointments={[baseAppointment]} />);
+        render(
+            <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Rozpocznij' }));
 
         await waitFor(() =>
@@ -80,7 +98,9 @@ describe('StaffAppointmentCalendarView', () => {
     it('calls updateAppointmentStatus(... no_show) on No-show', async () => {
         updateStatusMock.mockResolvedValueOnce(undefined);
 
-        render(<StaffAppointmentCalendarView appointments={[baseAppointment]} />);
+        render(
+            <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
+        );
         fireEvent.click(screen.getByRole('button', { name: 'No-show' }));
 
         await waitFor(() =>
@@ -94,7 +114,9 @@ describe('StaffAppointmentCalendarView', () => {
     it('calls cancelAppointment on Anuluj', async () => {
         cancelMock.mockResolvedValueOnce(undefined);
 
-        render(<StaffAppointmentCalendarView appointments={[baseAppointment]} />);
+        render(
+            <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
 
         await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(101));
@@ -110,10 +132,18 @@ describe('StaffAppointmentCalendarView', () => {
             />,
         );
 
-        expect(screen.queryByRole('button', { name: 'Rozpocznij' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'No-show' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Anuluj' })).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Otwórz' })).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Rozpocznij' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'No-show' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Anuluj' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Otwórz' }),
+        ).toBeInTheDocument();
     });
 
     it('calls onOpenAppointment when Otworz is clicked', () => {
@@ -131,9 +161,13 @@ describe('StaffAppointmentCalendarView', () => {
     });
 
     it('shows neutral error message and keeps appointment row after failed mutation', async () => {
-        updateStatusMock.mockRejectedValueOnce(new Error('backend stack trace'));
+        updateStatusMock.mockRejectedValueOnce(
+            new Error('backend stack trace'),
+        );
 
-        render(<StaffAppointmentCalendarView appointments={[baseAppointment]} />);
+        render(
+            <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Rozpocznij' }));
 
         await waitFor(() =>
@@ -144,6 +178,8 @@ describe('StaffAppointmentCalendarView', () => {
 
         const row = screen.getByText('Strzyżenie').closest('article');
         expect(row).not.toBeNull();
-        expect(within(row as HTMLElement).getByText('Jan Kowalski')).toBeInTheDocument();
+        expect(
+            within(row as HTMLElement).getByText('Jan Kowalski'),
+        ).toBeInTheDocument();
     });
 });
