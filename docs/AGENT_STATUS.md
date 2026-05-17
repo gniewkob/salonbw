@@ -14,6 +14,23 @@ Operational note (2026-05-17) — Sprint 45 Step 1 (Dependency & Security Triage
 - `gitleaks/gitleaks-action` latest checked release (`v2.3.9`) still declares `runs.using: node20`; no workflow change applied in Step 1.
 - No application/backend/workflow behavior changes in this step (docs-only triage).
 
+Operational note (2026-05-17) — Sprint 45 Step 2 (low-risk transitive patch wave):
+- Applied selective lockfile-level dependency hardening (no app/backend source changes, no workflow changes), including:
+  - `ip-address` -> `10.2.0`,
+  - `follow-redirects` -> `1.16.0`,
+  - `postcss` -> `8.5.14`,
+  - `serialize-javascript` -> `7.0.5`,
+  - `min-document` -> `2.19.2`,
+  - scoped updates for `typeorm>uuid` -> `11.1.1`,
+  - scoped updates for `picomatch` vulnerable paths (`micromatch`, `anymatch`, `tinyglobby`, `@angular-devkit/core`, `jest-util`),
+  - scoped update for `http-proxy-agent>@tootallnate/once` -> `3.0.1`.
+- Intentionally excluded from this step:
+  - `xlsx` high-severity cluster (requires separate focused remediation path),
+  - no `gitleaks-action` runtime migration (upstream action still declares `node20`).
+- Local validation after lockfile changes:
+  - panel: `test`, `typecheck`, `lint` -> pass (`lint` warnings only, 0 errors),
+  - backend: `test`, `typecheck`, `build` -> pass.
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,
