@@ -2,6 +2,19 @@
 
 _Last updated: 2026-05-16 (panel green regression baseline recorded after Sprint 36)_
 
+Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
+- Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
+  - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,
+  - pipeline status:
+    - CI run `25997577986` -> `completed/success`,
+    - Deploy (MyDevil) run `25997577984` -> `completed/success`.
+- Sprint 44 Step 1 closed on commit `62076e9a2fa510430d3046bb6d64a03fc77bd36d` (`test(customers): harden follow-up smoke customer resolution`):
+  - hardened smoke customer resolution and endpoint interception precision for follow-up deep-link validation,
+  - pipeline status:
+    - CI run `25997785928` -> `completed/success`,
+    - Deploy (MyDevil) run `25997785927` -> `completed/success`.
+- No application/backend/workflow changes in this consolidation entry (status docs update only).
+
 Operational note (2026-05-17) — Sprint 42 Step 1 (CRM follow-up operational detail flow docs):
 - Documented end-to-end operational flow in `docs/AGENT_OPERATIONS.md` for Sprint 39-41 CRM follow-up path:
   - reception candidates on `/calendar?view=reception`,
