@@ -139,11 +139,8 @@ export default function StaffAppointmentCalendarView({
                 });
             }
             onChanged?.();
-        } catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : 'Wystąpił błąd podczas aktualizacji wizyty';
+        } catch {
+            const message = 'Wystąpił błąd podczas aktualizacji wizyty';
             setActionErrorByAppointmentId((current) => ({
                 ...current,
                 [appointment.id]: message,
