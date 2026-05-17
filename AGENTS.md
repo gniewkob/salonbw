@@ -122,6 +122,26 @@ gh workflow run "Deploy (MyDevil)" --ref master -f ref=master -f environment=pro
 gh run list --workflow "Deploy (MyDevil)" --limit 10
 ```
 
+### Run monitoring standard (agent setting)
+
+- Default close condition for task completion: `Deploy (MyDevil)` must be `completed/success` (CI should also be green unless explicitly waived).
+- Preferred monitor command (token-efficient, deterministic):
+
+```bash
+scripts/monitor-master-runs.sh
+```
+
+- Optional explicit SHA:
+
+```bash
+scripts/monitor-master-runs.sh <sha_prefix>
+```
+
+- Agent rule:
+  - use the script instead of repeated ad-hoc `gh run list` polling,
+  - for small changes, commits may be batched before push,
+  - for larger/riskier changes, push and monitor immediately to final deploy status.
+
 ---
 
 ## 5) Production paths (MyDevil) — operational reference

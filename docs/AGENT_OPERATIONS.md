@@ -16,6 +16,19 @@ gh run list --workflow .github/workflows/deploy.yml --limit 5
 gh run view <run-id> --log | tail
 ```
 
+Preferred monitor helper (CI + Deploy by commit SHA):
+
+```bash
+scripts/monitor-master-runs.sh
+# or:
+scripts/monitor-master-runs.sh <sha_prefix>
+```
+
+Behavior:
+- waits until both `CI` and `Deploy (MyDevil)` are `completed`,
+- exits `0` only when both are `success`,
+- exits `1` on failed conclusion, `124` on timeout.
+
 ### 1.0 Panel regression baseline (2026-05-16)
 
 - Baseline SHA: `e6b032134e21138d5c80524c321a489e70e141e2`
