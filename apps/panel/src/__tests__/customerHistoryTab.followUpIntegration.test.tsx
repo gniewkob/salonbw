@@ -111,7 +111,12 @@ describe('CustomerHistoryTab follow-up integration', () => {
             expect(screen.getAllByText('Nieznany powód')).toHaveLength(2);
         });
 
-        expect(screen.getByText('#789')).toBeInTheDocument();
+        const appointmentLink = screen.getByRole('link', { name: '#789' });
+        expect(appointmentLink).toBeInTheDocument();
+        expect(appointmentLink).toHaveAttribute(
+            'href',
+            '/calendar?appointmentId=789',
+        );
         expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(2);
         expect(apiFetch).toHaveBeenCalledWith(
             '/crm/customers/123/follow-up-actions?limit=10',

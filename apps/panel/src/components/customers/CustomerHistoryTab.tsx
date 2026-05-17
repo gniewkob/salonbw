@@ -331,7 +331,13 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                             </td>
                                             <td>
                                                 {item.appointmentId > 0
-                                                    ? `#${item.appointmentId}`
+                                                    ? (
+                                                          <Link
+                                                              href={`/calendar?appointmentId=${item.appointmentId}`}
+                                                          >
+                                                              #{item.appointmentId}
+                                                          </Link>
+                                                      )
                                                     : '-'}
                                             </td>
                                         </tr>
