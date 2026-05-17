@@ -60,6 +60,15 @@ Operational note (2026-05-17) — Sprint 46 Step 2 (CSV import PoC for services)
 - Updated `docs/SECURITY_XLSX_REMEDIATION.md` with PoC run instructions.
 - Scope respected: no dependency graph cleanup/removal yet, no workflow changes.
 
+Operational note (2026-05-17) — Sprint 46 Step 3 (CSV import PoC for products):
+- Extended `backend/salonbw-backend/scripts/import-products.ts` with CSV support while keeping XLSX compatibility:
+  - `IMPORT_PRODUCTS_CSV=<path>` loads CSV directly,
+  - `.csv` path passed via `IMPORT_PRODUCTS_XLSX` is auto-detected and parsed as CSV,
+  - default XLSX behavior remains unchanged for existing operations.
+- Added `IMPORT_PRODUCTS_DRY_RUN=1` to validate parse/mapping path without DB writes.
+- Updated `docs/SECURITY_XLSX_REMEDIATION.md` with product CSV PoC run instructions.
+- Scope respected: no dependency graph cleanup/removal yet, no workflow changes.
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,

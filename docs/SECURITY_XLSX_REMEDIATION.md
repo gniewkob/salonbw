@@ -153,3 +153,24 @@ pnpm --filter salonbw-backend import:services
 IMPORT_SERVICES_XLSX=/abs/path/uslugi.xlsx \
 pnpm --filter salonbw-backend import:services
 ```
+
+## Sprint 46 Step 3 PoC Status (2026-05-17)
+
+Implemented in `backend/salonbw-backend/scripts/import-products.ts`:
+- Added CSV input support via `IMPORT_PRODUCTS_CSV=<path>`
+- Added fallback auto-detection for `.csv` path passed through `IMPORT_PRODUCTS_XLSX`
+- Kept existing XLSX path unchanged (backward compatible)
+- Added `IMPORT_PRODUCTS_DRY_RUN=1` mode to validate parse+mapping without DB writes
+
+Run examples:
+
+```bash
+# CSV path (preferred for PoC validation)
+IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv \
+IMPORT_PRODUCTS_DRY_RUN=1 \
+pnpm --filter salonbw-backend import:products
+
+# Existing XLSX path remains supported
+IMPORT_PRODUCTS_XLSX=/abs/path/produkty.xlsx \
+pnpm --filter salonbw-backend import:products
+```

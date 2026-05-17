@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import path from 'path';
+import fs from 'node:fs/promises';
 import * as XLSX from 'xlsx';
 import { Product, ProductType } from '../src/products/product.entity';
 
@@ -135,10 +136,73 @@ function makeNameBrandKey(name: string, brand: string | null): string {
     return `${name.trim().toLowerCase()}::${(brand ?? '').trim().toLowerCase()}`;
 }
 
-async function run() {
-    const workbookPath =
-        process.env.IMPORT_PRODUCTS_XLSX ||
-        path.resolve(__dirname, '..', '..', '..', 'produkty.xlsx');
+function parseCsvLine(line: string, delimiter: string): string[] {
+    const fields: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i += 1;
+            } else {
+                inQuotes = !inQuotes;
+            }
+            continue;
+        }
+
+        if (!inQuotes && char === delimiter) {
+            fields.push(current);
+            current = '';
+            continue;
+        }
+
+        current += char;
+    }
+
+    fields.push(current);
+    return fields;
+}
+
+function parseCsvRows(input: string): RawRow[] {
+    const normalized = input.replace(/^\uFEFF/, '');
+    const lines = normalized
+        .split(/\r?\n/)
+        .map((line) => line.trimEnd())
+        .filter((line) => line.length > 0);
+
+    if (lines.length === 0) {
+        return [];
+    }
+
+    const sample = lines.slice(0, 5).join('\n');
+    const semicolons = (sample.match(/;/g) || []).length;
+    const commas = (sample.match(/,/g) || []).length;
+    const delimiter = semicolons >= commas ? ';' : ',';
+
+    return lines.map((line) =>
+        parseCsvLine(line, delimiter).map((value) => value.trim()),
+    );
+}
+
+async function loadRows(): Promise<RawRow[]> {
+    const csvPathEnv = process.env.IMPORT_PRODUCTS_CSV;
+    const xlsxPathEnv = process.env.IMPORT_PRODUCTS_XLSX;
+    const fallbackXlsx = path.resolve(__dirname, '..', '..', '..', 'produkty.xlsx');
+
+    if (csvPathEnv) {
+        const csvRaw = await fs.readFile(csvPathEnv, 'utf8');
+        return parseCsvRows(csvRaw);
+    }
+
+    const workbookPath = xlsxPathEnv || fallbackXlsx;
+    if (workbookPath.toLowerCase().endsWith('.csv')) {
+        const csvRaw = await fs.readFile(workbookPath, 'utf8');
+        return parseCsvRows(csvRaw);
+    }
 
     const workbook = XLSX.readFile(workbookPath);
     const sheetName = workbook.SheetNames[0];
@@ -147,11 +211,15 @@ async function run() {
     }
 
     const sheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json<RawRow>(sheet, {
+    return XLSX.utils.sheet_to_json<RawRow>(sheet, {
         header: 1,
         defval: null,
         blankrows: false,
     });
+}
+
+async function run() {
+    const rows = await loadRows();
 
     const headerIndex = rows.findIndex((row) => isHeaderRow(row));
     if (headerIndex === -1) {
@@ -248,6 +316,17 @@ async function run() {
         };
 
         products.push(parsed);
+    }
+
+    const dryRun = process.env.IMPORT_PRODUCTS_DRY_RUN === '1';
+    if (dryRun) {
+        console.log(
+            `Dry run finished. Parsed products: ${products.length}. No DB changes.`,
+        );
+        console.log(
+            `Rows skipped. Sections: ${skippedSectionRows}, repeated headers: ${skippedHeaderRows}, invalid: ${skippedInvalidRows}`,
+        );
+        return;
     }
 
     const url = process.env.DATABASE_URL;
