@@ -132,3 +132,24 @@ Step 3 (migration + cleanup):
 - Import scripts still support required business fields and DB writes
 - Operator runbook updated with new input format and validation steps
 - Dependabot `xlsx` alerts (`#123/#125/#126`) closed
+
+## Sprint 46 Step 2 PoC Status (2026-05-17)
+
+Implemented in `backend/salonbw-backend/scripts/import-services.ts`:
+- Added CSV input support via `IMPORT_SERVICES_CSV=<path>`
+- Added fallback auto-detection for `.csv` path passed through `IMPORT_SERVICES_XLSX`
+- Kept existing XLSX path unchanged (backward compatible)
+- Added `IMPORT_SERVICES_DRY_RUN=1` mode to validate parse+mapping without DB writes
+
+Run examples:
+
+```bash
+# CSV path (preferred for PoC validation)
+IMPORT_SERVICES_CSV=/abs/path/uslugi.csv \
+IMPORT_SERVICES_DRY_RUN=1 \
+pnpm --filter salonbw-backend import:services
+
+# Existing XLSX path remains supported
+IMPORT_SERVICES_XLSX=/abs/path/uslugi.xlsx \
+pnpm --filter salonbw-backend import:services
+```

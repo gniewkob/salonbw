@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource, IsNull, In } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import path from 'path';
+import fs from 'node:fs/promises';
 import * as XLSX from 'xlsx';
 import { Service, PriceType as ServicePriceType } from '../src/services/service.entity';
 import { ServiceCategory } from '../src/services/entities/service-category.entity';
@@ -82,22 +83,90 @@ function splitServiceName(name: string): { base: string; variant?: string } {
     return variant ? { base, variant } : { base };
 }
 
-async function run() {
-    const workbookPath =
-        process.env.IMPORT_SERVICES_XLSX ||
-        path.resolve(__dirname, '..', '..', '..', 'uslugi.xlsx');
+function parseCsvLine(line: string, delimiter: string): string[] {
+    const fields: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i += 1;
+            } else {
+                inQuotes = !inQuotes;
+            }
+            continue;
+        }
+
+        if (!inQuotes && char === delimiter) {
+            fields.push(current);
+            current = '';
+            continue;
+        }
+
+        current += char;
+    }
+
+    fields.push(current);
+    return fields;
+}
+
+function parseCsvRows(input: string): RawRow[] {
+    const normalized = input.replace(/^\uFEFF/, '');
+    const lines = normalized
+        .split(/\r?\n/)
+        .map((line) => line.trimEnd())
+        .filter((line) => line.length > 0);
+
+    if (lines.length === 0) {
+        return [];
+    }
+
+    const sample = lines.slice(0, 5).join('\n');
+    const semicolons = (sample.match(/;/g) || []).length;
+    const commas = (sample.match(/,/g) || []).length;
+    const delimiter = semicolons >= commas ? ';' : ',';
+
+    return lines.map((line) =>
+        parseCsvLine(line, delimiter).map((value) => value.trim()),
+    );
+}
+
+async function loadRows(): Promise<RawRow[]> {
+    const csvPathEnv = process.env.IMPORT_SERVICES_CSV;
+    const xlsxPathEnv = process.env.IMPORT_SERVICES_XLSX;
+    const fallbackXlsx = path.resolve(__dirname, '..', '..', '..', 'uslugi.xlsx');
+
+    if (csvPathEnv) {
+        const csvRaw = await fs.readFile(csvPathEnv, 'utf8');
+        return parseCsvRows(csvRaw);
+    }
+
+    const workbookPath = xlsxPathEnv || fallbackXlsx;
+    if (workbookPath.toLowerCase().endsWith('.csv')) {
+        const csvRaw = await fs.readFile(workbookPath, 'utf8');
+        return parseCsvRows(csvRaw);
+    }
 
     const workbook = XLSX.readFile(workbookPath);
     const sheetName = workbook.SheetNames[0];
     if (!sheetName) {
         throw new Error('No sheets found in workbook.');
     }
+
     const sheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json<RawRow>(sheet, {
+    return XLSX.utils.sheet_to_json<RawRow>(sheet, {
         header: 1,
         defval: null,
         blankrows: false,
     });
+}
+
+async function run() {
+    const rows = await loadRows();
 
     const servicesMap = new Map<string, ParsedService>();
     let currentCategory: string | null = null;
@@ -189,6 +258,14 @@ async function run() {
             service.priceType =
                 maxPrice > minPrice ? ServicePriceType.From : service.priceType;
         }
+    }
+
+    const dryRun = process.env.IMPORT_SERVICES_DRY_RUN === '1';
+    if (dryRun) {
+        console.log(
+            `Dry run finished. Parsed services: ${servicesMap.size}. No DB changes.`,
+        );
+        return;
     }
 
     const url = process.env.DATABASE_URL;
