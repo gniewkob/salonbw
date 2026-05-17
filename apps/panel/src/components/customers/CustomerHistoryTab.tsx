@@ -330,15 +330,15 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                                     UNKNOWN_FOLLOW_UP_REASON_LABEL}
                                             </td>
                                             <td>
-                                                {item.appointmentId > 0
-                                                    ? (
-                                                          <Link
-                                                              href={`/calendar?appointmentId=${item.appointmentId}`}
-                                                          >
-                                                              #{item.appointmentId}
-                                                          </Link>
-                                                      )
-                                                    : '-'}
+                                                {item.appointmentId > 0 ? (
+                                                    <Link
+                                                        href={`/calendar?appointmentId=${item.appointmentId}`}
+                                                    >
+                                                        #{item.appointmentId}
+                                                    </Link>
+                                                ) : (
+                                                    '-'
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
