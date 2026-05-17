@@ -12,6 +12,11 @@ const links: { href: Route; label: string; testId: string }[] = [
     { href: '/dashboard', label: 'Pulpit', testId: 'nav-home' },
     { href: '/calendar', label: 'Kalendarz', testId: 'nav-calendar' },
     {
+        href: '/calendar?view=employee' as Route,
+        label: 'Kalendarz pracownika',
+        testId: 'nav-employee-calendar',
+    },
+    {
         href: '/appointments',
         label: 'Wizyty',
         testId: 'nav-appointments',
