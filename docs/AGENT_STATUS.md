@@ -97,6 +97,17 @@ Operational note (2026-05-17) — Sprint 47 Step 1 (remaining picomatch alert as
 - Recommendation recorded: wait one Dependabot refresh cycle, then only apply targeted lockfile nudge/override if alerts persist with concrete vulnerable path metadata.
 - No dependency/workflow/app/backend code changes in this step (analysis + docs only).
 
+Operational note (2026-05-17) — Sprint 47 Step 2 (targeted picomatch override for rollup path):
+- Applied minimal scoped overrides in root `package.json`:
+  - `@rollup/pluginutils>picomatch` -> `^4.0.4`
+  - `@rollup/plugin-commonjs>picomatch` -> `^4.0.4`
+- Refreshed lockfile and removed local `picomatch@4.0.3` path from `pnpm-lock.yaml`.
+- Verification:
+  - `pnpm why picomatch -r` now shows `4.0.4` (patched 4.x line) and `2.3.2` (separate 2.x line),
+  - panel tests pass,
+  - backend tests pass.
+- Dependabot immediately after push still reports `#199/#198` open; recorded as likely alert recalculation lag pending next scan cycle.
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,

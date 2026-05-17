@@ -78,6 +78,8 @@
             "tinyglobby>picomatch": "^4.0.4",
             "@angular-devkit/core>picomatch": "^4.0.4",
             "jest-util>picomatch": "^4.0.4",
+            "@rollup/pluginutils>picomatch": "^4.0.4",
+            "@rollup/plugin-commonjs>picomatch": "^4.0.4",
             "http-proxy-agent>@tootallnate/once": "^3.0.1"
         },
         "auditConfig": {

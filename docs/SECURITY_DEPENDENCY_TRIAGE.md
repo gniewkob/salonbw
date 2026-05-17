@@ -227,3 +227,34 @@ No clear evidence in current lockfile of an actually unresolved `4.0.0-4.0.3` pa
 1. Trigger Dependabot re-evaluation (allow one scan cycle) and re-check open alerts.
 2. If `#199/#198` persist after refresh, apply one targeted lockfile nudge (minimal no-op resolution refresh) and re-check.
 3. Only if a concrete vulnerable path is shown in updated alert metadata, add another narrowly scoped override.
+
+## Sprint 47 Step 2 — Targeted Rollup/Picomatch Override
+
+Date: 2026-05-17
+
+### Action applied
+
+- Added scoped overrides:
+  - `@rollup/pluginutils>picomatch: ^4.0.4`
+  - `@rollup/plugin-commonjs>picomatch: ^4.0.4`
+
+Rationale:
+- Remaining vulnerable path in lockfile was tied to `@rollup/plugin-commonjs@28.0.1` and `@rollup/pluginutils@5.3.0` resolving `picomatch@4.0.3`.
+
+### Local result after lockfile refresh
+
+- `pnpm-lock.yaml` no longer contains `picomatch@4.0.3`
+- `pnpm why picomatch -r` resolves only:
+  - `picomatch@4.0.4`
+  - `picomatch@2.3.2`
+
+### Dependabot status immediately after push
+
+- Open set still reports:
+  - `#199` high (`picomatch`)
+  - `#198` medium (`picomatch`)
+- This is likely advisory recalculation lag on GitHub side; no local vulnerable 4.0.0-4.0.3 path is visible.
+
+### Next check
+
+- Re-check Dependabot after one additional scan cycle; if alerts persist with same metadata, capture fresh alert payload and escalate for lockfile/advisory synchronization follow-up.
