@@ -149,7 +149,7 @@ IMPORT_SERVICES_CSV=/abs/path/uslugi.csv \
 IMPORT_SERVICES_DRY_RUN=1 \
 pnpm --filter salonbw-backend import:services
 
-# Existing XLSX path remains supported
+# Backward-compatible alternate path (before Step 4)
 IMPORT_SERVICES_XLSX=/abs/path/uslugi.xlsx \
 pnpm --filter salonbw-backend import:services
 ```
@@ -170,7 +170,35 @@ IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv \
 IMPORT_PRODUCTS_DRY_RUN=1 \
 pnpm --filter salonbw-backend import:products
 
-# Existing XLSX path remains supported
+# Backward-compatible alternate path (before Step 4)
 IMPORT_PRODUCTS_XLSX=/abs/path/produkty.xlsx \
 pnpm --filter salonbw-backend import:products
+```
+
+## Sprint 46 Step 4 Cleanup Status (2026-05-17)
+
+Implemented:
+- Removed `xlsx` import/parser path from:
+  - `backend/salonbw-backend/scripts/import-services.ts`
+  - `backend/salonbw-backend/scripts/import-products.ts`
+- Removed `xlsx` from `backend/salonbw-backend/package.json` devDependencies
+- Updated lockfile (workspace install) after dependency removal
+
+Current supported import format:
+- **CSV only**
+
+Current run commands:
+
+```bash
+# Services import (CSV-only)
+IMPORT_SERVICES_CSV=/abs/path/uslugi.csv \
+pnpm --filter salonbw-backend import:services
+
+# Products import (CSV-only)
+IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv \
+pnpm --filter salonbw-backend import:products
+
+# Optional dry-run modes (no DB writes)
+IMPORT_SERVICES_CSV=/abs/path/uslugi.csv IMPORT_SERVICES_DRY_RUN=1 pnpm --filter salonbw-backend import:services
+IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv IMPORT_PRODUCTS_DRY_RUN=1 pnpm --filter salonbw-backend import:products
 ```

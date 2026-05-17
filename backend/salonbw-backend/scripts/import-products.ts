@@ -3,7 +3,6 @@ import { DataSource } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import path from 'path';
 import fs from 'node:fs/promises';
-import * as XLSX from 'xlsx';
 import { Product, ProductType } from '../src/products/product.entity';
 
 loadEnv();
@@ -189,33 +188,11 @@ function parseCsvRows(input: string): RawRow[] {
 }
 
 async function loadRows(): Promise<RawRow[]> {
-    const csvPathEnv = process.env.IMPORT_PRODUCTS_CSV;
-    const xlsxPathEnv = process.env.IMPORT_PRODUCTS_XLSX;
-    const fallbackXlsx = path.resolve(__dirname, '..', '..', '..', 'produkty.xlsx');
-
-    if (csvPathEnv) {
-        const csvRaw = await fs.readFile(csvPathEnv, 'utf8');
-        return parseCsvRows(csvRaw);
-    }
-
-    const workbookPath = xlsxPathEnv || fallbackXlsx;
-    if (workbookPath.toLowerCase().endsWith('.csv')) {
-        const csvRaw = await fs.readFile(workbookPath, 'utf8');
-        return parseCsvRows(csvRaw);
-    }
-
-    const workbook = XLSX.readFile(workbookPath);
-    const sheetName = workbook.SheetNames[0];
-    if (!sheetName) {
-        throw new Error('No sheets found in workbook.');
-    }
-
-    const sheet = workbook.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json<RawRow>(sheet, {
-        header: 1,
-        defval: null,
-        blankrows: false,
-    });
+    const csvPath =
+        process.env.IMPORT_PRODUCTS_CSV ||
+        path.resolve(__dirname, '..', '..', '..', 'produkty.csv');
+    const csvRaw = await fs.readFile(csvPath, 'utf8');
+    return parseCsvRows(csvRaw);
 }
 
 async function run() {
