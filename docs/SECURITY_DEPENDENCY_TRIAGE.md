@@ -258,3 +258,37 @@ Rationale:
 ### Next check
 
 - Re-check Dependabot after one additional scan cycle; if alerts persist with same metadata, capture fresh alert payload and escalate for lockfile/advisory synchronization follow-up.
+
+## Sprint 48 Step 1 — Remaining Medium Alert Assessment
+
+Date: 2026-05-17
+
+### Current open alerts
+
+- `#216` medium — `@nestjs/core` (`GHSA-36xv-jgw5-4q75`)
+- `#181` medium — `file-type` (`GHSA-5v7r-6r5c-r473`)
+
+### Path analysis
+
+`#216` (`@nestjs/core`):
+- lockfile resolves `@nestjs/core@11.1.15`
+- advisory patched version: `11.1.18`
+- package range in backend `package.json` is already compatible (`^11.1.14`)
+- remediation type: low-risk patch/minor lockfile lift
+
+`#181` (`file-type`):
+- two lines exist in lockfile:
+  - `file-type@21.3.4` (patched)
+  - `file-type@16.5.4` (vulnerable range)
+- vulnerable `16.5.4` path is pulled via `jimp@0.22.12` -> `@jimp/core`
+- remediation is not a simple override-only patch in current graph; likely requires `jimp` family upgrade/replacement with compatibility checks
+
+### Recommended remediation order
+
+1. **`@nestjs/core` first** (`#216`):
+- clear patch target (`11.1.18+`)
+- lower functional risk than image-stack refactor
+
+2. **`file-type` second** (`#181`):
+- tied to `jimp` transitive tree
+- requires focused remediation sprint (upgrade strategy and compatibility verification)

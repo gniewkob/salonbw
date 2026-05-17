@@ -106,7 +106,17 @@ Operational note (2026-05-17) — Sprint 47 Step 2 (targeted picomatch override 
   - `pnpm why picomatch -r` now shows `4.0.4` (patched 4.x line) and `2.3.2` (separate 2.x line),
   - panel tests pass,
   - backend tests pass.
-- Dependabot immediately after push still reports `#199/#198` open; recorded as likely alert recalculation lag pending next scan cycle.
+- Dependabot re-check after pipeline completion confirms `#199/#198` are closed.
+
+Operational note (2026-05-17) — Sprint 48 Step 1 (remaining medium alerts assessment):
+- Added assessment in `docs/SECURITY_DEPENDENCY_TRIAGE.md` for remaining medium alerts:
+  - `#216` (`@nestjs/core`) and `#181` (`file-type`).
+- Findings:
+  - `@nestjs/core` is on `11.1.15` in lockfile; patch target is `11.1.18+` and appears low-risk.
+  - `file-type` remains through `jimp@0.22.12` transitive path (`file-type@16.5.4`), while `file-type@21.3.4` is already present elsewhere.
+- Recommended order:
+  1. remediate `@nestjs/core` first (patch/minor lockfile lift),
+  2. then handle `file-type` via dedicated `jimp`-path strategy.
 
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
