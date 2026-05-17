@@ -186,3 +186,44 @@ Date: 2026-05-17
   - `picomatch` (one high + one medium),
   - `file-type` (medium),
   - `@nestjs/core` (medium).
+
+## Sprint 47 Step 1 — Picomatch Path Assessment
+
+Date: 2026-05-17
+
+### Alert scope
+
+- `#199` high (`GHSA-c2c7-rcm5-vvqj`) — `picomatch` ReDoS
+- `#198` medium (`GHSA-3v7f-55p6-f55p`) — `picomatch` glob matching issue
+- Both alerts target range `>=4.0.0 <4.0.4`, patched in `4.0.4`
+
+### Current open state
+
+- Open alerts total: `4`
+- Open set:
+  - `#199` high — `picomatch`
+  - `#198` medium — `picomatch`
+  - `#181` medium — `file-type`
+  - `#216` medium — `@nestjs/core`
+
+### Dependency-path findings
+
+`pnpm why picomatch -r` in the current branch resolves `picomatch` to:
+- `4.0.4` (via `@angular-devkit/*`, `jest-util`, etc.)
+- `2.3.2` (via `micromatch` / `anymatch` branches)
+
+No `picomatch@4.0.0-4.0.3` path appears in the local resolved graph.
+
+### Why alerts may remain open
+
+Most likely causes (given local graph):
+- Dependabot alert dedup/recalculation lag after recent lockfile churn
+- stale advisory linkage to previously resolved lockfile nodes that should now be superseded
+
+No clear evidence in current lockfile of an actually unresolved `4.0.0-4.0.3` path.
+
+### Recommendation before patching again
+
+1. Trigger Dependabot re-evaluation (allow one scan cycle) and re-check open alerts.
+2. If `#199/#198` persist after refresh, apply one targeted lockfile nudge (minimal no-op resolution refresh) and re-check.
+3. Only if a concrete vulnerable path is shown in updated alert metadata, add another narrowly scoped override.

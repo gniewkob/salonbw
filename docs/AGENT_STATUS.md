@@ -88,6 +88,15 @@ Operational note (2026-05-17) — Sprint 46 post-cleanup snapshot (xlsx alert cl
   - remaining backlog: `picomatch` (`#199`, `#198`), `file-type` (`#181`), `@nestjs/core` (`#216`).
 - No app/backend/workflow changes in this step (docs-only status capture).
 
+Operational note (2026-05-17) — Sprint 47 Step 1 (remaining picomatch alert assessment):
+- Documented current status in `docs/SECURITY_DEPENDENCY_TRIAGE.md` for alerts `#199` (high) and `#198` (medium).
+- Current lockfile/path analysis (`pnpm why picomatch -r`) shows resolved versions at:
+  - `picomatch@4.0.4` (patched),
+  - `picomatch@2.3.2` (outside affected 4.x advisory range).
+- No visible local dependency path currently resolving to vulnerable `picomatch@4.0.0-4.0.3`.
+- Recommendation recorded: wait one Dependabot refresh cycle, then only apply targeted lockfile nudge/override if alerts persist with concrete vulnerable path metadata.
+- No dependency/workflow/app/backend code changes in this step (analysis + docs only).
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,
