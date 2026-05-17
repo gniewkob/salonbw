@@ -1,0 +1,130 @@
+# Security/Dependency Triage Report (Sprint 45 Step 1)
+
+Date: 2026-05-17  
+Branch: `master`  
+Baseline HEAD: `ef9ea42765e8e7d5d72751889fb323b1f99f685c`
+
+## Scope
+
+- Dependabot alerts triage for default branch (`master`)
+- Local `pnpm audit` snapshot (monorepo)
+- `gitleaks/gitleaks-action@v2` Node 20 deprecation warning check
+- No dependency updates or workflow changes in this step
+
+## Executive Summary
+
+- Open Dependabot alerts on default branch: **14**
+- Severity split: **3 high**, **9 medium**, **2 low**, **0 critical**
+- Highest-risk open items are concentrated around `xlsx` (SheetJS) in backend dependency graph.
+- Most medium/low alerts are transitive lockfile findings with available patched versions and can be handled in controlled patch/minor updates.
+- `gitleaks/gitleaks-action` latest release is `v2.3.9` (2025-04-17), but action runtime is still `node20`; deprecation warning is expected from upstream action runtime metadata.
+
+## Data Sources
+
+- GitHub API: `GET /repos/gniewkob/salonbw/dependabot/alerts?state=open`
+- Local: `pnpm audit --json`
+- Upstream action metadata:
+  - `gitleaks/gitleaks-action` latest release (`v2.3.9`)
+  - `action.yml` at `v2` and `v2.3.9`
+
+## Open Dependabot Alerts (default branch)
+
+### Totals
+
+- `high`: 3
+- `medium`: 9
+- `low`: 2
+
+### Alert Inventory
+
+| Alert | Severity | Package | Direct/Transitive | Scope | Manifest | Fixed Version | Area | Upgrade Type |
+|---|---|---|---|---|---|---|---|---|
+| #123 | high | `xlsx` | direct | development | `backend/salonbw-backend/package.json` | none indicated | backend | major/unclear (manual) |
+| #125 | high | `xlsx` | inconclusive | runtime | `pnpm-lock.yaml` | none indicated | backend/root lockfile | major/unclear (manual) |
+| #126 | high | `xlsx` | inconclusive | runtime | `pnpm-lock.yaml` | none indicated | backend/root lockfile | major/unclear (manual) |
+| #216 | medium | `@nestjs/core` | transitive | runtime | `pnpm-lock.yaml` | `11.1.18` | backend | patch/minor likely |
+| #181 | medium | `file-type` | transitive | runtime | `pnpm-lock.yaml` | `21.3.1` | backend toolchain | major likely (transitive) |
+| #229 | medium | `follow-redirects` | transitive | runtime | `pnpm-lock.yaml` | `1.16.0` | backend | patch/minor likely |
+| #235 | medium | `postcss` | transitive | runtime | `pnpm-lock.yaml` | `8.5.10` | landing/build | patch/minor likely |
+| #236 | medium | `uuid` | transitive | runtime | `pnpm-lock.yaml` | `11.1.1` | backend | patch likely |
+| #237 | medium | `ip-address` | transitive | runtime | `pnpm-lock.yaml` | `10.1.1` | backend transitive | patch likely |
+| #198 | medium | `picomatch` | transitive | development | `pnpm-lock.yaml` | `4.0.4` | tooling | patch likely |
+| #210 | medium | `picomatch` | transitive | development | `pnpm-lock.yaml` | `2.3.2` | tooling | patch likely |
+| #212 | medium | `serialize-javascript` | transitive | development | `pnpm-lock.yaml` | `7.0.5` | tooling | patch likely |
+| #12 | low | `min-document` | transitive | runtime | `pnpm-lock.yaml` | `2.19.1` | backend transitive | patch likely |
+| #178 | low | `@tootallnate/once` | transitive | runtime | `pnpm-lock.yaml` | `3.0.1` | backend transitive | patch/minor likely |
+
+## Key Risk Notes
+
+- `xlsx` (`^0.18.5` in backend) is the only **direct** high-severity package currently open.
+- For `xlsx` alerts, Dependabot data indicates no straightforward `first_patched_version` resolution in current graph; this likely needs a targeted backend compatibility check and possibly broader package replacement/major move.
+- `next` high/medium historical alerts are already fixed in this branch line (apps currently on `next@15.5.18` for panel and landing).
+
+## Local `pnpm audit` Snapshot (Monorepo)
+
+Command result: `pnpm audit --json` exited non-zero with vulnerabilities present.
+
+Audit metadata snapshot:
+- vulnerabilities: `high=5`, `moderate=15`, `low=2`
+- total dependencies scanned: `1833`
+
+Interpretation:
+- `pnpm audit` includes additional advisories that are not necessarily identical to the current open Dependabot set (different matching/resolution model and ecosystem timing).
+- For Sprint 45 Step 1 decision-making, Dependabot open alerts on default branch remain the canonical triage list; audit output is supporting signal.
+
+## gitleaks-action Node 20 Deprecation
+
+Current CI usage:
+- `.github/workflows/ci.yml` uses `gitleaks/gitleaks-action@v2`
+
+Upstream status checked on 2026-05-17:
+- Latest release: `gitleaks/gitleaks-action@v2.3.9` (published 2025-04-17)
+- `action.yml` at both `v2` and `v2.3.9` declares:
+  - `runs.using: "node20"`
+
+Conclusion:
+- Updating from `@v2` to `@v2.3.9` does **not** remove the Node 20 runtime deprecation warning by itself.
+- Safe minimal path for now: keep existing action pin (`@v2`) and track upstream move away from `node20`.
+- No workflow permission changes are required for a pure version pin bump within the same action major line.
+
+## Recommended Remediation Order (Step 2 input)
+
+1. **Backend high-risk direct dependency first**
+- Triage `xlsx` usage in backend (`backend/salonbw-backend`), define safe remediation strategy (upgrade path or controlled replacement).
+- Treat as separate focused change due to high severity + no clear auto-fix.
+
+2. **Low-risk transitive patch/minor wave**
+- Batch transitive updates where fixed versions are explicit and compatibility risk is low (`ip-address`, `uuid`, `follow-redirects`, `min-document`, `@tootallnate/once`, selected tooling packages).
+- Keep scope separated by area (backend/tooling vs frontend) to reduce blast radius.
+
+3. **Potentially disruptive medium items requiring validation**
+- `file-type@21.3.1` path may imply non-trivial transitive shifts; validate lockfile and runtime behavior.
+- `@nestjs/core` transitive bump should be validated with backend smoke/typecheck.
+
+4. **gitleaks runtime deprecation**
+- Do not change now unless upstream publishes runtime update (Node 22/24).
+- Re-check upstream action metadata in next dependency/security sprint.
+
+## What Can Be Safely Patched via Patch/Minor (Candidate List)
+
+Patch/minor-biased candidates (subject to lockfile resolution):
+- `ip-address` -> `10.1.1`
+- `uuid` -> `11.1.1`
+- `follow-redirects` -> `1.16.0`
+- `postcss` -> `8.5.10`
+- `serialize-javascript` -> `7.0.5`
+- `picomatch` -> `2.3.2` and `4.0.4` (two transitive branches)
+- `min-document` -> `2.19.1`
+- `@tootallnate/once` -> `3.0.1`
+
+Requires separate sprint / deeper analysis:
+- `xlsx` high-severity cluster (#123/#125/#126) due to missing straightforward patched resolution in current dependency graph and likely compatibility impact.
+- `file-type` transitive jump candidate due to likely major version implications.
+
+## Step 1 Closure Recommendation
+
+Sprint 45 Step 1 can be considered **formally complete** after docs commit + CI/Deploy monitoring, because:
+- triage inventory is complete,
+- risk-ranked remediation path is documented,
+- no prohibited broad upgrades were performed,
+- no app/backend/workflow behavior changes were introduced.

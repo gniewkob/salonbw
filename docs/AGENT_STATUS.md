@@ -2,6 +2,18 @@
 
 _Last updated: 2026-05-16 (panel green regression baseline recorded after Sprint 36)_
 
+Operational note (2026-05-17) — Sprint 45 Step 1 (Dependency & Security Triage report):
+- Added triage report in `docs/SECURITY_DEPENDENCY_TRIAGE.md` based on:
+  - open Dependabot alerts on default branch (`master`),
+  - local `pnpm audit --json` snapshot,
+  - `gitleaks/gitleaks-action@v2` runtime deprecation check.
+- Current open Dependabot state captured in report:
+  - `14` open alerts total (`3 high`, `9 medium`, `2 low`),
+  - high-severity concentration on `xlsx` (backend/root lockfile path),
+  - most remaining items are transitive with candidate patch/minor fix paths.
+- `gitleaks/gitleaks-action` latest checked release (`v2.3.9`) still declares `runs.using: node20`; no workflow change applied in Step 1.
+- No application/backend/workflow behavior changes in this step (docs-only triage).
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,
