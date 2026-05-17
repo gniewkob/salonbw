@@ -80,6 +80,14 @@ Operational note (2026-05-17) — Sprint 46 Step 4 (remove xlsx backend dependen
 - Dry-run validation modes remain available (`IMPORT_SERVICES_DRY_RUN=1`, `IMPORT_PRODUCTS_DRY_RUN=1`).
 - Updated `docs/SECURITY_XLSX_REMEDIATION.md` runbook section to CSV-only operation.
 
+Operational note (2026-05-17) — Sprint 46 post-cleanup snapshot (xlsx alert closure):
+- Updated `docs/SECURITY_DEPENDENCY_TRIAGE.md` with post-Step-4 security snapshot.
+- Confirmed `xlsx` alert cluster closure: `#123`, `#125`, `#126` are no longer open.
+- Current Dependabot open state after closure:
+  - `4` open total (`1 high`, `3 medium`),
+  - remaining backlog: `picomatch` (`#199`, `#198`), `file-type` (`#181`), `@nestjs/core` (`#216`).
+- No app/backend/workflow changes in this step (docs-only status capture).
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,

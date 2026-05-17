@@ -162,3 +162,27 @@ Current open set by package:
 - Step 2 met its goal: significant reduction through low-risk transitive updates without app/runtime workflow changes.
 - `xlsx` remains the highest-risk unresolved area and requires dedicated remediation planning (possible compatibility/functional impact).
 - `file-type` and `@nestjs/core` remain valid follow-up items, but were intentionally outside the minimal-risk patch wave boundary.
+
+## Step 4 — XLSX Closure Snapshot (after commit `6bcc7a6b`)
+
+Date: 2026-05-17
+
+### Status Update
+
+- Open Dependabot alerts: `4` (`1 high`, `3 medium`)
+- Closed `xlsx` alerts: `#123`, `#125`, `#126` (**no longer open**)
+
+### Current Open Backlog
+
+- `#199` high — `picomatch`
+- `#198` medium — `picomatch`
+- `#181` medium — `file-type`
+- `#216` medium — `@nestjs/core`
+
+### Interpretation
+
+- Sprint 46 remediation objective for `xlsx` is complete from dependency-alert perspective.
+- Remaining security/dependency backlog is now concentrated in:
+  - `picomatch` (one high + one medium),
+  - `file-type` (medium),
+  - `@nestjs/core` (medium).
