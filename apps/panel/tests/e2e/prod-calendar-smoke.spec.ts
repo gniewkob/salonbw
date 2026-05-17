@@ -5,6 +5,7 @@ const REQUIRED_LOGIN_ENV = [
     'PANEL_LOGIN_PASSWORD',
 ] as const;
 const missingLoginEnv = REQUIRED_LOGIN_ENV.filter((name) => !process.env[name]);
+const LOGIN_URL_RE = /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/;
 
 function requireEnv(name: string): string {
     const v = process.env[name];
@@ -21,11 +22,7 @@ async function login(page: any) {
         await page.waitForLoadState('domcontentloaded');
         await page.waitForLoadState('networkidle').catch(() => null);
 
-        if (
-            !/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(
-                page.url(),
-            )
-        ) {
+        if (!LOGIN_URL_RE.test(page.url())) {
             return;
         }
 
@@ -49,11 +46,7 @@ async function login(page: any) {
             ),
         ]);
 
-        if (
-            !/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(
-                page.url(),
-            )
-        ) {
+        if (!LOGIN_URL_RE.test(page.url())) {
             return;
         }
 
@@ -69,8 +62,34 @@ async function login(page: any) {
         await page.waitForTimeout(1000);
     }
 
-    await expect(page).not.toHaveURL(
-        /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
+    await expect(page).not.toHaveURL(LOGIN_URL_RE);
+}
+
+async function resolveCustomerId(page: any): Promise<number> {
+    const hinted = Number(process.env.PANEL_SMOKE_CUSTOMER_ID || '2');
+    if (Number.isFinite(hinted) && hinted > 0) {
+        return hinted;
+    }
+
+    await page.goto('/customers');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await expect(page).not.toHaveURL(LOGIN_URL_RE);
+
+    const hrefs = await page.$$eval('a[href]', (anchors) =>
+        anchors.map((a) => a.getAttribute('href') || ''),
+    );
+    for (const href of hrefs) {
+        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        if (!match) continue;
+        const id = Number(match[1]);
+        if (Number.isFinite(id) && id > 0) {
+            return id;
+        }
+    }
+
+    throw new Error(
+        'No valid customer ID found on /customers. Ensure at least one customer exists.',
     );
 }
 
@@ -499,5 +518,54 @@ test.describe('PROD smoke: calendar compat migration', () => {
             page.locator('text=Audyt follow-up chwilowo niedostępny.'),
         ).toBeVisible();
         expect(interceptedAuditUrls.length).toBeGreaterThan(0);
+    });
+
+    test('customer follow-up history links appointment to calendar deep link', async ({
+        page,
+    }) => {
+        await login(page);
+        const customerId = await resolveCustomerId(page);
+        const followUpEndpoint = `/api/crm/customers/${customerId}/follow-up-actions?limit=10`;
+        const followUpUrls: string[] = [];
+
+        await page.route('**/api/crm/customers/*/follow-up-actions?limit=10', async (route) => {
+            followUpUrls.push(route.request().url());
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    customerId,
+                    items: [
+                        {
+                            id: 7001,
+                            appointmentId: 123,
+                            action: 'contacted',
+                            candidateReason: 'recent_no_show',
+                            occurredAt: '2026-05-17T10:00:00.000Z',
+                        },
+                    ],
+                }),
+            });
+        });
+
+        await page.goto(`/customers/${customerId}?tab_name=events_history`);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle').catch(() => null);
+
+        await expect(
+            page.locator('text=Ostatnie działania follow-up'),
+        ).toBeVisible();
+        const appointmentLink = page.getByRole('link', { name: '#123' });
+        await expect(appointmentLink).toBeVisible();
+        await expect(appointmentLink).toHaveAttribute(
+            'href',
+            '/calendar?appointmentId=123',
+        );
+
+        await appointmentLink.click();
+        await expect(page).toHaveURL(/\/calendar\?appointmentId=123$/);
+        expect(followUpUrls.some((url) => url.includes(followUpEndpoint))).toBe(
+            true,
+        );
     });
 });
