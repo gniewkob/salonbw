@@ -128,3 +128,37 @@ Sprint 45 Step 1 can be considered **formally complete** after docs commit + CI/
 - risk-ranked remediation path is documented,
 - no prohibited broad upgrades were performed,
 - no app/backend/workflow behavior changes were introduced.
+
+## Step 3 — Post-Patch Alert Snapshot (after commit `a30427e1`)
+
+Date: 2026-05-17
+
+### Before vs After (Dependabot open alerts)
+
+- Baseline (Step 1): `14` open (`3 high`, `9 medium`, `2 low`)
+- After Step 2 patch wave: `7` open (`4 high`, `3 medium`, `0 low`)
+- Net reduction: `-7` open alerts (50% reduction)
+
+### Alerts Closed Since Baseline
+
+Closed alert IDs:
+- `12`, `178`, `210`, `212`, `229`, `235`, `236`, `237`
+
+These correspond to low/medium transitive dependency updates covered by the Step 2 scope (`ip-address`, `uuid`, `follow-redirects`, `postcss`, `serialize-javascript`, `@tootallnate/once` and related lockfile paths).
+
+### Remaining Open Backlog
+
+Still open alert IDs:
+- `123`, `125`, `126`, `181`, `198`, `199`, `216`
+
+Current open set by package:
+- `xlsx` (high): `#123` (direct in backend `package.json`), `#125`, `#126`
+- `picomatch` (high/medium): `#199`, `#198`
+- `@nestjs/core` (medium): `#216`
+- `file-type` (medium): `#181`
+
+### Interpretation
+
+- Step 2 met its goal: significant reduction through low-risk transitive updates without app/runtime workflow changes.
+- `xlsx` remains the highest-risk unresolved area and requires dedicated remediation planning (possible compatibility/functional impact).
+- `file-type` and `@nestjs/core` remain valid follow-up items, but were intentionally outside the minimal-risk patch wave boundary.

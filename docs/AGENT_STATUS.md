@@ -31,6 +31,14 @@ Operational note (2026-05-17) — Sprint 45 Step 2 (low-risk transitive patch wa
   - panel: `test`, `typecheck`, `lint` -> pass (`lint` warnings only, 0 errors),
   - backend: `test`, `typecheck`, `build` -> pass.
 
+Operational note (2026-05-17) — Sprint 45 Step 3 (post-patch dependency alert verification):
+- Verified Dependabot open alert status after Step 2 commit `a30427e1`.
+- Baseline from Step 1: `14` open alerts (`3 high`, `9 medium`, `2 low`).
+- Current status: `7` open alerts (`4 high`, `3 medium`, `0 low`) -> net reduction `-7` (50%).
+- Confirmed closed alert IDs: `12`, `178`, `210`, `212`, `229`, `235`, `236`, `237`.
+- Remaining backlog: `123`, `125`, `126` (`xlsx` high cluster), `181` (`file-type` medium), `198`/`199` (`picomatch`), `216` (`@nestjs/core`).
+- No app/backend/workflow changes in this step (docs-only verification).
+
 Operational note (2026-05-17) — Sprint 43 + Sprint 44 consolidation (closed):
 - Sprint 43 closed on commit `31029153939290211ff1f44297f59d5fcb69c0c6` (`test(customers): add production smoke for follow-up appointment links`):
   - added production smoke coverage for customer follow-up detail deep link path in `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`,
