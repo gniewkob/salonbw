@@ -66,8 +66,14 @@ async function login(page: any) {
 }
 
 async function resolveCustomerId(page: any): Promise<number> {
-    const hinted = Number(process.env.PANEL_SMOKE_CUSTOMER_ID || '2');
-    if (Number.isFinite(hinted) && hinted > 0) {
+    const hintedRaw = process.env.PANEL_SMOKE_CUSTOMER_ID;
+    if (hintedRaw) {
+        const hinted = Number(hintedRaw);
+        if (!Number.isFinite(hinted) || hinted <= 0) {
+            throw new Error(
+                `Invalid PANEL_SMOKE_CUSTOMER_ID=${hintedRaw}. Expected a positive integer.`,
+            );
+        }
         return hinted;
     }
 
@@ -89,7 +95,7 @@ async function resolveCustomerId(page: any): Promise<number> {
     }
 
     throw new Error(
-        'No valid customer ID found on /customers. Ensure at least one customer exists.',
+        'No valid customer ID found on /customers. Set PANEL_SMOKE_CUSTOMER_ID or ensure at least one customer exists.',
     );
 }
 
@@ -525,10 +531,11 @@ test.describe('PROD smoke: calendar compat migration', () => {
     }) => {
         await login(page);
         const customerId = await resolveCustomerId(page);
-        const followUpEndpoint = `/api/crm/customers/${customerId}/follow-up-actions?limit=10`;
+        const followUpPath = `/api/crm/customers/${customerId}/follow-up-actions`;
+        const followUpEndpoint = `${followUpPath}?limit=10`;
         const followUpUrls: string[] = [];
 
-        await page.route('**/api/crm/customers/*/follow-up-actions?limit=10', async (route) => {
+        await page.route(`**${followUpPath}?limit=10`, async (route) => {
             followUpUrls.push(route.request().url());
             await route.fulfill({
                 status: 200,
@@ -551,6 +558,7 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await page.goto(`/customers/${customerId}?tab_name=events_history`);
         await page.waitForLoadState('domcontentloaded');
         await page.waitForLoadState('networkidle').catch(() => null);
+        await expect(page).not.toHaveURL(LOGIN_URL_RE);
 
         await expect(
             page.locator('text=Ostatnie działania follow-up'),
@@ -564,8 +572,6 @@ test.describe('PROD smoke: calendar compat migration', () => {
 
         await appointmentLink.click();
         await expect(page).toHaveURL(/\/calendar\?appointmentId=123$/);
-        expect(followUpUrls.some((url) => url.includes(followUpEndpoint))).toBe(
-            true,
-        );
+        expect(followUpUrls).toContain(expect.stringContaining(followUpEndpoint));
     });
 });
