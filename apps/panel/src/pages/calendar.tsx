@@ -433,7 +433,7 @@ function areAlertMapsEqual(
 
 export default function CalendarPage() {
     const router = useRouter();
-    const { role, apiFetch } = useAuth();
+    const { role, user, apiFetch } = useAuth();
     const isMountedRef = useRef(true);
     const visibleCustomerIdsRef = useRef<number[]>([]);
     const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
@@ -443,6 +443,8 @@ export default function CalendarPage() {
     const pendingCustomerAlertFetchesRef = useRef<Set<number>>(new Set());
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
+    const [employeeMode, setEmployeeMode] = useState(false);
+    const [employeeArchiveMode, setEmployeeArchiveMode] = useState(false);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
         [],
     );
@@ -642,6 +644,29 @@ export default function CalendarPage() {
         receptionPriorityFilter,
         receptionNowTick,
     ]);
+
+    const employeeAppointments = useMemo(() => {
+        const list = Array.from(appointmentsById.values());
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const archiveStatuses = new Set(['completed', 'cancelled', 'no_show']);
+
+        return list.filter((appointment) => {
+            if (role === 'employee' && user?.id && appointment.employee?.id) {
+                if (appointment.employee.id !== user.id) {
+                    return false;
+                }
+            }
+
+            const start = new Date(appointment.startTime);
+            const status = appointment.status ?? 'scheduled';
+            const isArchived =
+                archiveStatuses.has(status) ||
+                start.getTime() < todayStart.getTime();
+
+            return employeeArchiveMode ? isArchived : !isArchived;
+        });
+    }, [appointmentsById, employeeArchiveMode, role, user?.id]);
 
     const receptionDailySummary = useMemo(() => {
         const allAppointments = Array.from(appointmentsById.values());
@@ -920,6 +945,12 @@ export default function CalendarPage() {
         const viewParam = Array.isArray(router.query.view)
             ? router.query.view[0]
             : router.query.view;
+        if (viewParam === 'employee') {
+            setEmployeeMode(true);
+            setCurrentView('day');
+            return;
+        }
+        setEmployeeMode(false);
         if (
             viewParam === 'day' ||
             viewParam === 'week' ||
@@ -1179,7 +1210,7 @@ export default function CalendarPage() {
     const updateCalendarQuery = (
         next: Partial<{
             date: string;
-            view: CalendarViewType;
+            view: CalendarViewType | 'employee';
             employeeIds: number[];
         }>,
     ) => {
@@ -1300,7 +1331,7 @@ export default function CalendarPage() {
                                 {deepLinkError}
                             </div>
                         ) : null}
-                        {currentView === 'reception' ? (
+                        {currentView === 'reception' && !employeeMode ? (
                             <div className="d-flex flex-column gap-3">
                                 {customerAlertStatsError ? (
                                     <div className="alert alert-warning py-2 mb-0">
@@ -1561,6 +1592,87 @@ export default function CalendarPage() {
                                             (current) => current + 1,
                                         );
                                     }}
+                                    onChanged={() => {
+                                        void refetch();
+                                    }}
+                                    onOpenFinalizeAppointment={(id) => {
+                                        openAppointmentDeepLink(id);
+                                    }}
+                                    onOpenAppointment={(id) => {
+                                        openAppointmentDeepLink(id);
+                                    }}
+                                />
+                            </div>
+                        ) : employeeMode ? (
+                            <div className="d-flex flex-column gap-3">
+                                <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
+                                    <div>
+                                        <label
+                                            className="form-label form-label-sm mb-1"
+                                            htmlFor="employee-calendar-date"
+                                        >
+                                            Data
+                                        </label>
+                                        <input
+                                            id="employee-calendar-date"
+                                            type="date"
+                                            className="form-control form-control-sm"
+                                            value={toDateParam(currentDate)}
+                                            onChange={(event) => {
+                                                const nextDate = new Date(
+                                                    `${event.target.value}T00:00:00`,
+                                                );
+                                                if (
+                                                    Number.isNaN(
+                                                        nextDate.getTime(),
+                                                    )
+                                                )
+                                                    return;
+                                                setCurrentDate(nextDate);
+                                                updateCalendarQuery({
+                                                    date: toDateParam(nextDate),
+                                                    view: 'employee',
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="form-check pb-2">
+                                        <input
+                                            id="employee-archive-mode"
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={employeeArchiveMode}
+                                            onChange={(event) =>
+                                                setEmployeeArchiveMode(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <label
+                                            className="form-check-label small"
+                                            htmlFor="employee-archive-mode"
+                                        >
+                                            Pokaż archiwalne
+                                        </label>
+                                    </div>
+                                </div>
+                                <ReceptionView
+                                    appointments={employeeAppointments}
+                                    loading={loading}
+                                    readOnly={employeeArchiveMode}
+                                    emptyTitle={
+                                        employeeArchiveMode
+                                            ? 'Brak wizyt archiwalnych.'
+                                            : 'Brak wizyt na wybrany dzień'
+                                    }
+                                    emptyDescription={
+                                        employeeArchiveMode
+                                            ? 'Wybierz inną datę lub wyłącz tryb archiwum.'
+                                            : 'Wybierz inną datę lub dodaj nową wizytę.'
+                                    }
+                                    customerAlertSeverityByCustomerId={
+                                        customerAlertSeverityById
+                                    }
                                     onChanged={() => {
                                         void refetch();
                                     }}

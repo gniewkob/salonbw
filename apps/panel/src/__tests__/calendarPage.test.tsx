@@ -26,6 +26,7 @@ jest.mock('next/router', () => ({
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
         role: 'admin',
+        user: { id: 99, role: 'admin', email: 'admin@test.local', name: 'A' },
         apiFetch: apiFetchMock,
     }),
 }));
@@ -54,9 +55,13 @@ jest.mock('@/components/calendar/ReceptionView', () => ({
     __esModule: true,
     default: ({
         appointments,
+        readOnly,
+        emptyTitle,
         onActionTracked,
     }: {
         appointments: Array<{ id: number }>;
+        readOnly?: boolean;
+        emptyTitle?: string;
         onActionTracked?: (params: {
             appointmentId: number;
             action:
@@ -69,7 +74,9 @@ jest.mock('@/components/calendar/ReceptionView', () => ({
         }) => void;
     }) => (
         <div>
+            {appointments.length === 0 ? <div>{emptyTitle}</div> : null}
             <div>reception-view:{appointments.length}</div>
+            <div>reception-readonly:{readOnly ? 'yes' : 'no'}</div>
             <button
                 type="button"
                 onClick={() =>
@@ -419,6 +426,84 @@ describe('CalendarPage', () => {
         expect(apiFetchMock).not.toHaveBeenCalledWith(
             '/customers/7/statistics',
         );
+    });
+
+    it('renders employee view when view=employee and filters archived by toggle', async () => {
+        routerMock.query = { view: 'employee' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 501,
+                        type: 'appointment',
+                        title: 'Aktywna',
+                        startTime: '2026-05-17T09:00:00.000Z',
+                        endTime: '2026-05-17T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 71,
+                        clientName: 'Klient A',
+                        status: 'confirmed',
+                    },
+                    {
+                        id: 502,
+                        type: 'appointment',
+                        title: 'Archiwum',
+                        startTime: '2026-05-17T10:00:00.000Z',
+                        endTime: '2026-05-17T10:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 72,
+                        clientName: 'Klient B',
+                        status: 'completed',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        expect(screen.getByLabelText('Pokaż archiwalne')).toBeInTheDocument();
+        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+        fireEvent.click(screen.getByLabelText('Pokaż archiwalne'));
+        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+    });
+
+    it('shows empty archive state message in employee archive mode', async () => {
+        routerMock.query = { view: 'employee' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 601,
+                        type: 'appointment',
+                        title: 'Aktywna',
+                        startTime: '2026-05-17T09:00:00.000Z',
+                        endTime: '2026-05-17T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 81,
+                        clientName: 'Klient C',
+                        status: 'confirmed',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+        fireEvent.click(screen.getByLabelText('Pokaż archiwalne'));
+
+        expect(
+            screen.getByText('Brak wizyt archiwalnych.'),
+        ).toBeInTheDocument();
     });
 
     it('shows warning when customer CRM stats are temporarily unavailable', async () => {

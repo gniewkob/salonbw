@@ -20,6 +20,9 @@ import { trackReceptionAction } from './receptionTelemetry';
 interface ReceptionViewProps {
     appointments: Appointment[];
     loading?: boolean;
+    readOnly?: boolean;
+    emptyTitle?: string;
+    emptyDescription?: string;
     onChanged?: () => void;
     onOpenFinalizeAppointment?: (appointmentId: number) => void;
     onOpenAppointment?: (appointmentId: number) => void;
@@ -88,6 +91,9 @@ const ACTION_LABELS: Record<string, { label: string; className: string }> = {
 export default function ReceptionView({
     appointments,
     loading,
+    readOnly = false,
+    emptyTitle = 'Brak wizyt na dziś',
+    emptyDescription = 'Wybierz inną datę lub dodaj nową wizytę.',
     onChanged,
     onOpenFinalizeAppointment,
     onOpenAppointment,
@@ -272,8 +278,8 @@ export default function ReceptionView({
             <div className="salonbw-reception-view">
                 <div className="salonbw-reception-empty">
                     <div className="salonbw-reception-empty__icon">📅</div>
-                    <h3>Brak wizyt na dziś</h3>
-                    <p>Wybierz inną datę lub dodaj nową wizytę.</p>
+                    <h3>{emptyTitle}</h3>
+                    <p>{emptyDescription}</p>
                 </div>
             </div>
         );
@@ -505,34 +511,44 @@ export default function ReceptionView({
                                             >
                                                 Otwórz
                                             </button>
-                                            {config.actions.map((action) => {
-                                                const actionConfig =
-                                                    ACTION_LABELS[action];
-                                                const isActionPending =
-                                                    pendingAction?.appointmentId ===
-                                                        appointment.id &&
-                                                    pendingAction.action ===
-                                                        action;
-                                                return (
-                                                    <button
-                                                        key={action}
-                                                        type="button"
-                                                        className={`salonbw-btn salonbw-btn--sm ${actionConfig.className}`}
-                                                        onClick={() =>
-                                                            void handleAction(
-                                                                appointment,
-                                                                action as ActionKey,
-                                                            )
-                                                        }
-                                                        disabled={isRowPending}
-                                                    >
-                                                        {isActionPending
-                                                            ? 'Trwa...'
-                                                            : actionConfig.label}
-                                                    </button>
-                                                );
-                                            })}
-                                            {config.actions.length === 0 && (
+                                            {readOnly
+                                                ? null
+                                                : config.actions.map(
+                                                      (action) => {
+                                                          const actionConfig =
+                                                              ACTION_LABELS[
+                                                                  action
+                                                              ];
+                                                          const isActionPending =
+                                                              pendingAction?.appointmentId ===
+                                                                  appointment.id &&
+                                                              pendingAction.action ===
+                                                                  action;
+                                                          return (
+                                                              <button
+                                                                  key={action}
+                                                                  type="button"
+                                                                  className={`salonbw-btn salonbw-btn--sm ${actionConfig.className}`}
+                                                                  onClick={() =>
+                                                                      void handleAction(
+                                                                          appointment,
+                                                                          action as ActionKey,
+                                                                      )
+                                                                  }
+                                                                  disabled={
+                                                                      isRowPending
+                                                                  }
+                                                              >
+                                                                  {isActionPending
+                                                                      ? 'Trwa...'
+                                                                      : actionConfig.label}
+                                                              </button>
+                                                          );
+                                                      },
+                                                  )}
+                                            {(readOnly ||
+                                                config.actions.length ===
+                                                    0) && (
                                                 <span className="salonbw-reception-no-actions">
                                                     -
                                                 </span>
