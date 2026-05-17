@@ -212,6 +212,140 @@ test.describe('PROD smoke: calendar compat migration', () => {
         ).toBeVisible();
     });
 
+    test('employee calendar smoke: render, archive toggle, readonly archive, deep-link and status action', async ({
+        page,
+    }) => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayDate = `${yyyy}-${mm}-${dd}`;
+
+        const calendarEvents = [
+            {
+                id: 9101,
+                type: 'appointment',
+                title: 'Wizyta aktywna',
+                startTime: `${todayDate}T09:00:00.000Z`,
+                endTime: `${todayDate}T09:45:00.000Z`,
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 7101,
+                clientName: 'Klient Aktywny',
+                serviceId: 1101,
+                serviceName: 'Strzyżenie',
+                status: 'scheduled',
+            },
+            {
+                id: 9102,
+                type: 'appointment',
+                title: 'Wizyta archiwalna',
+                startTime: `${todayDate}T10:00:00.000Z`,
+                endTime: `${todayDate}T10:45:00.000Z`,
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 7102,
+                clientName: 'Klient Archiwum',
+                serviceId: 1102,
+                serviceName: 'Koloryzacja',
+                status: 'completed',
+            },
+        ];
+
+        let statusMutations = 0;
+        const statusPayloads: Array<{ id: string; status: string }> = [];
+
+        await page.route('**/api/calendar/events**', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    events: calendarEvents,
+                    employees: [{ id: 2, name: 'Anna' }],
+                    dateRange: { start: todayDate, end: todayDate },
+                }),
+            });
+        });
+
+        await page.route('**/api/customers/statistics/batch**', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    items: [
+                        { customerId: 7101, statistics: { noShowVisits: 0 } },
+                        { customerId: 7102, statistics: { noShowVisits: 0 } },
+                    ],
+                }),
+            });
+        });
+
+        await page.route('**/api/appointments/*/status', async (route) => {
+            statusMutations += 1;
+            const url = route.request().url();
+            const idMatch = url.match(/\/appointments\/(\d+)\/status/);
+            const body = route.request().postDataJSON() as
+                | { status?: string }
+                | undefined;
+            statusPayloads.push({
+                id: idMatch?.[1] ?? '',
+                status: body?.status ?? '',
+            });
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    id: Number(idMatch?.[1] ?? 0),
+                    status: body?.status ?? 'scheduled',
+                }),
+            });
+        });
+
+        await login(page);
+        await page.goto('/calendar?view=employee');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="calendar-page"]'),
+        ).toBeVisible();
+        await expect(page.getByLabel('Pokaż archiwalne')).toBeVisible();
+        await expect(page.locator('text=Klient Aktywny')).toBeVisible();
+        await expect(page.locator('text=Klient Archiwum')).toHaveCount(0);
+
+        const activeStartButton = page
+            .locator('tr', { hasText: 'Klient Aktywny' })
+            .getByRole('button', { name: 'Rozpocznij' });
+        await expect(activeStartButton).toBeVisible();
+        await activeStartButton.click();
+        await expect
+            .poll(() => statusMutations, { timeout: 20_000 })
+            .toBeGreaterThan(0);
+        expect(statusPayloads.some((item) => item.status === 'in_progress')).toBe(
+            true,
+        );
+
+        const activeOpenButton = page
+            .locator('tr', { hasText: 'Klient Aktywny' })
+            .getByRole('button', { name: 'Otwórz' });
+        await activeOpenButton.click();
+        await expect(page).toHaveURL(/\/calendar\?.*appointmentId=9101/);
+
+        await page.getByLabel('Pokaż archiwalne').check();
+        await expect(page.locator('text=Klient Archiwum')).toBeVisible();
+        await expect(page.locator('text=Klient Aktywny')).toHaveCount(0);
+        await expect(
+            page.locator('tr', { hasText: 'Klient Archiwum' }),
+        ).toContainText('-');
+
+        const mutationsBeforeArchiveClick = statusMutations;
+        const archiveOpenButton = page
+            .locator('tr', { hasText: 'Klient Archiwum' })
+            .getByRole('button', { name: 'Otwórz' });
+        await archiveOpenButton.click();
+        await expect(page).toHaveURL(/\/calendar\?.*appointmentId=9102/);
+        expect(statusMutations).toBe(mutationsBeforeArchiveClick);
+    });
+
     test('calendar reception shows neutral fallback when operational-insights is unavailable', async ({
         page,
     }) => {
