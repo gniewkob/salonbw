@@ -12,6 +12,14 @@ Operational note (2026-05-17) — Sprint 42 Step 1 (CRM follow-up operational de
   - manager aggregate view on `/statistics/follow-up`.
 - No app/backend/workflow/test/ops-guard changes in this step (docs-only update).
 
+Operational note (2026-05-17) — Sprint 42 Step 2 (CRM follow-up detail smoke checklist):
+- Added manual post-deploy smoke checklist for follow-up detail flow in `docs/AGENT_OPERATIONS.md`, covering:
+  - `/calendar?view=reception` candidate action execution,
+  - customer profile verification in `Ostatnie działania follow-up`,
+  - deep link validation `#appointmentId` -> `/calendar?appointmentId=<id>`,
+  - manager aggregate verification on `/statistics/follow-up`.
+- No app/backend/workflow/test/ops-guard changes in this step (docs-only update).
+
 Operational note (2026-05-16) — Sprint 36 closeout (panel regression stabilization):
 - Baseline commit on `master`: `e6b032134e21138d5c80524c321a489e70e141e2` (`test(panel): stabilize auth logout regression tests`).
 - Full panel regression suite is green locally:

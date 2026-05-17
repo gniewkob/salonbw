@@ -137,6 +137,18 @@ Flow:
 5. When `appointmentId > 0`, `#appointmentId` in `Ostatnie działania follow-up` links to `/calendar?appointmentId=<id>`.
 6. Manager validates aggregated audit metrics in `/statistics/follow-up`.
 
+### Manual Smoke Checklist (Follow-up Detail Flow)
+
+Use this checklist after deploy when validating the follow-up detail path end-to-end:
+
+1. Open `/calendar?view=reception`.
+2. Execute one follow-up action on a candidate row (`contacted`, `deferred`, `dismissed`, or `escalated`).
+3. Open the related customer profile (`/customers`) and locate `Ostatnie działania follow-up`.
+4. Confirm the new action entry is visible in `Ostatnie działania follow-up`.
+5. Click `#appointmentId` in that row (when appointment id is present and `> 0`).
+6. Confirm deep link opens `/calendar?appointmentId=<id>`.
+7. Open `/statistics/follow-up` and confirm manager audit aggregate is available.
+
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.
