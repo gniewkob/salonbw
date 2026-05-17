@@ -292,3 +292,33 @@ Date: 2026-05-17
 2. **`file-type` second** (`#181`):
 - tied to `jimp` transitive tree
 - requires focused remediation sprint (upgrade strategy and compatibility verification)
+
+## Sprint 48 Step 2 — Patch `@nestjs/core` Vulnerability
+
+Date: 2026-05-17
+
+### Action applied
+
+- Performed targeted lockfile lift for NestJS backend runtime packages to patched line:
+  - `@nestjs/core` resolved to `11.1.19` (`>=11.1.18` patched advisory threshold)
+  - paired Nest packages resolved in lockfile to `11.1.19` (`@nestjs/testing`, `@nestjs/websockets`) to keep version line coherent
+- Kept `backend/salonbw-backend/package.json` semver ranges unchanged (`^11.1.14`) per minimal-change policy.
+
+### Scope guardrails respected
+
+- No changes to application/backend source code.
+- No changes to workflows.
+- No changes to `file-type` / `jimp` remediation scope.
+- No mass dependency update.
+
+### Local validation
+
+- `pnpm --filter salonbw-backend test` ✅
+- `pnpm --filter salonbw-backend typecheck` ✅
+- `pnpm --filter salonbw-backend build` ✅
+- `pnpm --filter @salonbw/panel test` ✅ (workspace safety check)
+
+### Expected security impact
+
+- Dependabot alert `#216` (`@nestjs/core`) should close after GitHub advisory re-evaluation on updated lockfile.
+- Remaining backlog after closure should be focused on `#181` (`file-type` via `jimp`).

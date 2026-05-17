@@ -1458,3 +1458,13 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
    - Node.js domains (e.g. `api.salon-bw.pl`, `dev.salon-bw.pl`): `devil www restart <domain>`.
    - PHP/Passenger wrappers (e.g. `salon-bw.pl`, `panel.salon-bw.pl`, `dev.salon-bw.pl`): write `tmp/restart.txt` instead—see operations doc.
 6. **Document everything**—if you learn a new path, secret, or behaviour, append it here and cross-link the deeper documentation.
+
+Operational note (2026-05-17) — Sprint 48 Step 2 (`@nestjs/core` remediation):
+- Applied minimal dependency patch wave limited to lockfile resolution for Nest runtime line.
+- `@nestjs/core` resolved from `11.1.15` to `11.1.19` (patched threshold `11.1.18+`).
+- Kept backend semver ranges unchanged in `backend/salonbw-backend/package.json` (`^11.1.14`) to preserve minimal policy scope.
+- Validation passed:
+  - `pnpm --filter salonbw-backend test`
+  - `pnpm --filter salonbw-backend typecheck`
+  - `pnpm --filter salonbw-backend build`
+  - `pnpm --filter @salonbw/panel test`
