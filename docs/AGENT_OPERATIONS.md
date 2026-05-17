@@ -120,6 +120,23 @@ PASS criteria for production validation:
   - `Audyt follow-up chwilowo niedostępny.`
 - legacy compatibility: `/calendar-next?view=reception` redirects to `/calendar?view=reception`.
 
+## 1.3 CRM Follow-up Operational Detail Flow
+
+Purpose:
+- define the end-to-end operational path across reception, customer profile, and manager audit views after Sprint 39-41.
+
+Flow:
+1. Reception opens `/calendar?view=reception` and reviews CRM follow-up candidates.
+2. Reception captures one follow-up action for a candidate:
+   - `contacted`
+   - `deferred`
+   - `dismissed`
+   - `escalated`
+3. Action is persisted via `POST /crm/follow-up-actions`.
+4. Customer profile (`/customers` -> customer card) shows the entry in `Ostatnie działania follow-up`.
+5. When `appointmentId > 0`, `#appointmentId` in `Ostatnie działania follow-up` links to `/calendar?appointmentId=<id>`.
+6. Manager validates aggregated audit metrics in `/statistics/follow-up`.
+
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.

@@ -2,6 +2,16 @@
 
 _Last updated: 2026-05-16 (panel green regression baseline recorded after Sprint 36)_
 
+Operational note (2026-05-17) — Sprint 42 Step 1 (CRM follow-up operational detail flow docs):
+- Documented end-to-end operational flow in `docs/AGENT_OPERATIONS.md` for Sprint 39-41 CRM follow-up path:
+  - reception candidates on `/calendar?view=reception`,
+  - action capture (`contacted` / `deferred` / `dismissed` / `escalated`),
+  - persistence via `POST /crm/follow-up-actions`,
+  - customer profile section `Ostatnie działania follow-up`,
+  - profile deep link `#appointmentId` -> `/calendar?appointmentId=<id>` when `appointmentId > 0`,
+  - manager aggregate view on `/statistics/follow-up`.
+- No app/backend/workflow/test/ops-guard changes in this step (docs-only update).
+
 Operational note (2026-05-16) — Sprint 36 closeout (panel regression stabilization):
 - Baseline commit on `master`: `e6b032134e21138d5c80524c321a489e70e141e2` (`test(panel): stabilize auth logout regression tests`).
 - Full panel regression suite is green locally:
