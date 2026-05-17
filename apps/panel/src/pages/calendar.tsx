@@ -7,6 +7,7 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
+import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
@@ -1656,7 +1657,7 @@ export default function CalendarPage() {
                                         </label>
                                     </div>
                                 </div>
-                                <ReceptionView
+                                <StaffAppointmentCalendarView
                                     appointments={employeeAppointments}
                                     loading={loading}
                                     readOnly={employeeArchiveMode}
@@ -1670,14 +1671,8 @@ export default function CalendarPage() {
                                             ? 'Wybierz inną datę lub wyłącz tryb archiwum.'
                                             : 'Wybierz inną datę lub dodaj nową wizytę.'
                                     }
-                                    customerAlertSeverityByCustomerId={
-                                        customerAlertSeverityById
-                                    }
                                     onChanged={() => {
                                         void refetch();
-                                    }}
-                                    onOpenFinalizeAppointment={(id) => {
-                                        openAppointmentDeepLink(id);
                                     }}
                                     onOpenAppointment={(id) => {
                                         openAppointmentDeepLink(id);

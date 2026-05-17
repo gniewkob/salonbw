@@ -104,6 +104,34 @@ jest.mock('@/components/calendar/ReceptionView', () => ({
     ),
 }));
 
+jest.mock('@/components/calendar/StaffAppointmentCalendarView', () => ({
+    __esModule: true,
+    default: ({
+        appointments,
+        readOnly,
+        emptyTitle,
+    }: {
+        appointments: Array<{ id: number }>;
+        readOnly?: boolean;
+        emptyTitle?: string;
+    }) => (
+        <div>
+            {appointments.length === 0 ? <div>{emptyTitle}</div> : null}
+            <div>staff-view:{appointments.length}</div>
+            <div>staff-readonly:{readOnly ? 'yes' : 'no'}</div>
+            {!readOnly && appointments.length > 0 ? (
+                <div>
+                    <button type="button">Rozpocznij</button>
+                    <button type="button">Zakończ</button>
+                    <button type="button">No-show</button>
+                    <button type="button">Anuluj</button>
+                    <button type="button">Otwórz</button>
+                </div>
+            ) : null}
+        </div>
+    ),
+}));
+
 const useCalendarMock = jest.fn();
 
 jest.mock('@/hooks/useCalendar', () => ({
@@ -468,9 +496,29 @@ describe('CalendarPage', () => {
         render(<CalendarPage />);
 
         expect(screen.getByLabelText('Pokaż archiwalne')).toBeInTheDocument();
-        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+        expect(screen.getByText('staff-view:1')).toBeInTheDocument();
+        expect(screen.getByText('staff-readonly:no')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Rozpocznij' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Zakończ' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'No-show' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Anuluj' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Otwórz' }),
+        ).toBeInTheDocument();
         fireEvent.click(screen.getByLabelText('Pokaż archiwalne'));
-        expect(screen.getByText('reception-view:1')).toBeInTheDocument();
+        expect(screen.getByText('staff-view:1')).toBeInTheDocument();
+        expect(screen.getByText('staff-readonly:yes')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Rozpocznij' }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows empty archive state message in employee archive mode', async () => {
