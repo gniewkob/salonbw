@@ -244,7 +244,7 @@ export default function SalonTopbar() {
                                     {topbar.user.initials}
                                 </div>
                             </div>
-                            <b className="caret color1 hidden-xs initials-arrow"></b>
+                            <b className="caret hidden-xs initials-arrow"></b>
                         </a>
                         <ul className="dropdown-menu larger-dropdown-menu">
                             <li className="main-menu-li">
