@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +11,8 @@ import { BUSINESS_INFO } from '@/config/content';
 
 export default function Navbar() {
     const { role, initialized, logout } = useAuth();
+    const router = useRouter();
+    const isHomePage = router.pathname === '/';
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
@@ -18,6 +21,8 @@ export default function Navbar() {
     const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
     const effectiveRole = initialized ? role : null;
     const dashboardRoute = effectiveRole ? panelDashboard : undefined;
+
+    const transparent = isHomePage && !scrolled;
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
@@ -47,7 +52,7 @@ export default function Navbar() {
     }, [mobileMenuOpen]);
 
     const navLinkClass = `transition duration-200 text-sm tracking-wide font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-        scrolled ? 'text-gray-800 hover:text-[#c5a880]' : 'text-white/90 hover:text-[#c5a880]'
+        transparent ? 'text-white/90 hover:text-[#c5a880]' : 'text-gray-800 hover:text-[#c5a880]'
     }`;
 
     return (
@@ -55,10 +60,10 @@ export default function Navbar() {
             aria-label="Nawigacja główna"
             className="sticky top-0 z-50 transition-all duration-400"
             style={{
-                background: scrolled ? 'rgba(255,255,255,0.97)' : 'transparent',
-                backdropFilter: scrolled ? 'blur(12px)' : 'none',
-                boxShadow: scrolled ? '0 1px 24px rgba(0,0,0,0.10)' : 'none',
-                borderBottom: scrolled ? '1px solid rgba(0,0,0,0.06)' : '1px solid transparent',
+                background: transparent ? 'transparent' : 'rgba(255,255,255,0.97)',
+                backdropFilter: transparent ? 'none' : 'blur(12px)',
+                boxShadow: transparent ? 'none' : '0 1px 24px rgba(0,0,0,0.10)',
+                borderBottom: transparent ? '1px solid transparent' : '1px solid rgba(0,0,0,0.06)',
             }}
         >
             <div className="container mx-auto px-4 md:px-8">
@@ -79,7 +84,7 @@ export default function Navbar() {
                             style={{
                                 height: '48px',
                                 width: 'auto',
-                                filter: scrolled ? 'none' : 'brightness(0) invert(1)',
+                                filter: transparent ? 'brightness(0) invert(1)' : 'none',
                                 transition: 'filter 0.3s',
                             }}
                         />
@@ -134,7 +139,7 @@ export default function Navbar() {
                         aria-expanded={mobileMenuOpen}
                         aria-controls="mobile-menu"
                     >
-                        <svg className="w-6 h-6" style={{ color: scrolled ? '#0d0d0d' : '#ffffff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6" style={{ color: transparent ? '#ffffff' : '#0d0d0d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {mobileMenuOpen ? (
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             ) : (

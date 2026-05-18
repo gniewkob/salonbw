@@ -8,6 +8,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
+import CustomCursor from '@/components/CustomCursor';
 import { playfair, openSans, tangerine } from '@/lib/fonts';
 import { initSentry } from '@/sentry.client';
 import {
@@ -116,6 +117,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                         </>
                     )}
                     <RouteProgress />
+                    <CustomCursor />
                     <BookNowFab />
                     <Component {...pageProps} />
                 </ToastProvider>
