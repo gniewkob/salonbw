@@ -692,6 +692,12 @@ describe('CalendarPage', () => {
         expect(screen.getByText(/Strzyzenie/i)).toBeInTheDocument();
         expect(screen.getByText(/Koloryzacja/i)).toBeInTheDocument();
         expect(screen.queryByText(/Makijaz/i)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByRole('button', { name: 'Popros o anulowanie' }),
+        ).toHaveLength(1);
 
         fireEvent.click(screen.getByRole('button', { name: /Koloryzacja/i }));
         expect(
@@ -705,6 +711,18 @@ describe('CalendarPage', () => {
         );
         expect(apiFetchMock).not.toHaveBeenCalledWith(
             expect.stringContaining('/customers/71/statistics'),
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        );
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/701/cancellation-request',
+                expect.objectContaining({
+                    method: 'POST',
+                }),
+            ),
         );
     });
 

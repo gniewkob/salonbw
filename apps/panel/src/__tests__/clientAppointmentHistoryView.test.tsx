@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
 import type { Appointment } from '@/types';
 
@@ -204,5 +204,78 @@ describe('ClientAppointmentHistoryView', () => {
         expect(
             screen.queryByRole('button', { name: 'Nowa wizyta' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('shows cancellation request button only for future appointments', () => {
+        render(
+            <ClientAppointmentHistoryView
+                currentDateParam="2026-05-20"
+                futureAppointments={[createAppointment(1)]}
+                archivedAppointments={[createAppointment(2)]}
+                onDateChange={jest.fn()}
+                onRequestCancellation={jest.fn().mockResolvedValue(undefined)}
+            />,
+        );
+
+        expect(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByRole('button', { name: 'Popros o anulowanie' }),
+        ).toHaveLength(1);
+    });
+
+    it('shows success state when cancellation request succeeds', async () => {
+        const onRequestCancellation = jest.fn().mockResolvedValue(undefined);
+        render(
+            <ClientAppointmentHistoryView
+                currentDateParam="2026-05-20"
+                futureAppointments={[createAppointment(1)]}
+                archivedAppointments={[]}
+                onDateChange={jest.fn()}
+                onRequestCancellation={onRequestCancellation}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        );
+
+        await waitFor(() =>
+            expect(onRequestCancellation).toHaveBeenCalledWith(1),
+        );
+        expect(
+            screen.getByText(
+                'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('shows error state when cancellation request fails', async () => {
+        const onRequestCancellation = jest
+            .fn()
+            .mockRejectedValue(new Error('network'));
+        render(
+            <ClientAppointmentHistoryView
+                currentDateParam="2026-05-20"
+                futureAppointments={[createAppointment(1)]}
+                archivedAppointments={[]}
+                onDateChange={jest.fn()}
+                onRequestCancellation={onRequestCancellation}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        );
+
+        await waitFor(() =>
+            expect(onRequestCancellation).toHaveBeenCalledWith(1),
+        );
+        expect(
+            screen.getByText(
+                'Nie udalo sie wyslac prosby o anulowanie. Sprobuj ponownie.',
+            ),
+        ).toBeInTheDocument();
     });
 });

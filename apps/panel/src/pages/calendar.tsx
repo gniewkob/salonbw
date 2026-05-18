@@ -1867,6 +1867,21 @@ export default function CalendarPage() {
                                         view: 'client',
                                     });
                                 }}
+                                onRequestCancellation={async (
+                                    appointmentId,
+                                ) => {
+                                    await apiFetch(
+                                        `/appointments/${appointmentId}/cancellation-request`,
+                                        {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
+                                            body: JSON.stringify({}),
+                                        },
+                                    );
+                                }}
                             />
                         ) : (
                             <CalendarView
