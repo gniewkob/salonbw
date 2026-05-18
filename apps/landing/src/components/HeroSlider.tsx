@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { HERO_SLIDES, BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 
@@ -14,29 +15,22 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
     const data = slides ?? (HERO_SLIDES as unknown as HeroSlide[]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-    const [animating, setAnimating] = useState(false);
 
     const bookingUrl = getPanelUrl(
         `/auth/login?redirect=${encodeURIComponent('/appointments')}`
     );
 
     const nextSlide = useCallback(() => {
-        setAnimating(true);
-        setTimeout(() => setAnimating(false), 700);
         setCurrentSlide((prev) => (prev + 1) % data.length);
     }, [data.length]);
 
     const prevSlide = useCallback(() => {
-        setAnimating(true);
-        setTimeout(() => setAnimating(false), 700);
         setCurrentSlide((prev) => (prev - 1 + data.length) % data.length);
     }, [data.length]);
 
     const goToSlide = useCallback((index: number) => {
         setCurrentSlide(index);
         setIsAutoPlaying(false);
-        setAnimating(true);
-        setTimeout(() => setAnimating(false), 700);
     }, []);
 
     useEffect(() => {
@@ -156,7 +150,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                             >
                                 {BUSINESS_INFO.booking.text}
                             </a>
-                            <a
+                            <Link
                                 href="/services"
                                 className="inline-block px-10 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
                                 style={{
@@ -170,7 +164,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                             >
                                 Nasze usługi
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
