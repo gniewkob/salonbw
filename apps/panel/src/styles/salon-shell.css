@@ -2514,6 +2514,7 @@ tr.customer-row:hover .customers-drag-handle {
     border-right: 1px solid #1b1e22;
     flex-shrink: 0;
     z-index: 40;
+    overflow: hidden;
 }
 
 .mainnav .nav {
@@ -2528,6 +2529,8 @@ tr.customer-row:hover .customers-drag-handle {
 .mainnav .nav li {
     min-height: var(--salon-mainnav-item-h);
     position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
 .mainnav .nav li.mt-auto {
@@ -2559,6 +2562,8 @@ tr.customer-row:hover .customers-drag-handle {
     text-transform: lowercase;
     padding: 6px 4px;
     transition: all 0.15s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .mainnav .nav li.active a {
