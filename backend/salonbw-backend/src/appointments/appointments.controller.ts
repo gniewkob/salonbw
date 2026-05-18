@@ -35,6 +35,7 @@ import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 import { CreateCancellationRequestDto } from './dto/create-cancellation-request.dto';
+import { GetCancellationRequestsDto } from './dto/get-cancellation-requests.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -60,6 +61,23 @@ export class AppointmentsController {
             });
         }
         return this.appointmentsService.findForUser(user.userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist)
+    @Get('cancellation-requests')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'List client cancellation requests for reception queue',
+    })
+    @ApiResponse({ status: 200, description: 'Cancellation request queue' })
+    listCancellationRequests(
+        @Query(new ValidationPipe({ transform: true }))
+        query: GetCancellationRequestsDto,
+    ) {
+        return this.appointmentsService.listCancellationRequests(
+            query.limit ?? 50,
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
