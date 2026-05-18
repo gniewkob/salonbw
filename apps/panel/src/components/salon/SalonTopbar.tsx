@@ -174,7 +174,6 @@ export default function SalonTopbar() {
                             </div>
                             <div className="d-none d-md-inline">
                                 <span>Pomoc</span>
-                                <b className="caret initials-arrow"></b>
                             </div>
                         </a>
                         <ul className="dropdown-menu larger-dropdown-menu nav-help">
@@ -244,7 +243,6 @@ export default function SalonTopbar() {
                                     {topbar.user.initials}
                                 </div>
                             </div>
-                            <b className="caret hidden-xs initials-arrow"></b>
                         </a>
                         <ul className="dropdown-menu larger-dropdown-menu">
                             <li className="main-menu-li">

@@ -135,8 +135,7 @@ export function renderCalendarViewsDropdown(views: CalendarNamedView[]) {
             : `<li class='lbl'>BRAK ZDEFINIOWANYCH WIDOKÓW</li>`;
 
     return `<div class='calendar-views dropdown dropup'>
-<button name="button" type="button" class="button button-sm" data-toggle="dropdown">widok
-<b class='caret caret-up'></b>
+<button name="button" type="button" class="button button-sm dropdown-toggle" data-toggle="dropdown">widok
 </button><ul class='dropdown-menu dropdown-menu-right dropdown-style-2'>
 <li class='lbl'>WIDOKI</li>
 <li>

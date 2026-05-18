@@ -138,9 +138,7 @@ export default function CustomerGroupsListPage() {
                             <span
                                 className="dropdown-toggle"
                                 data-toggle="dropdown"
-                            >
-                                <span className="caret" />
-                            </span>
+                            />
                             <ul className="dropdown-menu dropdown-menu-right">
                                 <li>
                                     <button

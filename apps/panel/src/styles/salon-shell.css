@@ -2309,6 +2309,7 @@ tr.customer-row:hover .customers-drag-handle {
     font-size: 12px;
 }
 
+/* Topbar renders explicit .caret elements, so suppress framework pseudo-caret. */
 .navbar .dropdown-menu {
     position: absolute;
     top: 100%;

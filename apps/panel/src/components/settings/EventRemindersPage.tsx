@@ -206,7 +206,7 @@ export default function EventRemindersPage() {
                             className="btn btn-default dropdown-toggle"
                             data-toggle="dropdown"
                         >
-                            więcej <span className="caret" />
+                            więcej
                         </button>
                         <ul className="dropdown-menu pull-right">
                             <li>
