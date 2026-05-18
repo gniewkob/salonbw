@@ -13,7 +13,7 @@ const links: { href: Route; label: string; testId: string }[] = [
     { href: '/calendar', label: 'Kalendarz', testId: 'nav-calendar' },
     {
         href: '/calendar?view=employee' as Route,
-        label: 'Mój kalendarz',
+        label: 'Kalendarz pracownika',
         testId: 'nav-employee-calendar',
     },
     {

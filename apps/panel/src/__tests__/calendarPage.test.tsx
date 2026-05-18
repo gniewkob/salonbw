@@ -457,7 +457,7 @@ describe('CalendarPage', () => {
     });
 
     it('renders employee view when view=employee and filters archived by toggle', async () => {
-        routerMock.query = { view: 'employee' };
+        routerMock.query = { view: 'employee', date: '2099-05-17' };
         useCalendarMock.mockImplementation(() => ({
             data: {
                 events: [
@@ -465,8 +465,8 @@ describe('CalendarPage', () => {
                         id: 501,
                         type: 'appointment',
                         title: 'Aktywna',
-                        startTime: '2026-05-17T09:00:00.000Z',
-                        endTime: '2026-05-17T09:45:00.000Z',
+                        startTime: '2099-05-17T09:00:00.000Z',
+                        endTime: '2099-05-17T09:45:00.000Z',
                         employeeId: 2,
                         employeeName: 'Anna',
                         clientId: 71,
@@ -477,8 +477,8 @@ describe('CalendarPage', () => {
                         id: 502,
                         type: 'appointment',
                         title: 'Archiwum',
-                        startTime: '2026-05-17T10:00:00.000Z',
-                        endTime: '2026-05-17T10:45:00.000Z',
+                        startTime: '2099-05-17T10:00:00.000Z',
+                        endTime: '2099-05-17T10:45:00.000Z',
                         employeeId: 2,
                         employeeName: 'Anna',
                         clientId: 72,
@@ -522,7 +522,7 @@ describe('CalendarPage', () => {
     });
 
     it('shows empty archive state message in employee archive mode', async () => {
-        routerMock.query = { view: 'employee' };
+        routerMock.query = { view: 'employee', date: '2099-05-17' };
         useCalendarMock.mockImplementation(() => ({
             data: {
                 events: [
@@ -530,8 +530,8 @@ describe('CalendarPage', () => {
                         id: 601,
                         type: 'appointment',
                         title: 'Aktywna',
-                        startTime: '2026-05-17T09:00:00.000Z',
-                        endTime: '2026-05-17T09:45:00.000Z',
+                        startTime: '2099-05-17T09:00:00.000Z',
+                        endTime: '2099-05-17T09:45:00.000Z',
                         employeeId: 2,
                         employeeName: 'Anna',
                         clientId: 81,
@@ -552,6 +552,39 @@ describe('CalendarPage', () => {
         expect(
             screen.getByText('Brak wizyt archiwalnych.'),
         ).toBeInTheDocument();
+    });
+
+    it('renders staff appointment view when view=staff alias is used', async () => {
+        routerMock.query = { view: 'staff', date: '2099-05-17' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 611,
+                        type: 'appointment',
+                        title: 'Widok staff',
+                        startTime: '2099-05-17T09:00:00.000Z',
+                        endTime: '2099-05-17T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 91,
+                        clientName: 'Klient D',
+                        status: 'confirmed',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        expect(screen.getByText('staff-view:1')).toBeInTheDocument();
+        expect(screen.getByText('staff-readonly:no')).toBeInTheDocument();
+        expect(screen.queryByText(/reception-view:/i)).not.toBeInTheDocument();
+        expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
     });
 
     it('shows warning when customer CRM stats are temporarily unavailable', async () => {

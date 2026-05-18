@@ -946,7 +946,7 @@ export default function CalendarPage() {
         const viewParam = Array.isArray(router.query.view)
             ? router.query.view[0]
             : router.query.view;
-        if (viewParam === 'employee') {
+        if (viewParam === 'employee' || viewParam === 'staff') {
             setEmployeeMode(true);
             setCurrentView('day');
             return;

@@ -24,7 +24,7 @@ describe('Employee calendar nav entry point', () => {
 
         const link = screen.getByTestId('nav-employee-calendar');
         expect(link).toHaveAttribute('href', '/calendar?view=employee');
-        expect(link).toHaveTextContent('Mój kalendarz');
+        expect(link).toHaveTextContent('Kalendarz pracownika');
     });
 
     it('renders admin link to employee calendar view', () => {
