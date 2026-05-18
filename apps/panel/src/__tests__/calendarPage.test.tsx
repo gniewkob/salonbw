@@ -529,6 +529,167 @@ describe('CalendarPage', () => {
         expect(screen.getByText('Kolizja z pracą')).toBeInTheDocument();
     });
 
+    it('cancels appointment from reception cancellation queue', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [{ customerId: 7, statistics: { noShowVisits: 0 } }],
+                };
+            }
+            if (endpoint.startsWith('/appointments/cancellation-requests')) {
+                return [
+                    {
+                        appointmentId: 712,
+                        requestedAt: '2026-05-07T08:30:00.000Z',
+                        reason: 'Kolizja z pracą',
+                        client: { id: 7, name: 'Ola' },
+                        service: { id: 12, name: 'Strzyżenie' },
+                        startTime: '2026-05-08T09:00:00.000Z',
+                        status: 'scheduled',
+                    },
+                ];
+            }
+            if (endpoint === '/appointments/712/cancel') {
+                return {
+                    id: 712,
+                    status: 'cancelled',
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Anuluj wizytę' }),
+            ).toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj wizytę' }));
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/712/cancel',
+                {
+                    method: 'PATCH',
+                },
+            ),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByRole('button', { name: 'Anuluj wizytę' }),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
+    it('shows neutral error when cancellation from queue fails', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(
+            async (endpoint: string, init?: RequestInit) => {
+                if (endpoint.startsWith('/customers/statistics/batch')) {
+                    return {
+                        items: [
+                            { customerId: 7, statistics: { noShowVisits: 0 } },
+                        ],
+                    };
+                }
+                if (
+                    endpoint.startsWith('/appointments/cancellation-requests')
+                ) {
+                    return [
+                        {
+                            appointmentId: 712,
+                            requestedAt: '2026-05-07T08:30:00.000Z',
+                            reason: 'Kolizja z pracą',
+                            client: { id: 7, name: 'Ola' },
+                            service: { id: 12, name: 'Strzyżenie' },
+                            startTime: '2026-05-08T09:00:00.000Z',
+                            status: 'scheduled',
+                        },
+                    ];
+                }
+                if (
+                    endpoint === '/appointments/712/cancel' &&
+                    init?.method === 'PATCH'
+                ) {
+                    throw new Error('cancel failed');
+                }
+                return {
+                    id: 42,
+                    startTime: '2026-05-07T10:00:00.000Z',
+                    endTime: '2026-05-07T10:45:00.000Z',
+                    status: 'scheduled',
+                };
+            },
+        );
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'Anuluj wizytę' }),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Nie udało się anulować wizyty. Spróbuj ponownie.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText('Prośby o anulowanie')).toBeInTheDocument();
+    });
+
     it('renders employee view when view=employee and filters archived by toggle', async () => {
         routerMock.query = { view: 'employee', date: '2099-05-17' };
         useCalendarMock.mockImplementation(() => ({

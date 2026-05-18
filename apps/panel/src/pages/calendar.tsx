@@ -124,6 +124,11 @@ interface CancellationRequestQueueItem {
     status: string | null;
 }
 
+type CancellationRequestActionState = {
+    status: 'pending' | 'success' | 'error';
+    message?: string;
+};
+
 type ReceptionFollowUpAction =
     | 'contacted'
     | 'deferred'
@@ -688,6 +693,10 @@ export default function CalendarPage() {
     const [cancellationRequests, setCancellationRequests] = useState<
         CancellationRequestQueueItem[]
     >([]);
+    const [
+        cancellationRequestActionStateByAppointmentId,
+        setCancellationRequestActionStateByAppointmentId,
+    ] = useState<Record<number, CancellationRequestActionState>>({});
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -1107,6 +1116,7 @@ export default function CalendarPage() {
             setCancellationRequestsLoading(false);
             setCancellationRequestsError(false);
             setCancellationRequests([]);
+            setCancellationRequestActionStateByAppointmentId({});
             return;
         }
 
@@ -1138,6 +1148,42 @@ export default function CalendarPage() {
             cancelled = true;
         };
     }, [apiFetch, currentView]);
+
+    const handleCancelFromRequestQueue = (appointmentId: number) => {
+        setCancellationRequestActionStateByAppointmentId((current) => ({
+            ...current,
+            [appointmentId]: { status: 'pending' },
+        }));
+
+        void apiFetch(`/appointments/${appointmentId}/cancel`, {
+            method: 'PATCH',
+        })
+            .then(() => {
+                setCancellationRequests((current) =>
+                    current.filter(
+                        (request) => request.appointmentId !== appointmentId,
+                    ),
+                );
+                setCancellationRequestActionStateByAppointmentId((current) => ({
+                    ...current,
+                    [appointmentId]: {
+                        status: 'success',
+                        message: 'Wizyta została anulowana.',
+                    },
+                }));
+                void refetch();
+            })
+            .catch(() => {
+                setCancellationRequestActionStateByAppointmentId((current) => ({
+                    ...current,
+                    [appointmentId]: {
+                        status: 'error',
+                        message:
+                            'Nie udało się anulować wizyty. Spróbuj ponownie.',
+                    },
+                }));
+            });
+    };
 
     useEffect(() => {
         if (currentView !== 'reception') {
@@ -1795,50 +1841,94 @@ export default function CalendarPage() {
                                                         <th scope="col">
                                                             Czas zgłoszenia
                                                         </th>
+                                                        <th scope="col">
+                                                            Akcje
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {cancellationRequests.map(
-                                                        (request) => (
-                                                            <tr
-                                                                key={`${request.appointmentId}:${request.requestedAt}`}
-                                                            >
-                                                                <td>
-                                                                    {request
-                                                                        .client
-                                                                        ?.name ??
-                                                                        'Brak danych'}
-                                                                </td>
-                                                                <td>
-                                                                    {request.startTime
-                                                                        ? new Date(
-                                                                              request.startTime,
-                                                                          ).toLocaleString(
-                                                                              'pl-PL',
-                                                                          )
-                                                                        : 'Brak danych'}
-                                                                </td>
-                                                                <td>
-                                                                    {request
-                                                                        .service
-                                                                        ?.name ??
-                                                                        'Brak danych'}
-                                                                </td>
-                                                                <td>
-                                                                    {request.reason ??
-                                                                        'Bez powodu'}
-                                                                </td>
-                                                                <td>
-                                                                    {request.requestedAt
-                                                                        ? new Date(
-                                                                              request.requestedAt,
-                                                                          ).toLocaleString(
-                                                                              'pl-PL',
-                                                                          )
-                                                                        : 'Brak danych'}
-                                                                </td>
-                                                            </tr>
-                                                        ),
+                                                        (request) => {
+                                                            const actionState =
+                                                                cancellationRequestActionStateByAppointmentId[
+                                                                    request
+                                                                        .appointmentId
+                                                                ];
+                                                            return (
+                                                                <tr
+                                                                    key={`${request.appointmentId}:${request.requestedAt}`}
+                                                                >
+                                                                    <td>
+                                                                        {request
+                                                                            .client
+                                                                            ?.name ??
+                                                                            'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request.startTime
+                                                                            ? new Date(
+                                                                                  request.startTime,
+                                                                              ).toLocaleString(
+                                                                                  'pl-PL',
+                                                                              )
+                                                                            : 'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request
+                                                                            .service
+                                                                            ?.name ??
+                                                                            'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request.reason ??
+                                                                            'Bez powodu'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request.requestedAt
+                                                                            ? new Date(
+                                                                                  request.requestedAt,
+                                                                              ).toLocaleString(
+                                                                                  'pl-PL',
+                                                                              )
+                                                                            : 'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-outline-danger btn-sm"
+                                                                            disabled={
+                                                                                actionState?.status ===
+                                                                                'pending'
+                                                                            }
+                                                                            onClick={() =>
+                                                                                handleCancelFromRequestQueue(
+                                                                                    request.appointmentId,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {actionState?.status ===
+                                                                            'pending'
+                                                                                ? 'Anulowanie...'
+                                                                                : 'Anuluj wizytę'}
+                                                                        </button>
+                                                                        {actionState?.message ? (
+                                                                            <div
+                                                                                className={`small mt-1 ${
+                                                                                    actionState.status ===
+                                                                                    'error'
+                                                                                        ? 'text-danger'
+                                                                                        : 'text-success'
+                                                                                }`}
+                                                                            >
+                                                                                {
+                                                                                    actionState.message
+                                                                                }
+                                                                            </div>
+                                                                        ) : null}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        },
                                                     )}
                                                 </tbody>
                                             </table>
