@@ -11,7 +11,7 @@ interface Props {
 const links: { href: Route; label: string; testId: string }[] = [
     { href: '/dashboard', label: 'Pulpit', testId: 'nav-home' },
     {
-        href: '/appointments',
+        href: '/calendar?view=client' as Route,
         label: 'Moje wizyty',
         testId: 'nav-appointments',
     },
