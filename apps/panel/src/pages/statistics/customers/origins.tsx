@@ -204,8 +204,7 @@ export default function ClientOriginsPage() {
                                                                               0,
                                                                       ) || 0;
                                                             return `${amount} klientów`;
-                                                        }
-                                                        }
+                                                        }}
                                                     />
                                                 </PieChart>
                                             </ResponsiveContainer>
@@ -256,8 +255,7 @@ export default function ClientOriginsPage() {
                                                                               0,
                                                                       ) || 0;
                                                             return `${amount} klientów`;
-                                                        }
-                                                        }
+                                                        }}
                                                     />
                                                     <Bar
                                                         dataKey="count"

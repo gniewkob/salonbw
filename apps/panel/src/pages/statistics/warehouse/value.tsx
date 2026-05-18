@@ -224,8 +224,7 @@ export default function WarehouseValuePage() {
                                                             return formatCurrency(
                                                                 amount,
                                                             );
-                                                        }
-                                                        }
+                                                        }}
                                                     />
                                                 </PieChart>
                                             </ResponsiveContainer>
