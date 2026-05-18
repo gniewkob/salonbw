@@ -86,7 +86,9 @@ async function resolveCustomerId(page: any): Promise<number> {
         anchors.map((a) => a.getAttribute('href') || ''),
     );
     for (const href of hrefs) {
-        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        const match = href.match(
+            /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+        );
         if (!match) continue;
         const id = Number(match[1]);
         if (Number.isFinite(id) && id > 0) {
@@ -267,18 +269,27 @@ test.describe('PROD smoke: calendar compat migration', () => {
             });
         });
 
-        await page.route('**/api/customers/statistics/batch**', async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({
-                    items: [
-                        { customerId: 7101, statistics: { noShowVisits: 0 } },
-                        { customerId: 7102, statistics: { noShowVisits: 0 } },
-                    ],
-                }),
-            });
-        });
+        await page.route(
+            '**/api/customers/statistics/batch**',
+            async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        items: [
+                            {
+                                customerId: 7101,
+                                statistics: { noShowVisits: 0 },
+                            },
+                            {
+                                customerId: 7102,
+                                statistics: { noShowVisits: 0 },
+                            },
+                        ],
+                    }),
+                });
+            },
+        );
 
         await page.route('**/api/appointments/*/status', async (route) => {
             statusMutations += 1;
@@ -320,9 +331,9 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await expect
             .poll(() => statusMutations, { timeout: 20_000 })
             .toBeGreaterThan(0);
-        expect(statusPayloads.some((item) => item.status === 'in_progress')).toBe(
-            true,
-        );
+        expect(
+            statusPayloads.some((item) => item.status === 'in_progress'),
+        ).toBe(true);
 
         const activeOpenButton = page
             .locator('tr', { hasText: 'Klient Aktywny' })
@@ -344,6 +355,125 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await archiveOpenButton.click();
         await expect(page).toHaveURL(/\/calendar\?.*appointmentId=9102/);
         expect(statusMutations).toBe(mutationsBeforeArchiveClick);
+    });
+
+    test('client calendar smoke: own appointments only, readonly details, no mutations', async ({
+        page,
+    }) => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayDate = `${yyyy}-${mm}-${dd}`;
+
+        const calendarEvents = [
+            {
+                id: 9201,
+                type: 'appointment',
+                title: 'Wizyta klienta aktywna',
+                startTime: `${todayDate}T09:00:00.000Z`,
+                endTime: `${todayDate}T09:45:00.000Z`,
+                employeeId: 2,
+                employeeName: 'Anna',
+                clientId: 501,
+                clientName: 'Klient Testowy',
+                serviceId: 1201,
+                serviceName: 'Strzyżenie klient',
+                status: 'scheduled',
+            },
+            {
+                id: 9202,
+                type: 'appointment',
+                title: 'Wizyta klienta archiwalna',
+                startTime: `2020-01-01T10:00:00.000Z`,
+                endTime: `2020-01-01T10:45:00.000Z`,
+                employeeId: 3,
+                employeeName: 'Ewa',
+                clientId: 501,
+                clientName: 'Klient Testowy',
+                serviceId: 1202,
+                serviceName: 'Koloryzacja klient',
+                status: 'completed',
+            },
+            {
+                id: 9203,
+                type: 'appointment',
+                title: 'Wizyta innego klienta',
+                startTime: `${todayDate}T11:00:00.000Z`,
+                endTime: `${todayDate}T11:45:00.000Z`,
+                employeeId: 4,
+                employeeName: 'Marta',
+                clientId: 999,
+                clientName: 'Inny Klient',
+                serviceId: 1203,
+                serviceName: 'Usługa innego klienta',
+                status: 'scheduled',
+            },
+        ];
+
+        let mutationCalls = 0;
+
+        await page.route('**/api/users/profile', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    id: 501,
+                    email: 'client-smoke@test.local',
+                    name: 'Client Smoke',
+                    role: 'client',
+                }),
+            });
+        });
+
+        await page.route('**/api/calendar/events**', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    events: calendarEvents,
+                    employees: [
+                        { id: 2, name: 'Anna' },
+                        { id: 3, name: 'Ewa' },
+                        { id: 4, name: 'Marta' },
+                    ],
+                    dateRange: { start: todayDate, end: todayDate },
+                }),
+            });
+        });
+
+        await page.route('**/api/appointments/**', async (route) => {
+            const method = route.request().method();
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                mutationCalls += 1;
+            }
+            await route.continue();
+        });
+
+        await login(page);
+        await page.goto('/calendar?view=client');
+        await page.waitForLoadState('domcontentloaded');
+
+        await expect(
+            page.locator('[data-testid="calendar-page"]'),
+        ).toBeVisible();
+        await expect(page.locator('text=Nadchodzace wizyty')).toBeVisible();
+        await expect(page.locator('text=Historia wizyt')).toBeVisible();
+        await expect(page.locator('text=Nowa wizyta')).toHaveCount(0);
+
+        await expect(page.locator('text=Strzyżenie klient')).toBeVisible();
+        await expect(page.locator('text=Koloryzacja klient')).toBeVisible();
+        await expect(page.locator('text=Usługa innego klienta')).toHaveCount(0);
+
+        await page.getByRole('button', { name: /Koloryzacja klient/i }).click();
+        await expect(
+            page.locator('[data-testid="client-appointment-details"]'),
+        ).toContainText('Szczegoly wizyty (tylko odczyt)');
+        await expect(
+            page.locator('[data-testid="client-appointment-details"]'),
+        ).toContainText('Koloryzacja klient');
+
+        expect(mutationCalls).toBe(0);
     });
 
     test('calendar reception shows neutral fallback when operational-insights is unavailable', async ({
@@ -626,7 +756,9 @@ test.describe('PROD smoke: calendar compat migration', () => {
         await expect(
             page.locator('[data-testid="follow-up-audit-page"]'),
         ).toBeVisible();
-        await expect(page.locator('text=Akcje follow-up łącznie')).toBeVisible();
+        await expect(
+            page.locator('text=Akcje follow-up łącznie'),
+        ).toBeVisible();
         await expect(page.locator('text=4')).toBeVisible();
 
         await page.click('button:has-text("Odśwież")');
@@ -706,6 +838,8 @@ test.describe('PROD smoke: calendar compat migration', () => {
 
         await appointmentLink.click();
         await expect(page).toHaveURL(/\/calendar\?appointmentId=123$/);
-        expect(followUpUrls).toContain(expect.stringContaining(followUpEndpoint));
+        expect(followUpUrls).toContain(
+            expect.stringContaining(followUpEndpoint),
+        );
     });
 });
