@@ -6,6 +6,7 @@ interface ClientAppointmentHistoryViewProps {
     futureAppointments: Appointment[];
     archivedAppointments: Appointment[];
     onDateChange: (nextDate: Date) => void;
+    onRequestCancellation?: (appointmentId: number) => Promise<void>;
 }
 
 function formatAppointmentDate(date: string): string {
@@ -20,10 +21,19 @@ export default function ClientAppointmentHistoryView({
     futureAppointments,
     archivedAppointments,
     onDateChange,
+    onRequestCancellation,
 }: ClientAppointmentHistoryViewProps) {
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<
         number | null
     >(null);
+    const [pendingRequestId, setPendingRequestId] = useState<number | null>(
+        null,
+    );
+    const [requestState, setRequestState] = useState<{
+        kind: 'success' | 'error';
+        appointmentId: number;
+        message: string;
+    } | null>(null);
 
     const appointmentsById = useMemo(() => {
         const map = new Map<number, Appointment>();
@@ -46,6 +56,30 @@ export default function ClientAppointmentHistoryView({
         if (appointmentsById.has(selectedAppointmentId)) return;
         setSelectedAppointmentId(null);
     }, [appointmentsById, selectedAppointmentId]);
+
+    const handleRequestCancellation = async (appointmentId: number) => {
+        if (!onRequestCancellation) return;
+        setPendingRequestId(appointmentId);
+        setRequestState(null);
+        try {
+            await onRequestCancellation(appointmentId);
+            setRequestState({
+                kind: 'success',
+                appointmentId,
+                message:
+                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+            });
+        } catch {
+            setRequestState({
+                kind: 'error',
+                appointmentId,
+                message:
+                    'Nie udalo sie wyslac prosby o anulowanie. Sprobuj ponownie.',
+            });
+        } finally {
+            setPendingRequestId(null);
+        }
+    };
 
     return (
         <div className="d-flex flex-column gap-3">
@@ -83,22 +117,60 @@ export default function ClientAppointmentHistoryView({
                         ) : (
                             <div className="d-flex flex-column gap-2">
                                 {futureAppointments.map((appointment) => (
-                                    <button
+                                    <div
                                         key={appointment.id}
-                                        type="button"
-                                        className="btn btn-outline-secondary btn-sm text-start"
-                                        onClick={() =>
-                                            setSelectedAppointmentId(
-                                                appointment.id,
-                                            )
-                                        }
+                                        className="d-flex flex-column gap-2 border rounded p-2"
                                     >
-                                        {appointment.service?.name ?? 'Wizyta'}{' '}
-                                        -{' '}
-                                        {formatAppointmentDate(
-                                            appointment.startTime,
-                                        )}
-                                    </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm text-start"
+                                            onClick={() =>
+                                                setSelectedAppointmentId(
+                                                    appointment.id,
+                                                )
+                                            }
+                                        >
+                                            {appointment.service?.name ??
+                                                'Wizyta'}{' '}
+                                            -{' '}
+                                            {formatAppointmentDate(
+                                                appointment.startTime,
+                                            )}
+                                        </button>
+                                        {onRequestCancellation ? (
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-danger btn-sm align-self-start"
+                                                onClick={() =>
+                                                    void handleRequestCancellation(
+                                                        appointment.id,
+                                                    )
+                                                }
+                                                disabled={
+                                                    pendingRequestId ===
+                                                    appointment.id
+                                                }
+                                            >
+                                                {pendingRequestId ===
+                                                appointment.id
+                                                    ? 'Wysylanie...'
+                                                    : 'Popros o anulowanie'}
+                                            </button>
+                                        ) : null}
+                                        {requestState?.appointmentId ===
+                                        appointment.id ? (
+                                            <p
+                                                className={`small mb-0 ${
+                                                    requestState.kind ===
+                                                    'success'
+                                                        ? 'text-success'
+                                                        : 'text-danger'
+                                                }`}
+                                            >
+                                                {requestState.message}
+                                            </p>
+                                        ) : null}
+                                    </div>
                                 ))}
                             </div>
                         )}

@@ -34,6 +34,8 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
+import { CreateCancellationRequestDto } from './dto/create-cancellation-request.dto';
+import { GetCancellationRequestsDto } from './dto/get-cancellation-requests.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -59,6 +61,23 @@ export class AppointmentsController {
             });
         }
         return this.appointmentsService.findForUser(user.userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist)
+    @Get('cancellation-requests')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'List client cancellation requests for reception queue',
+    })
+    @ApiResponse({ status: 200, description: 'Cancellation request queue' })
+    listCancellationRequests(
+        @Query(new ValidationPipe({ transform: true }))
+        query: GetCancellationRequestsDto,
+    ) {
+        return this.appointmentsService.listCancellationRequests(
+            query.limit ?? 50,
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -146,6 +165,40 @@ export class AppointmentsController {
             throw new ForbiddenException();
         }
         return this.appointmentsService.cancel(id, { id: user.userId } as User);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client)
+    @Post(':id/cancellation-request')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Create client cancellation request for appointment',
+        description:
+            'Records a cancellation request audit event without changing appointment status.',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Cancellation request recorded',
+        type: Appointment,
+    })
+    @ApiResponse({ status: 400, description: 'Invalid cancellation request' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async requestCancellation(
+        @Param('id', ParseIntPipe) id: number,
+        @Body(new ValidationPipe({ transform: true }))
+        body: CreateCancellationRequestDto,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsService.requestCancellation(
+            id,
+            { id: user.userId } as User,
+            body.reason,
+        );
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+        return appointment;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

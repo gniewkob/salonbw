@@ -2,6 +2,7 @@ import {
     ConflictException,
     Injectable,
     BadRequestException,
+    ForbiddenException,
     Inject,
     forwardRef,
 } from '@nestjs/common';
@@ -32,6 +33,7 @@ import { MetricsService } from '../observability/metrics.service';
 import { Optional } from '@nestjs/common';
 import { RetailService } from '../retail/retail.service';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
+import { Log } from '../logs/log.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -290,6 +292,105 @@ export class AppointmentsService {
             }
         }
         return updated;
+    }
+
+    async requestCancellation(
+        id: number,
+        user: User,
+        reason?: string,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+        if (appointment.client.id !== user.id) {
+            throw new ForbiddenException(
+                'Only appointment owner can request cancellation',
+            );
+        }
+        if (appointment.startTime.getTime() <= Date.now()) {
+            throw new BadRequestException(
+                'Cancellation request is allowed only for future appointments',
+            );
+        }
+        if (
+            appointment.status === AppointmentStatus.Cancelled ||
+            appointment.status === AppointmentStatus.Completed
+        ) {
+            throw new BadRequestException(
+                'Cannot request cancellation for completed or cancelled appointment',
+            );
+        }
+
+        await this.safeLog(user, LogAction.APPOINTMENT_CANCELLATION_REQUESTED, {
+            action: 'cancellation_request',
+            id: appointment.id,
+            appointmentId: appointment.id,
+            appointmentStatus: appointment.status,
+            reason: typeof reason === 'string' ? reason.trim() : undefined,
+            entity: 'appointment',
+        });
+
+        return appointment;
+    }
+
+    async listCancellationRequests(limit = 50): Promise<
+        Array<{
+            appointmentId: number;
+            requestedAt: string;
+            reason: string | null;
+            client: { id: number; name: string } | null;
+            service: { id: number; name: string } | null;
+            startTime: string | null;
+            status: AppointmentStatus | null;
+        }>
+    > {
+        const pageSize = Math.min(Math.max(limit, 1), 200);
+        const logsResult = await this.logService.findAll({
+            action: LogAction.APPOINTMENT_CANCELLATION_REQUESTED,
+            page: 1,
+            limit: pageSize,
+        });
+
+        const rows = await Promise.all(
+            logsResult.data.map(async (log: Log) => {
+                const details =
+                    typeof log.description === 'object' && log.description
+                        ? log.description
+                        : null;
+                const appointmentId = Number(details?.appointmentId);
+                if (!Number.isFinite(appointmentId) || appointmentId <= 0) {
+                    return null;
+                }
+                const appointment = await this.findOne(appointmentId);
+                return {
+                    appointmentId,
+                    requestedAt: log.timestamp.toISOString(),
+                    reason:
+                        typeof details?.reason === 'string'
+                            ? details.reason
+                            : null,
+                    client: appointment?.client
+                        ? {
+                              id: appointment.client.id,
+                              name: appointment.client.name,
+                          }
+                        : null,
+                    service: appointment?.service
+                        ? {
+                              id: appointment.service.id,
+                              name: appointment.service.name,
+                          }
+                        : null,
+                    startTime: appointment?.startTime
+                        ? appointment.startTime.toISOString()
+                        : null,
+                    status: appointment?.status ?? null,
+                };
+            }),
+        );
+
+        return rows.filter((row): row is NonNullable<typeof row> => row !== null);
     }
 
     async completeAppointment(

@@ -114,6 +114,21 @@ interface ReceptionFollowUpAuditResponse {
     byDay: ReceptionFollowUpAuditByDayItem[];
 }
 
+interface CancellationRequestQueueItem {
+    appointmentId: number;
+    requestedAt: string;
+    reason: string | null;
+    client: { id: number; name: string } | null;
+    service: { id: number; name: string } | null;
+    startTime: string | null;
+    status: string | null;
+}
+
+type CancellationRequestActionState = {
+    status: 'pending' | 'success' | 'error';
+    message?: string;
+};
+
 type ReceptionFollowUpAction =
     | 'contacted'
     | 'deferred'
@@ -414,6 +429,54 @@ function normalizeFollowUpAuditResponse(
     };
 }
 
+function normalizeCancellationRequestsResponse(
+    value: unknown,
+): CancellationRequestQueueItem[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value
+        .map((item) => {
+            if (!item || typeof item !== 'object') return null;
+            const row = item as Partial<CancellationRequestQueueItem>;
+            const appointmentId = Number(row.appointmentId);
+            if (!Number.isInteger(appointmentId) || appointmentId <= 0) {
+                return null;
+            }
+            return {
+                appointmentId,
+                requestedAt:
+                    typeof row.requestedAt === 'string' ? row.requestedAt : '',
+                reason:
+                    typeof row.reason === 'string' && row.reason.trim().length
+                        ? row.reason.trim()
+                        : null,
+                client:
+                    row.client &&
+                    typeof row.client.id === 'number' &&
+                    typeof row.client.name === 'string'
+                        ? { id: row.client.id, name: row.client.name }
+                        : null,
+                service:
+                    row.service &&
+                    typeof row.service.id === 'number' &&
+                    typeof row.service.name === 'string'
+                        ? { id: row.service.id, name: row.service.name }
+                        : null,
+                startTime:
+                    typeof row.startTime === 'string' ? row.startTime : null,
+                status: typeof row.status === 'string' ? row.status : null,
+            };
+        })
+        .filter((row): row is CancellationRequestQueueItem => row !== null)
+        .sort(
+            (left, right) =>
+                new Date(right.requestedAt).getTime() -
+                new Date(left.requestedAt).getTime(),
+        );
+}
+
 function toDateParam(value: Date): string {
     const year = value.getFullYear();
     const month = `${value.getMonth() + 1}`.padStart(2, '0');
@@ -623,6 +686,17 @@ export default function CalendarPage() {
     const [followUpAuditError, setFollowUpAuditError] = useState(false);
     const [followUpAuditSummary, setFollowUpAuditSummary] =
         useState<ReceptionFollowUpAuditResponse | null>(null);
+    const [cancellationRequestsLoading, setCancellationRequestsLoading] =
+        useState(false);
+    const [cancellationRequestsError, setCancellationRequestsError] =
+        useState(false);
+    const [cancellationRequests, setCancellationRequests] = useState<
+        CancellationRequestQueueItem[]
+    >([]);
+    const [
+        cancellationRequestActionStateByAppointmentId,
+        setCancellationRequestActionStateByAppointmentId,
+    ] = useState<Record<number, CancellationRequestActionState>>({});
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -1032,6 +1106,80 @@ export default function CalendarPage() {
                         status: 'error',
                         action,
                         message: 'Nie udało się zapisać akcji follow-up.',
+                    },
+                }));
+            });
+    };
+
+    useEffect(() => {
+        if (currentView !== 'reception') {
+            setCancellationRequestsLoading(false);
+            setCancellationRequestsError(false);
+            setCancellationRequests([]);
+            setCancellationRequestActionStateByAppointmentId({});
+            return;
+        }
+
+        let cancelled = false;
+        setCancellationRequestsLoading(true);
+        setCancellationRequestsError(false);
+
+        void apiFetch<CancellationRequestQueueItem[]>(
+            '/appointments/cancellation-requests?limit=50',
+        )
+            .then((response) => {
+                if (cancelled) return;
+                setCancellationRequests(
+                    normalizeCancellationRequestsResponse(response),
+                );
+                setCancellationRequestsError(false);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setCancellationRequests([]);
+                setCancellationRequestsError(true);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setCancellationRequestsLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, currentView]);
+
+    const handleCancelFromRequestQueue = (appointmentId: number) => {
+        setCancellationRequestActionStateByAppointmentId((current) => ({
+            ...current,
+            [appointmentId]: { status: 'pending' },
+        }));
+
+        void apiFetch(`/appointments/${appointmentId}/cancel`, {
+            method: 'PATCH',
+        })
+            .then(() => {
+                setCancellationRequests((current) =>
+                    current.filter(
+                        (request) => request.appointmentId !== appointmentId,
+                    ),
+                );
+                setCancellationRequestActionStateByAppointmentId((current) => ({
+                    ...current,
+                    [appointmentId]: {
+                        status: 'success',
+                        message: 'Wizyta została anulowana.',
+                    },
+                }));
+                void refetch();
+            })
+            .catch(() => {
+                setCancellationRequestActionStateByAppointmentId((current) => ({
+                    ...current,
+                    [appointmentId]: {
+                        status: 'error',
+                        message:
+                            'Nie udało się anulować wizyty. Spróbuj ponownie.',
                     },
                 }));
             });
@@ -1646,6 +1794,147 @@ export default function CalendarPage() {
                                     }
                                     byDay={followUpAuditSummary?.byDay ?? []}
                                 />
+                                <section
+                                    className="border rounded bg-white p-3"
+                                    data-testid="reception-cancellation-requests"
+                                >
+                                    <h2 className="h6 mb-2">
+                                        Prośby o anulowanie
+                                    </h2>
+                                    {cancellationRequestsLoading ? (
+                                        <div className="small text-muted">
+                                            Ładowanie próśb...
+                                        </div>
+                                    ) : null}
+                                    {cancellationRequestsError ? (
+                                        <div className="alert alert-warning py-2 mb-0">
+                                            Nie udało się pobrać próśb o
+                                            anulowanie. Spróbuj odświeżyć widok.
+                                        </div>
+                                    ) : null}
+                                    {!cancellationRequestsLoading &&
+                                    !cancellationRequestsError &&
+                                    cancellationRequests.length === 0 ? (
+                                        <div className="small text-muted">
+                                            Brak aktywnych próśb o anulowanie.
+                                        </div>
+                                    ) : null}
+                                    {!cancellationRequestsLoading &&
+                                    !cancellationRequestsError &&
+                                    cancellationRequests.length > 0 ? (
+                                        <div className="table-responsive">
+                                            <table className="table table-sm align-middle mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">
+                                                            Klient
+                                                        </th>
+                                                        <th scope="col">
+                                                            Termin
+                                                        </th>
+                                                        <th scope="col">
+                                                            Usługa
+                                                        </th>
+                                                        <th scope="col">
+                                                            Powód
+                                                        </th>
+                                                        <th scope="col">
+                                                            Czas zgłoszenia
+                                                        </th>
+                                                        <th scope="col">
+                                                            Akcje
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {cancellationRequests.map(
+                                                        (request) => {
+                                                            const actionState =
+                                                                cancellationRequestActionStateByAppointmentId[
+                                                                    request
+                                                                        .appointmentId
+                                                                ];
+                                                            return (
+                                                                <tr
+                                                                    key={`${request.appointmentId}:${request.requestedAt}`}
+                                                                >
+                                                                    <td>
+                                                                        {request
+                                                                            .client
+                                                                            ?.name ??
+                                                                            'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request.startTime
+                                                                            ? new Date(
+                                                                                  request.startTime,
+                                                                              ).toLocaleString(
+                                                                                  'pl-PL',
+                                                                              )
+                                                                            : 'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request
+                                                                            .service
+                                                                            ?.name ??
+                                                                            'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request.reason ??
+                                                                            'Bez powodu'}
+                                                                    </td>
+                                                                    <td>
+                                                                        {request.requestedAt
+                                                                            ? new Date(
+                                                                                  request.requestedAt,
+                                                                              ).toLocaleString(
+                                                                                  'pl-PL',
+                                                                              )
+                                                                            : 'Brak danych'}
+                                                                    </td>
+                                                                    <td>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-outline-danger btn-sm"
+                                                                            disabled={
+                                                                                actionState?.status ===
+                                                                                'pending'
+                                                                            }
+                                                                            onClick={() =>
+                                                                                handleCancelFromRequestQueue(
+                                                                                    request.appointmentId,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {actionState?.status ===
+                                                                            'pending'
+                                                                                ? 'Anulowanie...'
+                                                                                : 'Anuluj wizytę'}
+                                                                        </button>
+                                                                        {actionState?.message ? (
+                                                                            <div
+                                                                                className={`small mt-1 ${
+                                                                                    actionState.status ===
+                                                                                    'error'
+                                                                                        ? 'text-danger'
+                                                                                        : 'text-success'
+                                                                                }`}
+                                                                            >
+                                                                                {
+                                                                                    actionState.message
+                                                                                }
+                                                                            </div>
+                                                                        ) : null}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        },
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : null}
+                                </section>
                                 <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
                                     <div>
                                         <label
@@ -1866,6 +2155,21 @@ export default function CalendarPage() {
                                         date: toDateParam(nextDate),
                                         view: 'client',
                                     });
+                                }}
+                                onRequestCancellation={async (
+                                    appointmentId,
+                                ) => {
+                                    await apiFetch(
+                                        `/appointments/${appointmentId}/cancellation-request`,
+                                        {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
+                                            body: JSON.stringify({}),
+                                        },
+                                    );
                                 }}
                             />
                         ) : (

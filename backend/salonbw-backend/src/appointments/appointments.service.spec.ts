@@ -299,6 +299,62 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('should record cancellation request for future appointment without status change', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const result = await service.requestCancellation(
+            id,
+            users[0],
+            'Nie mogę przyjść',
+        );
+
+        expect(result?.status).toBe(AppointmentStatus.Scheduled);
+        expect(logActionSpy).toHaveBeenCalledWith(
+            users[0],
+            LogAction.APPOINTMENT_CANCELLATION_REQUESTED,
+            expect.objectContaining({
+                appointmentId: id,
+                action: 'cancellation_request',
+                reason: 'Nie mogę przyjść',
+            }),
+        );
+    });
+
+    it('should reject cancellation request for past appointment', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const now = new Date();
+        now.setHours(now.getHours() - 2);
+        const target = appointments.find((appointment) => appointment.id === id);
+        if (!target) {
+            throw new Error('Appointment not found in test context');
+        }
+        target.startTime = now;
+        target.endTime = now;
+
+        await expect(
+            service.requestCancellation(id, users[0], 'za późno'),
+        ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('should not complete a cancelled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(

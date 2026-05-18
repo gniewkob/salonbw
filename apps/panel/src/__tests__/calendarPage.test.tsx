@@ -465,6 +465,231 @@ describe('CalendarPage', () => {
         );
     });
 
+    it('renders cancellation request queue for reception view', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [{ customerId: 7, statistics: { noShowVisits: 0 } }],
+                };
+            }
+            if (endpoint.startsWith('/appointments/cancellation-requests')) {
+                return [
+                    {
+                        appointmentId: 712,
+                        requestedAt: '2026-05-07T08:30:00.000Z',
+                        reason: 'Kolizja z pracą',
+                        client: { id: 7, name: 'Ola' },
+                        service: { id: 12, name: 'Strzyżenie' },
+                        startTime: '2026-05-08T09:00:00.000Z',
+                        status: 'scheduled',
+                    },
+                ];
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/cancellation-requests?limit=50',
+            ),
+        );
+        expect(screen.getByText('Prośby o anulowanie')).toBeInTheDocument();
+        expect(screen.getByText('Ola')).toBeInTheDocument();
+        expect(screen.getByText('Strzyżenie')).toBeInTheDocument();
+        expect(screen.getByText('Kolizja z pracą')).toBeInTheDocument();
+    });
+
+    it('cancels appointment from reception cancellation queue', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint.startsWith('/customers/statistics/batch')) {
+                return {
+                    items: [{ customerId: 7, statistics: { noShowVisits: 0 } }],
+                };
+            }
+            if (endpoint.startsWith('/appointments/cancellation-requests')) {
+                return [
+                    {
+                        appointmentId: 712,
+                        requestedAt: '2026-05-07T08:30:00.000Z',
+                        reason: 'Kolizja z pracą',
+                        client: { id: 7, name: 'Ola' },
+                        service: { id: 12, name: 'Strzyżenie' },
+                        startTime: '2026-05-08T09:00:00.000Z',
+                        status: 'scheduled',
+                    },
+                ];
+            }
+            if (endpoint === '/appointments/712/cancel') {
+                return {
+                    id: 712,
+                    status: 'cancelled',
+                };
+            }
+            return {
+                id: 42,
+                startTime: '2026-05-07T10:00:00.000Z',
+                endTime: '2026-05-07T10:45:00.000Z',
+                status: 'scheduled',
+            };
+        });
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Anuluj wizytę' }),
+            ).toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj wizytę' }));
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/712/cancel',
+                {
+                    method: 'PATCH',
+                },
+            ),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByRole('button', { name: 'Anuluj wizytę' }),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
+    it('shows neutral error when cancellation from queue fails', async () => {
+        routerMock.query = { view: 'reception' };
+        apiFetchMock.mockImplementation(
+            async (endpoint: string, init?: RequestInit) => {
+                if (endpoint.startsWith('/customers/statistics/batch')) {
+                    return {
+                        items: [
+                            { customerId: 7, statistics: { noShowVisits: 0 } },
+                        ],
+                    };
+                }
+                if (
+                    endpoint.startsWith('/appointments/cancellation-requests')
+                ) {
+                    return [
+                        {
+                            appointmentId: 712,
+                            requestedAt: '2026-05-07T08:30:00.000Z',
+                            reason: 'Kolizja z pracą',
+                            client: { id: 7, name: 'Ola' },
+                            service: { id: 12, name: 'Strzyżenie' },
+                            startTime: '2026-05-08T09:00:00.000Z',
+                            status: 'scheduled',
+                        },
+                    ];
+                }
+                if (
+                    endpoint === '/appointments/712/cancel' &&
+                    init?.method === 'PATCH'
+                ) {
+                    throw new Error('cancel failed');
+                }
+                return {
+                    id: 42,
+                    startTime: '2026-05-07T10:00:00.000Z',
+                    endTime: '2026-05-07T10:45:00.000Z',
+                    status: 'scheduled',
+                };
+            },
+        );
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 200,
+                        type: 'appointment',
+                        title: 'Wizyta recepcja',
+                        startTime: '2026-05-07T09:00:00.000Z',
+                        endTime: '2026-05-07T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 7,
+                        clientName: 'Ola',
+                        status: 'scheduled',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'Anuluj wizytę' }),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Nie udało się anulować wizyty. Spróbuj ponownie.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText('Prośby o anulowanie')).toBeInTheDocument();
+    });
+
     it('renders employee view when view=employee and filters archived by toggle', async () => {
         routerMock.query = { view: 'employee', date: '2099-05-17' };
         useCalendarMock.mockImplementation(() => ({
@@ -692,6 +917,12 @@ describe('CalendarPage', () => {
         expect(screen.getByText(/Strzyzenie/i)).toBeInTheDocument();
         expect(screen.getByText(/Koloryzacja/i)).toBeInTheDocument();
         expect(screen.queryByText(/Makijaz/i)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByRole('button', { name: 'Popros o anulowanie' }),
+        ).toHaveLength(1);
 
         fireEvent.click(screen.getByRole('button', { name: /Koloryzacja/i }));
         expect(
@@ -706,6 +937,100 @@ describe('CalendarPage', () => {
         expect(apiFetchMock).not.toHaveBeenCalledWith(
             expect.stringContaining('/customers/71/statistics'),
         );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+        );
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/701/cancellation-request',
+                expect.objectContaining({
+                    method: 'POST',
+                    body: '{}',
+                }),
+            ),
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText(/Strzyzenie/i)).toBeInTheDocument();
+    });
+
+    it('client cancellation request smoke: request succeeds and archive stays read-only', async () => {
+        authRole = 'client';
+        authUserId = 71;
+        routerMock.query = { view: 'client', date: '2099-05-17' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 801,
+                        type: 'appointment',
+                        title: 'Przyszla',
+                        startTime: '2099-05-17T12:00:00.000Z',
+                        endTime: '2099-05-17T12:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 71,
+                        clientName: 'Klient E',
+                        status: 'scheduled',
+                        serviceId: 40,
+                        serviceName: 'Manicure',
+                    },
+                    {
+                        id: 802,
+                        type: 'appointment',
+                        title: 'Archiwalna',
+                        startTime: '2020-05-17T12:00:00.000Z',
+                        endTime: '2020-05-17T12:45:00.000Z',
+                        employeeId: 3,
+                        employeeName: 'Ola',
+                        clientId: 71,
+                        clientName: 'Klient E',
+                        status: 'completed',
+                        serviceId: 41,
+                        serviceName: 'Pedicure',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        const buttons = screen.getAllByRole('button', {
+            name: 'Popros o anulowanie',
+        });
+        expect(buttons).toHaveLength(1);
+
+        fireEvent.click(buttons[0]);
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/801/cancellation-request',
+                expect.objectContaining({
+                    method: 'POST',
+                    body: '{}',
+                }),
+            ),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText(/Manicure/i)).toBeInTheDocument();
+        expect(screen.getByText(/Pedicure/i)).toBeInTheDocument();
     });
 
     it('shows warning when customer CRM stats are temporarily unavailable', async () => {
