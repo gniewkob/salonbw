@@ -2,7 +2,7 @@ name: Deploy (MyDevil)
 
 concurrency:
   group: deploy-${{ github.ref }}-${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 on:
   push:
@@ -235,8 +235,8 @@ jobs:
         shell: bash
         run: |
           TARGET="${{ github.event.inputs.target }}"
-          # Default to PANEL on push event (if target is empty)
-          if [ -z "$TARGET" ]; then TARGET="panel"; fi
+          # For push events, keep TARGET empty and decide from path filters.
+          # For workflow_dispatch, target is required by workflow inputs.
 
           INPUT_PATH="${{ github.event.inputs.remote_path }}"
           INPUT_APP="${{ github.event.inputs.app_name }}"
@@ -1146,17 +1146,15 @@ jobs:
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
           APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
-          REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
-          echo "Restarting $APP_NAME (Passenger) + touching panel.salon-bw.pl restart.txt as safety net..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME' || echo 'devil restart returned non-zero (continuing)'; touch /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs/tmp/restart.txt && echo 'Touched panel.salon-bw.pl/tmp/restart.txt'"
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
       - name: Restart app (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
-          REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
           echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
       - name: Debug - List Apps
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -1164,7 +1162,10 @@ jobs:
 
       - name: Restart app (backend)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_api }}'"
+        run: |
+          APP_NAME="${{ steps.dest.outputs.app_name_api }}"
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
       - name: Smoke test (backend)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
