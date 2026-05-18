@@ -18,6 +18,7 @@ let authUserId = 99;
 const routerMock = {
     query: { appointmentId: '42' } as Record<string, string>,
     pathname: '/calendar',
+    isReady: true,
     push: pushMock,
 };
 
@@ -174,7 +175,7 @@ describe('CalendarPage', () => {
         originalConsoleError = console.error;
         consoleErrorSpy = jest
             .spyOn(console, 'error')
-            .mockImplementation((...args: unknown[]) => {
+            .mockImplementation((...args: Parameters<typeof console.error>) => {
                 const firstArg = args[0];
                 if (
                     typeof firstArg === 'string' &&
@@ -182,9 +183,7 @@ describe('CalendarPage', () => {
                 ) {
                     return;
                 }
-                originalConsoleError(
-                    ...(args as Parameters<typeof console.error>),
-                );
+                originalConsoleError(firstArg);
             });
         consoleWarnSpy = jest
             .spyOn(console, 'warn')
@@ -194,6 +193,7 @@ describe('CalendarPage', () => {
         useCalendarMock.mockReset();
         authRole = 'admin';
         authUserId = 99;
+        routerMock.isReady = true;
         routerMock.query = { appointmentId: '42' };
         apiFetchMock.mockResolvedValue({
             id: 42,
@@ -319,7 +319,7 @@ describe('CalendarPage', () => {
     });
 
     it('reuses cached customer alert stats and fetches only missing customers', async () => {
-        routerMock.query = {};
+        routerMock.query = { view: 'reception' };
 
         let events = [
             {
@@ -596,6 +596,37 @@ describe('CalendarPage', () => {
         expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
     });
 
+    it('initialises query-state in single pass and avoids enabled fetch before router is ready', async () => {
+        routerMock.isReady = false;
+        routerMock.query = { view: 'week', date: '2099-05-17' };
+
+        const { rerender } = render(<CalendarPage />);
+
+        expect(useCalendarMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                date: '2099-05-17',
+                view: 'week',
+                enabled: false,
+            }),
+        );
+        expect(useCalendarMock).not.toHaveBeenCalledWith(
+            expect.objectContaining({ enabled: true }),
+        );
+
+        routerMock.isReady = true;
+        rerender(<CalendarPage />);
+
+        await waitFor(() =>
+            expect(useCalendarMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    date: '2099-05-17',
+                    view: 'week',
+                    enabled: true,
+                }),
+            ),
+        );
+    });
+
     it('renders read-only client appointment lists and details for view=client', async () => {
         authRole = 'client';
         authUserId = 71;
@@ -669,6 +700,12 @@ describe('CalendarPage', () => {
         expect(
             screen.getByTestId('client-appointment-details'),
         ).toHaveTextContent('Koloryzacja');
+        expect(apiFetchMock).not.toHaveBeenCalledWith(
+            expect.stringContaining('/customers/statistics/batch'),
+        );
+        expect(apiFetchMock).not.toHaveBeenCalledWith(
+            expect.stringContaining('/customers/71/statistics'),
+        );
     });
 
     it('shows warning when customer CRM stats are temporarily unavailable', async () => {
@@ -2412,7 +2449,7 @@ describe('CalendarPage', () => {
     });
 
     it('guards concurrent customer stats fetches and retries after failure', async () => {
-        routerMock.query = {};
+        routerMock.query = { view: 'reception' };
 
         let events = [
             {
@@ -2536,7 +2573,7 @@ describe('CalendarPage', () => {
     });
 
     it('keeps per-customer fallback pending guard when batch request fails', async () => {
-        routerMock.query = {};
+        routerMock.query = { view: 'reception' };
 
         let events = [
             {

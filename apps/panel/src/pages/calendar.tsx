@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import type { ParsedUrlQuery } from 'querystring';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -419,6 +420,122 @@ function toDateParam(value: Date): string {
     return `${year}-${month}-${day}`;
 }
 
+function getFirstQueryValue(
+    value: string | string[] | undefined,
+): string | undefined {
+    return Array.isArray(value) ? value[0] : value;
+}
+
+function parseEmployeeIdsParam(value: string | string[] | undefined): number[] {
+    const idsParam = getFirstQueryValue(value);
+    if (!idsParam) return [];
+    return idsParam
+        .split(',')
+        .map((entry) => Number(entry))
+        .filter((entry) => Number.isInteger(entry) && entry > 0);
+}
+
+type CalendarQueryState = {
+    currentDate: Date;
+    currentView: CalendarViewType;
+    employeeMode: boolean;
+    clientMode: boolean;
+    selectedEmployeeIds: number[];
+};
+
+function deriveCalendarQueryState(query: ParsedUrlQuery): CalendarQueryState {
+    const dateParam = getFirstQueryValue(query.date);
+    const parsedDate = dateParam ? new Date(dateParam) : null;
+    const currentDate =
+        parsedDate && !Number.isNaN(parsedDate.getTime())
+            ? parsedDate
+            : new Date();
+
+    const viewParam = getFirstQueryValue(query.view);
+    if (viewParam === 'client') {
+        return {
+            currentDate,
+            currentView: 'month',
+            employeeMode: false,
+            clientMode: true,
+            selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
+        };
+    }
+    if (viewParam === 'employee' || viewParam === 'staff') {
+        return {
+            currentDate,
+            currentView: 'day',
+            employeeMode: true,
+            clientMode: false,
+            selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
+        };
+    }
+    if (
+        viewParam === 'day' ||
+        viewParam === 'week' ||
+        viewParam === 'month' ||
+        viewParam === 'reception'
+    ) {
+        return {
+            currentDate,
+            currentView: viewParam,
+            employeeMode: false,
+            clientMode: false,
+            selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
+        };
+    }
+
+    return {
+        currentDate,
+        currentView: 'day',
+        employeeMode: false,
+        clientMode: false,
+        selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
+    };
+}
+
+function areIdsEqual(left: number[], right: number[]): boolean {
+    if (left.length !== right.length) return false;
+    for (let index = 0; index < left.length; index += 1) {
+        if (left[index] !== right[index]) return false;
+    }
+    return true;
+}
+
+function CalendarPageShell() {
+    return (
+        <div className="salonbw-page" data-testid="calendar-shell">
+            <div className="px-3 pt-3 pb-2">
+                <div
+                    className="placeholder-glow small text-muted mb-2"
+                    aria-hidden
+                >
+                    <span className="placeholder col-2" />
+                </div>
+                <div
+                    className="d-flex align-items-center justify-content-between gap-2"
+                    aria-hidden
+                >
+                    <span className="placeholder col-7" />
+                    <span className="placeholder col-2" />
+                </div>
+            </div>
+            <div className="px-3 pb-3">
+                <div className="border rounded bg-white p-3">
+                    <div className="small text-muted mb-2">
+                        Initialising calendar engine...
+                    </div>
+                    <div className="placeholder-glow d-flex flex-column gap-2">
+                        <span className="placeholder col-12" />
+                        <span className="placeholder col-12" />
+                        <span className="placeholder col-8" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function areAlertMapsEqual(
     left: ReceptionAlertSeverityByCustomerId,
     right: ReceptionAlertSeverityByCustomerId,
@@ -434,6 +551,8 @@ function areAlertMapsEqual(
 
 export default function CalendarPage() {
     const router = useRouter();
+    const isRouterReady = router.isReady ?? true;
+    const initialQueryState = deriveCalendarQueryState(router.query);
     const { role, user, apiFetch } = useAuth();
     const isMountedRef = useRef(true);
     const visibleCustomerIdsRef = useRef<number[]>([]);
@@ -442,15 +561,22 @@ export default function CalendarPage() {
         Record<number, Exclude<ReceptionAlertSeverity, 'info'> | null>
     >({});
     const pendingCustomerAlertFetchesRef = useRef<Set<number>>(new Set());
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [currentView, setCurrentView] = useState<CalendarViewType>('day');
-    const [employeeMode, setEmployeeMode] = useState(false);
-    const [clientMode, setClientMode] = useState(false);
+    const [currentDate, setCurrentDate] = useState(
+        initialQueryState.currentDate,
+    );
+    const [currentView, setCurrentView] = useState<CalendarViewType>(
+        initialQueryState.currentView,
+    );
+    const [employeeMode, setEmployeeMode] = useState(
+        initialQueryState.employeeMode,
+    );
+    const [clientMode, setClientMode] = useState(initialQueryState.clientMode);
+    const [queryStateReady, setQueryStateReady] = useState(isRouterReady);
     const [employeeArchiveMode, setEmployeeArchiveMode] = useState(false);
     const [clientSelectedAppointmentId, setClientSelectedAppointmentId] =
         useState<number | null>(null);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
-        [],
+        initialQueryState.selectedEmployeeIds,
     );
     const [customerAlertSeverityById, setCustomerAlertSeverityById] =
         useState<ReceptionAlertSeverityByCustomerId>({});
@@ -516,6 +642,7 @@ export default function CalendarPage() {
         view: currentView,
         employeeIds:
             selectedEmployeeIds.length > 0 ? selectedEmployeeIds : undefined,
+        enabled: queryStateReady,
     });
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
 
@@ -969,57 +1096,35 @@ export default function CalendarPage() {
     }, [apiFetch, currentDate, currentView]);
 
     useEffect(() => {
-        const dateParam = Array.isArray(router.query.date)
-            ? router.query.date[0]
-            : router.query.date;
-        if (!dateParam) return;
-        const nextDate = new Date(dateParam);
-        if (!Number.isNaN(nextDate.getTime())) {
-            setCurrentDate(nextDate);
-        }
-    }, [router.query.date]);
-
-    useEffect(() => {
-        const idsParam = Array.isArray(router.query.employeeIds)
-            ? router.query.employeeIds[0]
-            : router.query.employeeIds;
-        if (!idsParam) {
-            setSelectedEmployeeIds([]);
-            return;
-        }
-        const parsed = idsParam
-            .split(',')
-            .map((value) => Number(value))
-            .filter((value) => Number.isInteger(value) && value > 0);
-        setSelectedEmployeeIds(parsed);
-    }, [router.query.employeeIds]);
-
-    useEffect(() => {
-        const viewParam = Array.isArray(router.query.view)
-            ? router.query.view[0]
-            : router.query.view;
-        if (viewParam === 'client') {
-            setClientMode(true);
-            setEmployeeMode(false);
-            setCurrentView('month');
-            return;
-        }
-        setClientMode(false);
-        if (viewParam === 'employee' || viewParam === 'staff') {
-            setEmployeeMode(true);
-            setCurrentView('day');
-            return;
-        }
-        setEmployeeMode(false);
-        if (
-            viewParam === 'day' ||
-            viewParam === 'week' ||
-            viewParam === 'month' ||
-            viewParam === 'reception'
-        ) {
-            setCurrentView(viewParam);
-        }
-    }, [router.query.view]);
+        if (!isRouterReady) return;
+        const next = deriveCalendarQueryState(router.query);
+        setCurrentDate((current) =>
+            toDateParam(current) === toDateParam(next.currentDate)
+                ? current
+                : next.currentDate,
+        );
+        setCurrentView((current) =>
+            current === next.currentView ? current : next.currentView,
+        );
+        setEmployeeMode((current) =>
+            current === next.employeeMode ? current : next.employeeMode,
+        );
+        setClientMode((current) =>
+            current === next.clientMode ? current : next.clientMode,
+        );
+        setSelectedEmployeeIds((current) =>
+            areIdsEqual(current, next.selectedEmployeeIds)
+                ? current
+                : next.selectedEmployeeIds,
+        );
+        setQueryStateReady(true);
+    }, [
+        isRouterReady,
+        router.query,
+        router.query.date,
+        router.query.employeeIds,
+        router.query.view,
+    ]);
 
     useEffect(() => {
         const appointmentIdParam = Array.isArray(router.query.appointmentId)
@@ -1095,7 +1200,17 @@ export default function CalendarPage() {
         visibleCustomerIdsRef.current = visibleCustomerIds;
     }, [visibleCustomerIds]);
 
+    const shouldFetchCustomerAlertStats =
+        currentView === 'reception' && !clientMode;
+
     useEffect(() => {
+        if (!shouldFetchCustomerAlertStats) {
+            setCustomerAlertStatsError(false);
+            setCustomerAlertSeverityById((current) =>
+                Object.keys(current).length === 0 ? current : {},
+            );
+            return;
+        }
         if (visibleCustomerIds.length === 0) {
             setCustomerAlertStatsError(false);
             setCustomerAlertSeverityById((current) =>
@@ -1265,7 +1380,12 @@ export default function CalendarPage() {
                 areAlertMapsEqual(current, nextVisible) ? current : nextVisible,
             );
         });
-    }, [visibleCustomerIds, apiFetch, customerAlertStatsRetryToken]);
+    }, [
+        shouldFetchCustomerAlertStats,
+        visibleCustomerIds,
+        apiFetch,
+        customerAlertStatsRetryToken,
+    ]);
 
     const updateCalendarQuery = (
         next: Partial<{
@@ -1356,7 +1476,10 @@ export default function CalendarPage() {
     if (!role) return null;
 
     return (
-        <RouteGuard permission="nav:calendar">
+        <RouteGuard
+            permission="nav:calendar"
+            loadingFallback={<CalendarPageShell />}
+        >
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="calendar-page">
                     <SalonBreadcrumbs

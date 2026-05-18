@@ -9,9 +9,15 @@ interface Props {
     children: ReactNode;
     roles?: Role[];
     permission?: Permission;
+    loadingFallback?: ReactNode;
 }
 
-export default function RouteGuard({ children, roles, permission }: Props) {
+export default function RouteGuard({
+    children,
+    roles,
+    permission,
+    loadingFallback = null,
+}: Props) {
     const { isAuthenticated, role, initialized } = useAuth();
     const router = useRouter();
 
@@ -26,7 +32,7 @@ export default function RouteGuard({ children, roles, permission }: Props) {
         }
     }, [initialized, isAuthenticated, router]);
 
-    if (!initialized) return null;
+    if (!initialized) return <>{loadingFallback}</>;
     if (!isAuthenticated) return null;
 
     if (

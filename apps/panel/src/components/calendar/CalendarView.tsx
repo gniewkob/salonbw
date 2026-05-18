@@ -16,8 +16,18 @@ import type FullCalendarComponent from '@fullcalendar/react';
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
     loading: () => (
-        <div className="d-flex h-96 align-items-center justify-content-center rounded border border-dashed small text-muted">
-            Initialising calendar engine...
+        <div
+            className="rounded border border-dashed bg-light p-3"
+            style={{ minHeight: 560 }}
+        >
+            <div className="small text-muted mb-3">
+                Initialising calendar engine...
+            </div>
+            <div className="placeholder-glow d-flex flex-column gap-2">
+                <span className="placeholder col-12" />
+                <span className="placeholder col-12" />
+                <span className="placeholder col-8" />
+            </div>
         </div>
     ),
 }) as typeof FullCalendarComponent;
@@ -75,6 +85,7 @@ export default function CalendarView({
     selectedEmployeeIds,
     hideSidebar = false,
 }: CalendarViewProps) {
+    const CALENDAR_MIN_HEIGHT = 560;
     const calendarRef = useRef<FullCalendarComponent | null>(null);
     const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
         null,
@@ -218,72 +229,86 @@ export default function CalendarView({
                         Calendar engine failed to load: {pluginLoadError}
                     </div>
                 ) : loading ? (
-                    <div className="d-flex h-100 align-items-center justify-content-center opacity-50">
-                        Loading appointments...
+                    <div
+                        className="rounded border border-dashed bg-light p-3"
+                        style={{ minHeight: CALENDAR_MIN_HEIGHT }}
+                    >
+                        <div className="small text-muted mb-3">
+                            Loading appointments...
+                        </div>
+                        <div className="placeholder-glow d-flex flex-column gap-2">
+                            <span className="placeholder col-12" />
+                            <span className="placeholder col-12" />
+                            <span className="placeholder col-8" />
+                        </div>
                     </div>
                 ) : calendarPlugins ? (
-                    <FullCalendar
-                        ref={calendarRef}
-                        plugins={calendarPlugins}
-                        initialView={VIEW_MAP[currentView]}
-                        initialDate={currentDate}
-                        events={fullCalendarEvents}
-                        eventContent={(info) => {
-                            const original = info.event.extendedProps
-                                .originalEvent as CalendarEvent;
-                            const alertSeverity =
-                                original.clientId !== undefined
-                                    ? customerAlertSeverityById[
-                                          original.clientId
-                                      ]
-                                    : undefined;
-                            const enrichedEvent: CalendarEvent = {
-                                ...original,
-                                customerAlertSeverity: alertSeverity,
-                                hasCustomerAlerts: Boolean(alertSeverity),
-                            };
-                            const employeeColor =
-                                original.employeeId !== undefined
-                                    ? employees.find(
-                                          (employee) =>
-                                              employee.id ===
-                                              original.employeeId,
-                                      )?.color
-                                    : undefined;
-                            return (
-                                <EventCard
-                                    event={enrichedEvent}
-                                    employeeColor={employeeColor}
-                                    onClick={onEventClick}
-                                />
-                            );
-                        }}
-                        eventClick={(info) =>
-                            onEventClick(
-                                info.event.extendedProps
-                                    .originalEvent as CalendarEvent,
-                            )
-                        }
-                        eventDrop={handleEventDrop}
-                        select={(info) => onDateSelect(info.start, info.end)}
-                        datesSet={handleDatesSet}
-                        selectable
-                        editable
-                        locale="pl"
-                        firstDay={1}
-                        slotMinTime="07:00:00"
-                        slotMaxTime="21:00:00" // source UI usually ends late
-                        slotDuration="00:15:00"
-                        allDaySlot={false}
-                        headerToolbar={{
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'timeGridDay,timeGridWeek,dayGridMonth',
-                        }}
-                        height="auto"
-                        contentHeight="auto"
-                        nowIndicator
-                    />
+                    <div style={{ minHeight: CALENDAR_MIN_HEIGHT }}>
+                        <FullCalendar
+                            ref={calendarRef}
+                            plugins={calendarPlugins}
+                            initialView={VIEW_MAP[currentView]}
+                            initialDate={currentDate}
+                            events={fullCalendarEvents}
+                            eventContent={(info) => {
+                                const original = info.event.extendedProps
+                                    .originalEvent as CalendarEvent;
+                                const alertSeverity =
+                                    original.clientId !== undefined
+                                        ? customerAlertSeverityById[
+                                              original.clientId
+                                          ]
+                                        : undefined;
+                                const enrichedEvent: CalendarEvent = {
+                                    ...original,
+                                    customerAlertSeverity: alertSeverity,
+                                    hasCustomerAlerts: Boolean(alertSeverity),
+                                };
+                                const employeeColor =
+                                    original.employeeId !== undefined
+                                        ? employees.find(
+                                              (employee) =>
+                                                  employee.id ===
+                                                  original.employeeId,
+                                          )?.color
+                                        : undefined;
+                                return (
+                                    <EventCard
+                                        event={enrichedEvent}
+                                        employeeColor={employeeColor}
+                                        onClick={onEventClick}
+                                    />
+                                );
+                            }}
+                            eventClick={(info) =>
+                                onEventClick(
+                                    info.event.extendedProps
+                                        .originalEvent as CalendarEvent,
+                                )
+                            }
+                            eventDrop={handleEventDrop}
+                            select={(info) =>
+                                onDateSelect(info.start, info.end)
+                            }
+                            datesSet={handleDatesSet}
+                            selectable
+                            editable
+                            locale="pl"
+                            firstDay={1}
+                            slotMinTime="07:00:00"
+                            slotMaxTime="21:00:00" // source UI usually ends late
+                            slotDuration="00:15:00"
+                            allDaySlot={false}
+                            headerToolbar={{
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: 'timeGridDay,timeGridWeek,dayGridMonth',
+                            }}
+                            height="auto"
+                            contentHeight="auto"
+                            nowIndicator
+                        />
+                    </div>
                 ) : (
                     <div className="p-3 text-center text-muted">
                         Initializing...
