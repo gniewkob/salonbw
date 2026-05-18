@@ -13,6 +13,8 @@ const apiFetchMock = jest.fn();
 let consoleErrorSpy: jest.SpyInstance;
 let originalConsoleError: typeof console.error;
 let consoleWarnSpy: jest.SpyInstance;
+let authRole: 'admin' | 'client' | 'employee' | 'receptionist' = 'admin';
+let authUserId = 99;
 const routerMock = {
     query: { appointmentId: '42' } as Record<string, string>,
     pathname: '/calendar',
@@ -25,8 +27,13 @@ jest.mock('next/router', () => ({
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
-        role: 'admin',
-        user: { id: 99, role: 'admin', email: 'admin@test.local', name: 'A' },
+        role: authRole,
+        user: {
+            id: authUserId,
+            role: authRole,
+            email: 'admin@test.local',
+            name: 'A',
+        },
         apiFetch: apiFetchMock,
     }),
 }));
@@ -185,6 +192,8 @@ describe('CalendarPage', () => {
         pushMock.mockReset();
         apiFetchMock.mockReset();
         useCalendarMock.mockReset();
+        authRole = 'admin';
+        authUserId = 99;
         routerMock.query = { appointmentId: '42' };
         apiFetchMock.mockResolvedValue({
             id: 42,
@@ -585,6 +594,81 @@ describe('CalendarPage', () => {
         expect(screen.getByText('staff-readonly:no')).toBeInTheDocument();
         expect(screen.queryByText(/reception-view:/i)).not.toBeInTheDocument();
         expect(screen.queryByText('calendar-view')).not.toBeInTheDocument();
+    });
+
+    it('renders read-only client appointment lists and details for view=client', async () => {
+        authRole = 'client';
+        authUserId = 71;
+        routerMock.query = { view: 'client', date: '2099-05-17' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 701,
+                        type: 'appointment',
+                        title: 'Przyszla',
+                        startTime: '2099-05-17T09:00:00.000Z',
+                        endTime: '2099-05-17T09:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 71,
+                        clientName: 'Klient E',
+                        status: 'scheduled',
+                        serviceId: 30,
+                        serviceName: 'Strzyzenie',
+                    },
+                    {
+                        id: 702,
+                        type: 'appointment',
+                        title: 'Archiwalna',
+                        startTime: '2020-05-17T09:00:00.000Z',
+                        endTime: '2020-05-17T09:45:00.000Z',
+                        employeeId: 3,
+                        employeeName: 'Ola',
+                        clientId: 71,
+                        clientName: 'Klient E',
+                        status: 'completed',
+                        serviceId: 31,
+                        serviceName: 'Koloryzacja',
+                    },
+                    {
+                        id: 703,
+                        type: 'appointment',
+                        title: 'Inny klient',
+                        startTime: '2099-05-17T10:00:00.000Z',
+                        endTime: '2099-05-17T10:45:00.000Z',
+                        employeeId: 3,
+                        employeeName: 'Ola',
+                        clientId: 999,
+                        clientName: 'Klient X',
+                        status: 'scheduled',
+                        serviceId: 32,
+                        serviceName: 'Makijaz',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        expect(screen.getByText('Nadchodzace wizyty')).toBeInTheDocument();
+        expect(screen.getByText('Historia wizyt')).toBeInTheDocument();
+        expect(screen.queryByText('Nowa wizyta')).not.toBeInTheDocument();
+        expect(screen.getByText(/Strzyzenie/i)).toBeInTheDocument();
+        expect(screen.getByText(/Koloryzacja/i)).toBeInTheDocument();
+        expect(screen.queryByText(/Makijaz/i)).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: /Koloryzacja/i }));
+        expect(
+            screen.getByTestId('client-appointment-details'),
+        ).toHaveTextContent('Szczegoly wizyty (tylko odczyt)');
+        expect(
+            screen.getByTestId('client-appointment-details'),
+        ).toHaveTextContent('Koloryzacja');
     });
 
     it('shows warning when customer CRM stats are temporarily unavailable', async () => {

@@ -445,7 +445,10 @@ export default function CalendarPage() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
     const [employeeMode, setEmployeeMode] = useState(false);
+    const [clientMode, setClientMode] = useState(false);
     const [employeeArchiveMode, setEmployeeArchiveMode] = useState(false);
+    const [clientSelectedAppointmentId, setClientSelectedAppointmentId] =
+        useState<number | null>(null);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
         [],
     );
@@ -668,6 +671,55 @@ export default function CalendarPage() {
             return employeeArchiveMode ? isArchived : !isArchived;
         });
     }, [appointmentsById, employeeArchiveMode, role, user?.id]);
+
+    const clientAppointments = useMemo(() => {
+        const list = Array.from(appointmentsById.values());
+        if (role !== 'client' || !user?.id) {
+            return [];
+        }
+        return list.filter((appointment) => appointment.client?.id === user.id);
+    }, [appointmentsById, role, user?.id]);
+
+    const clientFutureAppointments = useMemo(() => {
+        const now = Date.now();
+        const archiveStatuses = new Set(['completed', 'cancelled', 'no_show']);
+        return clientAppointments
+            .filter((appointment) => {
+                const status = appointment.status ?? 'scheduled';
+                const startTs = new Date(appointment.startTime).getTime();
+                return !archiveStatuses.has(status) && startTs >= now;
+            })
+            .sort(
+                (left, right) =>
+                    new Date(left.startTime).getTime() -
+                    new Date(right.startTime).getTime(),
+            );
+    }, [clientAppointments]);
+
+    const clientArchivedAppointments = useMemo(() => {
+        const now = Date.now();
+        const archiveStatuses = new Set(['completed', 'cancelled', 'no_show']);
+        return clientAppointments
+            .filter((appointment) => {
+                const status = appointment.status ?? 'scheduled';
+                const startTs = new Date(appointment.startTime).getTime();
+                return archiveStatuses.has(status) || startTs < now;
+            })
+            .sort(
+                (left, right) =>
+                    new Date(right.startTime).getTime() -
+                    new Date(left.startTime).getTime(),
+            );
+    }, [clientAppointments]);
+
+    const clientSelectedAppointment = useMemo(() => {
+        if (!clientSelectedAppointmentId) return null;
+        return (
+            clientAppointments.find(
+                (appointment) => appointment.id === clientSelectedAppointmentId,
+            ) ?? null
+        );
+    }, [clientAppointments, clientSelectedAppointmentId]);
 
     const receptionDailySummary = useMemo(() => {
         const allAppointments = Array.from(appointmentsById.values());
@@ -946,6 +998,13 @@ export default function CalendarPage() {
         const viewParam = Array.isArray(router.query.view)
             ? router.query.view[0]
             : router.query.view;
+        if (viewParam === 'client') {
+            setClientMode(true);
+            setEmployeeMode(false);
+            setCurrentView('month');
+            return;
+        }
+        setClientMode(false);
         if (viewParam === 'employee' || viewParam === 'staff') {
             setEmployeeMode(true);
             setCurrentView('day');
@@ -1211,7 +1270,7 @@ export default function CalendarPage() {
     const updateCalendarQuery = (
         next: Partial<{
             date: string;
-            view: CalendarViewType | 'employee';
+            view: CalendarViewType | 'employee' | 'staff' | 'client';
             employeeIds: number[];
         }>,
     ) => {
@@ -1310,20 +1369,22 @@ export default function CalendarPage() {
                             Natywny kalendarz Booksy-like (beta). Legacy:{' '}
                             <Link href="/calendar">/calendar</Link>
                         </div>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() =>
-                                setDrawer({
-                                    open: true,
-                                    mode: 'create',
-                                    appointment: null,
-                                    initialStartTime: new Date(),
-                                })
-                            }
-                        >
-                            Nowa wizyta
-                        </button>
+                        {role !== 'client' ? (
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() =>
+                                    setDrawer({
+                                        open: true,
+                                        mode: 'create',
+                                        appointment: null,
+                                        initialStartTime: new Date(),
+                                    })
+                                }
+                            >
+                                Nowa wizyta
+                            </button>
+                        ) : null}
                     </div>
 
                     <div className="px-3 pb-3">
@@ -1678,6 +1739,184 @@ export default function CalendarPage() {
                                         openAppointmentDeepLink(id);
                                     }}
                                 />
+                            </div>
+                        ) : clientMode ? (
+                            <div className="d-flex flex-column gap-3">
+                                <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
+                                    <div>
+                                        <label
+                                            className="form-label form-label-sm mb-1"
+                                            htmlFor="client-calendar-date"
+                                        >
+                                            Data referencyjna
+                                        </label>
+                                        <input
+                                            id="client-calendar-date"
+                                            type="date"
+                                            className="form-control form-control-sm"
+                                            value={toDateParam(currentDate)}
+                                            onChange={(event) => {
+                                                const nextDate = new Date(
+                                                    `${event.target.value}T00:00:00`,
+                                                );
+                                                if (
+                                                    Number.isNaN(
+                                                        nextDate.getTime(),
+                                                    )
+                                                )
+                                                    return;
+                                                setCurrentDate(nextDate);
+                                                updateCalendarQuery({
+                                                    date: toDateParam(nextDate),
+                                                    view: 'client',
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="row g-3">
+                                    <section className="col-12 col-lg-6">
+                                        <div className="border rounded bg-white p-3 h-100">
+                                            <h3 className="h6 mb-2">
+                                                Nadchodzace wizyty
+                                            </h3>
+                                            {clientFutureAppointments.length ===
+                                            0 ? (
+                                                <p className="text-muted small mb-0">
+                                                    Brak nadchodzacych wizyt.
+                                                </p>
+                                            ) : (
+                                                <div className="d-flex flex-column gap-2">
+                                                    {clientFutureAppointments.map(
+                                                        (appointment) => (
+                                                            <button
+                                                                key={
+                                                                    appointment.id
+                                                                }
+                                                                type="button"
+                                                                className="btn btn-outline-secondary btn-sm text-start"
+                                                                onClick={() =>
+                                                                    setClientSelectedAppointmentId(
+                                                                        appointment.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {appointment
+                                                                    .service
+                                                                    ?.name ??
+                                                                    'Wizyta'}{' '}
+                                                                -{' '}
+                                                                {new Date(
+                                                                    appointment.startTime,
+                                                                ).toLocaleString(
+                                                                    'pl-PL',
+                                                                    {
+                                                                        dateStyle:
+                                                                            'medium',
+                                                                        timeStyle:
+                                                                            'short',
+                                                                    },
+                                                                )}
+                                                            </button>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                    <section className="col-12 col-lg-6">
+                                        <div className="border rounded bg-white p-3 h-100">
+                                            <h3 className="h6 mb-2">
+                                                Historia wizyt
+                                            </h3>
+                                            {clientArchivedAppointments.length ===
+                                            0 ? (
+                                                <p className="text-muted small mb-0">
+                                                    Brak wizyt archiwalnych.
+                                                </p>
+                                            ) : (
+                                                <div className="d-flex flex-column gap-2">
+                                                    {clientArchivedAppointments.map(
+                                                        (appointment) => (
+                                                            <button
+                                                                key={
+                                                                    appointment.id
+                                                                }
+                                                                type="button"
+                                                                className="btn btn-outline-secondary btn-sm text-start"
+                                                                onClick={() =>
+                                                                    setClientSelectedAppointmentId(
+                                                                        appointment.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {appointment
+                                                                    .service
+                                                                    ?.name ??
+                                                                    'Wizyta'}{' '}
+                                                                -{' '}
+                                                                {new Date(
+                                                                    appointment.startTime,
+                                                                ).toLocaleString(
+                                                                    'pl-PL',
+                                                                    {
+                                                                        dateStyle:
+                                                                            'medium',
+                                                                        timeStyle:
+                                                                            'short',
+                                                                    },
+                                                                )}
+                                                            </button>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+                                <section
+                                    className="border rounded bg-white p-3"
+                                    data-testid="client-appointment-details"
+                                >
+                                    <h3 className="h6 mb-2">
+                                        Szczegoly wizyty (tylko odczyt)
+                                    </h3>
+                                    {clientSelectedAppointment ? (
+                                        <dl className="row mb-0">
+                                            <dt className="col-sm-3">Usluga</dt>
+                                            <dd className="col-sm-9">
+                                                {clientSelectedAppointment
+                                                    .service?.name ?? '-'}
+                                            </dd>
+                                            <dt className="col-sm-3">Status</dt>
+                                            <dd className="col-sm-9">
+                                                {clientSelectedAppointment.status ??
+                                                    'scheduled'}
+                                            </dd>
+                                            <dt className="col-sm-3">Termin</dt>
+                                            <dd className="col-sm-9">
+                                                {new Date(
+                                                    clientSelectedAppointment.startTime,
+                                                ).toLocaleString('pl-PL', {
+                                                    dateStyle: 'medium',
+                                                    timeStyle: 'short',
+                                                })}
+                                            </dd>
+                                            <dt className="col-sm-3">
+                                                Pracownik
+                                            </dt>
+                                            <dd className="col-sm-9">
+                                                {clientSelectedAppointment
+                                                    .employee?.name ?? '-'}
+                                            </dd>
+                                        </dl>
+                                    ) : (
+                                        <p className="text-muted small mb-0">
+                                            Wybierz wizyte z listy, aby zobaczyc
+                                            szczegoly.
+                                        </p>
+                                    )}
+                                </section>
                             </div>
                         ) : (
                             <CalendarView
