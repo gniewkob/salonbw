@@ -28,6 +28,7 @@ interface ReminderResult {
 @Injectable()
 export class AutomaticReminderService {
     private readonly logger = new Logger(AutomaticReminderService.name);
+    private readonly reminderConcurrency: number;
 
     constructor(
         @InjectRepository(Appointment)
@@ -37,7 +38,13 @@ export class AutomaticReminderService {
         private readonly smsService: SmsService,
         private readonly emailsService: EmailsService,
         private readonly config: ConfigService,
-    ) {}
+    ) {
+        const configured = Number(this.config.get<string>('REMINDER_CONCURRENCY', '5'));
+        this.reminderConcurrency =
+            Number.isFinite(configured) && configured > 0
+                ? Math.floor(configured)
+                : 5;
+    }
 
     /**
      * Run every hour at minute 0
@@ -79,12 +86,11 @@ export class AutomaticReminderService {
             `Found ${appointments.length} appointments needing reminders`,
         );
 
-        const results: ReminderResult[] = [];
-
-        for (const appointment of appointments) {
-            const result = await this.processAppointmentReminder(appointment);
-            results.push(result);
-        }
+        const results = await this.mapWithConcurrency(
+            appointments,
+            this.reminderConcurrency,
+            (appointment) => this.processAppointmentReminder(appointment),
+        );
 
         // Log summary
         const successful = results.filter(
@@ -274,12 +280,36 @@ export class AutomaticReminderService {
             `Manual trigger: Found ${appointments.length} appointments in next ${hours} hours`,
         );
 
-        const results: ReminderResult[] = [];
-        for (const appointment of appointments) {
-            const result = await this.processAppointmentReminder(appointment);
-            results.push(result);
+        return this.mapWithConcurrency(
+            appointments,
+            this.reminderConcurrency,
+            (appointment) => this.processAppointmentReminder(appointment),
+        );
+    }
+
+    private async mapWithConcurrency<TInput, TResult>(
+        items: TInput[],
+        concurrency: number,
+        mapper: (item: TInput) => Promise<TResult>,
+    ): Promise<TResult[]> {
+        if (items.length === 0) {
+            return [];
         }
 
+        const safeConcurrency = Math.max(1, Math.min(concurrency, items.length));
+        const results = new Array<TResult>(items.length);
+        let cursor = 0;
+
+        const worker = async (): Promise<void> => {
+            while (cursor < items.length) {
+                const index = cursor++;
+                results[index] = await mapper(items[index]);
+            }
+        };
+
+        await Promise.all(
+            Array.from({ length: safeConcurrency }, () => worker()),
+        );
         return results;
     }
 
