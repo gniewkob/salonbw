@@ -56,6 +56,26 @@ pnpm --filter @salonbw/panel lint
 
 All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are populated (SSH key, mydevil host/user, optional API URLs, `NPM_TOKEN`).
 
+### 1.0b Env sourcing format for production smoke
+
+Use shell-compatible `KEY=value` entries in local env files.
+
+Required syntax rules:
+- use lowercase `export` when exporting variables (`export PANEL_LOGIN_EMAIL=...`),
+- do not use uppercase `Export` (invalid in bash/zsh and breaks `source .env`),
+- never commit secrets; keep real values only in local/private env files.
+
+Recommended run pattern (repo root):
+
+```bash
+set -a
+source .env
+set +a
+pnpm --filter @salonbw/panel exec playwright test tests/e2e/prod-calendar-smoke.spec.ts --project=desktop-1366
+```
+
+If your env file includes non-shell lines, fix the file format first (or export variables manually in the shell) before running smoke tests.
+
 ## 1.1 Production smoke: Reception Insights (`calendar`)
 
 Scope:
