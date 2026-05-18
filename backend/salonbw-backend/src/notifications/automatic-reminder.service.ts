@@ -39,7 +39,9 @@ export class AutomaticReminderService {
         private readonly emailsService: EmailsService,
         private readonly config: ConfigService,
     ) {
-        const configured = Number(this.config.get<string>('REMINDER_CONCURRENCY', '5'));
+        const configured = Number(
+            this.config.get<string>('REMINDER_CONCURRENCY', '5'),
+        );
         this.reminderConcurrency =
             Number.isFinite(configured) && configured > 0
                 ? Math.floor(configured)
@@ -296,7 +298,10 @@ export class AutomaticReminderService {
             return [];
         }
 
-        const safeConcurrency = Math.max(1, Math.min(concurrency, items.length));
+        const safeConcurrency = Math.max(
+            1,
+            Math.min(concurrency, items.length),
+        );
         const results = new Array<TResult>(items.length);
         let cursor = 0;
 

@@ -2,6 +2,7 @@ import {
     ConflictException,
     Injectable,
     BadRequestException,
+    ForbiddenException,
     Inject,
     forwardRef,
 } from '@nestjs/common';
@@ -290,6 +291,46 @@ export class AppointmentsService {
             }
         }
         return updated;
+    }
+
+    async requestCancellation(
+        id: number,
+        user: User,
+        reason?: string,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+        if (appointment.client.id !== user.id) {
+            throw new ForbiddenException(
+                'Only appointment owner can request cancellation',
+            );
+        }
+        if (appointment.startTime.getTime() <= Date.now()) {
+            throw new BadRequestException(
+                'Cancellation request is allowed only for future appointments',
+            );
+        }
+        if (
+            appointment.status === AppointmentStatus.Cancelled ||
+            appointment.status === AppointmentStatus.Completed
+        ) {
+            throw new BadRequestException(
+                'Cannot request cancellation for completed or cancelled appointment',
+            );
+        }
+
+        await this.safeLog(user, LogAction.APPOINTMENT_CANCELLATION_REQUESTED, {
+            action: 'cancellation_request',
+            id: appointment.id,
+            appointmentId: appointment.id,
+            appointmentStatus: appointment.status,
+            reason: typeof reason === 'string' ? reason.trim() : undefined,
+            entity: 'appointment',
+        });
+
+        return appointment;
     }
 
     async completeAppointment(

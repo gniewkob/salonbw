@@ -44,6 +44,7 @@ d('Appointments integration', () => {
     let clientToken: string;
     let employeeToken: string;
     let otherEmployeeToken: string;
+    let otherClientToken: string;
     let adminToken: string;
     let service: Service;
     let client: User;
@@ -121,6 +122,13 @@ d('Appointments integration', () => {
             role: 'employee',
             commissionBase: 0,
         });
+        const otherClient = await userRepo.save({
+            email: 'client2@example.com',
+            password: 'pass',
+            name: 'Client2',
+            role: 'client',
+            commissionBase: 0,
+        });
         const admin = await userRepo.save({
             email: 'admin@example.com',
             password: 'pass',
@@ -145,6 +153,10 @@ d('Appointments integration', () => {
         );
         otherEmployeeToken = jwt.sign(
             { sub: otherEmployee.id, role: 'employee' },
+            jwtSecret,
+        );
+        otherClientToken = jwt.sign(
+            { sub: otherClient.id, role: 'client' },
             jwtSecret,
         );
         adminToken = jwt.sign({ sub: admin.id, role: 'admin' }, jwtSecret);
@@ -375,6 +387,80 @@ d('Appointments integration', () => {
         await request(server)
             .patch(`/appointments/${appointmentId}/complete`)
             .set('Authorization', `Bearer ${employeeToken}`)
+            .expect(400);
+    });
+
+    it('allows client owner to send cancellation request without changing status', async () => {
+        const startBase = Date.now() + 21 * hour;
+        const start = new Date(startBase).toISOString();
+        const createRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: start,
+            })
+            .expect(201);
+        const appointmentId = (createRes.body as AppointmentResponse).id;
+
+        const requestRes: Response = await request(server)
+            .post(`/appointments/${appointmentId}/cancellation-request`)
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ reason: 'Prosze o anulowanie' })
+            .expect(201);
+
+        expect((requestRes.body as AppointmentResponse).status).toBe(
+            'scheduled',
+        );
+    });
+
+    it('rejects cancellation request from non-owner client and for past appointment', async () => {
+        const startBase = Date.now() + 23 * hour;
+        const start = new Date(startBase).toISOString();
+        const createRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: start,
+            })
+            .expect(201);
+        const appointmentId = (createRes.body as AppointmentResponse).id;
+
+        await request(server)
+            .post(`/appointments/${appointmentId}/cancellation-request`)
+            .set('Authorization', `Bearer ${otherClientToken}`)
+            .send({ reason: 'nie moj termin' })
+            .expect(403);
+
+        const pastStart = new Date(Date.now() - 2 * hour).toISOString();
+        const pastRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .send({
+                clientId: client.id,
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: new Date(Date.now() + 25 * hour).toISOString(),
+            })
+            .expect(201);
+        const pastAppointmentId = (pastRes.body as AppointmentResponse).id;
+
+        await request(server)
+            .patch(`/appointments/${pastAppointmentId}`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                startTime: pastStart,
+                endTime: new Date(Date.now() - hour).toISOString(),
+            })
+            .expect(200);
+
+        await request(server)
+            .post(`/appointments/${pastAppointmentId}/cancellation-request`)
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ reason: 'za późno' })
             .expect(400);
     });
 
