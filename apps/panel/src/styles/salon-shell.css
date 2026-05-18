@@ -2309,7 +2309,12 @@ tr.customer-row:hover .customers-drag-handle {
     font-size: 12px;
 }
 
-/* Topbar renders explicit .caret elements, so suppress framework pseudo-caret. */
+.navbar .e2e-nav-user-dropdown::after {
+    margin-left: 6px;
+    align-self: center;
+    vertical-align: middle;
+}
+
 .navbar .dropdown-menu {
     position: absolute;
     top: 100%;
