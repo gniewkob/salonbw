@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { CORE_VALUES } from '@/config/content';
+import SectionHeader from './SectionHeader';
 import {
     Palette,
     Star,
@@ -29,18 +30,21 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
 
     const activeValue = data.find(v => v.id === active);
 
+    const handleKeyDown = useCallback((e: React.KeyboardEvent, id: string) => {
+        const idx = data.findIndex(v => v.id === id);
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setActive(data[(idx + 1) % data.length]?.id ?? id);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setActive(data[(idx - 1 + data.length) % data.length]?.id ?? id);
+        }
+    }, [data]);
+
     return (
         <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
             <div className="container mx-auto px-4 md:px-8">
-                <div className="text-center mb-14">
-                    <p className="text-xs tracking-widest uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif" }}>
-                        To, w co wierzymy
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: '#0d0d0d' }}>
-                        Nasze wartości
-                    </h2>
-                    <div className="mx-auto mt-4" style={{ width: '40px', height: '2px', background: '#c5a880' }} />
-                </div>
+                <SectionHeader eyebrow="To, w co wierzymy" title="Nasze wartości" />
 
                 {/* Icon grid */}
                 <div
@@ -54,11 +58,14 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                         return (
                             <button
                                 key={value.id}
+                                id={`tab-${value.id}`}
                                 type="button"
                                 role="tab"
                                 aria-selected={isActive}
                                 aria-controls={`tabpanel-${value.id}`}
+                                tabIndex={isActive ? 0 : -1}
                                 onClick={() => setActive(value.id)}
+                                onKeyDown={e => handleKeyDown(e, value.id)}
                                 className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
                                 style={{
                                     background: isActive ? '#0d0d0d' : '#ffffff',
@@ -97,6 +104,7 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                     <div
                         id={`tabpanel-${activeValue.id}`}
                         role="tabpanel"
+                        aria-labelledby={`tab-${activeValue.id}`}
                         className="max-w-2xl mx-auto text-center"
                     >
                         <p className="text-base leading-relaxed" style={{ color: '#4a3f35', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>

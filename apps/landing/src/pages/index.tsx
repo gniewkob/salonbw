@@ -16,6 +16,7 @@ import SalonGallery from '@/components/SalonGallery';
 import PartnerBrands from '@/components/PartnerBrands';
 import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
+import SectionHeader from '@/components/SectionHeader';
 import {
     getHeroSlides,
     getFounderMessage,
@@ -116,15 +117,7 @@ export default function HomePage({ slides, founder, historyItems, coreValues, ga
                 {/* 9. Contact section — dark with gold accents */}
                 <section style={{ background: '#0d0d0d' }} className="py-20 md:py-28">
                     <div className="container mx-auto px-4 md:px-8">
-                        <div className="text-center mb-14">
-                            <p className="text-xs tracking-widest uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif" }}>
-                                Znajdź nas
-                            </p>
-                            <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: '#ffffff' }}>
-                                Kontakt
-                            </h2>
-                            <div className="mx-auto mt-4" style={{ width: '40px', height: '2px', background: '#c5a880' }} />
-                        </div>
+                        <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-5xl mx-auto">
                             {/* Info */}
@@ -170,19 +163,15 @@ export default function HomePage({ slides, founder, historyItems, coreValues, ga
                                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                     <a
                                         href={bookingUrl}
-                                        className="px-8 py-3.5 text-xs font-semibold tracking-widest uppercase text-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
-                                        style={{ background: '#c5a880', color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
-                                        onMouseEnter={e => (e.currentTarget.style.background = '#a8895f')}
-                                        onMouseLeave={e => (e.currentTarget.style.background = '#c5a880')}
+                                        className="btn-gold px-8 py-3.5 text-xs font-semibold uppercase text-center focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
+                                        style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                                     >
                                         {BUSINESS_INFO.booking.text}
                                     </a>
                                     <Link
                                         href="/contact"
-                                        className="px-8 py-3.5 text-xs font-semibold tracking-widest uppercase text-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
-                                        style={{ border: '1px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.8)', borderRadius: '2px', letterSpacing: '0.14em' }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                        className="btn-outline-ghost px-8 py-3.5 text-xs font-semibold uppercase text-center focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
+                                        style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
                                     >
                                         Formularz kontaktowy
                                     </Link>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Scissors, Sparkles, Wand2, type LucideIcon } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
 const services: Array<{
     icon: LucideIcon;
@@ -7,7 +8,6 @@ const services: Array<{
     subtitle: string;
     description: string;
     href: string;
-    accent: string;
     featured?: boolean;
 }> = [
     {
@@ -16,7 +16,6 @@ const services: Array<{
         subtitle: 'Strzyżenie & Koloryzacja',
         description: 'Cięcia damskie i męskie, koloryzacja, balayage, ombre — tworzone z pasją przez doświadczonych stylistów.',
         href: '/services',
-        accent: '#c5a880',
     },
     {
         icon: Sparkles,
@@ -24,7 +23,6 @@ const services: Array<{
         subtitle: 'Botox • Złote Proteiny • SPA',
         description: 'Zabiegi regeneracyjne Kérastase i Nioxin, botox na włosy oraz luksusowe SPA dla zniszczonych lub cienkich włosów.',
         href: '/services',
-        accent: '#b09070',
         featured: true,
     },
     {
@@ -33,7 +31,6 @@ const services: Array<{
         subtitle: 'Metoda HairTalk',
         description: 'Naturalne przedłużanie i zagęszczanie włosów metodą HairTalk — dyskretne, trwałe, dopasowane do Ciebie.',
         href: '/services',
-        accent: '#c5a880',
     },
 ];
 
@@ -41,16 +38,7 @@ export default function ServicesTeaser() {
     return (
         <section className="py-20 md:py-28" style={{ background: '#ffffff' }}>
             <div className="container mx-auto px-4 md:px-8">
-                {/* Header */}
-                <div className="text-center mb-14">
-                    <p className="text-xs tracking-widest uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif" }}>
-                        Czym możemy służyć
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: '#0d0d0d' }}>
-                        Nasze usługi
-                    </h2>
-                    <div className="mx-auto mt-4" style={{ width: '40px', height: '2px', background: '#c5a880' }} />
-                </div>
+                <SectionHeader eyebrow="Czym możemy służyć" title="Nasze usługi" />
 
                 {/* Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -102,10 +90,8 @@ export default function ServicesTeaser() {
                 <div className="text-center mt-12">
                     <Link
                         href="/services"
-                        className="inline-block px-8 py-3.5 text-xs font-semibold tracking-widest uppercase transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
-                        style={{ border: '1px solid #0d0d0d', color: '#0d0d0d', borderRadius: '2px', letterSpacing: '0.16em' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#0d0d0d'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#0d0d0d'; }}
+                        className="btn-outline-dark inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                        style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         Pełna oferta usług
                     </Link>

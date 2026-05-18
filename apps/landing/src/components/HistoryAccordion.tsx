@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { HISTORY_ITEMS } from '@/config/content';
+import SectionHeader from './SectionHeader';
 
 type HistoryItem = { id: string; title: string; content: string };
 interface HistoryAccordionProps { items?: HistoryItem[]; }
@@ -20,15 +21,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
     return (
         <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
             <div className="container mx-auto px-4 md:px-8">
-                <div className="text-center mb-14">
-                    <p className="text-xs tracking-widest uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif" }}>
-                        Skąd pochodzimy
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: '#ffffff' }}>
-                        Nasza historia
-                    </h2>
-                    <div className="mx-auto mt-4" style={{ width: '40px', height: '2px', background: '#c5a880' }} />
-                </div>
+                <SectionHeader eyebrow="Skąd pochodzimy" title="Nasza historia" dark />
 
                 <div className="max-w-2xl mx-auto space-y-0">
                     {data.map((item, idx) => {

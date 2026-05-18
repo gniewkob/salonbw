@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SALON_GALLERY } from '@/config/content';
 import ImageLightbox from './ImageLightbox';
+import SectionHeader from './SectionHeader';
 
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
 interface SalonGalleryProps { images?: GalleryImage[]; }
@@ -37,18 +38,10 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
     return (
         <section className="py-20 md:py-28" style={{ background: '#ffffff' }}>
             <div className="container mx-auto px-4 md:px-8">
-                <div className="text-center mb-14">
-                    <p className="text-xs tracking-widest uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif" }}>
-                        Zajrzyj do nas
-                    </p>
-                    <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: '#0d0d0d' }}>
-                        Nasz salon
-                    </h2>
-                    <div className="mx-auto mt-4 mb-4" style={{ width: '40px', height: '2px', background: '#c5a880' }} />
-                    <p className="text-sm max-w-lg mx-auto" style={{ color: '#8a7060' }}>
-                        Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie.
-                    </p>
-                </div>
+                <SectionHeader eyebrow="Zajrzyj do nas" title="Nasz salon" />
+                <p className="text-sm max-w-lg mx-auto text-center -mt-10 mb-14" style={{ color: '#8a7060' }}>
+                    Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie.
+                </p>
 
                 {/* Masonry-style CSS grid */}
                 <div
@@ -123,10 +116,8 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 <div className="text-center mt-10">
                     <Link
                         href="/gallery"
-                        className="inline-block px-8 py-3.5 text-xs font-semibold tracking-widest uppercase transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
-                        style={{ border: '1px solid #0d0d0d', color: '#0d0d0d', borderRadius: '2px', letterSpacing: '0.16em' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#0d0d0d'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#0d0d0d'; }}
+                        className="btn-outline-dark inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                        style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         Zobacz pełną galerię
                     </Link>

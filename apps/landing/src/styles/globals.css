@@ -74,3 +74,73 @@ a:focus-visible {
 html {
     scroll-behavior: smooth;
 }
+
+/* ── Hero Slider animations ───────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes scrollDown {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50%      { transform: translateY(8px); opacity: 0.4; }
+}
+
+.hero-title  { animation: fadeUp 0.8s ease both; }
+.hero-tag    { animation: fadeUp 0.8s 0.15s ease both; }
+.hero-desc   { animation: fadeUp 0.8s 0.3s ease both; }
+.hero-cta    { animation: fadeUp 0.8s 0.45s ease both; }
+.hero-scroll { animation: fadeIn 1.2s 1s ease both; }
+.scroll-arrow { animation: scrollDown 1.8s ease-in-out infinite; }
+
+/* ── Partner brands marquee ───────────────────────────── */
+@keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.marquee-track {
+    animation: marquee 18s linear infinite;
+    display: flex;
+    width: max-content;
+}
+.marquee-track:hover { animation-play-state: paused; }
+
+/* ── Reusable hover utilities (replaces inline onMouseEnter mutations) ── */
+.btn-glass {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.2s;
+}
+.btn-glass:hover { background: rgba(255,255,255,0.25); }
+
+.btn-gold {
+    background: var(--brand-gold);
+    transition: background 0.2s;
+}
+.btn-gold:hover { background: var(--brand-gold-dark); }
+
+.btn-outline-dark {
+    border: 1px solid #0d0d0d;
+    color: #0d0d0d;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-outline-dark:hover { background: #0d0d0d; color: #fff; }
+
+.btn-outline-white {
+    border: 1px solid rgba(255,255,255,0.6);
+    color: #fff;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s;
+}
+.btn-outline-white:hover { background: rgba(255,255,255,0.12); }
+
+.btn-outline-ghost {
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.8);
+    transition: background 0.2s;
+}
+.btn-outline-ghost:hover { background: rgba(255,255,255,0.08); }

@@ -49,183 +49,136 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
     }, [nextSlide, prevSlide]);
 
     return (
-        <>
-            <style>{`
-                @keyframes fadeUp {
-                    from { opacity: 0; transform: translateY(28px); }
-                    to   { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to   { opacity: 1; }
-                }
-                .hero-title  { animation: fadeUp 0.8s ease both; }
-                .hero-tag    { animation: fadeUp 0.8s 0.15s ease both; }
-                .hero-desc   { animation: fadeUp 0.8s 0.3s ease both; }
-                .hero-cta    { animation: fadeUp 0.8s 0.45s ease both; }
-                .hero-scroll { animation: fadeIn 1.2s 1s ease both; }
+        <section
+            className="relative min-h-[600px] overflow-hidden"
+            style={{ height: '100svh' }}
+            aria-label="Hero slider"
+        >
+            {/* Slides */}
+            <div className="relative w-full h-full">
+                {data.map((slide, index) => (
+                    <div
+                        key={slide.id}
+                        className={`absolute inset-0 transition-opacity duration-700 ${
+                            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                        }`}
+                        aria-hidden={index !== currentSlide}
+                    >
+                        <Image
+                            src={slide.image}
+                            alt={slide.alt}
+                            fill
+                            style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+                            priority={index === 0}
+                            sizes="100vw"
+                        />
+                        <div className="absolute inset-0" style={{
+                            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.72) 100%)'
+                        }} />
+                    </div>
+                ))}
+            </div>
 
-                @keyframes scrollDown {
-                    0%, 100% { transform: translateY(0); opacity: 1; }
-                    50%      { transform: translateY(8px); opacity: 0.4; }
-                }
-                .scroll-arrow { animation: scrollDown 1.8s ease-in-out infinite; }
-            `}</style>
+            {/* Content — centred vertically */}
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4">
+                <div key={currentSlide} className="max-w-3xl mx-auto text-center text-white">
+                    {/* Academy eyebrow */}
+                    <p
+                        className="hero-tag mb-3 uppercase text-xs md:text-sm"
+                        style={{ color: 'var(--brand-gold)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
+                    >
+                        Akademia Zdrowych Włosów
+                    </p>
 
-            <section
-                className="relative min-h-[600px] overflow-hidden"
-                style={{ height: '100svh' }}
-                aria-label="Hero slider"
-            >
-                {/* Slides */}
-                <div className="relative w-full h-full">
-                    {data.map((slide, index) => (
-                        <div
-                            key={slide.id}
-                            className={`absolute inset-0 transition-opacity duration-700 ${
-                                index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                            }`}
-                            aria-hidden={index !== currentSlide}
+                    {/* Main heading */}
+                    <h1
+                        className="hero-title text-4xl md:text-6xl font-bold leading-tight mb-2"
+                        style={{ fontFamily: "'Playfair Display', serif", textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
+                    >
+                        {data[currentSlide]?.title ?? BUSINESS_INFO.name}
+                    </h1>
+
+                    {/* Tangerine script accent */}
+                    <p
+                        className="hero-tag mb-6"
+                        style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-gold)', lineHeight: 1.2 }}
+                    >
+                        Black &amp; White
+                    </p>
+
+                    <p className="hero-desc text-base md:text-lg mb-10 max-w-xl mx-auto" style={{ opacity: 0.9 }}>
+                        {data[currentSlide]?.description ?? ''}
+                    </p>
+
+                    <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center">
+                        <a
+                            href={bookingUrl}
+                            className="btn-gold inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(197,168,128,0.4)' }}
                         >
-                            <Image
-                                src={slide.image}
-                                alt={slide.alt}
-                                fill
-                                style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
-                                priority={index === 0}
-                                sizes="100vw"
-                            />
-                            {/* Gradient overlay — dark at bottom, lighter at top */}
-                            <div className="absolute inset-0" style={{
-                                background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.72) 100%)'
-                            }} />
-                        </div>
-                    ))}
-                </div>
-
-                {/* Content — centred vertically */}
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4">
-                    <div key={currentSlide} className="max-w-3xl mx-auto text-center text-white">
-                        {/* Academy tagline — Tangerine script */}
-                        <p
-                            className="hero-tag mb-3 tracking-widest uppercase text-xs md:text-sm"
-                            style={{ color: 'var(--brand-gold)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
+                            {BUSINESS_INFO.booking.text}
+                        </a>
+                        <Link
+                            href="/services"
+                            className="btn-outline-white inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            style={{ letterSpacing: '0.12em', borderRadius: '2px' }}
                         >
-                            Akademia Zdrowych Włosów
-                        </p>
-
-                        {/* Main heading — Playfair Display */}
-                        <h1
-                            className="hero-title text-4xl md:text-6xl font-bold leading-tight mb-2"
-                            style={{ fontFamily: "'Playfair Display', serif", textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
-                        >
-                            {data[currentSlide]?.title ?? ''}
-                        </h1>
-
-                        {/* Tangerine script accent */}
-                        <p
-                            className="hero-tag mb-6"
-                            style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-gold)', lineHeight: 1.2 }}
-                        >
-                            Black &amp; White
-                        </p>
-
-                        <p className="hero-desc text-base md:text-lg mb-10 max-w-xl mx-auto" style={{ opacity: 0.9 }}>
-                            {data[currentSlide]?.description ?? ''}
-                        </p>
-
-                        <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center">
-                            <a
-                                href={bookingUrl}
-                                className="inline-block px-10 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                style={{
-                                    background: 'var(--brand-gold)',
-                                    color: '#fff',
-                                    letterSpacing: '0.12em',
-                                    borderRadius: '2px',
-                                    boxShadow: '0 4px 24px rgba(197,168,128,0.4)',
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-gold-dark)')}
-                                onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-gold)')}
-                            >
-                                {BUSINESS_INFO.booking.text}
-                            </a>
-                            <Link
-                                href="/services"
-                                className="inline-block px-10 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                style={{
-                                    border: '1px solid rgba(255,255,255,0.6)',
-                                    color: '#fff',
-                                    letterSpacing: '0.12em',
-                                    borderRadius: '2px',
-                                    backdropFilter: 'blur(4px)',
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                            >
-                                Nasze usługi
-                            </Link>
-                        </div>
+                            Nasze usługi
+                        </Link>
                     </div>
                 </div>
+            </div>
 
-                {/* Navigation Arrows */}
-                <button
-                    type="button"
-                    onClick={() => { prevSlide(); setIsAutoPlaying(false); }}
-                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                    style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                    aria-label="Previous slide"
-                >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
+            {/* Navigation Arrows */}
+            <button
+                type="button"
+                onClick={() => { prevSlide(); setIsAutoPlaying(false); }}
+                className="btn-glass absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
+                aria-label="Previous slide"
+            >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
 
-                <button
-                    type="button"
-                    onClick={() => { nextSlide(); setIsAutoPlaying(false); }}
-                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                    style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                    aria-label="Next slide"
-                >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
+            <button
+                type="button"
+                onClick={() => { nextSlide(); setIsAutoPlaying(false); }}
+                className="btn-glass absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
+                aria-label="Next slide"
+            >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
 
-                {/* Dots */}
-                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-                    {data.map((slide, index) => (
-                        <button
-                            key={slide.id}
-                            type="button"
-                            onClick={() => goToSlide(index)}
-                            className="transition-all duration-300 focus:outline-none"
-                            style={{
-                                width: index === currentSlide ? '28px' : '8px',
-                                height: '8px',
-                                borderRadius: '4px',
-                                background: index === currentSlide ? 'var(--brand-gold)' : 'rgba(255,255,255,0.45)',
-                            }}
-                            aria-label={`Go to slide ${index + 1}`}
-                            aria-current={index === currentSlide}
-                        />
-                    ))}
-                </div>
+            {/* Dots */}
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+                {data.map((slide, index) => (
+                    <button
+                        key={slide.id}
+                        type="button"
+                        onClick={() => goToSlide(index)}
+                        className="transition-all duration-300 focus:outline-none"
+                        style={{
+                            width: index === currentSlide ? '28px' : '8px',
+                            height: '8px',
+                            borderRadius: '4px',
+                            background: index === currentSlide ? 'var(--brand-gold)' : 'rgba(255,255,255,0.45)',
+                        }}
+                        aria-label={`Go to slide ${index + 1}`}
+                        aria-current={index === currentSlide}
+                    />
+                ))}
+            </div>
 
-                {/* Scroll indicator */}
-                <div className="hero-scroll absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
-                    <span className="text-white/60 text-xs tracking-widest uppercase" style={{ fontSize: '10px' }}>Scroll</span>
-                    <svg className="scroll-arrow w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </section>
-        </>
+            {/* Scroll indicator */}
+            <div className="hero-scroll absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
+                <span className="text-white/60 uppercase" style={{ fontSize: '10px', letterSpacing: '0.2em' }}>Scroll</span>
+                <svg className="scroll-arrow w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
     );
 }

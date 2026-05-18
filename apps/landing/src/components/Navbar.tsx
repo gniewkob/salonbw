@@ -116,15 +116,8 @@ export default function Navbar() {
 
                         <a
                             href={bookingUrl}
-                            className="px-6 py-2.5 text-xs font-semibold tracking-widest uppercase transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
-                            style={{
-                                background: 'var(--brand-gold, #c5a880)',
-                                color: '#fff',
-                                borderRadius: '2px',
-                                letterSpacing: '0.14em',
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.background = '#a8895f')}
-                            onMouseLeave={e => (e.currentTarget.style.background = '#c5a880')}
+                            className="btn-gold px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                            style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                             onClick={() => trackEvent('begin_checkout', { cta: 'navbar' })}
                         >
                             {BUSINESS_INFO.booking.text}
@@ -199,8 +192,8 @@ export default function Navbar() {
                         <div className="px-4 mt-4">
                             <a
                                 href={bookingUrl}
-                                className="block w-full text-center py-3.5 text-xs font-semibold tracking-widest uppercase transition focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
-                                style={{ background: '#c5a880', color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
+                                className="btn-gold block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
+                                style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                                 onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); }}
                             >
                                 {BUSINESS_INFO.booking.text}
