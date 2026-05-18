@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { Repository } from 'typeorm';
-import Jimp from 'jimp';
+import { Jimp } from 'jimp';
 import {
     CustomerFile,
     CustomerFileCategory,
@@ -240,9 +240,14 @@ export class CustomerMediaService {
             // in Passenger environments and to make errors distinguishable.
             const buf = await fs.readFile(fullOriginal);
             const image = await Jimp.read(buf);
-            image.scaleToFit(320, 320);
-            image.quality(80);
-            await image.writeAsync(fullThumb);
+            image.scaleToFit({
+                w: 320,
+                h: 320,
+            });
+            const jpeg = await image.getBuffer('image/jpeg', {
+                quality: 80,
+            });
+            await fs.writeFile(fullThumb, jpeg);
         } catch (err) {
             // Distinguish IO errors (missing/permission) from decode errors.
             const code =
