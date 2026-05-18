@@ -60,7 +60,7 @@ export default function Navbar() {
             aria-label="Nawigacja główna"
             className="sticky top-0 z-50 transition-all duration-400"
             style={{
-                background: transparent ? 'transparent' : 'rgba(255,255,255,0.97)',
+                background: transparent ? 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%)' : 'rgba(255,255,255,0.97)',
                 backdropFilter: transparent ? 'none' : 'blur(12px)',
                 boxShadow: transparent ? 'none' : '0 1px 24px rgba(0,0,0,0.10)',
                 borderBottom: transparent ? '1px solid transparent' : '1px solid rgba(0,0,0,0.06)',
