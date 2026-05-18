@@ -3216,6 +3216,11 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     display: none !important;
 }
 
+/* Legacy helper alias used by older templates/components */
+.hidden {
+    display: none !important;
+}
+
 .d-inline-block {
     display: inline-block !important;
 }
