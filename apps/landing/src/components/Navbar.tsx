@@ -10,38 +10,31 @@ import { BUSINESS_INFO } from '@/config/content';
 export default function Navbar() {
     const { role, initialized, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    const linkClass =
-        'transition duration-150 hover:text-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2';
-    const mobileLinkClass = 'block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200';
+    const [scrolled, setScrolled] = useState(false);
 
     const panelDashboard = getPanelUrl('/dashboard');
     const panelLogin = getPanelUrl('/auth/login');
-
-    // Booking requires login - redirect to panel with return URL
-    const bookingUrl = getPanelUrl(
-        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
-    );
-
-    // During SSR and initial hydration, treat role as null to avoid mismatch
+    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
     const effectiveRole = initialized ? role : null;
     const dashboardRoute = effectiveRole ? panelDashboard : undefined;
 
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 60);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     const handleLogout = async () => {
         await logout();
-        if (typeof window !== 'undefined') {
-            window.location.href = '/';
-        }
+        if (typeof window !== 'undefined') window.location.href = '/';
     };
 
-    // Close mobile menu on route change
     useEffect(() => {
         const handleRouteChange = () => setMobileMenuOpen(false);
         window.addEventListener('popstate', handleRouteChange);
         return () => window.removeEventListener('popstate', handleRouteChange);
     }, []);
 
-    // Close mobile menu on Escape key
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') setMobileMenuOpen(false);
@@ -52,79 +45,64 @@ export default function Navbar() {
         }
     }, [mobileMenuOpen]);
 
+    const navLinkClass = `transition duration-200 text-sm tracking-wide font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+        scrolled ? 'text-gray-800 hover:text-[#c5a880]' : 'text-white/90 hover:text-[#c5a880]'
+    }`;
+
+    const logoTextColor = scrolled ? '#0d0d0d' : '#ffffff';
+
     return (
         <nav
             aria-label="Nawigacja główna"
-            className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50"
+            className="sticky top-0 z-50 transition-all duration-400"
+            style={{
+                background: scrolled ? 'rgba(255,255,255,0.97)' : 'transparent',
+                backdropFilter: scrolled ? 'blur(12px)' : 'none',
+                boxShadow: scrolled ? '0 1px 24px rgba(0,0,0,0.10)' : 'none',
+                borderBottom: scrolled ? '1px solid rgba(0,0,0,0.06)' : '1px solid transparent',
+            }}
         >
-            <div className="container mx-auto px-4">
-                <div className="flex justify-between items-center py-4">
+            <div className="container mx-auto px-4 md:px-8">
+                <div className="flex justify-between items-center py-4 md:py-5">
                     {/* Logo */}
                     <Link
                         href={'/' as Route}
-                        className={`font-bold text-xl text-black ${linkClass}`}
+                        className="flex flex-col leading-none focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
                         onClick={() => setMobileMenuOpen(false)}
                     >
-                        Salon Black & White
+                        <span
+                            className="font-bold tracking-widest uppercase text-xs"
+                            style={{ color: logoTextColor, letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif", transition: 'color 0.3s' }}
+                        >
+                            Black &amp; White
+                        </span>
+                        <span
+                            style={{ fontFamily: "'Tangerine', cursive", fontSize: '1.6rem', color: '#c5a880', lineHeight: 1, transition: 'color 0.3s' }}
+                        >
+                            Akademia Zdrowych Włosów
+                        </span>
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-6">
-                        {/* Opening Hours */}
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                            <div>Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}</div>
-                            <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
-                        </div>
-
-                        <ul className="flex items-center space-x-6">
-                            <li>
-                                <Link
-                                    href={'/' as Route}
-                                    className={linkClass}
-                                >
-                                    Start
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={'/services' as Route}
-                                    className={linkClass}
-                                >
-                                    Usługi
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={'/gallery' as Route}
-                                    className={linkClass}
-                                >
-                                    Galeria
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={'/contact' as Route}
-                                    className={linkClass}
-                                >
-                                    Kontakt
-                                </Link>
-                            </li>
+                    <div className="hidden md:flex items-center gap-8">
+                        <ul className="flex items-center gap-7">
+                            {[
+                                { label: 'Start', href: '/' },
+                                { label: 'Usługi', href: '/services' },
+                                { label: 'Galeria', href: '/gallery' },
+                                { label: 'Kontakt', href: '/contact' },
+                            ].map(({ label, href }) => (
+                                <li key={href}>
+                                    <Link href={href as Route} className={navLinkClass}>{label}</Link>
+                                </li>
+                            ))}
                             {dashboardRoute ? (
                                 <>
-                                    <li>
-                                        <a
-                                            href={dashboardRoute}
-                                            className={linkClass}
-                                        >
-                                            Panel
-                                        </a>
-                                    </li>
+                                    <li><a href={dashboardRoute} className={navLinkClass}>Panel</a></li>
                                     <li>
                                         <button
-                                            onClick={() => {
-                                                void handleLogout();
-                                            }}
-                                            className={linkClass}
+                                            onClick={() => { void handleLogout(); }}
+                                            className={navLinkClass}
                                             type="button"
                                         >
                                             Wyloguj
@@ -132,54 +110,40 @@ export default function Navbar() {
                                     </li>
                                 </>
                             ) : (
-                                <li>
-                                    <a href={panelLogin} className={linkClass}>
-                                        Zaloguj
-                                    </a>
-                                </li>
+                                <li><a href={panelLogin} className={navLinkClass}>Zaloguj</a></li>
                             )}
                         </ul>
 
-                        {/* Book Appointment Button - requires login */}
                         <a
                             href={bookingUrl}
-                            className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                            onClick={() =>
-                                trackEvent('begin_checkout', { cta: 'navbar' })
-                            }
+                            className="px-6 py-2.5 text-xs font-semibold tracking-widest uppercase transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                            style={{
+                                background: 'var(--brand-gold, #c5a880)',
+                                color: '#fff',
+                                borderRadius: '2px',
+                                letterSpacing: '0.14em',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = '#a8895f')}
+                            onMouseLeave={e => (e.currentTarget.style.background = '#c5a880')}
+                            onClick={() => trackEvent('begin_checkout', { cta: 'navbar' })}
                         >
                             {BUSINESS_INFO.booking.text}
                         </a>
                     </div>
 
-                    {/* Mobile Hamburger Button */}
+                    {/* Mobile Hamburger */}
                     <button
-                        className="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                        className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         aria-label="Toggle menu"
                         aria-expanded={mobileMenuOpen}
                         aria-controls="mobile-menu"
                     >
-                        <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
+                        <svg className="w-6 h-6" style={{ color: scrolled ? '#0d0d0d' : '#ffffff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {mobileMenuOpen ? (
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             ) : (
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 6h16M4 12h16M4 18h16"
-                                />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             )}
                         </svg>
                     </button>
@@ -189,71 +153,38 @@ export default function Navbar() {
                 {mobileMenuOpen && (
                     <div
                         id="mobile-menu"
-                        className="md:hidden border-t border-gray-200 py-4"
+                        className="md:hidden border-t py-4"
+                        style={{ background: 'rgba(255,255,255,0.98)', borderColor: 'rgba(0,0,0,0.08)' }}
                     >
-                        {/* Opening Hours */}
-                        <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-200 mb-2">
-                            <div>
-                                Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}
-                            </div>
+                        <div className="px-4 py-2 text-xs text-gray-500 border-b mb-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
+                            <div>Pn–Pt: {BUSINESS_INFO.hours.mondayFriday}</div>
                             <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
-                            <div>Niedz: {BUSINESS_INFO.hours.sunday}</div>
                         </div>
 
-                        <ul className="space-y-2">
-                            <li>
-                                <Link
-                                    href={'/' as Route}
-                                    className={mobileLinkClass}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    Start
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={'/services' as Route}
-                                    className={mobileLinkClass}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    Usługi
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={'/gallery' as Route}
-                                    className={mobileLinkClass}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    Galeria
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={'/contact' as Route}
-                                    className={mobileLinkClass}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    Kontakt
-                                </Link>
-                            </li>
+                        <ul className="space-y-1">
+                            {[
+                                { label: 'Start', href: '/' },
+                                { label: 'Usługi', href: '/services' },
+                                { label: 'Galeria', href: '/gallery' },
+                                { label: 'Kontakt', href: '/contact' },
+                            ].map(({ label, href }) => (
+                                <li key={href}>
+                                    <Link
+                                        href={href as Route}
+                                        className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        {label}
+                                    </Link>
+                                </li>
+                            ))}
                             {dashboardRoute ? (
                                 <>
-                                    <li>
-                                        <a
-                                            href={dashboardRoute}
-                                            className={mobileLinkClass}
-                                        >
-                                            Panel
-                                        </a>
-                                    </li>
+                                    <li><a href={dashboardRoute} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">Panel</a></li>
                                     <li>
                                         <button
-                                            onClick={() => {
-                                                void handleLogout();
-                                                setMobileMenuOpen(false);
-                                            }}
-                                            className={`${mobileLinkClass} w-full text-left`}
+                                            onClick={() => { void handleLogout(); setMobileMenuOpen(false); }}
+                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition"
                                             type="button"
                                         >
                                             Wyloguj
@@ -261,28 +192,16 @@ export default function Navbar() {
                                     </li>
                                 </>
                             ) : (
-                                <li>
-                                    <a
-                                        href={panelLogin}
-                                        className={mobileLinkClass}
-                                    >
-                                        Zaloguj
-                                    </a>
-                                </li>
+                                <li><a href={panelLogin} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">Zaloguj</a></li>
                             )}
                         </ul>
 
-                        {/* Book Appointment Button - Mobile (requires login) */}
                         <div className="px-4 mt-4">
                             <a
                                 href={bookingUrl}
-                                className="block w-full text-center bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                                onClick={() => {
-                                    setMobileMenuOpen(false);
-                                    trackEvent('begin_checkout', {
-                                        cta: 'mobile_menu',
-                                    });
-                                }}
+                                className="block w-full text-center py-3.5 text-xs font-semibold tracking-widest uppercase transition focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
+                                style={{ background: '#c5a880', color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
+                                onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); }}
                             >
                                 {BUSINESS_INFO.booking.text}
                             </a>
