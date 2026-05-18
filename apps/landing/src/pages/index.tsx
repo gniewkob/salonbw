@@ -11,7 +11,6 @@ import { getPanelUrl } from '@/utils/panelUrl';
 import SplitHero from '@/components/SplitHero';
 import GoldTicker from '@/components/GoldTicker';
 import StatsBar from '@/components/StatsBar';
-import CustomCursor from '@/components/CustomCursor';
 import ScrollReveal from '@/components/ScrollReveal';
 import FounderMessage from '@/components/FounderMessage';
 import HistoryAccordion from '@/components/HistoryAccordion';
@@ -99,8 +98,6 @@ export default function HomePage({ founder, historyItems, coreValues, galleryIma
             </Script>
 
             <div>
-                <CustomCursor />
-
                 {/* 1. Diagonal split hero */}
                 <SplitHero />
 
