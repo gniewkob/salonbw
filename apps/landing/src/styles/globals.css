@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Open+Sans:wght@400;500;600&family=Tangerine:wght@700&display=swap');
 
 :root {
     --background: #ffffff;
@@ -129,7 +128,7 @@ html {
     letter-spacing: 0.22em;
     color: #fff;
     padding: 0 1.5rem;
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
 }
 .gold-ticker__dot { opacity: 0.5; }
 
@@ -167,7 +166,7 @@ html {
     position: absolute;
     bottom: -0.15em;
     left: -0.08em;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(8rem, 18vw, 18rem);
     font-weight: 700;
     color: rgba(255,255,255,0.025);
@@ -186,7 +185,7 @@ html {
 }
 
 .split-hero__eyebrow {
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     font-size: 0.68rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
@@ -196,7 +195,7 @@ html {
 }
 
 .split-hero__heading {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-weight: 700;
     line-height: 0.9;
     margin-bottom: 1.5rem;
@@ -223,7 +222,7 @@ html {
     color: rgba(255,255,255,0.55);
     line-height: 1.8;
     margin-bottom: 2.5rem;
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     animation: fadeUp 0.9s 0.25s ease both;
 }
 
@@ -244,7 +243,7 @@ html {
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     border-radius: 1px;
     transition: background 0.25s, transform 0.25s;
     text-decoration: none;
@@ -263,7 +262,7 @@ html {
     font-weight: 600;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     border-radius: 1px;
     transition: border-color 0.25s, color 0.25s, background 0.25s;
     text-decoration: none;
@@ -281,7 +280,7 @@ html {
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.3);
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     animation: fadeIn 1.2s 0.8s ease both;
 }
 .split-hero__meta-dot {
@@ -344,20 +343,20 @@ html {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--brand-gold);
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     margin-bottom: 0.7rem;
 }
 .split-hero__float-hours {
     font-size: 0.78rem;
     color: rgba(255,255,255,0.65);
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
     margin-bottom: 0.3rem;
 }
 .split-hero__float-hours strong { color: #fff; }
 .split-hero__float-phone {
     display: block;
     margin-top: 0.8rem;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 1.05rem;
     color: var(--brand-gold);
     letter-spacing: 0.02em;
@@ -386,7 +385,7 @@ html {
     text-transform: uppercase;
     color: rgba(255,255,255,0.35);
     writing-mode: vertical-rl;
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
 }
 .split-hero__scroll-line {
     width: 1px;
@@ -428,7 +427,7 @@ html {
 .stats-bar__item:first-child { border-left: none; }
 .stats-bar__number {
     display: block;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(2.8rem, 5vw, 4.5rem);
     color: var(--brand-gold);
     line-height: 1;
@@ -440,7 +439,7 @@ html {
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.4);
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans), sans-serif;
 }
 
 /* ── Custom Cursor ────────────────────────────────────── */

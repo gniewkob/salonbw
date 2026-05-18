@@ -15,8 +15,9 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                heading: ['"Playfair Display"', 'serif'],
-                body: ['"Open Sans"', 'sans-serif'],
+                heading: ['var(--font-playfair)', 'Georgia', 'serif'],
+                body: ['var(--font-open-sans)', 'Arial', 'sans-serif'],
+                script: ['var(--font-tangerine)', 'cursive'],
             },
         },
     },

@@ -85,7 +85,7 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                                 <span
                                     className="text-center leading-tight"
                                     style={{
-                                        fontFamily: "'Open Sans', sans-serif",
+                                        fontFamily: "var(--font-open-sans), sans-serif",
                                         fontSize: '0.7rem',
                                         fontWeight: 600,
                                         color: isActive ? '#ffffff' : '#6b5f52',
@@ -107,7 +107,7 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                         aria-labelledby={`tab-${activeValue.id}`}
                         className="max-w-2xl mx-auto text-center"
                     >
-                        <p className="text-base leading-relaxed" style={{ color: '#4a3f35', fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
+                        <p className="text-base leading-relaxed" style={{ color: '#4a3f35', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic' }}>
                             &ldquo;{activeValue.description}&rdquo;
                         </p>
                     </div>

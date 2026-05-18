@@ -44,7 +44,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center" style={{ background: '#e8e2da' }}>
-                                            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', color: '#c5a880' }}>A</span>
+                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#c5a880' }}>A</span>
                                         </div>
                                     )}
                                 </div>
@@ -53,16 +53,16 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
 
                         {/* Text */}
                         <div>
-                            <p className="text-xs tracking-widest uppercase mb-4" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif" }}>
+                            <p className="text-xs tracking-widest uppercase mb-4" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                 Słowo od założycielki
                             </p>
 
-                            <div className="mb-2" style={{ fontFamily: "'Playfair Display', serif", fontSize: '3.5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
+                            <div className="mb-2" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3.5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
 
                             <blockquote>
                                 <p
                                     className="text-lg leading-relaxed mb-8"
-                                    style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', color: '#3a3028' }}
+                                    style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}
                                 >
                                     {data.quote}
                                 </p>
@@ -70,7 +70,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                                 <footer>
                                     <cite
                                         className="not-italic block"
-                                        style={{ fontFamily: "'Tangerine', cursive", fontSize: '2.4rem', color: '#c5a880', lineHeight: 1.1 }}
+                                        style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#c5a880', lineHeight: 1.1 }}
                                     >
                                         {data.name}
                                     </cite>

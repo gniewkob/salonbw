@@ -39,7 +39,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                         <span className="text-xs font-mono w-10 shrink-0" style={{ color: '#c5a880' }}>
                                             {YEAR_MAP[item.id] ?? '—'}
                                         </span>
-                                        <h3 className="text-lg font-semibold" style={{ fontFamily: "'Playfair Display', serif", color: isOpen ? '#c5a880' : '#ffffff', transition: 'color 0.2s' }}>
+                                        <h3 className="text-lg font-semibold" style={{ fontFamily: "var(--font-playfair), serif", color: isOpen ? '#c5a880' : '#ffffff', transition: 'color 0.2s' }}>
                                             {item.title}
                                         </h3>
                                     </div>

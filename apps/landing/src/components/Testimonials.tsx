@@ -40,11 +40,11 @@ export default function Testimonials() {
                 {/* Quote display */}
                 <div className="max-w-2xl mx-auto text-center mb-10">
                     {/* Large quote mark */}
-                    <div className="mb-6" style={{ fontFamily: "'Playfair Display', serif", fontSize: '5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.6 }}>&ldquo;</div>
+                    <div className="mb-6" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.6 }}>&ldquo;</div>
 
                     <p
                         className="text-base md:text-lg leading-relaxed mb-8"
-                        style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "'Playfair Display', serif", fontStyle: 'italic', minHeight: '5rem' }}
+                        style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', minHeight: '5rem' }}
                     >
                         {testimonials[active]?.text}
                     </p>
@@ -62,7 +62,7 @@ export default function Testimonials() {
                         ))}
                     </div>
 
-                    <p className="font-semibold text-sm" style={{ color: '#ffffff', fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="font-semibold text-sm" style={{ color: '#ffffff', fontFamily: "var(--font-open-sans), sans-serif" }}>
                         {testimonials[active]?.name}
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>

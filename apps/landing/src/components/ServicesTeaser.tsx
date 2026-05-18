@@ -64,7 +64,7 @@ export default function ServicesTeaser() {
                                 <Icon size={22} style={{ color: '#c5a880', strokeWidth: 1.5 }} />
                             </div>
 
-                            <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif", color: featured ? '#ffffff' : '#0d0d0d' }}>
+                            <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "var(--font-playfair), serif", color: featured ? '#ffffff' : '#0d0d0d' }}>
                                 {title}
                             </h3>
                             <p className="text-xs tracking-wider uppercase mb-4" style={{ color: '#c5a880', letterSpacing: '0.14em' }}>

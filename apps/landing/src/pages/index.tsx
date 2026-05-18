@@ -57,6 +57,14 @@ export default function HomePage({ founder, historyItems, coreValues, galleryIma
                 <meta property="og:title" content={SEO_META.title} />
                 <meta property="og:description" content={SEO_META.description} />
                 <meta property="og:type" content="website" />
+                <meta property="og:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:locale" content="pl_PL" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <link rel="canonical" href={process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'} />
+                <meta name="robots" content="index, follow" />
                 <meta name="geo.region" content={SEO_META.geo.region} />
                 <meta name="geo.placename" content={SEO_META.geo.placename} />
                 <meta name="geo.position" content={SEO_META.geo.position} />
@@ -148,7 +156,7 @@ export default function HomePage({ founder, historyItems, coreValues, galleryIma
                                     <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group">
                                         <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.22em' }}>Telefon</span>
                                         <span className="block transition-opacity duration-200 group-hover:opacity-70"
-                                            style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#ffffff', letterSpacing: '-0.01em' }}>
+                                            style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#ffffff', letterSpacing: '-0.01em' }}>
                                             {BUSINESS_INFO.contact.phone}
                                         </span>
                                     </a>
