@@ -46,9 +46,18 @@ interface RescheduleAppointmentPayload {
 export function useCalendar(options: UseCalendarOptions) {
     const { apiFetch } = useAuth();
     const { date, view = 'day', employeeIds, enabled = true } = options;
-    const normalizedDate = /^\d{4}-\d{2}-\d{2}$/.test(date)
-        ? `${date}T00:00:00.000Z`
-        : date;
+    const normalizedDate = (() => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            return `${date}T00:00:00.000Z`;
+        }
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(date)) {
+            return `${date}.000Z`;
+        }
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/.test(date)) {
+            return `${date}Z`;
+        }
+        return date;
+    })();
 
     const queryKey = [
         ...CALENDAR_QUERY_KEY,
