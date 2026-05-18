@@ -317,16 +317,31 @@ export default function WorkTimeReportPage() {
                                                             <YAxis />
                                                             <Tooltip
                                                                 formatter={(
-                                                                    value?: number,
-                                                                    name?: string,
+                                                                    value: unknown,
+                                                                    name?: unknown,
                                                                 ) => {
+                                                                    const first =
+                                                                        Array.isArray(
+                                                                            value,
+                                                                        )
+                                                                            ? value[0]
+                                                                            : value;
+                                                                    const amount =
+                                                                        typeof first ===
+                                                                        'number'
+                                                                            ? first
+                                                                            : Number(
+                                                                                  first ??
+                                                                                      0,
+                                                                              ) ||
+                                                                              0;
                                                                     if (
                                                                         name ===
                                                                         'workTime'
                                                                     ) {
-                                                                        return `${value ?? 0}h`;
+                                                                        return `${amount}h`;
                                                                     }
-                                                                    return `${value ?? 0} wizyt`;
+                                                                    return `${amount} wizyt`;
                                                                 }}
                                                             />
                                                             <Bar

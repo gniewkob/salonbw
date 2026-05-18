@@ -187,9 +187,24 @@ export default function ClientOriginsPage() {
                                                     </Pie>
                                                     <Tooltip
                                                         formatter={(
-                                                            value?: number,
-                                                        ) =>
-                                                            `${value ?? 0} klientów`
+                                                            value: unknown,
+                                                        ) => {
+                                                            const first =
+                                                                Array.isArray(
+                                                                    value,
+                                                                )
+                                                                    ? value[0]
+                                                                    : value;
+                                                            const amount =
+                                                                typeof first ===
+                                                                'number'
+                                                                    ? first
+                                                                    : Number(
+                                                                          first ??
+                                                                              0,
+                                                                      ) || 0;
+                                                            return `${amount} klientów`;
+                                                        }
                                                         }
                                                     />
                                                 </PieChart>
@@ -224,9 +239,24 @@ export default function ClientOriginsPage() {
                                                     />
                                                     <Tooltip
                                                         formatter={(
-                                                            value?: number,
-                                                        ) =>
-                                                            `${value ?? 0} klientów`
+                                                            value: unknown,
+                                                        ) => {
+                                                            const first =
+                                                                Array.isArray(
+                                                                    value,
+                                                                )
+                                                                    ? value[0]
+                                                                    : value;
+                                                            const amount =
+                                                                typeof first ===
+                                                                'number'
+                                                                    ? first
+                                                                    : Number(
+                                                                          first ??
+                                                                              0,
+                                                                      ) || 0;
+                                                            return `${amount} klientów`;
+                                                        }
                                                         }
                                                     />
                                                     <Bar

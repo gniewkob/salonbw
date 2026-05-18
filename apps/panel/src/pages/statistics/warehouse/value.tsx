@@ -205,11 +205,26 @@ export default function WarehouseValuePage() {
                                                     </Pie>
                                                     <Tooltip
                                                         formatter={(
-                                                            value?: number,
-                                                        ) =>
-                                                            formatCurrency(
-                                                                value ?? 0,
-                                                            )
+                                                            value: unknown,
+                                                        ) => {
+                                                            const first =
+                                                                Array.isArray(
+                                                                    value,
+                                                                )
+                                                                    ? value[0]
+                                                                    : value;
+                                                            const amount =
+                                                                typeof first ===
+                                                                'number'
+                                                                    ? first
+                                                                    : Number(
+                                                                          first ??
+                                                                              0,
+                                                                      ) || 0;
+                                                            return formatCurrency(
+                                                                amount,
+                                                            );
+                                                        }
                                                         }
                                                     />
                                                 </PieChart>
