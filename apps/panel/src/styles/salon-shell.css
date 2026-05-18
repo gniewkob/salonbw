@@ -2309,6 +2309,13 @@ tr.customer-row:hover .customers-drag-handle {
     font-size: 12px;
 }
 
+/* Keep topbar dropdown anchors in one horizontal row (badge + caret). */
+.navbar .navbar-right > li > a.dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
 .navbar .e2e-nav-user-dropdown::after {
     margin-left: 6px;
     align-self: center;
