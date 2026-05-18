@@ -1,94 +1,97 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { CORE_VALUES } from '@/config/content';
+import SectionHeader from './SectionHeader';
+import {
+    Palette,
+    Star,
+    User,
+    Heart,
+    Shield,
+    Leaf,
+    type LucideIcon,
+} from 'lucide-react';
 
-type CoreValue = {
-    id: string;
-    title: string;
-    icon: string;
-    description: string;
+type CoreValue = { id: string; title: string; icon: string; description: string };
+interface ValuesSectionProps { values?: CoreValue[]; }
+
+const VALUE_ICONS: Record<string, LucideIcon> = {
+    pasja: Palette,
+    profesjonalizm: Star,
+    indywidualne: User,
+    zadowolenie: Heart,
+    higiena: Shield,
+    srodowisko: Leaf,
 };
-
-interface ValuesSectionProps {
-    values?: CoreValue[];
-}
 
 export default function ValuesSection({ values }: ValuesSectionProps) {
     const data = values ?? (CORE_VALUES as unknown as CoreValue[]);
-    const [activeTab, setActiveTab] = useState<string>(
-        data[0]?.id || '',
-    );
+    const [active, setActive] = useState<string>(data[0]?.id ?? '');
 
-    // Keyboard navigation
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            const currentIndex = data.findIndex(
-                (v) => v.id === activeTab,
-            );
-            if (currentIndex === -1) return;
+    const activeValue = data.find(v => v.id === active);
 
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                const prevIndex =
-                    (currentIndex - 1 + data.length) %
-                    data.length;
-                setActiveTab(data[prevIndex].id);
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                const nextIndex = (currentIndex + 1) % data.length;
-                setActiveTab(data[nextIndex].id);
-            }
-        };
-
-        const tabsContainer = document.getElementById('values-tabs');
-        if (tabsContainer) {
-            tabsContainer.addEventListener(
-                'keydown',
-                handleKeyDown as EventListener,
-            );
-            return () =>
-                tabsContainer.removeEventListener(
-                    'keydown',
-                    handleKeyDown as EventListener,
-                );
+    const handleKeyDown = useCallback((e: React.KeyboardEvent, id: string) => {
+        const idx = data.findIndex(v => v.id === id);
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setActive(data[(idx + 1) % data.length]?.id ?? id);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setActive(data[(idx - 1 + data.length) % data.length]?.id ?? id);
         }
-    }, [activeTab, data]);
-
-    const activeValue = data.find((v) => v.id === activeTab);
+    }, [data]);
 
     return (
-        <section className="py-16 bg-gray-50 dark:bg-gray-900">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-                    Nasze Wartości
-                </h2>
+        <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
+            <div className="container mx-auto px-4 md:px-8">
+                <SectionHeader eyebrow="To, w co wierzymy" title="Nasze wartości" />
 
-                {/* Tabs */}
+                {/* Icon grid */}
                 <div
-                    id="values-tabs"
+                    className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 mb-12"
                     role="tablist"
-                    aria-label="Core values"
-                    className="flex flex-wrap justify-center gap-2 mb-8"
+                    aria-label="Nasze wartości"
                 >
-                    {data.map((value) => {
-                        const isActive = activeTab === value.id;
+                    {data.map(value => {
+                        const Icon = VALUE_ICONS[value.id] ?? Star;
+                        const isActive = active === value.id;
                         return (
                             <button
                                 key={value.id}
+                                id={`tab-${value.id}`}
                                 type="button"
                                 role="tab"
                                 aria-selected={isActive}
                                 aria-controls={`tabpanel-${value.id}`}
                                 tabIndex={isActive ? 0 : -1}
-                                onClick={() => setActiveTab(value.id)}
-                                className={`px-4 py-2 rounded-full transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 ${
-                                    isActive
-                                        ? 'bg-brand-gold text-white'
-                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                }`}
+                                onClick={() => setActive(value.id)}
+                                onKeyDown={e => handleKeyDown(e, value.id)}
+                                className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                                style={{
+                                    background: isActive ? '#0d0d0d' : '#ffffff',
+                                    border: isActive ? '1px solid #0d0d0d' : '1px solid #ede9e3',
+                                    borderRadius: '3px',
+                                }}
                             >
-                                <span className="mr-2">{value.icon}</span>
-                                <span className="font-medium">
+                                <div
+                                    className="w-9 h-9 flex items-center justify-center"
+                                    style={{
+                                        background: isActive ? 'rgba(197,168,128,0.2)' : 'rgba(197,168,128,0.1)',
+                                        borderRadius: '2px',
+                                    }}
+                                >
+                                    <Icon size={18} strokeWidth={1.5} style={{ color: '#c5a880' }} />
+                                </div>
+                                <span
+                                    className="text-center leading-tight"
+                                    style={{
+                                        fontFamily: "var(--font-open-sans), sans-serif",
+                                        fontSize: '0.7rem',
+                                        fontWeight: 600,
+                                        color: isActive ? '#ffffff' : '#6b5f52',
+                                        letterSpacing: '0.03em',
+                                    }}
+                                >
                                     {value.title}
                                 </span>
                             </button>
@@ -96,32 +99,19 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                     })}
                 </div>
 
-                {/* Tab Panel */}
+                {/* Active value description */}
                 {activeValue && (
                     <div
                         id={`tabpanel-${activeValue.id}`}
                         role="tabpanel"
                         aria-labelledby={`tab-${activeValue.id}`}
-                        className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-8"
+                        className="max-w-2xl mx-auto text-center"
                     >
-                        <div className="flex items-center mb-4">
-                            <span className="text-4xl mr-4">
-                                {activeValue.icon}
-                            </span>
-                            <h3 className="text-2xl font-bold">
-                                {activeValue.title}
-                            </h3>
-                        </div>
-                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                            {activeValue.description}
+                        <p className="text-base leading-relaxed" style={{ color: '#4a3f35', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic' }}>
+                            &ldquo;{activeValue.description}&rdquo;
                         </p>
                     </div>
                 )}
-
-                {/* Hint */}
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-                    Użyj strzałek ← → do nawigacji lub kliknij zakładkę
-                </p>
             </div>
         </section>
     );

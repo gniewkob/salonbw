@@ -3,46 +3,91 @@ import Image from 'next/image';
 import { FOUNDER_MESSAGE } from '@/config/content';
 
 type FounderData = { name: string; quote: string; photo?: string };
-
-interface FounderMessageProps {
-    founder?: FounderData;
-}
+interface FounderMessageProps { founder?: FounderData; }
 
 export default function FounderMessage({ founder }: FounderMessageProps) {
     const data = founder ?? (FOUNDER_MESSAGE as FounderData);
+
     return (
-        <section className="py-16 bg-gray-50 dark:bg-gray-900">
-            <div className="container mx-auto px-4">
-                <div className="max-w-4xl mx-auto">
-                    <blockquote className="text-center">
-                        <div className="mb-8">
-                            {data.photo && (
-                                <div className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden">
-                                    <Image
-                                        src={data.photo}
-                                        alt={`Zdjęcie ${data.name}`}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                        sizes="128px"
-                                    />
+        <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
+            <div className="container mx-auto px-4 md:px-8">
+                <div className="max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+
+                        {/* Photo */}
+                        <div className="flex justify-center md:justify-end order-1 md:order-none">
+                            <div className="relative">
+                                {/* Gold accent border */}
+                                <div
+                                    className="absolute"
+                                    style={{
+                                        top: '-12px',
+                                        left: '-12px',
+                                        right: '12px',
+                                        bottom: '12px',
+                                        border: '1px solid #c5a880',
+                                        borderRadius: '3px',
+                                        zIndex: 0,
+                                    }}
+                                />
+                                <div
+                                    className="relative overflow-hidden"
+                                    style={{ width: '280px', height: '340px', borderRadius: '3px', zIndex: 1 }}
+                                >
+                                    {data.photo ? (
+                                        <Image
+                                            src={data.photo}
+                                            alt={`Zdjęcie ${data.name}`}
+                                            fill
+                                            style={{ objectFit: 'cover', objectPosition: 'center top' }}
+                                            sizes="280px"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center" style={{ background: '#e8e2da' }}>
+                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#c5a880' }}>A</span>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 italic leading-relaxed mb-6">
-                                &ldquo;{data.quote}&rdquo;
-                            </p>
+                            </div>
                         </div>
-                        <footer className="flex flex-col items-center">
-                            <cite
-                                className="not-italic font-tangerine text-4xl md:text-5xl text-brand-gold"
-                                style={{ fontFamily: 'Tangerine, cursive' }}
-                            >
-                                {data.name}
-                            </cite>
-                            <span className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                Założycielka Salon Black & White
-                            </span>
-                        </footer>
-                    </blockquote>
+
+                        {/* Text */}
+                        <div>
+                            <p className="text-xs tracking-widest uppercase mb-4" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                Słowo od założycielki
+                            </p>
+
+                            <div className="mb-2" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3.5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
+
+                            <blockquote>
+                                <p
+                                    className="text-lg leading-relaxed mb-8"
+                                    style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}
+                                >
+                                    {data.quote}
+                                </p>
+
+                                <footer>
+                                    <cite
+                                        className="not-italic block"
+                                        style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#c5a880', lineHeight: 1.1 }}
+                                    >
+                                        {data.name}
+                                    </cite>
+                                    <span className="text-xs mt-1 block tracking-wider" style={{ color: '#8a7060', letterSpacing: '0.12em' }}>
+                                        Założycielka &amp; Właścicielka Salon Black &amp; White
+                                    </span>
+                                </footer>
+                            </blockquote>
+
+                            <div className="mt-8 flex items-center gap-3">
+                                <div style={{ width: '32px', height: '1px', background: '#c5a880' }} />
+                                <span className="text-xs tracking-widest" style={{ color: '#c5a880', letterSpacing: '0.2em' }}>
+                                    od 2011 roku
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

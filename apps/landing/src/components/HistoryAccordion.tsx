@@ -1,71 +1,65 @@
 'use client';
 import { useState } from 'react';
 import { HISTORY_ITEMS } from '@/config/content';
+import SectionHeader from './SectionHeader';
 
 type HistoryItem = { id: string; title: string; content: string };
+interface HistoryAccordionProps { items?: HistoryItem[]; }
 
-interface HistoryAccordionProps {
-    items?: HistoryItem[];
-}
+const YEAR_MAP: Record<string, string> = {
+    historia: '30+ lat',
+    poczatek: '2011',
+    wartosci: 'dziś',
+};
 
 export default function HistoryAccordion({ items }: HistoryAccordionProps) {
     const data = items ?? (HISTORY_ITEMS as unknown as HistoryItem[]);
-    const [openItem, setOpenItem] = useState<string | null>(
-        data[0]?.id || null,
-    );
+    const [openItem, setOpenItem] = useState<string | null>(data[0]?.id ?? null);
 
-    const toggleItem = (id: string) => {
-        setOpenItem((prev) => (prev === id ? null : id));
-    };
+    const toggle = (id: string) => setOpenItem(prev => prev === id ? null : id);
 
     return (
-        <section className="py-16 bg-white dark:bg-gray-950">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-                    Nasza Historia
-                </h2>
-                <div className="max-w-3xl mx-auto space-y-4">
-                    {data.map((item) => {
+        <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
+            <div className="container mx-auto px-4 md:px-8">
+                <SectionHeader eyebrow="Skąd pochodzimy" title="Nasza historia" dark />
+
+                <div className="max-w-2xl mx-auto space-y-0">
+                    {data.map((item, idx) => {
                         const isOpen = openItem === item.id;
                         return (
-                            <div
-                                key={item.id}
-                                className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
-                            >
+                            <div key={item.id} style={{ borderTop: idx === 0 ? '1px solid rgba(255,255,255,0.1)' : 'none', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                                 <button
                                     type="button"
-                                    onClick={() => toggleItem(item.id)}
-                                    className="w-full px-6 py-4 flex justify-between items-center bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-inset"
+                                    onClick={() => toggle(item.id)}
+                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-inset"
                                     aria-expanded={isOpen}
                                     aria-controls={`history-content-${item.id}`}
                                 >
-                                    <h3 className="text-xl font-semibold text-left">
-                                        {item.title}
-                                    </h3>
+                                    <div className="flex items-center gap-5">
+                                        <span className="text-xs font-mono w-10 shrink-0" style={{ color: '#c5a880' }}>
+                                            {YEAR_MAP[item.id] ?? '—'}
+                                        </span>
+                                        <h3 className="text-lg font-semibold" style={{ fontFamily: "var(--font-playfair), serif", color: isOpen ? '#c5a880' : '#ffffff', transition: 'color 0.2s' }}>
+                                            {item.title}
+                                        </h3>
+                                    </div>
                                     <svg
-                                        className={`w-6 h-6 transition-transform ${
-                                            isOpen ? 'rotate-180' : ''
-                                        }`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                        className="shrink-0 ml-4 transition-transform duration-300"
+                                        style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', color: '#c5a880' }}
+                                        width={18} height={18} fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M19 9l-7 7-7-7"
-                                        />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
+
                                 {isOpen && (
                                     <div
                                         id={`history-content-${item.id}`}
-                                        className="px-6 py-4 bg-white dark:bg-gray-900"
+                                        className="pb-6 pl-15"
+                                        style={{ paddingLeft: '60px' }}
                                         role="region"
-                                        aria-labelledby={`history-button-${item.id}`}
                                     >
-                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                        <p className="leading-relaxed text-sm md:text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>
                                             {item.content}
                                         </p>
                                     </div>
