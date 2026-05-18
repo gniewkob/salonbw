@@ -46,6 +46,9 @@ interface RescheduleAppointmentPayload {
 export function useCalendar(options: UseCalendarOptions) {
     const { apiFetch } = useAuth();
     const { date, view = 'day', employeeIds, enabled = true } = options;
+    const normalizedDate = /^\d{4}-\d{2}-\d{2}$/.test(date)
+        ? `${date}T00:00:00`
+        : date;
 
     const queryKey = [
         ...CALENDAR_QUERY_KEY,
@@ -56,7 +59,7 @@ export function useCalendar(options: UseCalendarOptions) {
         queryKey,
         queryFn: async () => {
             const params = new URLSearchParams({
-                date,
+                date: normalizedDate,
                 view,
             });
             if (employeeIds && employeeIds.length > 0) {
@@ -67,6 +70,22 @@ export function useCalendar(options: UseCalendarOptions) {
             );
         },
         enabled,
+        retry: (failureCount, error) => {
+            const status =
+                typeof error === 'object' &&
+                error !== null &&
+                'status' in error &&
+                typeof (error as { status?: unknown }).status === 'number'
+                    ? (error as { status: number }).status
+                    : null;
+
+            // Avoid repeated retries for deterministic client errors (4xx).
+            if (status !== null && status >= 400 && status < 500) {
+                return false;
+            }
+
+            return failureCount < 2;
+        },
     });
 
     return {
