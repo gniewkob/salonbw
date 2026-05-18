@@ -721,9 +721,91 @@ describe('CalendarPage', () => {
                 '/appointments/701/cancellation-request',
                 expect.objectContaining({
                     method: 'POST',
+                    body: '{}',
                 }),
             ),
         );
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText(/Strzyzenie/i)).toBeInTheDocument();
+    });
+
+    it('client cancellation request smoke: request succeeds and archive stays read-only', async () => {
+        authRole = 'client';
+        authUserId = 71;
+        routerMock.query = { view: 'client', date: '2099-05-17' };
+        useCalendarMock.mockImplementation(() => ({
+            data: {
+                events: [
+                    {
+                        id: 801,
+                        type: 'appointment',
+                        title: 'Przyszla',
+                        startTime: '2099-05-17T12:00:00.000Z',
+                        endTime: '2099-05-17T12:45:00.000Z',
+                        employeeId: 2,
+                        employeeName: 'Anna',
+                        clientId: 71,
+                        clientName: 'Klient E',
+                        status: 'scheduled',
+                        serviceId: 40,
+                        serviceName: 'Manicure',
+                    },
+                    {
+                        id: 802,
+                        type: 'appointment',
+                        title: 'Archiwalna',
+                        startTime: '2020-05-17T12:00:00.000Z',
+                        endTime: '2020-05-17T12:45:00.000Z',
+                        employeeId: 3,
+                        employeeName: 'Ola',
+                        clientId: 71,
+                        clientName: 'Klient E',
+                        status: 'completed',
+                        serviceId: 41,
+                        serviceName: 'Pedicure',
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-01-01', end: '2026-01-02' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        }));
+
+        render(<CalendarPage />);
+
+        const buttons = screen.getAllByRole('button', {
+            name: 'Popros o anulowanie',
+        });
+        expect(buttons).toHaveLength(1);
+
+        fireEvent.click(buttons[0]);
+
+        await waitFor(() =>
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/801/cancellation-request',
+                expect.objectContaining({
+                    method: 'POST',
+                    body: '{}',
+                }),
+            ),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(screen.getByText(/Manicure/i)).toBeInTheDocument();
+        expect(screen.getByText(/Pedicure/i)).toBeInTheDocument();
     });
 
     it('shows warning when customer CRM stats are temporarily unavailable', async () => {
