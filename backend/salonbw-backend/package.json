@@ -29,7 +29,7 @@
         "@nestjs/axios": "^4.0.1",
         "@nestjs/common": "^11.1.19",
         "@nestjs/config": "^4.0.2",
-        "@nestjs/core": "^11.1.14",
+        "@nestjs/core": "^11.1.21",
         "@nestjs/jwt": "^11.0.0",
         "@nestjs/mapped-types": "^2.0.5",
         "@nestjs/passport": "^11.0.5",
@@ -68,7 +68,7 @@
         "socket.io": "^4.8.1",
         "ts-node": "^10.9.2",
         "typeorm": "^0.3.28",
-        "uuid": "^8.3.2",
+        "uuid": "^14.0.0",
         "web-push": "^3.6.7",
         "xml2js": "^0.6.2"
     },
