@@ -2592,9 +2592,10 @@ tr.customer-row:hover .customers-drag-handle {
     display: block;
     text-align: center;
     padding: 0 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.15;
     max-width: 100%;
 }
 
