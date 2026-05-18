@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
@@ -49,8 +50,6 @@ export default function Navbar() {
         scrolled ? 'text-gray-800 hover:text-[#c5a880]' : 'text-white/90 hover:text-[#c5a880]'
     }`;
 
-    const logoTextColor = scrolled ? '#0d0d0d' : '#ffffff';
-
     return (
         <nav
             aria-label="Nawigacja główna"
@@ -67,20 +66,23 @@ export default function Navbar() {
                     {/* Logo */}
                     <Link
                         href={'/' as Route}
-                        className="flex flex-col leading-none focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
+                        className="flex items-center focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
                         onClick={() => setMobileMenuOpen(false)}
+                        aria-label="Black & White — strona główna"
                     >
-                        <span
-                            className="font-bold tracking-widest uppercase text-xs"
-                            style={{ color: logoTextColor, letterSpacing: '0.22em', fontFamily: "'Open Sans', sans-serif", transition: 'color 0.3s' }}
-                        >
-                            Black &amp; White
-                        </span>
-                        <span
-                            style={{ fontFamily: "'Tangerine', cursive", fontSize: '1.6rem', color: '#c5a880', lineHeight: 1, transition: 'color 0.3s' }}
-                        >
-                            Akademia Zdrowych Włosów
-                        </span>
+                        <Image
+                            src="/images/logo.svg"
+                            alt="Black & White Akademia Zdrowych Włosów"
+                            width={90}
+                            height={48}
+                            unoptimized
+                            style={{
+                                height: '48px',
+                                width: 'auto',
+                                filter: scrolled ? 'none' : 'brightness(0) invert(1)',
+                                transition: 'filter 0.3s',
+                            }}
+                        />
                     </Link>
 
                     {/* Desktop Navigation */}
