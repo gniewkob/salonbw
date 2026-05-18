@@ -9,6 +9,7 @@ import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import ReceptionView from '@/components/calendar/ReceptionView';
 import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
+import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
@@ -573,8 +574,6 @@ export default function CalendarPage() {
     const [clientMode, setClientMode] = useState(initialQueryState.clientMode);
     const [queryStateReady, setQueryStateReady] = useState(isRouterReady);
     const [employeeArchiveMode, setEmployeeArchiveMode] = useState(false);
-    const [clientSelectedAppointmentId, setClientSelectedAppointmentId] =
-        useState<number | null>(null);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
         initialQueryState.selectedEmployeeIds,
     );
@@ -838,15 +837,6 @@ export default function CalendarPage() {
                     new Date(left.startTime).getTime(),
             );
     }, [clientAppointments]);
-
-    const clientSelectedAppointment = useMemo(() => {
-        if (!clientSelectedAppointmentId) return null;
-        return (
-            clientAppointments.find(
-                (appointment) => appointment.id === clientSelectedAppointmentId,
-            ) ?? null
-        );
-    }, [clientAppointments, clientSelectedAppointmentId]);
 
     const receptionDailySummary = useMemo(() => {
         const allAppointments = Array.from(appointmentsById.values());
@@ -1864,183 +1854,20 @@ export default function CalendarPage() {
                                 />
                             </div>
                         ) : clientMode ? (
-                            <div className="d-flex flex-column gap-3">
-                                <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
-                                    <div>
-                                        <label
-                                            className="form-label form-label-sm mb-1"
-                                            htmlFor="client-calendar-date"
-                                        >
-                                            Data referencyjna
-                                        </label>
-                                        <input
-                                            id="client-calendar-date"
-                                            type="date"
-                                            className="form-control form-control-sm"
-                                            value={toDateParam(currentDate)}
-                                            onChange={(event) => {
-                                                const nextDate = new Date(
-                                                    `${event.target.value}T00:00:00`,
-                                                );
-                                                if (
-                                                    Number.isNaN(
-                                                        nextDate.getTime(),
-                                                    )
-                                                )
-                                                    return;
-                                                setCurrentDate(nextDate);
-                                                updateCalendarQuery({
-                                                    date: toDateParam(nextDate),
-                                                    view: 'client',
-                                                });
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="row g-3">
-                                    <section className="col-12 col-lg-6">
-                                        <div className="border rounded bg-white p-3 h-100">
-                                            <h3 className="h6 mb-2">
-                                                Nadchodzace wizyty
-                                            </h3>
-                                            {clientFutureAppointments.length ===
-                                            0 ? (
-                                                <p className="text-muted small mb-0">
-                                                    Brak nadchodzacych wizyt.
-                                                </p>
-                                            ) : (
-                                                <div className="d-flex flex-column gap-2">
-                                                    {clientFutureAppointments.map(
-                                                        (appointment) => (
-                                                            <button
-                                                                key={
-                                                                    appointment.id
-                                                                }
-                                                                type="button"
-                                                                className="btn btn-outline-secondary btn-sm text-start"
-                                                                onClick={() =>
-                                                                    setClientSelectedAppointmentId(
-                                                                        appointment.id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                {appointment
-                                                                    .service
-                                                                    ?.name ??
-                                                                    'Wizyta'}{' '}
-                                                                -{' '}
-                                                                {new Date(
-                                                                    appointment.startTime,
-                                                                ).toLocaleString(
-                                                                    'pl-PL',
-                                                                    {
-                                                                        dateStyle:
-                                                                            'medium',
-                                                                        timeStyle:
-                                                                            'short',
-                                                                    },
-                                                                )}
-                                                            </button>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </section>
-                                    <section className="col-12 col-lg-6">
-                                        <div className="border rounded bg-white p-3 h-100">
-                                            <h3 className="h6 mb-2">
-                                                Historia wizyt
-                                            </h3>
-                                            {clientArchivedAppointments.length ===
-                                            0 ? (
-                                                <p className="text-muted small mb-0">
-                                                    Brak wizyt archiwalnych.
-                                                </p>
-                                            ) : (
-                                                <div className="d-flex flex-column gap-2">
-                                                    {clientArchivedAppointments.map(
-                                                        (appointment) => (
-                                                            <button
-                                                                key={
-                                                                    appointment.id
-                                                                }
-                                                                type="button"
-                                                                className="btn btn-outline-secondary btn-sm text-start"
-                                                                onClick={() =>
-                                                                    setClientSelectedAppointmentId(
-                                                                        appointment.id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                {appointment
-                                                                    .service
-                                                                    ?.name ??
-                                                                    'Wizyta'}{' '}
-                                                                -{' '}
-                                                                {new Date(
-                                                                    appointment.startTime,
-                                                                ).toLocaleString(
-                                                                    'pl-PL',
-                                                                    {
-                                                                        dateStyle:
-                                                                            'medium',
-                                                                        timeStyle:
-                                                                            'short',
-                                                                    },
-                                                                )}
-                                                            </button>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </section>
-                                </div>
-                                <section
-                                    className="border rounded bg-white p-3"
-                                    data-testid="client-appointment-details"
-                                >
-                                    <h3 className="h6 mb-2">
-                                        Szczegoly wizyty (tylko odczyt)
-                                    </h3>
-                                    {clientSelectedAppointment ? (
-                                        <dl className="row mb-0">
-                                            <dt className="col-sm-3">Usluga</dt>
-                                            <dd className="col-sm-9">
-                                                {clientSelectedAppointment
-                                                    .service?.name ?? '-'}
-                                            </dd>
-                                            <dt className="col-sm-3">Status</dt>
-                                            <dd className="col-sm-9">
-                                                {clientSelectedAppointment.status ??
-                                                    'scheduled'}
-                                            </dd>
-                                            <dt className="col-sm-3">Termin</dt>
-                                            <dd className="col-sm-9">
-                                                {new Date(
-                                                    clientSelectedAppointment.startTime,
-                                                ).toLocaleString('pl-PL', {
-                                                    dateStyle: 'medium',
-                                                    timeStyle: 'short',
-                                                })}
-                                            </dd>
-                                            <dt className="col-sm-3">
-                                                Pracownik
-                                            </dt>
-                                            <dd className="col-sm-9">
-                                                {clientSelectedAppointment
-                                                    .employee?.name ?? '-'}
-                                            </dd>
-                                        </dl>
-                                    ) : (
-                                        <p className="text-muted small mb-0">
-                                            Wybierz wizyte z listy, aby zobaczyc
-                                            szczegoly.
-                                        </p>
-                                    )}
-                                </section>
-                            </div>
+                            <ClientAppointmentHistoryView
+                                currentDateParam={toDateParam(currentDate)}
+                                futureAppointments={clientFutureAppointments}
+                                archivedAppointments={
+                                    clientArchivedAppointments
+                                }
+                                onDateChange={(nextDate) => {
+                                    setCurrentDate(nextDate);
+                                    updateCalendarQuery({
+                                        date: toDateParam(nextDate),
+                                        view: 'client',
+                                    });
+                                }}
+                            />
                         ) : (
                             <CalendarView
                                 events={data?.events ?? []}
