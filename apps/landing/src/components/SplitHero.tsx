@@ -52,12 +52,12 @@ export default function SplitHero() {
             {/* Right — photo panel */}
             <div className="split-hero__right">
                 <Image
-                    src="/images/hero/slider1.jpg"
+                    src="/images/hero/DSC_9576.jpg"
                     alt={T.hero.imageAlt}
                     fill
                     priority
                     className="hero-img-zoom"
-                    style={{ objectFit: 'cover', objectPosition: 'center' }}
+                    style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
                     sizes="50vw"
                 />
                 <div className="split-hero__right-overlay" aria-hidden="true" />
