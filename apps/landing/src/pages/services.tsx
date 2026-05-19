@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
@@ -85,6 +85,11 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
             });
         } catch {}
     }, [items]);
+
+    const [bookingService, setBookingService] = useState<Service | null>(null);
+    const bookingUrl = bookingService
+        ? getPanelUrl(`/auth/login?redirect=${encodeURIComponent(`/calendar?newService=${bookingService.id}`)}`)
+        : '#';
 
     function resolveServiceRoute(name: string): Route | undefined {
         const n = name.toLowerCase();
@@ -190,13 +195,24 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                 </p>
                                             )}
                                         </div>
-                                        <div className="ml-4 text-right flex flex-col items-end">
-                                            <span className="text-lg font-semibold text-brand-gold">
+                                        <div className="ml-4 text-right flex flex-col items-end gap-1">
+                                            <span className="text-lg font-semibold" style={{ color: '#c5a880' }}>
                                                 {getServicePrice(s).label}
                                             </span>
                                             <span className="text-sm text-gray-500 dark:text-gray-400">
                                                 {getServiceDuration(s)}
                                             </span>
+                                            <button
+                                                onClick={() => setBookingService(s)}
+                                                className="mt-1 flex items-center gap-1 text-xs hover:opacity-70 transition"
+                                                style={{ color: '#c5a880' }}
+                                                aria-label={`Umów wizytę: ${s.name}`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                Umów
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -222,6 +238,43 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     </div>
                 </div>
             </div>
+            {bookingService && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ background: 'rgba(0,0,0,0.7)' }}
+                    onClick={() => setBookingService(null)}
+                >
+                    <div
+                        className="w-full max-w-sm rounded p-8"
+                        style={{ background: '#0d0d0d', border: '1px solid rgba(197,168,128,0.25)' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <p className="text-xs uppercase mb-1" style={{ color: '#c5a880', letterSpacing: '0.12em' }}>Rezerwacja</p>
+                        <h2 className="text-xl font-semibold mb-1" style={{ color: '#ffffff', fontFamily: "var(--font-playfair), serif" }}>
+                            {bookingService.name}
+                        </h2>
+                        <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                            {getServicePrice(bookingService).label} · {getServiceDuration(bookingService)}
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <a
+                                href={bookingUrl}
+                                className="block text-center text-xs font-semibold uppercase py-3.5 px-6 transition hover:opacity-90"
+                                style={{ background: '#c5a880', color: '#0d0d0d', letterSpacing: '0.12em', borderRadius: '2px' }}
+                            >
+                                Umów wizytę
+                            </a>
+                            <button
+                                onClick={() => setBookingService(null)}
+                                className="text-xs uppercase text-center py-2 transition hover:opacity-70"
+                                style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.10em' }}
+                            >
+                                Anuluj
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PublicLayout>
     );
 }
