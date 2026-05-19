@@ -3,12 +3,16 @@ import { SALON_GALLERY } from '@/config/content';
 
 type StripItem = { id: number; image: string; alt: string; caption: string };
 
-const STRIP_ITEMS = (SALON_GALLERY as unknown as StripItem[]).slice(0, 5);
+interface PhotoStripProps {
+    items?: StripItem[];
+}
 
-export default function PhotoStrip() {
+export default function PhotoStrip({ items }: PhotoStripProps) {
+    const data = items?.slice(0, 5) ?? (SALON_GALLERY as unknown as StripItem[]).slice(0, 5);
+
     return (
         <div className="photo-strip" aria-hidden="true">
-            {STRIP_ITEMS.map((item) => (
+            {data.map((item) => (
                 <div key={item.id} className="photo-strip__item">
                     <Image
                         src={item.image}

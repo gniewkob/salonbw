@@ -22,7 +22,7 @@ import GoldTickerStrip from '@/components/GoldTickerStrip';
 import PhotoStrip from '@/components/PhotoStrip';
 import {
     getFounderMessage,
-    getSalonGallery,
+    getInstagramGallery,
 } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
@@ -115,7 +115,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 </ScrollReveal>
 
                 {/* 7. Cinematic photo strip */}
-                <PhotoStrip />
+                <PhotoStrip items={galleryImages.slice(0, 5)} />
 
                 {/* 8. Gallery */}
                 <SalonGallery images={galleryImages} />
@@ -209,7 +209,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
     const [founder, galleryImages] = await Promise.all([
         getFounderMessage(),
-        getSalonGallery(),
+        getInstagramGallery(8),
     ]);
 
     return {
