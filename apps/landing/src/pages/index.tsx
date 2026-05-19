@@ -170,7 +170,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                             </div>
 
                             <div className="relative">
-                                <div className="absolute" style={{ inset: 0, margin: '-8px', border: '1px solid rgba(197,168,128,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
+                                <div className="absolute" style={{ inset: 0, border: '1px solid rgba(197,168,128,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
                                 <iframe
                                     src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2549.${BUSINESS_INFO.coordinates.lat}!2d${BUSINESS_INFO.coordinates.lng}!3d${BUSINESS_INFO.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTDCsDIwJzU1LjEiTiAxOMKwNTUnMTcuMSJF!5e0!3m2!1spl!2spl!4v1234567890123!5m2!1spl!2spl`}
                                     className="relative w-full"
