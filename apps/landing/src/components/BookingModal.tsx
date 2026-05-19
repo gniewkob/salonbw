@@ -1,5 +1,5 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
@@ -31,6 +31,14 @@ export default function BookingModal({
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [focusedField, setFocusedField] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!open) {
+            setError('');
+            setTouched({ email: false, password: false });
+            setFocusedField(null);
+        }
+    }, [open]);
 
     if (!open) return null;
 
@@ -161,7 +169,11 @@ export default function BookingModal({
                                 lineHeight: 1.2,
                             }}
                         >
-                            {service ? service.name : 'Zaloguj się'}
+                            {service
+                                ? service.name
+                                : isAuthenticated
+                                  ? 'Umów wizytę'
+                                  : 'Zaloguj się'}
                         </h2>
                         {service ? (
                             <p
@@ -185,7 +197,9 @@ export default function BookingModal({
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
                                 }}
                             >
-                                aby przejść do kalendarza rezerwacji
+                                {isAuthenticated
+                                    ? BUSINESS_INFO.address.city + ' · od 2011 roku'
+                                    : 'aby przejść do kalendarza rezerwacji'}
                             </p>
                         )}
                         <div

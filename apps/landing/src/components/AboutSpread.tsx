@@ -28,14 +28,30 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                 {T.founder.eyebrow}
                             </p>
 
-                            <div style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.5, marginBottom: '0.5rem' }}>
+                            <div
+                                aria-hidden="true"
+                                style={{
+                                    fontFamily: "var(--font-playfair), serif",
+                                    fontSize: 'clamp(5rem, 10vw, 9rem)',
+                                    color: '#c5a880',
+                                    lineHeight: 0.75,
+                                    opacity: 0.25,
+                                    marginBottom: '-0.25rem',
+                                    userSelect: 'none',
+                                }}
+                            >
                                 &ldquo;
                             </div>
 
                             <blockquote>
                                 <p
-                                    className="text-lg leading-relaxed mb-6"
-                                    style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}
+                                    className="leading-relaxed mb-6"
+                                    style={{
+                                        fontFamily: "var(--font-playfair), serif",
+                                        fontStyle: 'italic',
+                                        color: '#3a3028',
+                                        fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
+                                    }}
                                 >
                                     {data.quote}
                                 </p>
@@ -60,12 +76,12 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                             </div>
 
                             {/* Mini timeline */}
-                            <div className="mt-8 space-y-3">
+                            <div className="mt-8">
                                 {T.history.items.slice(0, 2).map(item => (
-                                    <div key={item.id} className="flex items-start gap-4">
+                                    <div key={item.id} className="timeline-item">
                                         <span
-                                            className="text-xs font-semibold shrink-0 mt-0.5 w-14"
-                                            style={{ color: '#c5a880', fontFamily: "var(--font-open-sans), sans-serif" }}
+                                            className="text-xs font-bold block mb-0.5"
+                                            style={{ color: '#c5a880', fontFamily: "var(--font-open-sans), sans-serif", letterSpacing: '0.1em' }}
                                         >
                                             {T.history.yearMap[item.id as keyof typeof T.history.yearMap]}
                                         </span>
@@ -86,7 +102,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                 />
                                 <div
                                     className="relative overflow-hidden"
-                                    style={{ width: '280px', height: '340px', borderRadius: '3px', zIndex: 1 }}
+                                    style={{ width: '300px', height: '400px', borderRadius: '3px', zIndex: 1, boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}
                                 >
                                     {data.photo ? (
                                         <Image

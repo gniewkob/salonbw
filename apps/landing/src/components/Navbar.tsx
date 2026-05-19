@@ -96,11 +96,22 @@ export default function Navbar() {
                                 { label: T.nav.services, href: '/services' },
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },
-                            ].map(({ label, href }) => (
-                                <li key={href}>
-                                    <Link href={href as Route} className={navLinkClass}>{label}</Link>
-                                </li>
-                            ))}
+                            ].map(({ label, href }) => {
+                                const pathname = router.pathname ?? '';
+                                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
+                                return (
+                                    <li key={href}>
+                                        <Link
+                                            href={href as Route}
+                                            className={navLinkClass}
+                                            style={active ? { color: '#c5a880', borderBottom: '1px solid #c5a880', paddingBottom: '2px' } : undefined}
+                                            aria-current={active ? 'page' : undefined}
+                                        >
+                                            {label}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                             {dashboardRoute ? (
                                 <>
                                     <li><a href={dashboardRoute} className={navLinkClass}>{T.nav.panel}</a></li>
@@ -180,17 +191,23 @@ export default function Navbar() {
                                 { label: T.nav.services, href: '/services' },
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },
-                            ].map(({ label, href }) => (
-                                <li key={href}>
-                                    <Link
-                                        href={href as Route}
-                                        className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        {label}
-                                    </Link>
-                                </li>
-                            ))}
+                            ].map(({ label, href }) => {
+                                const pathname = router.pathname ?? '';
+                                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
+                                return (
+                                    <li key={href}>
+                                        <Link
+                                            href={href as Route}
+                                            className="block py-2.5 px-4 text-sm font-medium transition"
+                                            style={{ color: active ? '#c5a880' : undefined }}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            aria-current={active ? 'page' : undefined}
+                                        >
+                                            {label}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                             {dashboardRoute ? (
                                 <>
                                     <li><a href={dashboardRoute} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">{T.nav.panel}</a></li>
