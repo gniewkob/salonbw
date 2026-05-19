@@ -9,14 +9,10 @@ import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 import SplitHero from '@/components/SplitHero';
-import GoldTicker from '@/components/GoldTicker';
-import StatsBar from '@/components/StatsBar';
+import TrustStrip from '@/components/TrustStrip';
 import ScrollReveal from '@/components/ScrollReveal';
-import FounderMessage from '@/components/FounderMessage';
-import HistoryAccordion from '@/components/HistoryAccordion';
-import ValuesSection from '@/components/ValuesSection';
+import AboutSpread from '@/components/AboutSpread';
 import SalonGallery from '@/components/SalonGallery';
-import PartnerBrands from '@/components/PartnerBrands';
 import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
 import SectionHeader from '@/components/SectionHeader';
@@ -92,119 +88,99 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
             </Script>
 
             <div>
-                {/* 1. Diagonal split hero */}
+                {/* 1. Split hero */}
                 <SplitHero />
 
-                {/* 2. Gold ticker — scrolling brand strip */}
-                <GoldTicker />
+                {/* 2. Partner brands trust strip */}
+                <TrustStrip />
 
-                {/* 3. Partner brands marquee */}
-                <PartnerBrands />
-
-                {/* 4. Stats bar */}
-                <StatsBar />
-
-                {/* 5. Services teaser */}
+                {/* 3. Services */}
                 <ScrollReveal direction="up">
                     <ServicesTeaser />
                 </ScrollReveal>
 
-                {/* 6. Founder message */}
+                {/* 4. About — founder + 3 principles */}
                 <ScrollReveal direction="up">
-                    <FounderMessage founder={founder} />
+                    <AboutSpread founder={founder} />
                 </ScrollReveal>
 
-                {/* 7. Core values */}
-                <ScrollReveal direction="up">
-                    <ValuesSection />
-                </ScrollReveal>
+                {/* 5. Gallery */}
+                <SalonGallery images={galleryImages} />
 
-                {/* 8. Gallery */}
-                <ScrollReveal direction="up">
-                    <SalonGallery images={galleryImages} />
-                </ScrollReveal>
+                {/* 6. Testimonials */}
+                <Testimonials />
 
-                {/* 9. History */}
-                <ScrollReveal direction="up">
-                    <HistoryAccordion />
-                </ScrollReveal>
-
-                {/* 10. Testimonials */}
-                <ScrollReveal direction="up">
-                    <Testimonials />
-                </ScrollReveal>
-
-                {/* 11. Contact — ink black, gold accents */}
+                {/* 7. Contact */}
                 <section className="contact-section" style={{ background: 'var(--brand-black)' }}>
                     <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
-                        <ScrollReveal direction="up">
-                            <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
-                        </ScrollReveal>
+                        <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-5xl mx-auto">
-                            <ScrollReveal direction="left">
-                                <div className="space-y-8">
-                                    <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group">
-                                        <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.22em' }}>Telefon</span>
-                                        <span className="block transition-opacity duration-200 group-hover:opacity-70"
-                                            style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#ffffff', letterSpacing: '-0.01em' }}>
-                                            {BUSINESS_INFO.contact.phone}
-                                        </span>
+                            <div className="space-y-8">
+                                <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group">
+                                    <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>Telefon</span>
+                                    <span
+                                        className="block transition-opacity duration-200 group-hover:opacity-70"
+                                        style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#ffffff', letterSpacing: '-0.01em' }}
+                                    >
+                                        {BUSINESS_INFO.contact.phone}
+                                    </span>
+                                </a>
+
+                                <div>
+                                    <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>Adres</span>
+                                    <address className="not-italic" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.8 }}>
+                                        {BUSINESS_INFO.address.street}<br />
+                                        {BUSINESS_INFO.address.postalCode} {BUSINESS_INFO.address.city}
+                                    </address>
+                                </div>
+
+                                <div>
+                                    <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>Godziny otwarcia</span>
+                                    <div>
+                                        {[
+                                            { day: 'Poniedziałek – Piątek', hours: BUSINESS_INFO.hours.mondayFriday },
+                                            { day: 'Sobota', hours: BUSINESS_INFO.hours.saturday },
+                                            { day: 'Niedziela', hours: BUSINESS_INFO.hours.sunday },
+                                        ].map(({ day, hours }) => (
+                                            <div key={day} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{day}</span>
+                                                <span className="text-sm font-medium" style={{ color: hours === 'Zamknięte' ? 'rgba(255,255,255,0.25)' : 'var(--brand-gold)' }}>{hours}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                    <a
+                                        href={bookingUrl}
+                                        className="split-hero__cta-primary text-xs font-semibold uppercase text-center px-8 py-3.5"
+                                        style={{ letterSpacing: '0.14em' }}
+                                    >
+                                        {BUSINESS_INFO.booking.text}
                                     </a>
-
-                                    <div>
-                                        <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.22em' }}>Adres</span>
-                                        <address className="not-italic" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.8 }}>
-                                            {BUSINESS_INFO.address.street}<br />
-                                            {BUSINESS_INFO.address.postalCode} {BUSINESS_INFO.address.city}
-                                        </address>
-                                    </div>
-
-                                    <div>
-                                        <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.22em' }}>Godziny otwarcia</span>
-                                        <div>
-                                            {[
-                                                { day: 'Poniedziałek – Piątek', hours: BUSINESS_INFO.hours.mondayFriday },
-                                                { day: 'Sobota', hours: BUSINESS_INFO.hours.saturday },
-                                                { day: 'Niedziela', hours: BUSINESS_INFO.hours.sunday },
-                                            ].map(({ day, hours }) => (
-                                                <div key={day} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                                    <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{day}</span>
-                                                    <span className="text-sm font-medium" style={{ color: hours === 'Zamknięte' ? 'rgba(255,255,255,0.25)' : 'var(--brand-gold)' }}>{hours}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                        <a href={bookingUrl}
-                                            className="split-hero__cta-primary text-xs font-semibold uppercase text-center px-8 py-3.5"
-                                            style={{ letterSpacing: '0.14em' }}>
-                                            {BUSINESS_INFO.booking.text}
-                                        </a>
-                                        <Link href="/contact"
-                                            className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
-                                            style={{ letterSpacing: '0.14em' }}>
-                                            Formularz kontaktowy
-                                        </Link>
-                                    </div>
+                                    <Link
+                                        href="/contact"
+                                        className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
+                                        style={{ letterSpacing: '0.14em' }}
+                                    >
+                                        Formularz kontaktowy
+                                    </Link>
                                 </div>
-                            </ScrollReveal>
+                            </div>
 
-                            <ScrollReveal direction="right">
-                                <div className="relative">
-                                    <div className="absolute" style={{ inset: 0, margin: '-8px', border: '1px solid rgba(197,168,128,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
-                                    <iframe
-                                        src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2549.${BUSINESS_INFO.coordinates.lat}!2d${BUSINESS_INFO.coordinates.lng}!3d${BUSINESS_INFO.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTDCsDIwJzU1LjEiTiAxOMKwNTUnMTcuMSJF!5e0!3m2!1spl!2spl!4v1234567890123!5m2!1spl!2spl`}
-                                        className="relative w-full"
-                                        style={{ height: '380px', borderRadius: '3px', filter: 'grayscale(0.3) contrast(1.05)', zIndex: 1, display: 'block' }}
-                                        allowFullScreen
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                        title={`Mapa salonu ${BUSINESS_INFO.name} w ${BUSINESS_INFO.address.city}`}
-                                    />
-                                </div>
-                            </ScrollReveal>
+                            <div className="relative">
+                                <div className="absolute" style={{ inset: 0, margin: '-8px', border: '1px solid rgba(197,168,128,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
+                                <iframe
+                                    src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2549.${BUSINESS_INFO.coordinates.lat}!2d${BUSINESS_INFO.coordinates.lng}!3d${BUSINESS_INFO.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTDCsDIwJzU1LjEiTiAxOMKwNTUnMTcuMSJF!5e0!3m2!1spl!2spl!4v1234567890123!5m2!1spl!2spl`}
+                                    className="relative w-full"
+                                    style={{ height: '380px', borderRadius: '3px', filter: 'grayscale(0.3) contrast(1.05)', zIndex: 1, display: 'block' }}
+                                    allowFullScreen
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    title={`Mapa salonu ${BUSINESS_INFO.name} w ${BUSINESS_INFO.address.city}`}
+                                />
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -95,43 +95,6 @@ html {
 .hero-scroll { animation: fadeIn 1.2s 1s ease both; }
 .scroll-arrow { animation: scrollDown 1.8s ease-in-out infinite; }
 
-/* ── Partner brands marquee ───────────────────────────── */
-@keyframes marquee {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-.marquee-track {
-    animation: marquee 18s linear infinite;
-    display: flex;
-    width: max-content;
-}
-.marquee-track:hover { animation-play-state: paused; }
-
-/* ── Gold ticker ──────────────────────────────────────── */
-@keyframes ticker {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-.gold-ticker {
-    background: var(--brand-gold);
-    overflow: hidden;
-    white-space: nowrap;
-    padding: 10px 0;
-}
-.gold-ticker__track {
-    display: inline-flex;
-    animation: ticker 28s linear infinite;
-}
-.gold-ticker__item {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: #fff;
-    padding: 0 1.5rem;
-    font-family: var(--font-open-sans), sans-serif;
-}
-.gold-ticker__dot { opacity: 0.5; }
-
 /* ── Split Hero ───────────────────────────────────────── */
 .split-hero {
     position: relative;
@@ -169,7 +132,7 @@ html {
     font-family: var(--font-playfair), serif;
     font-size: clamp(8rem, 18vw, 18rem);
     font-weight: 700;
-    color: rgba(255,255,255,0.025);
+    color: rgba(255,255,255,0.08);
     line-height: 1;
     pointer-events: none;
     user-select: none;
@@ -187,7 +150,7 @@ html {
 .split-hero__eyebrow {
     font-family: var(--font-open-sans), sans-serif;
     font-size: 0.68rem;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--brand-gold);
     margin-bottom: 2rem;
@@ -277,7 +240,7 @@ html {
     align-items: center;
     gap: 0.6rem;
     font-size: 0.65rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.3);
     font-family: var(--font-open-sans), sans-serif;
@@ -340,7 +303,7 @@ html {
 }
 .split-hero__float-label {
     font-size: 0.6rem;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--brand-gold);
     font-family: var(--font-open-sans), sans-serif;
@@ -436,51 +399,10 @@ html {
 .stats-bar__label {
     display: block;
     font-size: 0.65rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.4);
     font-family: var(--font-open-sans), sans-serif;
-}
-
-/* ── Custom Cursor ────────────────────────────────────── */
-@media (pointer: fine) {
-    * { cursor: none !important; }
-
-    .cursor-dot {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 7px;
-        height: 7px;
-        background: var(--brand-gold);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 9999;
-        margin: -3.5px 0 0 -3.5px;
-        transition: opacity 0.2s;
-        mix-blend-mode: normal;
-    }
-
-    .cursor-ring {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 36px;
-        height: 36px;
-        border: 1.5px solid rgba(197,168,128,0.6);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 9998;
-        margin: -18px 0 0 -18px;
-        transition: width 0.3s, height 0.3s, margin 0.3s, border-color 0.3s;
-    }
-
-    .cursor-ring.cursor-expand {
-        width: 56px;
-        height: 56px;
-        margin: -28px 0 0 -28px;
-        border-color: var(--brand-gold);
-    }
 }
 
 /* ── Scroll Reveal ────────────────────────────────────── */
@@ -547,7 +469,7 @@ html {
     .split-hero__scroll-hint { display: none; }
 }
 
-/* ── Reusable hover utilities (replaces inline onMouseEnter mutations) ── */
+/* ── Reusable hover utilities ─────────────────────────── */
 .btn-glass {
     background: rgba(255,255,255,0.12);
     backdrop-filter: blur(6px);

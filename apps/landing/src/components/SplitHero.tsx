@@ -41,7 +41,7 @@ export default function SplitHero() {
 
                     <div className="split-hero__meta">
                         <span className="split-hero__meta-dot" />
-                        <span>{BUSINESS_INFO.address.city} · {new Date().getFullYear() - 2011} {T.hero.metaYears}</span>
+                        <span>{T.hero.trustPill}</span>
                     </div>
                 </div>
 

@@ -9,8 +9,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
-import CustomCursor from '@/components/CustomCursor';
-import { playfair, openSans, tangerine } from '@/lib/fonts';
+import { playfair, openSans } from '@/lib/fonts';
 import { initSentry } from '@/sentry.client';
 import {
     isAnalyticsEnabled,
@@ -96,7 +95,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }, [router.asPath]);
 
     return (
-        <div className={`${playfair.variable} ${openSans.variable} ${tangerine.variable}`}>
+        <div className={`${playfair.variable} ${openSans.variable}`}>
         <LanguageProvider>
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
@@ -119,7 +118,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                         </>
                     )}
                     <RouteProgress />
-                    <CustomCursor />
                     <BookNowFab />
                     <Component {...pageProps} />
                 </ToastProvider>
