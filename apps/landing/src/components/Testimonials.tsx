@@ -4,10 +4,10 @@ import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const testimonials = [
-    { name: 'Monika W.', since: 'Klientka od 2015', stars: 5, text: 'Chodzę do Aleksandry od ponad 8 lat. Nigdy żaden inny salon nie dał mi tak dobrego efektu koloryzacji. Moje włosy są zdrowe, lśniące i dokładnie takie, jak sobie wymarzyłam.' },
-    { name: 'Karolina P.', since: 'Klientka od 2019', stars: 5, text: 'Botox na włosy w Black&White to zupełnie inne doświadczenie niż gdzie indziej. Konsultacja przed zabiegiem, wyjaśnienie każdego kroku — czuć, że to naprawdę akademia, nie zwykły salon.' },
-    { name: 'Anna S.', since: 'Klientka od 2021', stars: 5, text: 'Przedłużanie metodą HairTalk — wykonane perfekcyjnie, nie widać żadnych przejść. Mogę czesać, upinać i nosić kucyk bez żadnego strachu. Polecam z całego serca!' },
-    { name: 'Beata K.', since: 'Klientka od 2013', stars: 5, text: 'Atmosfera w salonie jest wyjątkowa — ciepła, profesjonalna i spokojny. Każda wizyta to chwila relaksu. Aleksandra zawsze wie, co będzie najlepsze dla moich włosów.' },
+    { name: 'Monika W.', sinceYear: 2015, stars: 5, text: 'Chodzę do Aleksandry od ponad 8 lat. Nigdy żaden inny salon nie dał mi tak dobrego efektu koloryzacji. Moje włosy są zdrowe, lśniące i dokładnie takie, jak sobie wymarzyłam.' },
+    { name: 'Karolina P.', sinceYear: 2019, stars: 5, text: 'Botox na włosy w Black&White to zupełnie inne doświadczenie niż gdzie indziej. Konsultacja przed zabiegiem, wyjaśnienie każdego kroku — czuć, że to naprawdę akademia, nie zwykły salon.' },
+    { name: 'Anna S.', sinceYear: 2021, stars: 5, text: 'Przedłużanie metodą HairTalk — wykonane perfekcyjnie, nie widać żadnych przejść. Mogę czesać, upinać i nosić kucyk bez żadnego strachu. Polecam z całego serca!' },
+    { name: 'Beata K.', sinceYear: 2013, stars: 5, text: 'Atmosfera w salonie jest wyjątkowa — ciepła, profesjonalna i spokojny. Każda wizyta to chwila relaksu. Aleksandra zawsze wie, co będzie najlepsze dla moich włosów.' },
 ];
 
 export default function Testimonials() {
@@ -42,7 +42,7 @@ export default function Testimonials() {
                         {testimonials[active]?.name}
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        {testimonials[active]?.since}
+                        {T.testimonials.clientSince.replace('{year}', String(testimonials[active]?.sinceYear ?? ''))}
                     </p>
                 </div>
 

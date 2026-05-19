@@ -26,6 +26,7 @@ const t = {
             imageAlt: 'Wnętrze salonu Black & White',
             hoursLabel: 'Godziny otwarcia',
             scroll: 'Scroll',
+            metaYears: 'lat z Bytomiem',
         },
         stats: [
             { suffix: '+', label: 'lat doświadczenia' },
@@ -90,6 +91,7 @@ const t = {
             title: 'Opinie',
             starsLabel: 'Ocena: {n} na 5 gwiazdek',
             reviewLabel: 'Opinia {name}',
+            clientSince: 'Klientka od {year}',
         },
         footer: {
             navigation: 'Nawigacja',
@@ -139,6 +141,7 @@ const t = {
             imageAlt: 'Interior of Black & White salon',
             hoursLabel: 'Opening hours',
             scroll: 'Scroll',
+            metaYears: 'years in Bytom',
         },
         stats: [
             { suffix: '+', label: 'years of experience' },
@@ -203,6 +206,7 @@ const t = {
             title: 'Reviews',
             starsLabel: 'Rating: {n} out of 5 stars',
             reviewLabel: 'Review by {name}',
+            clientSince: 'Client since {year}',
         },
         footer: {
             navigation: 'Navigation',
@@ -252,6 +256,7 @@ const t = {
             imageAlt: 'Interieur des Salons Black & White',
             hoursLabel: 'Öffnungszeiten',
             scroll: 'Scrollen',
+            metaYears: 'Jahre in Bytom',
         },
         stats: [
             { suffix: '+', label: 'Jahre Erfahrung' },
@@ -316,6 +321,7 @@ const t = {
             title: 'Bewertungen',
             starsLabel: 'Bewertung: {n} von 5 Sternen',
             reviewLabel: 'Bewertung von {name}',
+            clientSince: 'Kundin seit {year}',
         },
         footer: {
             navigation: 'Navigation',
