@@ -1,7 +1,7 @@
 'use client';
 import { useState, useCallback } from 'react';
-import { CORE_VALUES } from '@/config/content';
 import SectionHeader from './SectionHeader';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
     Palette,
     Star,
@@ -12,8 +12,7 @@ import {
     type LucideIcon,
 } from 'lucide-react';
 
-type CoreValue = { id: string; title: string; icon: string; description: string };
-interface ValuesSectionProps { values?: CoreValue[]; }
+type CoreValue = { id: string; title: string; description: string };
 
 const VALUE_ICONS: Record<string, LucideIcon> = {
     pasja: Palette,
@@ -24,8 +23,9 @@ const VALUE_ICONS: Record<string, LucideIcon> = {
     srodowisko: Leaf,
 };
 
-export default function ValuesSection({ values }: ValuesSectionProps) {
-    const data = values ?? (CORE_VALUES as unknown as CoreValue[]);
+export default function ValuesSection() {
+    const { T } = useLanguage();
+    const data: CoreValue[] = T.values.items as unknown as CoreValue[];
     const [active, setActive] = useState<string>(data[0]?.id ?? '');
 
     const activeValue = data.find(v => v.id === active);
@@ -44,14 +44,9 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
     return (
         <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
             <div className="container mx-auto px-4 md:px-8">
-                <SectionHeader eyebrow="To, w co wierzymy" title="Nasze wartości" />
+                <SectionHeader eyebrow={T.values.eyebrow} title={T.values.title} />
 
-                {/* Icon grid */}
-                <div
-                    className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 mb-12"
-                    role="tablist"
-                    aria-label="Nasze wartości"
-                >
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 mb-12" role="tablist" aria-label={T.values.title}>
                     {data.map(value => {
                         const Icon = VALUE_ICONS[value.id] ?? Star;
                         const isActive = active === value.id;
@@ -73,24 +68,12 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                                     borderRadius: '3px',
                                 }}
                             >
-                                <div
-                                    className="w-9 h-9 flex items-center justify-center"
-                                    style={{
-                                        background: isActive ? 'rgba(197,168,128,0.2)' : 'rgba(197,168,128,0.1)',
-                                        borderRadius: '2px',
-                                    }}
-                                >
+                                <div className="w-9 h-9 flex items-center justify-center" style={{ background: isActive ? 'rgba(197,168,128,0.2)' : 'rgba(197,168,128,0.1)', borderRadius: '2px' }}>
                                     <Icon size={18} strokeWidth={1.5} style={{ color: '#c5a880' }} />
                                 </div>
                                 <span
                                     className="text-center leading-tight"
-                                    style={{
-                                        fontFamily: "var(--font-open-sans), sans-serif",
-                                        fontSize: '0.7rem',
-                                        fontWeight: 600,
-                                        color: isActive ? '#ffffff' : '#6b5f52',
-                                        letterSpacing: '0.03em',
-                                    }}
+                                    style={{ fontFamily: "var(--font-open-sans), sans-serif", fontSize: '0.7rem', fontWeight: 600, color: isActive ? '#ffffff' : '#6b5f52', letterSpacing: '0.03em' }}
                                 >
                                     {value.title}
                                 </span>
@@ -99,14 +82,8 @@ export default function ValuesSection({ values }: ValuesSectionProps) {
                     })}
                 </div>
 
-                {/* Active value description */}
                 {activeValue && (
-                    <div
-                        id={`tabpanel-${activeValue.id}`}
-                        role="tabpanel"
-                        aria-labelledby={`tab-${activeValue.id}`}
-                        className="max-w-2xl mx-auto text-center"
-                    >
+                    <div id={`tabpanel-${activeValue.id}`} role="tabpanel" aria-labelledby={`tab-${activeValue.id}`} className="max-w-2xl mx-auto text-center">
                         <p className="text-base leading-relaxed" style={{ color: '#4a3f35', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic' }}>
                             &ldquo;{activeValue.description}&rdquo;
                         </p>

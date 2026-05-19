@@ -1,59 +1,35 @@
 'use client';
 import { useState } from 'react';
 import SectionHeader from './SectionHeader';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const testimonials = [
-    {
-        name: 'Monika W.',
-        since: 'Klientka od 2015',
-        stars: 5,
-        text: 'Chodzę do Aleksandry od ponad 8 lat. Nigdy żaden inny salon nie dał mi tak dobrego efektu koloryzacji. Moje włosy są zdrowe, lśniące i dokładnie takie, jak sobie wymarzyłam.',
-    },
-    {
-        name: 'Karolina P.',
-        since: 'Klientka od 2019',
-        stars: 5,
-        text: 'Botox na włosy w Black&White to zupełnie inne doświadczenie niż gdzie indziej. Konsultacja przed zabiegiem, wyjaśnienie każdego kroku — czuć, że to naprawdę akademia, nie zwykły salon.',
-    },
-    {
-        name: 'Anna S.',
-        since: 'Klientka od 2021',
-        stars: 5,
-        text: 'Przedłużanie metodą HairTalk — wykonane perfekcyjnie, nie widać żadnych przejść. Mogę czesać, upinać i nosić kucyk bez żadnego strachu. Polecam z całego serca!',
-    },
-    {
-        name: 'Beata K.',
-        since: 'Klientka od 2013',
-        stars: 5,
-        text: 'Atmosfera w salonie jest wyjątkowa — ciepła, profesjonalna i spokojny. Każda wizyta to chwila relaksu. Aleksandra zawsze wie, co będzie najlepsze dla moich włosów.',
-    },
+    { name: 'Monika W.', sinceYear: 2015, stars: 5, text: 'Chodzę do Aleksandry od ponad 8 lat. Nigdy żaden inny salon nie dał mi tak dobrego efektu koloryzacji. Moje włosy są zdrowe, lśniące i dokładnie takie, jak sobie wymarzyłam.' },
+    { name: 'Karolina P.', sinceYear: 2019, stars: 5, text: 'Botox na włosy w Black&White to zupełnie inne doświadczenie niż gdzie indziej. Konsultacja przed zabiegiem, wyjaśnienie każdego kroku — czuć, że to naprawdę akademia, nie zwykły salon.' },
+    { name: 'Anna S.', sinceYear: 2021, stars: 5, text: 'Przedłużanie metodą HairTalk — wykonane perfekcyjnie, nie widać żadnych przejść. Mogę czesać, upinać i nosić kucyk bez żadnego strachu. Polecam z całego serca!' },
+    { name: 'Beata K.', sinceYear: 2013, stars: 5, text: 'Atmosfera w salonie jest wyjątkowa — ciepła, profesjonalna i spokojny. Każda wizyta to chwila relaksu. Aleksandra zawsze wie, co będzie najlepsze dla moich włosów.' },
 ];
 
 export default function Testimonials() {
+    const { T } = useLanguage();
     const [active, setActive] = useState(0);
 
     return (
         <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
             <div className="container mx-auto px-4 md:px-8">
-                <SectionHeader eyebrow="Co mówią klientki" title="Opinie" dark />
+                <SectionHeader eyebrow={T.testimonials.eyebrow} title={T.testimonials.title} dark />
 
-                {/* Quote display */}
                 <div className="max-w-2xl mx-auto text-center mb-10">
-                    {/* Large quote mark */}
                     <div className="mb-6" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.6 }}>&ldquo;</div>
 
-                    <p
-                        className="text-base md:text-lg leading-relaxed mb-8"
-                        style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', minHeight: '5rem' }}
-                    >
+                    <p className="text-base md:text-lg leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', minHeight: '5rem' }}>
                         {testimonials[active]?.text}
                     </p>
 
-                    {/* Stars */}
                     <div
                         className="flex justify-center gap-1 mb-4"
                         role="img"
-                        aria-label={`Ocena: ${testimonials[active]?.stars ?? 5} na 5 gwiazdek`}
+                        aria-label={T.testimonials.starsLabel.replace('{n}', String(testimonials[active]?.stars ?? 5))}
                     >
                         {Array.from({ length: testimonials[active]?.stars ?? 5 }).map((_, i) => (
                             <svg key={i} className="w-4 h-4" aria-hidden="true" fill="#c5a880" viewBox="0 0 20 20">
@@ -66,11 +42,10 @@ export default function Testimonials() {
                         {testimonials[active]?.name}
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        {testimonials[active]?.since}
+                        {T.testimonials.clientSince.replace('{year}', String(testimonials[active]?.sinceYear ?? ''))}
                     </p>
                 </div>
 
-                {/* Dot selectors */}
                 <div className="flex justify-center gap-3">
                     {testimonials.map((t, i) => (
                         <button
@@ -78,13 +53,8 @@ export default function Testimonials() {
                             type="button"
                             onClick={() => { if (i !== active) setActive(i); }}
                             className="transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
-                            style={{
-                                width: i === active ? '28px' : '8px',
-                                height: '8px',
-                                borderRadius: '4px',
-                                background: i === active ? '#c5a880' : 'rgba(255,255,255,0.25)',
-                            }}
-                            aria-label={`Opinia ${t.name}`}
+                            style={{ width: i === active ? '28px' : '8px', height: '8px', borderRadius: '4px', background: i === active ? '#c5a880' : 'rgba(255,255,255,0.25)' }}
+                            aria-label={T.testimonials.reviewLabel.replace('{name}', t.name)}
                         />
                     ))}
                 </div>

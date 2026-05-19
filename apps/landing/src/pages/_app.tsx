@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
 import CustomCursor from '@/components/CustomCursor';
@@ -96,6 +97,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     return (
         <div className={`${playfair.variable} ${openSans.variable} ${tangerine.variable}`}>
+        <LanguageProvider>
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <ToastProvider>
@@ -123,6 +125,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                 </ToastProvider>
             </AuthProvider>
         </QueryClientProvider>
+        </LanguageProvider>
         </div>
     );
 }

@@ -1,11 +1,13 @@
 'use client';
 import Image from 'next/image';
 import { FOUNDER_MESSAGE } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type FounderData = { name: string; quote: string; photo?: string };
 interface FounderMessageProps { founder?: FounderData; }
 
 export default function FounderMessage({ founder }: FounderMessageProps) {
+    const { T } = useLanguage();
     const data = founder ?? (FOUNDER_MESSAGE as FounderData);
 
     return (
@@ -17,23 +19,11 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                         {/* Photo */}
                         <div className="flex justify-center md:justify-end order-1 md:order-none">
                             <div className="relative">
-                                {/* Gold accent border */}
                                 <div
                                     className="absolute"
-                                    style={{
-                                        top: '-12px',
-                                        left: '-12px',
-                                        right: '12px',
-                                        bottom: '12px',
-                                        border: '1px solid #c5a880',
-                                        borderRadius: '3px',
-                                        zIndex: 0,
-                                    }}
+                                    style={{ top: '-12px', left: '-12px', right: '12px', bottom: '12px', border: '1px solid #c5a880', borderRadius: '3px', zIndex: 0 }}
                                 />
-                                <div
-                                    className="relative overflow-hidden"
-                                    style={{ width: '280px', height: '340px', borderRadius: '3px', zIndex: 1 }}
-                                >
+                                <div className="relative overflow-hidden" style={{ width: '280px', height: '340px', borderRadius: '3px', zIndex: 1 }}>
                                     {data.photo ? (
                                         <Image
                                             src={data.photo}
@@ -54,28 +44,21 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                         {/* Text */}
                         <div>
                             <p className="text-xs tracking-widest uppercase mb-4" style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "var(--font-open-sans), sans-serif" }}>
-                                Słowo od założycielki
+                                {T.founder.eyebrow}
                             </p>
 
                             <div className="mb-2" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3.5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
 
                             <blockquote>
-                                <p
-                                    className="text-lg leading-relaxed mb-8"
-                                    style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}
-                                >
+                                <p className="text-lg leading-relaxed mb-8" style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}>
                                     {data.quote}
                                 </p>
-
                                 <footer>
-                                    <cite
-                                        className="not-italic block"
-                                        style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#c5a880', lineHeight: 1.1 }}
-                                    >
+                                    <cite className="not-italic block" style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#c5a880', lineHeight: 1.1 }}>
                                         {data.name}
                                     </cite>
                                     <span className="text-xs mt-1 block tracking-wider" style={{ color: '#8a7060', letterSpacing: '0.12em' }}>
-                                        Założycielka &amp; Właścicielka Salon Black &amp; White
+                                        {T.founder.role}
                                     </span>
                                 </footer>
                             </blockquote>
@@ -83,7 +66,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                             <div className="mt-8 flex items-center gap-3">
                                 <div style={{ width: '32px', height: '1px', background: '#c5a880' }} />
                                 <span className="text-xs tracking-widest" style={{ color: '#c5a880', letterSpacing: '0.2em' }}>
-                                    od 2011 roku
+                                    {T.founder.since}
                                 </span>
                             </div>
                         </div>

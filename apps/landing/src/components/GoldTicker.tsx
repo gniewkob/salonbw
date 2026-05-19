@@ -1,11 +1,10 @@
-const ITEMS = [
-    'PASJA', 'PROFESJONALIZM', 'PIELĘGNACJA', 'PIĘKNO',
-    'BYTOM', 'AKADEMIA', 'ZDROWE WŁOSY', 'BLACK & WHITE',
-    'KERASTASE', 'OLAPLEX', 'NIOXIN', 'WELLA',
-];
+'use client';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function GoldTicker() {
-    const doubled = [...ITEMS, ...ITEMS];
+    const { T } = useLanguage();
+    const doubled = [...T.ticker, ...T.ticker];
+
     return (
         <div className="gold-ticker" aria-hidden="true">
             <div className="gold-ticker__track">

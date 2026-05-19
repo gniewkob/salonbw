@@ -8,9 +8,12 @@ import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LANGUAGES } from '@/i18n/translations';
 
 export default function Navbar() {
     const { role, initialized, logout } = useAuth();
+    const { lang, setLang, T } = useLanguage();
     const router = useRouter();
     const isHomePage = router.pathname === '/';
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -51,19 +54,17 @@ export default function Navbar() {
         }
     }, [mobileMenuOpen]);
 
-    const navLinkClass = `transition duration-200 text-sm tracking-wide font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-        transparent ? 'text-white/90 hover:text-[#c5a880]' : 'text-gray-800 hover:text-[#c5a880]'
-    }`;
+    const navLinkClass = 'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[#c5a880] focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     return (
         <nav
             aria-label="Nawigacja główna"
             className="sticky top-0 z-50 transition-all duration-400"
             style={{
-                background: transparent ? 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%)' : 'rgba(255,255,255,0.97)',
-                backdropFilter: transparent ? 'none' : 'blur(12px)',
+                background: transparent ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.97)',
+                backdropFilter: 'blur(12px)',
                 boxShadow: transparent ? 'none' : '0 1px 24px rgba(0,0,0,0.10)',
-                borderBottom: transparent ? '1px solid transparent' : '1px solid rgba(0,0,0,0.06)',
+                borderBottom: transparent ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.06)',
             }}
         >
             <div className="container mx-auto px-4 md:px-8">
@@ -81,12 +82,7 @@ export default function Navbar() {
                             width={90}
                             height={48}
                             unoptimized
-                            style={{
-                                height: '48px',
-                                width: 'auto',
-                                filter: transparent ? 'brightness(0) invert(1)' : 'none',
-                                transition: 'filter 0.3s',
-                            }}
+                            style={{ height: '48px', width: 'auto' }}
                         />
                     </Link>
 
@@ -94,10 +90,10 @@ export default function Navbar() {
                     <div className="hidden md:flex items-center gap-8">
                         <ul className="flex items-center gap-7">
                             {[
-                                { label: 'Start', href: '/' },
-                                { label: 'Usługi', href: '/services' },
-                                { label: 'Galeria', href: '/gallery' },
-                                { label: 'Kontakt', href: '/contact' },
+                                { label: T.nav.home, href: '/' },
+                                { label: T.nav.services, href: '/services' },
+                                { label: T.nav.gallery, href: '/gallery' },
+                                { label: T.nav.contact, href: '/contact' },
                             ].map(({ label, href }) => (
                                 <li key={href}>
                                     <Link href={href as Route} className={navLinkClass}>{label}</Link>
@@ -105,21 +101,37 @@ export default function Navbar() {
                             ))}
                             {dashboardRoute ? (
                                 <>
-                                    <li><a href={dashboardRoute} className={navLinkClass}>Panel</a></li>
+                                    <li><a href={dashboardRoute} className={navLinkClass}>{T.nav.panel}</a></li>
                                     <li>
-                                        <button
-                                            onClick={() => { void handleLogout(); }}
-                                            className={navLinkClass}
-                                            type="button"
-                                        >
-                                            Wyloguj
+                                        <button onClick={() => { void handleLogout(); }} className={navLinkClass} type="button">
+                                            {T.nav.logout}
                                         </button>
                                     </li>
                                 </>
                             ) : (
-                                <li><a href={panelLogin} className={navLinkClass}>Zaloguj</a></li>
+                                <li><a href={panelLogin} className={navLinkClass}>{T.nav.login}</a></li>
                             )}
                         </ul>
+
+                        {/* Language switcher */}
+                        <div className="flex items-center gap-1" aria-label="Wybór języka">
+                            {LANGUAGES.map(({ code, label }) => (
+                                <button
+                                    key={code}
+                                    type="button"
+                                    onClick={() => setLang(code)}
+                                    className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#c5a880] px-1 py-0.5"
+                                    style={{
+                                        color: lang === code ? '#c5a880' : '#8a7060',
+                                        borderBottom: lang === code ? '1px solid #c5a880' : '1px solid transparent',
+                                    }}
+                                    aria-pressed={lang === code}
+                                    aria-label={`Język: ${label}`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
 
                         <a
                             href={bookingUrl}
@@ -127,7 +139,7 @@ export default function Navbar() {
                             style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                             onClick={() => trackEvent('begin_checkout', { cta: 'navbar' })}
                         >
-                            {BUSINESS_INFO.booking.text}
+                            {T.nav.booking}
                         </a>
                     </div>
 
@@ -139,7 +151,7 @@ export default function Navbar() {
                         aria-expanded={mobileMenuOpen}
                         aria-controls="mobile-menu"
                     >
-                        <svg className="w-6 h-6" style={{ color: transparent ? '#ffffff' : '#0d0d0d' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {mobileMenuOpen ? (
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             ) : (
@@ -157,16 +169,16 @@ export default function Navbar() {
                         style={{ background: 'rgba(255,255,255,0.98)', borderColor: 'rgba(0,0,0,0.08)' }}
                     >
                         <div className="px-4 py-2 text-xs text-gray-500 border-b mb-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
-                            <div>Pn–Pt: {BUSINESS_INFO.hours.mondayFriday}</div>
-                            <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
+                            <div>{T.hours.mondayFriday}: {BUSINESS_INFO.hours.mondayFriday}</div>
+                            <div>{T.hours.saturday}: {BUSINESS_INFO.hours.saturday}</div>
                         </div>
 
                         <ul className="space-y-1">
                             {[
-                                { label: 'Start', href: '/' },
-                                { label: 'Usługi', href: '/services' },
-                                { label: 'Galeria', href: '/gallery' },
-                                { label: 'Kontakt', href: '/contact' },
+                                { label: T.nav.home, href: '/' },
+                                { label: T.nav.services, href: '/services' },
+                                { label: T.nav.gallery, href: '/gallery' },
+                                { label: T.nav.contact, href: '/contact' },
                             ].map(({ label, href }) => (
                                 <li key={href}>
                                     <Link
@@ -180,21 +192,37 @@ export default function Navbar() {
                             ))}
                             {dashboardRoute ? (
                                 <>
-                                    <li><a href={dashboardRoute} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">Panel</a></li>
+                                    <li><a href={dashboardRoute} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">{T.nav.panel}</a></li>
                                     <li>
                                         <button
                                             onClick={() => { void handleLogout(); setMobileMenuOpen(false); }}
                                             className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition"
                                             type="button"
                                         >
-                                            Wyloguj
+                                            {T.nav.logout}
                                         </button>
                                     </li>
                                 </>
                             ) : (
-                                <li><a href={panelLogin} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">Zaloguj</a></li>
+                                <li><a href={panelLogin} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">{T.nav.login}</a></li>
                             )}
                         </ul>
+
+                        {/* Mobile language switcher */}
+                        <div className="flex items-center gap-3 px-4 mt-3 mb-2">
+                            {LANGUAGES.map(({ code, label }) => (
+                                <button
+                                    key={code}
+                                    type="button"
+                                    onClick={() => { setLang(code); }}
+                                    className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none"
+                                    style={{ color: lang === code ? '#c5a880' : '#8a7060', borderBottom: lang === code ? '1px solid #c5a880' : '1px solid transparent' }}
+                                    aria-pressed={lang === code}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
 
                         <div className="px-4 mt-4">
                             <a
@@ -203,7 +231,7 @@ export default function Navbar() {
                                 style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                                 onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); }}
                             >
-                                {BUSINESS_INFO.booking.text}
+                                {T.nav.booking}
                             </a>
                         </div>
                     </div>
