@@ -239,7 +239,7 @@ export default function LoginPage() {
                                     fontFamily: "'Open Sans', sans-serif",
                                 }}
                             >
-                                Adres e-mail
+                                Email
                             </label>
                             <input
                                 id="email"

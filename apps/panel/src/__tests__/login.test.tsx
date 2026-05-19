@@ -25,10 +25,10 @@ describe('LoginPage', () => {
         fireEvent.change(screen.getByLabelText(/email/i), {
             target: { value: 'a@b.com' },
         });
-        fireEvent.change(screen.getByLabelText(/password/i), {
+        fireEvent.change(screen.getByLabelText(/hasło/i), {
             target: { value: 'secret' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zaloguj/i }));
         await waitFor(() => expect(login).toHaveBeenCalled());
         await waitFor(() => expect(apiFetch).toHaveBeenCalled());
         expect(push).toHaveBeenCalledWith('/calendar');
@@ -39,12 +39,12 @@ describe('LoginPage', () => {
         mockedUseAuth.mockReturnValue(createAuthValue({ login }));
         render(<LoginPage />);
         const emailInput = screen.getByLabelText(/email/i);
-        const passwordInput = screen.getByLabelText(/password/i);
+        const passwordInput = screen.getByLabelText(/hasło/i);
         fireEvent.change(emailInput, { target: { value: 'bad' } });
         fireEvent.blur(emailInput);
         fireEvent.change(passwordInput, { target: { value: '' } });
         fireEvent.blur(passwordInput);
-        fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zaloguj/i }));
         expect(await screen.findAllByRole('alert')).not.toHaveLength(0);
         expect(login).not.toHaveBeenCalled();
     });
