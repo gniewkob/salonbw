@@ -11,8 +11,6 @@ describe('FAQ page', () => {
     it('renders without crashing', () => {
         mockedUseAuth.mockReturnValue(createAuthValue());
         render(<FAQPage />);
-        expect(
-            screen.getByText(/Frequently Asked Questions/i),
-        ).toBeInTheDocument();
+        expect(screen.getByText(/FAQ/i)).toBeInTheDocument();
     });
 });

@@ -9,24 +9,33 @@ export interface FAQItem {
 export default function FAQAccordion({ items }: { items: FAQItem[] }) {
     const [open, setOpen] = useState<number | null>(null);
 
-    const toggle = (index: number) => {
-        setOpen(index === open ? null : index);
-    };
-
     return (
-        <div className="space-y-2">
+        <div className="faq-accordion">
             {items.map((item, i) => (
-                <div key={i} className="border rounded">
+                <div key={i} className={`faq-item${open === i ? ' faq-item--open' : ''}`}>
                     <button
                         type="button"
-                        onClick={() => toggle(i)}
-                        className="w-full p-2 text-left font-medium"
+                        onClick={() => setOpen(open === i ? null : i)}
+                        className="faq-item__trigger"
+                        aria-expanded={open === i}
                     >
-                        {item.question}
+                        <span className="faq-item__question">{item.question}</span>
+                        <svg
+                            className="faq-item__chevron"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
                     </button>
-                    {open === i && (
-                        <div className="p-2 border-t">{item.answer}</div>
-                    )}
+                    <div className="faq-item__body">
+                        <p className="faq-item__answer">{item.answer}</p>
+                    </div>
                 </div>
             ))}
         </div>
