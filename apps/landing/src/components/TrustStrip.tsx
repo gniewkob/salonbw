@@ -1,8 +1,9 @@
 'use client';
+import type { CSSProperties } from 'react';
 import { PARTNER_BRANDS } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const BRAND_STYLES: Record<string, React.CSSProperties> = {
+const BRAND_STYLES: Record<string, CSSProperties> = {
     'Olaplex':            { fontFamily: "var(--font-open-sans), sans-serif", fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.82rem' },
     'Nioxin':             { fontFamily: "var(--font-open-sans), sans-serif", fontWeight: 600, letterSpacing: '0.14em', fontSize: '0.78rem' },
     'Wella':              { fontFamily: "var(--font-playfair), serif",       fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.9rem' },
