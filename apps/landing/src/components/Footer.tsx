@@ -2,19 +2,28 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
-import { BUSINESS_INFO, FOOTER_LINKS, COPYRIGHT } from '@/config/content';
+import { BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Footer() {
+    const { T } = useLanguage();
     const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
+
+    const navLinks = [
+        { label: T.nav.home, href: '/' },
+        { label: T.nav.services, href: '/services' },
+        { label: T.nav.gallery, href: '/gallery' },
+        { label: T.nav.contact, href: '/contact' },
+        { label: T.footer.privacy, href: '/privacy' },
+        { label: T.footer.terms, href: '/policy' },
+    ];
 
     return (
         <footer style={{ background: 'var(--brand-black)', color: 'rgba(255,255,255,0.75)' }}>
-            {/* Top border line */}
             <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--brand-gold), transparent)' }} />
 
             <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '4rem', paddingBottom: '2.5rem' }}>
-                {/* Logo + tagline row */}
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 mb-14">
                     <div className="max-w-xs">
                         <Link href={'/' as Route} className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[#c5a880]" aria-label="Black & White — strona główna">
@@ -28,32 +37,25 @@ export default function Footer() {
                             />
                         </Link>
                         <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, letterSpacing: '0.04em' }}>
-                            Akademia Zdrowych Włosów<br />
+                            {BUSINESS_INFO.tagline}<br />
                             {BUSINESS_INFO.address.street}, {BUSINESS_INFO.address.city}
                         </p>
                         <a
                             href={bookingUrl}
                             className="inline-block mt-5 text-xs font-semibold uppercase"
-                            style={{
-                                background: 'var(--brand-gold)',
-                                color: '#fff',
-                                padding: '0.7rem 1.6rem',
-                                letterSpacing: '0.14em',
-                                transition: 'background 0.2s',
-                            }}
+                            style={{ background: 'var(--brand-gold)', color: '#fff', padding: '0.7rem 1.6rem', letterSpacing: '0.14em', transition: 'background 0.2s' }}
                             onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-gold-dark)')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-gold)')}
                         >
-                            {BUSINESS_INFO.booking.text}
+                            {T.nav.booking}
                         </a>
                     </div>
 
-                    {/* Links grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                         <div>
-                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>Nawigacja</p>
+                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>{T.footer.navigation}</p>
                             <ul className="space-y-2.5">
-                                {FOOTER_LINKS.navigation.map(link => (
+                                {navLinks.map(link => (
                                     <li key={link.href}>
                                         <Link
                                             href={link.href as Route}
@@ -70,16 +72,16 @@ export default function Footer() {
                         </div>
 
                         <div>
-                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>Godziny</p>
+                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>{T.footer.hours}</p>
                             <div className="space-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                <p>Pn–Pt <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.mondayFriday}</span></p>
-                                <p>Sob <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.saturday}</span></p>
-                                <p>Ndz <span style={{ color: 'rgba(255,255,255,0.35)' }}>{BUSINESS_INFO.hours.sunday}</span></p>
+                                <p>{T.footer.monFri} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.mondayFriday}</span></p>
+                                <p>{T.footer.sat} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.saturday}</span></p>
+                                <p>{T.footer.sun} <span style={{ color: 'rgba(255,255,255,0.35)' }}>{T.footer.sunday}</span></p>
                             </div>
                         </div>
 
                         <div>
-                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>Kontakt</p>
+                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>{T.footer.contact}</p>
                             <div className="space-y-2.5 text-sm">
                                 {BUSINESS_INFO.contact.phone && (
                                     <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
@@ -126,11 +128,10 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Bottom bar */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>{COPYRIGHT}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>{T.footer.copyright}</p>
                     <div className="flex gap-5">
-                        {[{ href: '/privacy', label: 'Polityka prywatności' }, { href: '/policy', label: 'Regulamin' }].map(l => (
+                        {[{ href: '/privacy', label: T.footer.privacy }, { href: '/policy', label: T.footer.terms }].map(l => (
                             <Link key={l.href} href={l.href as Route}
                                 className="text-xs focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
                                 style={{ color: 'rgba(255,255,255,0.3)' }}

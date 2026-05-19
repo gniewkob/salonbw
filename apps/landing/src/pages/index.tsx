@@ -22,24 +22,18 @@ import Testimonials from '@/components/Testimonials';
 import SectionHeader from '@/components/SectionHeader';
 import {
     getFounderMessage,
-    getHistoryItems,
-    getCoreValues,
     getSalonGallery,
 } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
-type HistoryItem = { id: string; title: string; content: string };
-type CoreValue = { id: string; title: string; icon: string; description: string };
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
 
 interface HomePageProps {
     founder: FounderData;
-    historyItems: HistoryItem[];
-    coreValues: CoreValue[];
     galleryImages: GalleryImage[];
 }
 
-export default function HomePage({ founder, historyItems, coreValues, galleryImages }: HomePageProps) {
+export default function HomePage({ founder, galleryImages }: HomePageProps) {
     useEffect(() => {
         try { trackEvent('page_view', { page_title: 'Home' }); } catch {}
     }, []);
@@ -122,7 +116,7 @@ export default function HomePage({ founder, historyItems, coreValues, galleryIma
 
                 {/* 7. Core values */}
                 <ScrollReveal direction="up">
-                    <ValuesSection values={coreValues} />
+                    <ValuesSection />
                 </ScrollReveal>
 
                 {/* 8. Gallery */}
@@ -132,7 +126,7 @@ export default function HomePage({ founder, historyItems, coreValues, galleryIma
 
                 {/* 9. History */}
                 <ScrollReveal direction="up">
-                    <HistoryAccordion items={historyItems} />
+                    <HistoryAccordion />
                 </ScrollReveal>
 
                 {/* 10. Testimonials */}
@@ -220,18 +214,14 @@ export default function HomePage({ founder, historyItems, coreValues, galleryIma
 }
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-    const [founder, historyItems, coreValues, galleryImages] = await Promise.all([
+    const [founder, galleryImages] = await Promise.all([
         getFounderMessage(),
-        getHistoryItems(),
-        getCoreValues(),
         getSalonGallery(),
     ]);
 
     return {
         props: {
             founder: founder as unknown as FounderData,
-            historyItems: historyItems as unknown as HistoryItem[],
-            coreValues: coreValues as unknown as CoreValue[],
             galleryImages: galleryImages as unknown as GalleryImage[],
         },
         revalidate: 3600,

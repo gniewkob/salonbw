@@ -1,12 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const stats = [
-    { target: 30, suffix: '+', label: 'lat doświadczenia' },
-    { target: 2011, suffix: '', label: 'rok założenia' },
-    { target: 5, suffix: '', label: 'kluczowych wartości' },
-    { target: 5, suffix: '★', label: 'ocena klientek' },
-];
+const TARGETS = [30, 2011, 5, 5];
 
 function useCountUp(target: number, duration = 1400, active: boolean) {
     const [value, setValue] = useState(0);
@@ -48,11 +44,14 @@ function StatItem({ target, suffix, label, delay }: { target: number; suffix: st
 }
 
 export default function StatsBar() {
+    const { T } = useLanguage();
+    const stats = T.stats.map((s, i) => ({ target: TARGETS[i]!, ...s }));
+
     return (
         <section className="stats-bar" aria-label="Liczby o salonie">
             <div className="stats-bar__inner">
                 {stats.map((s, i) => (
-                    <StatItem key={s.label} {...s} delay={i * 100} />
+                    <StatItem key={i} target={s.target} suffix={s.suffix} label={s.label} delay={i * 100} />
                 ))}
             </div>
         </section>
