@@ -52,8 +52,12 @@ export default function BookingModal({ open, onClose, service }: BookingModalPro
                 <div className="flex flex-col gap-3">
                     <button
                         onClick={() => {
-                            window.open(href, 'salonbw_booking', 'width=480,height=680,scrollbars=yes,resizable=yes');
-                            onClose();
+                            const popup = window.open(href, 'salonbw_booking', 'width=480,height=680,scrollbars=yes,resizable=yes');
+                            if (popup) {
+                                onClose();
+                            } else {
+                                window.location.href = href;
+                            }
                         }}
                         className="block w-full text-center text-xs font-semibold uppercase py-3.5 px-6 transition hover:opacity-90 cursor-pointer"
                         style={{ background: '#c5a880', color: '#0d0d0d', letterSpacing: '0.12em', borderRadius: '2px' }}
