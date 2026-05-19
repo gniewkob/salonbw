@@ -1,4 +1,6 @@
 'use client';
+import { useState, type FormEvent } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
 
@@ -15,61 +17,436 @@ interface BookingModalProps {
     service?: BookingService;
 }
 
-export default function BookingModal({ open, onClose, service }: BookingModalProps) {
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function BookingModal({
+    open,
+    onClose,
+    service,
+}: BookingModalProps) {
+    const { login, isAuthenticated } = useAuth();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [touched, setTouched] = useState({ email: false, password: false });
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [focusedField, setFocusedField] = useState<string | null>(null);
+
     if (!open) return null;
 
-    const redirect = service
+    const redirectPath = service
         ? `/calendar?newService=${service.id}`
         : '/appointments';
-    const href = getPanelUrl(`/auth/login?redirect=${encodeURIComponent(redirect)}`);
+
+    const handleRedirectToPanel = () => {
+        window.location.href = getPanelUrl(redirectPath);
+    };
+
+    const emailError =
+        touched.email && !emailRe.test(email.trim())
+            ? email.trim()
+                ? 'Nieprawidłowy adres e-mail'
+                : 'Adres e-mail jest wymagany'
+            : '';
+    const passwordError =
+        touched.password && !password.trim() ? 'Hasło jest wymagane' : '';
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setTouched({ email: true, password: true });
+        if (
+            emailError ||
+            passwordError ||
+            !emailRe.test(email.trim()) ||
+            !password.trim()
+        )
+            return;
+        setError('');
+        setSubmitting(true);
+        try {
+            await login(email.trim(), password);
+            handleRedirectToPanel();
+        } catch (err: unknown) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Logowanie nieudane. Sprawdź dane i spróbuj ponownie.',
+            );
+            setPassword('');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const inputStyle = (field: string): React.CSSProperties => ({
+        display: 'block',
+        width: '100%',
+        padding: '0.8rem 1rem',
+        background: 'rgba(255,255,255,0.04)',
+        border: `1px solid ${
+            focusedField === field
+                ? '#c5a880'
+                : (field === 'email' && emailError) ||
+                    (field === 'password' && passwordError)
+                  ? 'rgba(220,60,60,0.6)'
+                  : 'rgba(255,255,255,0.12)'
+        }`,
+        borderRadius: '2px',
+        color: '#fff',
+        fontSize: '0.875rem',
+        fontFamily: "var(--font-opensans, 'Open Sans', sans-serif)",
+        outline: 'none',
+        transition: 'border-color 0.2s',
+        boxSizing: 'border-box',
+    });
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.7)' }}
+            style={{
+                background: 'rgba(0,0,0,0.75)',
+                backdropFilter: 'blur(4px)',
+            }}
             onClick={onClose}
         >
             <div
-                className="w-full max-w-sm rounded p-8"
-                style={{ background: '#0d0d0d', border: '1px solid rgba(197,168,128,0.25)' }}
-                onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Umów wizytę"
+                className="w-full max-w-sm"
+                style={{
+                    background: '#0d0d0d',
+                    border: '1px solid rgba(197,168,128,0.2)',
+                    borderRadius: '3px',
+                    overflow: 'hidden',
+                    boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+                }}
+                onClick={(e) => e.stopPropagation()}
             >
-                <p className="text-xs uppercase mb-1" style={{ color: '#c5a880', letterSpacing: '0.12em' }}>
-                    {service ? 'Rezerwacja' : BUSINESS_INFO.name}
-                </p>
-                <h2 className="text-xl font-semibold mb-1" style={{ color: '#ffffff', fontFamily: "var(--font-playfair), serif" }}>
-                    {service ? service.name : 'Umów wizytę'}
-                </h2>
-                {service ? (
-                    <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                        {service.priceLabel} · {service.duration}
-                    </p>
-                ) : (
-                    <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                        {BUSINESS_INFO.address.city} · {BUSINESS_INFO.hours.mondayFriday}
-                    </p>
-                )}
-                <div className="flex flex-col gap-3">
-                    <button
-                        onClick={() => {
-                            const popup = window.open(href, 'salonbw_booking', 'width=480,height=680,scrollbars=yes,resizable=yes');
-                            if (popup) {
-                                onClose();
-                            } else {
-                                window.location.href = href;
-                            }
-                        }}
-                        className="block w-full text-center text-xs font-semibold uppercase py-3.5 px-6 transition hover:opacity-90 cursor-pointer"
-                        style={{ background: '#c5a880', color: '#0d0d0d', letterSpacing: '0.12em', borderRadius: '2px' }}
-                    >
-                        Umów wizytę
-                    </button>
+                {/* Gold top bar */}
+                <div
+                    style={{
+                        height: '3px',
+                        background:
+                            'linear-gradient(90deg, #c5a880, #e8d5b0, #c5a880)',
+                    }}
+                />
+
+                <div style={{ padding: '2rem 2rem 1.75rem' }}>
+                    {/* Header */}
+                    <div style={{ marginBottom: '1.75rem' }}>
+                        <p
+                            style={{
+                                fontFamily:
+                                    "var(--font-opensans, 'Open Sans', sans-serif)",
+                                fontSize: '0.6rem',
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                color: '#c5a880',
+                                marginBottom: '0.5rem',
+                            }}
+                        >
+                            {service
+                                ? 'Rezerwacja usługi'
+                                : BUSINESS_INFO.booking.text}
+                        </p>
+                        <h2
+                            style={{
+                                fontFamily:
+                                    "var(--font-playfair, 'Playfair Display', serif)",
+                                fontSize: '1.5rem',
+                                fontWeight: 700,
+                                color: '#fff',
+                                margin: 0,
+                                lineHeight: 1.2,
+                            }}
+                        >
+                            {service ? service.name : 'Zaloguj się'}
+                        </h2>
+                        {service ? (
+                            <p
+                                style={{
+                                    marginTop: '0.35rem',
+                                    fontSize: '0.8rem',
+                                    color: 'rgba(255,255,255,0.4)',
+                                    fontFamily:
+                                        "var(--font-opensans, 'Open Sans', sans-serif)",
+                                }}
+                            >
+                                {service.priceLabel} · {service.duration}
+                            </p>
+                        ) : (
+                            <p
+                                style={{
+                                    marginTop: '0.35rem',
+                                    fontSize: '0.8rem',
+                                    color: 'rgba(255,255,255,0.4)',
+                                    fontFamily:
+                                        "var(--font-opensans, 'Open Sans', sans-serif)",
+                                }}
+                            >
+                                aby przejść do kalendarza rezerwacji
+                            </p>
+                        )}
+                        <div
+                            style={{
+                                width: '28px',
+                                height: '1px',
+                                background: '#c5a880',
+                                marginTop: '1rem',
+                                opacity: 0.6,
+                            }}
+                        />
+                    </div>
+
+                    {/* If already logged in, show Go button */}
+                    {isAuthenticated ? (
+                        <div>
+                            <p
+                                style={{
+                                    fontSize: '0.8rem',
+                                    color: 'rgba(255,255,255,0.55)',
+                                    marginBottom: '1.25rem',
+                                    fontFamily:
+                                        "var(--font-opensans, 'Open Sans', sans-serif)",
+                                }}
+                            >
+                                Jesteś już zalogowana/-y.
+                            </p>
+                            <button
+                                onClick={handleRedirectToPanel}
+                                style={{
+                                    display: 'block',
+                                    width: '100%',
+                                    padding: '0.85rem 1.5rem',
+                                    background: '#c5a880',
+                                    color: '#0d0d0d',
+                                    border: 'none',
+                                    borderRadius: '2px',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.18em',
+                                    textTransform: 'uppercase',
+                                    fontFamily:
+                                        "var(--font-opensans, 'Open Sans', sans-serif)",
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Przejdź do rezerwacji
+                            </button>
+                        </div>
+                    ) : (
+                        /* Login form */
+                        <form
+                            onSubmit={(e) => {
+                                void handleSubmit(e);
+                            }}
+                            noValidate
+                        >
+                            {/* Email */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label
+                                    htmlFor="bm-email"
+                                    style={{
+                                        display: 'block',
+                                        fontSize: '0.65rem',
+                                        letterSpacing: '0.12em',
+                                        textTransform: 'uppercase',
+                                        color: 'rgba(255,255,255,0.4)',
+                                        marginBottom: '0.4rem',
+                                        fontFamily:
+                                            "var(--font-opensans, 'Open Sans', sans-serif)",
+                                    }}
+                                >
+                                    Email
+                                </label>
+                                <input
+                                    id="bm-email"
+                                    type="email"
+                                    autoComplete="email"
+                                    value={email}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        if (touched.email)
+                                            setTouched((t) => ({
+                                                ...t,
+                                                email: true,
+                                            }));
+                                    }}
+                                    onFocus={() => setFocusedField('email')}
+                                    onBlur={() => {
+                                        setFocusedField(null);
+                                        setTouched((t) => ({
+                                            ...t,
+                                            email: true,
+                                        }));
+                                    }}
+                                    style={inputStyle('email')}
+                                    placeholder="twoj@email.pl"
+                                />
+                                {emailError && (
+                                    <p
+                                        role="alert"
+                                        style={{
+                                            fontSize: '0.72rem',
+                                            color: 'rgba(220,80,80,0.9)',
+                                            marginTop: '0.3rem',
+                                            fontFamily:
+                                                "var(--font-opensans, 'Open Sans', sans-serif)",
+                                        }}
+                                    >
+                                        {emailError}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Password */}
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label
+                                    htmlFor="bm-password"
+                                    style={{
+                                        display: 'block',
+                                        fontSize: '0.65rem',
+                                        letterSpacing: '0.12em',
+                                        textTransform: 'uppercase',
+                                        color: 'rgba(255,255,255,0.4)',
+                                        marginBottom: '0.4rem',
+                                        fontFamily:
+                                            "var(--font-opensans, 'Open Sans', sans-serif)",
+                                    }}
+                                >
+                                    Hasło
+                                </label>
+                                <input
+                                    id="bm-password"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if (touched.password)
+                                            setTouched((t) => ({
+                                                ...t,
+                                                password: true,
+                                            }));
+                                    }}
+                                    onFocus={() => setFocusedField('password')}
+                                    onBlur={() => {
+                                        setFocusedField(null);
+                                        setTouched((t) => ({
+                                            ...t,
+                                            password: true,
+                                        }));
+                                    }}
+                                    style={inputStyle('password')}
+                                    placeholder="••••••••"
+                                />
+                                {passwordError && (
+                                    <p
+                                        role="alert"
+                                        style={{
+                                            fontSize: '0.72rem',
+                                            color: 'rgba(220,80,80,0.9)',
+                                            marginTop: '0.3rem',
+                                            fontFamily:
+                                                "var(--font-opensans, 'Open Sans', sans-serif)",
+                                        }}
+                                    >
+                                        {passwordError}
+                                    </p>
+                                )}
+                            </div>
+
+                            {error && (
+                                <p
+                                    role="alert"
+                                    style={{
+                                        fontSize: '0.78rem',
+                                        color: 'rgba(220,80,80,0.9)',
+                                        marginBottom: '1rem',
+                                        textAlign: 'center',
+                                        fontFamily:
+                                            "var(--font-opensans, 'Open Sans', sans-serif)",
+                                    }}
+                                >
+                                    {error}
+                                </p>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                style={{
+                                    display: 'block',
+                                    width: '100%',
+                                    padding: '0.85rem 1.5rem',
+                                    background: submitting
+                                        ? '#a8895f'
+                                        : '#c5a880',
+                                    color: '#0d0d0d',
+                                    border: 'none',
+                                    borderRadius: '2px',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.18em',
+                                    textTransform: 'uppercase',
+                                    fontFamily:
+                                        "var(--font-opensans, 'Open Sans', sans-serif)",
+                                    cursor: submitting
+                                        ? 'not-allowed'
+                                        : 'pointer',
+                                    transition: 'background 0.2s',
+                                    marginBottom: '0.75rem',
+                                }}
+                            >
+                                {submitting
+                                    ? 'Logowanie…'
+                                    : 'Zaloguj i umów wizytę'}
+                            </button>
+
+                            <p
+                                style={{
+                                    textAlign: 'center',
+                                    fontSize: '0.72rem',
+                                    color: 'rgba(255,255,255,0.3)',
+                                    fontFamily:
+                                        "var(--font-opensans, 'Open Sans', sans-serif)",
+                                }}
+                            >
+                                Nie masz konta?{' '}
+                                <a
+                                    href={getPanelUrl('/auth/register')}
+                                    style={{
+                                        color: '#c5a880',
+                                        textDecoration: 'none',
+                                    }}
+                                >
+                                    Zarejestruj się
+                                </a>
+                            </p>
+                        </form>
+                    )}
+
+                    {/* Cancel */}
                     <button
                         onClick={onClose}
-                        className="text-xs uppercase text-center py-2 transition hover:opacity-70"
-                        style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.10em' }}
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            marginTop: '1rem',
+                            padding: '0.5rem',
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '0.65rem',
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(255,255,255,0.25)',
+                            fontFamily:
+                                "var(--font-opensans, 'Open Sans', sans-serif)",
+                            cursor: 'pointer',
+                        }}
                     >
-                        Anuluj
+                        Zamknij
                     </button>
                 </div>
             </div>

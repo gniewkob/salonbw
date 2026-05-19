@@ -7,7 +7,6 @@ import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
-import { getPanelUrl } from '@/utils/panelUrl';
 import SplitHero from '@/components/SplitHero';
 import TrustStrip from '@/components/TrustStrip';
 import ScrollReveal from '@/components/ScrollReveal';
