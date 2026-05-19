@@ -97,7 +97,8 @@ export default function Navbar() {
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },
                             ].map(({ label, href }) => {
-                                const active = router.pathname === href || (href !== '/' && router.pathname.startsWith(href));
+                                const pathname = router.pathname ?? '';
+                                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
                                 return (
                                     <li key={href}>
                                         <Link
@@ -191,7 +192,8 @@ export default function Navbar() {
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },
                             ].map(({ label, href }) => {
-                                const active = router.pathname === href || (href !== '/' && router.pathname.startsWith(href));
+                                const pathname = router.pathname ?? '';
+                                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
                                 return (
                                     <li key={href}>
                                         <Link
