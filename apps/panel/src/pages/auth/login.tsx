@@ -34,7 +34,9 @@ export const loginValidationSchema = {
     async validate(values: LoginFormValues) {
         const errors = validateLoginForm(values);
         if (Object.keys(errors).length > 0) {
-            throw new Error(errors.email ?? errors.password ?? 'Nieprawidłowe dane');
+            throw new Error(
+                errors.email ?? errors.password ?? 'Nieprawidłowe dane',
+            );
         }
         return values;
     },
@@ -48,7 +50,10 @@ const grain = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http:
 export default function LoginPage() {
     const { login, apiFetch } = useAuth();
     const router = useRouter();
-    const [form, setForm] = useState<LoginFormValues>({ email: '', password: '' });
+    const [form, setForm] = useState<LoginFormValues>({
+        email: '',
+        password: '',
+    });
     const [touched, setTouched] = useState({ email: false, password: false });
     const [errors, setErrors] = useState<LoginErrors>({});
     const [status, setStatus] = useState('');
@@ -58,7 +63,10 @@ export default function LoginPage() {
     const trimmedEmail = useMemo(() => form.email.trim(), [form.email]);
 
     const runValidation = () => {
-        const nextErrors = validateLoginForm({ email: trimmedEmail, password: form.password });
+        const nextErrors = validateLoginForm({
+            email: trimmedEmail,
+            password: form.password,
+        });
         setErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
     };
@@ -78,13 +86,19 @@ export default function LoginPage() {
             const fallback = getPostLoginRoute(profile?.role);
             // Accept both ?redirect= (from landing) and ?redirectTo= (legacy)
             const redirectTo =
-                (typeof router.query.redirect === 'string' ? router.query.redirect : null) ??
-                (typeof router.query.redirectTo === 'string' ? router.query.redirectTo : null) ??
+                (typeof router.query.redirect === 'string'
+                    ? router.query.redirect
+                    : null) ??
+                (typeof router.query.redirectTo === 'string'
+                    ? router.query.redirectTo
+                    : null) ??
                 '';
             void router.push(redirectTo || fallback);
         } catch (err: unknown) {
-            setStatus(err instanceof Error ? err.message : 'Logowanie nieudane');
-            setForm(prev => ({ ...prev, password: '' }));
+            setStatus(
+                err instanceof Error ? err.message : 'Logowanie nieudane',
+            );
+            setForm((prev) => ({ ...prev, password: '' }));
         } finally {
             setSubmitting(false);
         }
@@ -92,7 +106,7 @@ export default function LoginPage() {
 
     const handleBlur = (field: 'email' | 'password') => {
         setFocusedField(null);
-        setTouched(prev => ({ ...prev, [field]: true }));
+        setTouched((prev) => ({ ...prev, [field]: true }));
         runValidation();
     };
 
@@ -116,31 +130,115 @@ export default function LoginPage() {
             <Head>
                 <title>Logowanie — Salon Black &amp; White</title>
             </Head>
-            <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '2rem 1.5rem' }}>
+            <div
+                style={{
+                    minHeight: '100vh',
+                    background: '#080808',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    padding: '2rem 1.5rem',
+                }}
+            >
                 {/* Grain overlay */}
-                <div style={{ position: 'fixed', inset: 0, backgroundImage: grain, backgroundSize: '180px', opacity: 0.04, pointerEvents: 'none', zIndex: 0 }} />
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundImage: grain,
+                        backgroundSize: '180px',
+                        opacity: 0.04,
+                        pointerEvents: 'none',
+                        zIndex: 0,
+                    }}
+                />
 
                 {/* B&W watermark */}
-                <span style={{ position: 'fixed', bottom: '-0.1em', left: '-0.05em', fontFamily: "'Playfair Display', serif", fontSize: 'clamp(6rem,20vw,14rem)', fontWeight: 700, color: 'rgba(255,255,255,0.04)', lineHeight: 1, pointerEvents: 'none', userSelect: 'none', zIndex: 0 }}>
+                <span
+                    style={{
+                        position: 'fixed',
+                        bottom: '-0.1em',
+                        left: '-0.05em',
+                        fontFamily: "'Playfair Display', serif",
+                        fontSize: 'clamp(6rem,20vw,14rem)',
+                        fontWeight: 700,
+                        color: 'rgba(255,255,255,0.04)',
+                        lineHeight: 1,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                        zIndex: 0,
+                    }}
+                >
                     B&amp;W
                 </span>
 
-                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '400px' }}>
+                <div
+                    style={{
+                        position: 'relative',
+                        zIndex: 1,
+                        width: '100%',
+                        maxWidth: '400px',
+                    }}
+                >
                     {/* Brand */}
-                    <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c5a880', marginBottom: '0.75rem' }}>
+                    <div
+                        style={{ textAlign: 'center', marginBottom: '2.5rem' }}
+                    >
+                        <p
+                            style={{
+                                fontFamily: "'Open Sans', sans-serif",
+                                fontSize: '0.6rem',
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                color: '#c5a880',
+                                marginBottom: '0.75rem',
+                            }}
+                        >
                             Akademia Zdrowych Włosów
                         </p>
-                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.15 }}>
+                        <h1
+                            style={{
+                                fontFamily: "'Playfair Display', serif",
+                                fontSize: '2rem',
+                                fontWeight: 700,
+                                color: '#ffffff',
+                                margin: 0,
+                                lineHeight: 1.15,
+                            }}
+                        >
                             Zaloguj się
                         </h1>
-                        <div style={{ width: '32px', height: '2px', background: '#c5a880', margin: '1rem auto 0' }} />
+                        <div
+                            style={{
+                                width: '32px',
+                                height: '2px',
+                                background: '#c5a880',
+                                margin: '1rem auto 0',
+                            }}
+                        />
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={e => { void handleSubmit(e); }} noValidate>
+                    <form
+                        onSubmit={(e) => {
+                            void handleSubmit(e);
+                        }}
+                        noValidate
+                    >
                         <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="email" style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: '0.5rem', fontFamily: "'Open Sans', sans-serif" }}>
+                            <label
+                                htmlFor="email"
+                                style={{
+                                    display: 'block',
+                                    fontSize: '0.7rem',
+                                    letterSpacing: '0.1em',
+                                    textTransform: 'uppercase',
+                                    color: 'rgba(255,255,255,0.45)',
+                                    marginBottom: '0.5rem',
+                                    fontFamily: "'Open Sans', sans-serif",
+                                }}
+                            >
                                 Adres e-mail
                             </label>
                             <input
@@ -152,26 +250,54 @@ export default function LoginPage() {
                                 style={inputStyle('email')}
                                 placeholder="twoj@email.pl"
                                 value={form.email}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const value = e.target.value;
-                                    setForm(prev => ({ ...prev, email: value }));
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        email: value,
+                                    }));
                                     if (touched.email) {
-                                        const fieldErrors = validateLoginForm({ email: value, password: form.password });
-                                        setErrors(prev => ({ ...prev, email: fieldErrors.email }));
+                                        const fieldErrors = validateLoginForm({
+                                            email: value,
+                                            password: form.password,
+                                        });
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            email: fieldErrors.email,
+                                        }));
                                     }
                                 }}
                                 onFocus={() => setFocusedField('email')}
                                 onBlur={() => handleBlur('email')}
                             />
                             {touched.email && errors.email && (
-                                <p role="alert" style={{ fontSize: '0.75rem', color: 'rgba(220,80,80,0.9)', marginTop: '0.35rem', fontFamily: "'Open Sans', sans-serif" }}>
+                                <p
+                                    role="alert"
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'rgba(220,80,80,0.9)',
+                                        marginTop: '0.35rem',
+                                        fontFamily: "'Open Sans', sans-serif",
+                                    }}
+                                >
                                     {errors.email}
                                 </p>
                             )}
                         </div>
 
                         <div style={{ marginBottom: '1.75rem' }}>
-                            <label htmlFor="password" style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: '0.5rem', fontFamily: "'Open Sans', sans-serif" }}>
+                            <label
+                                htmlFor="password"
+                                style={{
+                                    display: 'block',
+                                    fontSize: '0.7rem',
+                                    letterSpacing: '0.1em',
+                                    textTransform: 'uppercase',
+                                    color: 'rgba(255,255,255,0.45)',
+                                    marginBottom: '0.5rem',
+                                    fontFamily: "'Open Sans', sans-serif",
+                                }}
+                            >
                                 Hasło
                             </label>
                             <input
@@ -183,19 +309,36 @@ export default function LoginPage() {
                                 style={inputStyle('password')}
                                 placeholder="••••••••"
                                 value={form.password}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const value = e.target.value;
-                                    setForm(prev => ({ ...prev, password: value }));
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        password: value,
+                                    }));
                                     if (touched.password) {
-                                        const fieldErrors = validateLoginForm({ email: form.email, password: value });
-                                        setErrors(prev => ({ ...prev, password: fieldErrors.password }));
+                                        const fieldErrors = validateLoginForm({
+                                            email: form.email,
+                                            password: value,
+                                        });
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            password: fieldErrors.password,
+                                        }));
                                     }
                                 }}
                                 onFocus={() => setFocusedField('password')}
                                 onBlur={() => handleBlur('password')}
                             />
                             {touched.password && errors.password && (
-                                <p role="alert" style={{ fontSize: '0.75rem', color: 'rgba(220,80,80,0.9)', marginTop: '0.35rem', fontFamily: "'Open Sans', sans-serif" }}>
+                                <p
+                                    role="alert"
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'rgba(220,80,80,0.9)',
+                                        marginTop: '0.35rem',
+                                        fontFamily: "'Open Sans', sans-serif",
+                                    }}
+                                >
                                     {errors.password}
                                 </p>
                             )}
@@ -225,20 +368,55 @@ export default function LoginPage() {
                         </button>
 
                         {status && (
-                            <p role="alert" style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(220,80,80,0.9)', fontFamily: "'Open Sans', sans-serif" }}>
+                            <p
+                                role="alert"
+                                style={{
+                                    textAlign: 'center',
+                                    marginTop: '1rem',
+                                    fontSize: '0.8rem',
+                                    color: 'rgba(220,80,80,0.9)',
+                                    fontFamily: "'Open Sans', sans-serif",
+                                }}
+                            >
                                 {status}
                             </p>
                         )}
                     </form>
 
-                    <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', fontFamily: "'Open Sans', sans-serif" }}>
+                    <p
+                        style={{
+                            textAlign: 'center',
+                            marginTop: '2rem',
+                            fontSize: '0.8rem',
+                            color: 'rgba(255,255,255,0.35)',
+                            fontFamily: "'Open Sans', sans-serif",
+                        }}
+                    >
                         Nie masz konta?{' '}
-                        <Link href="/auth/register" prefetch={false} style={{ color: '#c5a880', textDecoration: 'none', fontWeight: 600 }}>
+                        <Link
+                            href="/auth/register"
+                            prefetch={false}
+                            style={{
+                                color: '#c5a880',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
                             Zarejestruj się
                         </Link>
                     </p>
 
-                    <p style={{ textAlign: 'center', marginTop: '2.5rem', fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.15)', fontFamily: "'Open Sans', sans-serif" }}>
+                    <p
+                        style={{
+                            textAlign: 'center',
+                            marginTop: '2.5rem',
+                            fontSize: '0.6rem',
+                            letterSpacing: '0.14em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(255,255,255,0.15)',
+                            fontFamily: "'Open Sans', sans-serif",
+                        }}
+                    >
                         Salon Black &amp; White · Bytom
                     </p>
                 </div>

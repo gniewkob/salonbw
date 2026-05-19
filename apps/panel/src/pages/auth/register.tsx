@@ -8,7 +8,12 @@ import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type RegisterFormValues = { name: string; email: string; phone: string; password: string };
+type RegisterFormValues = {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+};
 type RegisterErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
 const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
@@ -33,8 +38,15 @@ const grain = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http:
 export default function RegisterPage() {
     const { register, apiFetch } = useAuth();
     const router = useRouter();
-    const [form, setForm] = useState<RegisterFormValues>({ name: '', email: '', phone: '', password: '' });
-    const [touched, setTouched] = useState<Partial<Record<keyof RegisterFormValues, boolean>>>({});
+    const [form, setForm] = useState<RegisterFormValues>({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+    });
+    const [touched, setTouched] = useState<
+        Partial<Record<keyof RegisterFormValues, boolean>>
+    >({});
     const [errors, setErrors] = useState<RegisterErrors>({});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -54,7 +66,7 @@ export default function RegisterPage() {
 
     const handleBlur = (field: keyof RegisterFormValues) => {
         setFocusedField(null);
-        setTouched(prev => ({ ...prev, [field]: true }));
+        setTouched((prev) => ({ ...prev, [field]: true }));
         runValidation(form);
     };
 
@@ -63,7 +75,12 @@ export default function RegisterPage() {
         setError('');
         const valid = runValidation(form);
         if (!valid) {
-            setTouched({ name: true, email: true, phone: true, password: true });
+            setTouched({
+                name: true,
+                email: true,
+                phone: true,
+                password: true,
+            });
             return;
         }
         setSubmitting(true);
@@ -72,13 +89,17 @@ export default function RegisterPage() {
             const profile = await apiFetch<User>('/users/profile');
             void router.push(getPostLoginRoute(profile?.role));
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Rejestracja nieudana');
+            setError(
+                err instanceof Error ? err.message : 'Rejestracja nieudana',
+            );
         } finally {
             setSubmitting(false);
         }
     };
 
-    const inputStyle = (field: keyof RegisterFormValues): React.CSSProperties => ({
+    const inputStyle = (
+        field: keyof RegisterFormValues,
+    ): React.CSSProperties => ({
         display: 'block',
         width: '100%',
         padding: '0.85rem 1rem',
@@ -115,46 +136,127 @@ export default function RegisterPage() {
             <Head>
                 <title>Rejestracja — Salon Black &amp; White</title>
             </Head>
-            <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '2rem 1.5rem' }}>
+            <div
+                style={{
+                    minHeight: '100vh',
+                    background: '#080808',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    padding: '2rem 1.5rem',
+                }}
+            >
                 {/* Grain overlay */}
-                <div style={{ position: 'fixed', inset: 0, backgroundImage: grain, backgroundSize: '180px', opacity: 0.04, pointerEvents: 'none', zIndex: 0 }} />
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundImage: grain,
+                        backgroundSize: '180px',
+                        opacity: 0.04,
+                        pointerEvents: 'none',
+                        zIndex: 0,
+                    }}
+                />
 
                 {/* B&W watermark */}
-                <span style={{ position: 'fixed', bottom: '-0.1em', left: '-0.05em', fontFamily: "'Playfair Display', serif", fontSize: 'clamp(6rem,20vw,14rem)', fontWeight: 700, color: 'rgba(255,255,255,0.04)', lineHeight: 1, pointerEvents: 'none', userSelect: 'none', zIndex: 0 }}>
+                <span
+                    style={{
+                        position: 'fixed',
+                        bottom: '-0.1em',
+                        left: '-0.05em',
+                        fontFamily: "'Playfair Display', serif",
+                        fontSize: 'clamp(6rem,20vw,14rem)',
+                        fontWeight: 700,
+                        color: 'rgba(255,255,255,0.04)',
+                        lineHeight: 1,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                        zIndex: 0,
+                    }}
+                >
                     B&amp;W
                 </span>
 
-                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '400px' }}>
+                <div
+                    style={{
+                        position: 'relative',
+                        zIndex: 1,
+                        width: '100%',
+                        maxWidth: '400px',
+                    }}
+                >
                     {/* Brand */}
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c5a880', marginBottom: '0.75rem' }}>
+                        <p
+                            style={{
+                                fontFamily: "'Open Sans', sans-serif",
+                                fontSize: '0.6rem',
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                color: '#c5a880',
+                                marginBottom: '0.75rem',
+                            }}
+                        >
                             Akademia Zdrowych Włosów
                         </p>
-                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.15 }}>
+                        <h1
+                            style={{
+                                fontFamily: "'Playfair Display', serif",
+                                fontSize: '2rem',
+                                fontWeight: 700,
+                                color: '#ffffff',
+                                margin: 0,
+                                lineHeight: 1.15,
+                            }}
+                        >
                             Zarejestruj się
                         </h1>
-                        <div style={{ width: '32px', height: '2px', background: '#c5a880', margin: '1rem auto 0' }} />
+                        <div
+                            style={{
+                                width: '32px',
+                                height: '2px',
+                                background: '#c5a880',
+                                margin: '1rem auto 0',
+                            }}
+                        />
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={e => { void handleSubmit(e); }} noValidate>
+                    <form
+                        onSubmit={(e) => {
+                            void handleSubmit(e);
+                        }}
+                        noValidate
+                    >
                         <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="name" style={labelStyle}>Imię i nazwisko</label>
+                            <label htmlFor="name" style={labelStyle}>
+                                Imię i nazwisko
+                            </label>
                             <input
                                 id="name"
                                 style={inputStyle('name')}
                                 placeholder="Jan Kowalski"
                                 autoComplete="name"
                                 value={form.name}
-                                onChange={e => handleChange('name', e.target.value)}
+                                onChange={(e) =>
+                                    handleChange('name', e.target.value)
+                                }
                                 onFocus={() => setFocusedField('name')}
                                 onBlur={() => handleBlur('name')}
                             />
-                            {touched.name && errors.name && <p role="alert" style={errorStyle}>{errors.name}</p>}
+                            {touched.name && errors.name && (
+                                <p role="alert" style={errorStyle}>
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="email" style={labelStyle}>Adres e-mail</label>
+                            <label htmlFor="email" style={labelStyle}>
+                                Adres e-mail
+                            </label>
                             <input
                                 id="email"
                                 type="email"
@@ -162,15 +264,28 @@ export default function RegisterPage() {
                                 style={inputStyle('email')}
                                 placeholder="twoj@email.pl"
                                 value={form.email}
-                                onChange={e => handleChange('email', e.target.value)}
+                                onChange={(e) =>
+                                    handleChange('email', e.target.value)
+                                }
                                 onFocus={() => setFocusedField('email')}
                                 onBlur={() => handleBlur('email')}
                             />
-                            {touched.email && errors.email && <p role="alert" style={errorStyle}>{errors.email}</p>}
+                            {touched.email && errors.email && (
+                                <p role="alert" style={errorStyle}>
+                                    {errors.email}
+                                </p>
+                            )}
                         </div>
 
                         <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="phone" style={labelStyle}>Telefon <span style={{ color: 'rgba(255,255,255,0.25)' }}>(opcjonalnie)</span></label>
+                            <label htmlFor="phone" style={labelStyle}>
+                                Telefon{' '}
+                                <span
+                                    style={{ color: 'rgba(255,255,255,0.25)' }}
+                                >
+                                    (opcjonalnie)
+                                </span>
+                            </label>
                             <input
                                 id="phone"
                                 type="tel"
@@ -178,14 +293,18 @@ export default function RegisterPage() {
                                 style={inputStyle('phone')}
                                 placeholder="+48 000 000 000"
                                 value={form.phone}
-                                onChange={e => handleChange('phone', e.target.value)}
+                                onChange={(e) =>
+                                    handleChange('phone', e.target.value)
+                                }
                                 onFocus={() => setFocusedField('phone')}
                                 onBlur={() => setFocusedField(null)}
                             />
                         </div>
 
                         <div style={{ marginBottom: '1.75rem' }}>
-                            <label htmlFor="password" style={labelStyle}>Hasło</label>
+                            <label htmlFor="password" style={labelStyle}>
+                                Hasło
+                            </label>
                             <input
                                 id="password"
                                 type="password"
@@ -193,11 +312,17 @@ export default function RegisterPage() {
                                 style={inputStyle('password')}
                                 placeholder="Min. 6 znaków"
                                 value={form.password}
-                                onChange={e => handleChange('password', e.target.value)}
+                                onChange={(e) =>
+                                    handleChange('password', e.target.value)
+                                }
                                 onFocus={() => setFocusedField('password')}
                                 onBlur={() => handleBlur('password')}
                             />
-                            {touched.password && errors.password && <p role="alert" style={errorStyle}>{errors.password}</p>}
+                            {touched.password && errors.password && (
+                                <p role="alert" style={errorStyle}>
+                                    {errors.password}
+                                </p>
+                            )}
                         </div>
 
                         <button
@@ -224,20 +349,54 @@ export default function RegisterPage() {
                         </button>
 
                         {error && (
-                            <p role="alert" style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(220,80,80,0.9)', fontFamily: "'Open Sans', sans-serif" }}>
+                            <p
+                                role="alert"
+                                style={{
+                                    textAlign: 'center',
+                                    marginTop: '1rem',
+                                    fontSize: '0.8rem',
+                                    color: 'rgba(220,80,80,0.9)',
+                                    fontFamily: "'Open Sans', sans-serif",
+                                }}
+                            >
                                 {error}
                             </p>
                         )}
                     </form>
 
-                    <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', fontFamily: "'Open Sans', sans-serif" }}>
+                    <p
+                        style={{
+                            textAlign: 'center',
+                            marginTop: '2rem',
+                            fontSize: '0.8rem',
+                            color: 'rgba(255,255,255,0.35)',
+                            fontFamily: "'Open Sans', sans-serif",
+                        }}
+                    >
                         Masz już konto?{' '}
-                        <Link href="/auth/login" style={{ color: '#c5a880', textDecoration: 'none', fontWeight: 600 }}>
+                        <Link
+                            href="/auth/login"
+                            style={{
+                                color: '#c5a880',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
                             Zaloguj się
                         </Link>
                     </p>
 
-                    <p style={{ textAlign: 'center', marginTop: '2.5rem', fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.15)', fontFamily: "'Open Sans', sans-serif" }}>
+                    <p
+                        style={{
+                            textAlign: 'center',
+                            marginTop: '2.5rem',
+                            fontSize: '0.6rem',
+                            letterSpacing: '0.14em',
+                            textTransform: 'uppercase',
+                            color: 'rgba(255,255,255,0.15)',
+                            fontFamily: "'Open Sans', sans-serif",
+                        }}
+                    >
                         Salon Black &amp; White · Bytom
                     </p>
                 </div>
