@@ -92,6 +92,28 @@ const t = {
             starsLabel: 'Ocena: {n} na 5 gwiazdek',
             reviewLabel: 'Opinia {name}',
             clientSince: 'Klientka od {year}',
+            items: [
+                {
+                    name: 'Monika W.',
+                    sinceYear: 2015,
+                    text: 'Chodzę do Aleksandry od ponad 8 lat. Nigdy żaden inny salon nie dał mi tak dobrego efektu koloryzacji. Moje włosy są zdrowe, lśniące i dokładnie takie, jak sobie wymarzyłam.',
+                },
+                {
+                    name: 'Karolina P.',
+                    sinceYear: 2019,
+                    text: 'Botox na włosy w Black&White to zupełnie inne doświadczenie niż gdzie indziej. Konsultacja przed zabiegiem, wyjaśnienie każdego kroku — czuć, że to naprawdę akademia, nie zwykły salon.',
+                },
+                {
+                    name: 'Anna S.',
+                    sinceYear: 2021,
+                    text: 'Przedłużanie metodą HairTalk — wykonane perfekcyjnie, nie widać żadnych przejść. Mogę czesać, upinać i nosić kucyk bez żadnego strachu. Polecam z całego serca!',
+                },
+                {
+                    name: 'Beata K.',
+                    sinceYear: 2013,
+                    text: 'Atmosfera w salonie jest wyjątkowa — ciepła, profesjonalna i spokojna. Każda wizyta to chwila relaksu. Aleksandra zawsze wie, co będzie najlepsze dla moich włosów.',
+                },
+            ],
         },
         footer: {
             navigation: 'Nawigacja',
@@ -207,6 +229,28 @@ const t = {
             starsLabel: 'Rating: {n} out of 5 stars',
             reviewLabel: 'Review by {name}',
             clientSince: 'Client since {year}',
+            items: [
+                {
+                    name: 'Monika W.',
+                    sinceYear: 2015,
+                    text: 'I have been coming to Aleksandra for over 8 years. No other salon has ever given me such a great colouring result. My hair is healthy, shiny, and exactly how I dreamed it would be.',
+                },
+                {
+                    name: 'Karolina P.',
+                    sinceYear: 2019,
+                    text: 'Hair botox at Black&White is a completely different experience than elsewhere. Consultation before the treatment, every step clearly explained — you can feel this is truly an academy, not just a regular salon.',
+                },
+                {
+                    name: 'Anna S.',
+                    sinceYear: 2021,
+                    text: 'HairTalk extensions done perfectly, with no visible transitions. I can comb, style, and wear a ponytail without any fear. I recommend it with all my heart!',
+                },
+                {
+                    name: 'Beata K.',
+                    sinceYear: 2013,
+                    text: 'The atmosphere in the salon is exceptional — warm, professional, and calm. Every visit is a moment of relaxation. Aleksandra always knows what will be best for my hair.',
+                },
+            ],
         },
         footer: {
             navigation: 'Navigation',
@@ -322,6 +366,28 @@ const t = {
             starsLabel: 'Bewertung: {n} von 5 Sternen',
             reviewLabel: 'Bewertung von {name}',
             clientSince: 'Kundin seit {year}',
+            items: [
+                {
+                    name: 'Monika W.',
+                    sinceYear: 2015,
+                    text: 'Ich gehe seit über 8 Jahren zu Aleksandra. Kein anderer Salon hat mir je so ein gutes Farbergebnis gegeben. Mein Haar ist gesund, glänzend und genau so, wie ich es mir immer gewünscht habe.',
+                },
+                {
+                    name: 'Karolina P.',
+                    sinceYear: 2019,
+                    text: 'Haar-Botox bei Black&White ist ein ganz anderes Erlebnis als anderswo. Beratung vor der Behandlung, Erklärung jedes Schrittes — man spürt, dass das wirklich eine Akademie ist und nicht nur ein gewöhnlicher Salon.',
+                },
+                {
+                    name: 'Anna S.',
+                    sinceYear: 2021,
+                    text: 'HairTalk-Verlängerung perfekt ausgeführt, ohne sichtbare Übergänge. Ich kann kämmen, stylen und einen Pferdeschwanz tragen, ganz ohne Angst. Ich empfehle es von ganzem Herzen!',
+                },
+                {
+                    name: 'Beata K.',
+                    sinceYear: 2013,
+                    text: 'Die Atmosphäre im Salon ist außergewöhnlich — warm, professionell und ruhig. Jeder Besuch ist ein Moment der Entspannung. Aleksandra weiß immer, was für mein Haar am besten ist.',
+                },
+            ],
         },
         footer: {
             navigation: 'Navigation',

@@ -3,16 +3,11 @@ import { useState } from 'react';
 import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const testimonials = [
-    { name: 'Monika W.', sinceYear: 2015, stars: 5, text: 'Chodzę do Aleksandry od ponad 8 lat. Nigdy żaden inny salon nie dał mi tak dobrego efektu koloryzacji. Moje włosy są zdrowe, lśniące i dokładnie takie, jak sobie wymarzyłam.' },
-    { name: 'Karolina P.', sinceYear: 2019, stars: 5, text: 'Botox na włosy w Black&White to zupełnie inne doświadczenie niż gdzie indziej. Konsultacja przed zabiegiem, wyjaśnienie każdego kroku — czuć, że to naprawdę akademia, nie zwykły salon.' },
-    { name: 'Anna S.', sinceYear: 2021, stars: 5, text: 'Przedłużanie metodą HairTalk — wykonane perfekcyjnie, nie widać żadnych przejść. Mogę czesać, upinać i nosić kucyk bez żadnego strachu. Polecam z całego serca!' },
-    { name: 'Beata K.', sinceYear: 2013, stars: 5, text: 'Atmosfera w salonie jest wyjątkowa — ciepła, profesjonalna i spokojny. Każda wizyta to chwila relaksu. Aleksandra zawsze wie, co będzie najlepsze dla moich włosów.' },
-];
-
 export default function Testimonials() {
     const { T } = useLanguage();
+    const testimonials = T.testimonials.items;
     const [active, setActive] = useState(0);
+    const stars = 5;
 
     return (
         <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
@@ -29,9 +24,9 @@ export default function Testimonials() {
                     <div
                         className="flex justify-center gap-1 mb-4"
                         role="img"
-                        aria-label={T.testimonials.starsLabel.replace('{n}', String(testimonials[active]?.stars ?? 5))}
+                        aria-label={T.testimonials.starsLabel.replace('{n}', String(stars))}
                     >
-                        {Array.from({ length: testimonials[active]?.stars ?? 5 }).map((_, i) => (
+                        {Array.from({ length: stars }).map((_, i) => (
                             <svg key={i} className="w-4 h-4" aria-hidden="true" fill="#c5a880" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>

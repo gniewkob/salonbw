@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://salon-bw.pl/sitemap.xml
+Sitemap: https://dev.salon-bw.pl/sitemap.xml
