@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Script from 'next/script';
@@ -16,6 +16,7 @@ import SalonGallery from '@/components/SalonGallery';
 import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
 import SectionHeader from '@/components/SectionHeader';
+import BookingModal from '@/components/BookingModal';
 import {
     getFounderMessage,
     getSalonGallery,
@@ -34,7 +35,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
         try { trackEvent('page_view', { page_title: 'Home' }); } catch {}
     }, []);
 
-    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
+    const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
     return (
         <PublicLayout>
@@ -152,13 +153,13 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                    <a
-                                        href={bookingUrl}
+                                    <button
+                                        onClick={() => setBookingModalOpen(true)}
                                         className="split-hero__cta-primary text-xs font-semibold uppercase text-center px-8 py-3.5"
                                         style={{ letterSpacing: '0.14em' }}
                                     >
                                         {BUSINESS_INFO.booking.text}
-                                    </a>
+                                    </button>
                                     <Link
                                         href="/contact"
                                         className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
@@ -185,6 +186,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                     </div>
                 </section>
             </div>
+            <BookingModal open={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
         </PublicLayout>
     );
 }

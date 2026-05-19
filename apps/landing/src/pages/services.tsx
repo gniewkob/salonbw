@@ -7,7 +7,7 @@ import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
-import { getPanelUrl } from '@/utils/panelUrl';
+import BookingModal, { BookingService } from '@/components/BookingModal';
 
 interface ServiceCategory {
     id: number | null;
@@ -86,10 +86,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
         } catch {}
     }, [items]);
 
-    const [bookingService, setBookingService] = useState<Service | null>(null);
-    const bookingUrl = bookingService
-        ? getPanelUrl(`/auth/login?redirect=${encodeURIComponent(`/calendar?newService=${bookingService.id}`)}`)
-        : '#';
+    const [bookingService, setBookingService] = useState<BookingService | null>(null);
+    const [generalBookingOpen, setGeneralBookingOpen] = useState(false);
 
     function resolveServiceRoute(name: string): Route | undefined {
         const n = name.toLowerCase();
@@ -127,13 +125,13 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             kosmetycznych dla kobiet i mężczyzn. Sprawdź naszą
                             ofertę i umów się na wizytę!
                         </p>
-                        <a
-                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                        <button
+                            onClick={() => setGeneralBookingOpen(true)}
                             className="inline-block px-8 py-3 rounded-md hover:opacity-90 transition focus:outline-none focus:ring-2"
                             style={{ background: 'var(--brand-gold)', color: '#0d0d0d', fontWeight: 600 }}
                         >
                             {BUSINESS_INFO.booking.text}
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -203,7 +201,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                 {getServiceDuration(s)}
                                             </span>
                                             <button
-                                                onClick={() => setBookingService(s)}
+                                                onClick={() => setBookingService({ id: s.id, name: s.name, priceLabel: getServicePrice(s).label, duration: getServiceDuration(s) })}
                                                 className="mt-1 flex items-center gap-1 text-xs hover:opacity-70 transition"
                                                 style={{ color: '#c5a880' }}
                                                 aria-label={`Umów wizytę: ${s.name}`}
@@ -229,52 +227,24 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             Umów się na wizytę i ciesz się profesjonalną obsługą
                             w naszym salonie.
                         </p>
-                        <a
-                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
-                            className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                        <button
+                            onClick={() => setGeneralBookingOpen(true)}
+                            className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2"
                         >
                             {BUSINESS_INFO.booking.text}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
-            {bookingService && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ background: 'rgba(0,0,0,0.7)' }}
-                    onClick={() => setBookingService(null)}
-                >
-                    <div
-                        className="w-full max-w-sm rounded p-8"
-                        style={{ background: '#0d0d0d', border: '1px solid rgba(197,168,128,0.25)' }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <p className="text-xs uppercase mb-1" style={{ color: '#c5a880', letterSpacing: '0.12em' }}>Rezerwacja</p>
-                        <h2 className="text-xl font-semibold mb-1" style={{ color: '#ffffff', fontFamily: "var(--font-playfair), serif" }}>
-                            {bookingService.name}
-                        </h2>
-                        <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                            {getServicePrice(bookingService).label} · {getServiceDuration(bookingService)}
-                        </p>
-                        <div className="flex flex-col gap-3">
-                            <a
-                                href={bookingUrl}
-                                className="block text-center text-xs font-semibold uppercase py-3.5 px-6 transition hover:opacity-90"
-                                style={{ background: '#c5a880', color: '#0d0d0d', letterSpacing: '0.12em', borderRadius: '2px' }}
-                            >
-                                Umów wizytę
-                            </a>
-                            <button
-                                onClick={() => setBookingService(null)}
-                                className="text-xs uppercase text-center py-2 transition hover:opacity-70"
-                                style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.10em' }}
-                            >
-                                Anuluj
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <BookingModal
+                open={!!bookingService}
+                onClose={() => setBookingService(null)}
+                service={bookingService ?? undefined}
+            />
+            <BookingModal
+                open={generalBookingOpen}
+                onClose={() => setGeneralBookingOpen(false)}
+            />
         </PublicLayout>
     );
 }

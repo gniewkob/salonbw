@@ -1,7 +1,8 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';
-import { getPanelUrl } from '@/utils/panelUrl';
+import BookingModal from '@/components/BookingModal';
 
 export default function BookNowFab() {
     const router = useRouter();
@@ -11,24 +12,23 @@ export default function BookNowFab() {
         path.startsWith('/auth') ||
         path.startsWith('/appointments');
 
+    const [modalOpen, setModalOpen] = useState(false);
+
     if (hidden) return null;
 
-    // Booking requires login - redirect to panel with return URL
-    const bookingUrl = getPanelUrl(
-        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
-    );
-
     return (
-        <div className="fixed bottom-4 right-4 z-50 md:hidden">
-            <a
-                href={bookingUrl}
-                onClick={() => trackEvent('begin_checkout', { cta: 'fab' })}
-                className="btn-gold px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
-                style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
-                aria-label="Umów wizytę"
-            >
-                Umów wizytę
-            </a>
-        </div>
+        <>
+            <div className="fixed bottom-4 right-4 z-50 md:hidden">
+                <button
+                    onClick={() => { trackEvent('begin_checkout', { cta: 'fab' }); setModalOpen(true); }}
+                    className="btn-gold px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
+                    style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
+                    aria-label="Umów wizytę"
+                >
+                    Umów wizytę
+                </button>
+            </div>
+            <BookingModal open={modalOpen} onClose={() => setModalOpen(false)} />
+        </>
     );
 }
