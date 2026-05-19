@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
 import ImageLightbox from '@/components/ImageLightbox';
+import SectionHeader from '@/components/SectionHeader';
 import { trackEvent } from '@/utils/analytics';
 import {
     cacheKey,
@@ -41,11 +42,7 @@ interface InstagramMedia {
 
 interface InstagramResponse {
     data?: InstagramMedia[];
-    paging?: {
-        cursors?: {
-            after?: string;
-        };
-    };
+    paging?: { cursors?: { after?: string } };
     error?: unknown;
 }
 
@@ -97,7 +94,7 @@ export default function GalleryPage({
 
     useEffect(() => {
         if (!sentinelRef.current) return;
-        if (!nextCursor || isFallback) return; // no infinite load in fallback mode
+        if (!nextCursor || isFallback) return;
         const el = sentinelRef.current;
         const loadMore = async () => {
             setLoading(true);
@@ -107,8 +104,7 @@ export default function GalleryPage({
                 );
                 if (!res.ok) throw new Error('Failed to load more');
                 const json = (await res.json()) as GalleryApiResponse;
-                const more: GalleryItem[] = json.items ?? [];
-                setItems((prev) => [...prev, ...more]);
+                setItems((prev) => [...prev, ...(json.items ?? [])]);
                 setNextCursor(json.nextCursor ?? null);
                 setIsFallback(json.fallback ?? false);
             } catch (e) {
@@ -120,199 +116,178 @@ export default function GalleryPage({
         const io = new IntersectionObserver(
             (entries) => {
                 const entry = entries[0];
-                if (!entry.isIntersecting || loading) return;
+                if (!entry?.isIntersecting || loading) return;
                 void loadMore();
             },
-            { rootMargin: '200px' },
+            { rootMargin: '300px' },
         );
         io.observe(el);
         return () => io.disconnect();
     }, [nextCursor, loading, isFallback]);
+
+    const openLightbox = (item: GalleryItem, i: number) => {
+        if (item.type === 'VIDEO') return;
+        const idx = imageIndexMap.get(item.id);
+        if (idx === undefined) return;
+        setLightboxIndex(idx);
+        try {
+            trackEvent('select_item', {
+                item_list_name: 'gallery',
+                items: [{ item_id: item.id, item_name: item.caption || `Gallery ${i + 1}`, item_category: 'Gallery' }],
+                cta: 'gallery_grid',
+            });
+        } catch {}
+    };
+
     return (
         <PublicLayout>
             <Head>
                 <title>Galeria | Salon Black &amp; White</title>
                 <meta
                     name="description"
-                    content="Zobacz przykłady naszych realizacji w galerii Salon Black &amp; White - profesjonalne fryzjerstwo i stylizacje z Bytomia."
+                    content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia."
                 />
-                <meta
-                    property="og:title"
-                    content="Galeria realizacji - Salon Black &amp; White"
-                />
+                <meta property="og:title" content="Galeria realizacji — Salon Black & White" />
                 <meta
                     property="og:description"
-                    content="Zobacz przykłady naszych realizacji w galerii Salon Black &amp; White - profesjonalne fryzjerstwo i stylizacje z Bytomia."
+                    content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia."
                 />
             </Head>
-            <div className="p-4 space-y-4 max-w-6xl mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                        Galeria Naszych Realizacji
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                        Zobacz efekty pracy naszego zespołu - profesjonalne
-                        fryzury, stylizacje i koloryzacje wykonane w Salonie
-                        Black &amp; White.
-                    </p>
+
+            <div className="ig-page">
+                <div className="ig-hero container mx-auto px-4 md:px-8">
+                    <SectionHeader
+                        eyebrow="Instagram · Nasze realizacje"
+                        title="Galeria"
+                        subtitle="Najnowsze prace naszego zespołu — fryzury, stylizacje i koloryzacje."
+                        dark
+                    />
+
+                    {isFallback && (
+                        <div className="ig-fallback">
+                            <span className="ig-fallback__text">
+                                Wyświetlamy przykładowe zdjęcia — brak połączenia z Instagram.
+                            </span>
+                            <button
+                                type="button"
+                                className="ig-fallback__btn"
+                                onClick={() => { void handleRetry(); }}
+                                disabled={retrying}
+                            >
+                                {retrying ? 'Ładowanie…' : 'Odśwież'}
+                            </button>
+                        </div>
+                    )}
                 </div>
-                {isFallback && (
-                    <div className="space-y-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                            Wyświetlamy przykładowe zdjęcia. Połącz konto
-                            Instagram, aby wyświetlić najnowsze realizacje.
-                        </p>
-                        <button
-                            type="button"
-                            className="px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition dark:text-gray-200"
-                            onClick={() => {
-                                void handleRetry();
-                            }}
-                            disabled={retrying}
-                        >
-                            {retrying ? 'Ładowanie…' : 'Spróbuj ponownie'}
-                        </button>
-                        {error && (
-                            <p className="text-xs text-red-600">{error}</p>
-                        )}
-                    </div>
-                )}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {items.map((item, i) =>
-                        item.type === 'VIDEO' && item.videoUrl ? (
-                            <div key={item.id} className="relative">
-                                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                                <video
-                                    controls
-                                    preload="metadata"
-                                    poster={item.posterUrl}
-                                    className="w-full h-auto object-cover"
+
+                <div className="ig-masonry">
+                    {items.map((item, i) => {
+                        if (item.type === 'VIDEO' && item.videoUrl) {
+                            return (
+                                <div
+                                    key={item.id}
+                                    className="ig-item ig-item--video"
                                     onPlay={() => {
                                         try {
                                             trackEvent('select_item', {
                                                 item_list_name: 'gallery',
-                                                items: [
-                                                    {
-                                                        item_id: item.id,
-                                                        item_name:
-                                                            item.caption ||
-                                                            `Gallery ${i + 1}`,
-                                                        item_category:
-                                                            'Gallery',
-                                                    },
-                                                ],
+                                                items: [{ item_id: item.id, item_name: item.caption || `Gallery ${i + 1}`, item_category: 'Gallery' }],
                                                 cta: 'gallery_video_play',
                                             });
                                         } catch {}
                                     }}
                                 >
-                                    <source src={item.videoUrl} />
-                                </video>
-                            </div>
-                        ) : (
+                                    {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                                    <video
+                                        controls
+                                        preload="metadata"
+                                        poster={item.posterUrl}
+                                        style={{ display: 'block', width: '100%', height: 'auto' }}
+                                    >
+                                        <source src={item.videoUrl} />
+                                    </video>
+                                    {item.caption && (
+                                        <div className="gallery-caption" style={{ opacity: 1, transform: 'none' }}>
+                                            <span className="gallery-caption__accent" />
+                                            <span className="gallery-caption__text">{item.caption.split('\n')[0]}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+
+                        return (
                             <button
                                 key={item.id}
                                 type="button"
-                                className="relative"
-                                onClick={() => {
-                                    const idx = imageIndexMap.get(item.id);
-                                    if (idx === undefined) return;
-                                    setLightboxIndex(idx);
-                                    try {
-                                        trackEvent('select_item', {
-                                            item_list_name: 'gallery',
-                                            items: [
-                                                {
-                                                    item_id: item.id,
-                                                    item_name:
-                                                        item.caption ||
-                                                        `Gallery ${i + 1}`,
-                                                    item_category: 'Gallery',
-                                                },
-                                            ],
-                                            cta: 'gallery_grid',
-                                        });
-                                    } catch {}
-                                }}
-                                aria-label={`Otwórz zdjęcie ${i + 1}`}
+                                className="ig-item"
+                                onClick={() => openLightbox(item, i)}
+                                aria-label={item.caption ? `Otwórz: ${item.caption.split('\n')[0]}` : `Otwórz zdjęcie ${i + 1}`}
                             >
                                 <Image
                                     src={item.imageUrl!}
-                                    alt={
-                                        item.caption ?? 'Zdjęcie z galerii salonu'
-                                    }
-                                    width={500}
-                                    height={500}
-                                    className="w-full h-auto object-cover rounded-lg hover:opacity-90 transition"
-                                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 50vw"
+                                    alt={item.caption ?? 'Realizacja salonu Black & White'}
+                                    width={600}
+                                    height={600}
+                                    style={{ display: 'block', width: '100%', height: 'auto' }}
+                                    sizes="(min-width: 1200px) 25vw, (min-width: 768px) 33vw, 50vw"
                                 />
+                                {item.caption && (
+                                    <div className="gallery-caption">
+                                        <span className="gallery-caption__accent" />
+                                        <span className="gallery-caption__text">{item.caption.split('\n')[0]?.slice(0, 60)}</span>
+                                    </div>
+                                )}
                             </button>
-                        ),
-                    )}
+                        );
+                    })}
                 </div>
+
                 {!isFallback && (
-                    <div
-                        ref={sentinelRef}
-                        className="h-10 flex items-center justify-center"
-                    >
+                    <div ref={sentinelRef} className="ig-loading">
                         {loading ? (
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                                Ładowanie…
-                            </span>
+                            <span className="ig-loading__dots">···</span>
                         ) : nextCursor ? (
-                            <span className="text-sm text-gray-400 dark:text-gray-500">
-                                Przewiń, aby zobaczyć więcej
-                            </span>
+                            'Przewiń, aby zobaczyć więcej'
                         ) : (
-                            <span className="text-sm text-gray-400 dark:text-gray-500">
-                                Koniec galerii
-                            </span>
+                            'Koniec galerii'
                         )}
                     </div>
                 )}
-                {!isFallback && error && (
-                    <p className="text-xs text-red-600">{error}</p>
-                )}
-                {lightboxIndex !== null && (
-                    <ImageLightbox
-                        sources={imageItems.map((it) => it.imageUrl!)}
-                        index={lightboxIndex}
-                        alt={
-                            imageItems[lightboxIndex]?.caption ||
-                            'Podgląd realizacji'
-                        }
-                        onPrev={() =>
-                            setLightboxIndex((idx) =>
-                                idx === null
-                                    ? null
-                                    : (idx + imageItems.length - 1) %
-                                      imageItems.length,
-                            )
-                        }
-                        onNext={() =>
-                            setLightboxIndex((idx) =>
-                                idx === null
-                                    ? null
-                                    : (idx + 1) % imageItems.length,
-                            )
-                        }
-                        onClose={() => setLightboxIndex(null)}
-                    />
+
+                {error && (
+                    <p className="text-center text-xs pb-8" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        {error}
+                    </p>
                 )}
             </div>
+
+            {lightboxIndex !== null && (
+                <ImageLightbox
+                    sources={imageItems.map((it) => it.imageUrl!)}
+                    index={lightboxIndex}
+                    alt={imageItems[lightboxIndex]?.caption || 'Podgląd realizacji'}
+                    onPrev={() =>
+                        setLightboxIndex((idx) =>
+                            idx === null ? null : (idx + imageItems.length - 1) % imageItems.length,
+                        )
+                    }
+                    onNext={() =>
+                        setLightboxIndex((idx) =>
+                            idx === null ? null : (idx + 1) % imageItems.length,
+                        )
+                    }
+                    onClose={() => setLightboxIndex(null)}
+                />
+            )}
         </PublicLayout>
     );
 }
 
-export const getServerSideProps: GetServerSideProps<
-    GalleryPageProps
-> = async () => {
+export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async () => {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
-        // Fallback to local sample images
-        return {
-            props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true },
-        };
+        return { props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true } };
     }
     const key = cacheKey(null, '12|ssr');
     const cached = readCache(key);
@@ -335,20 +310,9 @@ export const getServerSideProps: GetServerSideProps<
         const items: GalleryItem[] = (json.data ?? []).map(
             ({ id, media_url, media_type, caption, thumbnail_url }) => {
                 if (media_type === 'VIDEO') {
-                    return {
-                        id,
-                        type: 'VIDEO',
-                        videoUrl: media_url,
-                        posterUrl: thumbnail_url,
-                        caption,
-                    } satisfies GalleryItem;
+                    return { id, type: 'VIDEO', videoUrl: media_url, posterUrl: thumbnail_url, caption } satisfies GalleryItem;
                 }
-                return {
-                    id,
-                    type: 'IMAGE',
-                    imageUrl: media_url,
-                    caption,
-                } satisfies GalleryItem;
+                return { id, type: 'IMAGE', imageUrl: media_url, caption } satisfies GalleryItem;
             },
         );
         const nextCursor = json?.paging?.cursors?.after ?? null;
@@ -356,9 +320,6 @@ export const getServerSideProps: GetServerSideProps<
         writeCache(key, { items, nextCursor, fallback: false });
         return { props: { items, nextCursor, fallback: false } };
     } catch {
-        // Fallback to local sample images on failure
-        return {
-            props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true },
-        };
+        return { props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true } };
     }
 };

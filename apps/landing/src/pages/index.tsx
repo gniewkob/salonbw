@@ -19,7 +19,6 @@ import BookingModal from '@/components/BookingModal';
 import StatsBar from '@/components/StatsBar';
 import BookingCta from '@/components/BookingCta';
 import GoldTickerStrip from '@/components/GoldTickerStrip';
-import PhotoStrip from '@/components/PhotoStrip';
 import {
     getFounderMessage,
     getSalonGallery,
@@ -114,19 +113,16 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                     <AboutSpread founder={founder} />
                 </ScrollReveal>
 
-                {/* 7. Cinematic photo strip */}
-                <PhotoStrip />
-
-                {/* 8. Gallery */}
+                {/* 7. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 9. Testimonials */}
+                {/* 8. Testimonials */}
                 <Testimonials />
 
-                {/* 10. Booking CTA */}
+                {/* 9. Booking CTA */}
                 <BookingCta />
 
-                {/* 11. Contact */}
+                {/* 10. Contact */}
                 <section className="contact-section" style={{ background: 'var(--brand-black)' }}>
                     <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
                         <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
