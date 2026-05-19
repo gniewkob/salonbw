@@ -1,4 +1,4 @@
-import { Playfair_Display, Open_Sans, Tangerine } from 'next/font/google';
+import { Playfair_Display, Open_Sans } from 'next/font/google';
 
 export const playfair = Playfair_Display({
     subsets: ['latin', 'latin-ext'],
@@ -12,12 +12,5 @@ export const openSans = Open_Sans({
     subsets: ['latin', 'latin-ext'],
     weight: ['400', '500', '600'],
     variable: '--font-open-sans',
-    display: 'swap',
-});
-
-export const tangerine = Tangerine({
-    subsets: ['latin'],
-    weight: ['700'],
-    variable: '--font-tangerine',
     display: 'swap',
 });

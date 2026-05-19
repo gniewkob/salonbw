@@ -9,7 +9,7 @@ export default function SectionHeader({ eyebrow, title, dark = false }: SectionH
         <div className="text-center mb-14">
             <p
                 className="text-xs uppercase mb-3"
-                style={{ color: '#c5a880', letterSpacing: '0.22em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
             >
                 {eyebrow}
             </p>

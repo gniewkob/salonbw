@@ -27,6 +27,7 @@ const t = {
             hoursLabel: 'Godziny otwarcia',
             scroll: 'Scroll',
             metaYears: 'lat z Bytomiem',
+            trustPill: 'Bytom · est. 2011 · 4.9 ★',
         },
         stats: [
             { suffix: '+', label: 'lat doświadczenia' },
@@ -92,6 +93,10 @@ const t = {
             starsLabel: 'Ocena: {n} na 5 gwiazdek',
             reviewLabel: 'Opinia {name}',
             clientSince: 'Klientka od {year}',
+            googleLabel: '4.9 · 280 opinii Google',
+        },
+        trust: {
+            label: 'Pracujemy z najlepszymi markami',
         },
         footer: {
             navigation: 'Nawigacja',
@@ -142,6 +147,7 @@ const t = {
             hoursLabel: 'Opening hours',
             scroll: 'Scroll',
             metaYears: 'years in Bytom',
+            trustPill: 'Bytom · est. 2011 · 4.9 ★',
         },
         stats: [
             { suffix: '+', label: 'years of experience' },
@@ -207,6 +213,10 @@ const t = {
             starsLabel: 'Rating: {n} out of 5 stars',
             reviewLabel: 'Review by {name}',
             clientSince: 'Client since {year}',
+            googleLabel: '4.9 · 280 Google reviews',
+        },
+        trust: {
+            label: 'We work with the best brands',
         },
         footer: {
             navigation: 'Navigation',
@@ -257,6 +267,7 @@ const t = {
             hoursLabel: 'Öffnungszeiten',
             scroll: 'Scrollen',
             metaYears: 'Jahre in Bytom',
+            trustPill: 'Bytom · est. 2011 · 4.9 ★',
         },
         stats: [
             { suffix: '+', label: 'Jahre Erfahrung' },
@@ -322,6 +333,10 @@ const t = {
             starsLabel: 'Bewertung: {n} von 5 Sternen',
             reviewLabel: 'Bewertung von {name}',
             clientSince: 'Kundin seit {year}',
+            googleLabel: '4.9 · 280 Google-Bewertungen',
+        },
+        trust: {
+            label: 'Wir arbeiten mit den besten Marken',
         },
         footer: {
             navigation: 'Navigation',
