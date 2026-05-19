@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,23 +8,19 @@ import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type LoginFormValues = {
-    email: string;
-    password: string;
-};
-
+type LoginFormValues = { email: string; password: string };
 type LoginErrors = Partial<Record<keyof LoginFormValues, string>>;
 
 const validateLoginForm = (values: LoginFormValues): LoginErrors => {
     const errors: LoginErrors = {};
     const trimmedEmail = values.email.trim();
     if (!trimmedEmail) {
-        errors.email = 'Email is required';
+        errors.email = 'Adres e-mail jest wymagany';
     } else if (!emailPattern.test(trimmedEmail)) {
-        errors.email = 'Invalid email';
+        errors.email = 'Nieprawidłowy adres e-mail';
     }
     if (!values.password.trim()) {
-        errors.password = 'Password is required';
+        errors.password = 'Hasło jest wymagane';
     }
     return errors;
 };
@@ -32,14 +29,12 @@ export const loginValidationSchema = {
     async validateAt(field: keyof LoginFormValues, values: LoginFormValues) {
         const errors = validateLoginForm(values);
         const message = errors[field];
-        if (message) {
-            throw new Error(message);
-        }
+        if (message) throw new Error(message);
     },
     async validate(values: LoginFormValues) {
         const errors = validateLoginForm(values);
         if (Object.keys(errors).length > 0) {
-            throw new Error(errors.email ?? errors.password ?? 'Invalid email');
+            throw new Error(errors.email ?? errors.password ?? 'Nieprawidłowe dane');
         }
         return values;
     },
@@ -48,28 +43,22 @@ export const loginValidationSchema = {
     },
 };
 
+const grain = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
+
 export default function LoginPage() {
     const { login, apiFetch } = useAuth();
     const router = useRouter();
-    const [form, setForm] = useState<LoginFormValues>({
-        email: '',
-        password: '',
-    });
-    const [touched, setTouched] = useState({
-        email: false,
-        password: false,
-    });
+    const [form, setForm] = useState<LoginFormValues>({ email: '', password: '' });
+    const [touched, setTouched] = useState({ email: false, password: false });
     const [errors, setErrors] = useState<LoginErrors>({});
     const [status, setStatus] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [focusedField, setFocusedField] = useState<string | null>(null);
 
     const trimmedEmail = useMemo(() => form.email.trim(), [form.email]);
 
     const runValidation = () => {
-        const nextErrors = validateLoginForm({
-            email: trimmedEmail,
-            password: form.password,
-        });
+        const nextErrors = validateLoginForm({ email: trimmedEmail, password: form.password });
         setErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
     };
@@ -82,51 +71,77 @@ export default function LoginPage() {
             setTouched({ email: true, password: true });
             return;
         }
-
         setSubmitting(true);
         try {
             await login(trimmedEmail, form.password);
             const profile = await apiFetch<User>('/users/profile');
             const fallback = getPostLoginRoute(profile?.role);
+            // Accept both ?redirect= (from landing) and ?redirectTo= (legacy)
             const redirectTo =
-                typeof router.query.redirectTo === 'string'
-                    ? router.query.redirectTo
-                    : '';
+                (typeof router.query.redirect === 'string' ? router.query.redirect : null) ??
+                (typeof router.query.redirectTo === 'string' ? router.query.redirectTo : null) ??
+                '';
             void router.push(redirectTo || fallback);
         } catch (err: unknown) {
-            setStatus(err instanceof Error ? err.message : 'Login failed');
-            setForm((prev) => ({ ...prev, password: '' }));
+            setStatus(err instanceof Error ? err.message : 'Logowanie nieudane');
+            setForm(prev => ({ ...prev, password: '' }));
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleBlur = (field: 'email' | 'password') => {
-        setTouched((prev) => ({ ...prev, [field]: true }));
+        setFocusedField(null);
+        setTouched(prev => ({ ...prev, [field]: true }));
         runValidation();
     };
 
+    const inputStyle = (field: 'email' | 'password'): React.CSSProperties => ({
+        display: 'block',
+        width: '100%',
+        padding: '0.85rem 1rem',
+        background: 'rgba(255,255,255,0.05)',
+        border: `1px solid ${focusedField === field ? '#c5a880' : touched[field] && errors[field] ? 'rgba(220,60,60,0.7)' : 'rgba(255,255,255,0.12)'}`,
+        borderRadius: '2px',
+        color: '#ffffff',
+        fontSize: '0.875rem',
+        fontFamily: "'Open Sans', sans-serif",
+        outline: 'none',
+        transition: 'border-color 0.2s',
+        boxSizing: 'border-box',
+    });
+
     return (
-        <div
-            className="d-flex flex-column align-items-center justify-content-center py-5 px-4 bg-light"
-            style={{ minHeight: '100vh' }}
-        >
-            <div className="w-100" style={{ maxWidth: 448 }}>
-                <div className="text-center">
-                    <h2 className="mt-4 fs-3 fw-bold text-dark">
-                        Sign in to SalonBW Panel
-                    </h2>
-                </div>
-                <form
-                    className="mt-4"
-                    onSubmit={(event) => {
-                        void handleSubmit(event);
-                    }}
-                >
-                    <div className="mb-3">
-                        <div>
-                            <label htmlFor="email" className="visually-hidden">
-                                Email address
+        <>
+            <Head>
+                <title>Logowanie — Salon Black &amp; White</title>
+            </Head>
+            <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '2rem 1.5rem' }}>
+                {/* Grain overlay */}
+                <div style={{ position: 'fixed', inset: 0, backgroundImage: grain, backgroundSize: '180px', opacity: 0.04, pointerEvents: 'none', zIndex: 0 }} />
+
+                {/* B&W watermark */}
+                <span style={{ position: 'fixed', bottom: '-0.1em', left: '-0.05em', fontFamily: "'Playfair Display', serif", fontSize: 'clamp(6rem,20vw,14rem)', fontWeight: 700, color: 'rgba(255,255,255,0.04)', lineHeight: 1, pointerEvents: 'none', userSelect: 'none', zIndex: 0 }}>
+                    B&amp;W
+                </span>
+
+                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '400px' }}>
+                    {/* Brand */}
+                    <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c5a880', marginBottom: '0.75rem' }}>
+                            Akademia Zdrowych Włosów
+                        </p>
+                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.15 }}>
+                            Zaloguj się
+                        </h1>
+                        <div style={{ width: '32px', height: '2px', background: '#c5a880', margin: '1rem auto 0' }} />
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={e => { void handleSubmit(e); }} noValidate>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label htmlFor="email" style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: '0.5rem', fontFamily: "'Open Sans', sans-serif" }}>
+                                Adres e-mail
                             </label>
                             <input
                                 id="email"
@@ -134,43 +149,30 @@ export default function LoginPage() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="form-control rounded-top"
-                                placeholder="Email address"
+                                style={inputStyle('email')}
+                                placeholder="twoj@email.pl"
                                 value={form.email}
-                                onChange={(event) => {
-                                    const value = event.target.value;
-                                    setForm((prev) => ({
-                                        ...prev,
-                                        email: value,
-                                    }));
+                                onChange={e => {
+                                    const value = e.target.value;
+                                    setForm(prev => ({ ...prev, email: value }));
                                     if (touched.email) {
-                                        const fieldErrors = validateLoginForm({
-                                            email: value,
-                                            password: form.password,
-                                        });
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            email: fieldErrors.email,
-                                        }));
+                                        const fieldErrors = validateLoginForm({ email: value, password: form.password });
+                                        setErrors(prev => ({ ...prev, email: fieldErrors.email }));
                                     }
                                 }}
+                                onFocus={() => setFocusedField('email')}
                                 onBlur={() => handleBlur('email')}
                             />
                             {touched.email && errors.email && (
-                                <p
-                                    role="alert"
-                                    className="text-danger small mt-1"
-                                >
+                                <p role="alert" style={{ fontSize: '0.75rem', color: 'rgba(220,80,80,0.9)', marginTop: '0.35rem', fontFamily: "'Open Sans', sans-serif" }}>
                                     {errors.email}
                                 </p>
                             )}
                         </div>
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="visually-hidden"
-                            >
-                                Password
+
+                        <div style={{ marginBottom: '1.75rem' }}>
+                            <label htmlFor="password" style={{ display: 'block', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: '0.5rem', fontFamily: "'Open Sans', sans-serif" }}>
+                                Hasło
                             </label>
                             <input
                                 id="password"
@@ -178,70 +180,69 @@ export default function LoginPage() {
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                className="form-control rounded-bottom"
-                                placeholder="Password"
+                                style={inputStyle('password')}
+                                placeholder="••••••••"
                                 value={form.password}
-                                onChange={(event) => {
-                                    const value = event.target.value;
-                                    setForm((prev) => ({
-                                        ...prev,
-                                        password: value,
-                                    }));
+                                onChange={e => {
+                                    const value = e.target.value;
+                                    setForm(prev => ({ ...prev, password: value }));
                                     if (touched.password) {
-                                        const fieldErrors = validateLoginForm({
-                                            email: form.email,
-                                            password: value,
-                                        });
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            password: fieldErrors.password,
-                                        }));
+                                        const fieldErrors = validateLoginForm({ email: form.email, password: value });
+                                        setErrors(prev => ({ ...prev, password: fieldErrors.password }));
                                     }
                                 }}
+                                onFocus={() => setFocusedField('password')}
                                 onBlur={() => handleBlur('password')}
                             />
                             {touched.password && errors.password && (
-                                <p
-                                    role="alert"
-                                    className="text-danger small mt-1"
-                                >
+                                <p role="alert" style={{ fontSize: '0.75rem', color: 'rgba(220,80,80,0.9)', marginTop: '0.35rem', fontFamily: "'Open Sans', sans-serif" }}>
                                     {errors.password}
                                 </p>
                             )}
                         </div>
-                    </div>
 
-                    <div>
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="btn btn-primary w-100"
+                            style={{
+                                display: 'block',
+                                width: '100%',
+                                padding: '0.9rem 1.5rem',
+                                background: submitting ? '#a8895f' : '#c5a880',
+                                color: '#0d0d0d',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                letterSpacing: '0.18em',
+                                textTransform: 'uppercase',
+                                fontFamily: "'Open Sans', sans-serif",
+                                cursor: submitting ? 'not-allowed' : 'pointer',
+                                transition: 'background 0.2s',
+                            }}
                         >
-                            {submitting ? 'Signing in...' : 'Sign in'}
+                            {submitting ? 'Logowanie…' : 'Zaloguj się'}
                         </button>
-                    </div>
 
-                    {status && (
-                        <div className="text-center mt-3">
-                            <p role="alert" className="text-danger small">
+                        {status && (
+                            <p role="alert" style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(220,80,80,0.9)', fontFamily: "'Open Sans', sans-serif" }}>
                                 {status}
                             </p>
-                        </div>
-                    )}
-                </form>
-                <div className="text-center small mt-3">
-                    <p>
-                        Don&apos;t have an account?{' '}
-                        <Link
-                            href="/auth/register"
-                            prefetch={false}
-                            className="fw-semibold text-primary"
-                        >
-                            Register
+                        )}
+                    </form>
+
+                    <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', fontFamily: "'Open Sans', sans-serif" }}>
+                        Nie masz konta?{' '}
+                        <Link href="/auth/register" prefetch={false} style={{ color: '#c5a880', textDecoration: 'none', fontWeight: 600 }}>
+                            Zarejestruj się
                         </Link>
+                    </p>
+
+                    <p style={{ textAlign: 'center', marginTop: '2.5rem', fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.15)', fontFamily: "'Open Sans', sans-serif" }}>
+                        Salon Black &amp; White · Bytom
                     </p>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

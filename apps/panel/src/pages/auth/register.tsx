@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -7,49 +8,37 @@ import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type RegisterFormValues = {
-    name: string;
-    email: string;
-    phone: string;
-    password: string;
-};
-
+type RegisterFormValues = { name: string; email: string; phone: string; password: string };
 type RegisterErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
 const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
     const errors: RegisterErrors = {};
-    if (!values.name.trim()) {
-        errors.name = 'Name is required';
-    }
+    if (!values.name.trim()) errors.name = 'Imię i nazwisko jest wymagane';
     const trimmedEmail = values.email.trim();
     if (!trimmedEmail) {
-        errors.email = 'Email is required';
+        errors.email = 'Adres e-mail jest wymagany';
     } else if (!emailPattern.test(trimmedEmail)) {
-        errors.email = 'Invalid email';
+        errors.email = 'Nieprawidłowy adres e-mail';
     }
     if (!values.password) {
-        errors.password = 'Password is required';
+        errors.password = 'Hasło jest wymagane';
     } else if (values.password.length < 6) {
-        errors.password = 'Password must be at least 6 characters';
+        errors.password = 'Hasło musi mieć co najmniej 6 znaków';
     }
     return errors;
 };
 
+const grain = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
+
 export default function RegisterPage() {
     const { register, apiFetch } = useAuth();
     const router = useRouter();
-    const [form, setForm] = useState<RegisterFormValues>({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-    });
-    const [touched, setTouched] = useState<
-        Partial<Record<keyof RegisterFormValues, boolean>>
-    >({});
+    const [form, setForm] = useState<RegisterFormValues>({ name: '', email: '', phone: '', password: '' });
+    const [touched, setTouched] = useState<Partial<Record<keyof RegisterFormValues, boolean>>>({});
     const [errors, setErrors] = useState<RegisterErrors>({});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [focusedField, setFocusedField] = useState<string | null>(null);
 
     const runValidation = (currentForm: RegisterFormValues) => {
         const nextErrors = validateRegisterForm(currentForm);
@@ -60,13 +49,12 @@ export default function RegisterPage() {
     const handleChange = (field: keyof RegisterFormValues, value: string) => {
         const nextForm = { ...form, [field]: value };
         setForm(nextForm);
-        if (touched[field]) {
-            runValidation(nextForm);
-        }
+        if (touched[field]) runValidation(nextForm);
     };
 
     const handleBlur = (field: keyof RegisterFormValues) => {
-        setTouched((prev) => ({ ...prev, [field]: true }));
+        setFocusedField(null);
+        setTouched(prev => ({ ...prev, [field]: true }));
         runValidation(form);
     };
 
@@ -75,123 +63,185 @@ export default function RegisterPage() {
         setError('');
         const valid = runValidation(form);
         if (!valid) {
-            setTouched({
-                name: true,
-                email: true,
-                phone: true,
-                password: true,
-            });
+            setTouched({ name: true, email: true, phone: true, password: true });
             return;
         }
-
         setSubmitting(true);
         try {
             await register(form);
             const profile = await apiFetch<User>('/users/profile');
             void router.push(getPostLoginRoute(profile?.role));
         } catch (err: unknown) {
-            setError(
-                err instanceof Error ? err.message : 'Registration failed',
-            );
+            setError(err instanceof Error ? err.message : 'Rejestracja nieudana');
         } finally {
             setSubmitting(false);
         }
     };
 
+    const inputStyle = (field: keyof RegisterFormValues): React.CSSProperties => ({
+        display: 'block',
+        width: '100%',
+        padding: '0.85rem 1rem',
+        background: 'rgba(255,255,255,0.05)',
+        border: `1px solid ${focusedField === field ? '#c5a880' : touched[field] && errors[field] ? 'rgba(220,60,60,0.7)' : 'rgba(255,255,255,0.12)'}`,
+        borderRadius: '2px',
+        color: '#ffffff',
+        fontSize: '0.875rem',
+        fontFamily: "'Open Sans', sans-serif",
+        outline: 'none',
+        transition: 'border-color 0.2s',
+        boxSizing: 'border-box',
+    });
+
+    const labelStyle: React.CSSProperties = {
+        display: 'block',
+        fontSize: '0.7rem',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        color: 'rgba(255,255,255,0.45)',
+        marginBottom: '0.5rem',
+        fontFamily: "'Open Sans', sans-serif",
+    };
+
+    const errorStyle: React.CSSProperties = {
+        fontSize: '0.75rem',
+        color: 'rgba(220,80,80,0.9)',
+        marginTop: '0.35rem',
+        fontFamily: "'Open Sans', sans-serif",
+    };
+
     return (
-        <div className="p-3 bg-white">
-            <button onClick={() => router.back()} className="mb-3">
-                &larr; Back
-            </button>
-            <form
-                onSubmit={(e) => void handleSubmit(e)}
-                className="gap-2 mx-auto"
-                noValidate
-            >
-                <h1 className="fs-3 fw-bold">Register</h1>
+        <>
+            <Head>
+                <title>Rejestracja — Salon Black &amp; White</title>
+            </Head>
+            <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '2rem 1.5rem' }}>
+                {/* Grain overlay */}
+                <div style={{ position: 'fixed', inset: 0, backgroundImage: grain, backgroundSize: '180px', opacity: 0.04, pointerEvents: 'none', zIndex: 0 }} />
 
-                <div>
-                    <input
-                        className={`border p-2 w-100 rounded ${
-                            touched.name && errors.name ? 'border-danger' : ''
-                        }`}
-                        placeholder="Name"
-                        value={form.name}
-                        onChange={(e) => handleChange('name', e.target.value)}
-                        onBlur={() => handleBlur('name')}
-                    />
-                    {touched.name && errors.name && (
-                        <p className="text-danger small mt-1">{errors.name}</p>
-                    )}
-                </div>
+                {/* B&W watermark */}
+                <span style={{ position: 'fixed', bottom: '-0.1em', left: '-0.05em', fontFamily: "'Playfair Display', serif", fontSize: 'clamp(6rem,20vw,14rem)', fontWeight: 700, color: 'rgba(255,255,255,0.04)', lineHeight: 1, pointerEvents: 'none', userSelect: 'none', zIndex: 0 }}>
+                    B&amp;W
+                </span>
 
-                <div>
-                    <input
-                        className={`border p-2 w-100 rounded ${
-                            touched.email && errors.email ? 'border-danger' : ''
-                        }`}
-                        placeholder="Email"
-                        type="email"
-                        value={form.email}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                        onBlur={() => handleBlur('email')}
-                    />
-                    {touched.email && errors.email && (
-                        <p className="text-danger small mt-1">{errors.email}</p>
-                    )}
-                </div>
-
-                <div>
-                    <input
-                        className="border p-2 w-100 rounded"
-                        placeholder="Phone (optional)"
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) => handleChange('phone', e.target.value)}
-                    />
-                </div>
-
-                <div>
-                    <input
-                        className={`border p-2 w-100 rounded ${
-                            touched.password && errors.password
-                                ? 'border-danger'
-                                : ''
-                        }`}
-                        placeholder="Password"
-                        type="password"
-                        value={form.password}
-                        onChange={(e) =>
-                            handleChange('password', e.target.value)
-                        }
-                        onBlur={() => handleBlur('password')}
-                    />
-                    {touched.password && errors.password && (
-                        <p className="text-danger small mt-1">
-                            {errors.password}
+                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '400px' }}>
+                    {/* Brand */}
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c5a880', marginBottom: '0.75rem' }}>
+                            Akademia Zdrowych Włosów
                         </p>
-                    )}
-                </div>
+                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.15 }}>
+                            Zarejestruj się
+                        </h1>
+                        <div style={{ width: '32px', height: '2px', background: '#c5a880', margin: '1rem auto 0' }} />
+                    </div>
 
-                <button
-                    className="bg-primary bg-opacity-10 text-white px-3 py-2 rounded w-100"
-                    type="submit"
-                    disabled={submitting}
-                >
-                    {submitting ? 'Registering...' : 'Register'}
-                </button>
-                {error && (
-                    <p role="alert" className="text-danger text-center">
-                        {error}
+                    {/* Form */}
+                    <form onSubmit={e => { void handleSubmit(e); }} noValidate>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label htmlFor="name" style={labelStyle}>Imię i nazwisko</label>
+                            <input
+                                id="name"
+                                style={inputStyle('name')}
+                                placeholder="Jan Kowalski"
+                                autoComplete="name"
+                                value={form.name}
+                                onChange={e => handleChange('name', e.target.value)}
+                                onFocus={() => setFocusedField('name')}
+                                onBlur={() => handleBlur('name')}
+                            />
+                            {touched.name && errors.name && <p role="alert" style={errorStyle}>{errors.name}</p>}
+                        </div>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label htmlFor="email" style={labelStyle}>Adres e-mail</label>
+                            <input
+                                id="email"
+                                type="email"
+                                autoComplete="email"
+                                style={inputStyle('email')}
+                                placeholder="twoj@email.pl"
+                                value={form.email}
+                                onChange={e => handleChange('email', e.target.value)}
+                                onFocus={() => setFocusedField('email')}
+                                onBlur={() => handleBlur('email')}
+                            />
+                            {touched.email && errors.email && <p role="alert" style={errorStyle}>{errors.email}</p>}
+                        </div>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label htmlFor="phone" style={labelStyle}>Telefon <span style={{ color: 'rgba(255,255,255,0.25)' }}>(opcjonalnie)</span></label>
+                            <input
+                                id="phone"
+                                type="tel"
+                                autoComplete="tel"
+                                style={inputStyle('phone')}
+                                placeholder="+48 000 000 000"
+                                value={form.phone}
+                                onChange={e => handleChange('phone', e.target.value)}
+                                onFocus={() => setFocusedField('phone')}
+                                onBlur={() => setFocusedField(null)}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '1.75rem' }}>
+                            <label htmlFor="password" style={labelStyle}>Hasło</label>
+                            <input
+                                id="password"
+                                type="password"
+                                autoComplete="new-password"
+                                style={inputStyle('password')}
+                                placeholder="Min. 6 znaków"
+                                value={form.password}
+                                onChange={e => handleChange('password', e.target.value)}
+                                onFocus={() => setFocusedField('password')}
+                                onBlur={() => handleBlur('password')}
+                            />
+                            {touched.password && errors.password && <p role="alert" style={errorStyle}>{errors.password}</p>}
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            style={{
+                                display: 'block',
+                                width: '100%',
+                                padding: '0.9rem 1.5rem',
+                                background: submitting ? '#a8895f' : '#c5a880',
+                                color: '#0d0d0d',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                letterSpacing: '0.18em',
+                                textTransform: 'uppercase',
+                                fontFamily: "'Open Sans', sans-serif",
+                                cursor: submitting ? 'not-allowed' : 'pointer',
+                                transition: 'background 0.2s',
+                            }}
+                        >
+                            {submitting ? 'Rejestracja…' : 'Zarejestruj się'}
+                        </button>
+
+                        {error && (
+                            <p role="alert" style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(220,80,80,0.9)', fontFamily: "'Open Sans', sans-serif" }}>
+                                {error}
+                            </p>
+                        )}
+                    </form>
+
+                    <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', fontFamily: "'Open Sans', sans-serif" }}>
+                        Masz już konto?{' '}
+                        <Link href="/auth/login" style={{ color: '#c5a880', textDecoration: 'none', fontWeight: 600 }}>
+                            Zaloguj się
+                        </Link>
                     </p>
-                )}
-                <p className="text-center small">
-                    Already have an account?{' '}
-                    <Link href="/auth/login" className="text-primary">
-                        Login
-                    </Link>
-                </p>
-            </form>
-        </div>
+
+                    <p style={{ textAlign: 'center', marginTop: '2.5rem', fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.15)', fontFamily: "'Open Sans', sans-serif" }}>
+                        Salon Black &amp; White · Bytom
+                    </p>
+                </div>
+            </div>
+        </>
     );
 }
