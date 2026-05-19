@@ -27,6 +27,10 @@ const t = {
             hoursLabel: 'Godziny otwarcia',
             scroll: 'Scroll',
             metaYears: 'lat z Bytomiem',
+            trustPill: 'Bytom · zaufanie od 2011',
+        },
+        trust: {
+            label: 'Pracujemy na markach',
         },
         stats: [
             { suffix: '+', label: 'lat doświadczenia' },
@@ -164,6 +168,10 @@ const t = {
             hoursLabel: 'Opening hours',
             scroll: 'Scroll',
             metaYears: 'years in Bytom',
+            trustPill: 'Bytom · trusted since 2011',
+        },
+        trust: {
+            label: 'We work with brands',
         },
         stats: [
             { suffix: '+', label: 'years of experience' },
@@ -301,6 +309,10 @@ const t = {
             hoursLabel: 'Öffnungszeiten',
             scroll: 'Scrollen',
             metaYears: 'Jahre in Bytom',
+            trustPill: 'Bytom · Vertrauen seit 2011',
+        },
+        trust: {
+            label: 'Wir arbeiten mit Marken',
         },
         stats: [
             { suffix: '+', label: 'Jahre Erfahrung' },
