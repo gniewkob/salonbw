@@ -1194,6 +1194,86 @@ html {
     cursor: not-allowed;
 }
 
+/* ── Legal pages (policy, privacy) ───────────────────── */
+.legal-page {
+    background: var(--brand-black);
+    min-height: 60vh;
+    padding: 5rem 1.5rem 6rem;
+}
+.legal-article {
+    max-width: 780px;
+    margin: 0 auto;
+}
+.legal-eyebrow {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brand-gold);
+    margin-bottom: 0.9rem;
+}
+.legal-h1 {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+.legal-lead {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    border-left: 2px solid var(--brand-gold);
+    padding-left: 1.2rem;
+}
+.legal-h2 {
+    font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-gold);
+    margin-top: 2.8rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(197,168,128,0.18);
+}
+.legal-body {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.85;
+    margin-bottom: 1rem;
+}
+.legal-list {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.85;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+ul.legal-list { list-style: disc; }
+ol.legal-list { list-style: decimal; }
+.legal-list li { margin-bottom: 0.5rem; }
+.legal-link {
+    color: var(--brand-gold);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(197,168,128,0.35);
+    transition: border-color 0.2s;
+}
+.legal-link:hover { border-color: var(--brand-gold); }
+.legal-date {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.28);
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(197,168,128,0.1);
+}
+
 /* ── Reduced motion support ───────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     .hero-img-zoom { animation: none; }

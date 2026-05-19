@@ -12,29 +12,26 @@ export default function PolicyPage() {
                     content="Regulamin świadczenia usług drogą elektroniczną oraz zasady korzystania z usług Salonu Fryzjerskiego Black & White."
                 />
             </Head>
-            <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-                <article className="prose prose-slate lg:prose-lg max-w-none">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-8">
-                        Regulamin Świadczenia Usług
-                    </h1>
+            <div className="legal-page">
+                <article className="legal-article">
+                    <p className="legal-eyebrow">Dokumenty prawne</p>
+                    <h1 className="legal-h1">Regulamin Świadczenia Usług</h1>
 
-                    <p className="lead text-gray-600 mb-8">
+                    <p className="legal-lead">
                         Niniejszy Regulamin określa ogólne warunki, zasady oraz
                         sposób świadczenia usług drogą elektroniczną przez Salon
-                        Fryzjerski &quot;Black & White&quot;, a także zasady korzystania z
-                        systemu rezerwacji i świadczenia usług
+                        Fryzjerski &quot;Black &amp; White&quot;, a także zasady korzystania
+                        z systemu rezerwacji i świadczenia usług
                         kosmetyczno-fryzjerskich na miejscu.
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        1. Postanowienia Ogólne
-                    </h2>
-                    <ul className="list-decimal pl-6 text-gray-700 mb-4 space-y-2">
+                    <h2 className="legal-h2">1. Postanowienia Ogólne</h2>
+                    <ol className="legal-list">
                         <li>
                             Właścicielem serwisu internetowego oraz systemu
                             rezerwacji jest{' '}
                             <strong>
-                                Salon Fryzjerski Black&White Aleksandra Bodora
+                                Salon Fryzjerski Black&amp;White Aleksandra Bodora
                             </strong>{' '}
                             z siedzibą w Radzionkowie (41-922), ul. Mikołaja
                             Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588
@@ -52,12 +49,10 @@ export default function PolicyPage() {
                             systemu online (odznaczenie zgody podczas
                             rejestracji).
                         </li>
-                    </ul>
+                    </ol>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        2. Definicje
-                    </h2>
-                    <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                    <h2 className="legal-h2">2. Definicje</h2>
+                    <ul className="legal-list">
                         <li>
                             <strong>Klient</strong> – osoba fizyczna, osoba
                             prawna lub jednostka organizacyjna posiadająca co
@@ -81,14 +76,14 @@ export default function PolicyPage() {
                         <li>
                             <strong>Salon</strong> – miejsce fizycznego
                             świadczenia usług fryzjerskich zlokalizowane pod
-                            adresem [Wpisać adres salonu].
+                            adresem ul. Mikołaja Kopernika 13, Radzionków.
                         </li>
                     </ul>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
+                    <h2 className="legal-h2">
                         3. Usługi Świadczone Drogą Elektroniczną (System CRM)
                     </h2>
-                    <ul className="list-decimal pl-6 text-gray-700 mb-4 space-y-2">
+                    <ol className="legal-list">
                         <li>
                             Usługodawca ułatwia Klientom zarządzanie swoimi
                             wizytami udostępniając dedykowany system
@@ -112,13 +107,13 @@ export default function PolicyPage() {
                             internetowa (Chrome, Firefox, Safari, Edge) ze
                             wsparciem JavaScript oraz Cookies.
                         </li>
-                    </ul>
+                    </ol>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
+                    <h2 className="legal-h2">
                         4. Zasady Rezerwacji, Anulacji i Świadczenia Usług na
                         Miejscu
                     </h2>
-                    <ul className="list-decimal pl-6 text-gray-700 mb-4 space-y-2">
+                    <ol className="legal-list">
                         <li>
                             Rezerwacji na zabiegi oferowane przez Salon można
                             dokonywać online przez 24 godziny na dobę, 7 dni w
@@ -131,8 +126,7 @@ export default function PolicyPage() {
                         <li>
                             <strong>Anulacja:</strong> Klient może bezkosztowo
                             odwołać wizytę lub zmienić jej termin na minimalnie
-                            [np. 24 godziny] przed zaplanowanym czasem jej
-                            rozpoczęcia.
+                            24 godziny przed zaplanowanym czasem jej rozpoczęcia.
                         </li>
                         <li>
                             W przypadku nieodwołania wizyty w wyznaczonym wyżej
@@ -149,12 +143,12 @@ export default function PolicyPage() {
                             uprzedniej konsultacji stanu i długości włosa przed
                             rozpoczęciem zabiegu.
                         </li>
-                    </ul>
+                    </ol>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
+                    <h2 className="legal-h2">
                         5. Tryb Postępowania Reklamacyjnego
                     </h2>
-                    <ul className="list-decimal pl-6 text-gray-700 mb-4 space-y-2">
+                    <ol className="legal-list">
                         <li>
                             Każdemu Klientowi przysługuje prawo do zgłaszania
                             reklamacji uwag dotyczących usług świadczonych na
@@ -168,7 +162,7 @@ export default function PolicyPage() {
                             kierować elektronicznie na adres:{' '}
                             <a
                                 href="mailto:kontakt@salon-bw.pl"
-                                className="text-blue-600 hover:underline"
+                                className="legal-link"
                             >
                                 kontakt@salon-bw.pl
                             </a>
@@ -183,20 +177,15 @@ export default function PolicyPage() {
                             Usługodawca zobowiązuje się rozpatrzyć każdą
                             reklamację w terminie do 14 dni kalendarzowych.
                         </li>
-                    </ul>
+                    </ol>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        6. Postanowienia Końcowe
-                    </h2>
-                    <ul className="list-decimal pl-6 text-gray-700 mb-4 space-y-2">
+                    <h2 className="legal-h2">6. Postanowienia Końcowe</h2>
+                    <ol className="legal-list">
                         <li>
                             Kwestie dotyczące ochrony danych osobowych, praw
                             Użytkownika, zbieranych logów i cookies znajdują się
                             w osobnym dokumencie na stronie{' '}
-                            <Link
-                                href="/privacy"
-                                className="text-blue-600 hover:underline"
-                            >
+                            <Link href="/privacy" className="legal-link">
                                 Polityka Prywatności
                             </Link>
                             .
@@ -207,8 +196,9 @@ export default function PolicyPage() {
                             polskiego, w szczególności Kodeksu cywilnego oraz
                             Ustawy o prawach konsumenta.
                         </li>
-                    </ul>
-                    <div className="mt-12 text-sm text-gray-500">
+                    </ol>
+
+                    <div className="legal-date">
                         Regulamin obowiązuje od dnia:{' '}
                         {new Date().toLocaleDateString('pl-PL')}
                     </div>
