@@ -1,12 +1,15 @@
 interface SectionHeaderProps {
     eyebrow: string;
     title: string;
+    subtitle?: string;
     dark?: boolean;
+    align?: 'center' | 'left';
 }
 
-export default function SectionHeader({ eyebrow, title, dark = false }: SectionHeaderProps) {
+export default function SectionHeader({ eyebrow, title, subtitle, dark = false, align = 'center' }: SectionHeaderProps) {
+    const isLeft = align === 'left';
     return (
-        <div className="text-center mb-14">
+        <div className={isLeft ? 'mb-14' : 'text-center mb-14'}>
             <p
                 className="text-xs uppercase mb-3"
                 style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
@@ -19,7 +22,15 @@ export default function SectionHeader({ eyebrow, title, dark = false }: SectionH
             >
                 {title}
             </h2>
-            <div className="mx-auto mt-4" style={{ width: '40px', height: '2px', background: '#c5a880' }} />
+            <div className={isLeft ? 'mt-4' : 'mx-auto mt-4'} style={{ width: '40px', height: '2px', background: '#c5a880' }} />
+            {subtitle && (
+                <p
+                    className={`text-sm mt-5 max-w-lg ${isLeft ? '' : 'mx-auto'}`}
+                    style={{ color: dark ? 'rgba(255,255,255,0.55)' : '#8a7060', lineHeight: 1.8, fontFamily: "var(--font-open-sans), sans-serif" }}
+                >
+                    {subtitle}
+                </p>
+            )}
         </div>
     );
 }

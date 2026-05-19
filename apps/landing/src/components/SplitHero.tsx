@@ -1,13 +1,14 @@
 'use client';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BUSINESS_INFO } from '@/config/content';
-import { getPanelUrl } from '@/utils/panelUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
+import BookingModal from '@/components/BookingModal';
 
 export default function SplitHero() {
     const { T } = useLanguage();
-    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
+    const [modalOpen, setModalOpen] = useState(false);
 
     return (
         <section className="split-hero" aria-label="Hero">
@@ -31,9 +32,9 @@ export default function SplitHero() {
                     </p>
 
                     <div className="split-hero__cta-group">
-                        <a href={bookingUrl} className="split-hero__cta-primary">
+                        <button onClick={() => setModalOpen(true)} className="split-hero__cta-primary">
                             {T.nav.booking}
-                        </a>
+                        </button>
                         <Link href="/services" className="split-hero__cta-secondary">
                             {T.hero.ctaSecondary}
                         </Link>
@@ -55,6 +56,7 @@ export default function SplitHero() {
                     alt={T.hero.imageAlt}
                     fill
                     priority
+                    className="hero-img-zoom"
                     style={{ objectFit: 'cover', objectPosition: 'center' }}
                     sizes="50vw"
                 />
@@ -74,6 +76,8 @@ export default function SplitHero() {
                 <span>{T.hero.scroll}</span>
                 <div className="split-hero__scroll-line" />
             </div>
+
+            <BookingModal open={modalOpen} onClose={() => setModalOpen(false)} />
         </section>
     );
 }

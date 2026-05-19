@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Script from 'next/script';
@@ -16,6 +16,10 @@ import SalonGallery from '@/components/SalonGallery';
 import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
 import SectionHeader from '@/components/SectionHeader';
+import BookingModal from '@/components/BookingModal';
+import StatsBar from '@/components/StatsBar';
+import BookingCta from '@/components/BookingCta';
+import GoldTickerStrip from '@/components/GoldTickerStrip';
 import {
     getFounderMessage,
     getSalonGallery,
@@ -34,7 +38,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
         try { trackEvent('page_view', { page_title: 'Home' }); } catch {}
     }, []);
 
-    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
+    const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
     return (
         <PublicLayout>
@@ -91,26 +95,35 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 {/* 1. Split hero */}
                 <SplitHero />
 
-                {/* 2. Partner brands trust strip */}
+                {/* 2. Stats numbers */}
+                <StatsBar />
+
+                {/* 3. Partner brands trust strip */}
                 <TrustStrip />
 
-                {/* 3. Services */}
+                {/* 4. Services */}
                 <ScrollReveal direction="up">
                     <ServicesTeaser />
                 </ScrollReveal>
 
-                {/* 4. About — founder + 3 principles */}
+                {/* 5. Gold ticker separator */}
+                <GoldTickerStrip />
+
+                {/* 6. About — founder + 3 principles */}
                 <ScrollReveal direction="up">
                     <AboutSpread founder={founder} />
                 </ScrollReveal>
 
-                {/* 5. Gallery */}
+                {/* 7. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 6. Testimonials */}
+                {/* 8. Testimonials */}
                 <Testimonials />
 
-                {/* 7. Contact */}
+                {/* 9. Booking CTA */}
+                <BookingCta />
+
+                {/* 10. Contact */}
                 <section className="contact-section" style={{ background: 'var(--brand-black)' }}>
                     <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
                         <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
@@ -152,13 +165,13 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                    <a
-                                        href={bookingUrl}
+                                    <button
+                                        onClick={() => setBookingModalOpen(true)}
                                         className="split-hero__cta-primary text-xs font-semibold uppercase text-center px-8 py-3.5"
                                         style={{ letterSpacing: '0.14em' }}
                                     >
                                         {BUSINESS_INFO.booking.text}
-                                    </a>
+                                    </button>
                                     <Link
                                         href="/contact"
                                         className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
@@ -169,7 +182,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </div>
                             </div>
 
-                            <div className="relative">
+                            <div className="relative self-start">
                                 <div className="absolute" style={{ inset: 0, border: '1px solid rgba(197,168,128,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
                                 <iframe
                                     src={`https://maps.google.com/maps?q=${BUSINESS_INFO.coordinates.lat},${BUSINESS_INFO.coordinates.lng}&z=16&output=embed&hl=pl`}
@@ -185,6 +198,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                     </div>
                 </section>
             </div>
+            <BookingModal open={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
         </PublicLayout>
     );
 }

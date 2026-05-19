@@ -10,6 +10,7 @@ import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LANGUAGES } from '@/i18n/translations';
+import BookingModal from '@/components/BookingModal';
 
 export default function Navbar() {
     const { role, initialized, logout } = useAuth();
@@ -18,10 +19,10 @@ export default function Navbar() {
     const isHomePage = router.pathname === '/';
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
     const panelDashboard = getPanelUrl('/dashboard');
     const panelLogin = getPanelUrl('/auth/login');
-    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
     const effectiveRole = initialized ? role : null;
     const dashboardRoute = effectiveRole ? panelDashboard : undefined;
 
@@ -57,6 +58,7 @@ export default function Navbar() {
     const navLinkClass = 'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[#c5a880] focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     return (
+        <>
         <nav
             aria-label="Nawigacja główna"
             className="sticky top-0 z-50 transition-all duration-400"
@@ -133,14 +135,13 @@ export default function Navbar() {
                             ))}
                         </div>
 
-                        <a
-                            href={bookingUrl}
+                        <button
                             className="btn-gold px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
                             style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
-                            onClick={() => trackEvent('begin_checkout', { cta: 'navbar' })}
+                            onClick={() => { trackEvent('begin_checkout', { cta: 'navbar' }); setBookingModalOpen(true); }}
                         >
                             {T.nav.booking}
-                        </a>
+                        </button>
                     </div>
 
                     {/* Mobile Hamburger */}
@@ -225,18 +226,19 @@ export default function Navbar() {
                         </div>
 
                         <div className="px-4 mt-4">
-                            <a
-                                href={bookingUrl}
+                            <button
                                 className="btn-gold block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
                                 style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
-                                onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); }}
+                                onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); setBookingModalOpen(true); }}
                             >
                                 {T.nav.booking}
-                            </a>
+                            </button>
                         </div>
                     </div>
                 )}
             </div>
         </nav>
+        <BookingModal open={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
+        </>
     );
 }

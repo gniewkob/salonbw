@@ -39,6 +39,7 @@ interface DrawerState {
     initialStartTime?: Date;
     initialEndTime?: Date;
     initialEmployeeId?: number;
+    initialServiceId?: number;
 }
 
 interface CustomerStatisticsBatchItem {
@@ -1318,6 +1319,26 @@ export default function CalendarPage() {
         };
     }, [router.query.appointmentId, appointmentsById, apiFetch]);
 
+    useEffect(() => {
+        if (!isRouterReady) return;
+        const param = Array.isArray(router.query.newService)
+            ? router.query.newService[0]
+            : router.query.newService;
+        if (!param) return;
+        const serviceId = Number(param);
+        if (!Number.isFinite(serviceId) || serviceId <= 0) return;
+        setDrawer({
+            open: true,
+            mode: 'create',
+            appointment: null,
+            initialServiceId: serviceId,
+        });
+        const rest = Object.fromEntries(
+            Object.entries(router.query).filter(([k]) => k !== 'newService'),
+        );
+        void router.replace({ query: rest }, undefined, { shallow: true });
+    }, [router.query.newService, isRouterReady, router]);
+
     const visibleCustomerIds = useMemo(
         () =>
             Array.from(
@@ -2222,6 +2243,7 @@ export default function CalendarPage() {
                     initialStartTime={drawer.initialStartTime}
                     initialEndTime={drawer.initialEndTime}
                     initialEmployeeId={drawer.initialEmployeeId}
+                    initialServiceId={drawer.initialServiceId}
                     onClose={() => {
                         clearAppointmentDeepLink();
                         setDrawer((current) => ({

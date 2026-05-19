@@ -2,12 +2,12 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
-import { getPanelUrl } from '@/utils/panelUrl';
+import BookingModal, { BookingService } from '@/components/BookingModal';
 
 interface ServiceCategory {
     id: number | null;
@@ -86,6 +86,9 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
         } catch {}
     }, [items]);
 
+    const [bookingService, setBookingService] = useState<BookingService | null>(null);
+    const [generalBookingOpen, setGeneralBookingOpen] = useState(false);
+
     function resolveServiceRoute(name: string): Route | undefined {
         const n = name.toLowerCase();
         if (n.includes('balayage')) return '/services/balayage' as Route;
@@ -122,13 +125,13 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             kosmetycznych dla kobiet i mężczyzn. Sprawdź naszą
                             ofertę i umów się na wizytę!
                         </p>
-                        <a
-                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                        <button
+                            onClick={() => setGeneralBookingOpen(true)}
                             className="inline-block px-8 py-3 rounded-md hover:opacity-90 transition focus:outline-none focus:ring-2"
                             style={{ background: 'var(--brand-gold)', color: '#0d0d0d', fontWeight: 600 }}
                         >
                             {BUSINESS_INFO.booking.text}
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -190,13 +193,24 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                 </p>
                                             )}
                                         </div>
-                                        <div className="ml-4 text-right flex flex-col items-end">
-                                            <span className="text-lg font-semibold text-brand-gold">
+                                        <div className="ml-4 text-right flex flex-col items-end gap-1">
+                                            <span className="text-lg font-semibold" style={{ color: '#c5a880' }}>
                                                 {getServicePrice(s).label}
                                             </span>
                                             <span className="text-sm text-gray-500 dark:text-gray-400">
                                                 {getServiceDuration(s)}
                                             </span>
+                                            <button
+                                                onClick={() => setBookingService({ id: s.id, name: s.name, priceLabel: getServicePrice(s).label, duration: getServiceDuration(s) })}
+                                                className="mt-1 flex items-center gap-1 text-xs hover:opacity-70 transition"
+                                                style={{ color: '#c5a880' }}
+                                                aria-label={`Umów wizytę: ${s.name}`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                Umów
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -213,15 +227,24 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             Umów się na wizytę i ciesz się profesjonalną obsługą
                             w naszym salonie.
                         </p>
-                        <a
-                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
-                            className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                        <button
+                            onClick={() => setGeneralBookingOpen(true)}
+                            className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2"
                         >
                             {BUSINESS_INFO.booking.text}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
+            <BookingModal
+                open={!!bookingService}
+                onClose={() => setBookingService(null)}
+                service={bookingService ?? undefined}
+            />
+            <BookingModal
+                open={generalBookingOpen}
+                onClose={() => setGeneralBookingOpen(false)}
+            />
         </PublicLayout>
     );
 }

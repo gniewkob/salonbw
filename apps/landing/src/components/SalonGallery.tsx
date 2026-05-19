@@ -38,10 +38,11 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
     return (
         <section className="py-20 md:py-28" style={{ background: '#ffffff' }}>
             <div className="container mx-auto px-4 md:px-8">
-                <SectionHeader eyebrow="Zajrzyj do nas" title="Nasz salon" />
-                <p className="text-sm max-w-lg mx-auto text-center -mt-10 mb-14" style={{ color: '#8a7060' }}>
-                    Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie.
-                </p>
+                <SectionHeader
+                    eyebrow="Zajrzyj do nas"
+                    title="Nasz salon"
+                    subtitle="Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie."
+                />
 
                 {/* Masonry-style CSS grid */}
                 <div

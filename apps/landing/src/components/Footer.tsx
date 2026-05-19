@@ -1,14 +1,15 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
 import { BUSINESS_INFO } from '@/config/content';
-import { getPanelUrl } from '@/utils/panelUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
+import BookingModal from '@/components/BookingModal';
 
 export default function Footer() {
     const { T } = useLanguage();
-    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
+    const [bookingOpen, setBookingOpen] = useState(false);
 
     const navLinks = [
         { label: T.nav.home, href: '/' },
@@ -40,15 +41,16 @@ export default function Footer() {
                             {BUSINESS_INFO.tagline}<br />
                             {BUSINESS_INFO.address.street}, {BUSINESS_INFO.address.city}
                         </p>
-                        <a
-                            href={bookingUrl}
+                        <button
+                            onClick={() => setBookingOpen(true)}
+                            type="button"
                             className="inline-block mt-5 text-xs font-semibold uppercase"
                             style={{ background: 'var(--brand-gold)', color: '#fff', padding: '0.7rem 1.6rem', letterSpacing: '0.14em', transition: 'background 0.2s' }}
                             onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-gold-dark)')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-gold)')}
                         >
                             {T.nav.booking}
-                        </a>
+                        </button>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
@@ -144,6 +146,8 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
+
+            <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
         </footer>
     );
 }
