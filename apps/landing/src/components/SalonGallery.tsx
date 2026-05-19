@@ -36,12 +36,13 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
     const goToNext = useCallback(() => setLightboxIndex(p => (p + 1) % data.length), [data.length]);
 
     return (
-        <section className="py-20 md:py-28" style={{ background: '#ffffff' }}>
+        <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <SectionHeader
                     eyebrow="Zajrzyj do nas"
                     title="Nasz salon"
                     subtitle="Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie."
+                    dark
                 />
 
                 {/* Masonry-style CSS grid */}
@@ -49,8 +50,8 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                     className="hidden md:grid"
                     style={{
                         gridTemplateColumns: 'repeat(4, 1fr)',
-                        gridAutoRows: '200px',
-                        gap: '10px',
+                        gridAutoRows: '220px',
+                        gap: '6px',
                     }}
                 >
                     {data.map((image, index) => {
@@ -62,7 +63,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 style={{
                                     gridColumn: `span ${span.col}`,
                                     gridRow: `span ${span.row}`,
-                                    borderRadius: '3px',
+                                    borderRadius: '2px',
                                 }}
                                 onClick={() => openLightbox(index)}
                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
@@ -74,15 +75,13 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                     src={image.image}
                                     alt={image.alt}
                                     fill
-                                    style={{ objectFit: 'cover', transition: 'transform 0.5s ease' }}
+                                    style={{ objectFit: 'cover' }}
                                     sizes="(max-width: 768px) 50vw, 25vw"
-                                    className="group-hover:scale-105"
+                                    className="gallery-img"
                                 />
-                                <div
-                                    className="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{ background: 'linear-gradient(to top, rgba(13,13,13,0.7) 0%, transparent 60%)' }}
-                                >
-                                    <span className="text-white text-sm font-medium tracking-wide">{image.caption}</span>
+                                <div className="gallery-caption">
+                                    <span className="gallery-caption__accent" />
+                                    <span className="gallery-caption__text">{image.caption}</span>
                                 </div>
                             </div>
                         );
@@ -90,12 +89,12 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 </div>
 
                 {/* Mobile: simple 2-col grid */}
-                <div className="md:hidden grid grid-cols-2 gap-2">
+                <div className="md:hidden grid grid-cols-2 gap-0.5">
                     {data.map((image, index) => (
                         <div
                             key={image.id}
                             className="group relative aspect-square overflow-hidden cursor-pointer"
-                            style={{ borderRadius: '3px' }}
+                            style={{ borderRadius: '2px' }}
                             onClick={() => openLightbox(index)}
                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
                             role="button"
@@ -108,7 +107,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 sizes="50vw"
-                                className="group-hover:scale-105 transition-transform duration-300"
+                                className="gallery-img"
                             />
                         </div>
                     ))}
@@ -117,7 +116,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 <div className="text-center mt-10">
                     <Link
                         href="/gallery"
-                        className="btn-outline-dark inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                        className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                         style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         Zobacz pełną galerię
