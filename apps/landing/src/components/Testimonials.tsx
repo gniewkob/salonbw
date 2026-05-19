@@ -50,22 +50,30 @@ export default function Testimonials() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    {testimonials.map(t => (
+                    {testimonials.map((t, i) => (
                         <article
                             key={t.name}
-                            className="flex flex-col p-7 md:p-8"
-                            style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '3px' }}
+                            className="relative flex flex-col p-7 md:p-8 overflow-hidden"
+                            style={{
+                                background: i === 1 ? '#1a1410' : '#161616',
+                                border: i === 1 ? '1px solid rgba(197,168,128,0.25)' : '1px solid rgba(255,255,255,0.07)',
+                                borderRadius: '3px',
+                                transform: i === 1 ? 'translateY(-6px)' : 'none',
+                            }}
                         >
-                            <div className="mb-5">
+                            {/* Large decorative quote mark */}
+                            <span className="testimonial-quote-bg" aria-hidden="true">&ldquo;</span>
+
+                            <div className="relative z-10 mb-5">
                                 <StarRow count={t.stars} label={T.testimonials.starsLabel.replace('{n}', String(t.stars))} />
                             </div>
                             <p
-                                className="flex-grow text-sm leading-relaxed mb-6"
+                                className="relative z-10 flex-grow text-sm leading-relaxed mb-6"
                                 style={{ color: 'rgba(255,255,255,0.72)', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic' }}
                             >
                                 {t.text}
                             </p>
-                            <div>
+                            <div className="relative z-10">
                                 <p className="text-sm font-semibold" style={{ color: '#ffffff', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                     {t.name}
                                 </p>

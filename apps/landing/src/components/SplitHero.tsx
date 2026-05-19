@@ -56,6 +56,7 @@ export default function SplitHero() {
                     alt={T.hero.imageAlt}
                     fill
                     priority
+                    className="hero-img-zoom"
                     style={{ objectFit: 'cover', objectPosition: 'center' }}
                     sizes="50vw"
                 />

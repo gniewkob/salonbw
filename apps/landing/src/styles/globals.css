@@ -505,3 +505,125 @@ html {
     transition: background 0.2s;
 }
 .btn-outline-ghost:hover { background: rgba(255,255,255,0.08); }
+
+/* ── Hero image slow zoom ─────────────────────────────── */
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to   { transform: scale(1.07); }
+}
+.hero-img-zoom {
+    animation: slowZoom 12s ease-out forwards;
+}
+
+/* ── Section number decoration ────────────────────────── */
+.service-numeral {
+    position: absolute;
+    top: -0.3em;
+    right: 0.15em;
+    font-family: var(--font-playfair), serif;
+    font-size: 6rem;
+    font-weight: 700;
+    color: rgba(197,168,128,0.08);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.04em;
+    z-index: 0;
+}
+.service-card-dark .service-numeral {
+    color: rgba(197,168,128,0.12);
+}
+
+/* ── Testimonial large quote mark ─────────────────────── */
+.testimonial-quote-bg {
+    position: absolute;
+    top: -0.1em;
+    left: 0.3rem;
+    font-family: var(--font-playfair), serif;
+    font-size: 8rem;
+    line-height: 1;
+    color: rgba(197,168,128,0.10);
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+}
+
+/* ── Booking CTA section ──────────────────────────────── */
+.booking-cta-section {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 520px;
+}
+.booking-cta-section__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(8,8,8,0.9) 0%, rgba(8,8,8,0.7) 50%, rgba(8,8,8,0.85) 100%);
+    z-index: 1;
+}
+.booking-cta-section__content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 6rem 1.5rem;
+    max-width: 700px;
+}
+.booking-cta-section__eyebrow {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brand-gold);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+.booking-cta-section__heading {
+    font-family: var(--font-playfair), serif;
+    font-weight: 700;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    color: #ffffff;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+.booking-cta-section__heading em {
+    color: var(--brand-gold);
+    font-style: italic;
+}
+.booking-cta-section__sub {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 3rem;
+    line-height: 1.8;
+    letter-spacing: 0.04em;
+}
+
+/* ── Gold ticker strip ────────────────────────────────── */
+.gold-ticker-strip {
+    background: var(--brand-gold);
+    overflow: hidden;
+    padding: 0.9rem 0;
+    white-space: nowrap;
+}
+@keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.gold-ticker-strip__track {
+    display: inline-flex;
+    animation: tickerScroll 28s linear infinite;
+}
+.gold-ticker-strip__item {
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #0d0d0d;
+    padding: 0 2.5rem;
+}
+.gold-ticker-strip__dot {
+    color: rgba(0,0,0,0.35);
+}

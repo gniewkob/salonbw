@@ -17,6 +17,9 @@ import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
 import SectionHeader from '@/components/SectionHeader';
 import BookingModal from '@/components/BookingModal';
+import StatsBar from '@/components/StatsBar';
+import BookingCta from '@/components/BookingCta';
+import GoldTickerStrip from '@/components/GoldTickerStrip';
 import {
     getFounderMessage,
     getSalonGallery,
@@ -92,26 +95,35 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 {/* 1. Split hero */}
                 <SplitHero />
 
-                {/* 2. Partner brands trust strip */}
+                {/* 2. Stats numbers */}
+                <StatsBar />
+
+                {/* 3. Partner brands trust strip */}
                 <TrustStrip />
 
-                {/* 3. Services */}
+                {/* 4. Services */}
                 <ScrollReveal direction="up">
                     <ServicesTeaser />
                 </ScrollReveal>
 
-                {/* 4. About — founder + 3 principles */}
+                {/* 5. Gold ticker separator */}
+                <GoldTickerStrip />
+
+                {/* 6. About — founder + 3 principles */}
                 <ScrollReveal direction="up">
                     <AboutSpread founder={founder} />
                 </ScrollReveal>
 
-                {/* 5. Gallery */}
+                {/* 7. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 6. Testimonials */}
+                {/* 8. Testimonials */}
                 <Testimonials />
 
-                {/* 7. Contact */}
+                {/* 9. Booking CTA */}
+                <BookingCta />
+
+                {/* 10. Contact */}
                 <section className="contact-section" style={{ background: 'var(--brand-black)' }}>
                     <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
                         <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />

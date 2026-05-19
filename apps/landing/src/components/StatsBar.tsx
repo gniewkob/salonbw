@@ -1,59 +1,59 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useRef, useEffect, useState } from 'react';
 
-const TARGETS = [30, 2011, 5, 5];
+const STATS = [
+    { number: '15', suffix: '+', label: 'lat doświadczenia' },
+    { number: '3 000', suffix: '+', label: 'zadowolonych klientek' },
+    { number: '4.9', suffix: '★', label: 'ocena Google' },
+    { number: '5', suffix: '', label: 'marek premium' },
+];
 
-function useCountUp(target: number, duration = 1400, active: boolean) {
-    const [value, setValue] = useState(0);
-    useEffect(() => {
-        if (!active) return;
-        const start = performance.now();
-        const raf = (now: number) => {
-            const t = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - t, 3);
-            setValue(Math.round(eased * target));
-            if (t < 1) requestAnimationFrame(raf);
-        };
-        requestAnimationFrame(raf);
-    }, [active, target, duration]);
-    return value;
-}
-
-function StatItem({ target, suffix, label, delay }: { target: number; suffix: string; label: string; delay: number }) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [active, setActive] = useState(false);
-    const value = useCountUp(target, 1400, active);
-
+function useInView(ref: React.RefObject<HTMLDivElement | null>) {
+    const [inView, setInView] = useState(false);
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        const observer = new IntersectionObserver(([e]) => {
-            if (e.isIntersecting) { setActive(true); observer.unobserve(el); }
-        }, { threshold: 0.4 });
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, []);
-
-    return (
-        <div ref={ref} className="stats-bar__item" style={{ transitionDelay: `${delay}ms` }}>
-            <span className="stats-bar__number">{value}{suffix}</span>
-            <span className="stats-bar__label">{label}</span>
-        </div>
-    );
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (entry?.isIntersecting) { setInView(true); obs.disconnect(); } },
+            { threshold: 0.25 }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, [ref]);
+    return inView;
 }
 
 export default function StatsBar() {
-    const { T } = useLanguage();
-    const stats = T.stats.map((s, i) => ({ target: TARGETS[i]!, ...s }));
+    const ref = useRef<HTMLDivElement>(null);
+    const inView = useInView(ref);
 
     return (
-        <section className="stats-bar" aria-label="Liczby o salonie">
+        <div className="stats-bar" ref={ref}>
             <div className="stats-bar__inner">
-                {stats.map((s, i) => (
-                    <StatItem key={i} target={s.target} suffix={s.suffix} label={s.label} delay={i * 100} />
+                {STATS.map((stat, i) => (
+                    <div key={stat.label} className="stats-bar__item">
+                        <span
+                            className="stats-bar__number"
+                            style={{
+                                opacity: inView ? 1 : 0,
+                                transform: inView ? 'none' : 'translateY(14px)',
+                                transition: `opacity 0.7s ${i * 0.13}s ease, transform 0.7s ${i * 0.13}s ease`,
+                            }}
+                        >
+                            {stat.number}{stat.suffix}
+                        </span>
+                        <span
+                            className="stats-bar__label"
+                            style={{
+                                opacity: inView ? 1 : 0,
+                                transition: `opacity 0.7s ${i * 0.13 + 0.2}s ease`,
+                            }}
+                        >
+                            {stat.label}
+                        </span>
+                    </div>
                 ))}
             </div>
-        </section>
+        </div>
     );
 }
