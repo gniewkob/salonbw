@@ -70,10 +70,10 @@ export function useCalendar(options: UseCalendarOptions) {
         queryFn: async () => {
             const dateOnly = normalizedDate.slice(0, 10);
             const attempts: Array<{ date: string; view: CalendarView }> = [
-                { date: normalizedDate, view: backendView },
                 { date: dateOnly, view: 'day' },
                 { date: normalizedDate, view: 'day' },
                 { date: dateOnly, view: backendView },
+                { date: normalizedDate, view: backendView },
             ];
 
             let lastError: unknown = null;
