@@ -22,6 +22,7 @@ import GoldTickerStrip from '@/components/GoldTickerStrip';
 import PhotoStrip from '@/components/PhotoStrip';
 import {
     getFounderMessage,
+    getSalonGallery,
     getInstagramGallery,
 } from '@/utils/contentApi';
 
@@ -31,9 +32,10 @@ type GalleryImage = { id: number; image: string; caption: string; alt: string };
 interface HomePageProps {
     founder: FounderData;
     galleryImages: GalleryImage[];
+    stripImages: GalleryImage[];
 }
 
-export default function HomePage({ founder, galleryImages }: HomePageProps) {
+export default function HomePage({ founder, galleryImages, stripImages }: HomePageProps) {
     useEffect(() => {
         try { trackEvent('page_view', { page_title: 'Home' }); } catch {}
     }, []);
@@ -114,8 +116,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                     <AboutSpread founder={founder} />
                 </ScrollReveal>
 
-                {/* 7. Cinematic photo strip */}
-                <PhotoStrip items={galleryImages.slice(0, 5)} />
+                {/* 7. Cinematic photo strip — live Instagram work photos */}
+                <PhotoStrip items={stripImages} />
 
                 {/* 8. Gallery */}
                 <SalonGallery images={galleryImages} />
@@ -207,15 +209,17 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 }
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-    const [founder, galleryImages] = await Promise.all([
+    const [founder, galleryImages, stripImages] = await Promise.all([
         getFounderMessage(),
-        getInstagramGallery(8),
+        getSalonGallery(),       // salon interior photos
+        getInstagramGallery(5),  // live IG work photos for the strip
     ]);
 
     return {
         props: {
             founder: founder as unknown as FounderData,
             galleryImages: galleryImages as unknown as GalleryImage[],
+            stripImages: stripImages as unknown as GalleryImage[],
         },
         revalidate: 3600,
     };
