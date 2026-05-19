@@ -124,7 +124,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         </p>
                         <a
                             href={getPanelUrl(BUSINESS_INFO.booking.url)}
-                            className="inline-block bg-brand-gold text-white px-8 py-3 rounded-md hover:bg-yellow-700 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                            className="inline-block bg-brand-gold text-brand-black px-8 py-3 rounded-md hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
                         >
                             {BUSINESS_INFO.booking.text}
                         </a>
