@@ -115,37 +115,3 @@ export async function getCoreValues() {
 export async function getSalonGallery() {
     return getContentSection('SALON_GALLERY', localConfig.SALON_GALLERY);
 }
-
-interface InstagramMedia {
-    id: string;
-    media_type: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM';
-    media_url: string;
-    caption?: string;
-}
-
-type GalleryImage = { id: number; image: string; caption: string; alt: string };
-
-export async function getInstagramGallery(limit = 8): Promise<GalleryImage[]> {
-    const token = process.env.INSTAGRAM_ACCESS_TOKEN;
-    if (!token) return localConfig.SALON_GALLERY as unknown as GalleryImage[];
-    try {
-        const res = await fetch(
-            `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type&limit=${limit * 2}&access_token=${token}`,
-        );
-        if (!res.ok) return localConfig.SALON_GALLERY as unknown as GalleryImage[];
-        const json = (await res.json()) as { data?: InstagramMedia[]; error?: unknown };
-        if (json.error || !json.data?.length) return localConfig.SALON_GALLERY as unknown as GalleryImage[];
-        const images = json.data
-            .filter((m) => m.media_type !== 'VIDEO')
-            .slice(0, limit)
-            .map((m, i) => ({
-                id: i + 1,
-                image: m.media_url,
-                caption: m.caption?.split('\n')[0]?.slice(0, 60) ?? 'Realizacja',
-                alt: m.caption?.slice(0, 100) ?? 'Praca salonu Black & White',
-            }));
-        return images.length >= 4 ? images : (localConfig.SALON_GALLERY as unknown as GalleryImage[]);
-    } catch {
-        return localConfig.SALON_GALLERY as unknown as GalleryImage[];
-    }
-}

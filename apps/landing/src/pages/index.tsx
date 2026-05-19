@@ -19,11 +19,9 @@ import BookingModal from '@/components/BookingModal';
 import StatsBar from '@/components/StatsBar';
 import BookingCta from '@/components/BookingCta';
 import GoldTickerStrip from '@/components/GoldTickerStrip';
-import PhotoStrip from '@/components/PhotoStrip';
 import {
     getFounderMessage,
     getSalonGallery,
-    getInstagramGallery,
 } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
@@ -32,10 +30,9 @@ type GalleryImage = { id: number; image: string; caption: string; alt: string };
 interface HomePageProps {
     founder: FounderData;
     galleryImages: GalleryImage[];
-    stripImages: GalleryImage[];
 }
 
-export default function HomePage({ founder, galleryImages, stripImages }: HomePageProps) {
+export default function HomePage({ founder, galleryImages }: HomePageProps) {
     useEffect(() => {
         try { trackEvent('page_view', { page_title: 'Home' }); } catch {}
     }, []);
@@ -116,19 +113,16 @@ export default function HomePage({ founder, galleryImages, stripImages }: HomePa
                     <AboutSpread founder={founder} />
                 </ScrollReveal>
 
-                {/* 7. Cinematic photo strip — live Instagram work photos */}
-                <PhotoStrip items={stripImages} />
-
-                {/* 8. Gallery */}
+                {/* 7. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 9. Testimonials */}
+                {/* 8. Testimonials */}
                 <Testimonials />
 
-                {/* 10. Booking CTA */}
+                {/* 9. Booking CTA */}
                 <BookingCta />
 
-                {/* 11. Contact */}
+                {/* 10. Contact */}
                 <section className="contact-section" style={{ background: 'var(--brand-black)' }}>
                     <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
                         <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
@@ -209,17 +203,15 @@ export default function HomePage({ founder, galleryImages, stripImages }: HomePa
 }
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-    const [founder, galleryImages, stripImages] = await Promise.all([
+    const [founder, galleryImages] = await Promise.all([
         getFounderMessage(),
-        getSalonGallery(),       // salon interior photos
-        getInstagramGallery(5),  // live IG work photos for the strip
+        getSalonGallery(),
     ]);
 
     return {
         props: {
             founder: founder as unknown as FounderData,
             galleryImages: galleryImages as unknown as GalleryImage[],
-            stripImages: stripImages as unknown as GalleryImage[],
         },
         revalidate: 3600,
     };
