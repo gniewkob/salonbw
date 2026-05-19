@@ -68,16 +68,49 @@ export function useCalendar(options: UseCalendarOptions) {
     const query = useQuery({
         queryKey,
         queryFn: async () => {
-            const params = new URLSearchParams({
-                date: normalizedDate,
-                view: backendView,
-            });
-            if (employeeIds && employeeIds.length > 0) {
-                params.set('employeeIds', employeeIds.join(','));
+            const dateOnly = normalizedDate.slice(0, 10);
+            const attempts: Array<{ date: string; view: CalendarView }> = [
+                { date: normalizedDate, view: backendView },
+                { date: dateOnly, view: 'day' },
+                { date: normalizedDate, view: 'day' },
+                { date: dateOnly, view: backendView },
+            ];
+
+            let lastError: unknown = null;
+            for (const attempt of attempts) {
+                const params = new URLSearchParams({
+                    date: attempt.date,
+                    view: attempt.view,
+                });
+                if (employeeIds && employeeIds.length > 0) {
+                    params.set('employeeIds', employeeIds.join(','));
+                }
+
+                try {
+                    return await apiFetch<CalendarData>(
+                        `/calendar/events?${params.toString()}`,
+                    );
+                } catch (error) {
+                    const status =
+                        typeof error === 'object' &&
+                        error !== null &&
+                        'status' in error &&
+                        typeof (error as { status?: unknown }).status ===
+                            'number'
+                            ? (error as { status: number }).status
+                            : null;
+
+                    // Compatibility fallback: try alternative date/view combos
+                    // only for deterministic 400 query validation failures.
+                    if (status === 400) {
+                        lastError = error;
+                        continue;
+                    }
+                    throw error;
+                }
             }
-            return apiFetch<CalendarData>(
-                `/calendar/events?${params.toString()}`,
-            );
+
+            throw lastError ?? new Error('Calendar events request failed');
         },
         enabled,
         retry: (failureCount, error) => {
