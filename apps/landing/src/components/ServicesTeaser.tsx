@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Scissors, Sparkles, Wand2, type LucideIcon } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,6 +8,8 @@ const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
 const SERVICE_HREFS = ['/services', '/services', '/services'];
 const SERVICE_NUMERALS = ['01', '02', '03'];
 const FEATURED_INDEX = 0;
+// Assign a path like '/images/services/featured.jpg' to activate the photo background
+const FEATURED_BG_IMAGE = '';
 
 export default function ServicesTeaser() {
     const { T } = useLanguage();
@@ -39,6 +42,22 @@ export default function ServicesTeaser() {
                                     transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease',
                                 }}
                             >
+                                {featured && FEATURED_BG_IMAGE && (
+                                    <Image
+                                        src={FEATURED_BG_IMAGE}
+                                        alt=""
+                                        aria-hidden
+                                        fill
+                                        style={{ objectFit: 'cover', objectPosition: 'center 30%', opacity: 0.35 }}
+                                        sizes="50vw"
+                                    />
+                                )}
+                                {featured && FEATURED_BG_IMAGE && (
+                                    <div
+                                        className="absolute inset-0"
+                                        style={{ background: 'linear-gradient(to right, rgba(13,13,13,0.92) 0%, rgba(13,13,13,0.65) 100%)', zIndex: 0 }}
+                                    />
+                                )}
                                 {/* Numeral watermark */}
                                 <span className="service-numeral" aria-hidden="true">{numeral}</span>
 
