@@ -627,3 +627,52 @@ html {
 .gold-ticker-strip__dot {
     color: rgba(0,0,0,0.35);
 }
+
+/* ── Footer link hover states (CSS, not JS event handlers) ─ */
+.footer-link {
+    color: rgba(255,255,255,0.55);
+    transition: color 0.15s;
+}
+.footer-link:hover,
+.footer-link:focus-visible {
+    color: var(--brand-gold);
+    outline: none;
+}
+.footer-link--muted {
+    color: rgba(255,255,255,0.4);
+    transition: color 0.15s;
+}
+.footer-link--muted:hover,
+.footer-link--muted:focus-visible {
+    color: var(--brand-gold);
+    outline: none;
+}
+.footer-link--dim {
+    color: rgba(255,255,255,0.3);
+    transition: color 0.15s;
+}
+.footer-link--dim:hover,
+.footer-link--dim:focus-visible {
+    color: var(--brand-gold);
+    outline: none;
+}
+.footer-booking-btn {
+    background: var(--brand-gold);
+    color: #0d0d0d;
+    padding: 0.7rem 1.6rem;
+    letter-spacing: 0.14em;
+    transition: opacity 0.2s;
+    display: inline-block;
+}
+.footer-booking-btn:hover,
+.footer-booking-btn:focus-visible {
+    opacity: 0.82;
+}
+
+/* ── Reduced motion support ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .hero-img-zoom { animation: none; }
+    .gold-ticker-strip__track { animation-duration: 80s; }
+    .sr-init, .sr-init * { transition: none !important; animation: none !important; }
+    .stats-bar__number, .stats-bar__label { transition: none !important; }
+}
