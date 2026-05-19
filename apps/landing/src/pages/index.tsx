@@ -21,7 +21,7 @@ import BookingCta from '@/components/BookingCta';
 import GoldTickerStrip from '@/components/GoldTickerStrip';
 import {
     getFounderMessage,
-    getSalonGallery,
+    getInstagramGallery,
 } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
@@ -205,7 +205,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
     const [founder, galleryImages] = await Promise.all([
         getFounderMessage(),
-        getSalonGallery(),
+        getInstagramGallery(8),
     ]);
 
     return {
