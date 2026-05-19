@@ -10,12 +10,12 @@ export default function BookingCta() {
     return (
         <section className="booking-cta-section" aria-label="Umów wizytę">
             <Image
-                src="/images/hero/slider2.jpg"
+                src="/images/hero/DSC_9583.jpg"
                 alt=""
                 aria-hidden
                 fill
                 priority={false}
-                style={{ objectFit: 'cover', objectPosition: 'center 25%' }}
+                style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
                 sizes="100vw"
             />
             <div className="grain-overlay" aria-hidden="true" />

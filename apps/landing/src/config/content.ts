@@ -44,24 +44,24 @@ export const HERO_SLIDES = [
     title: 'Witamy w Akademii Zdrowych Włosów Black & White',
     description:
       'Naszym celem jest dostarczanie najwyższej jakości usług fryzjerskich i dbanie o zdrowie Twoich włosów.',
-    image: '/images/hero/slider1.jpg',
-    alt: 'Wnętrze salonu Black & White - profesjonalne stanowisko fryzjerskie',
+    image: '/images/hero/DSC_9576.jpg',
+    alt: 'Recepcja salonu Black & White — lada z logo salonu',
   },
   {
     id: 2,
-    title: 'Nowoczesna Stylizacja',
+    title: 'Nowoczesna Przestrzeń',
     description:
       'Oferując różnorodność fryzur zgodnych z najnowszymi trendami, dbamy o to, by każdy klient wyszedł z salonem z uśmiechem.',
-    image: '/images/hero/slider2.jpg',
-    alt: 'Nowoczesne fryzury i stylizacje w salonie Black & White',
+    image: '/images/hero/DSC_9583.jpg',
+    alt: 'Widok na wnętrze salonu Black & White przez kryształową kurtynę',
   },
   {
     id: 3,
     title: 'Serdecznie Zapraszamy',
     description:
       'Zapoznaj się z naszą ofertą i umów się na wizytę. Czekamy na Ciebie!',
-    image: '/images/hero/slider3.jpg',
-    alt: 'Zaproszenie do salonu fryzjerskiego Black & White w Bytomiu',
+    image: '/images/hero/DSC_9584.jpg',
+    alt: 'Stanowiska fryzjerskie w salonie Black & White w Bytomiu',
   },
 ] as const;
 
