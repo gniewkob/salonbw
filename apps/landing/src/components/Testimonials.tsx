@@ -15,14 +15,36 @@ export default function Testimonials() {
                 <SectionHeader eyebrow={T.testimonials.eyebrow} title={T.testimonials.title} dark />
 
                 <div className="max-w-2xl mx-auto text-center mb-10">
-                    <div className="mb-6" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '5rem', color: '#c5a880', lineHeight: 0.8, opacity: 0.6 }}>&ldquo;</div>
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            fontFamily: "var(--font-playfair), serif",
+                            fontSize: 'clamp(8rem, 18vw, 14rem)',
+                            color: '#c5a880',
+                            lineHeight: 0.75,
+                            opacity: 0.22,
+                            marginBottom: '-0.15em',
+                            userSelect: 'none',
+                        }}
+                    >
+                        &ldquo;
+                    </div>
 
-                    <p className="text-base md:text-lg leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', minHeight: '5rem' }}>
+                    <p
+                        key={active}
+                        className="testimonial-text text-lg md:text-xl leading-relaxed mb-8"
+                        style={{
+                            color: '#ffffff',
+                            fontFamily: "var(--font-playfair), serif",
+                            fontStyle: 'italic',
+                            minHeight: '6rem',
+                        }}
+                    >
                         {testimonials[active]?.text}
                     </p>
 
                     <div
-                        className="flex justify-center gap-1 mb-4"
+                        className="flex justify-center gap-1 mb-5"
                         role="img"
                         aria-label={T.testimonials.starsLabel.replace('{n}', String(stars))}
                     >
@@ -33,23 +55,33 @@ export default function Testimonials() {
                         ))}
                     </div>
 
-                    <p className="font-semibold text-sm" style={{ color: '#ffffff', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                    <p key={`name-${active}`} className="testimonial-text font-semibold text-sm" style={{ color: '#ffffff', fontFamily: "var(--font-open-sans), sans-serif" }}>
                         {testimonials[active]?.name}
                     </p>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         {T.testimonials.clientSince.replace('{year}', String(testimonials[active]?.sinceYear ?? ''))}
                     </p>
                 </div>
 
-                <div className="flex justify-center gap-3">
+                <div className="flex justify-center gap-2">
                     {testimonials.map((t, i) => (
                         <button
                             key={t.name}
                             type="button"
                             onClick={() => { if (i !== active) setActive(i); }}
-                            className="transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
-                            style={{ width: i === active ? '28px' : '8px', height: '8px', borderRadius: '4px', background: i === active ? '#c5a880' : 'rgba(255,255,255,0.25)' }}
+                            className="focus:outline-none focus:ring-2 focus:ring-[#c5a880]"
+                            style={{
+                                width: i === active ? '36px' : '8px',
+                                height: '6px',
+                                borderRadius: '3px',
+                                background: i === active ? '#c5a880' : 'rgba(255,255,255,0.2)',
+                                transition: 'width 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.3s',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: 0,
+                            }}
                             aria-label={T.testimonials.reviewLabel.replace('{name}', t.name)}
+                            aria-pressed={i === active}
                         />
                     ))}
                 </div>

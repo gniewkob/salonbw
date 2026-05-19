@@ -160,24 +160,32 @@ html {
 .split-hero__heading {
     font-family: var(--font-playfair), serif;
     font-weight: 700;
-    line-height: 0.9;
+    line-height: 0.88;
     margin-bottom: 1.5rem;
-    animation: fadeUp 0.9s 0.1s ease both;
+    animation: fadeUp 0.9s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-.split-hero__heading-line1,
-.split-hero__heading-line2 {
+.split-hero__heading-line1 {
     display: block;
-    font-size: clamp(3.5rem, 6.5vw, 7rem);
+    font-size: clamp(5rem, 12vw, 14rem);
     color: #ffffff;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
 }
 .split-hero__heading-ampersand {
     display: block;
-    font-size: clamp(2rem, 3.5vw, 4rem);
+    font-size: clamp(3rem, 6vw, 8rem);
     color: var(--brand-gold);
     font-style: italic;
-    letter-spacing: 0.05em;
-    margin: 0.15em 0;
+    letter-spacing: 0.02em;
+    margin: 0.05em 0 0.1em;
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(197,168,128,0.4);
+}
+.split-hero__heading-line2 {
+    display: block;
+    font-size: clamp(2rem, 4vw, 5rem);
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.06em;
+    margin-left: 0.6em;
 }
 
 .split-hero__tagline {
@@ -208,12 +216,13 @@ html {
     text-transform: uppercase;
     font-family: var(--font-open-sans), sans-serif;
     border-radius: 1px;
-    transition: background 0.25s, transform 0.25s;
+    transition: background 0.3s, transform 0.3s, letter-spacing 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-decoration: none;
 }
 .split-hero__cta-primary:hover {
     background: var(--brand-gold-dark);
     transform: translateY(-2px);
+    letter-spacing: 0.32em;
 }
 
 .split-hero__cta-secondary {
@@ -458,9 +467,15 @@ html {
     .split-hero__bw-mark {
         font-size: 50vw;
     }
-    .split-hero__heading-line1,
+    .split-hero__heading-line1 {
+        font-size: clamp(3.5rem, 16vw, 6rem);
+    }
+    .split-hero__heading-ampersand {
+        font-size: clamp(2.5rem, 10vw, 4.5rem);
+    }
     .split-hero__heading-line2 {
-        font-size: clamp(3rem, 12vw, 5rem);
+        font-size: clamp(1.5rem, 7vw, 3rem);
+        margin-left: 0.4em;
     }
     .split-hero__float-card {
         bottom: 1rem;
@@ -514,6 +529,62 @@ html {
 .hero-img-zoom {
     animation: slowZoom 12s ease-out forwards;
 }
+
+/* ── Services teaser editorial grid ──────────────────── */
+.services-editorial-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1.5rem;
+}
+.services-editorial-grid > :first-child {
+    grid-row: span 2;
+}
+@media (max-width: 768px) {
+    .services-editorial-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    .services-editorial-grid > :first-child { grid-row: span 1; }
+}
+
+/* ── Testimonial text enter animation ─────────────────── */
+@keyframes testimonialIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.testimonial-text {
+    animation: testimonialIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── About spread timeline ────────────────────────────── */
+.timeline-item {
+    position: relative;
+    padding-left: 2rem;
+    padding-bottom: 1.5rem;
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--brand-gold);
+    flex-shrink: 0;
+}
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 14px;
+    width: 1px;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(197,168,128,0.4), transparent);
+}
+.timeline-item:last-child::after { display: none; }
+.timeline-item:last-child { padding-bottom: 0; }
 
 /* ── Section number decoration ────────────────────────── */
 .service-numeral {

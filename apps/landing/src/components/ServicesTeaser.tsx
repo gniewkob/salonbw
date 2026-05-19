@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
 const SERVICE_HREFS = ['/services', '/services', '/services'];
 const SERVICE_NUMERALS = ['01', '02', '03'];
-const FEATURED_INDEX = 1;
+const FEATURED_INDEX = 0;
 
 export default function ServicesTeaser() {
     const { T } = useLanguage();
@@ -20,7 +20,7 @@ export default function ServicesTeaser() {
                     subtitle="Profesjonalne usługi fryzjerskie i pielęgnacyjne — od strzyżenia po zaawansowane zabiegi regeneracyjne."
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div className="services-editorial-grid">
                     {T.services.items.map(({ title, subtitle, description }, idx) => {
                         const Icon = SERVICE_ICONS[idx]!;
                         const href = SERVICE_HREFS[idx]!;
@@ -30,12 +30,13 @@ export default function ServicesTeaser() {
                             <Link
                                 key={title}
                                 href={href}
-                                className={`group relative flex flex-col p-8 md:p-10 overflow-hidden transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-4 ${featured ? 'service-card-dark' : ''}`}
+                                className={`group relative flex flex-col p-8 md:p-10 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-4 ${featured ? 'service-card-dark' : ''}`}
                                 style={{
                                     background: featured ? '#0d0d0d' : '#faf9f7',
                                     border: featured ? 'none' : '1px solid #ede9e3',
                                     borderRadius: '3px',
                                     textDecoration: 'none',
+                                    transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease',
                                 }}
                             >
                                 {/* Numeral watermark */}
