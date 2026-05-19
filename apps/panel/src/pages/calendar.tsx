@@ -1327,8 +1327,15 @@ export default function CalendarPage() {
         if (!param) return;
         const serviceId = Number(param);
         if (!Number.isFinite(serviceId) || serviceId <= 0) return;
-        setDrawer({ open: true, mode: 'create', appointment: null, initialServiceId: serviceId });
-        const { newService: _removed, ...rest } = router.query;
+        setDrawer({
+            open: true,
+            mode: 'create',
+            appointment: null,
+            initialServiceId: serviceId,
+        });
+        const rest = Object.fromEntries(
+            Object.entries(router.query).filter(([k]) => k !== 'newService'),
+        );
         void router.replace({ query: rest }, undefined, { shallow: true });
     }, [router.query.newService, isRouterReady, router]);
 
