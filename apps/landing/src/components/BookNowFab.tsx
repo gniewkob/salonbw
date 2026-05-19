@@ -23,7 +23,8 @@ export default function BookNowFab() {
             <a
                 href={bookingUrl}
                 onClick={() => trackEvent('begin_checkout', { cta: 'fab' })}
-                className="px-4 py-3 rounded-full shadow-lg bg-blue-600 text-white font-semibold"
+                className="btn-gold px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
+                style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                 aria-label="Umów wizytę"
             >
                 Umów wizytę
