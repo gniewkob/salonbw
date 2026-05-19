@@ -50,13 +50,16 @@ export default function BookingModal({ open, onClose, service }: BookingModalPro
                     </p>
                 )}
                 <div className="flex flex-col gap-3">
-                    <a
-                        href={href}
-                        className="block text-center text-xs font-semibold uppercase py-3.5 px-6 transition hover:opacity-90"
+                    <button
+                        onClick={() => {
+                            window.open(href, 'salonbw_booking', 'width=480,height=680,scrollbars=yes,resizable=yes');
+                            onClose();
+                        }}
+                        className="block w-full text-center text-xs font-semibold uppercase py-3.5 px-6 transition hover:opacity-90 cursor-pointer"
                         style={{ background: '#c5a880', color: '#0d0d0d', letterSpacing: '0.12em', borderRadius: '2px' }}
                     >
                         Umów wizytę
-                    </a>
+                    </button>
                     <button
                         onClick={onClose}
                         className="text-xs uppercase text-center py-2 transition hover:opacity-70"
