@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Legacy historical findings already triaged"
+commits = [
+  "94a72820a8c147e2e31e5dc33dcfdc3a12a227d8",
+  "28ab7683b793aa0106fc405f8463dbf37cf47971",
+]
