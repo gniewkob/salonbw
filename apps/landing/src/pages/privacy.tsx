@@ -11,50 +11,46 @@ export default function PrivacyPage() {
                     content="Polityka prywatności Salonu Fryzjerskiego Black & White. Informacje o przetwarzaniu danych osobowych (RODO)."
                 />
             </Head>
-            <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-                <article className="prose prose-slate lg:prose-lg max-w-none">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-8">
-                        Polityka Prywatności
-                    </h1>
+            <div className="legal-page">
+                <article className="legal-article">
+                    <p className="legal-eyebrow">Dokumenty prawne</p>
+                    <h1 className="legal-h1">Polityka Prywatności</h1>
 
-                    <p className="lead text-gray-600 mb-8">
+                    <p className="legal-lead">
                         Poniższa Polityka Prywatności określa zasady
                         przetwarzania i ochrony danych osobowych przekazywanych
                         przez Klientów w związku z korzystaniem z usług Salonu
-                        Fryzjerskiego &quot;Black & White&quot; oraz systemu rezerwacji
+                        Fryzjerskiego &quot;Black &amp; White&quot; oraz systemu rezerwacji
                         wizyt online (CRM).
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        1. Administrator Danych Osobowych
-                    </h2>
-                    <p className="text-gray-700 mb-4">
+                    <h2 className="legal-h2">1. Administrator Danych Osobowych</h2>
+                    <p className="legal-body">
                         Administratorem Państwa danych osobowych jest{' '}
                         <strong>
-                            Salon Fryzjerski Black&White Aleksandra Bodora
+                            Salon Fryzjerski Black&amp;White Aleksandra Bodora
                         </strong>{' '}
                         z siedzibą w Radzionkowie (41-922), ul. Mikołaja
                         Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588 868.
                         W sprawach związanych z ochroną danych osobowych prosimy
-                        o kontakt pod adresem e-mail:
+                        o kontakt pod adresem e-mail:{' '}
                         <a
                             href="mailto:kontakt@salon-bw.pl"
-                            className="text-blue-600 hover:underline"
+                            className="legal-link"
                         >
-                            {' '}
                             kontakt@salon-bw.pl
                         </a>
                         .
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
+                    <h2 className="legal-h2">
                         2. Cele i podstawy prawne przetwarzania danych
                     </h2>
-                    <p className="text-gray-700 mb-4">
+                    <p className="legal-body">
                         Państwa dane osobowe przetwarzane są w następujących
                         celach:
                     </p>
-                    <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                    <ul className="legal-list">
                         <li>
                             <strong>
                                 Obsługa konta i rezerwacja wizyt (CRM):
@@ -62,7 +58,8 @@ export default function PrivacyPage() {
                             Umożliwienie założenia konta w systemie, zarządzanie
                             listą wizyt, przypominanie o wizytach (SMS/e-mail)
                             oraz umożliwienie Klientowi podglądu historii
-                            odbytych wizyt. <br />
+                            odbytych wizyt.
+                            <br />
                             <i>Podstawa prawna:</i> Niezbędność do wykonania
                             umowy o świadczenie usług elektronicznych oraz usług
                             fryzjerskich (art. 6 ust. 1 lit. b RODO).
@@ -95,14 +92,12 @@ export default function PrivacyPage() {
                         </li>
                     </ul>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        3. Jakie dane przetwarzamy?
-                    </h2>
-                    <p className="text-gray-700 mb-4">
+                    <h2 className="legal-h2">3. Jakie dane przetwarzamy?</h2>
+                    <p className="legal-body">
                         Podczas rejestracji w naszym systemie rezerwacji oraz w
-                        trackie realizacji usług zbieramy:
+                        trakcie realizacji usług zbieramy:
                     </p>
-                    <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                    <ul className="legal-list">
                         <li>Imię i nazwisko</li>
                         <li>
                             Numer telefonu komórkowego (niezbędny do
@@ -118,21 +113,21 @@ export default function PrivacyPage() {
                             Klienta)
                         </li>
                     </ul>
-                    <p className="text-gray-700 mb-4">
+                    <p className="legal-body">
                         Podanie danych jest dobrowolne, jednakże brak podania
                         numeru telefonu i nazwiska może uniemożliwić prawidłową
                         weryfikację oraz rezerwację spotkania.
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
+                    <h2 className="legal-h2">
                         4. Kto jest odbiorcą Państwa danych?
                     </h2>
-                    <p className="text-gray-700 mb-4">
+                    <p className="legal-body">
                         Dla zapewnienia najwyższej jakości naszych usług, dane
                         mogą być powierzane wyspecjalizowanym podmiotom
                         współpracującym z Administratorem, w tym:
                     </p>
-                    <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                    <ul className="legal-list">
                         <li>
                             Dostawcom usług hostingowych, na których serwerach
                             działa serwis <strong>salon-bw.pl</strong>
@@ -145,18 +140,18 @@ export default function PrivacyPage() {
                             Biuru rachunkowemu wspierającemu kwestie księgowe
                         </li>
                     </ul>
-                    <p className="text-gray-700 mb-4">
+                    <p className="legal-body">
                         Nasi partnerzy zapewniają standardy bezpieczeństwa
                         zgodne z RODO.
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
+                    <h2 className="legal-h2">
                         5. Prawa osób, których dane dotyczą
                     </h2>
-                    <p className="text-gray-700 mb-4">
+                    <p className="legal-body">
                         Zgodnie z przepisami RODO, posiadają Państwo prawo do:
                     </p>
-                    <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                    <ul className="legal-list">
                         <li>
                             Dostępu do treści swoich danych oraz prawo ich
                             sprostowania,
@@ -182,22 +177,18 @@ export default function PrivacyPage() {
                         </li>
                     </ul>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        6. Okres przechowywania danych
-                    </h2>
-                    <p className="text-gray-700 mb-4">
+                    <h2 className="legal-h2">6. Okres przechowywania danych</h2>
+                    <p className="legal-body">
                         Dane osobowe będą przechowywane przez okres niezbędny do
                         świadczenia usług rezerwacji i prowadzenia konta w
-                        systemie, a po usunięciu konta - do momentu wejścia w
+                        systemie, a po usunięciu konta — do momentu wejścia w
                         życie przedawnienia ewentualnych roszczeń wynikających z
                         umowy lub obowiązkowego czasu archiwizacji dokumentów
                         księgowych przewidzianego przez prawo (zazwyczaj 5 lat).
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-800">
-                        7. Pliki Cookies
-                    </h2>
-                    <p className="text-gray-700 mb-4">
+                    <h2 className="legal-h2">7. Pliki Cookies</h2>
+                    <p className="legal-body">
                         Nasz serwis internetowy zbiera w sposób automatyczny
                         wyłącznie informacje zawarte w plikach cookies. Są one
                         wykorzystywane do utrzymywania sesji logowania w panelu,
@@ -205,7 +196,7 @@ export default function PrivacyPage() {
                         analitycznych.
                     </p>
 
-                    <div className="mt-12 text-sm text-gray-500">
+                    <div className="legal-date">
                         Ostatnia aktualizacja dokumentu:{' '}
                         {new Date().toLocaleDateString('pl-PL')}
                     </div>

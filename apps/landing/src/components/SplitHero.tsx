@@ -52,7 +52,7 @@ export default function SplitHero() {
             {/* Right — photo panel */}
             <div className="split-hero__right">
                 <Image
-                    src="/images/hero/DSC_9576.jpg"
+                    src="/images/hero/slider1.jpg"
                     alt={T.hero.imageAlt}
                     fill
                     priority

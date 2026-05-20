@@ -18,16 +18,16 @@ describe('ContactForm', () => {
                 <ContactForm />
             </ToastProvider>,
         );
-        fireEvent.change(screen.getByPlaceholderText('Your name'), {
+        fireEvent.change(screen.getByPlaceholderText('np. Anna Kowalska'), {
             target: { value: 'John' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Your email'), {
+        fireEvent.change(screen.getByPlaceholderText('np. anna@gmail.com'), {
             target: { value: 'john@example.com' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Message'), {
+        fireEvent.change(screen.getByPlaceholderText('W czym możemy pomóc?'), {
             target: { value: 'Hello' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /send/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Wyślij wiadomość/i }));
         await waitFor(() => expect(global.fetch).toHaveBeenCalled());
         expect(global.fetch).toHaveBeenCalledWith(
             `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
@@ -58,16 +58,16 @@ describe('ContactForm', () => {
                 <ContactForm />
             </ToastProvider>,
         );
-        fireEvent.change(screen.getByPlaceholderText('Your name'), {
+        fireEvent.change(screen.getByPlaceholderText('np. Anna Kowalska'), {
             target: { value: 'John' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Your email'), {
+        fireEvent.change(screen.getByPlaceholderText('np. anna@gmail.com'), {
             target: { value: 'invalid' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Message'), {
+        fireEvent.change(screen.getByPlaceholderText('W czym możemy pomóc?'), {
             target: { value: 'Hello' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /send/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Wyślij wiadomość/i }));
         expect(
             await screen.findByText(/nieprawidłowy format adresu email/i),
         ).toBeInTheDocument();

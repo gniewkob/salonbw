@@ -7,6 +7,7 @@ import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
 
 interface ServiceCategory {
@@ -23,7 +24,7 @@ function resolveCategoryName(service: Service): string {
     return service.categoryRelation?.name || service.category || 'Inne';
 }
 
-function getServicePrice(service: Service): string {
+function getServicePrice(service: Service, fromLabel: string): string {
     if (service.variants && service.variants.length > 0) {
         const prices = service.variants.map((v) => v.price);
         const min = Math.min(...prices);
@@ -33,13 +34,13 @@ function getServicePrice(service: Service): string {
                 style: 'currency',
                 currency: 'PLN',
             }).format(n);
-        return max > min ? `od ${fmt(min)}` : fmt(min);
+        return max > min ? `${fromLabel} ${fmt(min)}` : fmt(min);
     }
     const formatted = new Intl.NumberFormat('pl-PL', {
         style: 'currency',
         currency: 'PLN',
     }).format(service.price);
-    return service.priceType === 'from' ? `od ${formatted}` : formatted;
+    return service.priceType === 'from' ? `${fromLabel} ${formatted}` : formatted;
 }
 
 function getServiceDuration(service: Service): string {
@@ -65,6 +66,8 @@ function resolveServiceRoute(name: string): Route | undefined {
 }
 
 export default function ServicesPage({ categories }: ServicesPageProps) {
+    const { T } = useLanguage();
+    const s = T.services;
     const items = useMemo(
         () =>
             categories.flatMap((cat) =>
@@ -96,29 +99,23 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
     return (
         <PublicLayout>
             <Head>
-                <title>
-                    Usługi fryzjerskie, barber i pielęgnacja —{' '}
-                    {BUSINESS_INFO.name}
-                </title>
-                <meta
-                    name="description"
-                    content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, pielęgnacja włosów (Botox, Złote proteiny, Sauna-SPA), przedłużanie włosów metodą HairTalk.`}
-                />
-                <meta
-                    name="keywords"
-                    content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom"
-                />
+                <title>Usługi fryzjerskie, barber i pielęgnacja — {BUSINESS_INFO.name}</title>
+                <meta name="description" content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, pielęgnacja włosów (Botox, Złote proteiny, Sauna-SPA), przedłużanie włosów metodą HairTalk.`} />
+                <meta name="keywords" content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom" />
+                <meta property="og:title" content={`Usługi fryzjerskie — ${BUSINESS_INFO.name}`} />
+                <meta property="og:description" content={`Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów w ${BUSINESS_INFO.address.city}. Koloryzacja, balayage, botox, HairTalk.`} />
+                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`} />
+                <meta property="og:type" content="website" />
+                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/services`} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <div className="svcs-page">
                 {/* Hero */}
                 <div className="svcs-hero">
-                    <span className="svcs-hero__eyebrow">Cennik &amp; Oferta</span>
-                    <h1 className="svcs-hero__heading">Nasze Usługi</h1>
-                    <p className="svcs-hero__desc">
-                        Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów
-                        dla kobiet i mężczyzn. Każda wizyta to indywidualne podejście.
-                    </p>
+                    <span className="svcs-hero__eyebrow">{s.pageEyebrow}</span>
+                    <h1 className="svcs-hero__heading">{s.pageHeading}</h1>
+                    <p className="svcs-hero__desc">{s.pageDesc}</p>
                     <button
                         onClick={() => setGeneralBookingOpen(true)}
                         className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
@@ -136,17 +133,17 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 <h2 className="svcs-category__title">{cat.name}</h2>
                                 <span className="svcs-category__count">
                                     {cat.services.length}{' '}
-                                    {cat.services.length === 1 ? 'usługa' : 'usługi'}
+                                    {cat.services.length === 1 ? s.serviceCount1 : s.serviceCountMany}
                                 </span>
                             </div>
 
                             <div>
-                                {cat.services.map((s) => {
-                                    const price = getServicePrice(s);
-                                    const duration = getServiceDuration(s);
-                                    const href = resolveServiceRoute(s.name);
+                                {cat.services.map((svc) => {
+                                    const price = getServicePrice(svc, s.from);
+                                    const duration = getServiceDuration(svc);
+                                    const href = resolveServiceRoute(svc.name);
                                     return (
-                                        <div key={s.id} className="svcs-row">
+                                        <div key={svc.id} className="svcs-row">
                                             <div className="svcs-row__info">
                                                 <div className="svcs-row__name">
                                                     {href ? (
@@ -155,18 +152,18 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                             onClick={() =>
                                                                 trackEvent('select_item', {
                                                                     item_list_name: 'services',
-                                                                    items: [{ item_id: s.id, item_name: s.name, item_category: cat.name }],
+                                                                    items: [{ item_id: svc.id, item_name: svc.name, item_category: cat.name }],
                                                                 })
                                                             }
                                                         >
-                                                            {s.name}
+                                                            {svc.name}
                                                         </Link>
                                                     ) : (
-                                                        s.name
+                                                        svc.name
                                                     )}
                                                 </div>
-                                                {s.description && (
-                                                    <p className="svcs-row__desc">{s.description}</p>
+                                                {svc.description && (
+                                                    <p className="svcs-row__desc">{svc.description}</p>
                                                 )}
                                             </div>
                                             <div className="svcs-row__meta">
@@ -176,15 +173,15 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                     className="svcs-row__book"
                                                     onClick={() =>
                                                         setBookingService({
-                                                            id: s.id,
-                                                            name: s.name,
+                                                            id: svc.id,
+                                                            name: svc.name,
                                                             priceLabel: price,
                                                             duration,
                                                         })
                                                     }
-                                                    aria-label={`Umów wizytę: ${s.name}`}
+                                                    aria-label={`${s.bookBtn}: ${svc.name}`}
                                                 >
-                                                    Umów
+                                                    {s.bookBtn}
                                                 </button>
                                             </div>
                                         </div>
@@ -197,11 +194,10 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     {/* Bottom CTA */}
                     <div className="svcs-bottom-cta">
                         <h2 className="svcs-bottom-cta__heading">
-                            Gotowa/-y na metamorfozę?
+                            {s.ctaHeading}
                         </h2>
                         <p className="svcs-bottom-cta__sub">
-                            Zarezerwuj termin online lub zadzwoń.
-                            Czekamy na Ciebie od {BUSINESS_INFO.hours.mondayFriday} w tygodniu.
+                            {s.ctaSub.replace('{hours}', BUSINESS_INFO.hours.mondayFriday)}
                         </p>
                         <button
                             onClick={() => setGeneralBookingOpen(true)}

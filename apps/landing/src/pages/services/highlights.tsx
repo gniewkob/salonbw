@@ -1,38 +1,50 @@
 import Head from 'next/head';
-import Script from 'next/script';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import type { Route } from 'next';
+import Script from 'next/script';
+import { useState, useEffect } from 'react';
 import PublicLayout from '@/components/PublicLayout';
-import { jsonLd } from '@/utils/seo';
+import BookingModal from '@/components/BookingModal';
+import { BUSINESS_INFO } from '@/config/content';
+import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
-import { getPanelUrl } from '@/utils/panelUrl';
+
+const ITEMS = [
+    'Pasemka klasyczne i dynamiczne',
+    'Efekt rozświetlenia i głębi',
+    'Dostosowane do odcienia bazowego',
+    'Możliwość łączenia z balayage',
+    'Niska ingerencja w strukturę włosa',
+];
 
 export default function HighlightsPage() {
-    const name = process.env.NEXT_PUBLIC_BUSINESS_NAME || 'Salon Black & White';
-    const panelAppointments = getPanelUrl('/appointments');
+    const [open, setOpen] = useState(false);
+    const name = BUSINESS_INFO.name;
+
     useEffect(() => {
         try {
             trackEvent('view_item', {
                 items: [
                     {
                         item_id: 'highlights',
-                        item_name: 'Highlights',
-                        item_category: 'Highlights',
+                        item_name: 'Pasemka',
+                        item_category: 'Koloryzacja',
                     },
                 ],
             });
         } catch {}
     }, []);
+
     return (
         <PublicLayout>
             <Head>
-                <title>Highlights | {name}</title>
+                <title>Pasemka Bytom — Salon Black &amp; White</title>
                 <meta
                     name="description"
-                    content="Brighten your look with natural highlights and lowlights at Salon Black & White."
+                    content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku. Salon Black & White, ul. Webera 1a/13."
                 />
+                <link rel="canonical" href={absUrl('/services/highlights')} />
             </Head>
+
             <Script
                 id="ld-service-highlights"
                 type="application/ld+json"
@@ -41,83 +53,152 @@ export default function HighlightsPage() {
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
-                    name: 'Highlights',
-                    provider: {
-                        '@type': 'Organization',
-                        name,
-                    },
-                    areaServed: 'PL',
+                    name: 'Pasemka',
                     description:
-                        'Professional highlights and lowlights to add dimension and brightness to your hair.',
-                    category: 'Highlights',
+                        'Klasyczne pasemka i rozjaśnienia dodające głębi i blasku. Delikatne naturalne akcenty lub wyraziste kontrastowe efekty.',
+                    category: 'Koloryzacja',
+                    provider: {
+                        '@type': 'LocalBusiness',
+                        name,
+                        address: {
+                            '@type': 'PostalAddress',
+                            streetAddress: BUSINESS_INFO.address.street,
+                            addressLocality: BUSINESS_INFO.address.city,
+                            postalCode: BUSINESS_INFO.address.postalCode,
+                            addressCountry: 'PL',
+                        },
+                    },
+                    areaServed: {
+                        '@type': 'City',
+                        name: 'Bytom',
+                    },
+                    url: absUrl('/services/highlights'),
                 })}
             </Script>
-            <div className="p-6 max-w-3xl space-y-6">
-                <h1 className="text-3xl font-bold">Highlights</h1>
-                <p>
-                    Add dimension and brightness with subtle highlights or bold,
-                    sun‑kissed strands. Our stylists customize placement to
-                    frame your features and fit your routine.
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                    <li>Face‑framing highlights</li>
-                    <li>Partial or full highlights</li>
-                    <li>Low‑maintenance, natural looks</li>
-                </ul>
-                <div>
-                    <a
-                        href={panelAppointments}
-                        className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
+
+            {/* Dark hero */}
+            <section
+                style={{
+                    background: '#0d0d0d',
+                    paddingTop: '7rem',
+                    paddingBottom: '5rem',
+                }}
+            >
+                <div
+                    style={{
+                        maxWidth: '900px',
+                        margin: '0 auto',
+                        padding: '0 2rem',
+                    }}
+                >
+                    <p
+                        style={{
+                            color: '#c5a880',
+                            fontSize: '0.7rem',
+                            letterSpacing: '0.2em',
+                            textTransform: 'uppercase',
+                            marginBottom: '1rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                        }}
+                    >
+                        Koloryzacja
+                    </p>
+                    <h1
+                        style={{
+                            fontFamily: 'var(--font-playfair), serif',
+                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                            color: '#fff',
+                            marginBottom: '1.5rem',
+                            fontWeight: 700,
+                            lineHeight: 1.1,
+                        }}
+                    >
+                        Pasemka
+                    </h1>
+                    <p
+                        style={{
+                            color: 'rgba(255,255,255,0.65)',
+                            fontSize: '1.05rem',
+                            lineHeight: 1.8,
+                            maxWidth: '600px',
+                            marginBottom: '2.5rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                        }}
+                    >
+                        Klasyczne pasemka i rozjaśnienia to najszybszy sposób na
+                        dodanie głębi i blasku. Pracujemy zarówno z delikatnymi,
+                        naturalnymi akcentami, jak i wyrazistymi, kontrastowymi
+                        efektami.
+                    </p>
+                    <button
                         onClick={() => {
                             try {
                                 trackEvent('select_item', {
                                     items: [
                                         {
                                             item_id: 'highlights',
-                                            item_name: 'Highlights',
-                                            item_category: 'Highlights',
+                                            item_name: 'Pasemka',
+                                            item_category: 'Koloryzacja',
                                         },
                                     ],
-                                });
-                                trackEvent('begin_checkout', {
-                                    items: [
-                                        {
-                                            item_id: 'highlights',
-                                            item_name: 'Highlights',
-                                            item_category: 'Highlights',
-                                        },
-                                    ],
-                                    cta: 'service_page',
                                 });
                             } catch {}
+                            setOpen(true);
                         }}
+                        className="split-hero__cta-primary"
                     >
-                        Book an appointment
-                    </a>
+                        Umów wizytę
+                    </button>
                 </div>
+            </section>
 
-                <div className="mt-8">
-                    <h2 className="text-xl font-semibold">Related services</h2>
-                    <ul className="list-disc pl-6 mt-2 space-y-1">
-                        <li>
-                            <Link
-                                href={'/services/balayage' as Route}
-                                className="underline"
+            {/* Light content section */}
+            <section style={{ background: '#faf9f7', padding: '5rem 2rem' }}>
+                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {ITEMS.map((item) => (
+                            <li
+                                key={item}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                    gap: '0.75rem',
+                                    padding: '0.85rem 0',
+                                    borderBottom: '1px solid #ede9e3',
+                                    fontFamily: 'var(--font-open-sans), sans-serif',
+                                    color: '#3a3028',
+                                    fontSize: '0.95rem',
+                                }}
                             >
-                                Balayage
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href={'/services/coloring' as Route}
-                                className="underline"
-                            >
-                                Hair Coloring
-                            </Link>
-                        </li>
+                                <span
+                                    style={{ color: '#c5a880', flexShrink: 0 }}
+                                >
+                                    —
+                                </span>
+                                {item}
+                            </li>
+                        ))}
                     </ul>
+
+                    <div style={{ marginTop: '3rem' }}>
+                        <Link
+                            href="/services"
+                            style={{
+                                color: '#c5a880',
+                                fontSize: '0.8rem',
+                                letterSpacing: '0.12em',
+                                textTransform: 'uppercase',
+                                textDecoration: 'none',
+                                fontFamily: 'var(--font-open-sans), sans-serif',
+                            }}
+                        >
+                            ← Pełna oferta i cennik
+                        </Link>
+                    </div>
                 </div>
-            </div>
+            </section>
+
+            <BookingModal open={open} onClose={() => setOpen(false)} />
         </PublicLayout>
     );
 }

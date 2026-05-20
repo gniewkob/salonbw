@@ -1,38 +1,50 @@
 import Head from 'next/head';
-import Script from 'next/script';
-import { useEffect } from 'react';
 import Link from 'next/link';
-import type { Route } from 'next';
+import Script from 'next/script';
+import { useState, useEffect } from 'react';
 import PublicLayout from '@/components/PublicLayout';
-import { jsonLd } from '@/utils/seo';
+import BookingModal from '@/components/BookingModal';
+import { BUSINESS_INFO } from '@/config/content';
+import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
-import { getPanelUrl } from '@/utils/panelUrl';
 
-export default function HairColoringPage() {
-    const name = process.env.NEXT_PUBLIC_BUSINESS_NAME || 'Salon Black & White';
-    const panelAppointments = getPanelUrl('/appointments');
+const ITEMS = [
+    'Koloryzacja jednolita i wielotonowa',
+    'Korekta koloru (color correction)',
+    'Farbowanie korzeni i odrostów',
+    'Toning i gloss',
+    'Bezpieczna dla włosów – bez amoniaku dostępne',
+];
+
+export default function ColoringPage() {
+    const [open, setOpen] = useState(false);
+    const name = BUSINESS_INFO.name;
+
     useEffect(() => {
         try {
             trackEvent('view_item', {
                 items: [
                     {
                         item_id: 'coloring',
-                        item_name: 'Hair Coloring',
-                        item_category: 'Hair Coloring',
+                        item_name: 'Koloryzacja',
+                        item_category: 'Usługi fryzjerskie',
                     },
                 ],
             });
         } catch {}
     }, []);
+
     return (
         <PublicLayout>
             <Head>
-                <title>Hair Coloring | {name}</title>
+                <title>Koloryzacja Bytom — Salon Black &amp; White</title>
                 <meta
                     name="description"
-                    content="Professional hair coloring services including highlights, balayage, and full color at Salon Black & White."
+                    content="Profesjonalna koloryzacja włosów w Bytomiu — farby Wella i Kerastase, color correction, toning. Salon Black & White, ul. Webera 1a/13."
                 />
+                <link rel="canonical" href={absUrl('/services/coloring')} />
             </Head>
+
             <Script
                 id="ld-service-coloring"
                 type="application/ld+json"
@@ -41,86 +53,151 @@ export default function HairColoringPage() {
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
-                    name: 'Hair Coloring',
-                    provider: {
-                        '@type': 'Organization',
-                        name,
-                    },
-                    areaServed: 'PL',
+                    name: 'Koloryzacja',
                     description:
-                        'Expert hair coloring services including highlights, balayage, and full color.',
-                    category: 'Hair Coloring',
+                        'Pełna koloryzacja włosów z użyciem profesjonalnych farb Wella i Kerastase. Korekta koloru, toning, farbowanie odrostów.',
+                    category: 'Usługi fryzjerskie',
+                    provider: {
+                        '@type': 'LocalBusiness',
+                        name,
+                        address: {
+                            '@type': 'PostalAddress',
+                            streetAddress: BUSINESS_INFO.address.street,
+                            addressLocality: BUSINESS_INFO.address.city,
+                            postalCode: BUSINESS_INFO.address.postalCode,
+                            addressCountry: 'PL',
+                        },
+                    },
+                    areaServed: {
+                        '@type': 'City',
+                        name: 'Bytom',
+                    },
+                    url: absUrl('/services/coloring'),
                 })}
             </Script>
-            <div className="p-6 max-w-3xl space-y-6">
-                <h1 className="text-3xl font-bold">Hair Coloring</h1>
-                <p>
-                    Refresh your style with professional coloring: highlights,
-                    balayage, full color, and corrective color treatments. Our
-                    stylists help you choose a tone that matches your look and
-                    lifestyle.
-                </p>
-                <h2 className="text-xl font-semibold">What we offer</h2>
-                <ul className="list-disc pl-6 space-y-2">
-                    <li>Natural highlights and lowlights</li>
-                    <li>Balayage and ombré techniques</li>
-                    <li>Full and partial color</li>
-                    <li>Gloss/toner refresh</li>
-                </ul>
-                <div>
-                    <a
-                        href={panelAppointments}
-                        className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
+
+            {/* Dark hero */}
+            <section
+                style={{
+                    background: '#0d0d0d',
+                    paddingTop: '7rem',
+                    paddingBottom: '5rem',
+                }}
+            >
+                <div
+                    style={{
+                        maxWidth: '900px',
+                        margin: '0 auto',
+                        padding: '0 2rem',
+                    }}
+                >
+                    <p
+                        style={{
+                            color: '#c5a880',
+                            fontSize: '0.7rem',
+                            letterSpacing: '0.2em',
+                            textTransform: 'uppercase',
+                            marginBottom: '1rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                        }}
+                    >
+                        Usługi fryzjerskie
+                    </p>
+                    <h1
+                        style={{
+                            fontFamily: 'var(--font-playfair), serif',
+                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                            color: '#fff',
+                            marginBottom: '1.5rem',
+                            fontWeight: 700,
+                            lineHeight: 1.1,
+                        }}
+                    >
+                        Koloryzacja
+                    </h1>
+                    <p
+                        style={{
+                            color: 'rgba(255,255,255,0.65)',
+                            fontSize: '1.05rem',
+                            lineHeight: 1.8,
+                            maxWidth: '600px',
+                            marginBottom: '2.5rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                        }}
+                    >
+                        Pełna koloryzacja to kompletna zmiana lub odświeżenie koloru
+                        włosów. Używamy wyłącznie profesjonalnych farb Wella i
+                        Kerastase, które zapewniają intensywny kolor i pielęgnację
+                        jednocześnie.
+                    </p>
+                    <button
                         onClick={() => {
                             try {
                                 trackEvent('select_item', {
-                                    items: [
-                                        {
-                                            item_id: 'coloring',
-                                            item_name: 'Hair Coloring',
-                                            item_category: 'Hair Coloring',
-                                        },
-                                    ],
+                                    items: [{ item_id: 'coloring', item_name: 'Koloryzacja', item_category: 'Usługi fryzjerskie' }],
                                 });
                                 trackEvent('begin_checkout', {
-                                    items: [
-                                        {
-                                            item_id: 'coloring',
-                                            item_name: 'Hair Coloring',
-                                            item_category: 'Hair Coloring',
-                                        },
-                                    ],
+                                    items: [{ item_id: 'coloring', item_name: 'Koloryzacja', item_category: 'Usługi fryzjerskie' }],
                                     cta: 'service_page',
                                 });
                             } catch {}
+                            setOpen(true);
                         }}
+                        className="split-hero__cta-primary"
+                        data-testid="coloring-cta"
                     >
-                        Book an appointment
-                    </a>
+                        Umów wizytę
+                    </button>
                 </div>
+            </section>
 
-                <div className="mt-8">
-                    <h2 className="text-xl font-semibold">Related services</h2>
-                    <ul className="list-disc pl-6 mt-2 space-y-1">
-                        <li>
-                            <Link
-                                href={'/services/highlights' as Route}
-                                className="underline"
+            {/* Light content section */}
+            <section style={{ background: '#faf9f7', padding: '5rem 2rem' }}>
+                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {ITEMS.map((item) => (
+                            <li
+                                key={item}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                    gap: '0.75rem',
+                                    padding: '0.85rem 0',
+                                    borderBottom: '1px solid #ede9e3',
+                                    fontFamily: 'var(--font-open-sans), sans-serif',
+                                    color: '#3a3028',
+                                    fontSize: '0.95rem',
+                                }}
                             >
-                                Highlights
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href={'/services/balayage' as Route}
-                                className="underline"
-                            >
-                                Balayage
-                            </Link>
-                        </li>
+                                <span
+                                    style={{ color: '#c5a880', flexShrink: 0 }}
+                                >
+                                    —
+                                </span>
+                                {item}
+                            </li>
+                        ))}
                     </ul>
+
+                    <div style={{ marginTop: '3rem' }}>
+                        <Link
+                            href="/services"
+                            style={{
+                                color: '#c5a880',
+                                fontSize: '0.8rem',
+                                letterSpacing: '0.12em',
+                                textTransform: 'uppercase',
+                                textDecoration: 'none',
+                                fontFamily: 'var(--font-open-sans), sans-serif',
+                            }}
+                        >
+                            ← Pełna oferta i cennik
+                        </Link>
+                    </div>
                 </div>
-            </div>
+            </section>
+
+            <BookingModal open={open} onClose={() => setOpen(false)} />
         </PublicLayout>
     );
 }

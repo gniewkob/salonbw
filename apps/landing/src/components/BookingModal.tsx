@@ -3,6 +3,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface BookingService {
     id: number;
@@ -25,6 +26,8 @@ export default function BookingModal({
     service,
 }: BookingModalProps) {
     const { login, isAuthenticated } = useAuth();
+    const { T } = useLanguage();
+    const m = T.modal;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [touched, setTouched] = useState({ email: false, password: false });
@@ -53,11 +56,11 @@ export default function BookingModal({
     const emailError =
         touched.email && !emailRe.test(email.trim())
             ? email.trim()
-                ? 'Nieprawidłowy adres e-mail'
-                : 'Adres e-mail jest wymagany'
+                ? m.errorInvalidEmail
+                : m.errorEmailRequired
             : '';
     const passwordError =
-        touched.password && !password.trim() ? 'Hasło jest wymagane' : '';
+        touched.password && !password.trim() ? m.errorPasswordRequired : '';
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -78,7 +81,7 @@ export default function BookingModal({
             setError(
                 err instanceof Error
                     ? err.message
-                    : 'Logowanie nieudane. Sprawdź dane i spróbuj ponownie.',
+                    : m.errorLoginFailed,
             );
             setPassword('');
         } finally {
@@ -155,7 +158,7 @@ export default function BookingModal({
                             }}
                         >
                             {service
-                                ? 'Rezerwacja usługi'
+                                ? m.bookingServiceLabel
                                 : BUSINESS_INFO.booking.text}
                         </p>
                         <h2
@@ -172,8 +175,8 @@ export default function BookingModal({
                             {service
                                 ? service.name
                                 : isAuthenticated
-                                  ? 'Umów wizytę'
-                                  : 'Zaloguj się'}
+                                  ? m.bookingTitle
+                                  : m.loginTitle}
                         </h2>
                         {service ? (
                             <p
@@ -198,8 +201,8 @@ export default function BookingModal({
                                 }}
                             >
                                 {isAuthenticated
-                                    ? BUSINESS_INFO.address.city + ' · od 2011 roku'
-                                    : 'aby przejść do kalendarza rezerwacji'}
+                                    ? BUSINESS_INFO.address.city + ' · ' + m.since
+                                    : m.loginSub}
                             </p>
                         )}
                         <div
@@ -225,7 +228,7 @@ export default function BookingModal({
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
                                 }}
                             >
-                                Jesteś już zalogowana/-y.
+                                {m.alreadyLoggedIn}
                             </p>
                             <button
                                 onClick={handleRedirectToPanel}
@@ -246,7 +249,7 @@ export default function BookingModal({
                                     cursor: 'pointer',
                                 }}
                             >
-                                Przejdź do rezerwacji
+                                {m.goToBooking}
                             </button>
                         </div>
                     ) : (
@@ -272,7 +275,7 @@ export default function BookingModal({
                                             "var(--font-opensans, 'Open Sans', sans-serif)",
                                     }}
                                 >
-                                    Email
+                                    {m.emailLabel}
                                 </label>
                                 <input
                                     id="bm-email"
@@ -296,7 +299,7 @@ export default function BookingModal({
                                         }));
                                     }}
                                     style={inputStyle('email')}
-                                    placeholder="twoj@email.pl"
+                                    placeholder={m.emailPlaceholder}
                                 />
                                 {emailError && (
                                     <p
@@ -329,7 +332,7 @@ export default function BookingModal({
                                             "var(--font-opensans, 'Open Sans', sans-serif)",
                                     }}
                                 >
-                                    Hasło
+                                    {m.passwordLabel}
                                 </label>
                                 <input
                                     id="bm-password"
@@ -353,7 +356,7 @@ export default function BookingModal({
                                         }));
                                     }}
                                     style={inputStyle('password')}
-                                    placeholder="••••••••"
+                                    placeholder={m.passwordPlaceholder}
                                 />
                                 {passwordError && (
                                     <p
@@ -413,9 +416,7 @@ export default function BookingModal({
                                     marginBottom: '0.75rem',
                                 }}
                             >
-                                {submitting
-                                    ? 'Logowanie…'
-                                    : 'Zaloguj i umów wizytę'}
+                                {submitting ? m.submitting : m.submitLogin}
                             </button>
 
                             <p
@@ -427,7 +428,7 @@ export default function BookingModal({
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
                                 }}
                             >
-                                Nie masz konta?{' '}
+                                {m.noAccount}{' '}
                                 <a
                                     href={getPanelUrl('/auth/register')}
                                     style={{
@@ -435,7 +436,7 @@ export default function BookingModal({
                                         textDecoration: 'none',
                                     }}
                                 >
-                                    Zarejestruj się
+                                    {m.register}
                                 </a>
                             </p>
                         </form>
