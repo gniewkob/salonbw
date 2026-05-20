@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';
 import BookingModal from '@/components/BookingModal';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function BookNowFab() {
     const router = useRouter();
+    const { T } = useLanguage();
     const path = router.pathname || '/';
     const hidden =
         path.startsWith('/dashboard') ||
@@ -23,9 +25,9 @@ export default function BookNowFab() {
                     onClick={() => { trackEvent('begin_checkout', { cta: 'fab' }); setModalOpen(true); }}
                     className="btn-gold px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
                     style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
-                    aria-label="Umów wizytę"
+                    aria-label={T.nav.booking}
                 >
-                    Umów wizytę
+                    {T.nav.booking}
                 </button>
             </div>
             <BookingModal open={modalOpen} onClose={() => setModalOpen(false)} />

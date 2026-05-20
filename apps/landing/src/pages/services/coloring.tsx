@@ -7,6 +7,7 @@ import BookingModal from '@/components/BookingModal';
 import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const ITEMS = [
     'Koloryzacja jednolita i wielotonowa',
@@ -18,6 +19,7 @@ const ITEMS = [
 
 export default function ColoringPage() {
     const [open, setOpen] = useState(false);
+    const { T } = useLanguage();
     const name = BUSINESS_INFO.name;
 
     useEffect(() => {
@@ -149,7 +151,7 @@ export default function ColoringPage() {
                         className="split-hero__cta-primary"
                         data-testid="coloring-cta"
                     >
-                        Umów wizytę
+                        {T.nav.booking}
                     </button>
                 </div>
             </section>
