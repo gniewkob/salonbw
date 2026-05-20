@@ -82,12 +82,23 @@ export default function ServicesTeaser() {
 
                                 {'keyServices' in T.services.items[idx] && T.services.items[idx].keyServices && (
                                     <ul
-                                        className="relative z-10 mt-5 grid grid-cols-2 gap-x-4 gap-y-1.5 flex-grow"
-                                        style={{ listStyle: 'none', padding: 0, margin: 0 }}
+                                        className="relative z-10 flex-grow flex flex-col justify-between"
+                                        style={{ listStyle: 'none', padding: 0, margin: '1.5rem 0 0', borderTop: '1px solid rgba(197,168,128,0.15)' }}
                                     >
                                         {(T.services.items[idx].keyServices as string[]).map((name) => (
-                                            <li key={name} className="flex items-center gap-2 text-xs" style={{ color: featured ? 'rgba(255,255,255,0.55)' : '#6b5f52' }}>
-                                                <span style={{ color: '#c5a880', flexShrink: 0 }}>—</span>
+                                            <li
+                                                key={name}
+                                                className="flex items-center gap-3"
+                                                style={{
+                                                    borderBottom: '1px solid rgba(197,168,128,0.12)',
+                                                    padding: '0.65rem 0',
+                                                    color: featured ? 'rgba(255,255,255,0.6)' : '#6b5f52',
+                                                    fontSize: '0.78rem',
+                                                    letterSpacing: '0.04em',
+                                                    fontFamily: 'var(--font-open-sans), sans-serif',
+                                                }}
+                                            >
+                                                <span style={{ color: '#c5a880', flexShrink: 0, fontSize: '0.9rem' }}>—</span>
                                                 {name}
                                             </li>
                                         ))}
