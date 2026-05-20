@@ -123,7 +123,7 @@ export default function BookingModal({
             <div
                 role="dialog"
                 aria-modal="true"
-                aria-label="Umów wizytę"
+                aria-label={m.bookingTitle}
                 className="w-full max-w-sm"
                 style={{
                     background: '#0d0d0d',

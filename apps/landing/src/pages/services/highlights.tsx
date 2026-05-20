@@ -7,6 +7,7 @@ import BookingModal from '@/components/BookingModal';
 import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const ITEMS = [
     'Pasemka klasyczne i dynamiczne',
@@ -18,6 +19,7 @@ const ITEMS = [
 
 export default function HighlightsPage() {
     const [open, setOpen] = useState(false);
+    const { T } = useLanguage();
     const name = BUSINESS_INFO.name;
 
     useEffect(() => {
@@ -150,7 +152,7 @@ export default function HighlightsPage() {
                         }}
                         className="split-hero__cta-primary"
                     >
-                        Umów wizytę
+                        {T.nav.booking}
                     </button>
                 </div>
             </section>
