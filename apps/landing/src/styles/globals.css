@@ -934,6 +934,14 @@ html {
     transform: translateY(0);
     opacity: 1;
 }
+.ig-item:hover .gallery-caption,
+.ig-item:focus-visible .gallery-caption {
+    transform: translateY(0);
+    opacity: 1;
+}
+.ig-item--video .gallery-caption {
+    pointer-events: none;
+}
 .gallery-caption__text {
     font-family: var(--font-playfair), serif;
     font-size: 0.9rem;
