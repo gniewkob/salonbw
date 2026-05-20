@@ -53,7 +53,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                         fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
                                     }}
                                 >
-                                    {data.quote}
+                                    {T.founder.quote}
                                 </p>
                                 <footer>
                                     <cite

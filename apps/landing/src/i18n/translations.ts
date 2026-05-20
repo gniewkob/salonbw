@@ -43,6 +43,7 @@ const t = {
             eyebrow: 'Słowo od założycielki',
             role: 'Założycielka & Właścicielka Salon Black & White',
             since: 'od 2011 roku',
+            quote: 'Od wielu lat stale podnoszę swoje kwalifikacje oraz jakość moich usług, dzięki temu mam stałych zadowolonych klientów. Dołącz do nich i ciesz się pięknem swoich włosów!',
         },
         history: {
             eyebrow: 'Skąd pochodzimy',
@@ -267,6 +268,7 @@ const t = {
             eyebrow: 'A word from the founder',
             role: 'Founder & Owner of Black & White Salon',
             since: 'since 2011',
+            quote: 'For many years I have continually improved my qualifications and the quality of my services — which is why I have loyal, satisfied clients. Join them and enjoy the beauty of your hair!',
         },
         history: {
             eyebrow: 'Our roots',
@@ -491,6 +493,7 @@ const t = {
             eyebrow: 'Ein Wort von der Gründerin',
             role: 'Gründerin & Inhaberin des Salons Black & White',
             since: 'seit 2011',
+            quote: 'Seit vielen Jahren verbessere ich kontinuierlich meine Qualifikationen und die Qualität meiner Dienstleistungen — deshalb habe ich treue, zufriedene Kunden. Werden Sie Teil davon und genießen Sie die Schönheit Ihres Haares!',
         },
         history: {
             eyebrow: 'Woher wir kommen',
