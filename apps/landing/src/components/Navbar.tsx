@@ -122,7 +122,15 @@ export default function Navbar() {
                                     </li>
                                 </>
                             ) : (
-                                <li><a href={panelLogin} className={navLinkClass}>{T.nav.login}</a></li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        onClick={() => setBookingModalOpen(true)}
+                                        className={navLinkClass}
+                                    >
+                                        {T.nav.login}
+                                    </button>
+                                </li>
                             )}
                         </ul>
 
@@ -222,7 +230,15 @@ export default function Navbar() {
                                     </li>
                                 </>
                             ) : (
-                                <li><a href={panelLogin} className="block py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition">{T.nav.login}</a></li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setBookingModalOpen(true); setMobileMenuOpen(false); }}
+                                        className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#c5a880] text-sm font-medium transition"
+                                    >
+                                        {T.nav.login}
+                                    </button>
+                                </li>
                             )}
                         </ul>
 

@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import ContactForm from '@/components/ContactForm';
+import BookingModal from '@/components/BookingModal';
 import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
 import SectionHeader from '@/components/SectionHeader';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
 
 export default function ContactPage() {
+    const [bookingOpen, setBookingOpen] = useState(false);
+
     return (
         <PublicLayout>
             <Head>
@@ -74,19 +78,40 @@ export default function ContactPage() {
                             </div>
                         </div>
 
-                        {/* Right: contact form */}
+                        {/* Right: booking CTA + contact form */}
                         <div>
+                            {/* Primary CTA */}
+                            <div className="mb-10" style={{ paddingBottom: '2.5rem', borderBottom: '1px solid rgba(197,168,128,0.12)' }}>
+                                <p className="text-xs uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                    Zarezerwuj termin
+                                </p>
+                                <p className="mb-5" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.9rem', lineHeight: 1.7, fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                    Umów wizytę online — wybierz usługę, stylistę i termin który Ci odpowiada.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setBookingOpen(true)}
+                                    className="btn-gold"
+                                    style={{ padding: '0.85rem 2rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#fff', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
+                                >
+                                    Umów wizytę
+                                </button>
+                            </div>
+
+                            {/* Contact form */}
                             <p
                                 className="text-xs uppercase mb-6"
-                                style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                                style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
                             >
-                                Napisz do nas
+                                Lub napisz do nas
                             </p>
                             <ContactForm />
                         </div>
                     </div>
                 </div>
             </div>
+
+            <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
         </PublicLayout>
     );
 }
