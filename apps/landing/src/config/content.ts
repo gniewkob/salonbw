@@ -29,7 +29,6 @@ export const BUSINESS_INFO = {
   social: {
     facebook: 'https://www.facebook.com/Salon.Fryzjerski.Black.And.White',
     instagram: 'https://www.instagram.com/salon_bw',
-    twitter: 'https://twitter.com/salon_bw',
   },
   booking: {
     url: '/appointments', // Internal panel appointments
@@ -100,42 +99,36 @@ export const CORE_VALUES = [
   {
     id: 'pasja',
     title: 'Pasja i Kreatywność',
-    icon: '🎨',
     description:
       'W naszym salonie fryzjerskim wkładamy całe serce w to, co robimy. Nasza pasja do sztuki fryzjerskiej jest nieodłączną częścią naszej pracy. Jesteśmy kreatywni i otwarci na nowe trendy, dzięki czemu możemy stworzyć dla Ciebie wyjątkowe i niepowtarzalne fryzury, które podkreślą Twoją indywidualność.',
   },
   {
     id: 'profesjonalizm',
     title: 'Profesjonalizm i Doskonałość',
-    icon: '⭐',
     description:
       'W naszym zespole mamy doświadczonych fryzjerów, którzy są mistrzami swojego fachu. Stale doskonalimy swoje umiejętności, uczestnicząc w szkoleniach i śledząc najnowsze techniki i trendy fryzjerskie. Możesz mieć pewność, że otrzymasz usługę na najwyższym poziomie.',
   },
   {
     id: 'indywidualne',
     title: 'Indywidualne Podejście',
-    icon: '👤',
     description:
       'Wiemy, że każdy klient jest wyjątkowy. Dlatego zawsze słuchamy uważnie Twoich potrzeb i preferencji. Nasz zespół fryzjerów jest wyszkolony, aby zrozumieć Twoje oczekiwania i zaproponować rozwiązania dopasowane do Twojego stylu życia, osobowości i indywidualnych cech.',
   },
   {
     id: 'zadowolenie',
     title: 'Zadowolenie Klienta',
-    icon: '😊',
     description:
       'Twoje zadowolenie jest dla nas najważniejsze. Dlatego staramy się stworzyć przyjazną i komfortową atmosferę w naszym salonie. Chcemy, abyś czuł się jak w domu i opuszczał nasz salon z uśmiechem na twarzy. Działamy z pełnym zaangażowaniem, aby przekroczyć Twoje oczekiwania i sprawić, że każda wizyta będzie niezapomnianym doświadczeniem.',
   },
   {
     id: 'higiena',
     title: 'Higiena i Bezpieczeństwo',
-    icon: '🛡️',
     description:
       'Twoje zdrowie i bezpieczeństwo są dla nas priorytetem. Przestrzegamy surowych standardów higieny i dbamy o to, aby nasz salon był czysty i bezpieczny. Wszystkie nasze narzędzia i sprzęt są starannie dezynfekowane, aby zapewnić Ci bezpieczne środowisko podczas Twojej wizyty.',
   },
   {
     id: 'srodowisko',
     title: 'Zaangażowanie w Środowisko',
-    icon: '🌱',
     description:
       'Jesteśmy świadomi wpływu, jaki nasza branża może mieć na środowisko. Dlatego podejmujemy działania mające na celu ograniczenie naszego śladu ekologicznego. Stosujemy produkty przyjazne dla środowiska, minimalizujemy odpady i angażujemy się w praktyki zrównoważonego rozwoju.',
   },
@@ -232,40 +225,6 @@ export const SERVICE_CATEGORIES = [
   },
 ] as const;
 
-// Navigation Menu
-export const NAV_MENU = [
-  { label: 'Start', href: '/', submenu: [] },
-  {
-    label: 'Usługi',
-    href: '/services',
-    submenu: [
-      { label: 'Usługi fryzjerskie', href: '/services/uslugi-fryzjerskie' },
-      { label: 'Barber', href: '/services/barber' },
-      {
-        label: 'Pielęgnacja',
-        href: '/services/pielegnacja',
-        submenu: [
-          { label: 'Botox na włosy', href: '/services/botox' },
-          { label: 'Złote proteiny', href: '/services/zlote-proteiny' },
-          { label: 'Sauna - SPA dla włosów', href: '/services/sauna-spa' },
-        ],
-      },
-      { label: 'Karta podarunkowa', href: '/services/karta-podarunkowa' },
-    ],
-  },
-  {
-    label: 'Cennik',
-    href: BUSINESS_INFO.booking.url,
-    external: true,
-  },
-  {
-    label: 'Przedłużanie włosów',
-    href: '/services/przedluzanie-wlosow',
-    submenu: [],
-  },
-  { label: 'Kontakt', href: '/contact', submenu: [] },
-] as const;
-
 // Footer Links
 export const FOOTER_LINKS = {
   navigation: [
@@ -318,4 +277,3 @@ export type HistoryItem = (typeof HISTORY_ITEMS)[number];
 export type CoreValue = (typeof CORE_VALUES)[number];
 export type SalonImage = (typeof SALON_GALLERY)[number];
 export type ServiceCategory = (typeof SERVICE_CATEGORIES)[number];
-export type NavMenuItem = (typeof NAV_MENU)[number];

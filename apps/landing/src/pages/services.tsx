@@ -99,18 +99,15 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
     return (
         <PublicLayout>
             <Head>
-                <title>
-                    Usługi fryzjerskie, barber i pielęgnacja —{' '}
-                    {BUSINESS_INFO.name}
-                </title>
-                <meta
-                    name="description"
-                    content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, pielęgnacja włosów (Botox, Złote proteiny, Sauna-SPA), przedłużanie włosów metodą HairTalk.`}
-                />
-                <meta
-                    name="keywords"
-                    content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom"
-                />
+                <title>Usługi fryzjerskie, barber i pielęgnacja — {BUSINESS_INFO.name}</title>
+                <meta name="description" content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, pielęgnacja włosów (Botox, Złote proteiny, Sauna-SPA), przedłużanie włosów metodą HairTalk.`} />
+                <meta name="keywords" content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom" />
+                <meta property="og:title" content={`Usługi fryzjerskie — ${BUSINESS_INFO.name}`} />
+                <meta property="og:description" content={`Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów w ${BUSINESS_INFO.address.city}. Koloryzacja, balayage, botox, HairTalk.`} />
+                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`} />
+                <meta property="og:type" content="website" />
+                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/services`} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <div className="svcs-page">

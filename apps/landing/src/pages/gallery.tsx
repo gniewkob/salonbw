@@ -146,15 +146,13 @@ export default function GalleryPage({
         <PublicLayout>
             <Head>
                 <title>Galeria | Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia."
-                />
+                <meta name="description" content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia." />
                 <meta property="og:title" content="Galeria realizacji — Salon Black & White" />
-                <meta
-                    property="og:description"
-                    content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia."
-                />
+                <meta property="og:description" content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia." />
+                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`} />
+                <meta property="og:type" content="website" />
+                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/gallery`} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <div className="ig-page">

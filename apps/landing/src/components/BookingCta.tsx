@@ -29,7 +29,7 @@ export default function BookingCta() {
                 <h2 className="booking-cta-section__heading">
                     {b.headingLine1}<br />
                     {b.headingLine2}<br />
-                    co <em>{b.headingLine3}</em>
+                    <em>{b.headingLine3}</em>
                 </h2>
                 <p className="booking-cta-section__sub">
                     {BUSINESS_INFO.address.city} · {BUSINESS_INFO.address.street} · {b.since}

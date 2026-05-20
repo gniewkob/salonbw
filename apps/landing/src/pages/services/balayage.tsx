@@ -1,16 +1,23 @@
 import Head from 'next/head';
 import Script from 'next/script';
-import { useEffect } from 'react';
-import Link from 'next/link';
-import type { Route } from 'next';
+import { useState, useEffect } from 'react';
 import PublicLayout from '@/components/PublicLayout';
-import { jsonLd } from '@/utils/seo';
+import BookingModal from '@/components/BookingModal';
+import { BUSINESS_INFO } from '@/config/content';
+import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
-import { getPanelUrl } from '@/utils/panelUrl';
+
+const ITEMS = [
+    'Naturalny efekt bez widocznych odrostów',
+    'Ręczne nakładanie – precyzja na każdym paśmie',
+    'Idealny do włosów ciemnych i jasnych',
+    'Długotrwały efekt (3–5 miesięcy)',
+    'Możliwość łączenia z innymi technikami',
+];
 
 export default function BalayagePage() {
-    const name = process.env.NEXT_PUBLIC_BUSINESS_NAME || 'Salon Black & White';
-    const panelAppointments = getPanelUrl('/appointments');
+    const [open, setOpen] = useState(false);
+    const name = BUSINESS_INFO.name;
 
     useEffect(() => {
         try {
@@ -19,7 +26,7 @@ export default function BalayagePage() {
                     {
                         item_id: 'balayage',
                         item_name: 'Balayage',
-                        item_category: 'Hair Coloring',
+                        item_category: 'Koloryzacja',
                     },
                 ],
             });
@@ -29,12 +36,14 @@ export default function BalayagePage() {
     return (
         <PublicLayout>
             <Head>
-                <title>Balayage | {name}</title>
+                <title>Balayage Bytom — Salon Black &amp; White</title>
                 <meta
                     name="description"
-                    content="Sun‑kissed, natural‑looking balayage color crafted by our stylists at Salon Black & White."
+                    content="Balayage w Bytomiu — ręczna technika rozjaśniania włosów dająca naturalny, słoneczny efekt bez widocznych odrostów. Salon Black & White, ul. Webera 1a/13."
                 />
+                <link rel="canonical" href={absUrl('/services/balayage')} />
             </Head>
+
             <Script
                 id="ld-service-balayage"
                 type="application/ld+json"
@@ -44,32 +53,84 @@ export default function BalayagePage() {
                     '@context': 'https://schema.org',
                     '@type': 'Service',
                     name: 'Balayage',
-                    provider: {
-                        '@type': 'Organization',
-                        name,
-                    },
-                    areaServed: 'PL',
                     description:
-                        'Natural, low‑maintenance balayage for soft highlights and dimension.',
-                    category: 'Balayage',
+                        'Technika ręcznego rozjaśniania włosów dająca naturalny, słoneczny efekt bez widocznych odrostów. Indywidualnie dopasowany gradient.',
+                    category: 'Koloryzacja',
+                    provider: {
+                        '@type': 'LocalBusiness',
+                        name,
+                        address: {
+                            '@type': 'PostalAddress',
+                            streetAddress: BUSINESS_INFO.address.street,
+                            addressLocality: BUSINESS_INFO.address.city,
+                            postalCode: BUSINESS_INFO.address.postalCode,
+                            addressCountry: 'PL',
+                        },
+                    },
+                    areaServed: {
+                        '@type': 'City',
+                        name: 'Bytom',
+                    },
+                    url: absUrl('/services/balayage'),
                 })}
             </Script>
-            <div className="p-6 max-w-3xl space-y-6">
-                <h1 className="text-3xl font-bold">Balayage</h1>
-                <p>
-                    Achieve a soft, sun‑kissed finish with custom balayage
-                    placement. We tailor tone and brightness to your features
-                    and maintenance preference.
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                    <li>Seamless, natural blend</li>
-                    <li>Low‑maintenance grow‑out</li>
-                    <li>Personalized tone selection</li>
-                </ul>
-                <div>
-                    <a
-                        href={panelAppointments}
-                        className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
+
+            {/* Dark hero */}
+            <section
+                style={{
+                    background: '#0d0d0d',
+                    paddingTop: '7rem',
+                    paddingBottom: '5rem',
+                }}
+            >
+                <div
+                    style={{
+                        maxWidth: '900px',
+                        margin: '0 auto',
+                        padding: '0 2rem',
+                    }}
+                >
+                    <p
+                        style={{
+                            color: '#c5a880',
+                            fontSize: '0.7rem',
+                            letterSpacing: '0.2em',
+                            textTransform: 'uppercase',
+                            marginBottom: '1rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                        }}
+                    >
+                        Koloryzacja
+                    </p>
+                    <h1
+                        style={{
+                            fontFamily: 'var(--font-playfair), serif',
+                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                            color: '#fff',
+                            marginBottom: '1.5rem',
+                            fontWeight: 700,
+                            lineHeight: 1.1,
+                        }}
+                    >
+                        Balayage
+                    </h1>
+                    <p
+                        style={{
+                            color: 'rgba(255,255,255,0.65)',
+                            fontSize: '1.05rem',
+                            lineHeight: 1.8,
+                            maxWidth: '600px',
+                            marginBottom: '2.5rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                        }}
+                    >
+                        Balayage to technika ręcznego rozjaśniania włosów, która daje
+                        naturalny, słoneczny efekt. Nasze stylistki tworzą indywidualnie
+                        dopasowany gradient – od korzeni po końce – bez widocznych
+                        odrostów. Efekt trwa kilka miesięcy bez potrzeby częstego
+                        odświeżania.
+                    </p>
+                    <button
                         onClick={() => {
                             try {
                                 trackEvent('select_item', {
@@ -77,49 +138,67 @@ export default function BalayagePage() {
                                         {
                                             item_id: 'balayage',
                                             item_name: 'Balayage',
-                                            item_category: 'Hair Coloring',
+                                            item_category: 'Koloryzacja',
                                         },
                                     ],
-                                });
-                                trackEvent('begin_checkout', {
-                                    items: [
-                                        {
-                                            item_id: 'balayage',
-                                            item_name: 'Balayage',
-                                            item_category: 'Hair Coloring',
-                                        },
-                                    ],
-                                    cta: 'service_page',
                                 });
                             } catch {}
+                            setOpen(true);
                         }}
+                        className="split-hero__cta-primary"
                     >
-                        Book an appointment
-                    </a>
+                        Umów wizytę
+                    </button>
                 </div>
+            </section>
 
-                <div className="mt-8">
-                    <h2 className="text-xl font-semibold">Related services</h2>
-                    <ul className="list-disc pl-6 mt-2 space-y-1">
-                        <li>
-                            <Link
-                                href={'/services/highlights' as Route}
-                                className="underline"
+            {/* Light content section */}
+            <section style={{ background: '#faf9f7', padding: '5rem 2rem' }}>
+                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {ITEMS.map((item) => (
+                            <li
+                                key={item}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                    gap: '0.75rem',
+                                    padding: '0.85rem 0',
+                                    borderBottom: '1px solid #ede9e3',
+                                    fontFamily: 'var(--font-open-sans), sans-serif',
+                                    color: '#3a3028',
+                                    fontSize: '0.95rem',
+                                }}
                             >
-                                Highlights
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href={'/services/coloring' as Route}
-                                className="underline"
-                            >
-                                Hair Coloring
-                            </Link>
-                        </li>
+                                <span
+                                    style={{ color: '#c5a880', flexShrink: 0 }}
+                                >
+                                    —
+                                </span>
+                                {item}
+                            </li>
+                        ))}
                     </ul>
+
+                    <div style={{ marginTop: '3rem' }}>
+                        <a
+                            href="/services"
+                            style={{
+                                color: '#c5a880',
+                                fontSize: '0.8rem',
+                                letterSpacing: '0.12em',
+                                textTransform: 'uppercase',
+                                textDecoration: 'none',
+                                fontFamily: 'var(--font-open-sans), sans-serif',
+                            }}
+                        >
+                            ← Pełna oferta i cennik
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </section>
+
+            <BookingModal open={open} onClose={() => setOpen(false)} />
         </PublicLayout>
     );
 }

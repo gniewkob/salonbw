@@ -57,7 +57,7 @@ describe('Analytics events on services', () => {
         let calls = (window.gtag as jest.Mock).mock.calls;
         expect(calls.find((c) => c[1] === 'view_item')).toBeTruthy();
 
-        const cta = screen.getByText(/Book an appointment/i);
+        const cta = screen.getByTestId('coloring-cta');
         fireEvent.click(cta);
 
         calls = (window.gtag as jest.Mock).mock.calls;

@@ -8,8 +8,7 @@ const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
 const SERVICE_HREFS = ['/services', '/services', '/services'];
 const SERVICE_NUMERALS = ['01', '02', '03'];
 const FEATURED_INDEX = 0;
-// Assign a path like '/images/services/featured.jpg' to activate the photo background
-const FEATURED_BG_IMAGE = '';
+const FEATURED_BG_IMAGE = '/images/hero/DSC_9584.jpg';
 
 export default function ServicesTeaser() {
     const { T } = useLanguage();

@@ -16,10 +16,13 @@ export default function ContactPage() {
         <PublicLayout>
             <Head>
                 <title>{c.title} | {SEO_META.title}</title>
-                <meta
-                    name="description"
-                    content="Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość."
-                />
+                <meta name="description" content="Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość." />
+                <meta property="og:title" content={`${c.title} — ${SEO_META.title}`} />
+                <meta property="og:description" content="Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość." />
+                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`} />
+                <meta property="og:type" content="website" />
+                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/contact`} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <div style={{ background: '#0d0d0d', minHeight: '100vh', paddingBottom: '6rem' }}>
