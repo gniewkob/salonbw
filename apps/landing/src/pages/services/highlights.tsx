@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import Script from 'next/script';
 import { useState, useEffect } from 'react';
 import PublicLayout from '@/components/PublicLayout';
@@ -180,7 +181,7 @@ export default function HighlightsPage() {
                     </ul>
 
                     <div style={{ marginTop: '3rem' }}>
-                        <a
+                        <Link
                             href="/services"
                             style={{
                                 color: '#c5a880',
@@ -192,7 +193,7 @@ export default function HighlightsPage() {
                             }}
                         >
                             ← Pełna oferta i cennik
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </section>
