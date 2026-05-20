@@ -4,9 +4,10 @@ interface SectionHeaderProps {
     subtitle?: string;
     dark?: boolean;
     align?: 'center' | 'left';
+    as?: 'h1' | 'h2';
 }
 
-export default function SectionHeader({ eyebrow, title, subtitle, dark = false, align = 'center' }: SectionHeaderProps) {
+export default function SectionHeader({ eyebrow, title, subtitle, dark = false, align = 'center', as: Tag = 'h2' }: SectionHeaderProps) {
     const isLeft = align === 'left';
     return (
         <div className={isLeft ? 'mb-14' : 'text-center mb-14'}>
@@ -16,12 +17,12 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
             >
                 {eyebrow}
             </p>
-            <h2
+            <Tag
                 className="text-3xl md:text-4xl font-bold"
                 style={{ fontFamily: "var(--font-playfair), serif", color: dark ? '#ffffff' : '#0d0d0d' }}
             >
                 {title}
-            </h2>
+            </Tag>
             <div className={isLeft ? 'mt-4' : 'mx-auto mt-4'} style={{ width: '40px', height: '2px', background: '#c5a880' }} />
             {subtitle && (
                 <p

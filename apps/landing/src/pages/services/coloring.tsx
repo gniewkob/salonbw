@@ -38,11 +38,14 @@ export default function ColoringPage() {
         <PublicLayout>
             <Head>
                 <title>Koloryzacja Bytom — Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Profesjonalna koloryzacja włosów w Bytomiu — farby Wella i Kerastase, color correction, toning. Salon Black & White, ul. Webera 1a/13."
-                />
+                <meta name="description" content="Profesjonalna koloryzacja włosów w Bytomiu — farby Wella i Kerastase, color correction, toning. Salon Black & White, ul. Webera 1a/13." />
+                <meta name="keywords" content="koloryzacja włosów bytom, color correction bytom, farbowanie włosów bytom, toning włosów, salon fryzjerski bytom" />
+                <meta property="og:title" content="Koloryzacja włosów — Salon Black & White Bytom" />
+                <meta property="og:description" content="Profesjonalna koloryzacja włosów w Bytomiu. Farby Wella i Kerastase, color correction, toning, farbowanie odrostów." />
+                <meta property="og:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <meta property="og:type" content="website" />
                 <link rel="canonical" href={absUrl('/services/coloring')} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <Script
