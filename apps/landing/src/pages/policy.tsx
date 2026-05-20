@@ -7,10 +7,9 @@ export default function PolicyPage() {
         <PublicLayout>
             <Head>
                 <title>Regulamin Świadczenia Usług | Salon Black & White</title>
-                <meta
-                    name="description"
-                    content="Regulamin świadczenia usług drogą elektroniczną oraz zasady korzystania z usług Salonu Fryzjerskiego Black & White."
-                />
+                <meta name="description" content="Regulamin świadczenia usług drogą elektroniczną oraz zasady korzystania z usług Salonu Fryzjerskiego Black & White." />
+                <link rel="canonical" href="https://salon-bw.pl/policy" />
+                <meta name="robots" content="index, follow" />
             </Head>
             <div className="legal-page">
                 <article className="legal-article">

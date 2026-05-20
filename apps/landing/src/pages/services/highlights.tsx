@@ -38,11 +38,14 @@ export default function HighlightsPage() {
         <PublicLayout>
             <Head>
                 <title>Pasemka Bytom — Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku. Salon Black & White, ul. Webera 1a/13."
-                />
+                <meta name="description" content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku. Salon Black & White, ul. Webera 1a/13." />
+                <meta name="keywords" content="pasemka bytom, rozjaśnienia włosów bytom, highlights bytom, klasyczne pasemka bytom, salon fryzjerski bytom" />
+                <meta property="og:title" content="Pasemka — Salon Black & White Bytom" />
+                <meta property="og:description" content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku dla Twoich włosów." />
+                <meta property="og:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <meta property="og:type" content="website" />
                 <link rel="canonical" href={absUrl('/services/highlights')} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <Script

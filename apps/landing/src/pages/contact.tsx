@@ -32,6 +32,7 @@ export default function ContactPage() {
                         title={c.title}
                         subtitle={`${BUSINESS_INFO.address.street}, ${BUSINESS_INFO.address.city} · ${BUSINESS_INFO.contact.phone}`}
                         dark
+                        as="h1"
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 max-w-5xl mx-auto">

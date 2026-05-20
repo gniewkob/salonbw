@@ -6,10 +6,9 @@ export default function PrivacyPage() {
         <PublicLayout>
             <Head>
                 <title>Polityka Prywatności | Salon Black & White</title>
-                <meta
-                    name="description"
-                    content="Polityka prywatności Salonu Fryzjerskiego Black & White. Informacje o przetwarzaniu danych osobowych (RODO)."
-                />
+                <meta name="description" content="Polityka prywatności Salonu Fryzjerskiego Black & White. Informacje o przetwarzaniu danych osobowych (RODO)." />
+                <link rel="canonical" href="https://salon-bw.pl/privacy" />
+                <meta name="robots" content="index, follow" />
             </Head>
             <div className="legal-page">
                 <article className="legal-article">

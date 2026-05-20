@@ -162,6 +162,7 @@ export default function GalleryPage({
                         title={g.title}
                         subtitle={g.subtitle}
                         dark
+                        as="h1"
                     />
 
                     {isFallback && (

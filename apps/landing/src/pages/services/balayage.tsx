@@ -38,11 +38,14 @@ export default function BalayagePage() {
         <PublicLayout>
             <Head>
                 <title>Balayage Bytom — Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Balayage w Bytomiu — ręczna technika rozjaśniania włosów dająca naturalny, słoneczny efekt bez widocznych odrostów. Salon Black & White, ul. Webera 1a/13."
-                />
+                <meta name="description" content="Balayage w Bytomiu — ręczna technika rozjaśniania włosów dająca naturalny, słoneczny efekt bez widocznych odrostów. Salon Black & White, ul. Webera 1a/13." />
+                <meta name="keywords" content="balayage bytom, rozjaśnianie włosów bytom, naturalne pasemka bytom, ombre bytom, salon fryzjerski bytom" />
+                <meta property="og:title" content="Balayage — Salon Black & White Bytom" />
+                <meta property="og:description" content="Balayage w Bytomiu — ręczna technika rozjaśniania włosów. Naturalny słoneczny efekt bez widocznych odrostów." />
+                <meta property="og:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <meta property="og:type" content="website" />
                 <link rel="canonical" href={absUrl('/services/balayage')} />
+                <meta name="robots" content="index, follow" />
             </Head>
 
             <Script
