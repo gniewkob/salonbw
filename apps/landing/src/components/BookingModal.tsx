@@ -159,7 +159,7 @@ export default function BookingModal({
                         >
                             {service
                                 ? m.bookingServiceLabel
-                                : BUSINESS_INFO.booking.text}
+                                : T.nav.booking}
                         </p>
                         <h2
                             style={{
@@ -461,7 +461,7 @@ export default function BookingModal({
                             cursor: 'pointer',
                         }}
                     >
-                        Zamknij
+                        {m.close}
                     </button>
                 </div>
             </div>

@@ -173,7 +173,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         className="split-hero__cta-primary text-xs font-semibold uppercase text-center px-8 py-3.5"
                                         style={{ letterSpacing: '0.14em' }}
                                     >
-                                        {BUSINESS_INFO.booking.text}
+                                        {T.nav.booking}
                                     </button>
                                     <Link
                                         href="/contact"

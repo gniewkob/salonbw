@@ -11,7 +11,7 @@ export default function BookingCta() {
     const b = T.bookingCta;
 
     return (
-        <section className="booking-cta-section" aria-label={BUSINESS_INFO.booking.text}>
+        <section className="booking-cta-section" aria-label={T.nav.booking}>
             <Image
                 src="/images/hero/DSC_9583.jpg"
                 alt=""
@@ -37,9 +37,9 @@ export default function BookingCta() {
                 <button
                     onClick={() => setOpen(true)}
                     className="split-hero__cta-primary"
-                    aria-label={BUSINESS_INFO.booking.text}
+                    aria-label={T.nav.booking}
                 >
-                    {BUSINESS_INFO.booking.text}
+                    {T.nav.booking}
                 </button>
             </div>
 
