@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { HERO_SLIDES, BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type HeroSlide = { id: number; title: string; description: string; image: string; alt: string };
 
@@ -12,6 +13,7 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider({ slides }: HeroSliderProps) {
+    const { T } = useLanguage();
     const data = slides ?? (HERO_SLIDES as unknown as HeroSlide[]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -116,7 +118,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                             className="btn-gold inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
                             style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(197,168,128,0.4)' }}
                         >
-                            {BUSINESS_INFO.booking.text}
+                            {T.nav.booking}
                         </a>
                         <Link
                             href="/services"

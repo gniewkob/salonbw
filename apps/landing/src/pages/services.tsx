@@ -121,7 +121,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                         style={{ color: '#fff', padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
-                        {BUSINESS_INFO.booking.text}
+                        {T.nav.booking}
                     </button>
                 </div>
 
@@ -204,7 +204,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                             style={{ color: '#fff', padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
                         >
-                            {BUSINESS_INFO.booking.text}
+                            {T.nav.booking}
                         </button>
                         <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>
                             <a
