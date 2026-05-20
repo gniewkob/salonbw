@@ -173,6 +173,7 @@ const t = {
             submitting: 'Logowanie…',
             noAccount: 'Nie masz konta?',
             register: 'Zarejestruj się',
+            close: 'Zamknij',
         },
         salonGallery: {
             eyebrow: 'Zajrzyj do nas',
@@ -398,6 +399,7 @@ const t = {
             submitting: 'Logging in…',
             noAccount: 'No account?',
             register: 'Register',
+            close: 'Close',
         },
         salonGallery: {
             eyebrow: 'Take a look inside',
@@ -623,6 +625,7 @@ const t = {
             submitting: 'Wird angemeldet…',
             noAccount: 'Kein Konto?',
             register: 'Registrieren',
+            close: 'Schließen',
         },
         salonGallery: {
             eyebrow: 'Schauen Sie rein',
