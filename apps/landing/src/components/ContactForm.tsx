@@ -1,10 +1,13 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ContactForm() {
     const toast = useToast();
+    const { T } = useLanguage();
+    const c = T.contact;
     const [form, setForm] = useState({ name: '', email: '', message: '' });
     const [error, setError] = useState('');
     const [emailError, setEmailError] = useState('');
@@ -21,9 +24,7 @@ export default function ContactForm() {
         if (name === 'email') {
             const trimmed = value.trim();
             setEmailError(
-                !trimmed || emailPattern.test(trimmed)
-                    ? ''
-                    : 'Nieprawidłowy format adresu email',
+                !trimmed || emailPattern.test(trimmed) ? '' : c.formErrorEmail,
             );
         }
     };
@@ -46,9 +47,9 @@ export default function ContactForm() {
         e.preventDefault();
         const { name, email, message } = trimmedForm;
 
-        if (!name) { setError('Imię jest wymagane'); return; }
-        if (!emailPattern.test(email)) { setEmailError('Nieprawidłowy format adresu email'); return; }
-        if (!message) { setError('Wiadomość jest wymagana'); return; }
+        if (!name) { setError(c.formErrorName); return; }
+        if (!emailPattern.test(email)) { setEmailError(c.formErrorEmail); return; }
+        if (!message) { setError(c.formErrorMessage); return; }
 
         setError('');
         setEmailError('');
@@ -65,7 +66,7 @@ export default function ContactForm() {
                     },
                 );
                 if (!res.ok) throw new Error('Failed');
-                toast.success('Wiadomość została wysłana');
+                toast.success(c.formSuccess);
                 setSubmitted(true);
                 setForm({ name: '', email: '', message: '' });
                 return;
@@ -73,8 +74,8 @@ export default function ContactForm() {
                 const e = err as { response?: { data?: unknown }; message?: string };
                 console.error('Failed to submit contact form', e.response?.data || e.message);
                 if (attempt === retries - 1) {
-                    setSubmitError('Nie udało się wysłać wiadomości. Spróbuj ponownie.');
-                    toast.error('Nie udało się wysłać formularza');
+                    setSubmitError(c.formErrorSend);
+                    toast.error(c.formErrorSend);
                 } else {
                     await new Promise((res) => setTimeout(res, 1000));
                 }
@@ -85,27 +86,27 @@ export default function ContactForm() {
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="contact-form">
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-name">Imię i nazwisko</label>
+                <label className="contact-form__label" htmlFor="cf-name">{c.formName}</label>
                 <input
                     id="cf-name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    placeholder="np. Anna Kowalska"
+                    placeholder={c.formNamePlaceholder}
                     className="contact-form__input"
                     autoComplete="name"
                 />
             </div>
 
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-email">Adres email</label>
+                <label className="contact-form__label" htmlFor="cf-email">{c.formEmail}</label>
                 <input
                     id="cf-email"
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
-                    placeholder="np. anna@gmail.com"
+                    placeholder={c.formEmailPlaceholder}
                     className="contact-form__input"
                     autoComplete="email"
                 />
@@ -113,13 +114,13 @@ export default function ContactForm() {
             </div>
 
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-message">Wiadomość</label>
+                <label className="contact-form__label" htmlFor="cf-message">{c.formMessage}</label>
                 <textarea
                     id="cf-message"
                     name="message"
                     value={form.message}
                     onChange={handleChange}
-                    placeholder="W czym możemy pomóc?"
+                    placeholder={c.formMessagePlaceholder}
                     className="contact-form__input contact-form__textarea"
                     rows={5}
                 />
@@ -131,7 +132,7 @@ export default function ContactForm() {
             )}
             {submitted && (
                 <p data-testid="form-success-message" className="contact-form__success">
-                    Wiadomość wysłana — odezwiemy się wkrótce.
+                    {c.formSuccess}
                 </p>
             )}
 
@@ -140,7 +141,7 @@ export default function ContactForm() {
                 disabled={!isValid}
                 className="btn-gold contact-form__submit"
             >
-                Wyślij wiadomość
+                {c.formSubmit}
             </button>
         </form>
     );

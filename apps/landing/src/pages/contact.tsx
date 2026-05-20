@@ -5,14 +5,17 @@ import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
 import SectionHeader from '@/components/SectionHeader';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ContactPage() {
     const [bookingOpen, setBookingOpen] = useState(false);
+    const { T } = useLanguage();
+    const c = T.contact;
 
     return (
         <PublicLayout>
             <Head>
-                <title>Kontakt | {SEO_META.title}</title>
+                <title>{c.title} | {SEO_META.title}</title>
                 <meta
                     name="description"
                     content="Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość."
@@ -22,8 +25,8 @@ export default function ContactPage() {
             <div style={{ background: '#0d0d0d', minHeight: '100vh', paddingBottom: '6rem' }}>
                 <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem' }}>
                     <SectionHeader
-                        eyebrow="Jesteśmy tu dla Ciebie"
-                        title="Kontakt"
+                        eyebrow={c.eyebrow}
+                        title={c.title}
                         subtitle={`${BUSINESS_INFO.address.street}, ${BUSINESS_INFO.address.city} · ${BUSINESS_INFO.contact.phone}`}
                         dark
                     />
@@ -33,7 +36,7 @@ export default function ContactPage() {
                         {/* Left: info + map */}
                         <div>
                             <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group mb-10">
-                                <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>Telefon</span>
+                                <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.phoneLabel}</span>
                                 <span
                                     className="block transition-opacity duration-200 group-hover:opacity-70"
                                     style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', color: '#ffffff', letterSpacing: '-0.01em' }}
@@ -43,7 +46,7 @@ export default function ContactPage() {
                             </a>
 
                             <div className="mb-10">
-                                <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>Adres</span>
+                                <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.addressLabel}</span>
                                 <address className="not-italic" style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.8, fontFamily: "var(--font-open-sans), sans-serif" }}>
                                     {BUSINESS_INFO.address.street}<br />
                                     {BUSINESS_INFO.address.postalCode} {BUSINESS_INFO.address.city}
@@ -51,15 +54,15 @@ export default function ContactPage() {
                             </div>
 
                             <div className="mb-10">
-                                <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>Godziny otwarcia</span>
+                                <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.hoursTitle}</span>
                                 {[
-                                    { day: 'Poniedziałek – Piątek', hours: BUSINESS_INFO.hours.mondayFriday },
-                                    { day: 'Sobota', hours: BUSINESS_INFO.hours.saturday },
-                                    { day: 'Niedziela', hours: BUSINESS_INFO.hours.sunday },
-                                ].map(({ day, hours }) => (
+                                    { day: c.dayMonFri, hours: BUSINESS_INFO.hours.mondayFriday, closed: false },
+                                    { day: c.daySat, hours: BUSINESS_INFO.hours.saturday, closed: false },
+                                    { day: c.daySun, hours: T.footer.sunday, closed: true },
+                                ].map(({ day, hours, closed }) => (
                                     <div key={day} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                         <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "var(--font-open-sans), sans-serif" }}>{day}</span>
-                                        <span className="text-sm font-medium" style={{ color: hours === 'Zamknięte' ? 'rgba(255,255,255,0.2)' : '#c5a880', fontFamily: "var(--font-open-sans), sans-serif" }}>{hours}</span>
+                                        <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.2)' : '#c5a880', fontFamily: "var(--font-open-sans), sans-serif" }}>{hours}</span>
                                     </div>
                                 ))}
                             </div>
@@ -83,10 +86,10 @@ export default function ContactPage() {
                             {/* Primary CTA */}
                             <div className="mb-10" style={{ paddingBottom: '2.5rem', borderBottom: '1px solid rgba(197,168,128,0.12)' }}>
                                 <p className="text-xs uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
-                                    Zarezerwuj termin
+                                    {c.bookingTitle}
                                 </p>
                                 <p className="mb-5" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.9rem', lineHeight: 1.7, fontFamily: "var(--font-open-sans), sans-serif" }}>
-                                    Umów wizytę online — wybierz usługę, stylistę i termin który Ci odpowiada.
+                                    {c.bookingDesc}
                                 </p>
                                 <button
                                     type="button"
@@ -94,7 +97,7 @@ export default function ContactPage() {
                                     className="btn-gold"
                                     style={{ padding: '0.85rem 2rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#fff', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
                                 >
-                                    Umów wizytę
+                                    {c.bookingBtn}
                                 </button>
                             </div>
 
@@ -103,7 +106,7 @@ export default function ContactPage() {
                                 className="text-xs uppercase mb-6"
                                 style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
                             >
-                                Lub napisz do nas
+                                {c.formSubtitle}
                             </p>
                             <ContactForm />
                         </div>
