@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { SALON_GALLERY } from '@/config/content';
 import ImageLightbox from './ImageLightbox';
 import SectionHeader from './SectionHeader';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
 interface SalonGalleryProps { images?: GalleryImage[]; }
@@ -23,6 +24,8 @@ const GRID_SPANS = [
 
 export default function SalonGallery({ images }: SalonGalleryProps) {
     const data = images ?? (SALON_GALLERY as unknown as GalleryImage[]);
+    const { T } = useLanguage();
+    const g = T.salonGallery;
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -39,9 +42,9 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
         <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <SectionHeader
-                    eyebrow="Zajrzyj do nas"
-                    title="Nasz salon"
-                    subtitle="Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie."
+                    eyebrow={g.eyebrow}
+                    title={g.title}
+                    subtitle={g.subtitle}
                     dark
                 />
 
@@ -69,7 +72,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
                                 role="button"
                                 tabIndex={0}
-                                aria-label={`Otwórz ${image.caption}`}
+                                aria-label={`${g.open} ${image.caption}`}
                             >
                                 <Image
                                     src={image.image}
@@ -99,7 +102,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
                             role="button"
                             tabIndex={0}
-                            aria-label={`Otwórz ${image.caption}`}
+                            aria-label={`${g.open} ${image.caption}`}
                         >
                             <Image
                                 src={image.image}
@@ -119,7 +122,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                         className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                         style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
-                        Zobacz pełną galerię
+                        {g.viewAll}
                     </Link>
                 </div>
             </div>

@@ -1,12 +1,8 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const STATS = [
-    { number: '15', suffix: '+', label: 'lat doświadczenia' },
-    { number: '3 000', suffix: '+', label: 'zadowolonych klientek' },
-    { number: '4.9', suffix: '★', label: 'ocena Google' },
-    { number: '5', suffix: '', label: 'marek premium' },
-];
+const STAT_NUMBERS = ['15', '3 000', '4.9', '5'];
 
 function useInView(ref: React.RefObject<HTMLDivElement | null>) {
     const [inView, setInView] = useState(false);
@@ -30,11 +26,12 @@ function useInView(ref: React.RefObject<HTMLDivElement | null>) {
 export default function StatsBar() {
     const ref = useRef<HTMLDivElement>(null);
     const inView = useInView(ref);
+    const { T } = useLanguage();
 
     return (
         <div className="stats-bar" ref={ref}>
             <div className="stats-bar__inner">
-                {STATS.map((stat, i) => (
+                {T.stats.map((stat, i) => (
                     <div key={stat.label} className="stats-bar__item">
                         <span
                             className="stats-bar__number"
@@ -44,7 +41,7 @@ export default function StatsBar() {
                                 transition: `opacity 0.7s ${i * 0.13}s ease, transform 0.7s ${i * 0.13}s ease`,
                             }}
                         >
-                            {stat.number}{stat.suffix}
+                            {STAT_NUMBERS[i]}{stat.suffix}
                         </span>
                         <span
                             className="stats-bar__label"

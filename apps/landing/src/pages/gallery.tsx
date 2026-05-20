@@ -6,6 +6,7 @@ import PublicLayout from '@/components/PublicLayout';
 import ImageLightbox from '@/components/ImageLightbox';
 import SectionHeader from '@/components/SectionHeader';
 import { trackEvent } from '@/utils/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
     cacheKey,
     readCache,
@@ -57,6 +58,8 @@ export default function GalleryPage({
     nextCursor: initialCursor,
     fallback,
 }: GalleryPageProps) {
+    const { T } = useLanguage();
+    const g = T.gallery;
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [items, setItems] = useState<GalleryItem[]>(initialItems);
     const [isFallback, setIsFallback] = useState(fallback);
@@ -157,16 +160,16 @@ export default function GalleryPage({
             <div className="ig-page">
                 <div className="ig-hero container mx-auto px-4 md:px-8">
                     <SectionHeader
-                        eyebrow="Instagram · Nasze realizacje"
-                        title="Galeria"
-                        subtitle="Najnowsze prace naszego zespołu — fryzury, stylizacje i koloryzacje."
+                        eyebrow={g.eyebrow}
+                        title={g.title}
+                        subtitle={g.subtitle}
                         dark
                     />
 
                     {isFallback && (
                         <div className="ig-fallback">
                             <span className="ig-fallback__text">
-                                Wyświetlamy przykładowe zdjęcia — brak połączenia z Instagram.
+                                {g.fallback}
                             </span>
                             <button
                                 type="button"
@@ -174,7 +177,7 @@ export default function GalleryPage({
                                 onClick={() => { void handleRetry(); }}
                                 disabled={retrying}
                             >
-                                {retrying ? 'Ładowanie…' : 'Odśwież'}
+                                {retrying ? g.loading : g.refresh}
                             </button>
                         </div>
                     )}
@@ -222,11 +225,11 @@ export default function GalleryPage({
                                 type="button"
                                 className="ig-item"
                                 onClick={() => openLightbox(item, i)}
-                                aria-label={item.caption ? `Otwórz: ${item.caption.split('\n')[0]}` : `Otwórz zdjęcie ${i + 1}`}
+                                aria-label={item.caption ? `${g.open}: ${item.caption.split('\n')[0]}` : `${g.openPhoto} ${i + 1}`}
                             >
                                 <Image
                                     src={item.imageUrl!}
-                                    alt={item.caption ?? 'Realizacja salonu Black & White'}
+                                    alt={item.caption ?? g.imageAlt}
                                     width={600}
                                     height={600}
                                     style={{ display: 'block', width: '100%', height: 'auto' }}
@@ -248,9 +251,9 @@ export default function GalleryPage({
                         {loading ? (
                             <span className="ig-loading__dots">···</span>
                         ) : nextCursor ? (
-                            'Przewiń, aby zobaczyć więcej'
+                            g.scrollMore
                         ) : (
-                            'Koniec galerii'
+                            g.end
                         )}
                     </div>
                 )}
@@ -266,7 +269,7 @@ export default function GalleryPage({
                 <ImageLightbox
                     sources={imageItems.map((it) => it.imageUrl!)}
                     index={lightboxIndex}
-                    alt={imageItems[lightboxIndex]?.caption || 'Podgląd realizacji'}
+                    alt={imageItems[lightboxIndex]?.caption || g.preview}
                     onPrev={() =>
                         setLightboxIndex((idx) =>
                             idx === null ? null : (idx + imageItems.length - 1) % imageItems.length,

@@ -20,7 +20,7 @@ export default function ServicesTeaser() {
                 <SectionHeader
                     eyebrow={T.services.eyebrow}
                     title={T.services.title}
-                    subtitle="Profesjonalne usługi fryzjerskie i pielęgnacyjne — od strzyżenia po zaawansowane zabiegi regeneracyjne."
+                    subtitle={T.services.teaserSubtitle}
                 />
 
                 <div className="services-editorial-grid">
@@ -77,9 +77,24 @@ export default function ServicesTeaser() {
                                 <p className="relative z-10 text-xs tracking-wider uppercase mb-4" style={{ color: '#c5a880', letterSpacing: '0.14em' }}>
                                     {subtitle}
                                 </p>
-                                <p className="relative z-10 text-sm leading-relaxed flex-grow" style={{ color: featured ? 'rgba(255,255,255,0.65)' : '#6b5f52' }}>
+                                <p className="relative z-10 text-sm leading-relaxed" style={{ color: featured ? 'rgba(255,255,255,0.65)' : '#6b5f52' }}>
                                     {description}
                                 </p>
+
+                                {'keyServices' in T.services.items[idx] && T.services.items[idx].keyServices && (
+                                    <ul
+                                        className="relative z-10 mt-5 grid grid-cols-2 gap-x-4 gap-y-1.5 flex-grow"
+                                        style={{ listStyle: 'none', padding: 0, margin: 0 }}
+                                    >
+                                        {(T.services.items[idx].keyServices as string[]).map((name) => (
+                                            <li key={name} className="flex items-center gap-2 text-xs" style={{ color: featured ? 'rgba(255,255,255,0.55)' : '#6b5f52' }}>
+                                                <span style={{ color: '#c5a880', flexShrink: 0 }}>—</span>
+                                                {name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                {!('keyServices' in T.services.items[idx]) && <div className="flex-grow" />}
 
                                 <span className="relative z-10 mt-8 inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase transition-all duration-200" style={{ color: '#c5a880', letterSpacing: '0.16em' }}>
                                     {T.services.learnMore}

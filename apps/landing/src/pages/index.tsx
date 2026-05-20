@@ -7,6 +7,7 @@ import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
 import TrustStrip from '@/components/TrustStrip';
 import ScrollReveal from '@/components/ScrollReveal';
@@ -33,6 +34,9 @@ interface HomePageProps {
 }
 
 export default function HomePage({ founder, galleryImages }: HomePageProps) {
+    const { T } = useLanguage();
+    const c = T.contact;
+
     useEffect(() => {
         try { trackEvent('page_view', { page_title: 'Home' }); } catch {}
     }, []);
@@ -125,12 +129,12 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 {/* 10. Contact */}
                 <section className="contact-section" style={{ background: 'var(--brand-black)' }}>
                     <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '5rem', paddingBottom: '5rem' }}>
-                        <SectionHeader eyebrow="Znajdź nas" title="Kontakt" dark />
+                        <SectionHeader eyebrow={c.findUs} title={c.title} dark />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-5xl mx-auto">
                             <div className="space-y-8">
                                 <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group">
-                                    <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>Telefon</span>
+                                    <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>{c.phoneLabel}</span>
                                     <span
                                         className="block transition-opacity duration-200 group-hover:opacity-70"
                                         style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#ffffff', letterSpacing: '-0.01em' }}
@@ -140,7 +144,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </a>
 
                                 <div>
-                                    <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>Adres</span>
+                                    <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>{c.addressLabel}</span>
                                     <address className="not-italic" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.8 }}>
                                         {BUSINESS_INFO.address.street}<br />
                                         {BUSINESS_INFO.address.postalCode} {BUSINESS_INFO.address.city}
@@ -148,16 +152,16 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </div>
 
                                 <div>
-                                    <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>Godziny otwarcia</span>
+                                    <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>{c.hoursTitle}</span>
                                     <div>
                                         {[
-                                            { day: 'Poniedziałek – Piątek', hours: BUSINESS_INFO.hours.mondayFriday },
-                                            { day: 'Sobota', hours: BUSINESS_INFO.hours.saturday },
-                                            { day: 'Niedziela', hours: BUSINESS_INFO.hours.sunday },
-                                        ].map(({ day, hours }) => (
+                                            { day: c.dayMonFri, hours: BUSINESS_INFO.hours.mondayFriday, closed: false },
+                                            { day: c.daySat, hours: BUSINESS_INFO.hours.saturday, closed: false },
+                                            { day: c.daySun, hours: T.footer.sunday, closed: true },
+                                        ].map(({ day, hours, closed }) => (
                                             <div key={day} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                                 <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{day}</span>
-                                                <span className="text-sm font-medium" style={{ color: hours === 'Zamknięte' ? 'rgba(255,255,255,0.25)' : 'var(--brand-gold)' }}>{hours}</span>
+                                                <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.25)' : 'var(--brand-gold)' }}>{hours}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -176,7 +180,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
                                         style={{ letterSpacing: '0.14em' }}
                                     >
-                                        Formularz kontaktowy
+                                        {c.formLink}
                                     </Link>
                                 </div>
                             </div>
