@@ -2,9 +2,10 @@ import Head from 'next/head';
 import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { getPanelUrl } from '@/utils/panelUrl';
-import { BUSINESS_INFO } from '@/config/content';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function NotFound() {
+    const { T } = useLanguage();
     const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
     return (
         <PublicLayout>
@@ -34,7 +35,7 @@ export default function NotFound() {
                             Wróć na stronę główną
                         </Link>
                         <a href={bookingUrl} className="split-hero__cta-secondary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: '0.14em', fontWeight: 600, textTransform: 'uppercase' }}>
-                            {BUSINESS_INFO.booking.text}
+                            {T.nav.booking}
                         </a>
                     </div>
                 </div>
