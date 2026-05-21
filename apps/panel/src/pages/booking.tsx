@@ -191,7 +191,9 @@ export default function BookingPage() {
                                         setCreatedAppointmentId(null);
                                     }}
                                     onHistory={() =>
-                                        void router.push('/calendar?view=client')
+                                        void router.push(
+                                            '/calendar?view=client',
+                                        )
                                     }
                                 />
                             ) : (
@@ -252,13 +254,7 @@ export default function BookingPage() {
     );
 }
 
-function StepHeader({
-    step,
-    onBack,
-}: {
-    step: Step;
-    onBack?: () => void;
-}) {
+function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
     const labels: Record<Step, string> = {
         service: 'Wybierz usługę',
         slot: 'Wybierz termin',
@@ -307,9 +303,7 @@ function ServiceStep({
     onSelect: (svc: OnlineService) => void;
 }) {
     if (loading) {
-        return (
-            <p className="text-muted">Ładowanie usług...</p>
-        );
+        return <p className="text-muted">Ładowanie usług...</p>;
     }
     if (error) {
         return <p className="text-danger">{error}</p>;
@@ -358,12 +352,14 @@ function ServiceStep({
                                 }}
                                 onClick={() => onSelect(svc)}
                                 onMouseEnter={(e) => {
-                                    (e.currentTarget as HTMLButtonElement).style.borderColor =
-                                        'var(--salon-brand)';
+                                    (
+                                        e.currentTarget as HTMLButtonElement
+                                    ).style.borderColor = 'var(--salon-brand)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    (e.currentTarget as HTMLButtonElement).style.borderColor =
-                                        '';
+                                    (
+                                        e.currentTarget as HTMLButtonElement
+                                    ).style.borderColor = '';
                                 }}
                             >
                                 <div>
@@ -454,7 +450,9 @@ function SlotStep({
                 )}
             </div>
 
-            {loading && <p className="text-muted">Szukam wolnych terminów...</p>}
+            {loading && (
+                <p className="text-muted">Szukam wolnych terminów...</p>
+            )}
             {error && <p className="text-danger">{error}</p>}
 
             {!loading && !error && slots.length === 0 && (
@@ -478,9 +476,7 @@ function SlotStep({
                                 >
                                     {employeeName}
                                 </p>
-                                <div
-                                    className="d-flex flex-wrap gap-2"
-                                >
+                                <div className="d-flex flex-wrap gap-2">
                                     {empSlots.map((slot) => (
                                         <button
                                             key={slot.time}
@@ -633,11 +629,7 @@ function SuccessScreen({
                 </p>
             )}
             <div className="d-flex gap-2 justify-content-center">
-                <button
-                    type="button"
-                    className="btn btn-salon"
-                    onClick={onNew}
-                >
+                <button type="button" className="btn btn-salon" onClick={onNew}>
                     Zarezerwuj kolejną
                 </button>
                 <button
