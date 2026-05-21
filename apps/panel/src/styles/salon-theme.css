@@ -5,9 +5,9 @@
 
 /* --- CSS Variables --- */
 :root {
-  --salon-accent: #008bb4;
-  --salon-brand: #25B4C1;
-  --salon-brand-hover: #1f9ba8;
+  --salon-accent: #a8895f;
+  --salon-brand: #c5a880;
+  --salon-brand-hover: #b0896b;
   --salon-bg: #f5f5f5;
   --salon-fg: #333333;
 }
@@ -22,14 +22,14 @@ body {
 /* --- Buttons --- */
 .btn-salon {
   background: var(--salon-brand);
-  color: #fff;
+  color: #0d0d0d;
   border-color: var(--salon-brand);
 }
 .btn-salon:hover,
 .btn-salon:focus {
   background: var(--salon-brand-hover);
   border-color: var(--salon-brand-hover);
-  color: #fff;
+  color: #0d0d0d;
 }
 .btn-salon:disabled {
   opacity: 0.5;
@@ -68,6 +68,7 @@ body {
   font-size: 22px;
   font-weight: 400;
   margin: 20px 0 10px;
+  font-family: 'Playfair Display', Georgia, serif;
 }
 
 /* --- Column row --- */
@@ -79,6 +80,7 @@ body {
   font-size: 22px;
   font-weight: 400;
   margin: 20px 0 30px;
+  font-family: 'Playfair Display', Georgia, serif;
 }
 
 /* --- Boxes --- */
@@ -205,7 +207,7 @@ tr.even td { background: #f4fbff; }
 /* --- Form accent (focus ring) --- */
 .form-control:focus {
   border-color: var(--salon-brand);
-  box-shadow: 0 0 0 0.2rem rgba(37, 180, 193, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(197, 168, 128, 0.25);
 }
 
 /* --- Pjax link styling --- */
