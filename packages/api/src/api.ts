@@ -110,7 +110,7 @@ export class ApiClient {
         const rawBase =
             options.baseUrl ??
             process.env.NEXT_PUBLIC_API_URL ??
-            "http://localhost:3000";
+            "https://api.salon-bw.pl";
         if (this.debugEnabled()) {
             // Only emit construction telemetry when debug is enabled; this
             // used to be an unconditional `console.log` that leaked the
@@ -127,13 +127,13 @@ export class ApiClient {
             this.baseUrl =
                 u.protocol === "http:" || u.protocol === "https:"
                     ? rawBase
-                    : "http://localhost:3000";
+                    : "https://api.salon-bw.pl";
         } catch {
             // Allow relative paths for proxy usage
             if (rawBase.startsWith("/")) {
                 this.baseUrl = rawBase;
             } else {
-                this.baseUrl = "http://localhost:3000";
+                this.baseUrl = "https://api.salon-bw.pl";
             }
         }
         this.defaultHeaders = {
