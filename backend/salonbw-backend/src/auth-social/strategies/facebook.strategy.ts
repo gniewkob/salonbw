@@ -24,11 +24,16 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     }
 
     validate(
-        req: any,
-        accessToken: string,
-        refreshToken: string,
-        profile: any,
-        done: any,
+        _req: unknown,
+        _accessToken: string,
+        _refreshToken: string,
+        profile: {
+            id: string;
+            emails?: Array<{ value: string }>;
+            name?: { givenName?: string; familyName?: string };
+            photos?: Array<{ value: string }>;
+        },
+        done: (err: Error | null, user?: unknown) => void,
     ): void {
         const { id, emails, name, photos } = profile;
 

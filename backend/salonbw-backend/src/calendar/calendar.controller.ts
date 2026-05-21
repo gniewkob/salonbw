@@ -156,6 +156,29 @@ export class CalendarController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
+    @Get('available-slots')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get available booking slots for a service on a given date',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Array of available slots with employee info',
+    })
+    async getAvailableSlots(
+        @Query('serviceId', ParseIntPipe) serviceId: number,
+        @Query('date') date: string,
+        @Query('employeeId') employeeId?: string,
+    ) {
+        return this.calendarService.getAvailableSlots(
+            serviceId,
+            date,
+            employeeId ? parseInt(employeeId, 10) : undefined,
+        );
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get('conflicts')
     @ApiBearerAuth()

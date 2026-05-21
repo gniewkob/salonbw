@@ -305,7 +305,7 @@ export default function WorkTimeReportPage() {
                                                             <XAxis
                                                                 dataKey="date"
                                                                 tickFormatter={(
-                                                                    value,
+                                                                    value: string,
                                                                 ) => {
                                                                     const date =
                                                                         new Date(

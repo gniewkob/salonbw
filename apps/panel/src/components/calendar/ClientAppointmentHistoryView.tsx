@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
 import type { Appointment } from '@/types';
 
 interface ClientAppointmentHistoryViewProps {
@@ -23,6 +24,7 @@ export default function ClientAppointmentHistoryView({
     onDateChange,
     onRequestCancellation,
 }: ClientAppointmentHistoryViewProps) {
+    const router = useRouter();
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<
         number | null
     >(null);
@@ -83,6 +85,16 @@ export default function ClientAppointmentHistoryView({
 
     return (
         <div className="d-flex flex-column gap-3">
+            <div className="d-flex justify-content-between align-items-center">
+                <h2 className="h5 mb-0">Twoje wizyty</h2>
+                <button
+                    type="button"
+                    className="btn btn-salon btn-sm"
+                    onClick={() => void router.push('/booking')}
+                >
+                    + Zarezerwuj wizytę
+                </button>
+            </div>
             <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
                 <div>
                     <label

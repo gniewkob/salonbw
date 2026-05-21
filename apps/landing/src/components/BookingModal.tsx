@@ -46,8 +46,8 @@ export default function BookingModal({
     if (!open) return null;
 
     const redirectPath = service
-        ? `/calendar?newService=${service.id}`
-        : '/appointments';
+        ? `/booking?serviceId=${service.id}`
+        : '/booking';
 
     const handleRedirectToPanel = () => {
         window.location.href = getPanelUrl(redirectPath);
