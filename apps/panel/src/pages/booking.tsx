@@ -50,8 +50,6 @@ export default function BookingPage() {
     const { role, apiFetch } = useAuth();
     const router = useRouter();
 
-    if (!role) return null;
-
     const [step, setStep] = useState<Step>('service');
     const [services, setServices] = useState<OnlineService[]>([]);
     const [servicesLoading, setServicesLoading] = useState(true);
@@ -171,6 +169,8 @@ export default function BookingPage() {
             setSubmitting(false);
         }
     };
+
+    if (!role) return null;
 
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
