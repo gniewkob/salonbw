@@ -8,10 +8,12 @@ import {
     endOfWeek,
     startOfMonth,
     endOfMonth,
-    addDays,
+    addMinutes,
 } from 'date-fns';
 import { TimeBlock } from './entities/time-block.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { Service } from '../services/service.entity';
+import { EmployeeService } from '../services/entities/employee-service.entity';
 import { User } from '../users/user.entity';
 import { CalendarView } from './dto/calendar-query.dto';
 import {
@@ -52,6 +54,10 @@ export class CalendarService {
         private readonly appointmentRepository: Repository<Appointment>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @InjectRepository(Service)
+        private readonly serviceRepository: Repository<Service>,
+        @InjectRepository(EmployeeService)
+        private readonly employeeServiceRepository: Repository<EmployeeService>,
     ) {}
 
     async getCalendarData(
@@ -241,6 +247,131 @@ export class CalendarService {
             hasConflict: conflictingEvents.length > 0,
             conflictingEvents,
         };
+    }
+
+    async getAvailableSlots(
+        serviceId: number,
+        date: string,
+        employeeId?: number,
+    ): Promise<
+        Array<{
+            employeeId: number;
+            employeeName: string;
+            time: string;
+        }>
+    > {
+        const service = await this.serviceRepository.findOne({
+            where: { id: serviceId },
+        });
+        if (!service) {
+            throw new NotFoundException(
+                `Service with ID ${serviceId} not found`,
+            );
+        }
+
+        const duration = service.duration;
+
+        // Find employees that offer this service
+        let employeeServiceQuery = this.employeeServiceRepository
+            .createQueryBuilder('es')
+            .leftJoinAndSelect('es.employee', 'employee')
+            .where('es.serviceId = :serviceId', { serviceId })
+            .andWhere('es.isActive = true');
+
+        if (employeeId) {
+            employeeServiceQuery = employeeServiceQuery.andWhere(
+                'es.employeeId = :employeeId',
+                { employeeId },
+            );
+        }
+
+        const employeeServices = await employeeServiceQuery.getMany();
+
+        // Collect employees to check: from service assignments, or all employees as fallback
+        let candidateEmployees: User[];
+        if (employeeServices.length > 0) {
+            candidateEmployees = employeeServices
+                .map((es) => es.employee)
+                .filter((e): e is User => !!e);
+        } else {
+            candidateEmployees = await this.userRepository.find({
+                where: { role: 'employee' as never },
+            });
+        }
+
+        const dayStart = new Date(`${date}T00:00:00`);
+        const dayEnd = endOfDay(dayStart);
+
+        // Business hours: 09:00–19:00, slots every 30 min
+        const SLOT_STEP = 30;
+        const WORK_START = 9 * 60;
+        const WORK_END = 19 * 60;
+
+        const slots: Array<{
+            employeeId: number;
+            employeeName: string;
+            time: string;
+        }> = [];
+
+        for (const emp of candidateEmployees) {
+            if (!emp) continue;
+
+            const [appointments, timeBlocks] = await Promise.all([
+                this.appointmentRepository.find({
+                    where: {
+                        employeeId: emp.id,
+                        startTime: Between(startOfDay(dayStart), dayEnd),
+                    },
+                    select: ['startTime', 'endTime', 'status'],
+                }),
+                this.timeBlockRepository.find({
+                    where: {
+                        employee: { id: emp.id },
+                        startTime: Between(startOfDay(dayStart), dayEnd),
+                    },
+                    relations: ['employee'],
+                    select: ['startTime', 'endTime'],
+                }),
+            ]);
+
+            const busyRanges = [
+                ...appointments
+                    .filter((a) => a.status !== 'cancelled')
+                    .map((a) => ({
+                        start: new Date(a.startTime).getTime(),
+                        end: new Date(a.endTime).getTime(),
+                    })),
+                ...timeBlocks.map((tb) => ({
+                    start: new Date(tb.startTime).getTime(),
+                    end: new Date(tb.endTime).getTime(),
+                })),
+            ];
+
+            let minuteOffset = WORK_START;
+            while (minuteOffset + duration <= WORK_END) {
+                const slotStart = addMinutes(startOfDay(dayStart), minuteOffset);
+                const slotEnd = addMinutes(slotStart, duration);
+
+                const isBusy = busyRanges.some(
+                    (r) =>
+                        slotStart.getTime() < r.end &&
+                        slotEnd.getTime() > r.start,
+                );
+
+                if (!isBusy) {
+                    slots.push({
+                        employeeId: emp.id,
+                        employeeName: emp.name,
+                        time: slotStart.toISOString(),
+                    });
+                }
+
+                minuteOffset += SLOT_STEP;
+            }
+        }
+
+        slots.sort((a, b) => a.time.localeCompare(b.time));
+        return slots;
     }
 
     private getDateRange(
