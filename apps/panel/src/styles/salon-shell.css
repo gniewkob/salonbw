@@ -2537,7 +2537,7 @@ tr.customer-row:hover .customers-drag-handle {
     margin-top: auto;
 }
 
-/* Active state - green left border */
+/* Active state - gold left border */
 .mainnav .nav li.active::before {
     content: '';
     position: absolute;
@@ -2545,7 +2545,7 @@ tr.customer-row:hover .customers-drag-handle {
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--salon-green);
+    background: var(--salon-brand);
 }
 
 .mainnav .nav li a {
