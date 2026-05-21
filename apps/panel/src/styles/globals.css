@@ -599,7 +599,7 @@ body {
 }
 
 .salonbw-link {
-    color: var(--salon-accent, #25b4c1);
+    color: var(--salon-accent);
     text-decoration: none;
 }
 
@@ -1258,8 +1258,8 @@ body {
 }
 
 .salonbw-dashboard__period-btn.active {
-    background: var(--salon-accent, #25b4c1);
-    color: #fff;
+    background: var(--salon-brand);
+    color: #0d0d0d;
 }
 
 .salonbw-dashboard__period-label {
@@ -1327,7 +1327,7 @@ body {
 .salonbw-mini-chart__bar {
     flex: 1;
     border-radius: 2px;
-    background: var(--salon-accent, #25b4c1);
+    background: var(--salon-brand);
 }
 
 .salonbw-mini-chart__bar--blue {
@@ -1377,7 +1377,7 @@ body {
     display: block;
     text-align: center;
     font-size: 0.75rem;
-    color: #25b4c1;
+    color: var(--salon-accent);
     padding: 8px 0;
     border-top: 1px solid #f3f4f6;
     text-decoration: none;
@@ -1415,8 +1415,8 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #25b4c1;
-    color: #fff;
+    background: var(--salon-brand);
+    color: #0d0d0d;
     font-size: 0.75rem;
     display: flex;
     align-items: center;

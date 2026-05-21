@@ -198,7 +198,7 @@ tr.even td { background: #f4fbff; }
 }
 
 /* --- SalonBW badge variants --- */
-.badge-salon { background: var(--salon-brand); color: #fff; }
+.badge-salon { background: var(--salon-brand); color: #0d0d0d; border-radius: 2px; }
 .badge-salon-success { background: #dff0d8; color: #3c763d; }
 .badge-salon-warning { background: #fcf8e3; color: #8a6d3b; }
 .badge-salon-error { background: #f2dede; color: #a94442; }

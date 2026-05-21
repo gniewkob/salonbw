@@ -4905,8 +4905,8 @@ body.settings-dashboard-landing .main-content > .inner {
 }
 
 .sms-settings-page__type-card--active {
-    border-color: #25b4c1;
-    box-shadow: 0 10px 25px rgba(37, 180, 193, 0.08);
+    border-color: #c5a880;
+    box-shadow: 0 10px 25px rgba(197, 168, 128, 0.12);
 }
 
 .sms-settings-page__type-card--inactive {
@@ -4941,7 +4941,7 @@ body.settings-dashboard-landing .main-content > .inner {
 }
 
 .sms-settings-page__type-price {
-    color: #25b4c1;
+    color: #c5a880;
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 12px;
