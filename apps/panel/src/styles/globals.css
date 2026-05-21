@@ -91,8 +91,8 @@ body {
 }
 
 .salonbw-step.active .salonbw-step__number {
-    background: #25B4C1;
-    color: #fff;
+    background: #c5a880;
+    color: #0d0d0d;
 }
 
 .salonbw-step__label {
@@ -129,7 +129,7 @@ body {
 }
 
 .salonbw-channel:hover {
-    border-color: #25B4C1;
+    border-color: #c5a880;
 }
 
 .salonbw-channel input {
@@ -137,8 +137,8 @@ body {
 }
 
 .salonbw-channel.active {
-    border-color: #25B4C1;
-    background: rgba(37, 180, 193, 0.05);
+    border-color: #c5a880;
+    background: rgba(197, 168, 128, 0.07);
 }
 
 .salonbw-channel__icon {
@@ -185,13 +185,13 @@ body {
 }
 
 .salonbw-template-item:hover {
-    border-color: #25B4C1;
+    border-color: #c5a880;
     background: #f9fafb;
 }
 
 .salonbw-template-item.active {
-    border-color: #25B4C1;
-    background: rgba(37,180,193,0.05);
+    border-color: #c5a880;
+    background: rgba(197, 168, 128, 0.07);
 }
 
 .salonbw-template-item__name {
@@ -229,8 +229,8 @@ body {
 
 .salonbw-input:focus {
     outline: none;
-    border-color: #25B4C1;
-    box-shadow: 0 0 0 2px rgba(37,180,193,0.2);
+    border-color: #c5a880;
+    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
 }
 
 .salonbw-input--sm {
@@ -253,8 +253,8 @@ body {
 
 .salonbw-textarea:focus {
     outline: none;
-    border-color: #25B4C1;
-    box-shadow: 0 0 0 2px rgba(37,180,193,0.2);
+    border-color: #c5a880;
+    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
 }
 
 .salonbw-char-count {
@@ -512,8 +512,8 @@ body {
 
 .salonbw-select:focus {
     outline: none;
-    border-color: #25B4C1;
-    box-shadow: 0 0 0 2px rgba(37,180,193,0.2);
+    border-color: #c5a880;
+    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
 }
 
 .salonbw-select--inline {
