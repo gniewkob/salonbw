@@ -11,7 +11,10 @@ import {
     addMinutes,
 } from 'date-fns';
 import { TimeBlock } from './entities/time-block.entity';
-import { Appointment } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { Service } from '../services/service.entity';
 import { EmployeeService } from '../services/entities/employee-service.entity';
 import { User } from '../users/user.entity';
@@ -336,7 +339,7 @@ export class CalendarService {
 
             const busyRanges = [
                 ...appointments
-                    .filter((a) => a.status !== 'cancelled')
+                    .filter((a) => a.status !== AppointmentStatus.Cancelled)
                     .map((a) => ({
                         start: new Date(a.startTime).getTime(),
                         end: new Date(a.endTime).getTime(),
@@ -349,7 +352,10 @@ export class CalendarService {
 
             let minuteOffset = WORK_START;
             while (minuteOffset + duration <= WORK_END) {
-                const slotStart = addMinutes(startOfDay(dayStart), minuteOffset);
+                const slotStart = addMinutes(
+                    startOfDay(dayStart),
+                    minuteOffset,
+                );
                 const slotEnd = addMinutes(slotStart, duration);
 
                 const isBusy = busyRanges.some(
