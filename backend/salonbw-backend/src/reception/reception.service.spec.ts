@@ -51,7 +51,9 @@ describe('ReceptionService', () => {
             source: 'reception_view',
         };
 
-        repo.create.mockImplementation((payload) => payload as ReceptionOperationalEvent);
+        repo.create.mockImplementation(
+            (payload) => payload as ReceptionOperationalEvent,
+        );
         repo.save.mockImplementation(async (entity) => ({
             id: 1,
             createdAt: new Date('2026-05-11T10:00:01.000Z'),
@@ -96,7 +98,9 @@ describe('ReceptionService', () => {
             occurredAt: '2026-05-10T12:30:00.000Z',
         };
 
-        repo.create.mockImplementation((payload) => payload as ReceptionOperationalEvent);
+        repo.create.mockImplementation(
+            (payload) => payload as ReceptionOperationalEvent,
+        );
         repo.save.mockImplementation(async (entity) => ({
             id: 2,
             createdAt: new Date('2026-05-10T12:30:10.000Z'),
@@ -110,7 +114,9 @@ describe('ReceptionService', () => {
                 occurredAt: new Date('2026-05-10T12:30:00.000Z'),
             }),
         );
-        expect(result.occurredAt.toISOString()).toBe('2026-05-10T12:30:00.000Z');
+        expect(result.occurredAt.toISOString()).toBe(
+            '2026-05-10T12:30:00.000Z',
+        );
     });
 
     it('does not persist fields outside DTO shape', async () => {
@@ -124,7 +130,9 @@ describe('ReceptionService', () => {
             notes: 'Sensitive note',
         } as unknown as CreateReceptionOperationalEventDto;
 
-        repo.create.mockImplementation((payload) => payload as ReceptionOperationalEvent);
+        repo.create.mockImplementation(
+            (payload) => payload as ReceptionOperationalEvent,
+        );
         repo.save.mockImplementation(async (entity) => ({
             id: 3,
             createdAt: new Date('2026-05-10T12:30:10.000Z'),
@@ -170,10 +178,9 @@ describe('ReceptionService', () => {
             'COUNT(event.customerAlertSeverity)',
             'actionsOnAlerts',
         );
-        expect(whereMock).toHaveBeenCalledWith(
-            'event.eventName = :eventName',
-            { eventName: 'reception_operational_action' },
-        );
+        expect(whereMock).toHaveBeenCalledWith('event.eventName = :eventName', {
+            eventName: 'reception_operational_action',
+        });
         expect(andWhereMock).toHaveBeenNthCalledWith(
             1,
             'event.occurredAt >= :start',
@@ -610,6 +617,8 @@ describe('ReceptionService', () => {
                 occurredAt: new Date('2026-05-12T11:00:00.000Z'),
             }),
         );
-        expect(result.occurredAt.toISOString()).toBe('2026-05-12T11:00:00.000Z');
+        expect(result.occurredAt.toISOString()).toBe(
+            '2026-05-12T11:00:00.000Z',
+        );
     });
 });

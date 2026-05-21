@@ -390,7 +390,9 @@ export class AppointmentsService {
             }),
         );
 
-        return rows.filter((row): row is NonNullable<typeof row> => row !== null);
+        return rows.filter(
+            (row): row is NonNullable<typeof row> => row !== null,
+        );
     }
 
     async completeAppointment(

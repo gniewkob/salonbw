@@ -167,9 +167,7 @@ describe('RetailService reversal flow', () => {
     test('resolveReversalSelection defaults to remaining quantities after previous reversals', async () => {
         const { service, warehouseSales } = createService();
 
-        (
-            warehouseSales.find as unknown as jest.Mock
-        ).mockResolvedValue([
+        (warehouseSales.find as unknown as jest.Mock).mockResolvedValue([
             {
                 items: [{ originalSaleItemId: 10, quantity: -1 }],
             },
@@ -226,9 +224,7 @@ describe('RetailService reversal flow', () => {
             },
             'getSaleForReversal',
         ).mockResolvedValue(sourceSale);
-        (
-            warehouseSales.count as unknown as jest.Mock
-        ).mockResolvedValue(1);
+        (warehouseSales.count as unknown as jest.Mock).mockResolvedValue(1);
 
         await expect(
             service.voidSale(12, {}, { id: 7 } as User),
@@ -290,14 +286,16 @@ describe('RetailService reversal flow', () => {
             query: jest.fn().mockResolvedValue([]),
         };
 
-        (
-            dataSource.transaction as unknown as jest.Mock
-        ).mockImplementation(async (cb: (manager: unknown) => Promise<unknown>) =>
-            cb(manager),
+        (dataSource.transaction as unknown as jest.Mock).mockImplementation(
+            async (cb: (manager: unknown) => Promise<unknown>) => cb(manager),
         );
 
         jest.spyOn(
-            service as unknown as { resolveReversalSelection: (...args: unknown[]) => Promise<unknown> },
+            service as unknown as {
+                resolveReversalSelection: (
+                    ...args: unknown[]
+                ) => Promise<unknown>;
+            },
             'resolveReversalSelection',
         ).mockResolvedValue([
             {
@@ -307,7 +305,9 @@ describe('RetailService reversal flow', () => {
             },
         ]);
         jest.spyOn(
-            service as unknown as { hasTable: (name: string) => Promise<boolean> },
+            service as unknown as {
+                hasTable: (name: string) => Promise<boolean>;
+            },
             'hasTable',
         ).mockResolvedValue(false);
         jest.spyOn(
@@ -374,7 +374,11 @@ describe('RetailService reversal flow', () => {
         const { service } = createService();
 
         jest.spyOn(
-            service as unknown as { resolveReversalSelection: (...args: unknown[]) => Promise<unknown> },
+            service as unknown as {
+                resolveReversalSelection: (
+                    ...args: unknown[]
+                ) => Promise<unknown>;
+            },
             'resolveReversalSelection',
         ).mockResolvedValue([
             {
@@ -384,7 +388,9 @@ describe('RetailService reversal flow', () => {
             },
         ]);
         jest.spyOn(
-            service as unknown as { isFullReversal: (...args: unknown[]) => boolean },
+            service as unknown as {
+                isFullReversal: (...args: unknown[]) => boolean;
+            },
             'isFullReversal',
         ).mockReturnValue(false);
 
@@ -449,15 +455,20 @@ describe('RetailService listSales filters', () => {
         );
 
         jest.spyOn(
-            service as unknown as { hasTable: (name: string) => Promise<boolean> },
+            service as unknown as {
+                hasTable: (name: string) => Promise<boolean>;
+            },
             'hasTable',
         ).mockResolvedValue(true);
 
         const result = await service.listSales({ customerId: 123 });
 
-        expect(qb.andWhere).toHaveBeenCalledWith('sale.clientId = :customerId', {
-            customerId: 123,
-        });
+        expect(qb.andWhere).toHaveBeenCalledWith(
+            'sale.clientId = :customerId',
+            {
+                customerId: 123,
+            },
+        );
         expect(result).toEqual({
             items: [{ id: 1, clientId: 123 }],
             total: 1,
@@ -475,10 +486,9 @@ describe('RetailService createSale client linkage', () => {
             create: jest
                 .fn()
                 .mockImplementation(
-                    (
-                        _entity: unknown,
-                        payload: Record<string, unknown>,
-                    ) => ({ ...payload }),
+                    (_entity: unknown, payload: Record<string, unknown>) => ({
+                        ...payload,
+                    }),
                 ),
             save: jest.fn(async (entity: Record<string, unknown>) => {
                 if ((entity as { saleNumber?: string }).saleNumber) {
@@ -528,9 +538,7 @@ describe('RetailService createSale client linkage', () => {
 
         jest.spyOn(
             service as unknown as {
-                normalizeSaleItems: (
-                    dto: unknown,
-                ) => Promise<
+                normalizeSaleItems: (dto: unknown) => Promise<
                     Array<{
                         product: {
                             id: number;

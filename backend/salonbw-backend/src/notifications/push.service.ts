@@ -112,37 +112,42 @@ export class PushService {
 
         const payloadString = JSON.stringify(payload);
 
-        for (const sub of subscriptions) {
-            try {
-                await this.webPush.sendNotification(
-                    {
-                        endpoint: sub.endpoint,
-                        keys: {
-                            p256dh: sub.p256dh,
-                            auth: sub.auth,
+        await Promise.all(
+            subscriptions.map(async (sub) => {
+                try {
+                    await this.webPush!.sendNotification(
+                        {
+                            endpoint: sub.endpoint,
+                            keys: {
+                                p256dh: sub.p256dh,
+                                auth: sub.auth,
+                            },
                         },
-                    },
-                    payloadString,
-                );
-                this.logger.debug({ userId }, 'Push notification sent');
-            } catch (error: any) {
-                // If subscription is expired/invalid, deactivate it
-                if (error?.statusCode === 410 || error?.statusCode === 404) {
-                    await this.subscriptionsRepo.update(sub.id, {
-                        isActive: false,
-                    });
-                    this.logger.debug(
-                        { userId, endpoint: sub.endpoint },
-                        'Push subscription expired, deactivated',
+                        payloadString,
                     );
-                } else {
-                    this.logger.error(
-                        { userId, error },
-                        'Failed to send push notification',
-                    );
+                    this.logger.debug({ userId }, 'Push notification sent');
+                } catch (error: any) {
+                    // If subscription is expired/invalid, deactivate it
+                    if (
+                        error?.statusCode === 410 ||
+                        error?.statusCode === 404
+                    ) {
+                        await this.subscriptionsRepo.update(sub.id, {
+                            isActive: false,
+                        });
+                        this.logger.debug(
+                            { userId, endpoint: sub.endpoint },
+                            'Push subscription expired, deactivated',
+                        );
+                    } else {
+                        this.logger.error(
+                            { userId, error },
+                            'Failed to send push notification',
+                        );
+                    }
                 }
-            }
-        }
+            }),
+        );
     }
 
     async broadcastNotification(

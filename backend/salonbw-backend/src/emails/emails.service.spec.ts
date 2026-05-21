@@ -32,7 +32,10 @@ describe('EmailsService', () => {
     };
 
     const mockEmailLogsRepo = {
-        create: jest.fn((payload: Partial<EmailLog>) => ({ id: 1, ...payload })),
+        create: jest.fn((payload: Partial<EmailLog>) => ({
+            id: 1,
+            ...payload,
+        })),
         save: jest.fn(async (payload: Partial<EmailLog>) => ({
             id: 1,
             ...payload,

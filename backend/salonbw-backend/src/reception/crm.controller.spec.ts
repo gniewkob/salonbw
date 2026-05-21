@@ -32,7 +32,9 @@ describe('CrmController', () => {
 
         await controller.getFollowUpCandidates({ date: '2026-05-12' });
 
-        expect(service.getFollowUpCandidates).toHaveBeenCalledWith('2026-05-12');
+        expect(service.getFollowUpCandidates).toHaveBeenCalledWith(
+            '2026-05-12',
+        );
     });
 
     it('delegates follow-up action payload to service', async () => {
@@ -90,18 +92,18 @@ describe('CrmController', () => {
     });
 
     it('rejects invalid customerId for customer follow-up actions endpoint', () => {
-        expect(() =>
-            controller.getCustomerFollowUpActions(0),
-        ).toThrow(BadRequestException);
+        expect(() => controller.getCustomerFollowUpActions(0)).toThrow(
+            BadRequestException,
+        );
     });
 
     it('rejects invalid limit for customer follow-up actions endpoint', () => {
-        expect(() =>
-            controller.getCustomerFollowUpActions(123, 0),
-        ).toThrow(BadRequestException);
-        expect(() =>
-            controller.getCustomerFollowUpActions(123, 51),
-        ).toThrow(BadRequestException);
+        expect(() => controller.getCustomerFollowUpActions(123, 0)).toThrow(
+            BadRequestException,
+        );
+        expect(() => controller.getCustomerFollowUpActions(123, 51)).toThrow(
+            BadRequestException,
+        );
     });
 
     it('rejects invalid follow-up date', () => {
@@ -213,11 +215,7 @@ describe('CrmController', () => {
             CrmController.prototype.getFollowUpCandidates,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 
     it('requires Admin/Employee/Receptionist roles on follow-up action endpoint', () => {
@@ -226,11 +224,7 @@ describe('CrmController', () => {
             CrmController.prototype.createFollowUpAction,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 
     it('requires Admin/Employee/Receptionist roles on follow-up audit endpoint', () => {
@@ -239,11 +233,7 @@ describe('CrmController', () => {
             CrmController.prototype.getFollowUpActionAuditSummary,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 
     it('requires Admin/Employee/Receptionist roles on customer follow-up actions endpoint', () => {
@@ -252,11 +242,7 @@ describe('CrmController', () => {
             CrmController.prototype.getCustomerFollowUpActions,
         ) as Role[];
 
-        expect(roles).toEqual([
-            Role.Admin,
-            Role.Employee,
-            Role.Receptionist,
-        ]);
+        expect(roles).toEqual([Role.Admin, Role.Employee, Role.Receptionist]);
     });
 });
 
@@ -313,8 +299,8 @@ describe('CreateCrmFollowUpActionDto validation', () => {
         expect(errors.some((error) => error.property === 'customerId')).toBe(
             true,
         );
-        expect(
-            errors.some((error) => error.property === 'appointmentId'),
-        ).toBe(true);
+        expect(errors.some((error) => error.property === 'appointmentId')).toBe(
+            true,
+        );
     });
 });
