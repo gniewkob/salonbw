@@ -343,7 +343,9 @@ describe('AppointmentsService', () => {
 
         const now = new Date();
         now.setHours(now.getHours() - 2);
-        const target = appointments.find((appointment) => appointment.id === id);
+        const target = appointments.find(
+            (appointment) => appointment.id === id,
+        );
         if (!target) {
             throw new Error('Appointment not found in test context');
         }
