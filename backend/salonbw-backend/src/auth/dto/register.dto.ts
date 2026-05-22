@@ -8,6 +8,7 @@ import {
     IsDateString,
     IsArray,
     ValidateNested,
+    Equals,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -41,4 +42,31 @@ export class RegisterDto {
         required: false,
     })
     phone?: string;
+
+    @Equals(true, {
+        message: 'Zgoda na przetwarzanie danych osobowych jest wymagana',
+    })
+    @ApiProperty({
+        description: 'GDPR consent — must be true to register',
+        example: true,
+    })
+    gdprConsent: true;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        description: 'Consent to receive SMS marketing messages',
+        required: false,
+        example: false,
+    })
+    smsConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        description: 'Consent to receive email marketing messages',
+        required: false,
+        example: false,
+    })
+    emailConsent?: boolean;
 }
