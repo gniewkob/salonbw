@@ -113,4 +113,19 @@ export class WhatsappService {
     async sendFollowUp(to: string, date: string, time: string): Promise<void> {
         await this.sendTemplate(to, 'follow_up', [date, time]);
     }
+
+    async sendNewOnlineBookingAlert(
+        to: string,
+        clientName: string,
+        serviceName: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'new_online_booking_alert', [
+            clientName,
+            serviceName,
+            date,
+            time,
+        ]);
+    }
 }
