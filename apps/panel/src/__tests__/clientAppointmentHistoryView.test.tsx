@@ -115,7 +115,7 @@ describe('ClientAppointmentHistoryView', () => {
         const details = screen.getByTestId('client-appointment-details');
         expect(details).toHaveTextContent('Szczegoly wizyty (tylko odczyt)');
         expect(details).toHaveTextContent('Masaż');
-        expect(details).toHaveTextContent('confirmed');
+        expect(details).toHaveTextContent('Potwierdzona');
         expect(details).toHaveTextContent('Monika Zielinska');
         expect(details).toHaveTextContent('11 cze 2026');
     });
