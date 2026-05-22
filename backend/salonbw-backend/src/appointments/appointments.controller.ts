@@ -450,4 +450,26 @@ export class AppointmentsController {
     ): Promise<Appointment> {
         return this.appointmentsService.updateNotes(id, body.internalNote);
     }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Get(':id/usage')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get suggested material usage from service recipe',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Usage suggestions derived from service recipe items',
+    })
+    async getUsageSuggestions(@Param('id', ParseIntPipe) id: number): Promise<
+        {
+            productId: number;
+            productName: string;
+            quantity: number;
+            unit: string;
+        }[]
+    > {
+        return this.appointmentsService.getUsageSuggestions(id);
+    }
 }

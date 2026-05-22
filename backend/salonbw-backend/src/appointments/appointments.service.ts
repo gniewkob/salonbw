@@ -24,6 +24,7 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
 import { ServiceVariant } from '../services/entities/service-variant.entity';
+import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -44,6 +45,8 @@ export class AppointmentsService {
         private readonly servicesRepository: Repository<SalonService>,
         @InjectRepository(ServiceVariant)
         private readonly serviceVariantsRepository: Repository<ServiceVariant>,
+        @InjectRepository(ServiceRecipeItem)
+        private readonly recipeItemsRepository: Repository<ServiceRecipeItem>,
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
@@ -814,6 +817,40 @@ export class AppointmentsService {
             },
         );
 
+        // Deduct materials used during the service from warehouse stock
+        if (dto.usageItems && dto.usageItems.length > 0 && this.retailService) {
+            const clientName = [
+                appointment.client.firstName,
+                appointment.client.lastName,
+            ]
+                .filter((part) => Boolean(part && part.trim()))
+                .join(' ')
+                .trim();
+            try {
+                await this.retailService.createUsage(
+                    {
+                        items: dto.usageItems.map((item) => ({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            unit: item.unit,
+                        })),
+                        employeeId: appointment.employee.id,
+                        appointmentId: appointment.id,
+                        clientName:
+                            clientName.length > 0
+                                ? clientName
+                                : (appointment.client.name ??
+                                  null ??
+                                  undefined),
+                        scope: 'completed',
+                    },
+                    user,
+                );
+            } catch {
+                // Non-fatal: usage deduction failure does not roll back finalization
+            }
+        }
+
         const updated = await this.findOne(id);
         if (updated) {
             this.metrics?.incAppointmentCompleted();
@@ -860,5 +897,34 @@ export class AppointmentsService {
         appointment.internalNote =
             internalNote === null ? undefined : internalNote;
         return this.appointmentsRepository.save(appointment);
+    }
+
+    async getUsageSuggestions(
+        id: number,
+    ): Promise<
+        {
+            productId: number;
+            productName: string;
+            quantity: number;
+            unit: string;
+        }[]
+    > {
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+            relations: ['service'],
+        });
+        if (!appointment?.service?.id) return [];
+        const items = await this.recipeItemsRepository.find({
+            where: { serviceId: appointment.service.id },
+            relations: ['product'],
+        });
+        return items
+            .filter((item) => item.product && (item.quantity ?? 0) > 0)
+            .map((item) => ({
+                productId: item.product!.id,
+                productName: item.product!.name,
+                quantity: Math.max(1, Math.round(item.quantity ?? 1)),
+                unit: item.unit ?? 'op.',
+            }));
     }
 }

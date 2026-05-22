@@ -949,6 +949,13 @@ export interface ProductSaleItem {
     discountCents?: number;
 }
 
+export interface UsageItem {
+    productId: number;
+    productName: string;
+    quantity: number;
+    unit: string;
+}
+
 export interface FinalizeAppointmentRequest {
     paymentMethod: PaymentMethod;
     paidAmountCents: number;
@@ -956,6 +963,7 @@ export interface FinalizeAppointmentRequest {
     discountCents?: number;
     products?: ProductSaleItem[];
     note?: string;
+    usageItems?: { productId: number; quantity: number; unit?: string }[];
 }
 
 export interface FinalizationSummary {

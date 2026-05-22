@@ -12,6 +12,7 @@ import type {
     FinalizeAppointmentRequest,
     ProductSaleItem,
     Product,
+    UsageItem,
 } from '@/types';
 
 interface Props {
@@ -46,6 +47,7 @@ export default function FinalizationModal({
     const [note, setNote] = useState<string>('');
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
     const [showProductPicker, setShowProductPicker] = useState(false);
+    const [usageItems, setUsageItems] = useState<UsageItem[]>([]);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -141,6 +143,7 @@ export default function FinalizationModal({
         setTipPln('');
         setNote('');
         setProductSales([]);
+        setUsageItems([]);
         setShowProductPicker(false);
         setUiError(null);
         setSuccessMessage(null);
@@ -156,6 +159,17 @@ export default function FinalizationModal({
         },
         [],
     );
+
+    useEffect(() => {
+        if (!open || !appointment?.id) return;
+        apiFetch<UsageItem[]>(`/appointments/${appointment.id}/usage`)
+            .then((data) => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setUsageItems(data);
+                }
+            })
+            .catch(() => {});
+    }, [open, appointment?.id, apiFetch]);
 
     const handleSubmit = () => {
         if (!appointment) return;
@@ -174,6 +188,14 @@ export default function FinalizationModal({
             discountCents: Math.round(summary.discount * 100),
             products: productSales.length > 0 ? productSales : undefined,
             note: note || undefined,
+            usageItems:
+                usageItems.length > 0
+                    ? usageItems.map((item) => ({
+                          productId: item.productId,
+                          quantity: item.quantity,
+                          unit: item.unit,
+                      }))
+                    : undefined,
         };
 
         finalizeMutation.mutate(data);
@@ -471,6 +493,69 @@ export default function FinalizationModal({
                         </div>
                     )}
                 </div>
+
+                {/* Materials used */}
+                {usageItems.length > 0 && (
+                    <div className="mb-3">
+                        <label className="d-block small fw-medium text-body mb-2">
+                            Użyte materiały
+                        </label>
+                        <div className="d-flex flex-column gap-2">
+                            {usageItems.map((item, idx) => (
+                                <div
+                                    key={item.productId}
+                                    className="d-flex align-items-center gap-2 bg-light rounded px-2 py-1"
+                                >
+                                    <span className="flex-fill small">
+                                        {item.productName}
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={item.quantity}
+                                        onChange={(e) => {
+                                            const qty =
+                                                parseInt(e.target.value) || 1;
+                                            setUsageItems((prev) =>
+                                                prev.map((it, i) =>
+                                                    i === idx
+                                                        ? {
+                                                              ...it,
+                                                              quantity:
+                                                                  Math.max(
+                                                                      1,
+                                                                      qty,
+                                                                  ),
+                                                          }
+                                                        : it,
+                                                ),
+                                            );
+                                        }}
+                                        className="form-control form-control-sm"
+                                        style={{ width: '70px' }}
+                                    />
+                                    <span className="small text-muted">
+                                        {item.unit}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="text-danger small"
+                                        onClick={() =>
+                                            setUsageItems((prev) =>
+                                                prev.filter(
+                                                    (_, i) => i !== idx,
+                                                ),
+                                            )
+                                        }
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Note */}
                 <div className="mb-3">
