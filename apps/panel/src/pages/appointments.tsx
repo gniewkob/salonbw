@@ -5,10 +5,14 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import type { Appointment, AppointmentStatus } from '@/types';
+import type { Appointment, AppointmentStatus, ServiceVariant } from '@/types';
+
+interface AppointmentWithVariant extends Appointment {
+    serviceVariant?: ServiceVariant | null;
+}
 
 interface AppointmentPage {
-    items: Appointment[];
+    items: AppointmentWithVariant[];
     total: number;
     page: number;
     pageSize: number;
@@ -83,7 +87,10 @@ export default function AppointmentsPage() {
 
     const { data, isLoading, error } = useQuery<AppointmentPage>({
         queryKey: ['appointments-list', from, to, status, search, page],
-        queryFn: () => apiFetch<AppointmentPage>(`/appointments?${queryParams.toString()}`),
+        queryFn: () =>
+            apiFetch<AppointmentPage>(
+                `/appointments?${queryParams.toString()}`,
+            ),
         enabled: !!role && (role === 'admin' || role === 'receptionist'),
     });
 
@@ -102,7 +109,7 @@ export default function AppointmentsPage() {
 
     const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
-    const openInCalendar = (appt: Appointment) => {
+    const openInCalendar = (appt: AppointmentWithVariant) => {
         if (!appt.startTime) return;
         const d = new Date(appt.startTime);
         const dateStr = isoDate(d);
@@ -137,7 +144,10 @@ export default function AppointmentsPage() {
                                 type="date"
                                 className="form-control form-control-sm"
                                 value={from}
-                                onChange={(e) => { setFrom(e.target.value); handleFilterChange(); }}
+                                onChange={(e) => {
+                                    setFrom(e.target.value);
+                                    handleFilterChange();
+                                }}
                             />
                         </div>
                         <div>
@@ -146,41 +156,67 @@ export default function AppointmentsPage() {
                                 type="date"
                                 className="form-control form-control-sm"
                                 value={to}
-                                onChange={(e) => { setTo(e.target.value); handleFilterChange(); }}
+                                onChange={(e) => {
+                                    setTo(e.target.value);
+                                    handleFilterChange();
+                                }}
                             />
                         </div>
                         <div>
-                            <label className="form-label mb-1 small">Status</label>
+                            <label className="form-label mb-1 small">
+                                Status
+                            </label>
                             <select
                                 className="form-select form-select-sm"
                                 value={status}
-                                onChange={(e) => { setStatus(e.target.value as AppointmentStatus | ''); handleFilterChange(); }}
+                                onChange={(e) => {
+                                    setStatus(
+                                        e.target.value as
+                                            | AppointmentStatus
+                                            | '',
+                                    );
+                                    handleFilterChange();
+                                }}
                                 style={{ minWidth: 160 }}
                             >
                                 <option value="">Wszystkie statusy</option>
                                 {ALL_STATUSES.map((s) => (
-                                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                                    <option key={s} value={s}>
+                                        {STATUS_LABELS[s]}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                         <div className="flex-grow-1" style={{ minWidth: 180 }}>
-                            <label className="form-label mb-1 small">Klient / telefon</label>
+                            <label className="form-label mb-1 small">
+                                Klient / telefon
+                            </label>
                             <div className="input-group input-group-sm">
                                 <input
                                     type="text"
                                     className="form-control"
                                     placeholder="Szukaj..."
                                     value={searchInput}
-                                    onChange={(e) => setSearchInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                    onChange={(e) =>
+                                        setSearchInput(e.target.value)
+                                    }
+                                    onKeyDown={(e) =>
+                                        e.key === 'Enter' && handleSearch()
+                                    }
                                 />
-                                <button className="btn btn-outline-secondary" onClick={handleSearch}>
+                                <button
+                                    className="btn btn-outline-secondary"
+                                    onClick={handleSearch}
+                                >
                                     Szukaj
                                 </button>
                             </div>
                         </div>
                         <div>
-                            <Link href="/calendar" className="btn btn-sm btn-dark">
+                            <Link
+                                href="/calendar"
+                                className="btn btn-sm btn-dark"
+                            >
                                 + Nowa wizyta
                             </Link>
                         </div>
@@ -189,7 +225,9 @@ export default function AppointmentsPage() {
 
                 <div className="column_row results_info mb-2">
                     <span className="results_title">
-                        {isLoading ? 'Ładowanie...' : `${data?.total ?? 0} wizyt`}
+                        {isLoading
+                            ? 'Ładowanie...'
+                            : `${data?.total ?? 0} wizyt`}
                     </span>
                 </div>
 
@@ -216,15 +254,24 @@ export default function AppointmentsPage() {
                         <tbody>
                             {isLoading && (
                                 <tr>
-                                    <td colSpan={8} className="text-center py-4">
-                                        <div className="spinner-border spinner-border-sm" role="status" />
-                                        {' '}Ładowanie...
+                                    <td
+                                        colSpan={8}
+                                        className="text-center py-4"
+                                    >
+                                        <div
+                                            className="spinner-border spinner-border-sm"
+                                            role="status"
+                                        />{' '}
+                                        Ładowanie...
                                     </td>
                                 </tr>
                             )}
                             {!isLoading && data?.items.length === 0 && (
                                 <tr>
-                                    <td colSpan={8} className="text-center py-4 text-muted">
+                                    <td
+                                        colSpan={8}
+                                        className="text-center py-4 text-muted"
+                                    >
                                         Brak wizyt dla wybranych filtrów.
                                     </td>
                                 </tr>
@@ -243,56 +290,76 @@ export default function AppointmentsPage() {
                                         {appt.client ? (
                                             <Link
                                                 href={`/customers/${appt.client.id}`}
-                                                onClick={(e) => e.stopPropagation()}
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                             >
-                                                {appt.client.name || `${(appt.client as any).firstName ?? ''} ${(appt.client as any).lastName ?? ''}`.trim()}
+                                                {appt.client.name}
                                             </Link>
                                         ) : (
-                                            <span className="text-muted">—</span>
+                                            <span className="text-muted">
+                                                —
+                                            </span>
                                         )}
-                                        {(appt.client as any)?.phone && (
+                                        {appt.client?.phone && (
                                             <div className="small text-muted">
-                                                {(appt.client as any).phone}
+                                                {appt.client.phone}
                                             </div>
                                         )}
                                     </td>
                                     <td>
                                         {appt.service?.name ?? '—'}
-                                        {(appt as any).serviceVariant?.name && (
+                                        {appt.serviceVariant?.name && (
                                             <span className="text-muted small ms-1">
-                                                ({(appt as any).serviceVariant.name})
+                                                ({appt.serviceVariant.name})
                                             </span>
                                         )}
                                     </td>
                                     <td>{appt.employee?.name ?? '—'}</td>
                                     <td>
                                         {appt.status && (
-                                            <span className={`badge ${STATUS_BADGE[appt.status] ?? 'bg-secondary'}`}>
-                                                {STATUS_LABELS[appt.status] ?? appt.status}
+                                            <span
+                                                className={`badge ${STATUS_BADGE[appt.status] ?? 'bg-secondary'}`}
+                                            >
+                                                {STATUS_LABELS[appt.status] ??
+                                                    appt.status}
                                             </span>
                                         )}
                                     </td>
                                     <td>
                                         {appt.paymentMethod ? (
                                             <span className="small">
-                                                {appt.paymentMethod === 'cash' ? 'Gotówka' :
-                                                 appt.paymentMethod === 'card' ? 'Karta' :
-                                                 appt.paymentMethod === 'transfer' ? 'Przelew' :
-                                                 appt.paymentMethod}
+                                                {appt.paymentMethod === 'cash'
+                                                    ? 'Gotówka'
+                                                    : appt.paymentMethod ===
+                                                        'card'
+                                                      ? 'Karta'
+                                                      : appt.paymentMethod ===
+                                                          'transfer'
+                                                        ? 'Przelew'
+                                                        : appt.paymentMethod}
                                             </span>
-                                        ) : '—'}
+                                        ) : (
+                                            '—'
+                                        )}
                                     </td>
                                     <td className="text-end">
                                         {appt.paidAmount != null
                                             ? `${Number(appt.paidAmount).toFixed(2)} zł`
                                             : appt.service?.price != null
-                                            ? `${Number(appt.service.price).toFixed(2)} zł`
-                                            : '—'}
+                                              ? `${Number(appt.service.price).toFixed(2)} zł`
+                                              : '—'}
                                     </td>
-                                    <td className="text-end" style={{ whiteSpace: 'nowrap' }}>
+                                    <td
+                                        className="text-end"
+                                        style={{ whiteSpace: 'nowrap' }}
+                                    >
                                         <button
                                             className="btn btn-sm btn-outline-secondary"
-                                            onClick={(e) => { e.stopPropagation(); openInCalendar(appt); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openInCalendar(appt);
+                                            }}
                                         >
                                             Otwórz
                                         </button>
@@ -308,40 +375,50 @@ export default function AppointmentsPage() {
                         <div className="row">
                             <div className="info col-xs-7">
                                 <span>
-                                    Strona {page} z {totalPages}
-                                    {' '}({data?.total} wyników)
+                                    Strona {page} z {totalPages} ({data?.total}{' '}
+                                    wyników)
                                 </span>
                             </div>
                             <div className="form_pagination col-xs-5 d-flex gap-1 justify-content-end">
                                 <button
                                     className="btn btn-sm btn-outline-secondary"
                                     disabled={page <= 1}
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    onClick={() =>
+                                        setPage((p) => Math.max(1, p - 1))
+                                    }
                                 >
                                     &laquo; Poprzednia
                                 </button>
-                                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                                    const pageNum = totalPages <= 7
-                                        ? i + 1
-                                        : page <= 4
-                                        ? i + 1
-                                        : page >= totalPages - 3
-                                        ? totalPages - 6 + i
-                                        : page - 3 + i;
-                                    return (
-                                        <button
-                                            key={pageNum}
-                                            className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
-                                            onClick={() => setPage(pageNum)}
-                                        >
-                                            {pageNum}
-                                        </button>
-                                    );
-                                })}
+                                {Array.from(
+                                    { length: Math.min(totalPages, 7) },
+                                    (_, i) => {
+                                        const pageNum =
+                                            totalPages <= 7
+                                                ? i + 1
+                                                : page <= 4
+                                                  ? i + 1
+                                                  : page >= totalPages - 3
+                                                    ? totalPages - 6 + i
+                                                    : page - 3 + i;
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                onClick={() => setPage(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    },
+                                )}
                                 <button
                                     className="btn btn-sm btn-outline-secondary"
                                     disabled={page >= totalPages}
-                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    onClick={() =>
+                                        setPage((p) =>
+                                            Math.min(totalPages, p + 1),
+                                        )
+                                    }
                                 >
                                     Następna &raquo;
                                 </button>
