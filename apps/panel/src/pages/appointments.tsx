@@ -4,7 +4,8 @@ import Link from 'next/link';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/contexts/ToastContext';
 import type { Appointment, AppointmentStatus, ServiceVariant } from '@/types';
 
 interface AppointmentWithVariant extends Appointment {
@@ -64,14 +65,17 @@ const ALL_STATUSES: AppointmentStatus[] = [
 export default function AppointmentsPage() {
     const { role, apiFetch } = useAuth();
     const router = useRouter();
+    const queryClient = useQueryClient();
+    const toast = useToast();
 
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
+    const initialStatus = (router.query.status as AppointmentStatus) || '';
     const [from, setFrom] = useState(isoDate(thirtyDaysAgo));
     const [to, setTo] = useState(isoDate(today));
-    const [status, setStatus] = useState<AppointmentStatus | ''>('');
+    const [status, setStatus] = useState<AppointmentStatus | ''>(initialStatus);
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [page, setPage] = useState(1);
@@ -115,6 +119,55 @@ export default function AppointmentsPage() {
         const dateStr = isoDate(d);
         void router.push(`/calendar?date=${dateStr}&appointmentId=${appt.id}`);
     };
+
+    const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+    const handleConfirm = useCallback(
+        async (e: React.MouseEvent, appt: AppointmentWithVariant) => {
+            e.stopPropagation();
+            setActionLoading(appt.id);
+            try {
+                await apiFetch(`/appointments/${appt.id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'confirmed' }),
+                });
+                toast.success(
+                    'Wizyta potwierdzona — klient otrzyma powiadomienie WhatsApp',
+                );
+                void queryClient.invalidateQueries({
+                    queryKey: ['appointments-list'],
+                });
+            } catch {
+                toast.error('Błąd potwierdzenia wizyty');
+            } finally {
+                setActionLoading(null);
+            }
+        },
+        [apiFetch, toast, queryClient],
+    );
+
+    const handleReject = useCallback(
+        async (e: React.MouseEvent, appt: AppointmentWithVariant) => {
+            e.stopPropagation();
+            if (!confirm('Odrzucić rezerwację i anulować wizytę?')) return;
+            setActionLoading(appt.id);
+            try {
+                await apiFetch(`/appointments/${appt.id}/cancel`, {
+                    method: 'PATCH',
+                });
+                toast.success('Rezerwacja odrzucona');
+                void queryClient.invalidateQueries({
+                    queryKey: ['appointments-list'],
+                });
+            } catch {
+                toast.error('Błąd anulowania wizyty');
+            } finally {
+                setActionLoading(null);
+            }
+        },
+        [apiFetch, toast, queryClient],
+    );
 
     if (!role) return null;
 
@@ -354,15 +407,57 @@ export default function AppointmentsPage() {
                                         className="text-end"
                                         style={{ whiteSpace: 'nowrap' }}
                                     >
-                                        <button
-                                            className="btn btn-sm btn-outline-secondary"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openInCalendar(appt);
-                                            }}
-                                        >
-                                            Otwórz
-                                        </button>
+                                        <div className="d-flex gap-1 justify-content-end">
+                                            {appt.status ===
+                                                'online_pending' && (
+                                                <>
+                                                    <button
+                                                        className="btn btn-sm btn-success"
+                                                        disabled={
+                                                            actionLoading ===
+                                                            appt.id
+                                                        }
+                                                        onClick={(e) =>
+                                                            void handleConfirm(
+                                                                e,
+                                                                appt,
+                                                            )
+                                                        }
+                                                        title="Potwierdź rezerwację — klient otrzyma WhatsApp"
+                                                    >
+                                                        {actionLoading ===
+                                                        appt.id
+                                                            ? '...'
+                                                            : '✓ Potwierdź'}
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        disabled={
+                                                            actionLoading ===
+                                                            appt.id
+                                                        }
+                                                        onClick={(e) =>
+                                                            void handleReject(
+                                                                e,
+                                                                appt,
+                                                            )
+                                                        }
+                                                        title="Odrzuć rezerwację"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </>
+                                            )}
+                                            <button
+                                                className="btn btn-sm btn-outline-secondary"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openInCalendar(appt);
+                                                }}
+                                            >
+                                                Otwórz
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

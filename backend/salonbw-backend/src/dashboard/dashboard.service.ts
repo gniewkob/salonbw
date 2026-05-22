@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThan } from 'typeorm';
+import { Repository, Between, MoreThan, In } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import {
@@ -20,12 +20,10 @@ export class DashboardService {
     ) {}
 
     async getSummary(): Promise<DashboardSummaryDto> {
-        const clientCount = await this.usersRepository.count({
-            where: { role: Role.Client },
-        });
-        const employeeCount = await this.usersRepository.count({
-            where: { role: Role.Employee },
-        });
+        const [clientCount, employeeCount] = await Promise.all([
+            this.usersRepository.count({ where: { role: Role.Client } }),
+            this.usersRepository.count({ where: { role: Role.Employee } }),
+        ]);
 
         const now = new Date();
         const startOfDay = new Date(now);
@@ -33,61 +31,129 @@ export class DashboardService {
         const endOfDay = new Date(now);
         endOfDay.setHours(23, 59, 59, 999);
 
-        const todayAppointments = await this.appointmentsRepository.count({
-            where: {
-                startTime: Between(startOfDay, endOfDay),
-                status: AppointmentStatus.Scheduled,
-            },
-        });
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const upcomingAppointments = await this.appointmentsRepository.find({
-            where: {
-                startTime: MoreThan(now),
-                status: AppointmentStatus.Scheduled,
-            },
-            order: { startTime: 'ASC' },
-            take: 5,
-        });
+        const activeStatuses = [
+            AppointmentStatus.Scheduled,
+            AppointmentStatus.Confirmed,
+            AppointmentStatus.InProgress,
+            AppointmentStatus.OnlinePending,
+        ];
+
+        // Run all DB queries in parallel
+        const [
+            todayActive,
+            onlinePending,
+            upcomingAppointments,
+            completedToday,
+            completedThisMonth,
+        ] = await Promise.all([
+            this.appointmentsRepository.count({
+                where: {
+                    startTime: Between(startOfDay, endOfDay),
+                    status: In(activeStatuses),
+                },
+            }),
+            this.appointmentsRepository.count({
+                where: { status: AppointmentStatus.OnlinePending },
+            }),
+            this.appointmentsRepository.find({
+                where: {
+                    startTime: MoreThan(now),
+                    status: In([
+                        AppointmentStatus.Scheduled,
+                        AppointmentStatus.Confirmed,
+                        AppointmentStatus.OnlinePending,
+                    ]),
+                },
+                relations: ['client', 'service', 'employee'],
+                order: { startTime: 'ASC' },
+                take: 8,
+            }),
+            this.appointmentsRepository.find({
+                where: {
+                    startTime: Between(startOfDay, endOfDay),
+                    status: AppointmentStatus.Completed,
+                },
+                select: ['id', 'paidAmount'],
+            }),
+            this.appointmentsRepository.find({
+                where: {
+                    startTime: Between(startOfMonth, endOfDay),
+                    status: AppointmentStatus.Completed,
+                },
+                select: ['id', 'paidAmount'],
+            }),
+        ]);
+
+        const revenueToday = completedToday.reduce(
+            (sum, a) => sum + (Number(a.paidAmount) || 0),
+            0,
+        );
+        const revenueThisMonth = completedThisMonth.reduce(
+            (sum, a) => sum + (Number(a.paidAmount) || 0),
+            0,
+        );
 
         return {
             clientCount,
             employeeCount,
-            todayAppointments,
-            upcomingAppointments,
+            todayAppointments: todayActive,
+            onlinePendingCount: onlinePending,
+            revenueToday,
+            revenueThisMonth,
+            completedThisMonth: completedThisMonth.length,
+            upcomingAppointments: upcomingAppointments.map((a) => ({
+                id: a.id,
+                startTime: a.startTime,
+                endTime: a.endTime,
+                status: a.status,
+                clientName: a.client?.name ?? '',
+                clientPhone: (a.client as any)?.phone ?? '',
+                serviceName: a.service?.name ?? '',
+                employeeName: a.employee?.name ?? '',
+            })),
         };
     }
 
     async getClientSummary(userId: number): Promise<ClientDashboardDto> {
         const now = new Date();
 
-        // Get next upcoming appointment for this client
         const upcomingAppointment = await this.appointmentsRepository.findOne({
             where: {
                 client: { id: userId },
                 startTime: MoreThan(now),
-                status: AppointmentStatus.Scheduled,
+                status: In([
+                    AppointmentStatus.Scheduled,
+                    AppointmentStatus.Confirmed,
+                    AppointmentStatus.OnlinePending,
+                    AppointmentStatus.RescheduledPending,
+                ]),
             },
             relations: ['service', 'employee'],
             order: { startTime: 'ASC' },
         });
 
-        // Count completed appointments
-        const completedCount = await this.appointmentsRepository.count({
-            where: {
-                client: { id: userId },
-                status: AppointmentStatus.Completed,
-            },
-        });
+        const [completedCount, allAppointments, recentAppointments] =
+            await Promise.all([
+                this.appointmentsRepository.count({
+                    where: {
+                        client: { id: userId },
+                        status: AppointmentStatus.Completed,
+                    },
+                }),
+                this.appointmentsRepository.find({
+                    where: { client: { id: userId } },
+                    relations: ['service'],
+                }),
+                this.appointmentsRepository.find({
+                    where: { client: { id: userId } },
+                    relations: ['service', 'employee'],
+                    order: { startTime: 'DESC' },
+                    take: 10,
+                }),
+            ]);
 
-        // Get all appointments for service history aggregation
-        const allAppointments = await this.appointmentsRepository.find({
-            where: {
-                client: { id: userId },
-            },
-            relations: ['service'],
-        });
-
-        // Aggregate services used with counts
         const serviceMap = new Map<
             number,
             { id: number; name: string; count: number }
@@ -110,16 +176,6 @@ export class DashboardService {
             (a, b) => b.count - a.count,
         );
 
-        // Get recent appointments (last 10)
-        const recentAppointments = await this.appointmentsRepository.find({
-            where: {
-                client: { id: userId },
-            },
-            relations: ['service'],
-            order: { startTime: 'DESC' },
-            take: 10,
-        });
-
         return {
             upcomingAppointment: upcomingAppointment
                 ? {
@@ -130,6 +186,7 @@ export class DashboardService {
                           upcomingAppointment.employee?.name ??
                           upcomingAppointment.employee?.email ??
                           '',
+                      status: upcomingAppointment.status,
                   }
                 : null,
             completedCount,
@@ -139,6 +196,7 @@ export class DashboardService {
                 serviceName: apt.service?.name ?? '',
                 startTime: apt.startTime,
                 status: apt.status,
+                employeeName: apt.employee?.name ?? '',
             })),
         };
     }

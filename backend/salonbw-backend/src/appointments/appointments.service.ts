@@ -5,6 +5,7 @@ import {
     ForbiddenException,
     Inject,
     forwardRef,
+    Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -39,6 +40,8 @@ import { Log } from '../logs/log.entity';
 
 @Injectable()
 export class AppointmentsService {
+    private readonly logger = new Logger(AppointmentsService.name);
+
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
@@ -161,11 +164,22 @@ export class AppointmentsService {
         search?: string;
         page?: number;
         limit?: number;
-    }): Promise<{ items: Appointment[]; total: number; page: number; pageSize: number }> {
+    }): Promise<{
+        items: Appointment[];
+        total: number;
+        page: number;
+        pageSize: number;
+    }> {
         const page = params.page ?? 1;
         const pageSize = Math.min(params.limit ?? 50, 200);
 
-        const buildWhere = (extraClientWhere?: FindOptionsWhere<{ firstName?: string; lastName?: string; phone?: string }>): FindOptionsWhere<Appointment> => {
+        const buildWhere = (
+            extraClientWhere?: FindOptionsWhere<{
+                firstName?: string;
+                lastName?: string;
+                phone?: string;
+            }>,
+        ): FindOptionsWhere<Appointment> => {
             const where: FindOptionsWhere<Appointment> = {};
             if (params.employeeId) where.employee = { id: params.employeeId };
             if (params.status) where.status = params.status;
@@ -180,7 +194,9 @@ export class AppointmentsService {
             return where;
         };
 
-        let whereCondition: FindOptionsWhere<Appointment> | FindOptionsWhere<Appointment>[];
+        let whereCondition:
+            | FindOptionsWhere<Appointment>
+            | FindOptionsWhere<Appointment>[];
         if (params.search) {
             const term = `%${params.search}%`;
             whereCondition = [
@@ -582,6 +598,24 @@ export class AppointmentsService {
                 startTime: updated.startTime,
                 endTime: updated.endTime,
             });
+            // Notify client about rescheduled appointment
+            if (newStatus === AppointmentStatus.RescheduledPending) {
+                const client = updated.client;
+                if (client?.phone && client.receiveNotifications) {
+                    const { date, time } = this.formatDate(updated.startTime);
+                    try {
+                        await this.whatsappService.sendRescheduleNotification(
+                            client.phone,
+                            date,
+                            time,
+                        );
+                    } catch {
+                        this.logger.warn(
+                            'Failed to send reschedule WhatsApp notification',
+                        );
+                    }
+                }
+            }
         }
         return updated;
     }
@@ -749,6 +783,47 @@ export class AppointmentsService {
                 previousStatus: appointment.status,
                 status: targetStatus,
             });
+
+            // Notify client when their online booking is confirmed by salon
+            if (
+                appointment.status === AppointmentStatus.OnlinePending &&
+                targetStatus === AppointmentStatus.Confirmed
+            ) {
+                const client = updated.client;
+                if (client?.phone && client.receiveNotifications) {
+                    const { date, time } = this.formatDate(updated.startTime);
+                    try {
+                        await this.whatsappService.sendBookingConfirmed(
+                            client.phone,
+                            date,
+                            time,
+                        );
+                    } catch {
+                        this.logger.warn(
+                            'Failed to send booking confirmed WhatsApp',
+                        );
+                    }
+                }
+            }
+
+            // Notify client when their appointment is rescheduled by staff
+            if (targetStatus === AppointmentStatus.RescheduledPending) {
+                const client = updated.client;
+                if (client?.phone && client.receiveNotifications) {
+                    const { date, time } = this.formatDate(updated.startTime);
+                    try {
+                        await this.whatsappService.sendRescheduleNotification(
+                            client.phone,
+                            date,
+                            time,
+                        );
+                    } catch {
+                        this.logger.warn(
+                            'Failed to send reschedule WhatsApp notification',
+                        );
+                    }
+                }
+            }
         }
         return updated;
     }

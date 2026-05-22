@@ -115,7 +115,7 @@ export default function SalonTopbar() {
                     {onlinePendingCount > 0 ? (
                         <li className="d-flex align-items-center">
                             <Link
-                                href="/calendar"
+                                href="/appointments?status=online_pending"
                                 className="link d-flex align-items-center gap-1 px-2"
                                 title="Wizyty oczekujące na potwierdzenie"
                             >
