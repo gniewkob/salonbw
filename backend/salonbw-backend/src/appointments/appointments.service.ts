@@ -846,4 +846,19 @@ export class AppointmentsService {
 
         return updated;
     }
+
+    async updateNotes(
+        id: number,
+        internalNote: string | null,
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
+        if (!appointment) {
+            throw new BadRequestException('Appointment not found');
+        }
+        appointment.internalNote =
+            internalNote === null ? undefined : internalNote;
+        return this.appointmentsRepository.save(appointment);
+    }
 }

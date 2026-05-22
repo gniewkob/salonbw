@@ -108,6 +108,9 @@ describe('AppointmentDrawer', () => {
         useWarehouseSalesMock.mockReset();
         useCustomerAlertsMock.mockReset();
         trackEventMock.mockReset();
+        // Default: resolve with empty array so formula/notes fetch in useEffect
+        // doesn't throw TypeError when apiFetch returns undefined after reset.
+        apiFetchMock.mockResolvedValue([]);
         useWarehouseSalesMock.mockReturnValue({ data: { items: [] } });
         useCustomerAlertsMock.mockReturnValue({
             alerts: [],
@@ -561,6 +564,7 @@ describe('AppointmentDrawer', () => {
         expect(sectionHeadings).toEqual([
             'Wizyta',
             'Klient',
+            'Formularz zabiegu',
             'Sprzedaż',
             'Akcje',
         ]);

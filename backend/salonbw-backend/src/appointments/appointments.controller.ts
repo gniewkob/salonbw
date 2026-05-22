@@ -437,4 +437,17 @@ export class AppointmentsController {
             id: user.userId,
         } as User);
     }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Patch(':id/notes')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update internal note on appointment' })
+    @ApiResponse({ status: 200, type: Appointment })
+    async updateNotes(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: { internalNote: string | null },
+    ): Promise<Appointment> {
+        return this.appointmentsService.updateNotes(id, body.internalNote);
+    }
 }

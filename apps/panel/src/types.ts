@@ -46,6 +46,13 @@ export interface Appointment {
     internalNote?: string;
 }
 
+export interface Formula {
+    id: number;
+    description: string;
+    date: string;
+    appointment?: { id: number };
+}
+
 export type PriceType = 'fixed' | 'from';
 
 export interface Service {
