@@ -2073,3 +2073,369 @@ h3 {
     background: #2a2414;
     color: #c5a880;
 }
+
+/* ============================================================
+   LIGHT THEME — unified overrides for all salonbw-* components
+   Replaces legacy dark-luxury palette with a clean, light UI.
+   The navbar/sidenav keep their explicit dark colors above.
+   ============================================================ */
+
+/* --- Component backgrounds & borders --- */
+.salonbw-mass-communication__section,
+.salonbw-modal,
+.salonbw-widget,
+.salonbw-stat-card,
+.salonbw-dashboard__section,
+.salonbw-reception-summary,
+.salonbw-reception-table-wrap,
+.salonbw-reception-item,
+.salonbw-panel-sub,
+.salonbw-list-item,
+.salonbw-empty,
+.salonbw-empty-state,
+.salonbw-mini-cal,
+.salonbw-alert,
+.salonbw-variables-help,
+.salonbw-template-item,
+.salonbw-sidebar,
+.salonbw-sidebar-section,
+.salonbw-sidebar__section {
+    background: #ffffff;
+    border-color: #dee2e6;
+}
+
+.salonbw-reception-summary__item,
+.salonbw-reception-summary__item--scheduled,
+.salonbw-reception-summary__item--confirmed,
+.salonbw-reception-summary__item--in-progress,
+.salonbw-reception-summary__item--completed {
+    background: #f8f9fa;
+}
+
+.salonbw-modal__footer,
+.salonbw-modal__header {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+/* --- Text --- */
+.salonbw-mass-communication__section h3,
+.salonbw-modal__header h3,
+.salonbw-panel-sub__title,
+.salonbw-reception-item__title,
+.salonbw-dashboard__title,
+.salonbw-stat-card__value,
+.salonbw-dashboard__section-header h2,
+.salonbw-template-item__name,
+.salonbw-reception-empty h3,
+.salonbw-send-result h3,
+.salonbw-activity-item__title,
+.salonbw-appointment-item__client,
+.salonbw-reception-summary__value {
+    color: #212529;
+}
+
+.salonbw-panel-sub__description,
+.salonbw-panel-sub__meta,
+.salonbw-reception-item__meta,
+.salonbw-reception-item__details,
+.salonbw-template-item__preview,
+.salonbw-reception-phone,
+.salonbw-activity-item__meta,
+.salonbw-appointment-item__service,
+.salonbw-reception-empty p,
+.salonbw-reception-no-actions,
+.salonbw-reception-summary__label,
+.salonbw-section-title,
+.salonbw-sidebar__header,
+.salonbw-muted,
+.salonbw-loading,
+.salonbw-mass-communication__subsection h4 {
+    color: #6c757d;
+}
+
+/* --- Tables --- */
+.salonbw-table th,
+.salonbw-reception-table th,
+.salonbw-widget__header {
+    background: #f0f2f4;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.salonbw-table td,
+.salonbw-reception-table td {
+    border-color: #dee2e6;
+    color: #212529;
+}
+
+.salonbw-table tr:hover,
+.salonbw-reception-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+#salonbw-shell-root .salonbw-table th {
+    background: #f0f2f4;
+    color: #495057;
+    border-color: #dee2e6;
+}
+#salonbw-shell-root .salonbw-table td {
+    color: #212529;
+    border-color: #dee2e6;
+}
+#salonbw-shell-root .salonbw-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* --- Form elements --- */
+.salonbw-input,
+.salonbw-textarea,
+.salonbw-select,
+.salonbw-select--inline,
+.salonbw-sidebar__search,
+.salonbw-toolbar-search {
+    background: #ffffff;
+    border-color: #dee2e6;
+    color: #212529;
+}
+
+.salonbw-form-group label {
+    color: #495057;
+}
+
+/* --- Buttons --- */
+.salonbw-toolbar-btn,
+.salonbw-btn--default,
+.salonbw-btn--light,
+.salonbw-btn--secondary {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+.salonbw-toolbar-btn:hover,
+.salonbw-btn--default:hover,
+.salonbw-btn--light:hover,
+.salonbw-btn--secondary:hover {
+    background: #e9ecef;
+    color: #212529;
+}
+
+/* --- Chips/labels --- */
+.salonbw-label-xs {
+    background: #f0f2f4;
+    color: #495057;
+}
+
+/* --- Dividers / section borders --- */
+.salonbw-mass-communication__subsection {
+    border-left-color: #dee2e6;
+}
+.salonbw-mass-communication__footer,
+.salonbw-dashboard__period,
+.salonbw-dashboard__section-header,
+.salonbw-activity-item,
+.salonbw-appointment-item,
+.salonbw-pagination-footer,
+.salonbw-modal__header,
+.salonbw-modal__footer {
+    border-color: #dee2e6;
+}
+.salonbw-dashboard__section-footer {
+    border-top-color: #dee2e6;
+}
+
+/* --- Icon buttons --- */
+.salonbw-icon-btn {
+    color: #6c757d;
+}
+.salonbw-icon-btn:hover {
+    background: #f0f2f4;
+    color: #495057;
+}
+
+/* --- Mini calendar --- */
+.salonbw-mini-cal__weekdays {
+    border-bottom-color: #dee2e6;
+}
+.salonbw-mini-cal__weekdays span {
+    color: #6c757d;
+}
+.salonbw-mini-cal__day {
+    color: #495057;
+}
+.salonbw-mini-cal__day:hover {
+    background: #f0f2f4;
+    color: #212529;
+}
+.salonbw-mini-cal__day--other-month {
+    color: #adb5bd;
+}
+
+/* --- Modal close --- */
+.salonbw-modal__close {
+    color: #6c757d;
+}
+.salonbw-modal__close:hover {
+    background: #e9ecef;
+    color: #212529;
+}
+
+/* --- Employee filter --- */
+.salonbw-employee-filter__item:hover {
+    background: #f0f2f4;
+}
+.salonbw-employee-filter__name {
+    color: #495057;
+}
+
+/* --- Templates --- */
+.salonbw-template-item {
+    border-color: #dee2e6;
+}
+.salonbw-template-item:hover {
+    border-color: #c5a880;
+    background: rgba(197, 168, 128, 0.05);
+}
+.salonbw-template-item.active {
+    border-color: #c5a880;
+    background: rgba(197, 168, 128, 0.08);
+}
+
+/* --- Channel selector --- */
+.salonbw-channel {
+    border-color: #dee2e6;
+}
+.salonbw-checkbox-row {
+    color: #495057;
+}
+
+/* --- Alert --- */
+.salonbw-alert {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+.salonbw-alert-info {
+    background: #e8f4fd;
+    border-color: #bee3f8;
+    color: #0c5460;
+}
+
+/* --- Communication previews --- */
+.communication-reminder-card {
+    background: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+.sms_thread .message {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+.sms_thread .message.customer {
+    background: #e8f5f2;
+    border-color: #c3e6cb;
+}
+.communication-preview-sms,
+.communication-preview-email__body {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #212529;
+}
+.communication-preview-email__subject {
+    color: #212529;
+}
+
+/* --- Calendar view components (drawer) --- */
+.calendar-view-drafts__item {
+    background: #ffffff;
+    border-color: #dee2e6;
+}
+.calendar-view-drafts__title,
+.calendar-view-form-list__heading {
+    color: #212529;
+}
+.calendar-view-drafts__meta {
+    color: #6c757d;
+}
+.calendar-view-checkbox {
+    color: #495057;
+}
+
+/* --- Legacy modal (non-Bootstrap) --- */
+.modal-content {
+    background: #ffffff;
+    border-color: #dee2e6;
+}
+.modal-header {
+    background: #f8f9fa;
+    border-bottom-color: #dee2e6;
+}
+.modal-title {
+    color: #212529;
+    font-family: 'Open Sans', sans-serif;
+}
+.modal-footer {
+    background: #f8f9fa;
+    border-top-color: #dee2e6;
+}
+.close {
+    color: #6c757d;
+}
+.close:hover {
+    color: #212529;
+}
+
+/* --- Legacy btn-default / label-default --- */
+.btn-default {
+    background: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+.btn-default:hover {
+    background: #f8f9fa;
+    color: #212529;
+}
+.label-default {
+    background: #f0f2f4;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+/* --- Data table rows --- */
+.data_table .table-bordered tr.odd td {
+    background: #f8f9fa;
+}
+.data_table .table-bordered tr.even td {
+    background: #ffffff;
+}
+
+/* --- Dashboard period button --- */
+.salonbw-dashboard__period-btn {
+    color: #6c757d;
+}
+
+/* --- Mobile: tables scrollable --- */
+@media (max-width: 768px) {
+    .salonbw-reception-view,
+    .salonbw-dashboard__grid,
+    .salonbw-dashboard__stats {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .salonbw-dashboard__stats {
+        grid-template-columns: 1fr;
+    }
+
+    .salonbw-dashboard__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .salonbw-channel-selector {
+        flex-direction: column;
+    }
+
+    .salonbw-form-row {
+        grid-template-columns: 1fr;
+    }
+}

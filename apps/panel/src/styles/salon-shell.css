@@ -2492,7 +2492,7 @@ tr.customer-row:hover .customers-drag-handle {
     display: flex;
     min-height: calc(100vh - var(--salon-topbar-h));
     width: 100%;
-    background: #f7f8f9;
+    background: #ffffff;
 }
 
 /* ========================================
@@ -2699,7 +2699,8 @@ body.e2e-extension .main-content .inner {
 .main-content {
     flex: 1;
     overflow: auto;
-    background: #f1f3f5;
+    background: #ffffff;
+    min-width: 0;
 }
 
 .main-content .inner {
@@ -3300,12 +3301,57 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
         width: 50px;
     }
 
+    #sidebar,
+    .sidebar {
+        padding-left: 50px;
+    }
+
     .sidenav {
         display: none;
     }
 
     .navbar .brand {
         left: 60px;
+    }
+
+    /* Content padding on mobile */
+    .main-content .inner {
+        padding: 12px;
+    }
+
+    .salon-section,
+    .salon-column-row {
+        padding: 10px 12px;
+    }
+
+    /* Table horizontal scroll on mobile */
+    .data_table,
+    .salonbw-table-wrap,
+    .salonbw-reception-table-wrap,
+    .table-bordered-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent tables from breaking layout */
+    table {
+        min-width: max-content;
+    }
+
+    /* Stacked column layouts */
+    .salon-column-row .col-md-6,
+    .salon-column-row .col-lg-6 {
+        width: 100%;
+    }
+
+    /* Full-width buttons on mobile */
+    .d-md-none-mobile {
+        display: none !important;
+    }
+
+    /* Topbar omnibox */
+    .navbar .omnibox {
+        max-width: 120px;
     }
 }
 
