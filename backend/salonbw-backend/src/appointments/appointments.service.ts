@@ -198,6 +198,9 @@ export class AppointmentsService {
             data.endTime = this.computeEnd(data.startTime, service.duration);
         }
         await this.assertNoConflict(employee.id, data.startTime, data.endTime);
+        if (data.reservedOnline) {
+            data.status = AppointmentStatus.OnlinePending;
+        }
         const appointment = this.appointmentsRepository.create(data);
         const saved = await this.appointmentsRepository.save(appointment);
         const result = await this.findOne(saved.id);
@@ -463,9 +466,15 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
-        if (appointment.status !== AppointmentStatus.Scheduled) {
+        const reschedulableStatuses = [
+            AppointmentStatus.Scheduled,
+            AppointmentStatus.Confirmed,
+            AppointmentStatus.OnlinePending,
+            AppointmentStatus.RescheduledPending,
+        ];
+        if (!reschedulableStatuses.includes(appointment.status)) {
             throw new BadRequestException(
-                'Only scheduled appointments can be rescheduled',
+                'Only scheduled or confirmed appointments can be rescheduled',
             );
         }
         if (!startTime || isNaN(startTime.getTime())) {
@@ -498,10 +507,18 @@ export class AppointmentsService {
             newEnd,
             id,
         );
+        // When staff reschedules a confirmed appointment, flag it so the
+        // client can accept the new time before it moves back to confirmed.
+        const newStatus =
+            appointment.status === AppointmentStatus.Confirmed
+                ? AppointmentStatus.RescheduledPending
+                : appointment.status;
+
         await this.appointmentsRepository.update(id, {
             startTime,
             endTime: newEnd,
             serviceVariantId: appointment.serviceVariantId ?? null,
+            status: newStatus,
         });
         const updated = await this.findOne(id);
         if (updated) {
@@ -624,12 +641,15 @@ export class AppointmentsService {
             return this.completeAppointment(id, user);
         }
 
-        if (
-            appointment.status === AppointmentStatus.Cancelled ||
-            appointment.status === AppointmentStatus.Completed
-        ) {
+        const terminalStatuses = [
+            AppointmentStatus.Cancelled,
+            AppointmentStatus.Completed,
+            AppointmentStatus.NoShow,
+            AppointmentStatus.InProgress,
+        ];
+        if (terminalStatuses.includes(appointment.status)) {
             throw new BadRequestException(
-                'Cannot change status for cancelled or completed appointment',
+                `Cannot change status from ${appointment.status}`,
             );
         }
 
@@ -645,6 +665,12 @@ export class AppointmentsService {
             [AppointmentStatus.Confirmed]: [
                 AppointmentStatus.InProgress,
                 AppointmentStatus.NoShow,
+            ],
+            // Staff can confirm or cancel an online booking request
+            [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
+            // Client can confirm the new time or cancel after staff reschedule
+            [AppointmentStatus.RescheduledPending]: [
+                AppointmentStatus.Confirmed,
             ],
             [AppointmentStatus.InProgress]: [],
             [AppointmentStatus.NoShow]: [],

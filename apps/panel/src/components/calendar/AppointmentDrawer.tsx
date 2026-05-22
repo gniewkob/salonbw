@@ -202,13 +202,21 @@ export default function AppointmentDrawer({
         Number(clientId) > 0;
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
-    const canConfirm = currentStatus === 'scheduled';
+    const isOnlinePending = currentStatus === 'online_pending';
+    const isRescheduledPending = currentStatus === 'rescheduled_pending';
+    const canConfirm =
+        currentStatus === 'scheduled' ||
+        isOnlinePending ||
+        isRescheduledPending;
     const canStart =
         currentStatus === 'scheduled' || currentStatus === 'confirmed';
     const canNoShow =
         currentStatus === 'scheduled' || currentStatus === 'confirmed';
     const canCancel =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+        currentStatus === 'scheduled' ||
+        currentStatus === 'confirmed' ||
+        isOnlinePending ||
+        isRescheduledPending;
     const canComplete = currentStatus === 'in_progress';
 
     const handleCreate = async () => {
@@ -455,7 +463,61 @@ export default function AppointmentDrawer({
                         </div>
                         {appointment ? (
                             <div className="mt-2 pt-2 border-top small">
-                                <div>Status: {appointment.status ?? '-'}</div>
+                                <div className="d-flex align-items-center gap-2 mb-1">
+                                    <span>Status:</span>
+                                    <span
+                                        className={`badge ${
+                                            currentStatus === 'online_pending'
+                                                ? 'text-bg-warning'
+                                                : currentStatus ===
+                                                    'rescheduled_pending'
+                                                  ? 'text-bg-warning'
+                                                  : currentStatus ===
+                                                      'confirmed'
+                                                    ? 'text-bg-success'
+                                                    : currentStatus ===
+                                                        'in_progress'
+                                                      ? 'text-bg-primary'
+                                                      : currentStatus ===
+                                                          'cancelled'
+                                                        ? 'text-bg-danger'
+                                                        : 'text-bg-secondary'
+                                        }`}
+                                    >
+                                        {currentStatus === 'online_pending'
+                                            ? 'Oczekuje na potwierdzenie'
+                                            : currentStatus ===
+                                                'rescheduled_pending'
+                                              ? 'Przeniesiona — wymaga akceptacji'
+                                              : currentStatus === 'confirmed'
+                                                ? 'Potwierdzona'
+                                                : currentStatus ===
+                                                    'in_progress'
+                                                  ? 'W trakcie'
+                                                  : currentStatus ===
+                                                      'completed'
+                                                    ? 'Zakończona'
+                                                    : currentStatus ===
+                                                        'cancelled'
+                                                      ? 'Anulowana'
+                                                      : currentStatus ===
+                                                          'no_show'
+                                                        ? 'No-show'
+                                                        : 'Zaplanowana'}
+                                    </span>
+                                </div>
+                                {isOnlinePending && (
+                                    <p className="text-warning-emphasis small mb-1">
+                                        Klient zarezerwował online — potwierdź
+                                        lub odrzuć rezerwację.
+                                    </p>
+                                )}
+                                {isRescheduledPending && (
+                                    <p className="text-warning-emphasis small mb-1">
+                                        Wizyta przeniesiona — oczekuje na
+                                        akceptację klienta.
+                                    </p>
+                                )}
                                 <div>
                                     Płatność:{' '}
                                     {appointment.paymentStatus ?? 'nieopłacona'}
@@ -779,7 +841,7 @@ export default function AppointmentDrawer({
                                     {canConfirm ? (
                                         <button
                                             type="button"
-                                            className="btn btn-outline-primary"
+                                            className={`btn ${isOnlinePending ? 'btn-success' : 'btn-outline-primary'}`}
                                             onClick={() =>
                                                 void handleStatusChange(
                                                     'confirmed',
@@ -787,7 +849,11 @@ export default function AppointmentDrawer({
                                             }
                                             disabled={saving}
                                         >
-                                            Potwierdź
+                                            {isOnlinePending
+                                                ? 'Potwierdź rezerwację'
+                                                : isRescheduledPending
+                                                  ? 'Zaakceptuj nowy termin'
+                                                  : 'Potwierdź'}
                                         </button>
                                     ) : null}
                                     {canStart ? (

@@ -46,6 +46,8 @@ const STATUS_STYLES: Record<string, string> = {
     completed: 'opacity-60',
     cancelled: 'opacity-40 line-through',
     no_show: 'opacity-40 bg-red-100',
+    online_pending: 'opacity-100 ring-2 ring-orange-400',
+    rescheduled_pending: 'opacity-100 ring-2 ring-yellow-500',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -55,6 +57,8 @@ const STATUS_LABELS: Record<string, string> = {
     completed: 'Zakończona',
     cancelled: 'Anulowana',
     no_show: 'No-show',
+    online_pending: 'Oczekuje na potwierdzenie',
+    rescheduled_pending: 'Przeniesiona — wymaga akceptacji',
 };
 
 const ALERT_BADGE_STYLES: Record<ReceptionAlertSeverity, string> = {
