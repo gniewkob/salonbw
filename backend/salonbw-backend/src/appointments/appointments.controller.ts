@@ -120,6 +120,7 @@ export class AppointmentsController {
                 service: { id: body.serviceId } as SalonService,
                 serviceVariantId: body.serviceVariantId,
                 startTime: new Date(body.startTime),
+                reservedOnline: !isStaff ? true : undefined,
             },
             { id: user.userId } as User,
         );

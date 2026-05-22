@@ -26,4 +26,12 @@ export class CreateAppointmentDto {
     @IsInt()
     @IsOptional()
     clientId?: number;
+
+    @ApiProperty({
+        required: false,
+        description:
+            'Set to true when client books online — creates appointment with online_pending status',
+    })
+    @IsOptional()
+    reservedOnline?: boolean;
 }
