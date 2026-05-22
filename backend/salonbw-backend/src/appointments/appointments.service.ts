@@ -844,8 +844,12 @@ export class AppointmentsService {
                     },
                     user,
                 );
-            } catch {
+            } catch (err) {
                 // Non-fatal: usage deduction failure does not roll back finalization
+                console.error(
+                    `[finalize] usage deduction failed for appointment ${id}:`,
+                    err,
+                );
             }
         }
 
@@ -931,7 +935,7 @@ export class AppointmentsService {
             .map((item) => ({
                 productId: item.product!.id,
                 productName: item.product!.name,
-                quantity: Math.max(1, Math.round(item.quantity ?? 1)),
+                quantity: Math.max(0.01, +(item.quantity ?? 1).toFixed(2)),
                 unit: item.unit ?? 'op.',
             }));
     }

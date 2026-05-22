@@ -54,6 +54,16 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
         className: 'salonbw-status--no-show',
         actions: [],
     },
+    online_pending: {
+        label: 'Oczekuje online',
+        className: 'salonbw-status--online_pending',
+        actions: ['cancel'],
+    },
+    rescheduled_pending: {
+        label: 'Przeniesiona',
+        className: 'salonbw-status--rescheduled_pending',
+        actions: ['cancel'],
+    },
 };
 
 const ACTION_CONFIG: Record<

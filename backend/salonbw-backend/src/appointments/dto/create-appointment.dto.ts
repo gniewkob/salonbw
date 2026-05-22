@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsDateString, IsOptional } from 'class-validator';
+import { IsInt, IsDateString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateAppointmentDto {
     @ApiProperty()
@@ -32,6 +32,7 @@ export class CreateAppointmentDto {
         description:
             'Set to true when client books online — creates appointment with online_pending status',
     })
+    @IsBoolean()
     @IsOptional()
     reservedOnline?: boolean;
 }
