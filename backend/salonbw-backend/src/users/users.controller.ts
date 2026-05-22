@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Patch,
+    Post,
+    UseGuards,
+    Query,
+} from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -12,6 +20,7 @@ import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateConsentDto } from './dto/update-consent.dto';
 import { UserDto } from './dto/user.dto';
 import { Role } from './role.enum';
 import { IsEnum, IsOptional } from 'class-validator';
@@ -43,6 +52,20 @@ export class UsersController {
         const { password: _password, ...safeProfile } = profile;
         void _password;
         return safeProfile;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
+    @SkipThrottle()
+    @Patch('profile/consent')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update current user GDPR consent preferences' })
+    @ApiResponse({ status: 200 })
+    async updateConsent(
+        @CurrentUser() user: { userId: number },
+        @Body() dto: UpdateConsentDto,
+    ) {
+        return this.usersService.updateConsent(user.userId, dto);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

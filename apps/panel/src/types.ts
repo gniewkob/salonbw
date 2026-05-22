@@ -15,6 +15,10 @@ export interface User {
     firstName?: string;
     lastName?: string;
     avatarUrl?: string;
+    gdprConsent?: boolean;
+    gdprConsentDate?: string;
+    smsConsent?: boolean;
+    emailConsent?: boolean;
 }
 
 export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'online' | 'voucher';

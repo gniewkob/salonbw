@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 import { Role } from './role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateConsentDto } from './dto/update-consent.dto';
 
 @Injectable()
 export class UsersService {
@@ -73,6 +74,7 @@ export class UsersService {
 
         const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+        const gdprConsent = dto.gdprConsent ?? false;
         const user = this.usersRepository.create({
             email: dto.email,
             name: dto.name,
@@ -81,6 +83,10 @@ export class UsersService {
             phone: dto.phone ?? null,
             commissionBase: dto.commissionBase ?? 0,
             receiveNotifications: dto.receiveNotifications ?? true,
+            gdprConsent,
+            gdprConsentDate: gdprConsent ? new Date() : undefined,
+            smsConsent: dto.smsConsent ?? false,
+            emailConsent: dto.emailConsent ?? false,
         });
 
         return await this.usersRepository.save(user);
@@ -105,6 +111,22 @@ export class UsersService {
             receiveNotifications: dto.receiveNotifications ?? true,
         });
         return await this.usersRepository.save(user);
+    }
+
+    async updateConsent(
+        id: number,
+        dto: UpdateConsentDto,
+    ): Promise<Pick<User, 'smsConsent' | 'emailConsent'>> {
+        const update: Partial<User> = {};
+        if (dto.smsConsent !== undefined) update.smsConsent = dto.smsConsent;
+        if (dto.emailConsent !== undefined)
+            update.emailConsent = dto.emailConsent;
+        await this.usersRepository.update(id, update);
+        const updated = await this.findById(id);
+        return {
+            smsConsent: updated?.smsConsent ?? false,
+            emailConsent: updated?.emailConsent ?? false,
+        };
     }
 
     async updateName(id: number, name: string): Promise<User | null> {
