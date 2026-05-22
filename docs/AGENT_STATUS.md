@@ -1,6 +1,27 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-05-16 (panel green regression baseline recorded after Sprint 36)_
+_Last updated: 2026-05-22 (booking role-gating + privacy consent guard)_
+
+Operational note (2026-05-22) — booking role-gating hotfix (`reservedOnline`):
+- Fixed panel booking payload rule in `apps/panel/src/pages/booking.tsx`:
+  - `client` -> `reservedOnline: true`,
+  - `admin` / `employee` / `receptionist` -> `reservedOnline: false`.
+- Added panel regression test coverage:
+  - `apps/panel/src/__tests__/bookingPage.test.tsx` validates POST `/appointments` payload for all four roles.
+- Added backend contract coverage in `backend/salonbw-backend/src/appointments/appointments.service.spec.ts`:
+  - `reservedOnline=true` produces `online_pending`,
+  - `reservedOnline=false` keeps `scheduled`.
+- Extended appointments test context mock (`backend/salonbw-backend/src/appointments/test-context.ts`) with `sendNewOnlineBookingAlert` to match current service behavior.
+- Validation snapshot:
+  - panel: `lint` (warnings only), `typecheck`, `test -- bookingPage.test.tsx` -> pass,
+  - backend: `test -- appointments.service.spec.ts`, `typecheck` -> pass.
+
+Operational note (2026-05-22) — privacy consent overwrite guard:
+- Closed the review follow-up risk in `apps/panel/src/pages/settings/privacy.tsx`.
+- On `/users/profile` load failure the page now:
+  - shows explicit error messaging,
+  - provides a retry action,
+  - blocks consent save to prevent accidental overwrite with default `false` values.
 
 Operational note (2026-05-17) — Sprint 45 Step 1 (Dependency & Security Triage report):
 - Added triage report in `docs/SECURITY_DEPENDENCY_TRIAGE.md` based on:

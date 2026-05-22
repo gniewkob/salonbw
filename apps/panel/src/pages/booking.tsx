@@ -168,7 +168,7 @@ export default function BookingPage() {
                     serviceId: selectedService.id,
                     employeeId: selectedSlot.employeeId,
                     startTime: selectedSlot.time,
-                    reservedOnline: true,
+                    reservedOnline: role === 'client',
                 }),
             });
             setCreatedAppointmentId(result.id);

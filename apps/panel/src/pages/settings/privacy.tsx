@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -10,6 +10,7 @@ export default function PrivacySettingsPage() {
 
     const [profile, setProfile] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [saveSuccess, setSaveSuccess] = useState(false);
@@ -17,18 +18,29 @@ export default function PrivacySettingsPage() {
     const [smsConsent, setSmsConsent] = useState(false);
     const [emailConsent, setEmailConsent] = useState(false);
 
-    useEffect(() => {
+    const loadProfile = useCallback(() => {
+        setLoading(true);
+        setLoadError('');
         apiFetch<User>('/users/profile')
             .then((data) => {
                 setProfile(data);
                 setSmsConsent(data.smsConsent ?? false);
                 setEmailConsent(data.emailConsent ?? false);
             })
-            .catch(() => {})
+            .catch(() => {
+                setLoadError(
+                    'Nie udało się załadować aktualnych zgód. Spróbuj ponownie.',
+                );
+            })
             .finally(() => setLoading(false));
     }, [apiFetch]);
 
+    useEffect(() => {
+        loadProfile();
+    }, [loadProfile]);
+
     const handleSave = async () => {
+        if (loadError) return;
         setSaving(true);
         setSaveError('');
         setSaveSuccess(false);
@@ -63,6 +75,19 @@ export default function PrivacySettingsPage() {
                                 <p className="text-muted">
                                     Ładowanie ustawień...
                                 </p>
+                            ) : loadError ? (
+                                <div className="border rounded p-3 mb-4">
+                                    <p className="text-danger small mb-3">
+                                        {loadError}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary btn-sm"
+                                        onClick={loadProfile}
+                                    >
+                                        Spróbuj ponownie
+                                    </button>
+                                </div>
                             ) : (
                                 <>
                                     {profile && (

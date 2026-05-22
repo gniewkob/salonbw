@@ -1,10 +1,35 @@
 # Implementation Backlog Status
 
-_Last updated: 2026-03-12_
+_Last updated: 2026-05-22_
 
 This file tracks the current status of the AI-ready implementation backlog against the repository state.
 
 ## Closed in Code
+
+### 0. Booking role gating for `reservedOnline`
+
+- Status: implemented
+- Files:
+  - `apps/panel/src/pages/booking.tsx`
+  - `apps/panel/src/__tests__/bookingPage.test.tsx`
+  - `backend/salonbw-backend/src/appointments/appointments.service.spec.ts`
+  - `backend/salonbw-backend/src/appointments/test-context.ts`
+- Current behavior:
+  - panel booking wizard sends `reservedOnline=true` only for role `client`
+  - staff roles (`admin`, `employee`, `receptionist`) send `reservedOnline=false`
+  - backend service coverage confirms:
+    - `reservedOnline=true` => `AppointmentStatus.OnlinePending`
+    - `reservedOnline=false` => `AppointmentStatus.Scheduled`
+
+### 0a. Privacy consents load guard (prevent accidental overwrite)
+
+- Status: implemented
+- File:
+  - `apps/panel/src/pages/settings/privacy.tsx`
+- Current behavior:
+  - failed `/users/profile` load now shows explicit error state with retry button,
+  - consent save action is blocked when profile load fails,
+  - page no longer silently falls back to default `false` consent toggles on load failure.
 
 ### 1. Employee ranking N+1
 
