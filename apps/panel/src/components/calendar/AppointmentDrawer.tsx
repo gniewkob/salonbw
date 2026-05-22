@@ -746,12 +746,15 @@ export default function AppointmentDrawer({
                                 </div>
                             </div>
                         )}
-                        {appointment?.client?.phone || appointment?.client?.email ? (
+                        {appointment?.client?.phone ||
+                        appointment?.client?.email ? (
                             <div className="mt-2 pt-2 border-top small">
                                 {appointment.client.phone && (
                                     <div>
                                         Tel:{' '}
-                                        <a href={`tel:${appointment.client.phone}`}>
+                                        <a
+                                            href={`tel:${appointment.client.phone}`}
+                                        >
                                             {appointment.client.phone}
                                         </a>
                                     </div>
@@ -759,7 +762,9 @@ export default function AppointmentDrawer({
                                 {appointment.client.email && (
                                     <div>
                                         E-mail:{' '}
-                                        <a href={`mailto:${appointment.client.email}`}>
+                                        <a
+                                            href={`mailto:${appointment.client.email}`}
+                                        >
                                             {appointment.client.email}
                                         </a>
                                     </div>

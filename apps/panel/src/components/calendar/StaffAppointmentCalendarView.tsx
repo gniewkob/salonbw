@@ -171,104 +171,105 @@ export default function StaffAppointmentCalendarView({
 
     return (
         <>
-        <FinalizationModal
-            open={finalizingAppointment !== null}
-            appointment={finalizingAppointment}
-            onClose={() => setFinalizingAppointment(null)}
-            onSuccess={() => {
-                setFinalizingAppointment(null);
-                onChanged?.();
-            }}
-        />
-        <div className="salonbw-reception-list">
-            {sortedAppointments.map((appointment) => {
-                const status = appointment.status || 'scheduled';
-                const statusConfig =
-                    STATUS_CONFIG[status] || STATUS_CONFIG.scheduled;
-                const actions = readOnly ? [] : statusConfig.actions;
-                return (
-                    <article
-                        key={appointment.id}
-                        className="salonbw-reception-item"
-                    >
-                        <div className="salonbw-reception-item__header">
-                            <div>
-                                <h4 className="salonbw-reception-item__title">
-                                    {appointment.service?.name || 'Wizyta'}
-                                </h4>
-                                <div className="salonbw-reception-item__meta">
-                                    <span>
-                                        {formatTime(appointment.startTime)} -{' '}
-                                        {formatTime(
-                                            appointment.endTime ??
+            <FinalizationModal
+                open={finalizingAppointment !== null}
+                appointment={finalizingAppointment}
+                onClose={() => setFinalizingAppointment(null)}
+                onSuccess={() => {
+                    setFinalizingAppointment(null);
+                    onChanged?.();
+                }}
+            />
+            <div className="salonbw-reception-list">
+                {sortedAppointments.map((appointment) => {
+                    const status = appointment.status || 'scheduled';
+                    const statusConfig =
+                        STATUS_CONFIG[status] || STATUS_CONFIG.scheduled;
+                    const actions = readOnly ? [] : statusConfig.actions;
+                    return (
+                        <article
+                            key={appointment.id}
+                            className="salonbw-reception-item"
+                        >
+                            <div className="salonbw-reception-item__header">
+                                <div>
+                                    <h4 className="salonbw-reception-item__title">
+                                        {appointment.service?.name || 'Wizyta'}
+                                    </h4>
+                                    <div className="salonbw-reception-item__meta">
+                                        <span>
+                                            {formatTime(appointment.startTime)}{' '}
+                                            -{' '}
+                                            {formatTime(
+                                                appointment.endTime ??
+                                                    appointment.startTime,
+                                            )}
+                                        </span>
+                                        <span>·</span>
+                                        <span>
+                                            {formatDuration(
                                                 appointment.startTime,
-                                        )}
-                                    </span>
-                                    <span>·</span>
-                                    <span>
-                                        {formatDuration(
-                                            appointment.startTime,
-                                            appointment.endTime,
-                                        )}
-                                    </span>
+                                                appointment.endTime,
+                                            )}
+                                        </span>
+                                    </div>
                                 </div>
+                                <span
+                                    className={`salonbw-status-badge ${statusConfig.className}`}
+                                >
+                                    {statusConfig.label}
+                                </span>
                             </div>
-                            <span
-                                className={`salonbw-status-badge ${statusConfig.className}`}
-                            >
-                                {statusConfig.label}
-                            </span>
-                        </div>
-                        <div className="salonbw-reception-item__details">
-                            <span>
-                                {appointment.client?.name || 'Brak klienta'}
-                            </span>
-                        </div>
-                        <div className="salonbw-reception-item__actions">
-                            {actions.map((action) => {
-                                const config = ACTION_CONFIG[action];
-                                const isPending =
-                                    pendingAction?.appointmentId ===
-                                        appointment.id &&
-                                    pendingAction.action === action;
-                                return (
-                                    <button
-                                        key={action}
-                                        type="button"
-                                        className={`salonbw-btn salonbw-btn--sm ${config.className}`}
-                                        onClick={() =>
-                                            void handleAction(
-                                                appointment,
-                                                action,
-                                            )
-                                        }
-                                        disabled={Boolean(pendingAction)}
-                                    >
-                                        {isPending
-                                            ? 'Zapisywanie...'
-                                            : config.label}
-                                    </button>
-                                );
-                            })}
-                            <button
-                                type="button"
-                                className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
-                                onClick={() =>
-                                    onOpenAppointment?.(appointment.id)
-                                }
-                            >
-                                Otwórz
-                            </button>
-                        </div>
-                        {actionErrorByAppointmentId[appointment.id] ? (
-                            <p className="text-danger small mb-0 mt-2">
-                                {actionErrorByAppointmentId[appointment.id]}
-                            </p>
-                        ) : null}
-                    </article>
-                );
-            })}
-        </div>
+                            <div className="salonbw-reception-item__details">
+                                <span>
+                                    {appointment.client?.name || 'Brak klienta'}
+                                </span>
+                            </div>
+                            <div className="salonbw-reception-item__actions">
+                                {actions.map((action) => {
+                                    const config = ACTION_CONFIG[action];
+                                    const isPending =
+                                        pendingAction?.appointmentId ===
+                                            appointment.id &&
+                                        pendingAction.action === action;
+                                    return (
+                                        <button
+                                            key={action}
+                                            type="button"
+                                            className={`salonbw-btn salonbw-btn--sm ${config.className}`}
+                                            onClick={() =>
+                                                void handleAction(
+                                                    appointment,
+                                                    action,
+                                                )
+                                            }
+                                            disabled={Boolean(pendingAction)}
+                                        >
+                                            {isPending
+                                                ? 'Zapisywanie...'
+                                                : config.label}
+                                        </button>
+                                    );
+                                })}
+                                <button
+                                    type="button"
+                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
+                                    onClick={() =>
+                                        onOpenAppointment?.(appointment.id)
+                                    }
+                                >
+                                    Otwórz
+                                </button>
+                            </div>
+                            {actionErrorByAppointmentId[appointment.id] ? (
+                                <p className="text-danger small mb-0 mt-2">
+                                    {actionErrorByAppointmentId[appointment.id]}
+                                </p>
+                            ) : null}
+                        </article>
+                    );
+                })}
+            </div>
         </>
     );
 }
