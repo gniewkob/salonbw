@@ -46,21 +46,26 @@ export class AppointmentsController {
     @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
     @Get()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'List appointments (admin, optional filters)' })
-    @ApiResponse({ status: 200, type: Appointment, isArray: true })
-    findAll(
+    @ApiOperation({ summary: 'List appointments with filters and pagination' })
+    @ApiResponse({ status: 200, description: 'Paginated appointment list' })
+    async findAll(
         @Query(new ValidationPipe({ transform: true }))
         query: GetAppointmentsDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment[]> {
+    ) {
         if (user.role === Role.Admin || user.role === Role.Receptionist) {
             return this.appointmentsService.findAllInRange({
                 from: query.from ? new Date(query.from) : undefined,
                 to: query.to ? new Date(query.to) : undefined,
                 employeeId: query.employeeId,
+                status: query.status,
+                search: query.search,
+                page: query.page,
+                limit: query.limit,
             });
         }
-        return this.appointmentsService.findForUser(user.userId);
+        const items = await this.appointmentsService.findForUser(user.userId);
+        return { items, total: items.length, page: 1, pageSize: items.length };
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

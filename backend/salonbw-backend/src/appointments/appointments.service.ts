@@ -14,6 +14,7 @@ import {
     Not,
     Between,
     FindOptionsWhere,
+    ILike,
 } from 'typeorm';
 import {
     Appointment,
@@ -152,27 +153,54 @@ export class AppointmentsService {
         return { date, time };
     }
 
-    findAllInRange(params: {
+    async findAllInRange(params: {
         from?: Date;
         to?: Date;
         employeeId?: number;
-    }): Promise<Appointment[]> {
-        const where: FindOptionsWhere<Appointment> & {
-            employee?: { id: number };
-        } = {};
-        if (params.employeeId) where.employee = { id: params.employeeId };
-        if (params.from && params.to) {
-            where.startTime = Between(params.from, params.to);
-        } else if (params.from) {
-            where.startTime = MoreThan(params.from);
-        } else if (params.to) {
-            where.startTime = LessThan(params.to);
+        status?: AppointmentStatus;
+        search?: string;
+        page?: number;
+        limit?: number;
+    }): Promise<{ items: Appointment[]; total: number; page: number; pageSize: number }> {
+        const page = params.page ?? 1;
+        const pageSize = Math.min(params.limit ?? 50, 200);
+
+        const buildWhere = (extraClientWhere?: FindOptionsWhere<{ firstName?: string; lastName?: string; phone?: string }>): FindOptionsWhere<Appointment> => {
+            const where: FindOptionsWhere<Appointment> = {};
+            if (params.employeeId) where.employee = { id: params.employeeId };
+            if (params.status) where.status = params.status;
+            if (extraClientWhere) where.client = extraClientWhere as any;
+            if (params.from && params.to) {
+                where.startTime = Between(params.from, params.to);
+            } else if (params.from) {
+                where.startTime = MoreThan(params.from);
+            } else if (params.to) {
+                where.startTime = LessThan(params.to);
+            }
+            return where;
+        };
+
+        let whereCondition: FindOptionsWhere<Appointment> | FindOptionsWhere<Appointment>[];
+        if (params.search) {
+            const term = `%${params.search}%`;
+            whereCondition = [
+                buildWhere({ firstName: ILike(term) } as any),
+                buildWhere({ lastName: ILike(term) } as any),
+                buildWhere({ phone: ILike(term) } as any),
+            ];
+        } else {
+            whereCondition = buildWhere();
         }
-        return this.appointmentsRepository.find({
-            where,
-            order: { startTime: 'ASC' },
-            relations: ['formulas'],
+
+        const [items, total] = await this.appointmentsRepository.findAndCount({
+            where: whereCondition,
+            order: { startTime: 'DESC' },
+            relations: ['client', 'employee', 'service', 'serviceVariant'],
+            skip: (page - 1) * pageSize,
+            take: pageSize,
         });
+
+        return { items, total, page, pageSize };
     }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {

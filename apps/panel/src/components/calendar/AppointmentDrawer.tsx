@@ -459,7 +459,7 @@ export default function AppointmentDrawer({
         <>
             <div
                 className="position-fixed top-0 end-0 h-100 bg-white border-start shadow-lg"
-                style={{ width: '420px', zIndex: 1100 }}
+                style={{ width: 'min(420px, 100vw)', zIndex: 1100 }}
                 role="dialog"
                 aria-label="Appointment drawer"
             >
