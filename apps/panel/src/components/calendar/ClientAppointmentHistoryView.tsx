@@ -93,14 +93,14 @@ export default function ClientAppointmentHistoryView({
                 kind: 'success',
                 appointmentId,
                 message:
-                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                    'Prośba o anulowanie została zapisana. Recepcja skontaktuje się z Tobą.',
             });
         } catch {
             setRequestState({
                 kind: 'error',
                 appointmentId,
                 message:
-                    'Nie udalo sie wyslac prosby o anulowanie. Sprobuj ponownie.',
+                    'Nie udało się wysłać prośby o anulowanie. Spróbuj ponownie.',
             });
         } finally {
             setPendingRequestId(null);
@@ -119,7 +119,7 @@ export default function ClientAppointmentHistoryView({
                     + Zarezerwuj wizytę
                 </button>
             </div>
-            <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
+            <div className="d-flex flex-wrap align-items-end gap-3 rounded border p-2">
                 <div>
                     <label
                         className="form-label form-label-sm mb-1"
@@ -144,11 +144,11 @@ export default function ClientAppointmentHistoryView({
             </div>
             <div className="row g-3">
                 <section className="col-12 col-lg-6">
-                    <div className="border rounded bg-white p-3 h-100">
-                        <h3 className="h6 mb-2">Nadchodzace wizyty</h3>
+                    <div className="border rounded p-3 h-100">
+                        <h3 className="h6 mb-2">Nadchodzące wizyty</h3>
                         {futureAppointments.length === 0 ? (
                             <p className="text-muted small mb-0">
-                                Brak nadchodzacych wizyt.
+                                Brak nadchodzących wizyt.
                             </p>
                         ) : (
                             <div className="d-flex flex-column gap-2">
@@ -237,8 +237,8 @@ export default function ClientAppointmentHistoryView({
                                             >
                                                 {pendingRequestId ===
                                                 appointment.id
-                                                    ? 'Wysylanie...'
-                                                    : 'Popros o anulowanie'}
+                                                    ? 'Wysyłanie...'
+                                                    : 'Poproś o anulowanie'}
                                             </button>
                                         ) : null}
                                         {requestState?.appointmentId ===
@@ -261,7 +261,7 @@ export default function ClientAppointmentHistoryView({
                     </div>
                 </section>
                 <section className="col-12 col-lg-6">
-                    <div className="border rounded bg-white p-3 h-100">
+                    <div className="border rounded p-3 h-100">
                         <h3 className="h6 mb-2">Historia wizyt</h3>
                         {archivedAppointments.length === 0 ? (
                             <p className="text-muted small mb-0">
@@ -293,13 +293,13 @@ export default function ClientAppointmentHistoryView({
                 </section>
             </div>
             <section
-                className="border rounded bg-white p-3"
+                className="border rounded p-3"
                 data-testid="client-appointment-details"
             >
-                <h3 className="h6 mb-2">Szczegoly wizyty (tylko odczyt)</h3>
+                <h3 className="h6 mb-2">Szczegóły wizyty (tylko odczyt)</h3>
                 {selectedAppointment ? (
                     <dl className="row mb-0">
-                        <dt className="col-sm-3">Usluga</dt>
+                        <dt className="col-sm-3">Usługa</dt>
                         <dd className="col-sm-9">
                             {selectedAppointment.service?.name ?? '-'}
                         </dd>
@@ -324,7 +324,7 @@ export default function ClientAppointmentHistoryView({
                     </dl>
                 ) : (
                     <p className="text-muted small mb-0">
-                        Wybierz wizyte z listy, aby zobaczyc szczegoly.
+                        Wybierz wizytę z listy, aby zobaczyć szczegóły.
                     </p>
                 )}
             </section>

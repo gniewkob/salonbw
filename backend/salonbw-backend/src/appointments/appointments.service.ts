@@ -781,41 +781,40 @@ export class AppointmentsService {
                     user,
                     manager,
                 );
-
-                // Process product sales (upselling) if any
-                if (
-                    dto.products &&
-                    dto.products.length > 0 &&
-                    this.retailService
-                ) {
-                    for (const productSale of dto.products) {
-                        const customerName = [
-                            appointment.client.firstName,
-                            appointment.client.lastName,
-                        ]
-                            .filter((part) => Boolean(part && part.trim()))
-                            .join(' ')
-                            .trim();
-                        await this.retailService.createSale(
-                            {
-                                productId: productSale.productId,
-                                quantity: productSale.quantity,
-                                unitPriceCents: productSale.unitPriceCents,
-                                discountCents: productSale.discountCents,
-                                employeeId: appointment.employee.id,
-                                appointmentId: appointment.id,
-                                clientId: appointment.client.id,
-                                clientName:
-                                    customerName.length > 0
-                                        ? customerName
-                                        : (appointment.client.name ?? null),
-                            },
-                            user,
-                        );
-                    }
-                }
             },
         );
+
+        // Process product sales (upselling) after main transaction commits.
+        // createSale uses its own transaction so it cannot join the outer one;
+        // running it post-commit prevents partial-sale state when the outer
+        // transaction rolls back.
+        if (dto.products && dto.products.length > 0 && this.retailService) {
+            const customerName = [
+                appointment.client.firstName,
+                appointment.client.lastName,
+            ]
+                .filter((part) => Boolean(part && part.trim()))
+                .join(' ')
+                .trim();
+            for (const productSale of dto.products) {
+                await this.retailService.createSale(
+                    {
+                        productId: productSale.productId,
+                        quantity: productSale.quantity,
+                        unitPriceCents: productSale.unitPriceCents,
+                        discountCents: productSale.discountCents,
+                        employeeId: appointment.employee.id,
+                        appointmentId: appointment.id,
+                        clientId: appointment.client.id,
+                        clientName:
+                            customerName.length > 0
+                                ? customerName
+                                : (appointment.client.name ?? null),
+                    },
+                    user,
+                );
+            }
+        }
 
         // Deduct materials used during the service from warehouse stock
         if (dto.usageItems && dto.usageItems.length > 0 && this.retailService) {
@@ -839,7 +838,7 @@ export class AppointmentsService {
                         clientName:
                             clientName.length > 0
                                 ? clientName
-                                : (appointment.client.name || undefined),
+                                : appointment.client.name || undefined,
                         scope: 'completed',
                     },
                     user,
@@ -911,9 +910,7 @@ export class AppointmentsService {
         return this.appointmentsRepository.count({ where });
     }
 
-    async getUsageSuggestions(
-        id: number,
-    ): Promise<
+    async getUsageSuggestions(id: number): Promise<
         {
             productId: number;
             productName: string;
