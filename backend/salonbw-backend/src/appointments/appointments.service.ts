@@ -220,8 +220,8 @@ export class AppointmentsService {
             entity: 'appointment',
             id: result.id,
         });
+        const { date, time } = this.formatDate(result.startTime);
         if (client.phone && client.receiveNotifications) {
-            const { date, time } = this.formatDate(result.startTime);
             try {
                 await this.whatsappService.sendBookingConfirmation(
                     client.phone,
@@ -235,6 +235,29 @@ export class AppointmentsService {
             console.warn(
                 'Client has no phone number or notifications disabled; skipping booking confirmation',
             );
+        }
+        if (
+            result.status === AppointmentStatus.OnlinePending &&
+            employee.phone
+        ) {
+            const clientName = [client.firstName, client.lastName]
+                .filter(Boolean)
+                .join(' ')
+                .trim();
+            try {
+                await this.whatsappService.sendNewOnlineBookingAlert(
+                    employee.phone,
+                    clientName || client.name || 'Klient',
+                    result.service.name,
+                    date,
+                    time,
+                );
+            } catch (error) {
+                console.error(
+                    'Failed to send online booking alert to employee',
+                    error,
+                );
+            }
         }
         return result;
     }
