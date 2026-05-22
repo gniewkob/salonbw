@@ -746,6 +746,26 @@ export default function AppointmentDrawer({
                                 </div>
                             </div>
                         )}
+                        {appointment?.client?.phone || appointment?.client?.email ? (
+                            <div className="mt-2 pt-2 border-top small">
+                                {appointment.client.phone && (
+                                    <div>
+                                        Tel:{' '}
+                                        <a href={`tel:${appointment.client.phone}`}>
+                                            {appointment.client.phone}
+                                        </a>
+                                    </div>
+                                )}
+                                {appointment.client.email && (
+                                    <div>
+                                        E-mail:{' '}
+                                        <a href={`mailto:${appointment.client.email}`}>
+                                            {appointment.client.email}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
                         {appointment ? (
                             <div className="mt-2 pt-2 border-top small">
                                 <div className="d-flex align-items-center justify-content-between">

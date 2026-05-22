@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { Appointment, AppointmentStatus } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
+import FinalizationModal from './FinalizationModal';
 
 interface StaffAppointmentCalendarViewProps {
     appointments: Appointment[];
@@ -14,7 +15,7 @@ interface StaffAppointmentCalendarViewProps {
     onOpenAppointment?: (appointmentId: number) => void;
 }
 
-type ActionKey = 'start' | 'complete' | 'no_show' | 'cancel';
+type ActionKey = 'start' | 'finalize' | 'no_show' | 'cancel';
 
 type StatusConfig = {
     label: string;
@@ -36,7 +37,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     in_progress: {
         label: 'W trakcie',
         className: 'salonbw-status--in-progress',
-        actions: ['complete', 'cancel'],
+        actions: ['finalize', 'cancel'],
     },
     completed: {
         label: 'Zakończona',
@@ -64,10 +65,9 @@ const ACTION_CONFIG: Record<
         className: 'salonbw-btn--primary',
         nextStatus: 'in_progress',
     },
-    complete: {
-        label: 'Zakończ',
+    finalize: {
+        label: 'Finalizuj',
         className: 'salonbw-btn--success',
-        nextStatus: 'completed',
     },
     no_show: {
         label: 'No-show',
@@ -89,7 +89,7 @@ export default function StaffAppointmentCalendarView({
     onChanged,
     onOpenAppointment,
 }: StaffAppointmentCalendarViewProps) {
-    const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
+    const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
     const [pendingAction, setPendingAction] = useState<{
         appointmentId: number;
@@ -97,6 +97,8 @@ export default function StaffAppointmentCalendarView({
     } | null>(null);
     const [actionErrorByAppointmentId, setActionErrorByAppointmentId] =
         useState<Record<number, string>>({});
+    const [finalizingAppointment, setFinalizingAppointment] =
+        useState<Appointment | null>(null);
 
     const sortedAppointments = [...appointments].sort(
         (a, b) =>
@@ -120,6 +122,11 @@ export default function StaffAppointmentCalendarView({
         appointment: Appointment,
         action: ActionKey,
     ) => {
+        if (action === 'finalize') {
+            setFinalizingAppointment(appointment);
+            return;
+        }
+
         setPendingAction({ appointmentId: appointment.id, action });
         setActionErrorByAppointmentId((current) => {
             const next = { ...current };
@@ -130,8 +137,6 @@ export default function StaffAppointmentCalendarView({
         try {
             if (action === 'cancel') {
                 await cancelAppointment.mutateAsync(appointment.id);
-            } else if (action === 'complete') {
-                await completeAppointment.mutateAsync(appointment.id);
             } else {
                 await updateAppointmentStatus.mutateAsync({
                     id: appointment.id,
@@ -165,6 +170,16 @@ export default function StaffAppointmentCalendarView({
     }
 
     return (
+        <>
+        <FinalizationModal
+            open={finalizingAppointment !== null}
+            appointment={finalizingAppointment}
+            onClose={() => setFinalizingAppointment(null)}
+            onSuccess={() => {
+                setFinalizingAppointment(null);
+                onChanged?.();
+            }}
+        />
         <div className="salonbw-reception-list">
             {sortedAppointments.map((appointment) => {
                 const status = appointment.status || 'scheduled';
@@ -254,5 +269,6 @@ export default function StaffAppointmentCalendarView({
                 );
             })}
         </div>
+        </>
     );
 }

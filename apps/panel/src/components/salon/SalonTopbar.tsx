@@ -6,13 +6,26 @@ import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
 
 export default function SalonTopbar() {
-    const { user, logout } = useAuth();
+    const { user, logout, apiFetch } = useAuth();
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
+    const [onlinePendingCount, setOnlinePendingCount] = useState(0);
     const topbar = buildTopbarViewModel(user);
+
+    useEffect(() => {
+        if (!user || user.role === 'client') return;
+        const fetchCount = () => {
+            apiFetch<{ count: number }>('/appointments/online-pending-count')
+                .then((data) => setOnlinePendingCount(data.count))
+                .catch(() => undefined);
+        };
+        fetchCount();
+        const interval = setInterval(fetchCount, 60_000);
+        return () => clearInterval(interval);
+    }, [user, apiFetch]);
 
     useEffect(() => {
         const handleClickOutside = (
@@ -99,6 +112,22 @@ export default function SalonTopbar() {
                             ></div>
                         </div>
                     </li>
+                    {onlinePendingCount > 0 ? (
+                        <li className="d-flex align-items-center">
+                            <Link
+                                href="/calendar"
+                                className="link d-flex align-items-center gap-1 px-2"
+                                title="Wizyty oczekujące na potwierdzenie"
+                            >
+                                <span className="badge bg-warning text-dark">
+                                    {onlinePendingCount}
+                                </span>
+                                <span className="d-none d-md-inline small">
+                                    oczekujące
+                                </span>
+                            </Link>
+                        </li>
+                    ) : null}
                     {topbar.notifications.enabled ? (
                         <li
                             className="notification_center"

@@ -839,9 +839,7 @@ export class AppointmentsService {
                         clientName:
                             clientName.length > 0
                                 ? clientName
-                                : (appointment.client.name ??
-                                  null ??
-                                  undefined),
+                                : (appointment.client.name || undefined),
                         scope: 'completed',
                     },
                     user,
@@ -897,6 +895,16 @@ export class AppointmentsService {
         appointment.internalNote =
             internalNote === null ? undefined : internalNote;
         return this.appointmentsRepository.save(appointment);
+    }
+
+    async countOnlinePending(employeeId?: number): Promise<number> {
+        const where: FindOptionsWhere<Appointment> = {
+            status: AppointmentStatus.OnlinePending,
+        };
+        if (employeeId !== undefined) {
+            where.employee = { id: employeeId };
+        }
+        return this.appointmentsRepository.count({ where });
     }
 
     async getUsageSuggestions(
