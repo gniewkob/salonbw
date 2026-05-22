@@ -88,10 +88,10 @@ export default function SalonTopbar() {
                         href={topbar.brand.href}
                         title="przejdź do pulpitu"
                     >
-                        <SalonIcon id="svg-logo" className="svg-logo" />
-                        <SalonIcon
-                            id="svg-dashboard-ico"
-                            className="svg-dashboard-ico"
+                        <img
+                            src="/images/logo.svg"
+                            alt="Salon Black &amp; White"
+                            className="salon-topbar-logo"
                         />
                     </Link>
                 </div>

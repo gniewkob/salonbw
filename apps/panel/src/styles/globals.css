@@ -1,6 +1,6 @@
 :root {
-    --background: #0d0d0d;
-    --foreground: #e8e0d5;
+    --background: #ffffff;
+    --foreground: #1a1a1a;
 }
 
 body {
@@ -1827,7 +1827,7 @@ body {
 
 /* Main content */
 .main-content {
-    background: #0d0d0d;
+    background: #ffffff;
 }
 
 /* Legacy custom modals (non-Bootstrap bs5) */

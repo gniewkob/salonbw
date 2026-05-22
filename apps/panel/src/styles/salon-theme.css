@@ -8,8 +8,8 @@
     --salon-accent: #c5a880;
     --salon-brand: #c5a880;
     --salon-brand-hover: #d4b896;
-    --salon-bg: #0d0d0d;
-    --salon-fg: #e8e0d5;
+    --salon-bg: #ffffff;
+    --salon-fg: #1a1a1a;
 }
 
 /* --- Body defaults --- */
@@ -74,7 +74,7 @@ body {
 /* --- Sections (PanelSection wrapper) --- */
 .salon-section {
     padding: 15px 20px;
-    background: #161616;
+    background: #ffffff;
     margin-bottom: 20px;
 }
 .salon-section > .actions {
@@ -87,35 +87,35 @@ body {
     font-weight: 400;
     margin: 20px 0 10px;
     font-family: 'Playfair Display', Georgia, serif;
-    color: #e8e0d5;
+    color: #1a1a1a;
     letter-spacing: 0.01em;
 }
 
 /* --- Column row --- */
 .salon-column-row {
     padding: 15px 20px;
-    background: #161616;
+    background: #ffffff;
 }
 .salon-column-row h2 {
     font-size: 22px;
     font-weight: 400;
     margin: 20px 0 30px;
     font-family: 'Playfair Display', Georgia, serif;
-    color: #e8e0d5;
+    color: #1a1a1a;
     letter-spacing: 0.01em;
 }
 
 /* --- Boxes --- */
 .box {
-    background: #161616;
-    border: 1px solid #252525;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
     margin-bottom: 15px;
     padding: 15px;
 }
 .info-box {
-    background: #161616;
-    border: 1px solid #252525;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
     padding: 15px;
     margin-bottom: 15px;

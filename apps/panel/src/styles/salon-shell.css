@@ -5,11 +5,11 @@
     --salon-sidenav-w: 214px;
     --salon-content-max: 1010px;
     --salon-content-pad: 20px;
-    --salon-border: #252525;
-    --salon-bg: #0d0d0d;
-    --salon-panel-bg: #111111;
-    --salon-text: #e8e0d5;
-    --salon-muted: #7a7068;
+    --salon-border: #e0e0e0;
+    --salon-bg: #ffffff;
+    --salon-panel-bg: #f8f8f8;
+    --salon-text: #1a1a1a;
+    --salon-muted: #6b7280;
     /* brand active/link gold */
     --salon-accent: #c5a880;
     --salon-mainnav-bg: #0a0a0a;
@@ -2209,6 +2209,12 @@ tr.customer-row:hover .customers-drag-handle {
 
 .navbar:hover .svg-dashboard-ico {
     display: block !important;
+}
+
+.salon-topbar-logo {
+    height: 28px;
+    width: auto;
+    display: block;
 }
 
 .navbar .ml-auto {
