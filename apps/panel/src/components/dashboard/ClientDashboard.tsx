@@ -1,28 +1,71 @@
+'use client';
+
+import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
-import StatsWidget from '@/components/StatsWidget';
+
+const STATUS_LABELS: Record<string, string> = {
+    scheduled: 'Zaplanowana',
+    confirmed: 'Potwierdzona',
+    in_progress: 'W trakcie',
+    completed: 'Zrealizowana',
+    cancelled: 'Anulowana',
+    no_show: 'Nieobecność',
+    online_pending: 'Oczekuje',
+    rescheduled_pending: 'Zmiana terminu',
+};
+
+const STATUS_CLASS: Record<string, string> = {
+    scheduled: 'badge bg-secondary',
+    confirmed: 'badge bg-primary',
+    in_progress: 'badge bg-warning text-dark',
+    completed: 'badge bg-success',
+    cancelled: 'badge bg-danger',
+    no_show: 'badge bg-dark',
+    online_pending: 'badge bg-warning text-dark',
+    rescheduled_pending: 'badge bg-info text-dark',
+};
+
+function statusLabel(status: string) {
+    return STATUS_LABELS[status] ?? status;
+}
+
+function statusClass(status: string) {
+    return STATUS_CLASS[status] ?? 'badge bg-secondary';
+}
 
 export default function ClientDashboard() {
     const { data, loading, error } = useClientDashboard();
 
     if (loading) {
-        return <div className="p-3">Loading dashboard...</div>;
+        return (
+            <div className="salonbw-dashboard">
+                <div className="salonbw-dashboard__loading">
+                    Ładowanie pulpitu...
+                </div>
+            </div>
+        );
     }
 
     if (error) {
         return (
-            <div className="p-3 text-danger">
-                Error loading dashboard: {error.message}
+            <div className="salonbw-dashboard">
+                <div className="alert alert-danger">
+                    Błąd ładowania danych: {error.message}
+                </div>
             </div>
         );
     }
 
     if (!data) {
-        return <div className="p-3">No data available</div>;
+        return (
+            <div className="salonbw-dashboard">
+                <div className="salonbw-dashboard__empty">Brak danych</div>
+            </div>
+        );
     }
 
-    const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('pl-PL', {
+    const formatDate = (dateStr: string) =>
+        new Date(dateStr).toLocaleDateString('pl-PL', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -30,120 +73,179 @@ export default function ClientDashboard() {
             hour: '2-digit',
             minute: '2-digit',
         });
-    };
 
     return (
-        <div className="gap-3">
-            <h1 className="fs-3 fw-bold">Your Dashboard</h1>
+        <div className="salonbw-dashboard">
+            <div className="salonbw-dashboard__header">
+                <h1 className="salonbw-dashboard__title">Mój panel</h1>
+                <Link
+                    href="/booking"
+                    className="salonbw-btn salonbw-btn--primary"
+                >
+                    Zarezerwuj wizytę
+                </Link>
+            </div>
 
-            {/* Upcoming Appointment */}
-            <section className="bg-white rounded-3 shadow p-4">
-                <h2 className="fs-5 fw-semibold mb-3">Upcoming Appointment</h2>
-                {data.upcomingAppointment ? (
-                    <div className="border-start-4 border-primary ps-3">
-                        <p className="fs-5 fw-medium">
-                            {data.upcomingAppointment.serviceName}
-                        </p>
-                        <p className="text-muted">
-                            {formatDate(data.upcomingAppointment.startTime)}
-                        </p>
-                        <p className="small text-muted">
-                            with {data.upcomingAppointment.employeeName}
-                        </p>
+            {/* Nearest appointment */}
+            <div className="salonbw-dashboard__grid">
+                <div className="salonbw-dashboard__section">
+                    <div className="salonbw-dashboard__section-header">
+                        <h2>Nadchodząca wizyta</h2>
                     </div>
-                ) : (
-                    <p className="text-muted">
-                        No upcoming appointments scheduled
-                    </p>
-                )}
-            </section>
+                    {data.upcomingAppointment ? (
+                        <div className="salonbw-appointments-list">
+                            <div className="salonbw-appointment-item salonbw-appointment-item--upcoming">
+                                <div className="salonbw-appointment-item__details">
+                                    <div className="salonbw-appointment-item__client">
+                                        {data.upcomingAppointment.serviceName}
+                                    </div>
+                                    <div className="salonbw-appointment-item__service text-muted small">
+                                        {formatDate(
+                                            data.upcomingAppointment.startTime,
+                                        )}
+                                    </div>
+                                    {data.upcomingAppointment.employeeName && (
+                                        <div className="salonbw-appointment-item__service text-muted small">
+                                            specjalista:{' '}
+                                            {
+                                                data.upcomingAppointment
+                                                    .employeeName
+                                            }
+                                        </div>
+                                    )}
+                                </div>
+                                {data.upcomingAppointment.status && (
+                                    <span
+                                        className={statusClass(
+                                            data.upcomingAppointment.status,
+                                        )}
+                                    >
+                                        {statusLabel(
+                                            data.upcomingAppointment.status,
+                                        )}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="salonbw-appointments-list">
+                            <div className="salonbw-appointment-item salonbw-appointment-item--empty">
+                                Brak zaplanowanych wizyt
+                            </div>
+                        </div>
+                    )}
+                    <Link
+                        href="/booking"
+                        className="salonbw-dashboard__section-footer"
+                    >
+                        zarezerwuj nową wizytę
+                    </Link>
+                </div>
 
-            {/* Stats */}
-            <section className="-cols-1 gap-3">
-                <StatsWidget
-                    title="Completed Appointments"
-                    value={data.completedCount}
-                    loading={false}
-                />
-                <StatsWidget
-                    title="Services Used"
-                    value={data.serviceHistory.length}
-                    loading={false}
-                />
-            </section>
+                {/* Monthly summary */}
+                <div className="salonbw-dashboard__section">
+                    <div className="salonbw-dashboard__section-header">
+                        <h2>Moje statystyki</h2>
+                    </div>
+                    <div className="salonbw-appointments-list">
+                        <div className="salonbw-appointment-item">
+                            <div className="salonbw-appointment-item__details">
+                                <div className="salonbw-appointment-item__client">
+                                    Zrealizowane wizyty
+                                </div>
+                            </div>
+                            <div className="fw-bold">{data.completedCount}</div>
+                        </div>
+                        <div className="salonbw-appointment-item">
+                            <div className="salonbw-appointment-item__details">
+                                <div className="salonbw-appointment-item__client">
+                                    Różne usługi
+                                </div>
+                            </div>
+                            <div className="fw-bold">
+                                {data.serviceHistory.length}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            {/* Service History */}
-            <section className="bg-white rounded-3 shadow p-4">
-                <h2 className="fs-5 fw-semibold mb-3">
-                    Your Favorite Services
-                </h2>
-                {data.serviceHistory.length > 0 ? (
-                    <ul className="gap-2">
+            {/* Favourite services */}
+            {data.serviceHistory.length > 0 && (
+                <div className="salonbw-dashboard__section mt-3">
+                    <div className="salonbw-dashboard__section-header">
+                        <h2>Ulubione usługi</h2>
+                    </div>
+                    <div className="salonbw-appointments-list">
                         {data.serviceHistory.slice(0, 5).map((service) => (
-                            <li
+                            <div
                                 key={service.id}
-                                className="d-flex justify-content-between align-items-center py-2 border-bottom last:border-0"
+                                className="salonbw-appointment-item"
                             >
-                                <span>{service.name}</span>
-                                <span className="text-muted small">
+                                <div className="salonbw-appointment-item__details">
+                                    <div className="salonbw-appointment-item__client">
+                                        {service.name}
+                                    </div>
+                                </div>
+                                <div className="text-muted small">
                                     {service.count}{' '}
-                                    {service.count === 1 ? 'visit' : 'visits'}
-                                </span>
-                            </li>
+                                    {service.count === 1
+                                        ? 'wizyta'
+                                        : service.count < 5
+                                          ? 'wizyty'
+                                          : 'wizyt'}
+                                </div>
+                            </div>
                         ))}
-                    </ul>
-                ) : (
-                    <p className="text-muted">No service history yet</p>
-                )}
-            </section>
+                    </div>
+                </div>
+            )}
 
-            {/* Recent Appointments */}
-            <section className="bg-white rounded-3 shadow p-4">
-                <h2 className="fs-5 fw-semibold mb-3">Recent Appointments</h2>
+            {/* Recent appointments */}
+            <div className="salonbw-dashboard__section mt-3">
+                <div className="salonbw-dashboard__section-header">
+                    <h2>Ostatnie wizyty</h2>
+                </div>
                 {data.recentAppointments.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-100 small">
-                            <thead>
-                                <tr className="border-bottom">
-                                    <th className="text-start py-2">Service</th>
-                                    <th className="text-start py-2">Date</th>
-                                    <th className="text-start py-2">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.recentAppointments.map((apt) => (
-                                    <tr key={apt.id} className="border-bottom">
-                                        <td className="py-2">
-                                            {apt.serviceName}
-                                        </td>
-                                        <td className="py-2">
-                                            {new Date(
-                                                apt.startTime,
-                                            ).toLocaleDateString('pl-PL')}
-                                        </td>
-                                        <td className="py-2">
-                                            <span
-                                                className={`px-2 py-1 rounded small ${
-                                                    apt.status === 'completed'
-                                                        ? 'bg-success bg-opacity-10 text-success'
-                                                        : apt.status ===
-                                                            'cancelled'
-                                                          ? 'bg-danger bg-opacity-10 text-danger'
-                                                          : 'bg-primary bg-opacity-10 text-primary'
-                                                }`}
-                                            >
-                                                {apt.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="salonbw-appointments-list">
+                        {data.recentAppointments.map((apt) => (
+                            <div
+                                key={apt.id}
+                                className="salonbw-appointment-item"
+                            >
+                                <div className="salonbw-appointment-item__time">
+                                    {new Date(apt.startTime).toLocaleDateString(
+                                        'pl-PL',
+                                        {
+                                            day: 'numeric',
+                                            month: 'short',
+                                        },
+                                    )}
+                                </div>
+                                <div className="salonbw-appointment-item__details">
+                                    <div className="salonbw-appointment-item__client">
+                                        {apt.serviceName}
+                                    </div>
+                                    {apt.employeeName && (
+                                        <div className="salonbw-appointment-item__service text-muted small">
+                                            {apt.employeeName}
+                                        </div>
+                                    )}
+                                </div>
+                                <span className={statusClass(apt.status)}>
+                                    {statusLabel(apt.status)}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 ) : (
-                    <p className="text-muted">No appointments yet</p>
+                    <div className="salonbw-appointments-list">
+                        <div className="salonbw-appointment-item salonbw-appointment-item--empty">
+                            Brak historii wizyt
+                        </div>
+                    </div>
                 )}
-            </section>
+            </div>
         </div>
     );
 }

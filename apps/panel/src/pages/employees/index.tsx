@@ -19,7 +19,7 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="salonbw-loading">Loading employee form…</div>
+            <div className="salonbw-loading">Ładowanie formularza pracownika…</div>
         ),
     },
 );
