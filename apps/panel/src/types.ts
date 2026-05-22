@@ -2,6 +2,7 @@ export interface Client {
     id: number;
     name: string;
     phone?: string;
+    email?: string;
 }
 
 export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
@@ -23,7 +24,9 @@ export type AppointmentStatus =
     | 'in_progress'
     | 'cancelled'
     | 'completed'
-    | 'no_show';
+    | 'no_show'
+    | 'online_pending'
+    | 'rescheduled_pending';
 
 export interface Appointment {
     id: number;
@@ -42,6 +45,13 @@ export interface Appointment {
     finalizedBy?: { id: number; name: string };
     notes?: string;
     internalNote?: string;
+}
+
+export interface Formula {
+    id: number;
+    description: string;
+    date: string;
+    appointment?: { id: number };
 }
 
 export type PriceType = 'fixed' | 'from';
@@ -940,6 +950,13 @@ export interface ProductSaleItem {
     discountCents?: number;
 }
 
+export interface UsageItem {
+    productId: number;
+    productName: string;
+    quantity: number;
+    unit: string;
+}
+
 export interface FinalizeAppointmentRequest {
     paymentMethod: PaymentMethod;
     paidAmountCents: number;
@@ -947,6 +964,7 @@ export interface FinalizeAppointmentRequest {
     discountCents?: number;
     products?: ProductSaleItem[];
     note?: string;
+    usageItems?: { productId: number; quantity: number; unit?: string }[];
 }
 
 export interface FinalizationSummary {

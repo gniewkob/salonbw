@@ -37,8 +37,13 @@ export class FormulasService {
         if (appointment.employee.id !== userId) {
             throw new ForbiddenException();
         }
-        if (appointment.status !== AppointmentStatus.Completed) {
-            throw new BadRequestException('Appointment not completed');
+        if (
+            appointment.status !== AppointmentStatus.Completed &&
+            appointment.status !== AppointmentStatus.InProgress
+        ) {
+            throw new BadRequestException(
+                'Appointment must be in progress or completed to add a formula',
+            );
         }
         const formula = this.formulasRepository.create({
             description: data.description,

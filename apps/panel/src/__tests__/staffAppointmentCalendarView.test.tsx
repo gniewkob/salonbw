@@ -10,6 +10,7 @@ import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointment
 const cancelMock = jest.fn();
 const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
+const apiFetchMock = jest.fn();
 
 jest.mock('@/hooks/useAppointments', () => ({
     useAppointmentMutations: () => ({
@@ -17,6 +18,20 @@ jest.mock('@/hooks/useAppointments', () => ({
         completeAppointment: { mutateAsync: completeMock },
         updateAppointmentStatus: { mutateAsync: updateStatusMock },
     }),
+}));
+
+jest.mock('@/contexts/AuthContext', () => ({
+    useAuth: () => ({ apiFetch: apiFetchMock }),
+}));
+
+jest.mock('@tanstack/react-query', () => ({
+    useQuery: jest.fn(() => ({ data: [] })),
+    useMutation: jest.fn(() => ({
+        mutate: jest.fn(),
+        isPending: false,
+        isError: false,
+    })),
+    useQueryClient: jest.fn(() => ({ invalidateQueries: jest.fn() })),
 }));
 
 const baseAppointment = {
@@ -43,6 +58,8 @@ describe('StaffAppointmentCalendarView', () => {
         cancelMock.mockReset();
         completeMock.mockReset();
         updateStatusMock.mockReset();
+        apiFetchMock.mockReset();
+        apiFetchMock.mockResolvedValue([]);
     });
 
     it('renders active appointment row and action buttons', () => {
@@ -82,17 +99,17 @@ describe('StaffAppointmentCalendarView', () => {
         );
     });
 
-    it('calls completeAppointment on Zakoncz', async () => {
-        completeMock.mockResolvedValueOnce(undefined);
-
+    it('opens FinalizationModal on Finalizuj for in_progress appointment', () => {
         render(
             <StaffAppointmentCalendarView
                 appointments={[{ ...baseAppointment, status: 'in_progress' }]}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zakończ' }));
-
-        await waitFor(() => expect(completeMock).toHaveBeenCalledWith(101));
+        expect(
+            screen.getByRole('button', { name: 'Finalizuj' }),
+        ).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Finalizuj' }));
+        expect(completeMock).not.toHaveBeenCalled();
     });
 
     it('calls updateAppointmentStatus(... no_show) on No-show', async () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -66,6 +66,8 @@ export default function BookingPage() {
         null,
     );
 
+    const slotsAbortRef = useRef<AbortController | null>(null);
+
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [submitted, setSubmitted] = useState(false);
@@ -103,19 +105,30 @@ export default function BookingPage() {
 
     const loadSlots = useCallback(
         (date: string, svcId: number) => {
+            slotsAbortRef.current?.abort();
+            const controller = new AbortController();
+            slotsAbortRef.current = controller;
+
             setSlotsLoading(true);
             setSlotsError('');
             setSelectedSlot(null);
             apiFetch<AvailableSlot[]>(
                 `/calendar/available-slots?serviceId=${svcId}&date=${date}`,
+                { signal: controller.signal },
             )
-                .then(setSlots)
-                .catch(() => {
+                .then((data) => {
+                    if (!controller.signal.aborted) setSlots(data);
+                })
+                .catch((err: unknown) => {
+                    if (err instanceof Error && err.name === 'AbortError')
+                        return;
                     setSlotsError(
                         'Nie udało się załadować dostępnych terminów.',
                     );
                 })
-                .finally(() => setSlotsLoading(false));
+                .finally(() => {
+                    if (!controller.signal.aborted) setSlotsLoading(false);
+                });
         },
         [apiFetch],
     );
@@ -345,7 +358,7 @@ function ServiceStep({
                             <button
                                 key={svc.id}
                                 type="button"
-                                className="d-flex justify-content-between align-items-center border rounded p-3 bg-white text-start w-100"
+                                className="d-flex justify-content-between align-items-center border rounded p-3 text-start w-100"
                                 style={{
                                     cursor: 'pointer',
                                     transition: 'border-color 0.15s',
@@ -422,7 +435,7 @@ function SlotStep({
 
     return (
         <div>
-            <div className="border rounded bg-white p-3 mb-3">
+            <div className="border rounded p-3 mb-3">
                 <strong>{service.name}</strong>
                 <span className="text-muted ms-2">
                     {service.duration} min ·{' '}
@@ -522,7 +535,7 @@ function ConfirmStep({
 
     return (
         <div>
-            <div className="border rounded bg-white p-3 mb-4">
+            <div className="border rounded p-3 mb-4">
                 <dl className="row mb-0">
                     <dt className="col-5 text-muted small fw-normal">Usługa</dt>
                     <dd className="col-7 mb-2">

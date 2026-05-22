@@ -21,6 +21,8 @@ export enum AppointmentStatus {
     Cancelled = 'cancelled',
     Completed = 'completed',
     NoShow = 'no_show',
+    OnlinePending = 'online_pending',
+    RescheduledPending = 'rescheduled_pending',
 }
 
 export enum PaymentMethod {

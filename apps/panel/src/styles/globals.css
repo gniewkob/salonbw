@@ -1,14 +1,6 @@
 :root {
-    --background: #f5f5f5;
-    --foreground: #333333;
-}
-
-/* Dark mode overrides (optional, keeping for compatibility but default is light) */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #f5f5f5; /* Force light mode base for consistency with the source design for now */
-        --foreground: #333333;
-    }
+    --background: #0d0d0d;
+    --foreground: #e8e0d5;
 }
 
 body {
@@ -25,10 +17,10 @@ body {
 }
 
 .salonbw-mass-communication__section {
-    background: #fff;
+    background: #161616;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    border: 1px solid #e5e7eb;
+    box-shadow: none;
+    border: 1px solid #252525;
     padding: 24px;
     margin-bottom: 16px;
 }
@@ -36,20 +28,21 @@ body {
 .salonbw-mass-communication__section h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #e8e0d5;
     margin-bottom: 16px;
+    font-family: 'Playfair Display', Georgia, serif;
 }
 
 .salonbw-mass-communication__subsection {
     margin-top: 16px;
     padding-left: 16px;
-    border-left: 2px solid #e5e7eb;
+    border-left: 2px solid #252525;
 }
 
 .salonbw-mass-communication__subsection h4 {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #4b5563;
+    color: #7a7068;
     margin-bottom: 12px;
 }
 
@@ -59,7 +52,7 @@ body {
     align-items: center;
     margin-top: 24px;
     padding-top: 16px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #252525;
 }
 
 /* Step indicator */
@@ -81,8 +74,8 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #e5e7eb;
-    color: #4b5563;
+    background: #2a2520;
+    color: #7a7068;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,18 +90,18 @@ body {
 
 .salonbw-step__label {
     font-size: 0.875rem;
-    color: #4b5563;
+    color: #7a7068;
     font-weight: 500;
 }
 
 .salonbw-step.active .salonbw-step__label {
-    color: #111827;
+    color: #e8e0d5;
 }
 
 .salonbw-step__divider {
     width: 48px;
     height: 1px;
-    background: #d1d5db;
+    background: #252525;
     margin: 0 16px;
 }
 
@@ -123,9 +116,10 @@ body {
     align-items: center;
     gap: 8px;
     padding: 16px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #252525;
     border-radius: 8px;
     cursor: pointer;
+    background: transparent;
 }
 
 .salonbw-channel:hover {
@@ -158,7 +152,7 @@ body {
     width: 16px;
     height: 16px;
     border-radius: 3px;
-    border-color: #d1d5db;
+    border-color: #2a2a2a;
 }
 
 .salonbw-group-dot {
@@ -179,32 +173,33 @@ body {
 
 .salonbw-template-item {
     padding: 16px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #252525;
     border-radius: 8px;
     cursor: pointer;
+    background: transparent;
 }
 
 .salonbw-template-item:hover {
     border-color: #c5a880;
-    background: #f9fafb;
+    background: rgba(197, 168, 128, 0.05);
 }
 
 .salonbw-template-item.active {
     border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.07);
+    background: rgba(197, 168, 128, 0.08);
 }
 
 .salonbw-template-item__name {
     display: block;
     font-weight: 500;
-    color: #1f2937;
+    color: #e8e0d5;
     margin-bottom: 4px;
 }
 
 .salonbw-template-item__preview {
     display: block;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #7a7068;
 }
 
 /* Form styles */
@@ -216,15 +211,18 @@ body {
     display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: #7a7068;
     margin-bottom: 4px;
+    letter-spacing: 0.02em;
 }
 
 .salonbw-input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #d1d5db;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 6px;
+    color: #e8e0d5;
 }
 
 .salonbw-input:focus {
@@ -246,9 +244,11 @@ body {
 .salonbw-textarea {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #d1d5db;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 6px;
     resize: none;
+    color: #e8e0d5;
 }
 
 .salonbw-textarea:focus {
@@ -261,13 +261,14 @@ body {
     display: block;
     text-align: right;
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #5a5450;
     margin-top: 4px;
 }
 
 /* Variables help */
 .salonbw-variables-help {
-    background: #f9fafb;
+    background: #141414;
+    border: 1px solid #252525;
     padding: 16px;
     border-radius: 8px;
     margin-top: 16px;
@@ -276,17 +277,17 @@ body {
 .salonbw-variables-help h4 {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: #7a7068;
     margin-bottom: 8px;
 }
 
 .salonbw-variables-help code {
     display: inline-block;
     padding: 2px 8px;
-    background: #e5e7eb;
+    background: #252525;
     border-radius: 4px;
     font-size: 0.75rem;
-    color: #374151;
+    color: #c5a880;
     margin-right: 8px;
     font-family: monospace;
 }
@@ -307,8 +308,8 @@ body {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #dcfce7;
-    color: #16a34a;
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
     font-size: 1.875rem;
     display: flex;
     align-items: center;
@@ -319,7 +320,8 @@ body {
 .salonbw-send-result h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #e8e0d5;
+    font-family: 'Playfair Display', Georgia, serif;
     margin-bottom: 24px;
 }
 
@@ -351,12 +353,12 @@ body {
 
 .salonbw-stat__label {
     font-size: 0.875rem;
-    color: #4b5563;
+    color: #7a7068;
 }
 
 .salonbw-recipient-count {
     font-size: 0.875rem;
-    color: #4b5563;
+    color: #7a7068;
 }
 
 /* Button styles */
@@ -385,21 +387,22 @@ body {
 }
 
 .salonbw-btn--light {
-    background: #f3f4f6;
-    color: #374151;
+    background: #1e1e1e;
+    color: #c0b8af;
 }
 
 .salonbw-btn--light:hover {
-    background: #e5e7eb;
+    background: #2a2a2a;
 }
 
 .salonbw-btn--danger {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: rgba(185, 28, 28, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(185, 28, 28, 0.3);
 }
 
 .salonbw-btn--danger:hover {
-    background: #fecaca;
+    background: rgba(185, 28, 28, 0.25);
 }
 
 .salonbw-btn--sm {
@@ -408,13 +411,14 @@ body {
 }
 
 .salonbw-btn--default {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    color: #374151;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #c0b8af;
 }
 
 .salonbw-btn--default:hover {
-    background: #f9fafb;
+    background: #242420;
+    color: #e8e0d5;
 }
 
 .salonbw-btn--success {
@@ -468,30 +472,33 @@ body {
 
 .salonbw-toolbar-btn {
     padding: 6px 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
     border-radius: 4px;
     font-size: 0.875rem;
     cursor: pointer;
-    color: #374151;
+    color: #c0b8af;
 }
 
 .salonbw-toolbar-btn:hover {
-    background: #f9fafb;
+    background: #242420;
+    color: #e8e0d5;
 }
 
 .salonbw-toolbar-search {
     padding: 6px 12px;
-    border: 1px solid #d1d5db;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 4px;
     font-size: 0.875rem;
     width: 200px;
+    color: #e8e0d5;
 }
 
 /* Labels */
 .salonbw-label {
     font-size: 0.875rem;
-    color: #374151;
+    color: #c0b8af;
 }
 
 .salonbw-label-xs {
@@ -499,15 +506,17 @@ body {
     padding: 2px 6px;
     font-size: 0.75rem;
     border-radius: 4px;
-    background: #e5e7eb;
-    color: #374151;
+    background: #252525;
+    color: #9a9088;
 }
 
 /* Select */
 .salonbw-select {
     padding: 8px 12px;
-    border: 1px solid #d1d5db;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 6px;
+    color: #e8e0d5;
 }
 
 .salonbw-select:focus {
@@ -518,9 +527,11 @@ body {
 
 .salonbw-select--inline {
     padding: 4px 8px;
-    border: 1px solid #d1d5db;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 4px;
     font-size: 0.875rem;
+    color: #e8e0d5;
 }
 
 /* Table */
@@ -536,22 +547,23 @@ body {
 .salonbw-table th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-bottom: 1px solid #252525;
+    background: #141414;
     font-weight: 600;
-    color: #374151;
+    color: #c5a880;
     font-size: 0.875rem;
 }
 
 .salonbw-table td {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #252525;
     font-size: 0.875rem;
+    color: #c0b8af;
 }
 
 .salonbw-table tr:hover {
-    background: #f9fafb;
+    background: #1a1612;
 }
 
 /* Badge */
@@ -563,23 +575,23 @@ body {
     font-size: 0.75rem;
     font-weight: 500;
     border-radius: 9999px;
-    background: #f3f4f6;
-    color: #374151;
+    background: #252525;
+    color: #c0b8af;
 }
 
 .salonbw-badge--success {
-    background: #dcfce7;
-    color: #166534;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
 }
 
 .salonbw-badge--inactive {
-    background: #e5e7eb;
-    color: #4b5563;
+    background: #252525;
+    color: #5a5450;
 }
 
 .salonbw-badge--error {
-    background: #fee2e2;
-    color: #991b1b;
+    background: rgba(185, 28, 28, 0.15);
+    color: #f87171;
 }
 
 .salonbw-badge--sm {
@@ -595,7 +607,7 @@ body {
 
 /* Text utilities */
 .salonbw-muted {
-    color: #6b7280;
+    color: #7a7068;
 }
 
 .salonbw-link {
@@ -618,7 +630,7 @@ body {
 /* Template preview */
 .salonbw-template-preview {
     max-width: 320px;
-    color: #4b5563;
+    color: #7a7068;
 }
 
 /* Empty / loading states */
@@ -626,23 +638,23 @@ body {
 .salonbw-empty-state {
     text-align: center;
     padding: 48px 0;
-    color: #6b7280;
-    background: #fff;
+    color: #7a7068;
+    background: #161616;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #252525;
 }
 
 .salonbw-loading {
     text-align: center;
     padding: 48px 0;
-    color: #6b7280;
+    color: #5a5450;
 }
 
 /* Modal styles */
 .salonbw-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -651,9 +663,10 @@ body {
 }
 
 .salonbw-modal {
-    background: #fff;
+    background: #1c1c1c;
     border-radius: 8px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    border: 1px solid #2a2a2a;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     max-width: 672px;
     width: 100%;
     max-height: 90vh;
@@ -665,18 +678,19 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #252525;
 }
 
 .salonbw-modal__header h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #e8e0d5;
+    font-family: 'Playfair Display', Georgia, serif;
 }
 
 .salonbw-modal__close {
     font-size: 1.5rem;
-    color: #9ca3af;
+    color: #4a4440;
     cursor: pointer;
     width: 32px;
     height: 32px;
@@ -687,8 +701,8 @@ body {
 }
 
 .salonbw-modal__close:hover {
-    color: #4b5563;
-    background: #f3f4f6;
+    color: #c5a880;
+    background: #2a2414;
 }
 
 .salonbw-modal__body {
@@ -704,8 +718,8 @@ body {
     justify-content: flex-end;
     gap: 8px;
     padding: 16px;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-top: 1px solid #252525;
+    background: #141414;
 }
 
 .salonbw-form-row {
@@ -725,9 +739,9 @@ body {
     gap: 16px;
     margin-bottom: 24px;
     padding: 16px;
-    background: #fff;
+    background: #161616;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #252525;
 }
 
 .salonbw-reception-summary__item {
@@ -735,43 +749,43 @@ body {
     text-align: center;
     padding: 12px;
     border-radius: 8px;
-    background: #f9fafb;
+    background: #1c1c1c;
 }
 
 .salonbw-reception-summary__item--scheduled {
-    background: #eff6ff;
+    background: #0d1520;
 }
 
 .salonbw-reception-summary__item--confirmed {
-    background: #faf5ff;
+    background: #12101a;
 }
 
 .salonbw-reception-summary__item--in-progress {
-    background: #fefce8;
+    background: #1a1408;
 }
 
 .salonbw-reception-summary__item--completed {
-    background: #f0fdf4;
+    background: #0d180f;
 }
 
 .salonbw-reception-summary__value {
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1f2937;
+    color: #e8e0d5;
 }
 
 .salonbw-reception-summary__label {
     display: block;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #7a7068;
     margin-top: 4px;
 }
 
 .salonbw-reception-table-wrap {
-    background: #fff;
+    background: #161616;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #252525;
     overflow: hidden;
 }
 
@@ -783,22 +797,23 @@ body {
 .salonbw-reception-table th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-bottom: 1px solid #252525;
+    background: #141414;
     font-weight: 600;
-    color: #374151;
+    color: #c5a880;
     font-size: 0.875rem;
 }
 
 .salonbw-reception-table td {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #252525;
     font-size: 0.875rem;
+    color: #c0b8af;
 }
 
 .salonbw-reception-table tbody tr:hover {
-    background: #f9fafb;
+    background: #1a1612;
 }
 
 .salonbw-reception-table tbody tr:last-child td {
@@ -806,11 +821,11 @@ body {
 }
 
 .salonbw-reception-row--overdue {
-    background: rgba(254,242,242,0.5);
+    background: rgba(185, 28, 28, 0.08);
 }
 
 .salonbw-reception-row--overdue:hover {
-    background: #fef2f2;
+    background: rgba(185, 28, 28, 0.12);
 }
 
 .salonbw-reception-row--processing {
@@ -836,7 +851,7 @@ body {
 
 .salonbw-reception-phone {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #5a5450;
     margin-top: 4px;
 }
 
@@ -847,7 +862,7 @@ body {
 }
 
 .salonbw-reception-no-actions {
-    color: #9ca3af;
+    color: #3a3430;
 }
 
 .salonbw-status-badge {
@@ -859,41 +874,53 @@ body {
 }
 
 .salonbw-status--scheduled {
-    background: #dbeafe;
-    color: #1e40af;
+    background: rgba(59, 130, 246, 0.15);
+    color: #7eb5e0;
 }
 
 .salonbw-status--confirmed {
-    background: #ede9fe;
-    color: #5b21b6;
+    background: rgba(139, 92, 246, 0.15);
+    color: #b08fe0;
 }
 
 .salonbw-status--in-progress {
-    background: #fef9c3;
-    color: #854d0e;
+    background: rgba(197, 168, 128, 0.15);
+    color: #c5a880;
 }
 
 .salonbw-status--completed {
-    background: #dcfce7;
-    color: #166534;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
 }
 
 .salonbw-status--cancelled {
-    background: #e5e7eb;
-    color: #4b5563;
+    background: rgba(107, 114, 128, 0.15);
+    color: #7a7068;
 }
 
 .salonbw-status--no-show {
-    background: #fee2e2;
-    color: #991b1b;
+    background: rgba(185, 28, 28, 0.15);
+    color: #f87171;
+}
+
+.salonbw-status--online-pending,
+.salonbw-status--online_pending {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+.salonbw-status--rescheduled-pending,
+.salonbw-status--rescheduled_pending {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
 }
 
 .salonbw-reception-empty {
     text-align: center;
     padding: 64px 0;
-    background: #fff;
+    background: #161616;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #252525;
 }
 
 .salonbw-reception-empty__icon {
@@ -904,12 +931,13 @@ body {
 .salonbw-reception-empty h3 {
     font-size: 1.125rem;
     font-weight: 500;
-    color: #1f2937;
+    color: #e8e0d5;
+    font-family: 'Playfair Display', Georgia, serif;
     margin-bottom: 8px;
 }
 
 .salonbw-reception-empty p {
-    color: #6b7280;
+    color: #7a7068;
 }
 
 /* Pagination */
@@ -918,7 +946,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #252525;
     margin-top: 16px;
 }
 
@@ -931,12 +959,14 @@ body {
 
 .salonbw-list-item {
     padding: 10px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #252525;
     border-top: 0;
+    background: #161616;
+    color: #c0b8af;
 }
 
 .salonbw-list-item:first-child {
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #252525;
     border-radius: 4px 4px 0 0;
 }
 
@@ -974,7 +1004,7 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    color: #6b7280;
+    color: #5a5450;
     cursor: pointer;
     border: 0;
     background: transparent;
@@ -982,21 +1012,24 @@ body {
 }
 
 .salonbw-icon-btn:hover {
-    background: #f3f4f6;
+    background: #1e1a14;
+    color: #c5a880;
 }
 
 /* Alert */
 .salonbw-alert {
     padding: 12px 16px;
     border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #252525;
+    background: #141414;
+    color: #c0b8af;
     margin-bottom: 16px;
 }
 
 .salonbw-alert-info {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #1e40af;
+    background: #0d1520;
+    border-color: #1e3050;
+    color: #7eb5e0;
 }
 
 /* Checkbox large */
@@ -1053,44 +1086,46 @@ body {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6b7280;
+    letter-spacing: 0.08em;
+    color: #5a5450;
     margin-bottom: 12px;
 }
 
 /* Sidebar */
 .salonbw-sidebar {
-    background: #fff;
-    border-right: 1px solid #e5e7eb;
+    background: #0f0f0f;
+    border-right: 1px solid #1e1e1e;
     height: 100%;
     overflow-y: auto;
 }
 
 .salonbw-sidebar-section {
     padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #1e1e1e;
 }
 
 .salonbw-sidebar__section {
     padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #1e1e1e;
 }
 
 .salonbw-sidebar__header {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: #6b7280;
+    color: #4a4440;
     margin-bottom: 8px;
 }
 
 .salonbw-sidebar__search {
     width: 100%;
     padding: 6px 10px;
-    border: 1px solid #d1d5db;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 4px;
     font-size: 0.875rem;
     margin-bottom: 12px;
+    color: #e8e0d5;
 }
 
 .salonbw-sidebar__nav {
@@ -1122,8 +1157,8 @@ body {
 /* Panel sub section */
 .salonbw-panel-sub {
     padding: 16px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #161616;
+    border: 1px solid #252525;
     border-radius: 6px;
     margin-bottom: 12px;
 }
@@ -1131,18 +1166,18 @@ body {
 .salonbw-panel-sub__title {
     font-size: 1rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #e8e0d5;
     margin-bottom: 4px;
 }
 
 .salonbw-panel-sub__description {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #7a7068;
 }
 
 .salonbw-panel-sub__meta {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: #4a4440;
     margin-top: 4px;
 }
 
@@ -1152,7 +1187,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #5a5450;
     margin-bottom: 16px;
 }
 
@@ -1175,7 +1210,7 @@ body {
 }
 
 .salonbw-employee-filter__item:hover {
-    background: #f3f4f6;
+    background: #1e1a14;
 }
 
 .salonbw-employee-filter__color {
@@ -1187,13 +1222,13 @@ body {
 
 .salonbw-employee-filter__name {
     font-size: 0.875rem;
-    color: #374151;
+    color: #c0b8af;
 }
 
 /* Widget (stats sub-panel) */
 .salonbw-widget {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #161616;
+    border: 1px solid #252525;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 16px;
@@ -1201,11 +1236,11 @@ body {
 
 .salonbw-widget__header {
     padding: 12px 16px;
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    background: #141414;
+    border-bottom: 1px solid #252525;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: #c5a880;
 }
 
 .salonbw-widget__content {
@@ -1221,7 +1256,7 @@ body {
 .salonbw-dashboard__empty {
     padding: 64px 0;
     text-align: center;
-    color: #6b7280;
+    color: #5a5450;
     font-size: 0.875rem;
 }
 
@@ -1235,7 +1270,8 @@ body {
 .salonbw-dashboard__title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #e8e0d5;
+    font-family: 'Playfair Display', Georgia, serif;
 }
 
 .salonbw-dashboard__period {
@@ -1244,14 +1280,14 @@ body {
     gap: 16px;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #252525;
 }
 
 .salonbw-dashboard__period-btn {
     padding: 4px 12px;
     font-size: 0.875rem;
     border-radius: 4px;
-    color: #4b5563;
+    color: #7a7068;
     background: transparent;
     border: 0;
     cursor: pointer;
@@ -1264,7 +1300,7 @@ body {
 
 .salonbw-dashboard__period-label {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #5a5450;
     margin-left: auto;
 }
 
@@ -1277,17 +1313,17 @@ body {
 }
 
 .salonbw-stat-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #161616;
+    border: 1px solid #252525;
     border-radius: 8px;
     padding: 16px;
 }
 
 .salonbw-stat-card__title {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #5a5450;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     margin-bottom: 8px;
 }
 
@@ -1297,14 +1333,14 @@ body {
     gap: 8px;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1f2937;
+    color: #e8e0d5;
     margin-bottom: 12px;
 }
 
 .salonbw-stat-card__change {
     font-size: 0.75rem;
     font-weight: 400;
-    color: #9ca3af;
+    color: #4a4440;
 }
 
 .salonbw-stat-card__change.positive {
@@ -1346,8 +1382,8 @@ body {
 }
 
 .salonbw-dashboard__section {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #161616;
+    border: 1px solid #252525;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -1359,13 +1395,13 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #1e1e1e;
 }
 
 .salonbw-dashboard__section-header h2 {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: #e8e0d5;
 }
 
 .salonbw-dashboard__section-actions {
@@ -1379,7 +1415,7 @@ body {
     font-size: 0.75rem;
     color: var(--salon-accent);
     padding: 8px 0;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid #252525;
     text-decoration: none;
     margin-top: auto;
 }
@@ -1400,7 +1436,7 @@ body {
     align-items: flex-start;
     gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid #f9fafb;
+    border-bottom: 1px solid #1e1e1e;
 }
 
 .salonbw-activity-item--empty,
@@ -1408,7 +1444,7 @@ body {
     padding: 24px 16px;
     text-align: center;
     font-size: 0.875rem;
-    color: #9ca3af;
+    color: #3a3430;
 }
 
 .salonbw-activity-item__avatar {
@@ -1432,7 +1468,7 @@ body {
 
 .salonbw-activity-item__title {
     font-size: 0.875rem;
-    color: #1f2937;
+    color: #e8e0d5;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1440,7 +1476,7 @@ body {
 
 .salonbw-activity-item__meta {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #7a7068;
     margin-top: 2px;
 }
 
@@ -1450,13 +1486,13 @@ body {
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid #f9fafb;
+    border-bottom: 1px solid #1e1e1e;
 }
 
 .salonbw-appointment-item__time {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #c5a880;
     width: 48px;
     flex-shrink: 0;
 }
@@ -1468,7 +1504,7 @@ body {
 
 .salonbw-appointment-item__client {
     font-size: 0.875rem;
-    color: #1f2937;
+    color: #e8e0d5;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1476,7 +1512,7 @@ body {
 
 .salonbw-appointment-item__service {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #7a7068;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1486,52 +1522,52 @@ body {
    VERSUM CALENDAR STYLES - Matching Original
    ============================================ */
 
-/* Calendar background - white like oryginalny shell panelu */
+/* Calendar background - dark luxury */
 .fc {
-    --fc-border-color: #e5e7eb;
-    --fc-page-bg-color: #ffffff;
-    --fc-neutral-bg-color: #ffffff;
+    --fc-border-color: #252525;
+    --fc-page-bg-color: #0d0d0d;
+    --fc-neutral-bg-color: #111111;
 }
 
 .fc-view-harness {
-    background: #ffffff !important;
+    background: #0d0d0d !important;
 }
 
 .fc-timegrid-body {
-    background: #ffffff !important;
+    background: #0d0d0d !important;
 }
 
 .fc-timegrid-slots {
-    background: #ffffff !important;
+    background: #0d0d0d !important;
 }
 
 .fc-timegrid-slot {
-    background: #ffffff !important;
-    border-bottom: 1px solid #f3f4f6 !important;
+    background: #0d0d0d !important;
+    border-bottom: 1px solid #1e1e1e !important;
 }
 
 .fc-timegrid-slot-lane {
-    background: #ffffff !important;
+    background: #0d0d0d !important;
 }
 
 /* Header styling */
 .fc-col-header-cell {
-    background: #f3f4f6 !important;
-    border-bottom: 2px solid #d1d5db !important;
+    background: #141414 !important;
+    border-bottom: 2px solid #252525 !important;
     padding: 8px 4px !important;
 }
 
 .fc-col-header-cell-cushion {
-    color: #374151 !important;
+    color: #c5a880 !important;
     font-weight: 600 !important;
     font-size: 13px !important;
 }
 
-/* Event styling - source-like gray blocks */
+/* Event styling */
 .fc-event {
     border: none !important;
     border-radius: 3px !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
 
 .fc-event-main {
@@ -1541,13 +1577,13 @@ body {
 .fc-event-title {
     font-weight: 500 !important;
     font-size: 12px !important;
-    color: #1f2937 !important;
+    color: #0d0d0d !important;
 }
 
 /* Time text in events */
 .fc-event-time {
     font-size: 11px !important;
-    color: #6b7280 !important;
+    color: rgba(0, 0, 0, 0.7) !important;
     font-weight: 500 !important;
 }
 
@@ -1563,11 +1599,11 @@ body {
 
 /* Day grid (month view) */
 .fc-daygrid-day {
-    background: #ffffff !important;
+    background: #0d0d0d !important;
 }
 
 .fc-daygrid-day.fc-day-today {
-    background: #fef3c7 !important;
+    background: rgba(197, 168, 128, 0.06) !important;
 }
 
 .fc-daygrid-day-top {
@@ -1576,23 +1612,23 @@ body {
 
 .fc-daygrid-day-number {
     font-size: 13px !important;
-    color: #374151 !important;
+    color: #7a7068 !important;
     font-weight: 500 !important;
 }
 
 /* Week number column */
 .fc-timegrid-axis {
-    background: #f3f4f6 !important;
+    background: #141414 !important;
     font-weight: 600 !important;
-    color: #6b7280 !important;
+    color: #5a5450 !important;
     font-size: 11px !important;
 }
 
 /* Toolbar buttons */
 .fc-button {
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    color: #374151 !important;
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a !important;
+    color: #c0b8af !important;
     font-weight: 500 !important;
     text-transform: lowercase !important;
     padding: 6px 12px !important;
@@ -1600,14 +1636,15 @@ body {
 }
 
 .fc-button:hover {
-    background: #f3f4f6 !important;
-    border-color: #9ca3af !important;
+    background: #242420 !important;
+    border-color: #3a3a38 !important;
+    color: #e8e0d5 !important;
 }
 
 .fc-button-active {
-    background: #3b82f6 !important;
-    border-color: #3b82f6 !important;
-    color: #ffffff !important;
+    background: #2a2114 !important;
+    border-color: #c5a880 !important;
+    color: #c5a880 !important;
 }
 
 /* ============================================
@@ -1629,8 +1666,8 @@ body {
    ============================================ */
 
 .salonbw-mini-cal {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: #111111;
+    border: 1px solid #252525;
     border-radius: 4px;
     padding: 12px;
 }
@@ -1640,12 +1677,12 @@ body {
     justify-content: space-around;
     margin-bottom: 8px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #252525;
 }
 
 .salonbw-mini-cal__weekdays span {
     font-size: 11px;
-    color: #9ca3af;
+    color: #4a4440;
     text-transform: lowercase;
     width: 28px;
     text-align: center;
@@ -1665,7 +1702,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: #374151;
+    color: #c0b8af;
     background: transparent;
     border: none;
     border-radius: 3px;
@@ -1675,19 +1712,364 @@ body {
 }
 
 .salonbw-mini-cal__day:hover {
-    background: #f3f4f6;
+    background: #1e1a14;
+    color: #c5a880;
 }
 
 .salonbw-mini-cal__day--selected {
-    background: #3b82f6 !important;
-    color: white !important;
+    background: #c5a880 !important;
+    color: #0d0d0d !important;
 }
 
 .salonbw-mini-cal__day--today {
-    border: 1px solid #3b82f6;
+    border: 1px solid #c5a880;
     font-weight: 600;
+    color: #c5a880;
 }
 
 .salonbw-mini-cal__day--other-month {
-    color: #d1d5db;
+    color: #3a3430;
+}
+
+/* ==============================================
+   LUXURY DARK — Structural overrides
+   Covers hardcoded colors in salon-shell.css
+   CSS variables handle the rest.
+   ============================================== */
+
+/* Bootstrap 5.3 dark mode luxury token overrides */
+[data-bs-theme='dark'] {
+    --bs-body-bg: #0d0d0d;
+    --bs-body-color: #e8e0d5;
+    --bs-secondary-bg: #161616;
+    --bs-tertiary-bg: #111111;
+    --bs-border-color: #252525;
+    --bs-border-color-translucent: rgba(255, 255, 255, 0.06);
+    --bs-secondary-color: #7a7068;
+    --bs-tertiary-color: #5a5450;
+    --bs-emphasis-color: #f0e8dc;
+    --bs-link-color: #c5a880;
+    --bs-link-hover-color: #d4b896;
+    --bs-heading-color: #e8e0d5;
+    --bs-card-bg: #161616;
+    --bs-card-border-color: #252525;
+    --bs-input-bg: #141414;
+    --bs-input-border-color: #353535;
+    --bs-input-color: #e8e0d5;
+    --bs-form-select-bg: #141414;
+    --bs-dropdown-bg: #1c1c1c;
+    --bs-dropdown-border-color: #2a2a2a;
+    --bs-dropdown-link-color: #e8e0d5;
+    --bs-dropdown-link-hover-bg: #2a2414;
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(197, 168, 128, 0.04);
+    --bs-table-hover-bg: rgba(197, 168, 128, 0.06);
+    --bs-table-border-color: #252525;
+    --bs-modal-bg: #1c1c1c;
+    --bs-modal-header-border-color: #252525;
+    --bs-list-group-bg: #161616;
+    --bs-list-group-border-color: #252525;
+    --bs-list-group-action-hover-bg: #1e1a14;
+    --bs-nav-tabs-border-color: #252525;
+    --bs-nav-tabs-link-active-bg: #161616;
+    --bs-nav-tabs-link-active-border-color: #252525;
+    --bs-nav-pills-link-active-bg: #c5a880;
+    --bs-pagination-bg: #161616;
+    --bs-pagination-border-color: #252525;
+    --bs-pagination-active-bg: #c5a880;
+    --bs-pagination-active-border-color: #c5a880;
+    --bs-progress-bg: #1e1e1e;
+    --bs-code-color: #c5a880;
+}
+
+/* Topbar */
+.navbar.navbar-default {
+    background: #0a0a0a;
+    border-bottom-color: #1c1c1c;
+}
+
+.navbar .brand a {
+    color: #c5a880;
+}
+
+.navbar .brand a:hover {
+    color: #d4b896;
+}
+
+.navbar .navbar-right > li > a:not(.button) {
+    color: #7a7068;
+}
+
+/* Sidenav */
+#sidenav,
+.sidenav {
+    background: #0f0f0f;
+    border-right-color: #1c1c1c;
+}
+
+#sidenav .nav-header,
+.sidenav .nav-header {
+    color: #3a3430;
+}
+
+#sidenav .nav-list li a,
+.sidenav .nav-list li a {
+    color: #7a7068;
+}
+
+#sidenav .nav-list li a:hover,
+#sidenav .nav-list li.active a,
+.sidenav .nav-list li a:hover,
+.sidenav .nav-list li.active a {
+    background: #1e1a14;
+    color: #c5a880;
+}
+
+/* Main content */
+.main-content {
+    background: #0d0d0d;
+}
+
+/* Legacy custom modals (non-Bootstrap bs5) */
+.modal-content {
+    background: #1c1c1c;
+    border-color: #252525;
+}
+
+.modal-header {
+    background: #141414;
+    border-bottom-color: #252525;
+}
+
+.modal-title {
+    color: #e8e0d5;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.modal-footer {
+    background: #141414;
+    border-top-color: #252525;
+}
+
+.close {
+    color: #4a4440;
+}
+
+.close:hover {
+    color: #c5a880;
+}
+
+/* Legacy buttons */
+.btn-default {
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+    color: #c0b8af;
+}
+
+.btn-default:hover {
+    background: #222220;
+    color: #e8e0d5;
+}
+
+/* Legacy label */
+.label-default {
+    background: #1e1e1e;
+    border-color: #2a2a2a;
+    color: #7a7068;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    color: #4a4440;
+}
+
+.breadcrumb li + li::before {
+    color: #2a2420;
+}
+
+/* Shell table overrides */
+#salonbw-shell-root .salonbw-table th {
+    background: #141414;
+    color: #c5a880;
+    border-color: #252525;
+}
+
+#salonbw-shell-root .salonbw-table td {
+    color: #c0b8af;
+    border-color: #252525;
+}
+
+#salonbw-shell-root .salonbw-table tr:hover {
+    background: #1a1612;
+}
+
+/* Data table row colors */
+.data_table .table-bordered tr.odd td {
+    background: #161616;
+}
+.data_table .table-bordered tr.even td {
+    background: #1a1a1a;
+}
+
+/* Calendar view components */
+.calendar-view-drafts__item {
+    background: #161616;
+    border-color: #252525;
+}
+
+.calendar-view-drafts__title,
+.calendar-view-form-list__heading {
+    color: #e8e0d5;
+}
+
+.calendar-view-drafts__meta {
+    color: #7a7068;
+}
+
+.calendar-view-checkbox {
+    color: #c0b8af;
+}
+
+/* Communication */
+.communication-reminder-card {
+    background: #161616;
+    border-color: #252525;
+    color: #c0b8af;
+}
+
+.sms_thread .message {
+    background: #161616;
+    border-color: #252525;
+}
+
+.sms_thread .message.customer {
+    background: #0f1e1c;
+    border-color: #1a4040;
+}
+
+.communication-preview-sms,
+.communication-preview-email__body {
+    background: #161616;
+    border-color: #252525;
+    color: #c0b8af;
+}
+
+.communication-preview-email__subject {
+    color: #e8e0d5;
+}
+
+/* Reception list card (StaffAppointmentCalendarView) */
+.salonbw-reception-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.salonbw-reception-item {
+    background: #161616;
+    border: 1px solid #252525;
+    border-radius: 6px;
+    padding: 14px 16px;
+}
+
+.salonbw-reception-item__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.salonbw-reception-item__title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #e8e0d5;
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.salonbw-reception-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    color: #7a7068;
+    margin-top: 3px;
+}
+
+.salonbw-reception-item__details {
+    font-size: 0.8125rem;
+    color: #9a9088;
+    margin-bottom: 10px;
+}
+
+.salonbw-reception-item__actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Secondary button variant (missing from original) */
+.salonbw-btn--secondary {
+    background: #1e1e1e;
+    color: #c0b8af;
+    border: 1px solid #2a2a2a;
+}
+
+.salonbw-btn--secondary:hover {
+    background: #2a2a2a;
+    color: #e8e0d5;
+}
+
+/* Luxury typography for content headings */
+h1,
+h2,
+h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.salonbw-section-title,
+.salonbw-sidebar__header,
+.salonbw-widget__header {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Loading state */
+.salonbw-loading {
+    color: #5a5450;
+}
+
+/* Topbar search input and dropdown */
+.navbar .omnibox {
+    background-color: #1a1a1a;
+    border-color: #2a2a2a;
+    color: #e8e0d5;
+}
+
+.navbar .omnibox:focus {
+    border-color: #c5a880;
+    box-shadow: none;
+}
+
+.navbar .dropdown-toggle {
+    color: #7a7068;
+}
+
+.navbar .dropdown-menu {
+    background: #1c1c1c;
+    border-color: #2a2a2a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.navbar .dropdown-menu .divider {
+    background: #252525;
+}
+
+.navbar .dropdown-menu .main-menu-li a {
+    color: #c0b8af;
+}
+
+.navbar .dropdown-menu .main-menu-li a:hover {
+    background: #2a2414;
+    color: #c5a880;
 }
