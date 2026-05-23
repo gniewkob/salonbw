@@ -44,7 +44,7 @@ export default function TemplatesList({
     }
 
     return (
-        <div className="gap-2">
+        <div className="d-flex flex-column gap-2">
             {templates.map((template) => (
                 <div
                     key={template.id}
@@ -77,7 +77,15 @@ export default function TemplatesList({
                             <h4 className="fw-medium text-dark">
                                 {template.name}
                             </h4>
-                            <p className="small text-muted mt-1 line-clamp-2">
+                            <p
+                                className="small text-muted mt-1"
+                                style={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                }}
+                            >
                                 {template.content}
                             </p>
                             {template.availableVariables &&
@@ -104,11 +112,14 @@ export default function TemplatesList({
                                     onClick={() => {
                                         void onSetDefault(template.id);
                                     }}
-                                    className="p-1 text-secondary bg-opacity-10 rounded"
+                                    className="p-1 text-secondary bg-secondary bg-opacity-10 rounded"
                                     title="Ustaw jako domyślny"
                                 >
                                     <svg
-                                        className="w-4 h-4"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                        }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -130,7 +141,10 @@ export default function TemplatesList({
                                     title="Edytuj"
                                 >
                                     <svg
-                                        className="w-4 h-4"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                        }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -150,11 +164,14 @@ export default function TemplatesList({
                                     onClick={() => {
                                         void onDelete(template.id);
                                     }}
-                                    className="p-1 text-danger bg-opacity-10 rounded"
+                                    className="p-1 text-danger bg-danger bg-opacity-10 rounded"
                                     title="Usuń"
                                 >
                                     <svg
-                                        className="w-4 h-4"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                        }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"

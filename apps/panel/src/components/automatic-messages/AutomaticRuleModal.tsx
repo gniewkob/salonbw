@@ -261,7 +261,7 @@ export default function AutomaticRuleModal({
                             </div>
 
                             {/* Timing */}
-                            <div className="-cols-3 gap-3">
+                            <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
                                 <div>
                                     <label className="d-block small fw-medium text-body mb-1">
                                         Kanał
@@ -437,7 +437,7 @@ export default function AutomaticRuleModal({
                                                     e.target.checked,
                                             }))
                                         }
-                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded"
+                                        className="form-check-input"
                                     />
                                     <span className="small text-body">
                                         Wymagaj zgody SMS
@@ -453,7 +453,7 @@ export default function AutomaticRuleModal({
                                                 isActive: e.target.checked,
                                             }))
                                         }
-                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded"
+                                        className="form-check-input"
                                     />
                                     <span className="small text-body">
                                         Aktywna
@@ -473,7 +473,7 @@ export default function AutomaticRuleModal({
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
+                                className="px-3 py-2 bg-primary text-white rounded-3"
                             >
                                 {loading
                                     ? 'Zapisywanie...'

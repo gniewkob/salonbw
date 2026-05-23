@@ -122,7 +122,7 @@ export default function TemplateModal({
                     {template ? 'Edytuj szablon' : 'Nowy szablon'}
                 </h2>
 
-                <div className="gap-2">
+                <div className="d-flex flex-column gap-2">
                     {/* Name */}
                     <div>
                         <label className="d-block small fw-medium text-body mb-1">
@@ -224,7 +224,8 @@ export default function TemplateModal({
                                 setForm({ ...form, content: e.target.value })
                             }
                             rows={4}
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 resize-none"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
+                            style={{ resize: 'none' }}
                             required
                         />
                     </div>
@@ -276,7 +277,7 @@ export default function TemplateModal({
                             onChange={(e) =>
                                 setForm({ ...form, isActive: e.target.checked })
                             }
-                            className="w-4 h-4 text-primary rounded"
+                            className="form-check-input"
                         />
                         <span className="small text-body">Szablon aktywny</span>
                     </label>
@@ -293,7 +294,7 @@ export default function TemplateModal({
                     <button
                         type="submit"
                         disabled={saving}
-                        className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
+                        className="px-3 py-2 bg-primary text-white rounded-3"
                     >
                         {saving ? 'Zapisywanie...' : 'Zapisz'}
                     </button>

@@ -54,7 +54,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                 Wyślij wiadomość SMS
             </h3>
 
-            <div className="gap-2">
+            <div className="d-flex flex-column gap-2">
                 {/* Recipient */}
                 <div>
                     <label className="d-block small fw-medium text-body mb-1">
@@ -111,7 +111,8 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         onChange={(e) => setContent(e.target.value)}
                         rows={4}
                         placeholder="Wpisz treść wiadomości..."
-                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 resize-none"
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
+                        style={{ resize: 'none' }}
                     />
                     <p className="mt-1 small text-muted">
                         Zmienne typu {'{'}
@@ -127,17 +128,21 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         void handleSend();
                     }}
                     disabled={sending || !recipient || !content}
-                    className="w-100 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10 disabled: d-flex align-items-center justify-content-center gap-2"
+                    className="w-100 px-3 py-2 bg-primary text-white rounded-3 fw-medium d-flex align-items-center justify-content-center gap-2"
                 >
                     {sending ? (
                         <>
-                            <div className="rounded-circle h-4 w-4 border border-2 border-white border-top-transparent"></div>
+                            <span
+                                className="spinner-border spinner-border-sm border-white"
+                                role="status"
+                                aria-hidden="true"
+                            ></span>
                             Wysyłanie...
                         </>
                     ) : (
                         <>
                             <svg
-                                className="w-4 h-4"
+                                style={{ width: '1rem', height: '1rem' }}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"

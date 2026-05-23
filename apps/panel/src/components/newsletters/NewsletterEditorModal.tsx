@@ -192,7 +192,7 @@ export default function NewsletterEditorModal({
                     >
                         <div className="row row-cols-1 row-cols-sm-2 g-4">
                             {/* Left column - Newsletter details */}
-                            <div className="gap-2">
+                            <div className="d-flex flex-column gap-2">
                                 <div>
                                     <label
                                         htmlFor="nl-name"
@@ -309,7 +309,7 @@ export default function NewsletterEditorModal({
                             </div>
 
                             {/* Right column - Recipients */}
-                            <div className="gap-2">
+                            <div className="d-flex flex-column gap-2">
                                 <div>
                                     <label className="d-block small fw-medium text-body mb-2">
                                         Odbiorcy
@@ -349,7 +349,7 @@ export default function NewsletterEditorModal({
                                 </div>
 
                                 {filterMode === 'filter' ? (
-                                    <div className="bg-light rounded-3 p-3 gap-2">
+                                    <div className="bg-light rounded-3 p-3 d-flex flex-column gap-2">
                                         <div className="d-flex align-items-center gap-3">
                                             <label className="d-flex align-items-center">
                                                 <input
@@ -563,7 +563,7 @@ export default function NewsletterEditorModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-3 py-2 text-body bg-opacity-25 rounded-3"
+                            className="px-3 py-2 text-body bg-light bg-opacity-75 rounded-3"
                         >
                             Anuluj
                         </button>
@@ -571,7 +571,7 @@ export default function NewsletterEditorModal({
                             type="submit"
                             form="newsletter-form"
                             disabled={saving || !name || !subject || !content}
-                            className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10 disabled:"
+                            className="px-4 py-2 bg-primary text-white rounded-3"
                         >
                             {saving ? 'Zapisywanie...' : 'Zapisz'}
                         </button>
