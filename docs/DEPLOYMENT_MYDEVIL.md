@@ -165,6 +165,11 @@ If Devil returns an invalid domain type, or the new build is not picked up, touc
 ssh <user>@s0.mydevil.net "touch /home/<user>/domains/<domain>/public_nodejs/tmp/restart.txt"
 ```
 
+Post-env-change restart note:
+- After any API `.env` change, run `devil www restart api.salon-bw.pl` and immediately verify `/healthz`.
+- If the new env is not picked up, force Passenger reload with:
+  `touch /usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/tmp/restart.txt`.
+
 You can also perform the restart from DevilWEB (WWW tab) if you prefer the GUI. Confirm the application process started cleanly by inspecting the Passenger logs (e.g. `~/logs/nodejs/<app>/passenger.log`).
 
 ## 5a. Image Optimization (Next.js)

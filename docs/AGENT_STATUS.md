@@ -1,6 +1,19 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-05-22 (booking role-gating + privacy consent guard)_
+_Last updated: 2026-05-23 (booking role-gating + privacy consent guard + SMTP/Instagram ops fixes)_
+
+Operational note (2026-05-23) — production SMTP + Instagram health remediation:
+- Verified and fixed API SMTP credentials directly on server (`/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`):
+  - switched SMTP auth account to real mailbox `kontakt@salon-bw.pl` (not alias),
+  - rotated mailbox password and synchronized `SMTP_PASSWORD` in API `.env`,
+  - kept branded sender via alias `SMTP_FROM=noreply@salon-bw.pl`.
+- Resolved stale runtime env issue on API by forcing Passenger reload (`tmp/restart.txt`) after `.env` update.
+- Synced `INSTAGRAM_ACCESS_TOKEN` from landing runtime env to API env and verified backend health check now reports:
+  - `database: ok`,
+  - `smtp: ok`,
+  - `instagram: ok`.
+- Added Playwright smoke coverage for privacy resilience flow:
+  - `apps/panel/tests/e2e/prod-privacy-smoke.spec.ts` validates `error -> retry -> save` behavior for `/settings/privacy` using API route stubs (no production data mutation).
 
 Operational note (2026-05-22) — booking role-gating hotfix (`reservedOnline`):
 - Fixed panel booking payload rule in `apps/panel/src/pages/booking.tsx`:
