@@ -28,6 +28,11 @@ const COMMUNICATION_ITEMS: NavItem[] = [
         label: 'Przypomnienia',
         href: '/communication/reminders',
     },
+    {
+        id: 'automatic',
+        label: 'Automatyczne wiadomości',
+        href: '/communication/automatic',
+    },
 ];
 
 export default function CommunicationNav() {
