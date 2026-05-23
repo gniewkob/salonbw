@@ -153,11 +153,13 @@ export class AppointmentsService {
         from?: Date;
         to?: Date;
         employeeId?: number;
+        status?: string;
     }): Promise<Appointment[]> {
         const where: FindOptionsWhere<Appointment> & {
             employee?: { id: number };
         } = {};
         if (params.employeeId) where.employee = { id: params.employeeId };
+        if (params.status) where.status = params.status as AppointmentStatus;
         if (params.from && params.to) {
             where.startTime = Between(params.from, params.to);
         } else if (params.from) {

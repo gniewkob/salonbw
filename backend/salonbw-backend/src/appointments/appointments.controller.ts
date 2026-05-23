@@ -58,6 +58,7 @@ export class AppointmentsController {
                 from: query.from ? new Date(query.from) : undefined,
                 to: query.to ? new Date(query.to) : undefined,
                 employeeId: query.employeeId,
+                status: query.status,
             });
         }
         return this.appointmentsService.findForUser(user.userId);

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsDateString } from 'class-validator';
+import { IsNumber, IsOptional, IsDateString, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class GetAppointmentsDto {
@@ -27,4 +27,12 @@ export class GetAppointmentsDto {
     @Type(() => Number)
     @IsNumber()
     employeeId?: number;
+
+    @ApiProperty({
+        required: false,
+        description: 'Filter by appointment status',
+    })
+    @IsOptional()
+    @IsString()
+    status?: string;
 }

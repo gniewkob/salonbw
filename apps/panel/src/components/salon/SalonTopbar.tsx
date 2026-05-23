@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect, type MouseEvent } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
+import { usePendingBookingsCount } from '@/hooks/useAppointments';
 
 export default function SalonTopbar() {
     const { user, logout } = useAuth();
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+    const pendingCount = usePendingBookingsCount();
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
     const topbar = buildTopbarViewModel(user);
@@ -153,6 +156,25 @@ export default function SalonTopbar() {
                             ></div>
                         </li>
                     ) : null}
+                    {pendingCount > 0 ? (
+                        <li className="d-flex align-items-center">
+                            <Link
+                                href="/calendar"
+                                className="d-flex align-items-center gap-1 text-decoration-none px-2"
+                                title={`${pendingCount} rezerwacja${pendingCount === 1 ? '' : pendingCount < 5 ? 'e' : 'i'} online czeka na potwierdzenie`}
+                            >
+                                <span
+                                    className="badge rounded-pill bg-warning text-dark"
+                                    style={{ fontSize: '0.75rem' }}
+                                >
+                                    {pendingCount}
+                                </span>
+                                <span className="d-none d-md-inline text-warning small fw-semibold">
+                                    oczekujące
+                                </span>
+                            </Link>
+                        </li>
+                    ) : null}
                     <li
                         ref={helpMenuRef}
                         className={`dropdown help_tooltip right-menu${helpMenuOpen ? ' open' : ''}`}
@@ -251,10 +273,13 @@ export default function SalonTopbar() {
                                     href={topbar.user.profileHref}
                                 >
                                     {topbar.user.avatarUrl ? (
-                                        <img
+                                        <Image
                                             alt="Avatar"
                                             className="avatar"
                                             src={topbar.user.avatarUrl}
+                                            width={32}
+                                            height={32}
+                                            unoptimized
                                         />
                                     ) : null}
                                     <strong>{topbar.user.fullName}</strong>
