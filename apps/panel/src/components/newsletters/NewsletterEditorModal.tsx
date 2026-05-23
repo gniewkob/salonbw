@@ -136,7 +136,7 @@ export default function NewsletterEditorModal({
                     Podgląd HTML
                 </label>
                 <div
-                    className="bg-white border rounded-3 p-3 max-h-64 overflow-auto prose prose-sm"
+                    className="bg-white border rounded-3 p-3 overflow-auto"
                     // eslint-disable-next-line react/no-danger
                     dangerouslySetInnerHTML={{ __html: content }}
                 />
@@ -146,13 +146,16 @@ export default function NewsletterEditorModal({
 
     return (
         <div className="position-fixed top-0 start-0 bottom-0 end-0 overflow-y-auto">
-            <div className="d-flex min-h-100 align-items-center justify-content-center p-3">
+            <div className="d-flex vh-100 align-items-center justify-content-center p-3">
                 <div
-                    className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50"
+                    className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50"
                     onClick={onClose}
                     aria-hidden
                 />
-                <div className="position-relative bg-white rounded-4 shadow-lg w-100 max-w-4xl max-h-[90vh] overflow-d-none d-flex flex-column">
+                <div
+                    className="position-relative bg-white rounded-4 shadow-lg w-100 overflow-hidden d-flex flex-column"
+                    style={{ maxWidth: '56rem', maxHeight: '90vh' }}
+                >
                     <div className="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
                         <h2 className="fs-5 fw-semibold text-dark">
                             {newsletter
@@ -187,7 +190,7 @@ export default function NewsletterEditorModal({
                         }}
                         className="flex-fill overflow-y-auto p-4"
                     >
-                        <div className="-cols-2 gap-4">
+                        <div className="row row-cols-1 row-cols-sm-2 g-4">
                             {/* Left column - Newsletter details */}
                             <div className="gap-2">
                                 <div>
@@ -204,7 +207,7 @@ export default function NewsletterEditorModal({
                                         onChange={(e) =>
                                             setName(e.target.value)
                                         }
-                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus:"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm"
                                         placeholder="np. Newsletter Styczniowy 2026"
                                         required
                                     />
@@ -224,7 +227,7 @@ export default function NewsletterEditorModal({
                                         onChange={(e) =>
                                             setSubject(e.target.value)
                                         }
-                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus:"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm"
                                         placeholder="np. Nowości w naszym salonie!"
                                         required
                                     />
@@ -246,7 +249,7 @@ export default function NewsletterEditorModal({
                                                     .value as NewsletterChannel,
                                             )
                                         }
-                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus:"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm"
                                     >
                                         <option value="email">Email</option>
                                         <option value="sms">SMS</option>
@@ -294,7 +297,7 @@ export default function NewsletterEditorModal({
                                             setContent(e.target.value)
                                         }
                                         rows={12}
-                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm focus: font-mono small"
+                                        className="w-100 rounded-3 border-secondary border-opacity-50 shadow-sm small"
                                         placeholder={
                                             channel === 'email'
                                                 ? '<h1>Witaj {{client_name}}!</h1>\n<p>Mamy dla Ciebie świetne nowości...</p>'
@@ -428,7 +431,7 @@ export default function NewsletterEditorModal({
                                             </select>
                                         </div>
 
-                                        <div className="-cols-2 gap-3">
+                                        <div className="row row-cols-1 row-cols-sm-2 g-3">
                                             <div>
                                                 <label
                                                     htmlFor="filter-age-min"

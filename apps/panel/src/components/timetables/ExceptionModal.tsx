@@ -40,7 +40,7 @@ const EXCEPTION_TYPES: {
     {
         value: 'training',
         label: 'Szkolenie',
-        color: 'bg-purple-100 text-purple-700',
+        color: 'badge text-bg-secondary',
     },
     {
         value: 'custom_hours',
@@ -114,7 +114,7 @@ export default function ExceptionModal({
                 onSubmit={(event) => {
                     void handleSubmit(event);
                 }}
-                className="w-[480px]"
+                className=""
             >
                 <h2 className="fs-5 fw-semibold text-dark mb-4">
                     {exception ? 'Edytuj wyjątek' : 'Dodaj wyjątek'}
@@ -132,7 +132,7 @@ export default function ExceptionModal({
                             onChange={(e) =>
                                 setForm({ ...form, date: e.target.value })
                             }
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                             required
                         />
                     </div>
@@ -174,7 +174,7 @@ export default function ExceptionModal({
                                 setForm({ ...form, title: e.target.value })
                             }
                             placeholder="np. Wizyta u lekarza"
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                         />
                     </div>
 
@@ -191,7 +191,7 @@ export default function ExceptionModal({
                                             isAllDay: e.target.checked,
                                         })
                                     }
-                                    className="w-4 h-4 text-primary rounded focus:"
+                                    className="w-4 h-4 text-primary rounded"
                                 />
                                 <span className="small text-body">
                                     Cały dzień wolny
@@ -216,7 +216,7 @@ export default function ExceptionModal({
                                             customStartTime: e.target.value,
                                         })
                                     }
-                                    className="px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                    className="px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                 />
                             </div>
                             <div>
@@ -232,7 +232,7 @@ export default function ExceptionModal({
                                             customEndTime: e.target.value,
                                         })
                                     }
-                                    className="px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                    className="px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                 />
                             </div>
                         </div>
@@ -250,7 +250,7 @@ export default function ExceptionModal({
                             }
                             rows={2}
                             placeholder="Dodatkowe informacje..."
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus: resize-none"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 resize-none"
                         />
                     </div>
                 </div>

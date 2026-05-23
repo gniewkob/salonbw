@@ -65,7 +65,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
                         placeholder="+48 123 456 789"
-                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                     />
                 </div>
 
@@ -84,7 +84,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                                         : null,
                                 )
                             }
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                         >
                             <option value="">-- Bez szablonu --</option>
                             {templates.map((t) => (
@@ -111,7 +111,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         onChange={(e) => setContent(e.target.value)}
                         rows={4}
                         placeholder="Wpisz treść wiadomości..."
-                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus: resize-none"
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 resize-none"
                     />
                     <p className="mt-1 small text-muted">
                         Zmienne typu {'{'}

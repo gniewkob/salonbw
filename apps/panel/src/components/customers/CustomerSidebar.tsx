@@ -65,7 +65,9 @@ export default function CustomerSidebar({
                     <ul className="salonbw-sidebar__nav">
                         <li className={!filters.groupId ? 'active' : ''}>
                             <a onClick={() => handleGroupSelect(undefined)}>
-                                <span className="flex-1">Wszyscy klienci</span>
+                                <span className="flex-fill">
+                                    Wszyscy klienci
+                                </span>
                             </a>
                         </li>
                         {groups.map((group) => (
@@ -91,7 +93,7 @@ export default function CustomerSidebar({
                                                     />
                                                 );
                                             })()}
-                                        <span className="flex-1 text-truncate">
+                                        <span className="flex-fill text-truncate">
                                             {group.name}
                                         </span>
                                         {group.memberCount !== undefined && (
@@ -128,7 +130,7 @@ export default function CustomerSidebar({
                                                 : tag.id,
                                         )
                                     }
-                                    className={`label cursor-pointer font-normal bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
+                                    className={`label  bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
                                     style={tagStyle}
                                 >
                                     {tag.name}
@@ -141,7 +143,7 @@ export default function CustomerSidebar({
                 {/* Filtry zaawansowane */}
                 <div className="salonbw-sidebar__section">
                     <div
-                        className="salonbw-sidebar__header flex-between cursor-pointer"
+                        className="salonbw-sidebar__header flex-between "
                         onClick={() =>
                             setShowAdvancedFilters(!showAdvancedFilters)
                         }

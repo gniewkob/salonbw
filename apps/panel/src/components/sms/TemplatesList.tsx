@@ -23,8 +23,8 @@ const TYPE_COLORS: Record<TemplateType, string> = {
     appointment_reminder: 'badge text-bg-info',
     appointment_confirmation: 'badge text-bg-success',
     appointment_cancellation: 'badge text-bg-danger',
-    birthday_wish: 'bg-pink-100 text-pink-700',
-    follow_up: 'bg-purple-100 text-purple-700',
+    birthday_wish: 'badge text-bg-secondary bg-opacity-75 text-danger-emphasis',
+    follow_up: 'badge text-bg-secondary',
     marketing: 'badge text-bg-warning',
     custom: 'bg-secondary bg-opacity-10 text-body',
 };

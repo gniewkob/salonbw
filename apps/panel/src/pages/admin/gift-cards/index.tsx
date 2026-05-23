@@ -323,7 +323,7 @@ export default function GiftCardsManagementPage() {
                             {/* Filters */}
                             <div className="bg-white rounded-4 shadow-sm p-3 mb-4">
                                 <div className="d-flex flex-wrap gap-3">
-                                    <div className="flex-fill min-w-[200px]">
+                                    <div className="flex-fill">
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Szukaj po kodzie
                                         </label>
@@ -336,7 +336,7 @@ export default function GiftCardsManagementPage() {
                                                 )
                                             }
                                             placeholder="np. XXXX-XXXX-XXXX"
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         />
                                     </div>
                                     <div className="w-48">
@@ -354,7 +354,7 @@ export default function GiftCardsManagementPage() {
                                                         | '',
                                                 )
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         >
                                             <option value="">Wszystkie</option>
                                             <option value="active">
@@ -375,7 +375,7 @@ export default function GiftCardsManagementPage() {
                             </div>
 
                             {/* Cards Table */}
-                            <div className="bg-white rounded-4 shadow-sm overflow-d-none">
+                            <div className="bg-white rounded-4 shadow-sm overflow-hidden">
                                 {isLoading ? (
                                     <div className="p-4 text-center text-muted">
                                         Ładowanie...
@@ -385,7 +385,7 @@ export default function GiftCardsManagementPage() {
                                         Brak kart podarunkowych
                                     </div>
                                 ) : (
-                                    <table className="min-w-100">
+                                    <table className="w-100">
                                         <thead className="bg-light">
                                             <tr>
                                                 <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -427,7 +427,7 @@ export default function GiftCardsManagementPage() {
                                                                         card,
                                                                     )
                                                                 }
-                                                                className="font-mono small text-primary fw-medium"
+                                                                className="font-monospace small text-primary fw-medium"
                                                             >
                                                                 {card.code}
                                                             </button>
@@ -631,8 +631,8 @@ export default function GiftCardsManagementPage() {
 
                         {/* Create Modal */}
                         {modalType === 'create' && (
-                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
-                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 overflow-y-auto">
                                     <form
                                         onSubmit={(event) => {
                                             void handleCreate(event);
@@ -667,10 +667,10 @@ export default function GiftCardsManagementPage() {
                                                                 ),
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
-                                            <div className="-cols-2 gap-3">
+                                            <div className="row row-cols-1 row-cols-sm-2 g-3">
                                                 <div>
                                                     <label className="d-block small fw-medium text-body mb-1">
                                                         Ważna od *
@@ -692,7 +692,7 @@ export default function GiftCardsManagementPage() {
                                                                 }),
                                                             )
                                                         }
-                                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                        className="w-100 px-3 py-2 border rounded-3"
                                                     />
                                                 </div>
                                                 <div>
@@ -716,7 +716,7 @@ export default function GiftCardsManagementPage() {
                                                                 }),
                                                             )
                                                         }
-                                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                        className="w-100 px-3 py-2 border rounded-3"
                                                     />
                                                 </div>
                                             </div>
@@ -739,7 +739,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -761,7 +761,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -780,7 +780,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                     placeholder="Wszystkiego najlepszego z okazji urodzin!"
                                                 />
                                             </div>
@@ -814,8 +814,8 @@ export default function GiftCardsManagementPage() {
 
                         {/* Edit Modal */}
                         {modalType === 'edit' && selectedCard && (
-                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
-                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 overflow-y-auto">
                                     <form
                                         onSubmit={(event) => {
                                             void handleUpdate(event);
@@ -845,7 +845,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -867,7 +867,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -889,7 +889,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -910,7 +910,7 @@ export default function GiftCardsManagementPage() {
                                                                 e.target.value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -929,7 +929,7 @@ export default function GiftCardsManagementPage() {
                                                                 .value,
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                         </div>
@@ -962,7 +962,7 @@ export default function GiftCardsManagementPage() {
 
                         {/* Redeem Modal */}
                         {modalType === 'redeem' && (
-                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
                                 <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
                                     <form
                                         onSubmit={(event) => {
@@ -990,7 +990,7 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="XXXX-XXXX-XXXX"
-                                                    className="w-100 px-3 py-2 border rounded-3 focus: font-mono"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -1013,7 +1013,7 @@ export default function GiftCardsManagementPage() {
                                                             ),
                                                         }))
                                                     }
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                             <div>
@@ -1031,7 +1031,7 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="np. wizyta #123"
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                         </div>
@@ -1064,7 +1064,7 @@ export default function GiftCardsManagementPage() {
 
                         {/* Adjust Balance Modal */}
                         {modalType === 'adjust' && selectedCard && (
-                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
                                 <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
                                     <form
                                         onSubmit={(event) => {
@@ -1107,7 +1107,7 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="Dodatnia = doładowanie, ujemna = obciążenie"
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                                 <p className="small text-muted mt-1">
                                                     Nowe saldo:{' '}
@@ -1134,7 +1134,7 @@ export default function GiftCardsManagementPage() {
                                                         }))
                                                     }
                                                     placeholder="np. Zwrot za anulowaną wizytę"
-                                                    className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                    className="w-100 px-3 py-2 border rounded-3"
                                                 />
                                             </div>
                                         </div>
@@ -1167,8 +1167,8 @@ export default function GiftCardsManagementPage() {
 
                         {/* Details Modal */}
                         {modalType === 'details' && selectedCard && (
-                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
-                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                                <div className="bg-white rounded-4 shadow-lg w-100 mx-4 overflow-y-auto">
                                     <div className="px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
                                         <h2 className="fs-5 fw-semibold">
                                             Szczegóły karty {selectedCard.code}
@@ -1196,12 +1196,12 @@ export default function GiftCardsManagementPage() {
                                         </button>
                                     </div>
                                     <div className="px-4 py-3">
-                                        <div className="-cols-2 gap-3 mb-4">
+                                        <div className="row row-cols-1 row-cols-sm-2 g-3 mb-4">
                                             <div>
                                                 <p className="small text-muted">
                                                     Kod karty
                                                 </p>
-                                                <p className="font-mono fs-5 fw-bold">
+                                                <p className="font-monospace fs-5 fw-bold">
                                                     {selectedCard.code}
                                                 </p>
                                             </div>
@@ -1341,8 +1341,8 @@ export default function GiftCardsManagementPage() {
                                                     Brak transakcji
                                                 </p>
                                             ) : (
-                                                <div className="border rounded-3 overflow-d-none">
-                                                    <table className="min-w-100">
+                                                <div className="border rounded-3 overflow-hidden">
+                                                    <table className="w-100">
                                                         <thead className="bg-light">
                                                             <tr>
                                                                 <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

@@ -35,7 +35,7 @@ export default function CashRegister({ data, loading }: Props) {
     return (
         <div className="gap-3">
             {/* Summary cards */}
-            <div className="-cols-2 gap-3">
+            <div className="row row-cols-1 row-cols-sm-2 g-3">
                 <div className="bg-success bg-opacity-10 border border-success rounded-3 p-3">
                     <p className="small text-success fw-medium">Suma</p>
                     <p className="fs-3 fw-bold text-success">
@@ -63,8 +63,8 @@ export default function CashRegister({ data, loading }: Props) {
             </div>
 
             {/* Entries table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-100">
+            <div className="overflow-auto">
+                <table className="w-100">
                     <thead className="bg-light">
                         <tr>
                             <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

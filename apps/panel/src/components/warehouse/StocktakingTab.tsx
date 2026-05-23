@@ -140,7 +140,7 @@ export default function StocktakingTab() {
                 </div>
                 <button
                     onClick={handleOpenModal}
-                    className="px-3 py-2 bg-teal-600 text-white rounded-3"
+                    className="px-3 py-2 btn-salon text-white rounded-3"
                 >
                     + Nowa inwentaryzacja
                 </button>
@@ -154,8 +154,8 @@ export default function StocktakingTab() {
                     Brak inwentaryzacji. Utwórz pierwszą inwentaryzację.
                 </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-100">
+                <div className="overflow-auto">
+                    <table className="w-100">
                         <thead className="bg-light">
                             <tr>
                                 <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -369,7 +369,7 @@ export default function StocktakingTab() {
                             <button
                                 type="submit"
                                 disabled={createStocktaking.isPending}
-                                className="rounded-3 bg-teal-600 px-3 py-2 text-white"
+                                className="rounded-3 btn-salon px-3 py-2 text-white"
                             >
                                 {createStocktaking.isPending
                                     ? 'Tworzenie...'

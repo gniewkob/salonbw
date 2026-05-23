@@ -6503,3 +6503,172 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* Typography micro-utilities (legacy markup compatibility) */
+.fz-10 {
+    font-size: 10px;
+}
+.fz-11 {
+    font-size: 11px;
+}
+.fz-12 {
+    font-size: 12px;
+}
+.fz-13 {
+    font-size: 13px;
+}
+.fz-14 {
+    font-size: 14px;
+}
+
+.fw-400 {
+    font-weight: 400;
+}
+.fw-600 {
+    font-weight: 600;
+}
+.fw-700 {
+    font-weight: 700;
+}
+
+.lh-14 {
+    line-height: 1.4;
+}
+
+.text-333 {
+    color: #333;
+}
+.text-555 {
+    color: #555;
+}
+.text-666 {
+    color: #666;
+}
+.text-777 {
+    color: #777;
+}
+.text-888 {
+    color: #888;
+}
+.text-999 {
+    color: #999;
+}
+.text-bbb {
+    color: #bbb;
+}
+
+/* label-primary (salon brand color variant) */
+.label-primary {
+    background-color: #008bb4;
+    color: #fff;
+}
+
+/* bg-dynamic: used with inline style color — base styles only */
+.bg-dynamic {
+    background-color: currentColor;
+}
+
+/* w/h pixel helpers used in color dots */
+.w-8 {
+    width: 8px;
+}
+.h-8 {
+    height: 8px;
+}
+.w-10 {
+    width: 10px;
+}
+.h-10 {
+    height: 10px;
+}
+.w-24 {
+    width: 24px;
+}
+.h-24 {
+    height: 24px;
+}
+
+/* ── salonbw-tile: KPI stat tile ───────────────────────────────────── */
+.salonbw-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 4px;
+    min-width: 80px;
+    text-align: center;
+}
+.salonbw-tile__label {
+    font-size: 11px;
+    color: #8b949d;
+    margin-bottom: 2px;
+}
+.salonbw-tile__value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.1;
+}
+
+/* ── salonbw-stat: inline stat with value + label ───────────────────── */
+.salonbw-stat__value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.1;
+}
+.salonbw-stat__label {
+    font-size: 11px;
+    color: #8b949d;
+}
+
+/* ── salonbw-stat-card: dashboard KPI card ──────────────────────────── */
+.salonbw-stat-card {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    padding: 16px;
+}
+.salonbw-stat-card__title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b949d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 4px;
+}
+.salonbw-stat-card__value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+.salonbw-stat-card__change {
+    font-size: 11px;
+    color: #e36b5d;
+}
+.salonbw-stat-card__change.positive {
+    color: #27ae60;
+}
+.salonbw-stat-card__chart {
+    margin-top: 8px;
+}
+
+/* ── salonbw-sidebar (customer detail sidebar) ──────────────────────── */
+.salonbw-sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+/* text-accent: primary data/KPI accent color */
+.text-accent {
+    color: #2aa0cf;
+}

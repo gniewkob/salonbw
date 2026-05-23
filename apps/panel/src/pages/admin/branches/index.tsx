@@ -199,10 +199,13 @@ export default function BranchesManagementPage() {
                             return (
                                 <div
                                     key={branch.id}
-                                    className="bg-white rounded-3 shadow-sm border border-secondary border-opacity-25 overflow-d-none -shadow"
+                                    className="bg-white rounded-3 shadow-sm border border-secondary border-opacity-25 overflow-hidden"
                                 >
                                     {branch.coverImageUrl && (
-                                        <div className="h-32 overflow-d-none position-relative">
+                                        <div
+                                            className="overflow-hidden position-relative"
+                                            style={{ height: '8rem' }}
+                                        >
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={branch.coverImageUrl}
@@ -345,7 +348,7 @@ export default function BranchesManagementPage() {
                                     );
                                     setSelectedBranch(branch ?? null);
                                 }}
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                             >
                                 <option value="">Wybierz salon...</option>
                                 {branches?.map((b) => (
@@ -361,8 +364,8 @@ export default function BranchesManagementPage() {
                                 <h3 className="fw-medium text-dark mb-3">
                                     Pracownicy salonu: {selectedBranch.name}
                                 </h3>
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-100">
+                                <div className="overflow-auto">
+                                    <table className="w-100">
                                         <thead className="bg-light">
                                             <tr>
                                                 <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -443,7 +446,7 @@ export default function BranchesManagementPage() {
                 <div className="position-fixed top-0 start-0 bottom-0 end-0 overflow-y-auto">
                     <div className="d-flex align-items-center justify-content-center px-3">
                         <div
-                            className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50"
+                            className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50"
                             onClick={() => setModalOpen(false)}
                         />
                         <div className="position-relative bg-white rounded-3 shadow-lg w-100 p-4">
@@ -469,11 +472,11 @@ export default function BranchesManagementPage() {
                                         value={formData.name}
                                         onChange={handleChange}
                                         required
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     />
                                 </div>
 
-                                <div className="-cols-2 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 g-3">
                                     <div>
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Miasto
@@ -485,7 +488,7 @@ export default function BranchesManagementPage() {
                                             placeholder="Miasto"
                                             value={formData.city ?? ''}
                                             onChange={handleChange}
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         />
                                     </div>
                                     <div>
@@ -499,7 +502,7 @@ export default function BranchesManagementPage() {
                                             value={formData.postalCode ?? ''}
                                             onChange={handleChange}
                                             placeholder="00-000"
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         />
                                     </div>
                                 </div>
@@ -516,7 +519,7 @@ export default function BranchesManagementPage() {
                                             placeholder="Ulica"
                                             value={formData.street ?? ''}
                                             onChange={handleChange}
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         />
                                     </div>
                                     <div>
@@ -532,12 +535,12 @@ export default function BranchesManagementPage() {
                                                 formData.buildingNumber ?? ''
                                             }
                                             onChange={handleChange}
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="-cols-2 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 g-3">
                                     <div>
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Telefon
@@ -549,7 +552,7 @@ export default function BranchesManagementPage() {
                                             placeholder="Telefon"
                                             value={formData.phone ?? ''}
                                             onChange={handleChange}
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         />
                                     </div>
                                     <div>
@@ -563,7 +566,7 @@ export default function BranchesManagementPage() {
                                             placeholder="Email"
                                             value={formData.email ?? ''}
                                             onChange={handleChange}
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         />
                                     </div>
                                 </div>
@@ -579,7 +582,7 @@ export default function BranchesManagementPage() {
                                         value={formData.description ?? ''}
                                         onChange={handleChange}
                                         rows={3}
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     />
                                 </div>
 

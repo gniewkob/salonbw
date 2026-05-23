@@ -156,9 +156,9 @@ export default function AutomaticRuleModal({
 
     return (
         <div className="position-fixed top-0 start-0 bottom-0 end-0 overflow-y-auto">
-            <div className="d-flex min-h-100 align-items-center justify-content-center p-3">
+            <div className="d-flex vh-100 align-items-center justify-content-center p-3">
                 <div
-                    className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/30"
+                    className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-25"
                     onClick={onClose}
                 ></div>
 
@@ -195,9 +195,9 @@ export default function AutomaticRuleModal({
                             void handleSubmit(event);
                         }}
                     >
-                        <div className="p-3 gap-2 max-h-[60vh] overflow-y-auto">
+                        <div className="p-3 gap-2 overflow-y-auto">
                             {/* Basic Info */}
-                            <div className="-cols-2 gap-3">
+                            <div className="row row-cols-1 row-cols-sm-2 g-3">
                                 <div>
                                     <label className="d-block small fw-medium text-body mb-1">
                                         Nazwa reguły *
@@ -211,7 +211,7 @@ export default function AutomaticRuleModal({
                                                 name: e.target.value,
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                         required
                                     />
                                 </div>
@@ -228,7 +228,7 @@ export default function AutomaticRuleModal({
                                                     .value as AutomaticMessageTrigger,
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     >
                                         {TRIGGER_OPTIONS.map((opt) => (
                                             <option
@@ -255,7 +255,7 @@ export default function AutomaticRuleModal({
                                             description: e.target.value,
                                         }))
                                     }
-                                    className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                    className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     placeholder="Krótki opis reguły..."
                                 />
                             </div>
@@ -275,7 +275,7 @@ export default function AutomaticRuleModal({
                                                     .value as AutomaticMessageChannel,
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     >
                                         {CHANNEL_OPTIONS.map((opt) => (
                                             <option
@@ -305,7 +305,7 @@ export default function AutomaticRuleModal({
                                                     ),
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                             min={-168}
                                             max={168}
                                         />
@@ -332,7 +332,7 @@ export default function AutomaticRuleModal({
                                                     ),
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                             min={1}
                                             max={365}
                                         />
@@ -341,7 +341,7 @@ export default function AutomaticRuleModal({
                             </div>
 
                             {/* Send Window */}
-                            <div className="-cols-2 gap-3">
+                            <div className="row row-cols-1 row-cols-sm-2 g-3">
                                 <div>
                                     <label className="d-block small fw-medium text-body mb-1">
                                         Okno wysyłki od
@@ -359,7 +359,7 @@ export default function AutomaticRuleModal({
                                                     e.target.value + ':00',
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     />
                                 </div>
                                 <div>
@@ -379,7 +379,7 @@ export default function AutomaticRuleModal({
                                                     e.target.value + ':00',
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     />
                                 </div>
                             </div>
@@ -397,7 +397,7 @@ export default function AutomaticRuleModal({
                                             content: e.target.value,
                                         }))
                                     }
-                                    className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                    className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                                     rows={4}
                                     required
                                     placeholder="Wpisz treść wiadomości..."
@@ -437,7 +437,7 @@ export default function AutomaticRuleModal({
                                                     e.target.checked,
                                             }))
                                         }
-                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded focus:"
+                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded"
                                     />
                                     <span className="small text-body">
                                         Wymagaj zgody SMS
@@ -453,7 +453,7 @@ export default function AutomaticRuleModal({
                                                 isActive: e.target.checked,
                                             }))
                                         }
-                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded focus:"
+                                        className="w-4 h-4 text-primary border-secondary border-opacity-50 rounded"
                                     />
                                     <span className="small text-body">
                                         Aktywna

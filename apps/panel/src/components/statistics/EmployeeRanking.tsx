@@ -25,8 +25,8 @@ export default function EmployeeRanking({ data, loading }: Props) {
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-100">
+        <div className="overflow-auto">
+            <table className="w-100">
                 <thead className="bg-light">
                     <tr>
                         <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

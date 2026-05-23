@@ -28,8 +28,8 @@ export default function ServiceRanking({ data, loading }: Props) {
     const maxBookings = Math.max(...data.map((s) => s.bookingCount));
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-100">
+        <div className="overflow-auto">
+            <table className="w-100">
                 <thead className="bg-light">
                     <tr>
                         <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

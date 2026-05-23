@@ -20,6 +20,13 @@ export default function RouteProgress() {
 
     if (!loading) return null;
     return (
-        <div className="fixed top-0 left-0 right-0 h-1 bg-brand-gold animate-pulse z-50" />
+        <div
+            className="position-fixed top-0 start-0 end-0"
+            style={{
+                height: 3,
+                background: 'var(--salon-accent)',
+                zIndex: 9999,
+            }}
+        />
     );
 }

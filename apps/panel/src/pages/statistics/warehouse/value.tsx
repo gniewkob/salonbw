@@ -178,7 +178,10 @@ export default function WarehouseValuePage() {
                                         <div className="salonbw-widget__header">
                                             Wartość wg kategorii
                                         </div>
-                                        <div className="salonbw-widget__content h-[300px]">
+                                        <div
+                                            className="salonbw-widget__content"
+                                            style={{ height: 300 }}
+                                        >
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -237,7 +240,10 @@ export default function WarehouseValuePage() {
                                         <div className="salonbw-widget__header">
                                             Ilość produktów wg kategorii
                                         </div>
-                                        <div className="salonbw-widget__content h-[300px]">
+                                        <div
+                                            className="salonbw-widget__content"
+                                            style={{ height: 300 }}
+                                        >
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.byCategory}

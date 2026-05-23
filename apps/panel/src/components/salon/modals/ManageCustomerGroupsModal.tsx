@@ -240,10 +240,11 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                     return (
                                         <div
                                             key={g.id}
-                                            className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]"
+                                            className="border rounded p-2 mb-2"
+                                            style={{ borderColor: '#e6eaee' }}
                                         >
-                                            <div className="d-flex align-items-center justify-content-between gap-[10px] mb-2">
-                                                <div className="d-flex align-items-center gap-[10px]">
+                                            <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                                <div className="d-flex align-items-center gap-2">
                                                     {(() => {
                                                         const colorDotStyle: React.CSSProperties =
                                                             {

@@ -174,7 +174,10 @@ export default function WarehouseChangesPage() {
                                 <div className="salonbw-widget__header">
                                     Ruchy magazynowe wg typu
                                 </div>
-                                <div className="salonbw-widget__content h-[300px]">
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 300 }}
+                                >
                                     <ResponsiveContainer>
                                         <BarChart data={chartData}>
                                             <CartesianGrid strokeDasharray="3 3" />

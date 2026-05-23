@@ -160,7 +160,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                     type="checkbox"
                                     checked={isWorking}
                                     onChange={() => toggleDay(day)}
-                                    className="w-5 h-5 text-primary rounded focus:"
+                                    className="w-5 h-5 text-primary rounded"
                                 />
                                 <span
                                     className={`fw-medium ${isWorking ? 'text-dark' : 'text-secondary'}`}
@@ -186,7 +186,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small focus:"
+                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small"
                                         />
                                         <label className="small text-muted">
                                             Do:
@@ -201,7 +201,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small focus:"
+                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small"
                                         />
                                     </div>
 

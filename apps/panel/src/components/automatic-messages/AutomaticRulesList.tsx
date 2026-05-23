@@ -28,10 +28,10 @@ const TRIGGER_COLORS: Record<AutomaticMessageTrigger, string> = {
     appointment_reminder: 'badge text-bg-info',
     appointment_confirmation: 'badge text-bg-success',
     appointment_cancellation: 'badge text-bg-danger',
-    follow_up: 'bg-purple-100 text-purple-700',
-    birthday: 'bg-pink-100 text-pink-700',
+    follow_up: 'badge text-bg-secondary',
+    birthday: 'badge text-bg-secondary bg-opacity-75 text-danger-emphasis',
     inactive_client: 'badge text-bg-warning',
-    new_client: 'bg-teal-100 text-teal-700',
+    new_client: 'badge text-bg-info',
     review_request: 'badge text-bg-warning',
 };
 

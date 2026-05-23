@@ -331,7 +331,7 @@ export default function AppointmentsPage() {
                             {data?.items.map((appt) => (
                                 <tr
                                     key={appt.id}
-                                    className="cursor-pointer"
+                                    className=""
                                     onClick={() => openInCalendar(appt)}
                                     style={{ cursor: 'pointer' }}
                                 >

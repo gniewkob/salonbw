@@ -24,8 +24,8 @@ const EXCEPTION_STYLES: Record<
     vacation: { bg: 'bg-info-subtle', text: 'text-info', label: 'Urlop' },
     sick_leave: { bg: 'bg-danger-subtle', text: 'text-danger', label: 'L4' },
     training: {
-        bg: 'bg-purple-100',
-        text: 'text-purple-700',
+        bg: 'bg-secondary bg-opacity-10',
+        text: 'text-body',
         label: 'Szkolenie',
     },
     custom_hours: {

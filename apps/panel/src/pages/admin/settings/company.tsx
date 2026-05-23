@@ -516,7 +516,7 @@ export default function CompanySettingsPage() {
                                                 formData.isVatPayer ?? true
                                             }
                                             onChange={handleChange}
-                                            className="h-4 w-4 text-primary focus: border-secondary border-opacity-50 rounded"
+                                            className="h-4 w-4 text-primary border-secondary border-opacity-50 rounded"
                                         />
                                         <label
                                             htmlFor="isVatPayer"

@@ -93,7 +93,10 @@ export default function RemindersPage() {
                                     </span>
                                 </div>
                                 <div className="salonbw-stat">
-                                    <span className="salonbw-stat__value text-[#25B4C1]">
+                                    <span
+                                        className="salonbw-stat__value"
+                                        style={{ color: '#25B4C1' }}
+                                    >
                                         {stats?.upcoming ?? '-'}
                                     </span>
                                     <span className="salonbw-stat__label">

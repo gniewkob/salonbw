@@ -85,7 +85,7 @@ export default function NewslettersList({
             {newsletters.map((newsletter) => (
                 <div
                     key={newsletter.id}
-                    className="bg-white border border-secondary border-opacity-25 rounded-3 p-3 -shadow"
+                    className="bg-white border border-secondary border-opacity-25 rounded-3 p-3"
                 >
                     <div className="d-flex align-items-start justify-content-between">
                         <div className="flex-fill">
