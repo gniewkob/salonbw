@@ -44,9 +44,7 @@ export default function ClientAppointmentHistoryView({
     const [pendingRequestId, setPendingRequestId] = useState<number | null>(
         null,
     );
-    const [pendingAcceptId, setPendingAcceptId] = useState<number | null>(
-        null,
-    );
+    const [pendingAcceptId, setPendingAcceptId] = useState<number | null>(null);
     const [requestState, setRequestState] = useState<{
         kind: 'success' | 'error';
         appointmentId: number;
