@@ -176,6 +176,7 @@ export default function AppointmentDrawer({
 
     useEffect(() => {
         if (!open) return;
+        let alive = true;
 
         setInternalNote('');
         setNoteSaved(false);
@@ -199,12 +200,18 @@ export default function AppointmentDrawer({
             if (clientId && canShowFormulas) {
                 apiFetch<Formula[]>(`/customers/${clientId}/formulas`)
                     .then((data) => {
+                        if (!alive) return;
                         setFormulas(data.slice(0, 3));
                         setFormulasLoaded(true);
                     })
-                    .catch(() => setFormulasLoaded(true));
+                    .catch(() => {
+                        if (!alive) return;
+                        setFormulasLoaded(true);
+                    });
             }
-            return;
+            return () => {
+                alive = false;
+            };
         }
 
         const start = initialStartTime ?? new Date();
@@ -220,6 +227,9 @@ export default function AppointmentDrawer({
         setNewCustomerPhone('');
         setNewCustomerEmail('');
         setError(null);
+        return () => {
+            alive = false;
+        };
     }, [
         open,
         mode,

@@ -88,6 +88,7 @@ export default function SalonTopbar() {
                         href={topbar.brand.href}
                         title="przejdź do pulpitu"
                     >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src="/images/logo.svg"
                             alt="Salon Black &amp; White"
@@ -280,11 +281,14 @@ export default function SalonTopbar() {
                                     href={topbar.user.profileHref}
                                 >
                                     {topbar.user.avatarUrl ? (
-                                        <img
-                                            alt="Avatar"
-                                            className="avatar"
-                                            src={topbar.user.avatarUrl}
-                                        />
+                                        <>
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                alt="Avatar"
+                                                className="avatar"
+                                                src={topbar.user.avatarUrl}
+                                            />
+                                        </>
                                     ) : null}
                                     <strong>{topbar.user.fullName}</strong>
                                     {topbar.user.roleLabel}
