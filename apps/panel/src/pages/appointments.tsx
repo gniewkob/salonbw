@@ -190,7 +190,7 @@ export default function AppointmentsPage() {
                 />
 
                 <div className="column_row mb-3">
-                    <div className="d-flex flex-wrap gap-2 align-items-end">
+                    <div className="salonbw-filters d-flex flex-wrap gap-2 align-items-end">
                         <div>
                             <label className="form-label mb-1 small">Od</label>
                             <input
@@ -230,7 +230,6 @@ export default function AppointmentsPage() {
                                     );
                                     handleFilterChange();
                                 }}
-                                style={{ minWidth: 160 }}
                             >
                                 <option value="">Wszystkie statusy</option>
                                 {ALL_STATUSES.map((s) => (
@@ -240,7 +239,7 @@ export default function AppointmentsPage() {
                                 ))}
                             </select>
                         </div>
-                        <div className="flex-grow-1" style={{ minWidth: 180 }}>
+                        <div className="flex-grow-1">
                             <label className="form-label mb-1 small">
                                 Klient / telefon
                             </label>

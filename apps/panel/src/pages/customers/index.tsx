@@ -389,45 +389,47 @@ export default function ClientsPage() {
                                     className="column_row details_container"
                                     id="customers_list"
                                 >
-                                    <table className="list-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Klient</th>
-                                                <th>Kontakt</th>
-                                                <th className="hidden-xs">
-                                                    Ostatnia wizyta
-                                                </th>
-                                                <th
-                                                    className="text-right hidden-xs"
-                                                    aria-label="Akcje"
-                                                />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredCustomers.map(
-                                                (customer, i) => (
-                                                    <DraggableCustomerRow
-                                                        key={customer.id}
-                                                        customer={customer}
-                                                        isDragging={
-                                                            draggedCustomer?.id ===
-                                                            customer.id
-                                                        }
-                                                        rowClass={
-                                                            i % 2 === 0
-                                                                ? 'odd'
-                                                                : 'even'
-                                                        }
-                                                        onOpen={(id) =>
-                                                            void router.push(
-                                                                `/customers/${id}` as Route,
-                                                            )
-                                                        }
+                                    <div className="list-table-responsive">
+                                        <table className="list-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Klient</th>
+                                                    <th>Kontakt</th>
+                                                    <th className="hidden-xs">
+                                                        Ostatnia wizyta
+                                                    </th>
+                                                    <th
+                                                        className="text-right hidden-xs"
+                                                        aria-label="Akcje"
                                                     />
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredCustomers.map(
+                                                    (customer, i) => (
+                                                        <DraggableCustomerRow
+                                                            key={customer.id}
+                                                            customer={customer}
+                                                            isDragging={
+                                                                draggedCustomer?.id ===
+                                                                customer.id
+                                                            }
+                                                            rowClass={
+                                                                i % 2 === 0
+                                                                    ? 'odd'
+                                                                    : 'even'
+                                                            }
+                                                            onOpen={(id) =>
+                                                                void router.push(
+                                                                    `/customers/${id}` as Route,
+                                                                )
+                                                            }
+                                                        />
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </>
                         )}

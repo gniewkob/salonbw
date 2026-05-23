@@ -6340,3 +6340,151 @@ body.e2e-extension .main-content .inner.extension_info {
     color: #8ca7d9;
     cursor: default;
 }
+
+/* ========================================
+   Mobile Nav Overlay
+   ======================================== */
+
+.salonbw-nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1040;
+}
+
+body.salonbw-sidebar-open .salonbw-nav-overlay {
+    display: block;
+}
+
+/* ========================================
+   Mobile Responsive Layout
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* --- Topbar: remove mainnav offset, keep hamburger visible --- */
+    .navbar.navbar-default {
+        padding-left: 48px;
+    }
+
+    .navbar .menu-toggler {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* --- Sidebar wrapper: no left padding (mainnav is fixed/overlaid) --- */
+    #sidebar,
+    .sidebar {
+        padding-left: 0;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    /* --- Mainnav: hidden off-screen by default, slides in when open --- */
+    #mainnav,
+    .mainnav {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 1050;
+        top: var(--salon-topbar-h);
+        height: calc(100vh - var(--salon-topbar-h));
+    }
+
+    /* Overlay behind open mainnav */
+    body.salonbw-sidebar-open::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1040;
+    }
+
+    /* Open state: slide mainnav in */
+    body.salonbw-sidebar-open #mainnav,
+    body.salonbw-sidebar-open .mainnav {
+        transform: translateX(0);
+    }
+
+    /* --- Sidenav: full-width strip above content --- */
+    #sidenav,
+    .sidenav {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--salon-border);
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 6px 8px;
+    }
+
+    /* --- Main content: no left margin offset --- */
+    #main-container,
+    .main-container {
+        flex-direction: column;
+    }
+
+    .main-content .inner {
+        padding: 12px;
+    }
+}
+
+/* ========================================
+   Mobile Table Scroll
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Wrap any bare table without an existing scroll container */
+    .list-table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Appointments filter bar: stack vertically */
+    .salonbw-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .salonbw-filters > * {
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    /* Stat cards: single column on mobile */
+    .salonbw-dashboard__stats {
+        grid-template-columns: 1fr;
+    }
+
+    /* Dashboard grid: single column */
+    .salonbw-dashboard__grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Form grids: single column */
+    .product-form__row,
+    .warehouse-form-grid,
+    .salon-column-row {
+        grid-template-columns: 1fr !important;
+        flex-direction: column;
+    }
+
+    .salon-column {
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+    /* Appointment drawer / modals: full-width on mobile */
+    .salonbw-drawer {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0;
+    }
+
+    /* Tables: allow horizontal scroll */
+    .salonbw-table-wrap,
+    .data_table_wrapper,
+    .data-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
