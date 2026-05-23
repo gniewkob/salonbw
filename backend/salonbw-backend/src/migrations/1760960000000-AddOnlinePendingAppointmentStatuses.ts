@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddOnlinePendingAppointmentStatuses1760960000000 implements MigrationInterface {
+export class AddOnlinePendingAppointmentStatuses1760960000000
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Drop the existing CHECK constraint on appointments.status and recreate it
         // with the two new values: 'online_pending' and 'rescheduled_pending'.

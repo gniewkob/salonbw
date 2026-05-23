@@ -18,10 +18,6 @@ export class UpcomingAppointmentDto {
 
     @ApiProperty({ description: 'Employee name' })
     employeeName: string;
-
-    @ApiProperty({ description: 'Appointment status', required: false })
-    @IsOptional()
-    status?: string;
 }
 
 export class ServiceHistoryItemDto {
