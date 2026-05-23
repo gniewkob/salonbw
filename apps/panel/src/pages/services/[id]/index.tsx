@@ -278,17 +278,17 @@ export default function ServiceDetailsPage() {
                                                     className="list-group-item"
                                                 >
                                                     <div className="row">
-                                                        <div className="col-xs-6">
+                                                        <div className="col-6">
                                                             <span className="h4">
                                                                 {variant.name}
                                                             </span>
                                                         </div>
-                                                        <div className="col-xs-3">
+                                                        <div className="col-3">
                                                             {formatDuration(
                                                                 variant.duration,
                                                             )}
                                                         </div>
-                                                        <div className="col-xs-3 text-end">
+                                                        <div className="col-3 text-end">
                                                             {formatCurrency(
                                                                 variant.price,
                                                             )}

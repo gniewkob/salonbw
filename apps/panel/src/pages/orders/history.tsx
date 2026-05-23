@@ -102,7 +102,7 @@ export default function WarehouseOrdersHistoryPage() {
                             </select>
                         </div>
                         <div className="col-sm-8 col-lg-7">
-                            <div className="d-flex flex-wrap jc-end">
+                            <div className="d-flex flex-wrap justify-content-end">
                                 <Link
                                     href="/orders/new"
                                     className="button button-blue ml-xs"

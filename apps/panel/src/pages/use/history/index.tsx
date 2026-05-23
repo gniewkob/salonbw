@@ -19,7 +19,7 @@ export default function WarehouseUsageHistoryPage() {
         >
             <div className="row mb-3">
                 <div className="col-sm-12">
-                    <div className="d-flex flex-wrap jc-end">
+                    <div className="d-flex flex-wrap justify-content-end">
                         <Link
                             href="/use/new"
                             className="button button-blue ml-xs"

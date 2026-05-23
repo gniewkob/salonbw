@@ -182,7 +182,7 @@ export default function CustomerSidebar({
                             </div>
 
                             <div className="row row-tight">
-                                <div className="col-xs-6">
+                                <div className="col-6">
                                     <label
                                         htmlFor="filter-age-min"
                                         className="control-label salonbw-label-xs"
@@ -206,7 +206,7 @@ export default function CustomerSidebar({
                                         className="form-control input-sm"
                                     />
                                 </div>
-                                <div className="col-xs-6">
+                                <div className="col-6">
                                     <label
                                         htmlFor="filter-age-max"
                                         className="control-label small mb-4"
@@ -233,7 +233,7 @@ export default function CustomerSidebar({
                             </div>
 
                             <div className="row row-tight">
-                                <div className="col-xs-6">
+                                <div className="col-6">
                                     <label
                                         htmlFor="filter-spent-min"
                                         className="control-label salonbw-label-xs"
@@ -257,7 +257,7 @@ export default function CustomerSidebar({
                                         className="form-control input-sm"
                                     />
                                 </div>
-                                <div className="col-xs-6">
+                                <div className="col-6">
                                     <label
                                         htmlFor="filter-spent-max"
                                         className="control-label salonbw-label-xs"

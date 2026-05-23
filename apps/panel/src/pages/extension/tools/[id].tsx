@@ -218,7 +218,7 @@ function ExtensionToolContent() {
                     <div className="row">
                         <div className="col-sm-6 logo_with_actions">
                             <div className="row">
-                                <div className="col-xs-3 extension_icon">
+                                <div className="col-3 extension_icon">
                                     <svg
                                         className={`svg-${tool.icon}`}
                                         aria-hidden="true"
@@ -228,7 +228,7 @@ function ExtensionToolContent() {
                                         />
                                     </svg>
                                 </div>
-                                <div className="col-xs-9">
+                                <div className="col-9">
                                     <div className="ext_title">
                                         {tool.title}
                                     </div>
@@ -241,14 +241,14 @@ function ExtensionToolContent() {
                                     <div className="row vertical-align status-info">
                                         {tool.status === 'Aktywny' ? (
                                             <>
-                                                <div className="col-xs-6">
+                                                <div className="col-6">
                                                     {'status: '}
                                                     <div className="icon sprite-active_green" />
                                                     <div className="state active">
                                                         Aktywny
                                                     </div>
                                                 </div>
-                                                <div className="col-xs-6">
+                                                <div className="col-6">
                                                     <div className="update_extension">
                                                         <a
                                                             className="disable_extension_link"
@@ -264,7 +264,7 @@ function ExtensionToolContent() {
                                             </>
                                         ) : (
                                             <>
-                                                <div className="col-xs-6">
+                                                <div className="col-6">
                                                     <button
                                                         type="button"
                                                         className="button button-blue"
@@ -272,7 +272,7 @@ function ExtensionToolContent() {
                                                         wypróbuj za darmo
                                                     </button>
                                                 </div>
-                                                <div className="col-xs-6">
+                                                <div className="col-6">
                                                     {'status: '}
                                                     <span className="state inactive">
                                                         Nieaktywny
@@ -285,7 +285,7 @@ function ExtensionToolContent() {
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12">
+                                <div className="col-12">
                                     <div className="desc">
                                         <p>{tool.description}</p>
                                         {tool.descriptionMore?.length ? (
@@ -326,7 +326,7 @@ function ExtensionToolContent() {
                                 <div className="slider">
                                     <div id="gallery">
                                         <div className="row row-no-padding">
-                                            <div className="col-xs-12">
+                                            <div className="col-12">
                                                 <a href={tool.gallery.main}>
                                                     {/* Copy-first parity with source gallery markup. */}
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -343,7 +343,7 @@ function ExtensionToolContent() {
                                                 (thumbUrl, idx) => (
                                                     <div
                                                         key={thumbUrl}
-                                                        className="col-xs-4"
+                                                        className="col-4"
                                                     >
                                                         <a href={thumbUrl}>
                                                             {/* Copy-first parity with source gallery markup. */}

@@ -148,7 +148,7 @@ export default function WarehouseSalesHistoryPage() {
                             </select>
                         </div>
                         <div className="col-sm-8 col-lg-7">
-                            <div className="d-flex flex-wrap jc-end">
+                            <div className="d-flex flex-wrap justify-content-end">
                                 {Number.isFinite(appointmentIdFromQuery) &&
                                 appointmentIdFromQuery > 0 ? (
                                     <span className="badge text-bg-info me-2 align-self-center">
