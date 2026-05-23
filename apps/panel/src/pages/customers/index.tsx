@@ -386,16 +386,20 @@ export default function ClientsPage() {
                                     </label>
                                 </div>
                                 <div
-                                    className="column_row details_container"
+                                    className="column_row data_table"
                                     id="customers_list"
                                 >
-                                    <table className="list-table">
+                                    <table className="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Klient</th>
-                                                <th>Kontakt</th>
+                                                <th>
+                                                    <div>Klient</div>
+                                                </th>
+                                                <th>
+                                                    <div>Kontakt</div>
+                                                </th>
                                                 <th className="hidden-xs">
-                                                    Ostatnia wizyta
+                                                    <div>Ostatnia wizyta</div>
                                                 </th>
                                                 <th
                                                     className="text-right hidden-xs"

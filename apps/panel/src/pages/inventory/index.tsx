@@ -100,21 +100,36 @@ export default function InventoryHistoryPage() {
                             <option value="cancelled">anulowane</option>
                         </select>
                     </div>
-                    <div className="products-table-wrap">
-                        <table className="products-table">
+                    <div className="column_row data_table">
+                        <table className="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>data i nazwa inwentaryzacji</th>
-                                    <th>status</th>
-                                    <th>liczba produktów</th>
                                     <th>
-                                        liczba produktów z niedoborem w
-                                        magazynie
+                                        <div>data i nazwa inwentaryzacji</div>
                                     </th>
                                     <th>
-                                        liczba produktów z nadwyżką w magazynie
+                                        <div>status</div>
                                     </th>
-                                    <th>liczba produktów ze stanem zgodnym</th>
+                                    <th>
+                                        <div>liczba produktów</div>
+                                    </th>
+                                    <th>
+                                        <div>
+                                            liczba produktów z niedoborem w
+                                            magazynie
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div>
+                                            liczba produktów z nadwyżką w
+                                            magazynie
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div>
+                                            liczba produktów ze stanem zgodnym
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -123,7 +138,7 @@ export default function InventoryHistoryPage() {
                                         <td>
                                             <Link
                                                 href={`/inventory/${row.id}`}
-                                                className="products-link"
+                                                className="link_body inverse_decoration"
                                             >
                                                 {new Date(
                                                     row.stocktakingDate,
@@ -146,7 +161,7 @@ export default function InventoryHistoryPage() {
                 </>
             )}
 
-            <div className="products-pagination">
+            <div className="pagination_container">
                 Pozycje od {from} do {to} z {filteredRows.length} | na stronie
                 <select
                     className="salonbw-select salonbw-select--inline"
@@ -155,7 +170,7 @@ export default function InventoryHistoryPage() {
                 >
                     <option value="20">20</option>
                 </select>
-                <div className="products-pagination-nav">
+                <div className="form_pagination">
                     <input
                         type="text"
                         value={safePage}

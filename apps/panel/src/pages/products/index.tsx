@@ -197,7 +197,7 @@ export default function WarehouseProductsPage() {
             </div>
 
             <div className="column_row data_table">
-                <table className="table-bordered">
+                <table className="table table-bordered">
                     <thead>
                         <tr>
                             <th className="pointer checkbox_container center_text">
@@ -206,12 +206,24 @@ export default function WarehouseProductsPage() {
                                     aria-label="zaznacz wszystkie"
                                 />
                             </th>
-                            <th>Nazwa</th>
-                            <th>Kategoria</th>
-                            <th>Rodzaj produktu</th>
-                            <th>Kod wewnętrzny (SKU)</th>
-                            <th>Stan magazynowy</th>
-                            <th>Cena sprzedaży</th>
+                            <th>
+                                <div>Nazwa</div>
+                            </th>
+                            <th>
+                                <div>Kategoria</div>
+                            </th>
+                            <th>
+                                <div>Rodzaj produktu</div>
+                            </th>
+                            <th>
+                                <div>Kod wewnętrzny (SKU)</div>
+                            </th>
+                            <th>
+                                <div>Stan magazynowy</div>
+                            </th>
+                            <th>
+                                <div>Cena sprzedaży</div>
+                            </th>
                             <th className="col-actions-45" aria-label="Akcje" />
                         </tr>
                     </thead>
