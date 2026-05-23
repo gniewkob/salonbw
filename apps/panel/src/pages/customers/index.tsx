@@ -428,34 +428,10 @@ export default function ClientsPage() {
                                                             )
                                                         }
                                                     />
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {filteredCustomers.map(
-                                                    (customer, i) => (
-                                                        <DraggableCustomerRow
-                                                            key={customer.id}
-                                                            customer={customer}
-                                                            isDragging={
-                                                                draggedCustomer?.id ===
-                                                                customer.id
-                                                            }
-                                                            rowClass={
-                                                                i % 2 === 0
-                                                                    ? 'odd'
-                                                                    : 'even'
-                                                            }
-                                                            onOpen={(id) =>
-                                                                void router.push(
-                                                                    `/customers/${id}` as Route,
-                                                                )
-                                                            }
-                                                        />
-                                                    ),
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                ),
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </>
                         )}

@@ -24,13 +24,13 @@ const STATUS_LABELS: Record<NewsletterStatus, string> = {
 };
 
 const STATUS_CLASS: Record<NewsletterStatus, string> = {
-    draft: 'badge bg-secondary',
-    scheduled: 'badge bg-info text-dark',
-    sending: 'badge bg-warning text-dark',
-    sent: 'badge bg-success',
-    partial_failure: 'badge bg-warning text-dark',
-    failed: 'badge bg-danger',
-    cancelled: 'badge bg-dark',
+    draft: 'badge badge-salon-inactive',
+    scheduled: 'badge badge-salon',
+    sending: 'badge badge-salon-warning',
+    sent: 'badge badge-salon-success',
+    partial_failure: 'badge badge-salon-warning',
+    failed: 'badge badge-salon-error',
+    cancelled: 'badge badge-salon-inactive',
 };
 
 const CHANNEL_LABELS: Record<string, string> = {
@@ -157,7 +157,7 @@ export default function MessagesPage() {
                 <div className="actions">
                     <button
                         type="button"
-                        className="btn button-blue pull-right"
+                        className="button button-blue pull-right"
                         onClick={handleNewNewsletter}
                     >
                         + nowy newsletter
@@ -170,12 +170,13 @@ export default function MessagesPage() {
                 )}
 
                 {isLoading ? (
-                    <p className="text-muted">Ładowanie...</p>
+                    <p className="salonbw-muted p-20">Ładowanie...</p>
                 ) : error ? (
                     <div className="alert alert-danger">
                         Błąd ładowania wiadomości
                     </div>
                 ) : (
+                    <div className="column_row data_table">
                     <table className="table table-bordered">
                         <thead>
                             <tr>
@@ -213,12 +214,8 @@ export default function MessagesPage() {
                                 newsletters.map((nl) => (
                                     <tr key={nl.id}>
                                         <td>
-                                            <div className="fw-semibold">
-                                                {nl.name}
-                                            </div>
-                                            <div className="small text-muted">
-                                                {nl.subject}
-                                            </div>
+                                            <strong>{nl.name}</strong>
+                                            <div>{nl.subject}</div>
                                         </td>
                                         <td>
                                             {CHANNEL_LABELS[nl.channel] ??
@@ -251,12 +248,12 @@ export default function MessagesPage() {
                                             </span>
                                         </td>
                                         <td>
-                                            <div className="d-flex gap-1 flex-wrap">
+                                            <div>
                                                 {nl.status === 'draft' && (
                                                     <>
                                                         <button
                                                             type="button"
-                                                            className="btn btn-sm btn-outline-secondary"
+                                                            className="button button-link"
                                                             onClick={() =>
                                                                 handleEdit(nl)
                                                             }
@@ -265,7 +262,7 @@ export default function MessagesPage() {
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="btn btn-sm btn-primary"
+                                                            className="button button-blue"
                                                             onClick={() => {
                                                                 void handleSend(
                                                                     nl.id,
@@ -279,7 +276,7 @@ export default function MessagesPage() {
                                                 {nl.status === 'scheduled' && (
                                                     <button
                                                         type="button"
-                                                        className="btn btn-sm btn-outline-danger"
+                                                        className="button button-link"
                                                         onClick={() => {
                                                             void handleCancel(
                                                                 nl.id,
@@ -291,7 +288,7 @@ export default function MessagesPage() {
                                                 )}
                                                 <button
                                                     type="button"
-                                                    className="btn btn-sm btn-outline-secondary"
+                                                    className="button button-link"
                                                     onClick={() => {
                                                         void handleDuplicate(
                                                             nl.id,
@@ -307,7 +304,7 @@ export default function MessagesPage() {
                                                             <>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-sm btn-danger"
+                                                                    className="button button-link"
                                                                     onClick={() => {
                                                                         void handleDelete(
                                                                             nl.id,
@@ -318,7 +315,7 @@ export default function MessagesPage() {
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-sm btn-outline-secondary"
+                                                                    className="button button-link"
                                                                     onClick={() =>
                                                                         setConfirmDeleteId(
                                                                             null,
@@ -331,7 +328,7 @@ export default function MessagesPage() {
                                                         ) : (
                                                             <button
                                                                 type="button"
-                                                                className="btn btn-sm btn-outline-danger"
+                                                                className="button button-link"
                                                                 onClick={() =>
                                                                     setConfirmDeleteId(
                                                                         nl.id,
@@ -350,6 +347,7 @@ export default function MessagesPage() {
                             )}
                         </tbody>
                     </table>
+                    </div>
                 )}
             </div>
 
