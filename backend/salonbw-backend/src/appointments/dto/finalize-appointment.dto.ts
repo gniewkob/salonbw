@@ -7,6 +7,7 @@ import {
     ValidateNested,
     Min,
     IsString,
+    IsInt,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '../appointment.entity';
@@ -37,6 +38,25 @@ export class ProductSaleItemDto {
     @IsNumber()
     @IsOptional()
     discountCents?: number;
+}
+
+export class UsageMaterialItemDto {
+    @ApiProperty({ description: 'Product ID' })
+    @IsInt()
+    productId: number;
+
+    @ApiProperty({
+        description: 'Quantity used (will be rounded to integer)',
+        minimum: 1,
+    })
+    @IsNumber()
+    @Min(1)
+    quantity: number;
+
+    @ApiProperty({ description: 'Unit', required: false })
+    @IsString()
+    @IsOptional()
+    unit?: string;
 }
 
 export class FinalizeAppointmentDto {
@@ -86,6 +106,18 @@ export class FinalizeAppointmentDto {
     @Type(() => ProductSaleItemDto)
     @IsOptional()
     products?: ProductSaleItemDto[];
+
+    @ApiProperty({
+        description:
+            'Materials used during the treatment (deducted from warehouse)',
+        required: false,
+        type: [UsageMaterialItemDto],
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => UsageMaterialItemDto)
+    @IsOptional()
+    usageMaterials?: UsageMaterialItemDto[];
 
     @ApiProperty({
         description: 'Internal note about the finalization',

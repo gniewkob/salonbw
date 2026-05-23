@@ -944,12 +944,20 @@ export interface ProductSaleItem {
     discountCents?: number;
 }
 
+export interface UsageMaterialItem {
+    productId: number;
+    productName: string;
+    quantity: number;
+    unit?: string;
+}
+
 export interface FinalizeAppointmentRequest {
     paymentMethod: PaymentMethod;
     paidAmountCents: number;
     tipAmountCents?: number;
     discountCents?: number;
     products?: ProductSaleItem[];
+    usageMaterials?: UsageMaterialItem[];
     note?: string;
 }
 

@@ -881,6 +881,52 @@ export class AppointmentsService {
                     console.error('Failed to send follow up message', error);
                 }
             }
+
+            // Deduct materials used during treatment from warehouse
+            if (
+                dto.usageMaterials &&
+                dto.usageMaterials.length > 0 &&
+                this.retailService
+            ) {
+                const validItems = dto.usageMaterials
+                    .filter((item) => item.quantity >= 1)
+                    .map((item) => ({
+                        productId: item.productId,
+                        quantity: Math.round(item.quantity),
+                        unit: item.unit,
+                    }));
+                if (validItems.length > 0) {
+                    const customerName = [
+                        appointment.client.firstName,
+                        appointment.client.lastName,
+                    ]
+                        .filter((part) => Boolean(part && part.trim()))
+                        .join(' ')
+                        .trim();
+                    try {
+                        await this.retailService.createUsage(
+                            {
+                                items: validItems,
+                                employeeId: appointment.employee.id,
+                                appointmentId: appointment.id,
+                                clientName:
+                                    customerName.length > 0
+                                        ? customerName
+                                        : (appointment.client.name ??
+                                          undefined),
+                                scope: 'completed',
+                            },
+                            user,
+                        );
+                    } catch (error) {
+                        console.warn(
+                            'Failed to record material usage for appointment',
+                            appointment.id,
+                            error,
+                        );
+                    }
+                }
+            }
         }
 
         return updated;
