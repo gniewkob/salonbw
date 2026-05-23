@@ -23,7 +23,9 @@ export type AppointmentStatus =
     | 'in_progress'
     | 'cancelled'
     | 'completed'
-    | 'no_show';
+    | 'no_show'
+    | 'online_pending'
+    | 'rescheduled_pending';
 
 export interface Appointment {
     id: number;
