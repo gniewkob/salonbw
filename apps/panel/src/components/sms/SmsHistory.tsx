@@ -18,7 +18,7 @@ const STATUS_STYLES: Record<
         text: 'text-warning',
         label: 'Oczekuje',
     },
-    sent: { bg: 'bg-blue-100', text: 'text-info', label: 'Wysłano' },
+    sent: { bg: 'bg-info-subtle', text: 'text-info', label: 'Wysłano' },
     delivered: {
         bg: 'bg-success-subtle',
         text: 'text-success',

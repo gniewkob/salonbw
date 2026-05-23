@@ -167,7 +167,7 @@ export default function ManageCategoriesModal({
                             className="btn btn-default float-start"
                             onClick={() => handleAdd(null)}
                         >
-                            <i className="fa fa-plus mr-6"></i>
+                            <i className="fa fa-plus me-2"></i>
                             Dodaj kategorię główną
                         </button>
                         <button className="btn btn-primary" onClick={onClose}>

@@ -266,7 +266,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                             />
                                                         );
                                                     })()}
-                                                    <strong className="text-[12px]">
+                                                    <strong
+                                                        style={{ fontSize: 12 }}
+                                                    >
                                                         #{g.id}
                                                     </strong>
                                                 </div>

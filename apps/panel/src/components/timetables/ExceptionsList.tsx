@@ -21,7 +21,7 @@ const EXCEPTION_STYLES: Record<
         text: 'text-body',
         label: 'Dzień wolny',
     },
-    vacation: { bg: 'bg-blue-100', text: 'text-info', label: 'Urlop' },
+    vacation: { bg: 'bg-info-subtle', text: 'text-info', label: 'Urlop' },
     sick_leave: { bg: 'bg-danger-subtle', text: 'text-danger', label: 'L4' },
     training: {
         bg: 'bg-purple-100',

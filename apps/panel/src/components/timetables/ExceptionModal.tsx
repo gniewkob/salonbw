@@ -152,7 +152,7 @@ export default function ExceptionModal({
                                     }
                                     className={`px-3 py-2 rounded-3 small fw-medium  ${
                                         form.type === type.value
-                                            ? `${type.color} ring-2 ring-offset-1 ring-primary-500`
+                                            ? `${type.color} outline outline-offset-1`
                                             : 'bg-light text-muted '
                                     }`}
                                 >

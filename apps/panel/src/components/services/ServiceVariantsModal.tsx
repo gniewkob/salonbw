@@ -224,7 +224,7 @@ export default function ServiceVariantsModal({
                                                                                     variant,
                                                                                 )
                                                                             }
-                                                                            className="btn btn-default btn-xs mr-4"
+                                                                            className="btn btn-default btn-xs me-1"
                                                                         >
                                                                             edytuj
                                                                         </button>
