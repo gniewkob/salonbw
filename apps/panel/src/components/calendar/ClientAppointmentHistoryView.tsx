@@ -2,12 +2,24 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import type { Appointment } from '@/types';
 
+const STATUS_LABELS: Record<string, string> = {
+    scheduled: 'Zaplanowana',
+    confirmed: 'Potwierdzona',
+    in_progress: 'W trakcie',
+    completed: 'Zakończona',
+    cancelled: 'Anulowana',
+    no_show: 'No-show',
+    online_pending: 'Oczekuje na potwierdzenie',
+    rescheduled_pending: 'Przeniesiona — wymaga akceptacji',
+};
+
 interface ClientAppointmentHistoryViewProps {
     currentDateParam: string;
     futureAppointments: Appointment[];
     archivedAppointments: Appointment[];
     onDateChange: (nextDate: Date) => void;
     onRequestCancellation?: (appointmentId: number) => Promise<void>;
+    onAcceptReschedule?: (appointmentId: number) => Promise<void>;
 }
 
 function formatAppointmentDate(date: string): string {
@@ -23,6 +35,7 @@ export default function ClientAppointmentHistoryView({
     archivedAppointments,
     onDateChange,
     onRequestCancellation,
+    onAcceptReschedule,
 }: ClientAppointmentHistoryViewProps) {
     const router = useRouter();
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<
@@ -59,6 +72,16 @@ export default function ClientAppointmentHistoryView({
         setSelectedAppointmentId(null);
     }, [appointmentsById, selectedAppointmentId]);
 
+    const handleAcceptReschedule = async (appointmentId: number) => {
+        if (!onAcceptReschedule) return;
+        setPendingAcceptId(appointmentId);
+        try {
+            await onAcceptReschedule(appointmentId);
+        } finally {
+            setPendingAcceptId(null);
+        }
+    };
+
     const handleRequestCancellation = async (appointmentId: number) => {
         if (!onRequestCancellation) return;
         setPendingRequestId(appointmentId);
@@ -69,14 +92,14 @@ export default function ClientAppointmentHistoryView({
                 kind: 'success',
                 appointmentId,
                 message:
-                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                    'Prośba o anulowanie została zapisana. Recepcja skontaktuje się z Tobą.',
             });
         } catch {
             setRequestState({
                 kind: 'error',
                 appointmentId,
                 message:
-                    'Nie udalo sie wyslac prosby o anulowanie. Sprobuj ponownie.',
+                    'Nie udało się wysłać prośby o anulowanie. Spróbuj ponownie.',
             });
         } finally {
             setPendingRequestId(null);
@@ -120,18 +143,25 @@ export default function ClientAppointmentHistoryView({
             </div>
             <div className="row g-3">
                 <section className="col-12 col-lg-6">
-                    <div className="border rounded bg-white p-3 h-100">
-                        <h3 className="h6 mb-2">Nadchodzace wizyty</h3>
+                    <div className="border rounded p-3 h-100">
+                        <h3 className="h6 mb-2">Nadchodzące wizyty</h3>
                         {futureAppointments.length === 0 ? (
                             <p className="text-muted small mb-0">
-                                Brak nadchodzacych wizyt.
+                                Brak nadchodzących wizyt.
                             </p>
                         ) : (
                             <div className="d-flex flex-column gap-2">
                                 {futureAppointments.map((appointment) => (
                                     <div
                                         key={appointment.id}
-                                        className="d-flex flex-column gap-2 border rounded p-2"
+                                        className={`d-flex flex-column gap-2 border rounded p-2 ${
+                                            appointment.status ===
+                                                'online_pending' ||
+                                            appointment.status ===
+                                                'rescheduled_pending'
+                                                ? 'border-warning'
+                                                : ''
+                                        }`}
                                     >
                                         <button
                                             type="button"
@@ -149,6 +179,47 @@ export default function ClientAppointmentHistoryView({
                                                 appointment.startTime,
                                             )}
                                         </button>
+                                        {appointment.status && (
+                                            <span
+                                                className={`badge align-self-start ${
+                                                    appointment.status ===
+                                                        'online_pending' ||
+                                                    appointment.status ===
+                                                        'rescheduled_pending'
+                                                        ? 'text-bg-warning'
+                                                        : appointment.status ===
+                                                            'confirmed'
+                                                          ? 'text-bg-success'
+                                                          : 'text-bg-secondary'
+                                                }`}
+                                            >
+                                                {STATUS_LABELS[
+                                                    appointment.status
+                                                ] ?? appointment.status}
+                                            </span>
+                                        )}
+                                        {appointment.status ===
+                                            'rescheduled_pending' &&
+                                        onAcceptReschedule ? (
+                                            <button
+                                                type="button"
+                                                className="btn btn-success btn-sm align-self-start"
+                                                onClick={() =>
+                                                    void handleAcceptReschedule(
+                                                        appointment.id,
+                                                    )
+                                                }
+                                                disabled={
+                                                    pendingAcceptId ===
+                                                    appointment.id
+                                                }
+                                            >
+                                                {pendingAcceptId ===
+                                                appointment.id
+                                                    ? 'Akceptowanie...'
+                                                    : 'Zaakceptuj nowy termin'}
+                                            </button>
+                                        ) : null}
                                         {onRequestCancellation ? (
                                             <button
                                                 type="button"
@@ -165,8 +236,8 @@ export default function ClientAppointmentHistoryView({
                                             >
                                                 {pendingRequestId ===
                                                 appointment.id
-                                                    ? 'Wysylanie...'
-                                                    : 'Popros o anulowanie'}
+                                                    ? 'Wysyłanie...'
+                                                    : 'Poproś o anulowanie'}
                                             </button>
                                         ) : null}
                                         {requestState?.appointmentId ===
@@ -189,7 +260,7 @@ export default function ClientAppointmentHistoryView({
                     </div>
                 </section>
                 <section className="col-12 col-lg-6">
-                    <div className="border rounded bg-white p-3 h-100">
+                    <div className="border rounded p-3 h-100">
                         <h3 className="h6 mb-2">Historia wizyt</h3>
                         {archivedAppointments.length === 0 ? (
                             <p className="text-muted small mb-0">
@@ -221,19 +292,23 @@ export default function ClientAppointmentHistoryView({
                 </section>
             </div>
             <section
-                className="border rounded bg-white p-3"
+                className="border rounded p-3"
                 data-testid="client-appointment-details"
             >
-                <h3 className="h6 mb-2">Szczegoly wizyty (tylko odczyt)</h3>
+                <h3 className="h6 mb-2">Szczegóły wizyty (tylko odczyt)</h3>
                 {selectedAppointment ? (
                     <dl className="row mb-0">
-                        <dt className="col-sm-3">Usluga</dt>
+                        <dt className="col-sm-3">Usługa</dt>
                         <dd className="col-sm-9">
                             {selectedAppointment.service?.name ?? '-'}
                         </dd>
                         <dt className="col-sm-3">Status</dt>
                         <dd className="col-sm-9">
-                            {selectedAppointment.status ?? 'scheduled'}
+                            {STATUS_LABELS[
+                                selectedAppointment.status ?? 'scheduled'
+                            ] ??
+                                selectedAppointment.status ??
+                                'Zaplanowana'}
                         </dd>
                         <dt className="col-sm-3">Termin</dt>
                         <dd className="col-sm-9">
@@ -248,7 +323,7 @@ export default function ClientAppointmentHistoryView({
                     </dl>
                 ) : (
                     <p className="text-muted small mb-0">
-                        Wybierz wizyte z listy, aby zobaczyc szczegoly.
+                        Wybierz wizytę z listy, aby zobaczyć szczegóły.
                     </p>
                 )}
             </section>

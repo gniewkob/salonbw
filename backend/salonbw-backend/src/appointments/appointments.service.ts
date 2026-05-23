@@ -5,6 +5,7 @@ import {
     ForbiddenException,
     Inject,
     forwardRef,
+    Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -14,6 +15,7 @@ import {
     Not,
     Between,
     FindOptionsWhere,
+    ILike,
 } from 'typeorm';
 import {
     Appointment,
@@ -24,6 +26,7 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
 import { ServiceVariant } from '../services/entities/service-variant.entity';
+import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -37,6 +40,8 @@ import { Log } from '../logs/log.entity';
 
 @Injectable()
 export class AppointmentsService {
+    private readonly logger = new Logger(AppointmentsService.name);
+
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
@@ -44,6 +49,8 @@ export class AppointmentsService {
         private readonly servicesRepository: Repository<SalonService>,
         @InjectRepository(ServiceVariant)
         private readonly serviceVariantsRepository: Repository<ServiceVariant>,
+        @InjectRepository(ServiceRecipeItem)
+        private readonly recipeItemsRepository: Repository<ServiceRecipeItem>,
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
@@ -149,7 +156,7 @@ export class AppointmentsService {
         return { date, time };
     }
 
-    findAllInRange(params: {
+    async findAllInRange(params: {
         from?: Date;
         to?: Date;
         employeeId?: number;
@@ -167,11 +174,16 @@ export class AppointmentsService {
         } else if (params.to) {
             where.startTime = LessThan(params.to);
         }
-        return this.appointmentsRepository.find({
-            where,
-            order: { startTime: 'ASC' },
-            relations: ['formulas'],
+
+        const [items, total] = await this.appointmentsRepository.findAndCount({
+            where: whereCondition,
+            order: { startTime: 'DESC' },
+            relations: ['client', 'employee', 'service', 'serviceVariant'],
+            skip: (page - 1) * pageSize,
+            take: pageSize,
         });
+
+        return { items, total, page, pageSize };
     }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
@@ -492,9 +504,15 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
-        if (appointment.status !== AppointmentStatus.Scheduled) {
+        const reschedulableStatuses = [
+            AppointmentStatus.Scheduled,
+            AppointmentStatus.Confirmed,
+            AppointmentStatus.OnlinePending,
+            AppointmentStatus.RescheduledPending,
+        ];
+        if (!reschedulableStatuses.includes(appointment.status)) {
             throw new BadRequestException(
-                'Only scheduled appointments can be rescheduled',
+                'Only scheduled or confirmed appointments can be rescheduled',
             );
         }
         if (!startTime || isNaN(startTime.getTime())) {
@@ -527,10 +545,18 @@ export class AppointmentsService {
             newEnd,
             id,
         );
+        // When staff reschedules a confirmed appointment, flag it so the
+        // client can accept the new time before it moves back to confirmed.
+        const newStatus =
+            appointment.status === AppointmentStatus.Confirmed
+                ? AppointmentStatus.RescheduledPending
+                : appointment.status;
+
         await this.appointmentsRepository.update(id, {
             startTime,
             endTime: newEnd,
             serviceVariantId: appointment.serviceVariantId ?? null,
+            status: newStatus,
         });
         const updated = await this.findOne(id);
         if (updated) {
@@ -540,6 +566,24 @@ export class AppointmentsService {
                 startTime: updated.startTime,
                 endTime: updated.endTime,
             });
+            // Notify client about rescheduled appointment
+            if (newStatus === AppointmentStatus.RescheduledPending) {
+                const client = updated.client;
+                if (client?.phone && client.receiveNotifications) {
+                    const { date, time } = this.formatDate(updated.startTime);
+                    try {
+                        await this.whatsappService.sendRescheduleNotification(
+                            client.phone,
+                            date,
+                            time,
+                        );
+                    } catch {
+                        this.logger.warn(
+                            'Failed to send reschedule WhatsApp notification',
+                        );
+                    }
+                }
+            }
         }
         return updated;
     }
@@ -688,12 +732,15 @@ export class AppointmentsService {
             return this.completeAppointment(id, user);
         }
 
-        if (
-            appointment.status === AppointmentStatus.Cancelled ||
-            appointment.status === AppointmentStatus.Completed
-        ) {
+        const terminalStatuses = [
+            AppointmentStatus.Cancelled,
+            AppointmentStatus.Completed,
+            AppointmentStatus.NoShow,
+            AppointmentStatus.InProgress,
+        ];
+        if (terminalStatuses.includes(appointment.status)) {
             throw new BadRequestException(
-                'Cannot change status for cancelled or completed appointment',
+                `Cannot change status from ${appointment.status}`,
             );
         }
 
@@ -738,6 +785,47 @@ export class AppointmentsService {
                 previousStatus: appointment.status,
                 status: targetStatus,
             });
+
+            // Notify client when their online booking is confirmed by salon
+            if (
+                appointment.status === AppointmentStatus.OnlinePending &&
+                targetStatus === AppointmentStatus.Confirmed
+            ) {
+                const client = updated.client;
+                if (client?.phone && client.receiveNotifications) {
+                    const { date, time } = this.formatDate(updated.startTime);
+                    try {
+                        await this.whatsappService.sendBookingConfirmed(
+                            client.phone,
+                            date,
+                            time,
+                        );
+                    } catch {
+                        this.logger.warn(
+                            'Failed to send booking confirmed WhatsApp',
+                        );
+                    }
+                }
+            }
+
+            // Notify client when their appointment is rescheduled by staff
+            if (targetStatus === AppointmentStatus.RescheduledPending) {
+                const client = updated.client;
+                if (client?.phone && client.receiveNotifications) {
+                    const { date, time } = this.formatDate(updated.startTime);
+                    try {
+                        await this.whatsappService.sendRescheduleNotification(
+                            client.phone,
+                            date,
+                            time,
+                        );
+                    } catch {
+                        this.logger.warn(
+                            'Failed to send reschedule WhatsApp notification',
+                        );
+                    }
+                }
+            }
         }
         return updated;
     }
@@ -821,41 +909,76 @@ export class AppointmentsService {
                     user,
                     manager,
                 );
-
-                // Process product sales (upselling) if any
-                if (
-                    dto.products &&
-                    dto.products.length > 0 &&
-                    this.retailService
-                ) {
-                    for (const productSale of dto.products) {
-                        const customerName = [
-                            appointment.client.firstName,
-                            appointment.client.lastName,
-                        ]
-                            .filter((part) => Boolean(part && part.trim()))
-                            .join(' ')
-                            .trim();
-                        await this.retailService.createSale(
-                            {
-                                productId: productSale.productId,
-                                quantity: productSale.quantity,
-                                unitPriceCents: productSale.unitPriceCents,
-                                discountCents: productSale.discountCents,
-                                employeeId: appointment.employee.id,
-                                appointmentId: appointment.id,
-                                clientId: appointment.client.id,
-                                clientName:
-                                    customerName.length > 0
-                                        ? customerName
-                                        : (appointment.client.name ?? null),
-                            },
-                            user,
-                        );
-                    }
-                }
             },
         );
+
+        // Process product sales (upselling) after main transaction commits.
+        // createSale uses its own transaction so it cannot join the outer one;
+        // running it post-commit prevents partial-sale state when the outer
+        // transaction rolls back.
+        if (dto.products && dto.products.length > 0 && this.retailService) {
+            const customerName = [
+                appointment.client.firstName,
+                appointment.client.lastName,
+            ]
+                .filter((part) => Boolean(part && part.trim()))
+                .join(' ')
+                .trim();
+            for (const productSale of dto.products) {
+                await this.retailService.createSale(
+                    {
+                        productId: productSale.productId,
+                        quantity: productSale.quantity,
+                        unitPriceCents: productSale.unitPriceCents,
+                        discountCents: productSale.discountCents,
+                        employeeId: appointment.employee.id,
+                        appointmentId: appointment.id,
+                        clientId: appointment.client.id,
+                        clientName:
+                            customerName.length > 0
+                                ? customerName
+                                : (appointment.client.name ?? null),
+                    },
+                    user,
+                );
+            }
+        }
+
+        // Deduct materials used during the service from warehouse stock
+        if (dto.usageItems && dto.usageItems.length > 0 && this.retailService) {
+            const clientName = [
+                appointment.client.firstName,
+                appointment.client.lastName,
+            ]
+                .filter((part) => Boolean(part && part.trim()))
+                .join(' ')
+                .trim();
+            try {
+                await this.retailService.createUsage(
+                    {
+                        items: dto.usageItems.map((item) => ({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            unit: item.unit,
+                        })),
+                        employeeId: appointment.employee.id,
+                        appointmentId: appointment.id,
+                        clientName:
+                            clientName.length > 0
+                                ? clientName
+                                : appointment.client.name || undefined,
+                        scope: 'completed',
+                    },
+                    user,
+                );
+            } catch (err) {
+                // Non-fatal: usage deduction failure does not roll back finalization
+                console.error(
+                    `[finalize] usage deduction failed for appointment ${id}:`,
+                    err,
+                );
+            }
+        }
 
         const updated = await this.findOne(id);
         if (updated) {
@@ -934,5 +1057,57 @@ export class AppointmentsService {
         }
 
         return updated;
+    }
+
+    async updateNotes(
+        id: number,
+        internalNote: string | null,
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
+        if (!appointment) {
+            throw new BadRequestException('Appointment not found');
+        }
+        appointment.internalNote =
+            internalNote === null ? undefined : internalNote;
+        return this.appointmentsRepository.save(appointment);
+    }
+
+    async countOnlinePending(employeeId?: number): Promise<number> {
+        const where: FindOptionsWhere<Appointment> = {
+            status: AppointmentStatus.OnlinePending,
+        };
+        if (employeeId !== undefined) {
+            where.employee = { id: employeeId };
+        }
+        return this.appointmentsRepository.count({ where });
+    }
+
+    async getUsageSuggestions(id: number): Promise<
+        {
+            productId: number;
+            productName: string;
+            quantity: number;
+            unit: string;
+        }[]
+    > {
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+            relations: ['service'],
+        });
+        if (!appointment?.service?.id) return [];
+        const items = await this.recipeItemsRepository.find({
+            where: { serviceId: appointment.service.id },
+            relations: ['product'],
+        });
+        return items
+            .filter((item) => item.product && (item.quantity ?? 0) > 0)
+            .map((item) => ({
+                productId: item.product!.id,
+                productName: item.product!.name,
+                quantity: Math.max(0.01, +(item.quantity ?? 1).toFixed(2)),
+                unit: item.unit ?? 'op.',
+            }));
     }
 }

@@ -56,4 +56,31 @@ export class CreateUserDto {
         required: false,
     })
     password?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        description: 'GDPR consent',
+        required: false,
+        example: false,
+    })
+    gdprConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        description: 'SMS marketing consent',
+        required: false,
+        example: false,
+    })
+    smsConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        description: 'Email marketing consent',
+        required: false,
+        example: false,
+    })
+    emailConsent?: boolean;
 }

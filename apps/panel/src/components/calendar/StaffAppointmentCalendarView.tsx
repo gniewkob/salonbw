@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { Appointment, AppointmentStatus } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
+import FinalizationModal from './FinalizationModal';
 
 interface StaffAppointmentCalendarViewProps {
     appointments: Appointment[];
@@ -14,7 +15,7 @@ interface StaffAppointmentCalendarViewProps {
     onOpenAppointment?: (appointmentId: number) => void;
 }
 
-type ActionKey = 'start' | 'complete' | 'no_show' | 'cancel';
+type ActionKey = 'start' | 'finalize' | 'no_show' | 'cancel';
 
 type StatusConfig = {
     label: string;
@@ -36,7 +37,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     in_progress: {
         label: 'W trakcie',
         className: 'salonbw-status--in-progress',
-        actions: ['complete', 'cancel'],
+        actions: ['finalize', 'cancel'],
     },
     completed: {
         label: 'Zakończona',
@@ -53,6 +54,16 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
         className: 'salonbw-status--no-show',
         actions: [],
     },
+    online_pending: {
+        label: 'Oczekuje online',
+        className: 'salonbw-status--online_pending',
+        actions: ['cancel'],
+    },
+    rescheduled_pending: {
+        label: 'Przeniesiona',
+        className: 'salonbw-status--rescheduled_pending',
+        actions: ['cancel'],
+    },
 };
 
 const ACTION_CONFIG: Record<
@@ -64,10 +75,9 @@ const ACTION_CONFIG: Record<
         className: 'salonbw-btn--primary',
         nextStatus: 'in_progress',
     },
-    complete: {
-        label: 'Zakończ',
+    finalize: {
+        label: 'Finalizuj',
         className: 'salonbw-btn--success',
-        nextStatus: 'completed',
     },
     no_show: {
         label: 'No-show',
@@ -89,7 +99,7 @@ export default function StaffAppointmentCalendarView({
     onChanged,
     onOpenAppointment,
 }: StaffAppointmentCalendarViewProps) {
-    const { cancelAppointment, completeAppointment, updateAppointmentStatus } =
+    const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
     const [pendingAction, setPendingAction] = useState<{
         appointmentId: number;
@@ -97,6 +107,8 @@ export default function StaffAppointmentCalendarView({
     } | null>(null);
     const [actionErrorByAppointmentId, setActionErrorByAppointmentId] =
         useState<Record<number, string>>({});
+    const [finalizingAppointment, setFinalizingAppointment] =
+        useState<Appointment | null>(null);
 
     const sortedAppointments = [...appointments].sort(
         (a, b) =>
@@ -120,6 +132,11 @@ export default function StaffAppointmentCalendarView({
         appointment: Appointment,
         action: ActionKey,
     ) => {
+        if (action === 'finalize') {
+            setFinalizingAppointment(appointment);
+            return;
+        }
+
         setPendingAction({ appointmentId: appointment.id, action });
         setActionErrorByAppointmentId((current) => {
             const next = { ...current };
@@ -130,8 +147,6 @@ export default function StaffAppointmentCalendarView({
         try {
             if (action === 'cancel') {
                 await cancelAppointment.mutateAsync(appointment.id);
-            } else if (action === 'complete') {
-                await completeAppointment.mutateAsync(appointment.id);
             } else {
                 await updateAppointmentStatus.mutateAsync({
                     id: appointment.id,
@@ -165,94 +180,106 @@ export default function StaffAppointmentCalendarView({
     }
 
     return (
-        <div className="salonbw-reception-list">
-            {sortedAppointments.map((appointment) => {
-                const status = appointment.status || 'scheduled';
-                const statusConfig =
-                    STATUS_CONFIG[status] || STATUS_CONFIG.scheduled;
-                const actions = readOnly ? [] : statusConfig.actions;
-                return (
-                    <article
-                        key={appointment.id}
-                        className="salonbw-reception-item"
-                    >
-                        <div className="salonbw-reception-item__header">
-                            <div>
-                                <h4 className="salonbw-reception-item__title">
-                                    {appointment.service?.name || 'Wizyta'}
-                                </h4>
-                                <div className="salonbw-reception-item__meta">
-                                    <span>
-                                        {formatTime(appointment.startTime)} -{' '}
-                                        {formatTime(
-                                            appointment.endTime ??
+        <>
+            <FinalizationModal
+                open={finalizingAppointment !== null}
+                appointment={finalizingAppointment}
+                onClose={() => setFinalizingAppointment(null)}
+                onSuccess={() => {
+                    setFinalizingAppointment(null);
+                    onChanged?.();
+                }}
+            />
+            <div className="salonbw-reception-list">
+                {sortedAppointments.map((appointment) => {
+                    const status = appointment.status || 'scheduled';
+                    const statusConfig =
+                        STATUS_CONFIG[status] || STATUS_CONFIG.scheduled;
+                    const actions = readOnly ? [] : statusConfig.actions;
+                    return (
+                        <article
+                            key={appointment.id}
+                            className="salonbw-reception-item"
+                        >
+                            <div className="salonbw-reception-item__header">
+                                <div>
+                                    <h4 className="salonbw-reception-item__title">
+                                        {appointment.service?.name || 'Wizyta'}
+                                    </h4>
+                                    <div className="salonbw-reception-item__meta">
+                                        <span>
+                                            {formatTime(appointment.startTime)}{' '}
+                                            -{' '}
+                                            {formatTime(
+                                                appointment.endTime ??
+                                                    appointment.startTime,
+                                            )}
+                                        </span>
+                                        <span>·</span>
+                                        <span>
+                                            {formatDuration(
                                                 appointment.startTime,
-                                        )}
-                                    </span>
-                                    <span>·</span>
-                                    <span>
-                                        {formatDuration(
-                                            appointment.startTime,
-                                            appointment.endTime,
-                                        )}
-                                    </span>
+                                                appointment.endTime,
+                                            )}
+                                        </span>
+                                    </div>
                                 </div>
+                                <span
+                                    className={`salonbw-status-badge ${statusConfig.className}`}
+                                >
+                                    {statusConfig.label}
+                                </span>
                             </div>
-                            <span
-                                className={`salonbw-status-badge ${statusConfig.className}`}
-                            >
-                                {statusConfig.label}
-                            </span>
-                        </div>
-                        <div className="salonbw-reception-item__details">
-                            <span>
-                                {appointment.client?.name || 'Brak klienta'}
-                            </span>
-                        </div>
-                        <div className="salonbw-reception-item__actions">
-                            {actions.map((action) => {
-                                const config = ACTION_CONFIG[action];
-                                const isPending =
-                                    pendingAction?.appointmentId ===
-                                        appointment.id &&
-                                    pendingAction.action === action;
-                                return (
-                                    <button
-                                        key={action}
-                                        type="button"
-                                        className={`salonbw-btn salonbw-btn--sm ${config.className}`}
-                                        onClick={() =>
-                                            void handleAction(
-                                                appointment,
-                                                action,
-                                            )
-                                        }
-                                        disabled={Boolean(pendingAction)}
-                                    >
-                                        {isPending
-                                            ? 'Zapisywanie...'
-                                            : config.label}
-                                    </button>
-                                );
-                            })}
-                            <button
-                                type="button"
-                                className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
-                                onClick={() =>
-                                    onOpenAppointment?.(appointment.id)
-                                }
-                            >
-                                Otwórz
-                            </button>
-                        </div>
-                        {actionErrorByAppointmentId[appointment.id] ? (
-                            <p className="text-danger small mb-0 mt-2">
-                                {actionErrorByAppointmentId[appointment.id]}
-                            </p>
-                        ) : null}
-                    </article>
-                );
-            })}
-        </div>
+                            <div className="salonbw-reception-item__details">
+                                <span>
+                                    {appointment.client?.name || 'Brak klienta'}
+                                </span>
+                            </div>
+                            <div className="salonbw-reception-item__actions">
+                                {actions.map((action) => {
+                                    const config = ACTION_CONFIG[action];
+                                    const isPending =
+                                        pendingAction?.appointmentId ===
+                                            appointment.id &&
+                                        pendingAction.action === action;
+                                    return (
+                                        <button
+                                            key={action}
+                                            type="button"
+                                            className={`salonbw-btn salonbw-btn--sm ${config.className}`}
+                                            onClick={() =>
+                                                void handleAction(
+                                                    appointment,
+                                                    action,
+                                                )
+                                            }
+                                            disabled={Boolean(pendingAction)}
+                                        >
+                                            {isPending
+                                                ? 'Zapisywanie...'
+                                                : config.label}
+                                        </button>
+                                    );
+                                })}
+                                <button
+                                    type="button"
+                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
+                                    onClick={() =>
+                                        onOpenAppointment?.(appointment.id)
+                                    }
+                                >
+                                    Otwórz
+                                </button>
+                            </div>
+                            {actionErrorByAppointmentId[appointment.id] ? (
+                                <p className="text-danger small mb-0 mt-2">
+                                    {actionErrorByAppointmentId[appointment.id]}
+                                </p>
+                            ) : null}
+                        </article>
+                    );
+                })}
+            </div>
+        </>
     );
 }

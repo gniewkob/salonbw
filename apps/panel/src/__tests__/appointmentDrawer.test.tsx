@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 
 const apiFetchMock = jest.fn();
@@ -108,12 +109,30 @@ describe('AppointmentDrawer', () => {
         useWarehouseSalesMock.mockReset();
         useCustomerAlertsMock.mockReset();
         trackEventMock.mockReset();
+        // Default: resolve with empty array so formula/notes fetch in useEffect
+        // doesn't throw TypeError when apiFetch returns undefined after reset.
+        apiFetchMock.mockResolvedValue([]);
         useWarehouseSalesMock.mockReturnValue({ data: { items: [] } });
         useCustomerAlertsMock.mockReturnValue({
             alerts: [],
             isLoading: false,
         });
     });
+
+    const renderDrawer = async (
+        ui: ReactElement,
+        options?: { waitForFormulas?: boolean },
+    ) => {
+        const view = render(ui);
+        if (options?.waitForFormulas) {
+            await waitFor(() =>
+                expect(apiFetchMock).toHaveBeenCalledWith(
+                    expect.stringMatching(/^\/customers\/\d+\/formulas$/),
+                ),
+            );
+        }
+        return view;
+    };
 
     it('creates appointment in create mode', async () => {
         const onSaved = jest.fn();
@@ -190,12 +209,12 @@ describe('AppointmentDrawer', () => {
         });
     });
 
-    it('links to specific sale details when linkedSaleId exists', () => {
+    it('links to specific sale details when linkedSaleId exists', async () => {
         useWarehouseSalesMock.mockReturnValue({
             data: { items: [{ id: 77 }] },
         });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -223,18 +242,19 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         const link = screen.getByRole('link', { name: 'Szczegóły sprzedaży' });
         expect(link).toHaveAttribute('href', '/sales/history/77');
     });
 
-    it('falls back to appointment-filtered sales history when no linkedSaleId', () => {
+    it('falls back to appointment-filtered sales history when no linkedSaleId', async () => {
         useWarehouseSalesMock.mockReturnValueOnce({
             data: { items: [] },
         });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -262,13 +282,14 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         const link = screen.getByRole('link', { name: 'Historia sprzedaży' });
         expect(link).toHaveAttribute('href', '/sales/history?appointmentId=42');
     });
 
-    it('renders customer alerts when available', () => {
+    it('renders customer alerts when available', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,
             alerts: [
@@ -281,7 +302,7 @@ describe('AppointmentDrawer', () => {
             ],
         });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -309,19 +330,20 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         expect(screen.getByText('Alerty')).toBeInTheDocument();
         expect(screen.getByText(/Historia no-show/i)).toBeInTheDocument();
     });
 
-    it('does not render customer alerts section when there are no alerts', () => {
+    it('does not render customer alerts section when there are no alerts', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,
             alerts: [],
         });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -349,12 +371,13 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         expect(screen.queryByText('Alerty')).not.toBeInTheDocument();
     });
 
-    it('renders pinned medical/warning/preference alerts', () => {
+    it('renders pinned medical/warning/preference alerts', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,
             alerts: [
@@ -373,7 +396,7 @@ describe('AppointmentDrawer', () => {
             ],
         });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -401,6 +424,7 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         expect(screen.getByText('Notatka medyczna')).toBeInTheDocument();
@@ -460,8 +484,8 @@ describe('AppointmentDrawer', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('shows finalize action only for in_progress appointment', () => {
-        render(
+    it('shows finalize action only for in_progress appointment', async () => {
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -469,6 +493,7 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         expect(
@@ -488,8 +513,8 @@ describe('AppointmentDrawer', () => {
         ).toBeVisible();
     });
 
-    it('hides status actions for completed appointment', () => {
-        render(
+    it('hides status actions for completed appointment', async () => {
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -497,6 +522,7 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         expect(
@@ -519,8 +545,8 @@ describe('AppointmentDrawer', () => {
         ).toBeVisible();
     });
 
-    it('renders operational sections in edit mode', () => {
-        const { container } = render(
+    it('renders operational sections in edit mode', async () => {
+        const { container } = await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -548,6 +574,7 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         expect(screen.getByText('Wizyta')).toBeInTheDocument();
@@ -561,12 +588,13 @@ describe('AppointmentDrawer', () => {
         expect(sectionHeadings).toEqual([
             'Wizyta',
             'Klient',
+            'Formularz zabiegu',
             'Sprzedaż',
             'Akcje',
         ]);
     });
 
-    it('tracks CRM alert severity for drawer actions when alerts exist', () => {
+    it('tracks CRM alert severity for drawer actions when alerts exist', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,
             alerts: [
@@ -579,7 +607,7 @@ describe('AppointmentDrawer', () => {
             ],
         });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -587,6 +615,7 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         fireEvent.click(
@@ -605,8 +634,8 @@ describe('AppointmentDrawer', () => {
         );
     });
 
-    it('does not track CRM alert severity for drawer actions without alerts', () => {
-        render(
+    it('does not track CRM alert severity for drawer actions without alerts', async () => {
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -614,6 +643,7 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
+            { waitForFormulas: true },
         );
 
         fireEvent.click(

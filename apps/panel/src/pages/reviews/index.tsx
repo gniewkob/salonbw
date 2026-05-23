@@ -17,7 +17,7 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="salonbw-loading">Loading review form…</div>
+            <div className="salonbw-loading">Ładowanie formularza opinii…</div>
         ),
     },
 );

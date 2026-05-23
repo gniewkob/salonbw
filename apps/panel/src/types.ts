@@ -2,6 +2,7 @@ export interface Client {
     id: number;
     name: string;
     phone?: string;
+    email?: string;
 }
 
 export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
@@ -14,6 +15,10 @@ export interface User {
     firstName?: string;
     lastName?: string;
     avatarUrl?: string;
+    gdprConsent?: boolean;
+    gdprConsentDate?: string;
+    smsConsent?: boolean;
+    emailConsent?: boolean;
 }
 
 export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'online' | 'voucher';
@@ -44,6 +49,13 @@ export interface Appointment {
     finalizedBy?: { id: number; name: string };
     notes?: string;
     internalNote?: string;
+}
+
+export interface Formula {
+    id: number;
+    description: string;
+    date: string;
+    appointment?: { id: number };
 }
 
 export type PriceType = 'fixed' | 'from';
@@ -278,11 +290,26 @@ export interface Review {
     createdAt?: string;
 }
 
+export interface UpcomingAppointmentItem {
+    id: number;
+    startTime: string;
+    endTime?: string;
+    status: AppointmentStatus;
+    clientName: string;
+    clientPhone?: string;
+    serviceName: string;
+    employeeName: string;
+}
+
 export interface DashboardResponse {
     clientCount: number;
     employeeCount: number;
     todayAppointments: number;
-    upcomingAppointments: Appointment[];
+    onlinePendingCount: number;
+    revenueToday: number;
+    revenueThisMonth: number;
+    completedThisMonth: number;
+    upcomingAppointments: UpcomingAppointmentItem[];
 }
 
 export interface ClientDashboardResponse {
@@ -959,6 +986,7 @@ export interface FinalizeAppointmentRequest {
     products?: ProductSaleItem[];
     usageMaterials?: UsageMaterialItem[];
     note?: string;
+    usageItems?: { productId: number; quantity: number; unit?: string }[];
 }
 
 export interface FinalizationSummary {

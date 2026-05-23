@@ -75,6 +75,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                             }
                                             title="Podgląd"
                                         >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={`${base}${image.thumbnailUrl}`}
                                                 alt={
@@ -116,6 +117,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                             </div>
                             <div className="modal-body">
                                 <div className="text-center">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={`${base}${selectedImage.url}`}
                                         alt={

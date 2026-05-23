@@ -203,6 +203,7 @@ export default function BranchesManagementPage() {
                                 >
                                     {branch.coverImageUrl && (
                                         <div className="h-32 overflow-d-none position-relative">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={branch.coverImageUrl}
                                                 alt={`Okładka salonu ${branch.name}`}

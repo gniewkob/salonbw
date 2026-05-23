@@ -51,6 +51,8 @@ export default function FinalizationModal({
         [],
     );
     const [showProductPicker, setShowProductPicker] = useState(false);
+    const [usageItems, setUsageItems] = useState<UsageItem[]>([]);
+    const [showUsagePicker, setShowUsagePicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -69,7 +71,7 @@ export default function FinalizationModal({
     const { data: productsResponse } = useQuery<ProductsResponse>({
         queryKey: ['products'],
         queryFn: () => apiFetch<ProductsResponse>('/products'),
-        enabled: open && showProductPicker,
+        enabled: open && (showProductPicker || showUsagePicker),
     });
     const products = useMemo<Product[]>(
         () =>
@@ -158,6 +160,7 @@ export default function FinalizationModal({
         setProductSales([]);
         setUsageMaterials([]);
         setShowProductPicker(false);
+        setShowUsagePicker(false);
         setUiError(null);
         setSuccessMessage(null);
         onClose();
@@ -218,6 +221,14 @@ export default function FinalizationModal({
             usageMaterials:
                 usageMaterials.length > 0 ? usageMaterials : undefined,
             note: note || undefined,
+            usageItems:
+                usageItems.length > 0
+                    ? usageItems.map((item) => ({
+                          productId: item.productId,
+                          quantity: item.quantity,
+                          unit: item.unit,
+                      }))
+                    : undefined,
         };
 
         finalizeMutation.mutate(data);
@@ -256,6 +267,23 @@ export default function FinalizationModal({
 
     const removeProduct = (productId: number) => {
         setProductSales(productSales.filter((p) => p.productId !== productId));
+    };
+
+    const addUsageMaterial = (productId: number) => {
+        const product = products.find((p) => p.id === productId);
+        if (!product) return;
+        const existing = usageItems.find((u) => u.productId === productId);
+        if (existing) return;
+        setUsageItems((prev) => [
+            ...prev,
+            {
+                productId,
+                productName: product.name,
+                quantity: 1,
+                unit: 'op.',
+            },
+        ]);
+        setShowUsagePicker(false);
     };
 
     const updateProductQuantity = (productId: number, quantity: number) => {
@@ -612,6 +640,120 @@ export default function FinalizationModal({
                                     </div>
                                 );
                             })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Materials used */}
+                <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <label className="small fw-medium text-body mb-0">
+                            Użyte materiały
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setShowUsagePicker(!showUsagePicker)}
+                            className="small text-primary"
+                        >
+                            {showUsagePicker ? 'Ukryj' : '+ Dodaj materiał'}
+                        </button>
+                    </div>
+
+                    {showUsagePicker && (
+                        <div
+                            className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 overflow-y-auto"
+                            style={{ maxHeight: '200px' }}
+                        >
+                            {products.length === 0 ? (
+                                <p className="small text-muted text-center py-2">
+                                    Brak produktów
+                                </p>
+                            ) : (
+                                <div className="d-flex flex-column gap-1">
+                                    {products
+                                        .filter(
+                                            (p) =>
+                                                !usageItems.some(
+                                                    (u) => u.productId === p.id,
+                                                ),
+                                        )
+                                        .map((product) => (
+                                            <button
+                                                key={product.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    addUsageMaterial(product.id)
+                                                }
+                                                className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
+                                            >
+                                                <span>{product.name}</span>
+                                                <span className="text-muted">
+                                                    stan: {product.stock ?? '–'}
+                                                </span>
+                                            </button>
+                                        ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {usageItems.length > 0 && (
+                        <div>
+                            <div className="d-flex flex-column gap-2">
+                                {usageItems.map((item, idx) => (
+                                    <div
+                                        key={item.productId}
+                                        className="d-flex align-items-center gap-2 bg-light rounded px-2 py-1"
+                                    >
+                                        <span className="flex-fill small">
+                                            {item.productName}
+                                        </span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            step="1"
+                                            value={item.quantity}
+                                            onChange={(e) => {
+                                                const qty =
+                                                    parseInt(e.target.value) ||
+                                                    1;
+                                                setUsageItems((prev) =>
+                                                    prev.map((it, i) =>
+                                                        i === idx
+                                                            ? {
+                                                                  ...it,
+                                                                  quantity:
+                                                                      Math.max(
+                                                                          1,
+                                                                          qty,
+                                                                      ),
+                                                              }
+                                                            : it,
+                                                    ),
+                                                );
+                                            }}
+                                            className="form-control form-control-sm"
+                                            style={{ width: '70px' }}
+                                        />
+                                        <span className="small text-muted">
+                                            {item.unit}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="text-danger small"
+                                            onClick={() =>
+                                                setUsageItems((prev) =>
+                                                    prev.filter(
+                                                        (_, i) => i !== idx,
+                                                    ),
+                                                )
+                                            }
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

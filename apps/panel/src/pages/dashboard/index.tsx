@@ -12,7 +12,7 @@ const ClientDashboard = dynamic<
 >(() => import('@/components/dashboard/ClientDashboard'), {
     ssr: false,
     loading: () => (
-        <div className="p-4 small text-muted">Loading dashboard...</div>
+        <div className="p-4 small text-muted">Ładowanie pulpitu...</div>
     ),
 });
 
@@ -21,7 +21,7 @@ const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="p-4 small text-muted">Loading dashboard...</div>
+            <div className="p-4 small text-muted">Ładowanie pulpitu...</div>
         ),
     },
 );
@@ -41,7 +41,7 @@ export default function DashboardPage() {
             case 'receptionist':
                 return <AdminDashboard />;
             default:
-                return <div>Please log in to view your dashboard</div>;
+                return null;
         }
     };
 

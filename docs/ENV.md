@@ -27,10 +27,10 @@ Use this guide to configure local, staging, and production environments for Salo
 | `PRODUCT_COMMISSION_PERCENT` | ➖ | `0` | Default commission percent used for product sales when no employee rule/base is present. |
 | `SMTP_HOST` | ➖ | `mail0.mydevil.net` | SMTP server used for transactional email (contact form, notifications). |
 | `SMTP_PORT` | ➖ | `465` | SMTP server port. Use `465` for SSL or `587` for STARTTLS. |
-| `SMTP_USER` | ➖ | `kontakt@salon-bw.pl` | SMTP username for authentication. |
+| `SMTP_USER` | ➖ | `kontakt@salon-bw.pl` | SMTP username for authentication. Use a real mailbox account (not an alias). |
 | `SMTP_PASSWORD` | ➖ | `********` | SMTP password for the account above. |
 | `SMTP_SECURE` | ➖ | `true` | Set to `true` when using SSL (port 465); otherwise `false`. |
-| `SMTP_FROM` | ➖ | `kontakt@salon-bw.pl` | Sender address that appears in outgoing messages. Defaults to `SMTP_USER` when omitted. |
+| `SMTP_FROM` | ➖ | `noreply@salon-bw.pl` | Sender address shown in outgoing messages. Alias is allowed, but `SMTP_USER` must stay a real mailbox. Defaults to `SMTP_USER` when omitted. |
 | `UPLOADS_DIR` | ➖ | `./uploads` | Base directory for persistent uploads (customer files/gallery). Defaults to `process.cwd()/uploads` on the API host. Files max 20 MB; gallery images max 10 MB; thumbnails generated as JPG. |
 | `INSTAGRAM_ACCESS_TOKEN` | ➖ | *(unset)* | Optional: used by the backend health check to confirm the public gallery token is still valid. |
 | `INSTAGRAM_HEALTH_USER_ID` | ➖ | `me` | Overrides the Instagram Graph user ID to probe during health checks. Defaults to `me`. |
@@ -58,6 +58,11 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | `MYDEVIL_SSH_USER` | `<login>` | SSH username with database access. |
 | `MYDEVIL_PG_HOST` | `pgsql0.mydevil.net` | PostgreSQL host inside mydevil. |
 | `MYDEVIL_PG_PORT` | `5432` | PostgreSQL port on mydevil. |
+
+
+Operational SMTP note (mydevil, 2026-05-23):
+- `noreply@salon-bw.pl` is configured as an alias to `kontakt@salon-bw.pl` (not a standalone mailbox).
+- Keep `SMTP_USER=kontakt@salon-bw.pl` in API `.env`; use `SMTP_FROM=noreply@salon-bw.pl` if needed for sender branding.
 
 ## Frontends (`apps/landing`, `apps/panel`)
 

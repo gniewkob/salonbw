@@ -36,6 +36,7 @@ jest.mock('@tanstack/react-query', () => ({
 describe('FinalizationModal', () => {
     beforeEach(() => {
         apiFetchMock.mockReset();
+        apiFetchMock.mockResolvedValue([]);
         mutateMock.mockReset();
         invalidateMock.mockReset();
         useQueryMock.mockReset();

@@ -1,6 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import type { Appointment, Customer, Employee, Service } from '@/types';
+import type {
+    Appointment,
+    Customer,
+    Employee,
+    Formula,
+    Service,
+} from '@/types';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
 import {
@@ -115,6 +121,26 @@ export default function AppointmentDrawer({
     const [error, setError] = useState<string | null>(null);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
+    const [internalNote, setInternalNote] = useState('');
+    const [noteSaving, setNoteSaving] = useState(false);
+    const [noteSaved, setNoteSaved] = useState(false);
+    const noteSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const [formulaText, setFormulaText] = useState('');
+    const [formulaSaving, setFormulaSaving] = useState(false);
+    const [formulaError, setFormulaError] = useState<string | null>(null);
+    const [formulas, setFormulas] = useState<Formula[]>([]);
+    const [formulasLoaded, setFormulasLoaded] = useState(false);
+
+    interface UsageHistoryEntry {
+        id: number;
+        usedAt: string;
+        appointmentId: number | null;
+        items: { productName: string; quantity: number; unit: string }[];
+    }
+    const [usageHistory, setUsageHistory] = useState<UsageHistoryEntry[]>([]);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
+
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
 
@@ -159,14 +185,56 @@ export default function AppointmentDrawer({
 
     useEffect(() => {
         if (!open) return;
+        let alive = true;
+
+        setInternalNote('');
+        setNoteSaved(false);
+        setFormulaText('');
+        setFormulaError(null);
+        setFormulas([]);
+        setFormulasLoaded(false);
+        setUsageHistory([]);
+        setHistoryLoaded(false);
 
         if (mode === 'edit' && appointment) {
             setStartTime(toLocalDateTimeInput(new Date(appointment.startTime)));
             setEmployeeId(appointment.employee?.id ?? '');
             setServiceId(appointment.service?.id ?? '');
             setClientId(appointment.client?.id ?? '');
+            setInternalNote(appointment.internalNote ?? '');
             setError(null);
-            return;
+
+            const clientId = appointment.client?.id;
+            if (clientId) {
+                // Load formulas for all statuses so employee can check history before starting
+                apiFetch<Formula[]>(`/customers/${clientId}/formulas`)
+                    .then((data) => {
+                        if (!alive) return;
+                        setFormulas(data.slice(0, 5));
+                        setFormulasLoaded(true);
+                    })
+                    .catch(() => {
+                        if (!alive) return;
+                        setFormulasLoaded(true);
+                    });
+
+                // Load material usage history
+                apiFetch<UsageHistoryEntry[]>(
+                    `/customers/${clientId}/usage-history`,
+                )
+                    .then((data) => {
+                        if (!alive) return;
+                        setUsageHistory(data.slice(0, 5));
+                        setHistoryLoaded(true);
+                    })
+                    .catch(() => {
+                        if (!alive) return;
+                        setHistoryLoaded(true);
+                    });
+            }
+            return () => {
+                alive = false;
+            };
         }
 
         const start = initialStartTime ?? new Date();
@@ -182,6 +250,9 @@ export default function AppointmentDrawer({
         setNewCustomerPhone('');
         setNewCustomerEmail('');
         setError(null);
+        return () => {
+            alive = false;
+        };
     }, [
         open,
         mode,
@@ -190,6 +261,7 @@ export default function AppointmentDrawer({
         initialEndTime,
         initialEmployeeId,
         initialServiceId,
+        apiFetch,
     ]);
 
     if (!open) return null;
@@ -368,11 +440,62 @@ export default function AppointmentDrawer({
         }
     };
 
+    const handleSaveNote = async () => {
+        if (!appointment?.id) return;
+        setNoteSaving(true);
+        try {
+            await apiFetch(`/appointments/${appointment.id}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ internalNote: internalNote || null }),
+            });
+            if (noteSavedTimer.current) clearTimeout(noteSavedTimer.current);
+            setNoteSaved(true);
+            noteSavedTimer.current = setTimeout(
+                () => setNoteSaved(false),
+                2000,
+            );
+        } finally {
+            setNoteSaving(false);
+        }
+    };
+
+    const handleSaveFormula = async () => {
+        if (!appointment?.id || !formulaText.trim()) return;
+        setFormulaSaving(true);
+        setFormulaError(null);
+        try {
+            await apiFetch(`/appointments/${appointment.id}/formulas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: formulaText.trim(),
+                    date: new Date().toISOString(),
+                }),
+            });
+            setFormulaText('');
+            if (appointment.client?.id) {
+                const data = await apiFetch<Formula[]>(
+                    `/customers/${appointment.client.id}/formulas`,
+                );
+                setFormulas(data.slice(0, 3));
+            }
+        } catch {
+            setFormulaError('Nie udało się zapisać formularza.');
+        } finally {
+            setFormulaSaving(false);
+        }
+    };
+
+    const canShowFormulaSection =
+        isEditMode &&
+        (currentStatus === 'in_progress' || currentStatus === 'completed');
+
     return (
         <>
             <div
                 className="position-fixed top-0 end-0 h-100 bg-white border-start shadow-lg"
-                style={{ width: '420px', zIndex: 1100 }}
+                style={{ width: 'min(420px, 100vw)', zIndex: 1100 }}
                 role="dialog"
                 aria-label="Appointment drawer"
             >
@@ -387,7 +510,10 @@ export default function AppointmentDrawer({
                     </button>
                 </div>
 
-                <div className="p-3 d-flex flex-column gap-3">
+                <div
+                    className="p-3 d-flex flex-column gap-3 overflow-y-auto"
+                    style={{ flex: 1 }}
+                >
                     <div className="rounded border p-2">
                         <strong className="d-block mb-2">Wizyta</strong>
                         <div>
@@ -466,7 +592,61 @@ export default function AppointmentDrawer({
                         </div>
                         {appointment ? (
                             <div className="mt-2 pt-2 border-top small">
-                                <div>Status: {appointment.status ?? '-'}</div>
+                                <div className="d-flex align-items-center gap-2 mb-1">
+                                    <span>Status:</span>
+                                    <span
+                                        className={`badge ${
+                                            currentStatus === 'online_pending'
+                                                ? 'text-bg-warning'
+                                                : currentStatus ===
+                                                    'rescheduled_pending'
+                                                  ? 'text-bg-warning'
+                                                  : currentStatus ===
+                                                      'confirmed'
+                                                    ? 'text-bg-success'
+                                                    : currentStatus ===
+                                                        'in_progress'
+                                                      ? 'text-bg-primary'
+                                                      : currentStatus ===
+                                                          'cancelled'
+                                                        ? 'text-bg-danger'
+                                                        : 'text-bg-secondary'
+                                        }`}
+                                    >
+                                        {currentStatus === 'online_pending'
+                                            ? 'Oczekuje na potwierdzenie'
+                                            : currentStatus ===
+                                                'rescheduled_pending'
+                                              ? 'Przeniesiona — wymaga akceptacji'
+                                              : currentStatus === 'confirmed'
+                                                ? 'Potwierdzona'
+                                                : currentStatus ===
+                                                    'in_progress'
+                                                  ? 'W trakcie'
+                                                  : currentStatus ===
+                                                      'completed'
+                                                    ? 'Zakończona'
+                                                    : currentStatus ===
+                                                        'cancelled'
+                                                      ? 'Anulowana'
+                                                      : currentStatus ===
+                                                          'no_show'
+                                                        ? 'No-show'
+                                                        : 'Zaplanowana'}
+                                    </span>
+                                </div>
+                                {isOnlinePending && (
+                                    <p className="text-warning-emphasis small mb-1">
+                                        Klient zarezerwował online — potwierdź
+                                        lub odrzuć rezerwację.
+                                    </p>
+                                )}
+                                {isRescheduledPending && (
+                                    <p className="text-warning-emphasis small mb-1">
+                                        Wizyta przeniesiona — oczekuje na
+                                        akceptację klienta.
+                                    </p>
+                                )}
                                 <div>
                                     Płatność:{' '}
                                     {appointment.paymentStatus ?? 'nieopłacona'}
@@ -602,6 +782,31 @@ export default function AppointmentDrawer({
                                 </div>
                             </div>
                         )}
+                        {appointment?.client?.phone ||
+                        appointment?.client?.email ? (
+                            <div className="mt-2 pt-2 border-top small">
+                                {appointment.client.phone && (
+                                    <div>
+                                        Tel:{' '}
+                                        <a
+                                            href={`tel:${appointment.client.phone}`}
+                                        >
+                                            {appointment.client.phone}
+                                        </a>
+                                    </div>
+                                )}
+                                {appointment.client.email && (
+                                    <div>
+                                        E-mail:{' '}
+                                        <a
+                                            href={`mailto:${appointment.client.email}`}
+                                        >
+                                            {appointment.client.email}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
                         {appointment ? (
                             <div className="mt-2 pt-2 border-top small">
                                 <div className="d-flex align-items-center justify-content-between">
@@ -687,6 +892,176 @@ export default function AppointmentDrawer({
                                         ) : null}
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {/* ── Client history: formulas + materials ────────── */}
+                    {isEditMode &&
+                        (formulasLoaded || historyLoaded) &&
+                        (formulas.length > 0 || usageHistory.length > 0) && (
+                            <div className="rounded border p-2">
+                                <strong className="d-block mb-2">
+                                    Historia klienta
+                                </strong>
+
+                                {formulas.length > 0 && (
+                                    <div className="mb-3">
+                                        <div className="small fw-medium text-muted mb-1">
+                                            Poprzednie receptury
+                                        </div>
+                                        <div className="d-flex flex-column gap-1">
+                                            {formulas.map((f) => (
+                                                <div
+                                                    key={f.id}
+                                                    className="small bg-light rounded px-2 py-1"
+                                                >
+                                                    <div
+                                                        className="text-muted mb-0"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                        }}
+                                                    >
+                                                        {new Date(
+                                                            f.date,
+                                                        ).toLocaleDateString(
+                                                            'pl-PL',
+                                                        )}
+                                                    </div>
+                                                    <div>{f.description}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {usageHistory.length > 0 && (
+                                    <div>
+                                        <div className="small fw-medium text-muted mb-1">
+                                            Użyte materiały (poprzednie wizyty)
+                                        </div>
+                                        <div className="d-flex flex-column gap-1">
+                                            {usageHistory.map((entry) => (
+                                                <div
+                                                    key={entry.id}
+                                                    className="small bg-light rounded px-2 py-1"
+                                                >
+                                                    <div
+                                                        className="text-muted mb-1"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                        }}
+                                                    >
+                                                        {new Date(
+                                                            entry.usedAt,
+                                                        ).toLocaleDateString(
+                                                            'pl-PL',
+                                                        )}
+                                                    </div>
+                                                    {entry.items.map(
+                                                        (item, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="d-flex justify-content-between"
+                                                            >
+                                                                <span>
+                                                                    {
+                                                                        item.productName
+                                                                    }
+                                                                </span>
+                                                                <span className="text-muted">
+                                                                    {
+                                                                        item.quantity
+                                                                    }{' '}
+                                                                    {item.unit}
+                                                                </span>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                    {canShowFormulaSection ? (
+                        <div className="rounded border p-2">
+                            <strong className="d-block mb-2">
+                                Formularz zabiegu
+                            </strong>
+
+                            <div className="mb-2">
+                                <label
+                                    className="form-label form-label-sm mb-1"
+                                    htmlFor="appointment-internal-note"
+                                >
+                                    Notatka wewnętrzna
+                                </label>
+                                <textarea
+                                    id="appointment-internal-note"
+                                    className="form-control form-control-sm"
+                                    rows={2}
+                                    value={internalNote}
+                                    onChange={(e) =>
+                                        setInternalNote(e.target.value)
+                                    }
+                                    placeholder="Uwagi widoczne tylko dla personelu..."
+                                />
+                                <div className="d-flex align-items-center gap-2 mt-1">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary btn-sm"
+                                        onClick={() => void handleSaveNote()}
+                                        disabled={noteSaving}
+                                    >
+                                        {noteSaving
+                                            ? 'Zapisywanie…'
+                                            : 'Zapisz notatkę'}
+                                    </button>
+                                    {noteSaved && (
+                                        <span className="small text-success">
+                                            Zapisano
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mb-2">
+                                <label
+                                    className="form-label form-label-sm mb-1"
+                                    htmlFor="appointment-formula"
+                                >
+                                    Receptura / formularz zabiegu
+                                </label>
+                                <textarea
+                                    id="appointment-formula"
+                                    className="form-control form-control-sm"
+                                    rows={3}
+                                    value={formulaText}
+                                    onChange={(e) =>
+                                        setFormulaText(e.target.value)
+                                    }
+                                    placeholder="Np. kolor: 7.1 + 8 vol, 40 min..."
+                                />
+                                {formulaError && (
+                                    <div className="small text-danger mt-1">
+                                        {formulaError}
+                                    </div>
+                                )}
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-primary btn-sm mt-1"
+                                    onClick={() => void handleSaveFormula()}
+                                    disabled={
+                                        formulaSaving || !formulaText.trim()
+                                    }
+                                >
+                                    {formulaSaving
+                                        ? 'Zapisywanie…'
+                                        : 'Zapisz formularz'}
+                                </button>
                             </div>
                         </div>
                     ) : null}
@@ -802,7 +1177,7 @@ export default function AppointmentDrawer({
                                     {canConfirm ? (
                                         <button
                                             type="button"
-                                            className="btn btn-outline-primary"
+                                            className={`btn ${isOnlinePending ? 'btn-success' : 'btn-outline-primary'}`}
                                             onClick={() =>
                                                 void handleStatusChange(
                                                     'confirmed',
@@ -810,7 +1185,11 @@ export default function AppointmentDrawer({
                                             }
                                             disabled={saving}
                                         >
-                                            Potwierdź
+                                            {isOnlinePending
+                                                ? 'Potwierdź rezerwację'
+                                                : isRescheduledPending
+                                                  ? 'Zaakceptuj nowy termin'
+                                                  : 'Potwierdź'}
                                         </button>
                                     ) : null}
                                     {isOnlinePending ? (

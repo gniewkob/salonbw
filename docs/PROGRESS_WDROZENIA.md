@@ -1,6 +1,18 @@
 # Postęp Wdrożenia SalonBW (Versum Clone)
 
-> Ostatnia aktualizacja: 2026-01-30
+> Ostatnia aktualizacja: 2026-05-22
+> Status dokumentu: **archiwalny (historyczny)**
+
+## Uwaga operacyjna (2026-05-22)
+
+Ten dokument pozostaje jako historyczny snapshot wcześniejszych faz wdrożenia.
+Nie jest już głównym źródłem bieżącego statusu.
+
+Aktualne źródła prawdy:
+- bieżące zmiany operacyjne i wdrożeniowe: `docs/AGENT_STATUS.md`
+- status pokrycia funkcjonalnego tras: `docs/IMPLEMENTATION_MATRIX.md`
+- backlog implementacyjny i elementy domknięte: `docs/IMPLEMENTATION_BACKLOG_STATUS.md`
+- postęp klonowania/parity (historyczny kontekst Versum): `docs/VERSUM_CLONE_PROGRESS.md`
 
 ## Stan Ogólny
 
