@@ -128,4 +128,28 @@ export class WhatsappService {
             time,
         ]);
     }
+
+    async sendBookingConfirmed(
+        to: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'booking_confirmed', [date, time]);
+    }
+
+    async sendRescheduleNotification(
+        to: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'appointment_rescheduled', [date, time]);
+    }
+
+    async sendCancellationNotification(
+        to: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'appointment_cancelled', [date, time]);
+    }
 }

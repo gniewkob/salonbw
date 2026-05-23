@@ -290,11 +290,26 @@ export interface Review {
     createdAt?: string;
 }
 
+export interface UpcomingAppointmentItem {
+    id: number;
+    startTime: string;
+    endTime?: string;
+    status: AppointmentStatus;
+    clientName: string;
+    clientPhone?: string;
+    serviceName: string;
+    employeeName: string;
+}
+
 export interface DashboardResponse {
     clientCount: number;
     employeeCount: number;
     todayAppointments: number;
-    upcomingAppointments: Appointment[];
+    onlinePendingCount: number;
+    revenueToday: number;
+    revenueThisMonth: number;
+    completedThisMonth: number;
+    upcomingAppointments: UpcomingAppointmentItem[];
 }
 
 export interface ClientDashboardResponse {
@@ -303,6 +318,7 @@ export interface ClientDashboardResponse {
         serviceName: string;
         startTime: string;
         employeeName: string;
+        status?: string;
     } | null;
     completedCount: number;
     serviceHistory: { id: number; name: string; count: number }[];
@@ -311,6 +327,7 @@ export interface ClientDashboardResponse {
         serviceName: string;
         startTime: string;
         status: string;
+        employeeName?: string;
     }[];
 }
 

@@ -15,6 +15,10 @@ export class UpcomingAppointmentDto {
 
     @ApiProperty({ description: 'Employee name' })
     employeeName: string;
+
+    @ApiProperty({ description: 'Appointment status', required: false })
+    @IsOptional()
+    status?: string;
 }
 
 export class ServiceHistoryItemDto {
@@ -43,6 +47,10 @@ export class RecentAppointmentDto {
 
     @ApiProperty({ description: 'Appointment status' })
     status: string;
+
+    @ApiProperty({ description: 'Employee name', required: false })
+    @IsOptional()
+    employeeName?: string;
 }
 
 export class ClientDashboardDto {

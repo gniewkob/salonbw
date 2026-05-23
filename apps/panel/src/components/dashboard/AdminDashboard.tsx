@@ -241,58 +241,53 @@ export default function AdminDashboard() {
             </div>
 
             <div className="salonbw-dashboard__grid">
-                <div className="salonbw-dashboard__section">
-                    <div className="salonbw-dashboard__section-header">
-                        <h2>więcej aktywności</h2>
-                        <Link
-                            href="/settings/employees/activity-logs"
-                            className="salonbw-link"
-                        >
-                            więcej
-                        </Link>
+                {/* Pending online bookings — most urgent action */}
+                {(dashboardData?.onlinePendingCount ?? 0) > 0 && (
+                    <div
+                        className="salonbw-dashboard__section"
+                        style={{
+                            gridColumn: '1 / -1',
+                            borderLeft: '4px solid #f59e0b',
+                        }}
+                    >
+                        <div className="salonbw-dashboard__section-header">
+                            <h2>
+                                <span className="badge bg-warning text-dark me-2">
+                                    {dashboardData?.onlinePendingCount}
+                                </span>
+                                Rezerwacje online czekające na potwierdzenie
+                            </h2>
+                            <Link
+                                href="/appointments?status=online_pending"
+                                className="btn btn-sm btn-warning"
+                            >
+                                Zarządzaj
+                            </Link>
+                        </div>
+                        <p className="small text-muted mb-0">
+                            Klienci zarezerwowali wizyty online. Potwierdź lub
+                            odrzuć — po potwierdzeniu klient otrzyma
+                            powiadomienie WhatsApp.
+                        </p>
                     </div>
-                    <div className="salonbw-activity-list">
-                        {dashboardData?.upcomingAppointments
-                            ?.slice(0, 5)
-                            .map((appointment) => (
-                                <div
-                                    key={appointment.id}
-                                    className="salonbw-activity-item"
-                                >
-                                    <div className="salonbw-activity-item__avatar">
-                                        {appointment.client?.name?.charAt(0) ||
-                                            '?'}
-                                    </div>
-                                    <div className="salonbw-activity-item__content">
-                                        <div className="salonbw-activity-item__title">
-                                            Wizyta:{' '}
-                                            {appointment.client?.name ||
-                                                'Unknown'}
-                                        </div>
-                                        <div className="salonbw-activity-item__meta">
-                                            {format(
-                                                new Date(appointment.startTime),
-                                                'd MMMM, HH:mm',
-                                                { locale: pl },
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )) || (
-                            <div className="salonbw-activity-item salonbw-activity-item--empty">
-                                Brak aktywności
-                            </div>
-                        )}
-                    </div>
-                </div>
+                )}
 
                 <div className="salonbw-dashboard__section">
                     <div className="salonbw-dashboard__section-header">
-                        <h2>najbliższe zaplanowane wizyty</h2>
+                        <h2>najbliższe wizyty</h2>
+                        <Link href="/calendar" className="salonbw-link">
+                            kalendarz
+                        </Link>
                     </div>
                     <div className="salonbw-appointments-list">
-                        {dashboardData?.upcomingAppointments
-                            ?.slice(0, 5)
+                        {(dashboardData?.upcomingAppointments ?? []).length ===
+                            0 && (
+                            <div className="salonbw-appointment-item salonbw-appointment-item--empty">
+                                Brak zaplanowanych wizyt
+                            </div>
+                        )}
+                        {(dashboardData?.upcomingAppointments ?? [])
+                            .slice(0, 6)
                             .map((appointment) => (
                                 <div
                                     key={appointment.id}
@@ -303,47 +298,126 @@ export default function AdminDashboard() {
                                             new Date(appointment.startTime),
                                             'HH:mm',
                                         )}
+                                        <div className="small text-muted">
+                                            {format(
+                                                new Date(appointment.startTime),
+                                                'd MMM',
+                                                { locale: pl },
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="salonbw-appointment-item__details">
                                         <div className="salonbw-appointment-item__client">
-                                            {appointment.client?.name ||
-                                                'Unknown'}
+                                            {appointment.clientName || '—'}
+                                            {appointment.clientPhone && (
+                                                <a
+                                                    href={`tel:${appointment.clientPhone}`}
+                                                    className="ms-2 small text-muted"
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                >
+                                                    {appointment.clientPhone}
+                                                </a>
+                                            )}
                                         </div>
                                         <div className="salonbw-appointment-item__service">
-                                            {appointment.service?.name ||
-                                                'Unknown'}
+                                            {appointment.serviceName}
+                                            {appointment.employeeName && (
+                                                <span className="text-muted ms-1">
+                                                    · {appointment.employeeName}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
+                                    {appointment.status ===
+                                        'online_pending' && (
+                                        <span className="badge bg-warning text-dark ms-auto">
+                                            Oczekuje
+                                        </span>
+                                    )}
                                 </div>
-                            )) || (
-                            <div className="salonbw-appointment-item salonbw-appointment-item--empty">
-                                Brak zaplanowanych wizyt
-                            </div>
-                        )}
+                            ))}
                     </div>
                     <Link
-                        href="/calendar"
+                        href="/appointments"
                         className="salonbw-dashboard__section-footer"
                     >
-                        kalendarz wizyt
+                        lista wszystkich wizyt
                     </Link>
                 </div>
 
                 <div className="salonbw-dashboard__section">
                     <div className="salonbw-dashboard__section-header">
-                        <h2>zadania</h2>
-                        <div className="salonbw-dashboard__section-actions">
-                            <button type="button" className="salonbw-icon-btn">
-                                +
-                            </button>
-                            <button type="button" className="salonbw-icon-btn">
-                                •••
-                            </button>
+                        <h2>podsumowanie miesiąca</h2>
+                        <Link href="/statistics" className="salonbw-link">
+                            szczegóły
+                        </Link>
+                    </div>
+                    <div className="salonbw-appointments-list">
+                        <div className="salonbw-appointment-item">
+                            <div className="salonbw-appointment-item__details">
+                                <div className="salonbw-appointment-item__client">
+                                    Przychód (dzisiaj)
+                                </div>
+                                <div className="salonbw-appointment-item__service text-muted small">
+                                    z zakończonych wizyt
+                                </div>
+                            </div>
+                            <div className="fw-bold">
+                                {formatMoney(
+                                    dashboardData?.revenueToday ??
+                                        stats?.todayRevenue ??
+                                        0,
+                                )}
+                            </div>
+                        </div>
+                        <div className="salonbw-appointment-item">
+                            <div className="salonbw-appointment-item__details">
+                                <div className="salonbw-appointment-item__client">
+                                    Przychód (ten miesiąc)
+                                </div>
+                                <div className="salonbw-appointment-item__service text-muted small">
+                                    z zakończonych wizyt
+                                </div>
+                            </div>
+                            <div className="fw-bold">
+                                {formatMoney(
+                                    dashboardData?.revenueThisMonth ??
+                                        stats?.monthRevenue ??
+                                        0,
+                                )}
+                            </div>
+                        </div>
+                        <div className="salonbw-appointment-item">
+                            <div className="salonbw-appointment-item__details">
+                                <div className="salonbw-appointment-item__client">
+                                    Zakończone wizyty (ten miesiąc)
+                                </div>
+                            </div>
+                            <div className="fw-bold">
+                                {dashboardData?.completedThisMonth ??
+                                    stats?.monthAppointments ??
+                                    0}
+                            </div>
+                        </div>
+                        <div className="salonbw-appointment-item">
+                            <div className="salonbw-appointment-item__details">
+                                <div className="salonbw-appointment-item__client">
+                                    Łączna liczba klientów
+                                </div>
+                            </div>
+                            <div className="fw-bold">
+                                {dashboardData?.clientCount ?? 0}
+                            </div>
                         </div>
                     </div>
-                    <div className="salonbw-empty-state">
-                        Brak zadań do wykonania
-                    </div>
+                    <Link
+                        href="/statistics"
+                        className="salonbw-dashboard__section-footer"
+                    >
+                        pełne statystyki
+                    </Link>
                 </div>
             </div>
         </div>
