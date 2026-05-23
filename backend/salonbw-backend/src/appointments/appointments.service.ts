@@ -237,7 +237,11 @@ export class AppointmentsService {
             );
         }
         // Notify employee when client self-books
-        if (isClientSelfBooking && employee.phone && employee.receiveNotifications) {
+        if (
+            isClientSelfBooking &&
+            employee.phone &&
+            employee.receiveNotifications
+        ) {
             try {
                 const clientName = client.name ?? client.email ?? 'Klient';
                 const serviceName = result.service?.name ?? '';

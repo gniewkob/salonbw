@@ -69,6 +69,7 @@ export class DashboardService {
                     AppointmentStatus.Scheduled,
                     AppointmentStatus.Confirmed,
                     AppointmentStatus.RescheduledPending,
+                    AppointmentStatus.OnlinePending,
                 ]),
             },
             relations: ['service', 'employee'],
