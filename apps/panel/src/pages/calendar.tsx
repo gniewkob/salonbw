@@ -7,6 +7,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CalendarView from '@/components/calendar/CalendarView';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
+import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import ReceptionView from '@/components/calendar/ReceptionView';
 import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
 import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
@@ -703,6 +704,10 @@ export default function CalendarPage() {
         mode: 'create',
         appointment: null,
     });
+    const [quickModal, setQuickModal] = useState<{
+        event: CalendarEvent | null;
+        appointment: Appointment | null;
+    }>({ event: null, appointment: null });
 
     useEffect(
         () => () => {
@@ -785,6 +790,13 @@ export default function CalendarPage() {
             source: 'calendar',
         });
 
+        setQuickModal({ event, appointment: appointment ?? null });
+    };
+
+    const openDrawerFromQuick = () => {
+        if (!quickModal.event) return;
+        const appointment = quickModal.appointment;
+        setQuickModal({ event: null, appointment: null });
         setDrawer({
             open: true,
             mode: 'edit',
@@ -2251,6 +2263,17 @@ export default function CalendarPage() {
                         )}
                     </div>
                 </div>
+
+                <AppointmentQuickModal
+                    open={quickModal.event !== null}
+                    event={quickModal.event}
+                    appointment={quickModal.appointment}
+                    onClose={() =>
+                        setQuickModal({ event: null, appointment: null })
+                    }
+                    onOpenFull={openDrawerFromQuick}
+                    onChanged={() => void refetch()}
+                />
 
                 <AppointmentDrawer
                     open={drawer.open}

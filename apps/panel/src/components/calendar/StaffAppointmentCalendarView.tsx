@@ -4,6 +4,7 @@ import { pl } from 'date-fns/locale';
 import type { Appointment, AppointmentStatus } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import FinalizationModal from './FinalizationModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface StaffAppointmentCalendarViewProps {
     appointments: Appointment[];
@@ -109,6 +110,10 @@ export default function StaffAppointmentCalendarView({
         useState<Record<number, string>>({});
     const [finalizingAppointment, setFinalizingAppointment] =
         useState<Appointment | null>(null);
+    const [confirmPending, setConfirmPending] = useState<{
+        appointment: Appointment;
+        action: 'cancel' | 'no_show';
+    } | null>(null);
 
     const sortedAppointments = [...appointments].sort(
         (a, b) =>
@@ -128,15 +133,10 @@ export default function StaffAppointmentCalendarView({
         return `${minutes} min`;
     };
 
-    const handleAction = async (
+    const executeAction = async (
         appointment: Appointment,
         action: ActionKey,
     ) => {
-        if (action === 'finalize') {
-            setFinalizingAppointment(appointment);
-            return;
-        }
-
         setPendingAction({ appointmentId: appointment.id, action });
         setActionErrorByAppointmentId((current) => {
             const next = { ...current };
@@ -165,6 +165,18 @@ export default function StaffAppointmentCalendarView({
         }
     };
 
+    const handleAction = (appointment: Appointment, action: ActionKey) => {
+        if (action === 'finalize') {
+            setFinalizingAppointment(appointment);
+            return;
+        }
+        if (action === 'cancel' || action === 'no_show') {
+            setConfirmPending({ appointment, action });
+            return;
+        }
+        void executeAction(appointment, action);
+    };
+
     if (loading) {
         return <div className="salonbw-loading">Ładowanie wizyt...</div>;
     }
@@ -188,6 +200,36 @@ export default function StaffAppointmentCalendarView({
                 onSuccess={() => {
                     setFinalizingAppointment(null);
                     onChanged?.();
+                }}
+            />
+            <ConfirmModal
+                open={confirmPending !== null}
+                title={
+                    confirmPending?.action === 'cancel'
+                        ? 'Anulować wizytę?'
+                        : 'Oznaczyć jako nieobecność?'
+                }
+                message={
+                    confirmPending?.action === 'cancel'
+                        ? `${confirmPending.appointment.client?.name ?? 'Klient'} — ${confirmPending.appointment.service?.name ?? 'wizyta'}. Operacja jest nieodwracalna.`
+                        : `${confirmPending?.appointment.client?.name ?? 'Klient'} — ${confirmPending?.appointment.service?.name ?? 'wizyta'}.`
+                }
+                confirmLabel={
+                    confirmPending?.action === 'cancel'
+                        ? 'Anuluj wizytę'
+                        : 'Oznacz no-show'
+                }
+                confirmVariant={
+                    confirmPending?.action === 'cancel' ? 'danger' : 'warning'
+                }
+                onCancel={() => setConfirmPending(null)}
+                onConfirm={() => {
+                    if (!confirmPending) return;
+                    void executeAction(
+                        confirmPending.appointment,
+                        confirmPending.action,
+                    );
+                    setConfirmPending(null);
                 }}
             />
             <div className="salonbw-reception-list">
@@ -248,7 +290,7 @@ export default function StaffAppointmentCalendarView({
                                             type="button"
                                             className={`salonbw-btn salonbw-btn--sm ${config.className}`}
                                             onClick={() =>
-                                                void handleAction(
+                                                handleAction(
                                                     appointment,
                                                     action,
                                                 )
