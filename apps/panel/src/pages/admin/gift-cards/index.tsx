@@ -170,10 +170,10 @@ export default function GiftCardsManagementPage() {
     };
 
     const STATUS_COLORS: Record<GiftCardStatus, string> = {
-        active: 'bg-green-100 text-green-700',
+        active: 'badge text-bg-success',
         used: 'bg-secondary bg-opacity-10 text-body',
-        expired: 'bg-yellow-100 text-yellow-700',
-        cancelled: 'bg-red-100 text-red-700',
+        expired: 'badge text-bg-warning',
+        cancelled: 'badge text-bg-danger',
     };
 
     const STATUS_LABELS: Record<GiftCardStatus, string> = {

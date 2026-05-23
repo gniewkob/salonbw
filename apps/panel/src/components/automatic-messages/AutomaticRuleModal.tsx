@@ -414,7 +414,7 @@ export default function AutomaticRuleModal({
                                                 onClick={() =>
                                                     insertVariable(v.key)
                                                 }
-                                                className="px-2 py-0.5 small bg-light bg-opacity-25 rounded text-body"
+                                                className="px-2 py-1 small bg-light bg-opacity-25 rounded text-body"
                                                 title={v.desc}
                                             >
                                                 {`{{${v.key}}}`}

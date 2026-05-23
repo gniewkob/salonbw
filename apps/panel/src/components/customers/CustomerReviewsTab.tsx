@@ -52,12 +52,12 @@ const sourceConfig: Record<
     booksy: {
         label: 'Booksy',
         icon: '📱',
-        color: 'bg-orange-100 text-orange-700',
+        color: 'badge text-bg-warning',
     },
     google: {
         label: 'Google',
         icon: '🔍',
-        color: 'bg-blue-100 text-blue-700',
+        color: 'badge text-bg-info',
     },
     facebook: {
         label: 'Facebook',

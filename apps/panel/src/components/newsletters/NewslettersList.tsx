@@ -27,11 +27,11 @@ const STATUS_LABELS: Record<NewsletterStatus, string> = {
 
 const STATUS_COLORS: Record<NewsletterStatus, string> = {
     draft: 'bg-secondary bg-opacity-10 text-body',
-    scheduled: 'bg-blue-100 text-blue-700',
-    sending: 'bg-yellow-100 text-yellow-700',
-    sent: 'bg-green-100 text-green-700',
-    partial_failure: 'bg-orange-100 text-orange-700',
-    failed: 'bg-red-100 text-red-700',
+    scheduled: 'badge text-bg-info',
+    sending: 'badge text-bg-warning',
+    sent: 'badge text-bg-success',
+    partial_failure: 'badge text-bg-warning',
+    failed: 'badge text-bg-danger',
     cancelled: 'bg-secondary bg-opacity-25 text-muted',
 };
 
@@ -94,13 +94,13 @@ export default function NewslettersList({
                                     {newsletter.name}
                                 </h3>
                                 <span
-                                    className={`px-2 py-0.5 small rounded-circle ${
+                                    className={`px-2 py-1 small rounded-circle ${
                                         STATUS_COLORS[newsletter.status]
                                     }`}
                                 >
                                     {STATUS_LABELS[newsletter.status]}
                                 </span>
-                                <span className="px-2 py-0.5 small rounded-circle bg-light text-muted">
+                                <span className="px-2 py-1 small rounded-circle bg-light text-muted">
                                     {newsletter.channel === 'email'
                                         ? 'Email'
                                         : 'SMS'}

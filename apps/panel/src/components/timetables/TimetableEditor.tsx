@@ -231,7 +231,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="px-2 py-1 border border-orange-200 rounded small"
+                                                    className="px-2 py-1 border rounded small"
                                                 />
                                                 <span className="text-secondary">
                                                     -
@@ -246,7 +246,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="px-2 py-1 border border-orange-200 rounded small"
+                                                    className="px-2 py-1 border rounded small"
                                                 />
                                             </div>
                                         )}

@@ -20,9 +20,9 @@ const statusLabels: Record<StocktakingStatus, string> = {
 
 const statusColors: Record<StocktakingStatus, string> = {
     draft: 'bg-secondary bg-opacity-10 text-dark',
-    in_progress: 'bg-blue-100 text-blue-800',
-    completed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    in_progress: 'badge text-bg-info',
+    completed: 'badge text-bg-success',
+    cancelled: 'badge text-bg-danger',
 };
 
 export default function StocktakingTab() {

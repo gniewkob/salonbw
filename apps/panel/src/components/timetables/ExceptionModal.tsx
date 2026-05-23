@@ -31,11 +31,11 @@ const EXCEPTION_TYPES: {
         label: 'Dzień wolny',
         color: 'bg-secondary bg-opacity-10 text-body',
     },
-    { value: 'vacation', label: 'Urlop', color: 'bg-blue-100 text-blue-700' },
+    { value: 'vacation', label: 'Urlop', color: 'badge text-bg-info' },
     {
         value: 'sick_leave',
         label: 'Zwolnienie lekarskie',
-        color: 'bg-red-100 text-red-700',
+        color: 'badge text-bg-danger',
     },
     {
         value: 'training',
@@ -45,7 +45,7 @@ const EXCEPTION_TYPES: {
     {
         value: 'custom_hours',
         label: 'Zmienione godziny',
-        color: 'bg-yellow-100 text-yellow-700',
+        color: 'badge text-bg-warning',
     },
     {
         value: 'other',

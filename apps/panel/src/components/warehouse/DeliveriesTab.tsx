@@ -21,9 +21,9 @@ const statusLabels: Record<DeliveryStatus, string> = {
 
 const statusColors: Record<DeliveryStatus, string> = {
     draft: 'bg-secondary bg-opacity-10 text-dark',
-    pending: 'bg-yellow-100 text-yellow-800',
-    received: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    pending: 'badge text-bg-warning',
+    received: 'badge text-bg-success',
+    cancelled: 'badge text-bg-danger',
 };
 
 export default function DeliveriesTab() {

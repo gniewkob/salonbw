@@ -120,9 +120,9 @@ export default function BranchesManagementPage() {
     };
 
     const STATUS_COLORS: Record<string, string> = {
-        active: 'bg-green-100 text-green-700',
+        active: 'badge text-bg-success',
         inactive: 'bg-secondary bg-opacity-10 text-body',
-        suspended: 'bg-red-100 text-red-700',
+        suspended: 'badge text-bg-danger',
     };
 
     const STATUS_LABELS: Record<string, string> = {
@@ -222,7 +222,7 @@ export default function BranchesManagementPage() {
                                                 </p>
                                             </div>
                                             <span
-                                                className={`px-2 py-0.5 small rounded-circle ${STATUS_COLORS[branch.status]}`}
+                                                className={`px-2 py-1 small rounded-circle ${STATUS_COLORS[branch.status]}`}
                                             >
                                                 {STATUS_LABELS[branch.status]}
                                             </span>
@@ -404,12 +404,12 @@ export default function BranchesManagementPage() {
                                                     <td className="px-3 py-2">
                                                         <div className="d-flex gap-2">
                                                             {member.isPrimary && (
-                                                                <span className="px-2 py-0.5 small bg-primary bg-opacity-10 text-primary rounded-circle">
+                                                                <span className="px-2 py-1 small bg-primary bg-opacity-10 text-primary rounded-circle">
                                                                     Główny
                                                                 </span>
                                                             )}
                                                             {member.canManage && (
-                                                                <span className="px-2 py-0.5 small bg-info bg-opacity-10 text-info rounded-circle">
+                                                                <span className="px-2 py-1 small bg-info bg-opacity-10 text-info rounded-circle">
                                                                     Manager
                                                                 </span>
                                                             )}

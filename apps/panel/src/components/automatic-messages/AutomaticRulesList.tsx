@@ -25,14 +25,14 @@ const TRIGGER_LABELS: Record<AutomaticMessageTrigger, string> = {
 };
 
 const TRIGGER_COLORS: Record<AutomaticMessageTrigger, string> = {
-    appointment_reminder: 'bg-blue-100 text-blue-700',
-    appointment_confirmation: 'bg-green-100 text-green-700',
-    appointment_cancellation: 'bg-red-100 text-red-700',
+    appointment_reminder: 'badge text-bg-info',
+    appointment_confirmation: 'badge text-bg-success',
+    appointment_cancellation: 'badge text-bg-danger',
     follow_up: 'bg-purple-100 text-purple-700',
     birthday: 'bg-pink-100 text-pink-700',
-    inactive_client: 'bg-orange-100 text-orange-700',
+    inactive_client: 'badge text-bg-warning',
     new_client: 'bg-teal-100 text-teal-700',
-    review_request: 'bg-yellow-100 text-yellow-700',
+    review_request: 'badge text-bg-warning',
 };
 
 export default function AutomaticRulesList({
@@ -94,14 +94,14 @@ export default function AutomaticRulesList({
                                     {rule.name}
                                 </h3>
                                 <span
-                                    className={`px-2 py-0.5 small rounded-circle ${
+                                    className={`px-2 py-1 small rounded-circle ${
                                         TRIGGER_COLORS[rule.trigger]
                                     }`}
                                 >
                                     {TRIGGER_LABELS[rule.trigger]}
                                 </span>
                                 {!rule.isActive && (
-                                    <span className="px-2 py-0.5 small rounded-circle bg-secondary bg-opacity-25 text-muted">
+                                    <span className="px-2 py-1 small rounded-circle bg-secondary bg-opacity-25 text-muted">
                                         Nieaktywna
                                     </span>
                                 )}

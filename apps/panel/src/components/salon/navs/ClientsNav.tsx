@@ -48,7 +48,7 @@ function DroppableGroupItem({
                 </div>
                 {group.name}
                 {isOver ? (
-                    <span className="ml-2 text-[11px]">↑ upuść</span>
+                    <span className="ms-2 text-[11px]">↑ upuść</span>
                 ) : null}
             </a>
         </li>

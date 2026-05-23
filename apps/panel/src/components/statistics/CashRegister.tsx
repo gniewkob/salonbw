@@ -54,7 +54,7 @@ export default function CashRegister({ data, loading }: Props) {
                         {data.totals.card.toLocaleString('pl-PL')} PLN
                     </p>
                 </div>
-                <div className="bg-warning bg-opacity-10 border border-yellow-100 rounded-3 p-3">
+                <div className="bg-warning bg-opacity-10 border rounded-3 p-3">
                     <p className="small text-warning fw-medium">Napiwki</p>
                     <p className="fs-5 fw-bold text-warning">
                         {data.totals.tips.toLocaleString('pl-PL')} PLN
