@@ -167,7 +167,7 @@ export default function BranchesManagementPage() {
 
                 {/* Tabs */}
                 <div className="border-bottom border-secondary border-opacity-25 mb-4">
-                    <nav className="-mb-px d-flex gap-4">
+                    <nav className="d-flex gap-4">
                         {[
                             { key: 'branches', label: 'Salony' },
                             { key: 'members', label: 'Pracownicy w salonach' },
@@ -176,7 +176,7 @@ export default function BranchesManagementPage() {
                                 key={tab.key}
                                 type="button"
                                 onClick={() => setActiveTab(tab.key as Tab)}
-                                className={`py-2 px-1 border-bottom-2 fw-medium small ${
+                                className={`py-2 px-1 border-bottom border-2 fw-medium small ${
                                     activeTab === tab.key
                                         ? 'border-primary text-primary'
                                         : 'border-transparent text-muted border-opacity-50'
@@ -190,11 +190,11 @@ export default function BranchesManagementPage() {
 
                 {isLoading ? (
                     <div className="d-flex align-items-center justify-content-center py-5">
-                        <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                        <div className="spinner-border spinner-border-sm text-primary"></div>
                         <span className="ms-2 text-muted">Ładowanie...</span>
                     </div>
                 ) : activeTab === 'branches' ? (
-                    <div className="-cols-1 gap-4">
+                    <div className="d-flex flex-column gap-4">
                         {branches?.map((branch) => {
                             return (
                                 <div
@@ -232,7 +232,15 @@ export default function BranchesManagementPage() {
                                         </div>
 
                                         {branch.description && (
-                                            <p className="small text-muted mt-2 line-clamp-2">
+                                            <p
+                                                className="small text-muted mt-2"
+                                                style={{
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
                                                 {branch.description}
                                             </p>
                                         )}
@@ -507,7 +515,7 @@ export default function BranchesManagementPage() {
                                     </div>
                                 </div>
 
-                                <div className="-cols-3 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                                     <div className="">
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Ulica

@@ -48,7 +48,7 @@ export default function NewslettersList({
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
                 <span className="ms-2 text-muted">
                     Ładowanie newsletterów...
                 </span>
@@ -81,7 +81,7 @@ export default function NewslettersList({
     }
 
     return (
-        <div className="gap-2">
+        <div className="d-flex flex-column gap-2">
             {newsletters.map((newsletter) => (
                 <div
                     key={newsletter.id}
@@ -165,7 +165,7 @@ export default function NewslettersList({
                                         onClick={() => {
                                             void onSend(newsletter.id);
                                         }}
-                                        className="p-2 text-success bg-opacity-10 rounded-3"
+                                        className="p-2 text-success bg-success bg-opacity-10 rounded-3"
                                         title="Wyślij"
                                     >
                                         <svg
@@ -185,7 +185,7 @@ export default function NewslettersList({
                                     <button
                                         type="button"
                                         onClick={() => onEdit(newsletter)}
-                                        className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                        className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                         title="Edytuj"
                                     >
                                         <svg
@@ -235,7 +235,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onViewRecipients(newsletter.id);
                                     }}
-                                    className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                    className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                     title="Odbiorcy"
                                 >
                                     <svg
@@ -258,7 +258,7 @@ export default function NewslettersList({
                                 onClick={() => {
                                     void onDuplicate(newsletter.id);
                                 }}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Duplikuj"
                             >
                                 <svg
@@ -281,7 +281,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onDelete(newsletter.id);
                                     }}
-                                    className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                    className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                     title="Usuń"
                                 >
                                     <svg

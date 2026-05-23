@@ -11,7 +11,7 @@ export default function EmployeeRanking({ data, loading }: Props) {
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-4">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
             </div>
         );
     }
@@ -57,7 +57,7 @@ export default function EmployeeRanking({ data, loading }: Props) {
                         <tr key={employee.employeeId} className="">
                             <td className="px-3 py-2 text-nowrap">
                                 <span
-                                    className={`inline-d-flex align-items-center justify-content-center w-6 h-6 rounded-circle small fw-bold ${
+                                    className={`d-inline-flex align-items-center justify-content-center w-6 h-6 rounded-circle small fw-bold ${
                                         index === 0
                                             ? 'bg-warning bg-opacity-10 text-warning'
                                             : index === 1

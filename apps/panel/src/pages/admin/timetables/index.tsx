@@ -172,13 +172,13 @@ export default function AdminTimetablesPage() {
 
                     {isLoading ? (
                         <div className="d-flex align-items-center justify-content-center py-5">
-                            <div className="rounded-circle h-8 w-8 border-bottom-2 border-primary"></div>
+                            <div className="spinner-border text-primary"></div>
                             <span className="ms-2 text-muted">
                                 Ładowanie...
                             </span>
                         </div>
                     ) : selectedEmployeeId ? (
-                        <div className="-cols-1 gap-4">
+                        <div className="d-flex flex-column gap-4">
                             {/* Weekly schedule editor */}
                             <TimetableEditor
                                 timetable={activeTimetable}

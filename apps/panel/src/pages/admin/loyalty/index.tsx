@@ -227,13 +227,13 @@ export default function LoyaltyManagementPage() {
 
                 {/* Tabs */}
                 <div className="border-bottom border-secondary border-opacity-25 mb-4">
-                    <nav className="-mb-px d-flex space-x-8">
+                    <nav className="d-flex">
                         {TABS.map((tab) => (
                             <button
                                 key={tab.id}
                                 type="button"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`py-3 px-1 border-bottom-2 fw-medium small ${
+                                className={`py-3 px-1 border-bottom border-2 fw-medium small ${
                                     activeTab === tab.id
                                         ? 'border-primary text-primary'
                                         : 'border-transparent text-muted border-opacity-50'
@@ -250,7 +250,7 @@ export default function LoyaltyManagementPage() {
                     <div className="gap-3">
                         {/* Stats Cards */}
                         {stats && (
-                            <div className="-cols-1 gap-3">
+                            <div className="d-flex flex-column gap-3">
                                 <div className="bg-white rounded-4 shadow-sm p-4">
                                     <p className="small text-muted">
                                         Członkowie programu
@@ -749,7 +749,7 @@ export default function LoyaltyManagementPage() {
 
                             <div className="border-top pt-3">
                                 <h3 className="fw-medium mb-2">Bonusy</h3>
-                                <div className="-cols-3 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                                     <div>
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Za rejestrację

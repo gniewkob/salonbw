@@ -120,7 +120,7 @@ export default function ExceptionModal({
                     {exception ? 'Edytuj wyjątek' : 'Dodaj wyjątek'}
                 </h2>
 
-                <div className="gap-2">
+                <div className="d-flex flex-column gap-2">
                     {/* Date */}
                     <div>
                         <label className="d-block small fw-medium text-body mb-1">
@@ -142,7 +142,7 @@ export default function ExceptionModal({
                         <label className="d-block small fw-medium text-body mb-2">
                             Typ
                         </label>
-                        <div className="-cols-3 gap-2">
+                        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2">
                             {EXCEPTION_TYPES.map((type) => (
                                 <button
                                     key={type.value}
@@ -152,7 +152,7 @@ export default function ExceptionModal({
                                     }
                                     className={`px-3 py-2 rounded-3 small fw-medium  ${
                                         form.type === type.value
-                                            ? `${type.color} outline outline-offset-1`
+                                            ? `${type.color} border border-2 border-primary`
                                             : 'bg-light text-muted '
                                     }`}
                                 >
@@ -191,7 +191,7 @@ export default function ExceptionModal({
                                             isAllDay: e.target.checked,
                                         })
                                     }
-                                    className="w-4 h-4 text-primary rounded"
+                                    className="form-check-input"
                                 />
                                 <span className="small text-body">
                                     Cały dzień wolny

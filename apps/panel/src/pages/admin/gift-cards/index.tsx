@@ -274,7 +274,7 @@ export default function GiftCardsManagementPage() {
 
                             {/* Stats Cards */}
                             {stats && (
-                                <div className="-cols-1 gap-3 mb-4">
+                                <div className="d-flex flex-column gap-3 mb-4">
                                     <div className="bg-white rounded-4 shadow-sm p-4">
                                         <p className="small text-muted">
                                             Wszystkie karty

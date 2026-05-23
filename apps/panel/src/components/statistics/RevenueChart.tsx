@@ -36,7 +36,7 @@ export default function RevenueChart({
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center h-64 bg-light rounded-3">
-                <div className="rounded-circle h-8 w-8 border-bottom-2 border-primary"></div>
+                <div className="spinner-border text-primary"></div>
             </div>
         );
     }

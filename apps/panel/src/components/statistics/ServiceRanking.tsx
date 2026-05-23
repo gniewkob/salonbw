@@ -11,7 +11,7 @@ export default function ServiceRanking({ data, loading }: Props) {
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-4">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
             </div>
         );
     }

@@ -107,7 +107,7 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
             <div className="flex-fill overflow-auto">
                 {loading ? (
                     <div className="d-flex justify-content-center p-4">
-                        <div className="rounded-circle h-8 w-8 border-bottom-2 border-sky-600"></div>
+                        <div className="spinner-border text-info"></div>
                     </div>
                 ) : (
                     <table className="w-100">

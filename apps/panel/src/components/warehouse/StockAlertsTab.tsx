@@ -79,7 +79,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
     if (isLoading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-8 w-8 border-bottom-2 border-teal-500"></div>
+                <div className="spinner-border text-success"></div>
                 <span className="ms-2 text-muted">Ładowanie alertów...</span>
             </div>
         );

@@ -7147,11 +7147,71 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   w-5 / h-5 — SVG icon size (Tailwind compat, 1.25rem = 20px)
+   Icon / image size utilities (Tailwind-compatible names)
+   w-4=1rem  w-5=1.25rem  w-6=1.5rem  w-8=2rem  w-12=3rem
+   resize-none — disable textarea resize handle
+   max-w-7xl — wide container cap (80rem)
+   space-x-N — horizontal gap between inline siblings
    ══════════════════════════════════════════════════════════════════ */
+.w-4 {
+    width: 1rem !important;
+}
+.h-4 {
+    height: 1rem !important;
+}
 .w-5 {
     width: 1.25rem !important;
 }
 .h-5 {
     height: 1.25rem !important;
+}
+.w-6 {
+    width: 1.5rem !important;
+}
+.h-6 {
+    height: 1.5rem !important;
+}
+.w-8 {
+    width: 2rem !important;
+}
+.h-8 {
+    height: 2rem !important;
+}
+.w-12 {
+    width: 3rem !important;
+}
+.h-12 {
+    height: 3rem !important;
+}
+.resize-none {
+    resize: none !important;
+}
+.max-w-sm {
+    max-width: 24rem;
+}
+.max-w-md {
+    max-width: 28rem;
+}
+.max-w-lg {
+    max-width: 32rem;
+}
+.max-w-xl {
+    max-width: 36rem;
+}
+.max-w-2xl {
+    max-width: 42rem;
+}
+.max-w-7xl {
+    max-width: 80rem;
+}
+.shadow-xl {
+    box-shadow:
+        0 20px 25px -5px rgb(0 0 0 / 0.1),
+        0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+.space-x-2 > * + * {
+    margin-left: 0.5rem;
+}
+.space-x-8 > * + * {
+    margin-left: 2rem;
 }

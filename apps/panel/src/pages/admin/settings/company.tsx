@@ -55,7 +55,7 @@ export default function CompanySettingsPage() {
 
     if (!user || user.role !== 'admin') {
         return (
-            <div className="d-d-flex align-align-items-center justify-content-center">
+            <div className="d-flex align-items-center justify-content-center">
                 <p className="text-muted">Brak dostępu</p>
             </div>
         );
@@ -113,7 +113,7 @@ export default function CompanySettingsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="d-d-flex align-align-items-center justify-content-center py-3">
+                    <div className="d-flex align-items-center justify-content-center py-3">
                         <div className="spinner-border spinner-border-sm text-primary"></div>
                         <span className="ms-2 text-muted">
                             Ładowanie ustawień...
@@ -127,7 +127,7 @@ export default function CompanySettingsPage() {
                     >
                         {/* Tabs */}
                         <div className="border-bottom mb-3">
-                            <nav className="-mb-px d-d-flex gap-3 overflow-auto">
+                            <nav className="d-flex gap-3 overflow-auto">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.key}
@@ -228,7 +228,7 @@ export default function CompanySettingsPage() {
                                             <label className="form-label">
                                                 Kolor główny
                                             </label>
-                                            <div className="d-d-flex gap-2">
+                                            <div className="d-flex gap-2">
                                                 <input
                                                     type="color"
                                                     name="primaryColor"
@@ -507,7 +507,7 @@ export default function CompanySettingsPage() {
 
                             {activeTab === 'tax' && (
                                 <div className="">
-                                    <div className="d-d-flex align-align-items-center gap-2">
+                                    <div className="d-flex align-items-center gap-2">
                                         <input
                                             type="checkbox"
                                             id="isVatPayer"
@@ -516,7 +516,7 @@ export default function CompanySettingsPage() {
                                                 formData.isVatPayer ?? true
                                             }
                                             onChange={handleChange}
-                                            className="h-4 w-4 text-primary border-secondary border-opacity-50 rounded"
+                                            className="form-check-input"
                                         />
                                         <label
                                             htmlFor="isVatPayer"
@@ -669,10 +669,14 @@ export default function CompanySettingsPage() {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10 disabled: d-d-flex align-align-items-center gap-2"
+                                className="px-4 py-2 bg-primary text-white rounded-3 fw-medium d-flex align-items-center gap-2"
                             >
                                 {saving && (
-                                    <div className="rounded-circle h-4 w-4 border-bottom-2 border-white"></div>
+                                    <span
+                                        className="spinner-border spinner-border-sm border-white"
+                                        role="status"
+                                        aria-hidden="true"
+                                    ></span>
                                 )}
                                 Zapisz zmiany
                             </button>

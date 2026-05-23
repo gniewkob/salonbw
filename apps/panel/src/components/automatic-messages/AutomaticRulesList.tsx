@@ -46,7 +46,7 @@ export default function AutomaticRulesList({
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
                 <span className="ms-2 text-muted">Ładowanie reguł...</span>
             </div>
         );
@@ -77,7 +77,7 @@ export default function AutomaticRulesList({
     }
 
     return (
-        <div className="gap-2">
+        <div className="d-flex flex-column gap-2">
             {rules.map((rule) => (
                 <div
                     key={rule.id}
@@ -148,7 +148,7 @@ export default function AutomaticRulesList({
                                 onClick={() => {
                                     void onProcess(rule.id);
                                 }}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Uruchom teraz"
                             >
                                 <svg
@@ -209,7 +209,7 @@ export default function AutomaticRulesList({
                             <button
                                 type="button"
                                 onClick={() => onEdit(rule)}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Edytuj"
                             >
                                 <svg
@@ -231,7 +231,7 @@ export default function AutomaticRulesList({
                                 onClick={() => {
                                     void onDelete(rule.id);
                                 }}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Usuń"
                             >
                                 <svg

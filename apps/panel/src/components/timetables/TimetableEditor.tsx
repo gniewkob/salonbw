@@ -160,7 +160,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                     type="checkbox"
                                     checked={isWorking}
                                     onChange={() => toggleDay(day)}
-                                    className="w-5 h-5 text-primary rounded"
+                                    className="form-check-input"
                                 />
                                 <span
                                     className={`fw-medium ${isWorking ? 'text-dark' : 'text-secondary'}`}
@@ -214,7 +214,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                 onChange={() =>
                                                     toggleBreak(day)
                                                 }
-                                                className="w-4 h-4 text-warning rounded"
+                                                className="form-check-input"
                                             />
                                             Przerwa
                                         </label>
