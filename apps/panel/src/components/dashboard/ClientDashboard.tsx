@@ -281,11 +281,6 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-<<<<<<< HEAD
-                                <span className={statusClass(apt.status)}>
-                                    {statusLabel(apt.status)}
-                                </span>
-=======
                                 <div className="d-flex align-items-center gap-2">
                                     <span className={statusClass(apt.status)}>
                                         {statusLabel(apt.status)}
@@ -308,7 +303,6 @@ export default function ClientDashboard() {
                                             </button>
                                         )}
                                 </div>
->>>>>>> f315c557a (feat(client): self-cancellation button in client dashboard)
                             </div>
                         ))}
                     </div>
