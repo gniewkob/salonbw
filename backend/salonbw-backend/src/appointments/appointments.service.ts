@@ -175,15 +175,11 @@ export class AppointmentsService {
             where.startTime = LessThan(params.to);
         }
 
-        const [items, total] = await this.appointmentsRepository.findAndCount({
-            where: whereCondition,
-            order: { startTime: 'DESC' },
+        return this.appointmentsRepository.find({
+            where,
+            order: { startTime: 'ASC' },
             relations: ['client', 'employee', 'service', 'serviceVariant'],
-            skip: (page - 1) * pageSize,
-            take: pageSize,
         });
-
-        return { items, total, page, pageSize };
     }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
@@ -249,7 +245,11 @@ export class AppointmentsService {
             );
         }
         // Notify employee when client self-books
-        if (isClientSelfBooking && employee.phone && employee.receiveNotifications) {
+        if (
+            isClientSelfBooking &&
+            employee.phone &&
+            employee.receiveNotifications
+        ) {
             try {
                 const clientName = client.name ?? client.email ?? 'Klient';
                 const serviceName = result.service?.name ?? '';
@@ -791,7 +791,7 @@ export class AppointmentsService {
                 if (client?.phone && client.receiveNotifications) {
                     const { date, time } = this.formatDate(updated.startTime);
                     try {
-                        await this.whatsappService.sendBookingConfirmed(
+                        await this.whatsappService.sendBookingConfirmation(
                             client.phone,
                             date,
                             time,

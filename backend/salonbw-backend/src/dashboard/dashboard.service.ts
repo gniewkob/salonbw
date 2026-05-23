@@ -127,6 +127,7 @@ export class DashboardService {
                     AppointmentStatus.Scheduled,
                     AppointmentStatus.Confirmed,
                     AppointmentStatus.RescheduledPending,
+                    AppointmentStatus.OnlinePending,
                 ]),
             },
             relations: ['service', 'employee'],
@@ -175,16 +176,6 @@ export class DashboardService {
             (a, b) => b.count - a.count,
         );
 
-        // Get recent appointments (last 10)
-        const recentAppointments = await this.appointmentsRepository.find({
-            where: {
-                client: { id: userId },
-            },
-            relations: ['service', 'employee'],
-            order: { startTime: 'DESC' },
-            take: 10,
-        });
-
         return {
             upcomingAppointment: upcomingAppointment
                 ? {
@@ -196,7 +187,6 @@ export class DashboardService {
                           upcomingAppointment.employee?.name ??
                           upcomingAppointment.employee?.email ??
                           '',
-                      status: upcomingAppointment.status,
                   }
                 : null,
             completedCount,
