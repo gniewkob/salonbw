@@ -214,8 +214,8 @@ export class AppointmentsService {
             entity: 'appointment',
             id: result.id,
         });
+        const { date, time } = this.formatDate(result.startTime);
         if (client.phone && client.receiveNotifications) {
-            const { date, time } = this.formatDate(result.startTime);
             try {
                 await this.whatsappService.sendBookingConfirmation(
                     client.phone,
@@ -229,6 +229,26 @@ export class AppointmentsService {
             console.warn(
                 'Client has no phone number or notifications disabled; skipping booking confirmation',
             );
+        }
+        // Notify employee when client self-books (not a staff-created appointment)
+        const isClientSelfBooking = user.id === client.id;
+        if (isClientSelfBooking && employee.phone) {
+            try {
+                const clientName = client.name ?? client.email ?? 'Klient';
+                const serviceName = result.service?.name ?? '';
+                await this.whatsappService.sendNewBookingToEmployee(
+                    employee.phone,
+                    clientName,
+                    serviceName,
+                    date,
+                    time,
+                );
+            } catch (error) {
+                console.error(
+                    'Failed to send new booking notification to employee',
+                    error,
+                );
+            }
         }
         return result;
     }

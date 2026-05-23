@@ -82,7 +82,7 @@ export class WhatsappService {
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
                     this.logger.error(
-                        { error: error.response?.data },
+                        { error: error.response?.data as unknown },
                         'Failed to send WhatsApp message',
                     );
                 } else {
@@ -112,5 +112,20 @@ export class WhatsappService {
 
     async sendFollowUp(to: string, date: string, time: string): Promise<void> {
         await this.sendTemplate(to, 'follow_up', [date, time]);
+    }
+
+    async sendNewBookingToEmployee(
+        to: string,
+        clientName: string,
+        serviceName: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'new_appointment_employee', [
+            clientName,
+            serviceName,
+            date,
+            time,
+        ]);
     }
 }
