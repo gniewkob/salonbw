@@ -132,6 +132,15 @@ export default function AppointmentDrawer({
     const [formulas, setFormulas] = useState<Formula[]>([]);
     const [formulasLoaded, setFormulasLoaded] = useState(false);
 
+    interface UsageHistoryEntry {
+        id: number;
+        usedAt: string;
+        appointmentId: number | null;
+        items: { productName: string; quantity: number; unit: string }[];
+    }
+    const [usageHistory, setUsageHistory] = useState<UsageHistoryEntry[]>([]);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
+
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
 
@@ -183,6 +192,8 @@ export default function AppointmentDrawer({
         setFormulaError(null);
         setFormulas([]);
         setFormulasLoaded(false);
+        setUsageHistory([]);
+        setHistoryLoaded(false);
 
         if (mode === 'edit' && appointment) {
             setStartTime(toLocalDateTimeInput(new Date(appointment.startTime)));
@@ -193,16 +204,24 @@ export default function AppointmentDrawer({
             setError(null);
 
             const clientId = appointment.client?.id;
-            const canShowFormulas =
-                appointment.status === 'in_progress' ||
-                appointment.status === 'completed';
-            if (clientId && canShowFormulas) {
+            if (clientId) {
+                // Load formulas for all statuses so employee can check history before starting
                 apiFetch<Formula[]>(`/customers/${clientId}/formulas`)
                     .then((data) => {
-                        setFormulas(data.slice(0, 3));
+                        setFormulas(data.slice(0, 5));
                         setFormulasLoaded(true);
                     })
                     .catch(() => setFormulasLoaded(true));
+
+                // Load material usage history
+                apiFetch<UsageHistoryEntry[]>(
+                    `/customers/${clientId}/usage-history`,
+                )
+                    .then((data) => {
+                        setUsageHistory(data.slice(0, 5));
+                        setHistoryLoaded(true);
+                    })
+                    .catch(() => setHistoryLoaded(true));
             }
             return;
         }
@@ -860,6 +879,96 @@ export default function AppointmentDrawer({
                         </div>
                     ) : null}
 
+                    {/* ── Client history: formulas + materials ────────── */}
+                    {isEditMode &&
+                        (formulasLoaded || historyLoaded) &&
+                        (formulas.length > 0 || usageHistory.length > 0) && (
+                            <div className="rounded border p-2">
+                                <strong className="d-block mb-2">
+                                    Historia klienta
+                                </strong>
+
+                                {formulas.length > 0 && (
+                                    <div className="mb-3">
+                                        <div className="small fw-medium text-muted mb-1">
+                                            Poprzednie receptury
+                                        </div>
+                                        <div className="d-flex flex-column gap-1">
+                                            {formulas.map((f) => (
+                                                <div
+                                                    key={f.id}
+                                                    className="small bg-light rounded px-2 py-1"
+                                                >
+                                                    <div
+                                                        className="text-muted mb-0"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                        }}
+                                                    >
+                                                        {new Date(
+                                                            f.date,
+                                                        ).toLocaleDateString(
+                                                            'pl-PL',
+                                                        )}
+                                                    </div>
+                                                    <div>{f.description}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {usageHistory.length > 0 && (
+                                    <div>
+                                        <div className="small fw-medium text-muted mb-1">
+                                            Użyte materiały (poprzednie wizyty)
+                                        </div>
+                                        <div className="d-flex flex-column gap-1">
+                                            {usageHistory.map((entry) => (
+                                                <div
+                                                    key={entry.id}
+                                                    className="small bg-light rounded px-2 py-1"
+                                                >
+                                                    <div
+                                                        className="text-muted mb-1"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                        }}
+                                                    >
+                                                        {new Date(
+                                                            entry.usedAt,
+                                                        ).toLocaleDateString(
+                                                            'pl-PL',
+                                                        )}
+                                                    </div>
+                                                    {entry.items.map(
+                                                        (item, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="d-flex justify-content-between"
+                                                            >
+                                                                <span>
+                                                                    {
+                                                                        item.productName
+                                                                    }
+                                                                </span>
+                                                                <span className="text-muted">
+                                                                    {
+                                                                        item.quantity
+                                                                    }{' '}
+                                                                    {item.unit}
+                                                                </span>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                     {canShowFormulaSection ? (
                         <div className="rounded border p-2">
                             <strong className="d-block mb-2">
@@ -937,36 +1046,6 @@ export default function AppointmentDrawer({
                                         : 'Zapisz formularz'}
                                 </button>
                             </div>
-
-                            {formulasLoaded && formulas.length > 0 && (
-                                <div>
-                                    <div className="small fw-medium text-muted mb-1">
-                                        Poprzednie formularze klienta
-                                    </div>
-                                    <div className="d-flex flex-column gap-1">
-                                        {formulas.map((f) => (
-                                            <div
-                                                key={f.id}
-                                                className="small bg-light rounded px-2 py-1"
-                                            >
-                                                <div
-                                                    className="text-muted mb-0"
-                                                    style={{
-                                                        fontSize: '0.75rem',
-                                                    }}
-                                                >
-                                                    {new Date(
-                                                        f.date,
-                                                    ).toLocaleDateString(
-                                                        'pl-PL',
-                                                    )}
-                                                </div>
-                                                <div>{f.description}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     ) : null}
 

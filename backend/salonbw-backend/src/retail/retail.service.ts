@@ -1346,6 +1346,33 @@ export class RetailService {
         return query.getMany();
     }
 
+    async getUsageHistoryForClient(clientId: number): Promise<
+        {
+            id: number;
+            usedAt: Date;
+            appointmentId: number | null;
+            items: { productName: string; quantity: number; unit: string }[];
+        }[]
+    > {
+        if (!(await this.hasTable('public.warehouse_usages'))) return [];
+        const usages = await this.warehouseUsages.find({
+            where: { clientId },
+            relations: ['items'],
+            order: { usedAt: 'DESC' },
+            take: 10,
+        });
+        return usages.map((u) => ({
+            id: u.id,
+            usedAt: u.usedAt,
+            appointmentId: u.appointmentId,
+            items: (u.items ?? []).map((i) => ({
+                productName: i.productName,
+                quantity: Number(i.quantity),
+                unit: i.unit,
+            })),
+        }));
+    }
+
     async getUsageDetails(id: number) {
         if (!(await this.hasTable('public.warehouse_usages'))) {
             throw new NotFoundException(`Usage ${id} not found`);
