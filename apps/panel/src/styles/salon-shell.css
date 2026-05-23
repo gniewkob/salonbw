@@ -6672,3 +6672,453 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 .text-accent {
     color: #2aa0cf;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-btn — standalone action buttons (used in Reception / Staff views)
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.salonbw-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.salonbw-btn--sm {
+    padding: 3px 8px;
+    font-size: 12px;
+}
+.salonbw-btn--primary {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+.salonbw-btn--primary:hover {
+    background: #0b5ed7;
+}
+.salonbw-btn--success {
+    background: #198754;
+    color: #fff;
+    border-color: #198754;
+}
+.salonbw-btn--success:hover {
+    background: #157347;
+}
+.salonbw-btn--warning {
+    background: #ffc107;
+    color: #212529;
+    border-color: #ffc107;
+}
+.salonbw-btn--warning:hover {
+    background: #e6ac06;
+}
+.salonbw-btn--danger {
+    background: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+.salonbw-btn--danger:hover {
+    background: #bb2d3b;
+}
+.salonbw-btn--secondary {
+    background: #fff;
+    color: #495057;
+    border-color: #ced4da;
+}
+.salonbw-btn--secondary:hover {
+    background: #f8f9fa;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-status-badge — appointment status pill
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.salonbw-status--scheduled {
+    background: #e9ecef;
+    color: #495057;
+}
+.salonbw-status--confirmed {
+    background: #cfe2ff;
+    color: #084298;
+}
+.salonbw-status--in-progress {
+    background: #cff4fc;
+    color: #055160;
+}
+.salonbw-status--completed {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+.salonbw-status--cancelled {
+    background: #f8d7da;
+    color: #842029;
+    opacity: 0.8;
+}
+.salonbw-status--no-show {
+    background: #fff3cd;
+    color: #664d03;
+    opacity: 0.8;
+}
+.salonbw-status--online_pending {
+    background: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffc107;
+}
+.salonbw-status--rescheduled_pending {
+    background: #fde8d8;
+    color: #7b3d00;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-loading / empty states
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-loading {
+    padding: 24px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+.salonbw-reception-empty {
+    padding: 40px 24px;
+    text-align: center;
+    color: #6c757d;
+}
+.salonbw-reception-empty__icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-reception-list — StaffAppointmentCalendarView
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-reception-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.salonbw-reception-item {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    padding: 12px 14px;
+}
+.salonbw-reception-item__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.salonbw-reception-item__title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: #2c3e50;
+}
+.salonbw-reception-item__meta {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+.salonbw-reception-item__details {
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 8px;
+}
+.salonbw-reception-item__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-reception-view — ReceptionView table layout
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-reception-view {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.salonbw-reception-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.salonbw-reception-summary__item {
+    padding: 8px 14px;
+    background: #f8f9fa;
+    border: 1px solid #e6eaee;
+    border-radius: 4px;
+    text-align: center;
+    min-width: 80px;
+}
+.salonbw-reception-summary__item--scheduled {
+    border-left: 3px solid #6c757d;
+}
+.salonbw-reception-summary__item--confirmed {
+    border-left: 3px solid #0d6efd;
+}
+.salonbw-reception-summary__item--in-progress {
+    border-left: 3px solid #0dcaf0;
+}
+.salonbw-reception-summary__item--completed {
+    border-left: 3px solid #198754;
+}
+.salonbw-reception-summary__value {
+    font-size: 20px;
+    font-weight: 700;
+    display: block;
+    color: #2c3e50;
+}
+.salonbw-reception-summary__label {
+    font-size: 11px;
+    color: #6c757d;
+}
+.salonbw-reception-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.salonbw-reception-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.salonbw-reception-table th,
+.salonbw-reception-table td {
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f3f6;
+    vertical-align: middle;
+}
+.salonbw-reception-table th {
+    font-weight: 600;
+    color: #495057;
+}
+.salonbw-reception-time {
+    white-space: nowrap;
+    font-weight: 500;
+}
+.salonbw-reception-client {
+    font-weight: 500;
+}
+.salonbw-reception-phone {
+    font-size: 12px;
+    color: #6c757d;
+}
+.salonbw-reception-actions {
+    white-space: nowrap;
+    text-align: right;
+}
+.salonbw-reception-no-actions {
+    color: #adb5bd;
+    font-size: 12px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-dashboard — AdminDashboard / ClientDashboard
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.salonbw-dashboard__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.salonbw-dashboard__title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: #2c3e50;
+}
+.salonbw-dashboard__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.salonbw-dashboard__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+.salonbw-dashboard__section {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.salonbw-dashboard__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f3f6;
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+}
+.salonbw-dashboard__section-footer {
+    padding: 10px 16px;
+    border-top: 1px solid #f0f3f6;
+    background: #fafbfc;
+    font-size: 12px;
+    text-align: center;
+}
+.salonbw-dashboard__period {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.salonbw-dashboard__period-label {
+    font-size: 12px;
+    color: #6c757d;
+}
+.salonbw-dashboard__period-btn {
+    padding: 3px 10px;
+    font-size: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    background: #fff;
+    cursor: pointer;
+    color: #495057;
+}
+.salonbw-dashboard__period-btn.active,
+.salonbw-dashboard__period-btn:hover {
+    background: #008bb4;
+    color: #fff;
+    border-color: #008bb4;
+}
+.salonbw-dashboard__loading {
+    padding: 24px;
+    text-align: center;
+    color: #6c757d;
+}
+.salonbw-dashboard__empty {
+    padding: 24px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-appointments-list — upcoming/recent appointment cards
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-appointments-list {
+    display: flex;
+    flex-direction: column;
+}
+.salonbw-appointment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f3f6;
+    font-size: 13px;
+}
+.salonbw-appointment-item:last-child {
+    border-bottom: none;
+}
+.salonbw-appointment-item--empty {
+    color: #6c757d;
+    justify-content: center;
+    padding: 20px;
+}
+.salonbw-appointment-item--upcoming {
+    background: #f8faff;
+}
+.salonbw-appointment-item__time {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #6c757d;
+    min-width: 45px;
+}
+.salonbw-appointment-item__service {
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.salonbw-appointment-item__details {
+    font-size: 12px;
+    color: #6c757d;
+}
+.salonbw-appointment-item__client {
+    font-size: 12px;
+    color: #495057;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-mini-chart — sparkline bar chart
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 32px;
+}
+.salonbw-mini-chart__bar {
+    flex: 1;
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: #dee2e6;
+}
+.salonbw-mini-chart__bar--blue {
+    background: #0d6efd;
+}
+.salonbw-mini-chart__bar--green {
+    background: #198754;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-link / salonbw-icon
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-link {
+    color: #008bb4;
+    text-decoration: none;
+    font-size: 13px;
+}
+.salonbw-link:hover {
+    text-decoration: underline;
+}
+.salonbw-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+.salonbw-icon--plus::before {
+    content: '+';
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
+}

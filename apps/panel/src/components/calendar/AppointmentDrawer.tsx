@@ -489,7 +489,9 @@ export default function AppointmentDrawer({
 
     const canShowFormulaSection =
         isEditMode &&
-        (currentStatus === 'in_progress' || currentStatus === 'completed');
+        (currentStatus === 'confirmed' ||
+            currentStatus === 'in_progress' ||
+            currentStatus === 'completed');
 
     return (
         <>
