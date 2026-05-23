@@ -33,6 +33,7 @@ export function useClientDashboard() {
     const [data, setData] = useState<ClientDashboardResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
+    const [tick, setTick] = useState(0);
 
     useEffect(() => {
         let mounted = true;
@@ -56,7 +57,9 @@ export function useClientDashboard() {
         return () => {
             mounted = false;
         };
-    }, [apiFetch]);
+    }, [apiFetch, tick]);
 
-    return { data, loading, error };
+    const refetch = () => setTick((t) => t + 1);
+
+    return { data, loading, error, refetch };
 }

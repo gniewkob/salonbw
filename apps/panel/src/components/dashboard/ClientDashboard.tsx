@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
+import { useAuth } from '@/contexts/AuthContext';
 
 const STATUS_LABELS: Record<string, string> = {
     scheduled: 'Zaplanowana',
@@ -33,8 +35,31 @@ function statusClass(status: string) {
     return STATUS_CLASS[status] ?? 'badge bg-secondary';
 }
 
+const CANCELLABLE = new Set(['scheduled', 'confirmed', 'online_pending']);
+
 export default function ClientDashboard() {
-    const { data, loading, error } = useClientDashboard();
+    const { data, loading, error, refetch } = useClientDashboard();
+    const { apiFetch } = useAuth();
+    const [cancelling, setCancelling] = useState<Set<number>>(new Set());
+
+    const cancelAppointment = async (id: number) => {
+        if (!confirm('Czy na pewno chcesz anulować tę wizytę?')) return;
+        setCancelling((prev) => new Set(prev).add(id));
+        try {
+            await apiFetch(`/appointments/${id}/cancel`, {
+                method: 'PATCH',
+            });
+            refetch();
+        } catch {
+            alert('Nie udało się anulować wizyty. Spróbuj ponownie.');
+        } finally {
+            setCancelling((prev) => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
+        }
+    };
 
     if (loading) {
         return (
@@ -114,17 +139,41 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                {data.upcomingAppointment.status && (
-                                    <span
-                                        className={statusClass(
+                                <div className="d-flex align-items-center gap-2">
+                                    {data.upcomingAppointment.status && (
+                                        <span
+                                            className={statusClass(
+                                                data.upcomingAppointment
+                                                    .status ?? '',
+                                            )}
+                                        >
+                                            {statusLabel(
+                                                data.upcomingAppointment
+                                                    .status ?? '',
+                                            )}
+                                        </span>
+                                    )}
+                                    {data.upcomingAppointment.status &&
+                                        CANCELLABLE.has(
                                             data.upcomingAppointment.status,
+                                        ) && (
+                                            <button
+                                                className="btn btn-sm btn-outline-danger"
+                                                disabled={cancelling.has(
+                                                    data.upcomingAppointment.id,
+                                                )}
+                                                onClick={() => {
+                                                    void cancelAppointment(
+                                                        data
+                                                            .upcomingAppointment!
+                                                            .id,
+                                                    );
+                                                }}
+                                            >
+                                                Anuluj
+                                            </button>
                                         )}
-                                    >
-                                        {statusLabel(
-                                            data.upcomingAppointment.status,
-                                        )}
-                                    </span>
-                                )}
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -232,9 +281,34 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
+<<<<<<< HEAD
                                 <span className={statusClass(apt.status)}>
                                     {statusLabel(apt.status)}
                                 </span>
+=======
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className={statusClass(apt.status)}>
+                                        {statusLabel(apt.status)}
+                                    </span>
+                                    {CANCELLABLE.has(apt.status) &&
+                                        new Date(apt.startTime) >
+                                            new Date() && (
+                                            <button
+                                                className="btn btn-sm btn-outline-danger"
+                                                disabled={cancelling.has(
+                                                    apt.id,
+                                                )}
+                                                onClick={() => {
+                                                    void cancelAppointment(
+                                                        apt.id,
+                                                    );
+                                                }}
+                                            >
+                                                Anuluj
+                                            </button>
+                                        )}
+                                </div>
+>>>>>>> f315c557a (feat(client): self-cancellation button in client dashboard)
                             </div>
                         ))}
                     </div>
