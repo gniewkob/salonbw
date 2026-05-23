@@ -12,7 +12,8 @@ import type {
     FinalizeAppointmentRequest,
     ProductSaleItem,
     Product,
-    UsageItem,
+    UsageMaterialItem,
+    ServiceRecipeItem,
 } from '@/types';
 
 interface Props {
@@ -46,12 +47,25 @@ export default function FinalizationModal({
     const [tipPln, setTipPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
+    const [usageMaterials, setUsageMaterials] = useState<UsageMaterialItem[]>(
+        [],
+    );
     const [showProductPicker, setShowProductPicker] = useState(false);
     const [usageItems, setUsageItems] = useState<UsageItem[]>([]);
     const [showUsagePicker, setShowUsagePicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Fetch service recipe for pre-filling usage materials
+    const { data: recipeItems } = useQuery<ServiceRecipeItem[]>({
+        queryKey: ['service-recipe', appointment?.service?.id],
+        queryFn: () =>
+            apiFetch<ServiceRecipeItem[]>(
+                `/services/${appointment?.service?.id}/recipe`,
+            ),
+        enabled: open && !!appointment?.service?.id,
+    });
 
     // Fetch products for upselling
     const { data: productsResponse } = useQuery<ProductsResponse>({
@@ -144,7 +158,7 @@ export default function FinalizationModal({
         setTipPln('');
         setNote('');
         setProductSales([]);
-        setUsageItems([]);
+        setUsageMaterials([]);
         setShowProductPicker(false);
         setShowUsagePicker(false);
         setUiError(null);
@@ -162,16 +176,31 @@ export default function FinalizationModal({
         [],
     );
 
+    // Pre-fill usage materials from service recipe when modal opens
     useEffect(() => {
-        if (!open || !appointment?.id) return;
-        apiFetch<UsageItem[]>(`/appointments/${appointment.id}/usage`)
-            .then((data) => {
-                if (Array.isArray(data) && data.length > 0) {
-                    setUsageItems(data);
-                }
-            })
-            .catch(() => {});
-    }, [open, appointment?.id, apiFetch]);
+        if (!open || !recipeItems) return;
+        const prefilled = recipeItems
+            .filter(
+                (
+                    r,
+                ): r is typeof r & {
+                    productId: number;
+                    product: NonNullable<typeof r.product>;
+                    quantity: number;
+                } =>
+                    r.productId != null &&
+                    r.product != null &&
+                    r.quantity != null &&
+                    r.quantity >= 1,
+            )
+            .map((r) => ({
+                productId: r.productId,
+                productName: r.product.name,
+                quantity: Math.max(1, Math.round(r.quantity)),
+                unit: r.unit ?? r.product?.unit ?? 'op.',
+            }));
+        setUsageMaterials(prefilled);
+    }, [open, recipeItems]);
 
     const handleSubmit = () => {
         if (!appointment) return;
@@ -189,6 +218,8 @@ export default function FinalizationModal({
             tipAmountCents: Math.round(summary.tip * 100),
             discountCents: Math.round(summary.discount * 100),
             products: productSales.length > 0 ? productSales : undefined,
+            usageMaterials:
+                usageMaterials.length > 0 ? usageMaterials : undefined,
             note: note || undefined,
             usageItems:
                 usageItems.length > 0
@@ -275,6 +306,29 @@ export default function FinalizationModal({
                 ),
             );
         }
+    };
+
+    const updateUsageMaterialQuantity = (
+        productId: number,
+        quantity: number,
+    ) => {
+        if (quantity <= 0) {
+            setUsageMaterials((prev) =>
+                prev.filter((m) => m.productId !== productId),
+            );
+        } else {
+            setUsageMaterials((prev) =>
+                prev.map((m) =>
+                    m.productId === productId ? { ...m, quantity } : m,
+                ),
+            );
+        }
+    };
+
+    const removeUsageMaterial = (productId: number) => {
+        setUsageMaterials((prev) =>
+            prev.filter((m) => m.productId !== productId),
+        );
     };
 
     if (!appointment) return null;
@@ -376,6 +430,83 @@ export default function FinalizationModal({
                         />
                     </div>
                 </div>
+
+                {/* Usage Materials (from service recipe) */}
+                {usageMaterials.length > 0 && (
+                    <div className="mb-3">
+                        <label className="d-block small fw-medium text-body mb-2">
+                            Materiały do zabiegu
+                        </label>
+                        <div className="d-flex flex-column gap-2">
+                            {usageMaterials.map((material) => (
+                                <div
+                                    key={material.productId}
+                                    className="d-flex align-items-center justify-content-between bg-light rounded px-2 py-1"
+                                >
+                                    <div className="small">
+                                        <span>{material.productName}</span>
+                                        {material.unit && (
+                                            <span className="text-muted ms-1">
+                                                ({material.unit})
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="d-flex align-items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                updateUsageMaterialQuantity(
+                                                    material.productId,
+                                                    material.quantity - 1,
+                                                )
+                                            }
+                                            className="d-flex align-items-center justify-content-center rounded border"
+                                            style={{
+                                                width: '24px',
+                                                height: '24px',
+                                            }}
+                                        >
+                                            -
+                                        </button>
+                                        <span
+                                            className="text-center small"
+                                            style={{ width: '24px' }}
+                                        >
+                                            {material.quantity}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                updateUsageMaterialQuantity(
+                                                    material.productId,
+                                                    material.quantity + 1,
+                                                )
+                                            }
+                                            className="d-flex align-items-center justify-content-center rounded border"
+                                            style={{
+                                                width: '24px',
+                                                height: '24px',
+                                            }}
+                                        >
+                                            +
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                removeUsageMaterial(
+                                                    material.productId,
+                                                )
+                                            }
+                                            className="text-danger ms-1"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Product Upselling */}
                 <div className="mb-3">

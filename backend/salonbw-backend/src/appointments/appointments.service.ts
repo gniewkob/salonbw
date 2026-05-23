@@ -160,52 +160,19 @@ export class AppointmentsService {
         from?: Date;
         to?: Date;
         employeeId?: number;
-        status?: AppointmentStatus;
-        search?: string;
-        page?: number;
-        limit?: number;
-    }): Promise<{
-        items: Appointment[];
-        total: number;
-        page: number;
-        pageSize: number;
-    }> {
-        const page = params.page ?? 1;
-        const pageSize = Math.min(params.limit ?? 50, 200);
-
-        const buildWhere = (
-            extraClientWhere?: FindOptionsWhere<{
-                firstName?: string;
-                lastName?: string;
-                phone?: string;
-            }>,
-        ): FindOptionsWhere<Appointment> => {
-            const where: FindOptionsWhere<Appointment> = {};
-            if (params.employeeId) where.employee = { id: params.employeeId };
-            if (params.status) where.status = params.status;
-            if (extraClientWhere) where.client = extraClientWhere as any;
-            if (params.from && params.to) {
-                where.startTime = Between(params.from, params.to);
-            } else if (params.from) {
-                where.startTime = MoreThan(params.from);
-            } else if (params.to) {
-                where.startTime = LessThan(params.to);
-            }
-            return where;
-        };
-
-        let whereCondition:
-            | FindOptionsWhere<Appointment>
-            | FindOptionsWhere<Appointment>[];
-        if (params.search) {
-            const term = `%${params.search}%`;
-            whereCondition = [
-                buildWhere({ firstName: ILike(term) } as any),
-                buildWhere({ lastName: ILike(term) } as any),
-                buildWhere({ phone: ILike(term) } as any),
-            ];
-        } else {
-            whereCondition = buildWhere();
+        status?: string;
+    }): Promise<Appointment[]> {
+        const where: FindOptionsWhere<Appointment> & {
+            employee?: { id: number };
+        } = {};
+        if (params.employeeId) where.employee = { id: params.employeeId };
+        if (params.status) where.status = params.status as AppointmentStatus;
+        if (params.from && params.to) {
+            where.startTime = Between(params.from, params.to);
+        } else if (params.from) {
+            where.startTime = MoreThan(params.from);
+        } else if (params.to) {
+            where.startTime = LessThan(params.to);
         }
 
         const [items, total] = await this.appointmentsRepository.findAndCount({
@@ -245,7 +212,8 @@ export class AppointmentsService {
             data.endTime = this.computeEnd(data.startTime, service.duration);
         }
         await this.assertNoConflict(employee.id, data.startTime, data.endTime);
-        if (data.reservedOnline) {
+        const isClientSelfBooking = user.id === client.id;
+        if (isClientSelfBooking) {
             data.status = AppointmentStatus.OnlinePending;
         }
         const appointment = this.appointmentsRepository.create(data);
@@ -280,25 +248,21 @@ export class AppointmentsService {
                 'Client has no phone number or notifications disabled; skipping booking confirmation',
             );
         }
-        if (
-            result.status === AppointmentStatus.OnlinePending &&
-            employee.phone
-        ) {
-            const clientName = [client.firstName, client.lastName]
-                .filter(Boolean)
-                .join(' ')
-                .trim();
+        // Notify employee when client self-books
+        if (isClientSelfBooking && employee.phone && employee.receiveNotifications) {
             try {
-                await this.whatsappService.sendNewOnlineBookingAlert(
+                const clientName = client.name ?? client.email ?? 'Klient';
+                const serviceName = result.service?.name ?? '';
+                await this.whatsappService.sendNewBookingToEmployee(
                     employee.phone,
-                    clientName || client.name || 'Klient',
-                    result.service.name,
+                    clientName,
+                    serviceName,
                     date,
                     time,
                 );
             } catch (error) {
                 console.error(
-                    'Failed to send online booking alert to employee',
+                    'Failed to send new booking notification to employee',
                     error,
                 );
             }
@@ -672,6 +636,7 @@ export class AppointmentsService {
         const updateData: Partial<Appointment> = {
             startTime,
             endTime: newEnd,
+            status: AppointmentStatus.RescheduledPending,
         };
 
         if (employeeId && employeeId !== appointment.employee.id) {
@@ -694,18 +659,52 @@ export class AppointmentsService {
             if (updated.client.phone && updated.client.receiveNotifications) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
-                    await this.whatsappService.sendBookingConfirmation(
+                    await this.whatsappService.sendRescheduleNotification(
                         updated.client.phone,
                         date,
                         time,
                     );
                 } catch (error) {
                     console.error(
-                        'Failed to send reschedule confirmation',
+                        'Failed to send reschedule notification',
                         error,
                     );
                 }
             }
+        }
+
+        return updated;
+    }
+
+    async acceptReschedule(
+        id: number,
+        user: User,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) return null;
+
+        if (appointment.client.id !== user.id) {
+            throw new ForbiddenException();
+        }
+
+        if (appointment.status !== AppointmentStatus.RescheduledPending) {
+            throw new BadRequestException(
+                'Appointment is not awaiting reschedule acceptance',
+            );
+        }
+
+        await this.appointmentsRepository.update(id, {
+            status: AppointmentStatus.Confirmed,
+        });
+
+        const updated = await this.findOne(id);
+        if (updated) {
+            await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
+                action: 'accept_reschedule',
+                appointmentId: updated.id,
+                previousStatus: AppointmentStatus.RescheduledPending,
+                status: AppointmentStatus.Confirmed,
+            });
         }
 
         return updated;
@@ -754,11 +753,10 @@ export class AppointmentsService {
                 AppointmentStatus.InProgress,
                 AppointmentStatus.NoShow,
             ],
-            // Staff can confirm or cancel an online booking request
             [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
-            // Client can confirm the new time or cancel after staff reschedule
             [AppointmentStatus.RescheduledPending]: [
                 AppointmentStatus.Confirmed,
+                AppointmentStatus.Cancelled,
             ],
             [AppointmentStatus.InProgress]: [],
             [AppointmentStatus.NoShow]: [],
@@ -1004,6 +1002,52 @@ export class AppointmentsService {
                     );
                 } catch (error) {
                     console.error('Failed to send follow up message', error);
+                }
+            }
+
+            // Deduct materials used during treatment from warehouse
+            if (
+                dto.usageMaterials &&
+                dto.usageMaterials.length > 0 &&
+                this.retailService
+            ) {
+                const validItems = dto.usageMaterials
+                    .filter((item) => item.quantity >= 1)
+                    .map((item) => ({
+                        productId: item.productId,
+                        quantity: Math.round(item.quantity),
+                        unit: item.unit,
+                    }));
+                if (validItems.length > 0) {
+                    const customerName = [
+                        appointment.client.firstName,
+                        appointment.client.lastName,
+                    ]
+                        .filter((part) => Boolean(part && part.trim()))
+                        .join(' ')
+                        .trim();
+                    try {
+                        await this.retailService.createUsage(
+                            {
+                                items: validItems,
+                                employeeId: appointment.employee.id,
+                                appointmentId: appointment.id,
+                                clientName:
+                                    customerName.length > 0
+                                        ? customerName
+                                        : (appointment.client.name ??
+                                          undefined),
+                                scope: 'completed',
+                            },
+                            user,
+                        );
+                    } catch (error) {
+                        console.warn(
+                            'Failed to record material usage for appointment',
+                            appointment.id,
+                            error,
+                        );
+                    }
                 }
             }
         }

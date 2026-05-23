@@ -35,12 +35,18 @@ function statusClass(status: string) {
     return STATUS_CLASS[status] ?? 'badge bg-secondary';
 }
 
-const CANCELLABLE = new Set(['scheduled', 'confirmed', 'online_pending']);
+const CANCELLABLE = new Set([
+    'scheduled',
+    'confirmed',
+    'online_pending',
+    'rescheduled_pending',
+]);
 
 export default function ClientDashboard() {
     const { data, loading, error, refetch } = useClientDashboard();
     const { apiFetch } = useAuth();
     const [cancelling, setCancelling] = useState<Set<number>>(new Set());
+    const [accepting, setAccepting] = useState<Set<number>>(new Set());
 
     const cancelAppointment = async (id: number) => {
         if (!confirm('Czy na pewno chcesz anulować tę wizytę?')) return;
@@ -54,6 +60,26 @@ export default function ClientDashboard() {
             alert('Nie udało się anulować wizyty. Spróbuj ponownie.');
         } finally {
             setCancelling((prev) => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
+        }
+    };
+
+    const acceptReschedule = async (id: number) => {
+        setAccepting((prev) => new Set(prev).add(id));
+        try {
+            await apiFetch(`/appointments/${id}/accept-reschedule`, {
+                method: 'PATCH',
+            });
+            refetch();
+        } catch {
+            alert(
+                'Nie udało się zaakceptować zmiany terminu. Spróbuj ponownie.',
+            );
+        } finally {
+            setAccepting((prev) => {
                 const next = new Set(prev);
                 next.delete(id);
                 return next;
@@ -139,7 +165,7 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="d-flex align-items-center gap-2">
+                                <div className="d-flex align-items-center gap-2 flex-wrap">
                                     {data.upcomingAppointment.status && (
                                         <span
                                             className={statusClass(
@@ -152,6 +178,23 @@ export default function ClientDashboard() {
                                                     .status ?? '',
                                             )}
                                         </span>
+                                    )}
+                                    {data.upcomingAppointment.status ===
+                                        'rescheduled_pending' && (
+                                        <button
+                                            className="btn btn-sm btn-success"
+                                            disabled={accepting.has(
+                                                data.upcomingAppointment.id,
+                                            )}
+                                            onClick={() => {
+                                                void acceptReschedule(
+                                                    data.upcomingAppointment!
+                                                        .id,
+                                                );
+                                            }}
+                                        >
+                                            Akceptuj nowy termin
+                                        </button>
                                     )}
                                     {data.upcomingAppointment.status &&
                                         CANCELLABLE.has(
@@ -281,10 +324,25 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="d-flex align-items-center gap-2">
+                                <div className="d-flex align-items-center gap-2 flex-wrap">
                                     <span className={statusClass(apt.status)}>
                                         {statusLabel(apt.status)}
                                     </span>
+                                    {apt.status === 'rescheduled_pending' &&
+                                        new Date(apt.startTime) >
+                                            new Date() && (
+                                            <button
+                                                className="btn btn-sm btn-success"
+                                                disabled={accepting.has(apt.id)}
+                                                onClick={() => {
+                                                    void acceptReschedule(
+                                                        apt.id,
+                                                    );
+                                                }}
+                                            >
+                                                Akceptuj
+                                            </button>
+                                        )}
                                     {CANCELLABLE.has(apt.status) &&
                                         new Date(apt.startTime) >
                                             new Date() && (

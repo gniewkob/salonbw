@@ -38,7 +38,6 @@ export default function ClientAppointmentHistoryView({
     onAcceptReschedule,
 }: ClientAppointmentHistoryViewProps) {
     const router = useRouter();
-    const [pendingAcceptId, setPendingAcceptId] = useState<number | null>(null);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<
         number | null
     >(null);
@@ -119,7 +118,7 @@ export default function ClientAppointmentHistoryView({
                     + Zarezerwuj wizytę
                 </button>
             </div>
-            <div className="d-flex flex-wrap align-items-end gap-3 rounded border p-2">
+            <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
                 <div>
                     <label
                         className="form-label form-label-sm mb-1"

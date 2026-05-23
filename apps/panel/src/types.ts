@@ -971,11 +971,11 @@ export interface ProductSaleItem {
     discountCents?: number;
 }
 
-export interface UsageItem {
+export interface UsageMaterialItem {
     productId: number;
     productName: string;
     quantity: number;
-    unit: string;
+    unit?: string;
 }
 
 export interface FinalizeAppointmentRequest {
@@ -984,6 +984,7 @@ export interface FinalizeAppointmentRequest {
     tipAmountCents?: number;
     discountCents?: number;
     products?: ProductSaleItem[];
+    usageMaterials?: UsageMaterialItem[];
     note?: string;
     usageItems?: { productId: number; quantity: number; unit?: string }[];
 }

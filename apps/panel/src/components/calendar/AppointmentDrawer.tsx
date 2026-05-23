@@ -281,13 +281,16 @@ export default function AppointmentDrawer({
         isOnlinePending ||
         isRescheduledPending;
     const canStart =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+        !isOnlinePending &&
+        !isRescheduledPending &&
+        (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canNoShow =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+        !isOnlinePending &&
+        !isRescheduledPending &&
+        (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canCancel =
         currentStatus === 'scheduled' ||
         currentStatus === 'confirmed' ||
-        isOnlinePending ||
         isRescheduledPending;
     const canComplete = currentStatus === 'in_progress';
 
@@ -1159,6 +1162,18 @@ export default function AppointmentDrawer({
 
                             {mode === 'edit' && appointment?.id ? (
                                 <>
+                                    {isOnlinePending ? (
+                                        <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
+                                            <strong>Rezerwacja online</strong> —
+                                            czeka na potwierdzenie przez salon
+                                        </div>
+                                    ) : null}
+                                    {isRescheduledPending ? (
+                                        <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
+                                            <strong>Zmiana terminu</strong> —
+                                            czeka na akceptację klienta
+                                        </div>
+                                    ) : null}
                                     {canConfirm ? (
                                         <button
                                             type="button"
@@ -1175,6 +1190,26 @@ export default function AppointmentDrawer({
                                                 : isRescheduledPending
                                                   ? 'Zaakceptuj nowy termin'
                                                   : 'Potwierdź'}
+                                        </button>
+                                    ) : null}
+                                    {isOnlinePending ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-danger"
+                                            onClick={() => void handleCancel()}
+                                            disabled={saving}
+                                        >
+                                            Odrzuć rezerwację
+                                        </button>
+                                    ) : null}
+                                    {isRescheduledPending ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-danger"
+                                            onClick={() => void handleCancel()}
+                                            disabled={saving}
+                                        >
+                                            Anuluj wizytę
                                         </button>
                                     ) : null}
                                     {canStart ? (

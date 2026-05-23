@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect, type MouseEvent } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
+import { usePendingBookingsCount } from '@/hooks/useAppointments';
 
 export default function SalonTopbar() {
     const { user, logout, apiFetch } = useAuth();
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+    const pendingCount = usePendingBookingsCount();
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
     const [onlinePendingCount, setOnlinePendingCount] = useState(0);
@@ -75,20 +78,132 @@ export default function SalonTopbar() {
     };
 
     return (
-        <>
-            {/* Mobile overlay — closes sidebar when tapped */}
-            <div
-                className="salonbw-nav-overlay"
-                aria-hidden="true"
-                onClick={closeSidebar}
-            />
-            <div
-                className="navbar navbar-default navbar-static-top d-flex"
-                id="navbar"
-            >
-                <div className="notification-bar-container"></div>
-                <div>
-                    {topbar.menuToggler.enabled ? (
+        <div
+            className="navbar navbar-default navbar-static-top d-flex"
+            id="navbar"
+        >
+            <div className="notification-bar-container"></div>
+            <div>
+                {topbar.menuToggler.enabled ? (
+                    <a
+                        aria-label="Menu"
+                        className="menu-toggler navbar-toggle"
+                        href="#"
+                        id="menu-toggler"
+                        onClick={handleMenuTogglerClick}
+                    >
+                        <span className="icon-bar"></span>
+                        <span className="icon-bar"></span>
+                        <span className="icon-bar"></span>
+                    </a>
+                ) : null}
+                <div className="brand">
+                    <Link
+                        aria-label="Przejdź do pulpitu"
+                        href={topbar.brand.href}
+                        title="przejdź do pulpitu"
+                    >
+                        <SalonIcon id="svg-logo" className="svg-logo" />
+                        <SalonIcon
+                            id="svg-dashboard-ico"
+                            className="svg-dashboard-ico"
+                        />
+                    </Link>
+                </div>
+            </div>
+            <div className="ml-auto">
+                <ul className="navbar-right simple-list d-flex">
+                    <li className="d-flex">
+                        <div className="omnibox-wrapper">
+                            <input
+                                className="omnibox"
+                                data-search-url={topbar.search.searchUrl}
+                                id="omnibox"
+                                placeholder={topbar.search.placeholder}
+                            />
+                            <div
+                                className="dropdown-menu"
+                                id="omnibox-results"
+                            ></div>
+                        </div>
+                    </li>
+                    {topbar.notifications.enabled ? (
+                        <li
+                            className="notification_center"
+                            id="notification_center_navbar"
+                        >
+                            <a
+                                className="link e2e-notification-center-navbar"
+                                href="#"
+                                onClick={(event) => event.preventDefault()}
+                            >
+                                <div
+                                    className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}
+                                    data-unread_notifications={
+                                        topbar.notifications.unreadCount ?? 0
+                                    }
+                                    id="notification_center_navbar_icon"
+                                >
+                                    <SalonIcon
+                                        id="svg-notifications"
+                                        className="svg-notifications"
+                                    />
+                                </div>
+                            </a>
+                        </li>
+                    ) : null}
+                    {topbar.tasks.enabled ? (
+                        <li className="all_complete tasks_tooltip">
+                            <a
+                                aria-expanded="false"
+                                className="link"
+                                href="#"
+                                title="Twoje zadania"
+                                onClick={(event) => event.preventDefault()}
+                            >
+                                <div
+                                    className="assigned_tasks"
+                                    data-assigned_tasks={
+                                        topbar.tasks.count ?? 0
+                                    }
+                                >
+                                    <SalonIcon
+                                        id="svg-todo"
+                                        className="svg-todo"
+                                    />
+                                </div>
+                            </a>
+                            <div className="dropdown_cover"></div>
+                            <div
+                                className="dropdown-menu-tasks"
+                                id="dropdownTasks"
+                                role="menu"
+                            ></div>
+                        </li>
+                    ) : null}
+                    {pendingCount > 0 ? (
+                        <li className="d-flex align-items-center">
+                            <Link
+                                href="/calendar"
+                                className="d-flex align-items-center gap-1 text-decoration-none px-2"
+                                title={`${pendingCount} rezerwacja${pendingCount === 1 ? '' : pendingCount < 5 ? 'e' : 'i'} online czeka na potwierdzenie`}
+                            >
+                                <span
+                                    className="badge rounded-pill bg-warning text-dark"
+                                    style={{ fontSize: '0.75rem' }}
+                                >
+                                    {pendingCount}
+                                </span>
+                                <span className="d-none d-md-inline text-warning small fw-semibold">
+                                    oczekujące
+                                </span>
+                            </Link>
+                        </li>
+                    ) : null}
+                    <li
+                        ref={helpMenuRef}
+                        className={`dropdown help_tooltip right-menu${helpMenuOpen ? ' open' : ''}`}
+                    >
                         <a
                             aria-label="Menu"
                             className="menu-toggler navbar-toggle"
@@ -158,17 +273,14 @@ export default function SalonTopbar() {
                                     href="#"
                                     onClick={(event) => event.preventDefault()}
                                 >
-                                    <div
-                                        className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}
-                                        data-unread_notifications={
-                                            topbar.notifications.unreadCount ??
-                                            0
-                                        }
-                                        id="notification_center_navbar_icon"
-                                    >
-                                        <SalonIcon
-                                            id="svg-notifications"
-                                            className="svg-notifications"
+                                    {topbar.user.avatarUrl ? (
+                                        <Image
+                                            alt="Avatar"
+                                            className="avatar"
+                                            src={topbar.user.avatarUrl}
+                                            width={32}
+                                            height={32}
+                                            unoptimized
                                         />
                                     </div>
                                 </a>

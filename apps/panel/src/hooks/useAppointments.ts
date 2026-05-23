@@ -131,3 +131,25 @@ export function useAppointmentMutations() {
         updateAppointmentStatus,
     };
 }
+
+export function usePendingBookingsCount() {
+    const { apiFetch, role } = useAuth();
+    const isStaff =
+        role === 'admin' || role === 'receptionist' || role === 'employee';
+
+    const query = useQuery({
+        queryKey: ['pending-bookings-count'],
+        queryFn: async () => {
+            const from = new Date().toISOString();
+            const items = await apiFetch<LocalAppointment[]>(
+                `/appointments?status=online_pending&from=${encodeURIComponent(from)}`,
+            );
+            return items.length;
+        },
+        enabled: isStaff,
+        refetchInterval: 2 * 60 * 1000,
+        staleTime: 90 * 1000,
+    });
+
+    return query.data ?? 0;
+}

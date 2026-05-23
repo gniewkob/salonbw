@@ -126,7 +126,6 @@ export class DashboardService {
                 status: In([
                     AppointmentStatus.Scheduled,
                     AppointmentStatus.Confirmed,
-                    AppointmentStatus.OnlinePending,
                     AppointmentStatus.RescheduledPending,
                 ]),
             },
@@ -176,12 +175,23 @@ export class DashboardService {
             (a, b) => b.count - a.count,
         );
 
+        // Get recent appointments (last 10)
+        const recentAppointments = await this.appointmentsRepository.find({
+            where: {
+                client: { id: userId },
+            },
+            relations: ['service', 'employee'],
+            order: { startTime: 'DESC' },
+            take: 10,
+        });
+
         return {
             upcomingAppointment: upcomingAppointment
                 ? {
                       id: upcomingAppointment.id,
                       serviceName: upcomingAppointment.service?.name ?? '',
                       startTime: upcomingAppointment.startTime,
+                      status: upcomingAppointment.status,
                       employeeName:
                           upcomingAppointment.employee?.name ??
                           upcomingAppointment.employee?.email ??
@@ -196,7 +206,8 @@ export class DashboardService {
                 serviceName: apt.service?.name ?? '',
                 startTime: apt.startTime,
                 status: apt.status,
-                employeeName: apt.employee?.name ?? '',
+                employeeName:
+                    apt.employee?.name ?? apt.employee?.email ?? undefined,
             })),
         };
     }

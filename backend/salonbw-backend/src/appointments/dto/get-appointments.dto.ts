@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsDateString, IsString, IsEnum, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsDateString, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AppointmentStatus } from '../appointment.entity';
 
@@ -20,27 +20,11 @@ export class GetAppointmentsDto {
     @IsNumber()
     employeeId?: number;
 
-    @ApiProperty({ required: false, enum: AppointmentStatus })
-    @IsOptional()
-    @IsEnum(AppointmentStatus)
-    status?: AppointmentStatus;
-
-    @ApiProperty({ required: false, description: 'Client name or phone search' })
+    @ApiProperty({
+        required: false,
+        description: 'Filter by appointment status',
+    })
     @IsOptional()
     @IsString()
-    search?: string;
-
-    @ApiProperty({ required: false, default: 1 })
-    @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
-    @Min(1)
-    page?: number;
-
-    @ApiProperty({ required: false, default: 50 })
-    @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
-    @Min(1)
-    limit?: number;
+    status?: string;
 }

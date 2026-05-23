@@ -59,9 +59,14 @@ export class AppointmentsController {
                 to: query.to ? new Date(query.to) : undefined,
                 employeeId: query.employeeId,
                 status: query.status,
-                search: query.search,
-                page: query.page,
-                limit: query.limit,
+            });
+        }
+        if (user.role === Role.Employee) {
+            return this.appointmentsService.findAllInRange({
+                from: query.from ? new Date(query.from) : undefined,
+                to: query.to ? new Date(query.to) : undefined,
+                employeeId: user.userId,
+                status: query.status,
             });
         }
         const items = await this.appointmentsService.findForUser(user.userId);
@@ -171,6 +176,35 @@ export class AppointmentsController {
             throw new ForbiddenException();
         }
         return this.appointmentsService.cancel(id, { id: user.userId } as User);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client)
+    @Patch(':id/accept-reschedule')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Client accepts rescheduled appointment time' })
+    @ApiResponse({
+        status: 200,
+        description: 'Reschedule accepted, appointment confirmed',
+        type: Appointment,
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Appointment not awaiting acceptance',
+    })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async acceptReschedule(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment | null> {
+        const result = await this.appointmentsService.acceptReschedule(id, {
+            id: user.userId,
+        } as User);
+        if (!result) {
+            throw new NotFoundException();
+        }
+        return result;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -386,21 +386,47 @@ export default function ClientsPage() {
                                     </label>
                                 </div>
                                 <div
-                                    className="column_row details_container"
+                                    className="column_row data_table"
                                     id="customers_list"
                                 >
-                                    <div className="list-table-responsive">
-                                        <table className="list-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Klient</th>
-                                                    <th>Kontakt</th>
-                                                    <th className="hidden-xs">
-                                                        Ostatnia wizyta
-                                                    </th>
-                                                    <th
-                                                        className="text-right hidden-xs"
-                                                        aria-label="Akcje"
+                                    <table className="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <div>Klient</div>
+                                                </th>
+                                                <th>
+                                                    <div>Kontakt</div>
+                                                </th>
+                                                <th className="hidden-xs">
+                                                    <div>Ostatnia wizyta</div>
+                                                </th>
+                                                <th
+                                                    className="text-right hidden-xs"
+                                                    aria-label="Akcje"
+                                                />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredCustomers.map(
+                                                (customer, i) => (
+                                                    <DraggableCustomerRow
+                                                        key={customer.id}
+                                                        customer={customer}
+                                                        isDragging={
+                                                            draggedCustomer?.id ===
+                                                            customer.id
+                                                        }
+                                                        rowClass={
+                                                            i % 2 === 0
+                                                                ? 'odd'
+                                                                : 'even'
+                                                        }
+                                                        onOpen={(id) =>
+                                                            void router.push(
+                                                                `/customers/${id}` as Route,
+                                                            )
+                                                        }
                                                     />
                                                 </tr>
                                             </thead>

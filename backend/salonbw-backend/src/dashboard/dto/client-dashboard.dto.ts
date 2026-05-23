@@ -13,6 +13,9 @@ export class UpcomingAppointmentDto {
     @ApiProperty({ description: 'Start time' })
     startTime: Date;
 
+    @ApiProperty({ description: 'Appointment status' })
+    status: string;
+
     @ApiProperty({ description: 'Employee name' })
     employeeName: string;
 
