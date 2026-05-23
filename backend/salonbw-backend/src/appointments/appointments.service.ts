@@ -198,6 +198,10 @@ export class AppointmentsService {
             data.endTime = this.computeEnd(data.startTime, service.duration);
         }
         await this.assertNoConflict(employee.id, data.startTime, data.endTime);
+        const isClientSelfBooking = user.id === client.id;
+        if (isClientSelfBooking) {
+            data.status = AppointmentStatus.OnlinePending;
+        }
         const appointment = this.appointmentsRepository.create(data);
         const saved = await this.appointmentsRepository.save(appointment);
         const result = await this.findOne(saved.id);
@@ -230,8 +234,7 @@ export class AppointmentsService {
                 'Client has no phone number or notifications disabled; skipping booking confirmation',
             );
         }
-        // Notify employee when client self-books (not a staff-created appointment)
-        const isClientSelfBooking = user.id === client.id;
+        // Notify employee when client self-books
         if (isClientSelfBooking && employee.phone) {
             try {
                 const clientName = client.name ?? client.email ?? 'Klient';
@@ -665,6 +668,10 @@ export class AppointmentsService {
             [AppointmentStatus.Confirmed]: [
                 AppointmentStatus.InProgress,
                 AppointmentStatus.NoShow,
+            ],
+            [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
+            [AppointmentStatus.RescheduledPending]: [
+                AppointmentStatus.Confirmed,
             ],
             [AppointmentStatus.InProgress]: [],
             [AppointmentStatus.NoShow]: [],

@@ -202,11 +202,14 @@ export default function AppointmentDrawer({
         Number(clientId) > 0;
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
-    const canConfirm = currentStatus === 'scheduled';
+    const isOnlinePending = currentStatus === 'online_pending';
+    const canConfirm = currentStatus === 'scheduled' || isOnlinePending;
     const canStart =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+        !isOnlinePending &&
+        (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canNoShow =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+        !isOnlinePending &&
+        (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canCancel =
         currentStatus === 'scheduled' || currentStatus === 'confirmed';
     const canComplete = currentStatus === 'in_progress';
@@ -776,6 +779,12 @@ export default function AppointmentDrawer({
 
                             {mode === 'edit' && appointment?.id ? (
                                 <>
+                                    {isOnlinePending ? (
+                                        <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
+                                            <strong>Rezerwacja online</strong> —
+                                            czeka na potwierdzenie przez salon
+                                        </div>
+                                    ) : null}
                                     {canConfirm ? (
                                         <button
                                             type="button"
@@ -788,6 +797,16 @@ export default function AppointmentDrawer({
                                             disabled={saving}
                                         >
                                             Potwierdź
+                                        </button>
+                                    ) : null}
+                                    {isOnlinePending ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-danger"
+                                            onClick={() => void handleCancel()}
+                                            disabled={saving}
+                                        >
+                                            Odrzuć rezerwację
                                         </button>
                                     ) : null}
                                     {canStart ? (
