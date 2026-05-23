@@ -12,6 +12,22 @@ import {
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '../appointment.entity';
 
+export class UsageItemDto {
+    @ApiProperty({ description: 'Product ID' })
+    @IsNumber()
+    productId: number;
+
+    @ApiProperty({ description: 'Quantity used', minimum: 1 })
+    @IsNumber()
+    @Min(1)
+    quantity: number;
+
+    @ApiProperty({ description: 'Unit (e.g. ml, g, op.)', required: false })
+    @IsString()
+    @IsOptional()
+    unit?: string;
+}
+
 export class ProductSaleItemDto {
     @ApiProperty({ description: 'Product ID' })
     @IsNumber()
@@ -126,4 +142,16 @@ export class FinalizeAppointmentDto {
     @IsString()
     @IsOptional()
     note?: string;
+
+    @ApiProperty({
+        description:
+            'Materials used during the service (deducted from warehouse)',
+        required: false,
+        type: [UsageItemDto],
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => UsageItemDto)
+    @IsOptional()
+    usageItems?: UsageItemDto[];
 }

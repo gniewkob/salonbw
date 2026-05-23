@@ -17,9 +17,9 @@ module.exports = {
         '<rootDir>/.next/',
         // Prevent jest-haste-map "duplicate manual mock" collisions with sibling
         // apps that vendor the same packages (e.g. apps/landing/vendor/picocolors
-        // vs apps/panel/vendor/picocolors). Without this, running any panel test
-        // whose filename also exists in landing's __tests__ would fail at
-        // module-map build time.
+        // vs apps/panel/vendor/picocolors). Exclude both vendor dirs so haste
+        // never sees duplicate package names.
+        '<rootDir>/vendor/',
         '<rootDir>/../landing/',
     ],
     coverageThreshold: {

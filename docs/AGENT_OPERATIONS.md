@@ -250,6 +250,13 @@ ssh devil "devil www list --verbose"
 
 If Devil reports an invalid domain type or the restart does not pick up a new build, fall back to touching `tmp/restart.txt` in the domain root.
 
+
+Post-env-change restart note:
+- After any API `.env` change, run `devil www restart api.salon-bw.pl` and immediately verify `/healthz`.
+- If the new env is not picked up, force Passenger reload with:
+  `touch /usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/tmp/restart.txt`
+
+
 Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 
 ## 5. Observability

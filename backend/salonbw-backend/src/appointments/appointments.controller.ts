@@ -46,13 +46,13 @@ export class AppointmentsController {
     @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
     @Get()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'List appointments (admin, optional filters)' })
-    @ApiResponse({ status: 200, type: Appointment, isArray: true })
-    findAll(
+    @ApiOperation({ summary: 'List appointments with filters and pagination' })
+    @ApiResponse({ status: 200, description: 'Paginated appointment list' })
+    async findAll(
         @Query(new ValidationPipe({ transform: true }))
         query: GetAppointmentsDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment[]> {
+    ) {
         if (user.role === Role.Admin || user.role === Role.Receptionist) {
             return this.appointmentsService.findAllInRange({
                 from: query.from ? new Date(query.from) : undefined,
@@ -69,7 +69,8 @@ export class AppointmentsController {
                 status: query.status,
             });
         }
-        return this.appointmentsService.findForUser(user.userId);
+        const items = await this.appointmentsService.findForUser(user.userId);
+        return { items, total: items.length, page: 1, pageSize: items.length };
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -129,6 +130,7 @@ export class AppointmentsController {
                 service: { id: body.serviceId } as SalonService,
                 serviceVariantId: body.serviceVariantId,
                 startTime: new Date(body.startTime),
+                reservedOnline: !isStaff ? true : undefined,
             },
             { id: user.userId } as User,
         );
@@ -394,6 +396,31 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Get('online-pending-count')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Count online-pending appointments',
+        description:
+            'Admin and Receptionist see the total count. ' +
+            'Employee sees only their own online-pending appointments.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Count of online-pending appointments',
+        schema: { type: 'object', properties: { count: { type: 'number' } } },
+    })
+    async countOnlinePending(
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<{ count: number }> {
+        const isEmployeeOnly = user.role === Role.Employee;
+        const count = await this.appointmentsService.countOnlinePending(
+            isEmployeeOnly ? user.userId : undefined,
+        );
+        return { count };
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Employee)
     @Get(':id/conflicts')
     @ApiBearerAuth()
@@ -474,5 +501,40 @@ export class AppointmentsController {
         return this.appointmentsService.finalizeAppointment(id, body, {
             id: user.userId,
         } as User);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Patch(':id/notes')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update internal note on appointment' })
+    @ApiResponse({ status: 200, type: Appointment })
+    async updateNotes(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: { internalNote: string | null },
+    ): Promise<Appointment> {
+        return this.appointmentsService.updateNotes(id, body.internalNote);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Get(':id/usage')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get suggested material usage from service recipe',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Usage suggestions derived from service recipe items',
+    })
+    async getUsageSuggestions(@Param('id', ParseIntPipe) id: number): Promise<
+        {
+            productId: number;
+            productName: string;
+            quantity: number;
+            unit: string;
+        }[]
+    > {
+        return this.appointmentsService.getUsageSuggestions(id);
     }
 }

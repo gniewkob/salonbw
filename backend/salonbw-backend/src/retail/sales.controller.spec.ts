@@ -16,9 +16,7 @@ describe('SalesController', () => {
             getSalesSummary: jest.fn().mockResolvedValue({ units: 3 }),
             getSaleDetails: jest.fn().mockResolvedValue({ id: 4 }),
             voidSale: jest.fn().mockResolvedValue({ id: 5, kind: 'void' }),
-            refundSale: jest
-                .fn()
-                .mockResolvedValue({ id: 6, kind: 'refund' }),
+            refundSale: jest.fn().mockResolvedValue({ id: 6, kind: 'refund' }),
             correctSale: jest
                 .fn()
                 .mockResolvedValue({ id: 7, kind: 'correction' }),
@@ -32,9 +30,9 @@ describe('SalesController', () => {
             items: [{ productId: 10, quantity: 2 }],
         } as CreateSaleDto;
 
-        await expect(controller.createSale(dto, { userId: 91 })).resolves.toEqual(
-            { id: 1 },
-        );
+        await expect(
+            controller.createSale(dto, { userId: 91 }),
+        ).resolves.toEqual({ id: 1 });
         expect(service.createSale).toHaveBeenCalledWith(dto, { id: 91 });
     });
 

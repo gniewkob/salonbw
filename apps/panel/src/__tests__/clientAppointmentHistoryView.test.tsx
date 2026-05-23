@@ -56,7 +56,7 @@ describe('ClientAppointmentHistoryView', () => {
             />,
         );
 
-        expect(screen.getByText('Nadchodzace wizyty')).toBeInTheDocument();
+        expect(screen.getByText('Nadchodzące wizyty')).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: /Koloryzacja/i }),
         ).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('ClientAppointmentHistoryView', () => {
         );
 
         expect(
-            screen.getByText('Brak nadchodzacych wizyt.'),
+            screen.getByText('Brak nadchodzących wizyt.'),
         ).toBeInTheDocument();
         expect(
             screen.getByText('Brak wizyt archiwalnych.'),
@@ -113,9 +113,9 @@ describe('ClientAppointmentHistoryView', () => {
         );
 
         const details = screen.getByTestId('client-appointment-details');
-        expect(details).toHaveTextContent('Szczegoly wizyty (tylko odczyt)');
+        expect(details).toHaveTextContent('Szczegóły wizyty (tylko odczyt)');
         expect(details).toHaveTextContent('Masaż');
-        expect(details).toHaveTextContent('confirmed');
+        expect(details).toHaveTextContent('Potwierdzona');
         expect(details).toHaveTextContent('Monika Zielinska');
         expect(details).toHaveTextContent('11 cze 2026');
     });
@@ -176,7 +176,7 @@ describe('ClientAppointmentHistoryView', () => {
 
         expect(
             screen.getByTestId('client-appointment-details'),
-        ).toHaveTextContent('Wybierz wizyte z listy, aby zobaczyc szczegoly.');
+        ).toHaveTextContent('Wybierz wizytę z listy, aby zobaczyć szczegóły.');
     });
 
     it('does not render mutating action buttons in client read-only view', () => {
@@ -218,10 +218,10 @@ describe('ClientAppointmentHistoryView', () => {
         );
 
         expect(
-            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getByRole('button', { name: 'Poproś o anulowanie' }),
         ).toBeInTheDocument();
         expect(
-            screen.getAllByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getAllByRole('button', { name: 'Poproś o anulowanie' }),
         ).toHaveLength(1);
     });
 
@@ -238,7 +238,7 @@ describe('ClientAppointmentHistoryView', () => {
         );
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getByRole('button', { name: 'Poproś o anulowanie' }),
         );
 
         await waitFor(() =>
@@ -246,7 +246,7 @@ describe('ClientAppointmentHistoryView', () => {
         );
         expect(
             screen.getByText(
-                'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                'Prośba o anulowanie została zapisana. Recepcja skontaktuje się z Tobą.',
             ),
         ).toBeInTheDocument();
     });
@@ -266,7 +266,7 @@ describe('ClientAppointmentHistoryView', () => {
         );
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getByRole('button', { name: 'Poproś o anulowanie' }),
         );
 
         await waitFor(() =>
@@ -274,7 +274,7 @@ describe('ClientAppointmentHistoryView', () => {
         );
         expect(
             screen.getByText(
-                'Nie udalo sie wyslac prosby o anulowanie. Sprobuj ponownie.',
+                'Nie udało się wysłać prośby o anulowanie. Spróbuj ponownie.',
             ),
         ).toBeInTheDocument();
     });

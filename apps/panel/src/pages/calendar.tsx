@@ -2192,6 +2192,22 @@ export default function CalendarPage() {
                                         },
                                     );
                                 }}
+                                onAcceptReschedule={async (appointmentId) => {
+                                    await apiFetch(
+                                        `/appointments/${appointmentId}/status`,
+                                        {
+                                            method: 'PATCH',
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                                status: 'confirmed',
+                                            }),
+                                        },
+                                    );
+                                    void refetch();
+                                }}
                             />
                         ) : (
                             <CalendarView

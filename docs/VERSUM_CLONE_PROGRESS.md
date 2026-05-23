@@ -1,8 +1,17 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-03-17
+> Data aktualizacji: 2026-05-22
+> Status dokumentu: **historyczny (parity/clone archive)**
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
+
+## Uwaga operacyjna (2026-05-22)
+
+Ten plik zachowuje historię sprintów klonowania i raporty parity.
+Dla aktualnego, operacyjnego statusu projektu używaj:
+- `docs/AGENT_STATUS.md`
+- `docs/IMPLEMENTATION_MATRIX.md`
+- `docs/IMPLEMENTATION_BACKLOG_STATUS.md`
 
 ---
 

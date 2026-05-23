@@ -40,6 +40,9 @@ export interface RegisterData {
     email: string;
     phone: string;
     password: string;
+    gdprConsent: boolean;
+    smsConsent?: boolean;
+    emailConsent?: boolean;
 }
 
 export interface AuthTokens {

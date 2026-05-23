@@ -911,23 +911,23 @@ describe('CalendarPage', () => {
 
         render(<CalendarPage />);
 
-        expect(screen.getByText('Nadchodzace wizyty')).toBeInTheDocument();
+        expect(screen.getByText('Nadchodzące wizyty')).toBeInTheDocument();
         expect(screen.getByText('Historia wizyt')).toBeInTheDocument();
         expect(screen.queryByText('Nowa wizyta')).not.toBeInTheDocument();
         expect(screen.getByText(/Strzyzenie/i)).toBeInTheDocument();
         expect(screen.getByText(/Koloryzacja/i)).toBeInTheDocument();
         expect(screen.queryByText(/Makijaz/i)).not.toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getByRole('button', { name: 'Poproś o anulowanie' }),
         ).toBeInTheDocument();
         expect(
-            screen.getAllByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getAllByRole('button', { name: 'Poproś o anulowanie' }),
         ).toHaveLength(1);
 
         fireEvent.click(screen.getByRole('button', { name: /Koloryzacja/i }));
         expect(
             screen.getByTestId('client-appointment-details'),
-        ).toHaveTextContent('Szczegoly wizyty (tylko odczyt)');
+        ).toHaveTextContent('Szczegóły wizyty (tylko odczyt)');
         expect(
             screen.getByTestId('client-appointment-details'),
         ).toHaveTextContent('Koloryzacja');
@@ -939,7 +939,7 @@ describe('CalendarPage', () => {
         );
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Popros o anulowanie' }),
+            screen.getByRole('button', { name: 'Poproś o anulowanie' }),
         );
         await waitFor(() =>
             expect(apiFetchMock).toHaveBeenCalledWith(
@@ -953,7 +953,7 @@ describe('CalendarPage', () => {
         await waitFor(() =>
             expect(
                 screen.getByText(
-                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                    'Prośba o anulowanie została zapisana. Recepcja skontaktuje się z Tobą.',
                 ),
             ).toBeInTheDocument(),
         );
@@ -1006,7 +1006,7 @@ describe('CalendarPage', () => {
         render(<CalendarPage />);
 
         const buttons = screen.getAllByRole('button', {
-            name: 'Popros o anulowanie',
+            name: 'Poproś o anulowanie',
         });
         expect(buttons).toHaveLength(1);
 
@@ -1025,7 +1025,7 @@ describe('CalendarPage', () => {
         await waitFor(() =>
             expect(
                 screen.getByText(
-                    'Prosba o anulowanie zostala zapisana. Recepcja skontaktuje sie z Toba.',
+                    'Prośba o anulowanie została zapisana. Recepcja skontaktuje się z Tobą.',
                 ),
             ).toBeInTheDocument(),
         );

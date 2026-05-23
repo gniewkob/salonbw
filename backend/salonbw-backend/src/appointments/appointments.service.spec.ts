@@ -82,6 +82,38 @@ describe('AppointmentsService', () => {
         ).toBeLessThan(sendBookingConfirmationMock.mock.invocationCallOrder[0]);
     });
 
+    it('should set online_pending when reservedOnline is true', async () => {
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const result = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+                reservedOnline: true,
+            },
+            users[0],
+        );
+
+        expect(result.status).toBe(AppointmentStatus.OnlinePending);
+    });
+
+    it('should keep scheduled status when reservedOnline is false', async () => {
+        const start = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        const result = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+                reservedOnline: false,
+            },
+            users[1],
+        );
+
+        expect(result.status).toBe(AppointmentStatus.Scheduled);
+    });
+
     it('should not send booking confirmation if client has no phone', async () => {
         users[0].phone = null;
         const start = new Date(Date.now() + 60 * 60 * 1000);
@@ -343,7 +375,9 @@ describe('AppointmentsService', () => {
 
         const now = new Date();
         now.setHours(now.getHours() - 2);
-        const target = appointments.find((appointment) => appointment.id === id);
+        const target = appointments.find(
+            (appointment) => appointment.id === id,
+        );
         if (!target) {
             throw new Error('Appointment not found in test context');
         }

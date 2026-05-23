@@ -18,11 +18,15 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { FormulasService } from './formulas.service';
 import { Formula } from './formula.entity';
+import { RetailService } from '../retail/retail.service';
 
 @ApiTags('formulas')
 @Controller('customers')
 export class CustomerFormulasController {
-    constructor(private readonly formulasService: FormulasService) {}
+    constructor(
+        private readonly formulasService: FormulasService,
+        private readonly retailService: RetailService,
+    ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Admin)
@@ -42,5 +46,15 @@ export class CustomerFormulasController {
     @ApiResponse({ status: 200, type: Formula, isArray: true })
     findForCustomer(@Param('id', ParseIntPipe) id: number): Promise<Formula[]> {
         return this.formulasService.findForClient(id);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @Get(':id/usage-history')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get material usage history for customer' })
+    @ApiResponse({ status: 200, description: 'Usage history per appointment' })
+    findUsageHistory(@Param('id', ParseIntPipe) id: number) {
+        return this.retailService.getUsageHistoryForClient(id);
     }
 }

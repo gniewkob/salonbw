@@ -9,8 +9,12 @@ interface CustomDocumentProps extends DocumentProps {
 export default function Document(props: CustomDocumentProps) {
     // Next.js automatically passes nonce to Script components when CSP is set via middleware
     return (
-        <Html lang="en">
+        <Html lang="pl">
             <Head nonce={props.nonce}>
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1"
+                />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
                     rel="preconnect"

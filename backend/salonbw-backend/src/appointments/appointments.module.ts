@@ -6,6 +6,7 @@ import { AppointmentsController } from './appointments.controller';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { Service as SalonService } from '../services/service.entity';
 import { ServiceVariant } from '../services/entities/service-variant.entity';
+import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 import { User } from '../users/user.entity';
 import { LogsModule } from '../logs/logs.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -19,6 +20,7 @@ import { LoyaltyModule } from '../loyalty/loyalty.module';
             Appointment,
             SalonService,
             ServiceVariant,
+            ServiceRecipeItem,
             User,
         ]),
         CommissionsModule,

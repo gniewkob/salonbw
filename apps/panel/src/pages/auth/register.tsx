@@ -13,6 +13,9 @@ type RegisterFormValues = {
     email: string;
     phone: string;
     password: string;
+    gdprConsent: boolean;
+    smsConsent: boolean;
+    emailConsent: boolean;
 };
 type RegisterErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
@@ -30,6 +33,10 @@ const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
     } else if (values.password.length < 6) {
         errors.password = 'Hasło musi mieć co najmniej 6 znaków';
     }
+    if (!values.gdprConsent) {
+        errors.gdprConsent =
+            'Zgoda na przetwarzanie danych osobowych jest wymagana';
+    }
     return errors;
 };
 
@@ -43,6 +50,9 @@ export default function RegisterPage() {
         email: '',
         phone: '',
         password: '',
+        gdprConsent: false,
+        smsConsent: false,
+        emailConsent: false,
     });
     const [touched, setTouched] = useState<
         Partial<Record<keyof RegisterFormValues, boolean>>
@@ -64,6 +74,15 @@ export default function RegisterPage() {
         if (touched[field]) runValidation(nextForm);
     };
 
+    const handleCheckbox = (
+        field: 'gdprConsent' | 'smsConsent' | 'emailConsent',
+        checked: boolean,
+    ) => {
+        const nextForm = { ...form, [field]: checked };
+        setForm(nextForm);
+        if (touched[field]) runValidation(nextForm);
+    };
+
     const handleBlur = (field: keyof RegisterFormValues) => {
         setFocusedField(null);
         setTouched((prev) => ({ ...prev, [field]: true }));
@@ -80,6 +99,7 @@ export default function RegisterPage() {
                 email: true,
                 phone: true,
                 password: true,
+                gdprConsent: true,
             });
             return;
         }
@@ -323,6 +343,159 @@ export default function RegisterPage() {
                                     {errors.password}
                                 </p>
                             )}
+                        </div>
+
+                        {/* Consent checkboxes */}
+                        <div
+                            style={{
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.75rem',
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    gap: '0.65rem',
+                                    cursor: 'pointer',
+                                    alignItems: 'flex-start',
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    id="gdprConsent"
+                                    checked={form.gdprConsent}
+                                    onChange={(e) =>
+                                        handleCheckbox(
+                                            'gdprConsent',
+                                            e.target.checked,
+                                        )
+                                    }
+                                    onBlur={() =>
+                                        setTouched((prev) => ({
+                                            ...prev,
+                                            gdprConsent: true,
+                                        }))
+                                    }
+                                    style={{ marginTop: '2px', flexShrink: 0 }}
+                                />
+                                <span
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'rgba(255,255,255,0.65)',
+                                        fontFamily: "'Open Sans', sans-serif",
+                                        lineHeight: 1.5,
+                                    }}
+                                >
+                                    <span
+                                        style={{ color: 'rgba(220,80,80,0.9)' }}
+                                    >
+                                        *{' '}
+                                    </span>
+                                    Wyrażam zgodę na przetwarzanie moich danych
+                                    osobowych przez Salon Black &amp; White w
+                                    celu realizacji usług oraz obsługi konta
+                                    zgodnie z{' '}
+                                    <a
+                                        href="/privacy"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            color: '#c5a880',
+                                            textDecoration: 'underline',
+                                        }}
+                                    >
+                                        Polityką prywatności
+                                    </a>
+                                    .
+                                </span>
+                            </label>
+                            {touched.gdprConsent && errors.gdprConsent && (
+                                <p role="alert" style={errorStyle}>
+                                    {errors.gdprConsent}
+                                </p>
+                            )}
+
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    gap: '0.65rem',
+                                    cursor: 'pointer',
+                                    alignItems: 'flex-start',
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    id="smsConsent"
+                                    checked={form.smsConsent}
+                                    onChange={(e) =>
+                                        handleCheckbox(
+                                            'smsConsent',
+                                            e.target.checked,
+                                        )
+                                    }
+                                    style={{ marginTop: '2px', flexShrink: 0 }}
+                                />
+                                <span
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'rgba(255,255,255,0.45)',
+                                        fontFamily: "'Open Sans', sans-serif",
+                                        lineHeight: 1.5,
+                                    }}
+                                >
+                                    Wyrażam zgodę na otrzymywanie informacji
+                                    marketingowych drogą SMS / WhatsApp.{' '}
+                                    <span
+                                        style={{
+                                            color: 'rgba(255,255,255,0.25)',
+                                        }}
+                                    >
+                                        (opcjonalne)
+                                    </span>
+                                </span>
+                            </label>
+
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    gap: '0.65rem',
+                                    cursor: 'pointer',
+                                    alignItems: 'flex-start',
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    id="emailConsent"
+                                    checked={form.emailConsent}
+                                    onChange={(e) =>
+                                        handleCheckbox(
+                                            'emailConsent',
+                                            e.target.checked,
+                                        )
+                                    }
+                                    style={{ marginTop: '2px', flexShrink: 0 }}
+                                />
+                                <span
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'rgba(255,255,255,0.45)',
+                                        fontFamily: "'Open Sans', sans-serif",
+                                        lineHeight: 1.5,
+                                    }}
+                                >
+                                    Wyrażam zgodę na otrzymywanie informacji
+                                    marketingowych drogą e-mail.{' '}
+                                    <span
+                                        style={{
+                                            color: 'rgba(255,255,255,0.25)',
+                                        }}
+                                    >
+                                        (opcjonalne)
+                                    </span>
+                                </span>
+                            </label>
                         </div>
 
                         <button

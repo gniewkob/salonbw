@@ -6,6 +6,7 @@ import { AppointmentsService } from './appointments.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService, PriceType } from '../services/service.entity';
 import { ServiceVariant } from '../services/entities/service-variant.entity';
+import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
@@ -101,6 +102,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const mockUsersRepo = createUsersRepo(users);
     const mockServicesRepo = createServicesRepo(services);
     const mockServiceVariantsRepo = createServiceVariantsRepo();
+    const mockRecipeItemsRepo = createRecipeItemsRepo();
     const mockAppointmentsRepo = createAppointmentsRepo(
         appointments,
         services,
@@ -122,6 +124,10 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         sendBookingConfirmation: jest.fn<
             Promise<void>,
             [string | null, string, string]
+        >(() => Promise.resolve()),
+        sendNewOnlineBookingAlert: jest.fn<
+            Promise<void>,
+            [string, string, string, string, string]
         >(() => Promise.resolve()),
         sendReminder: jest.fn<Promise<void>, [string, string, string]>(),
         sendFollowUp: jest.fn<Promise<void>, [string, string, string]>(() =>
@@ -156,6 +162,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockAppointmentsRepo,
         mockServicesRepo,
         mockServiceVariantsRepo,
+        mockRecipeItemsRepo,
         mockUsersRepo,
         mockCommissionsService,
         mockLogService,
@@ -213,6 +220,12 @@ function createServiceVariantsRepo() {
             [{ where: { id: number } } | undefined]
         >(() => Promise.resolve(null)),
     } as unknown as jest.Mocked<Repository<ServiceVariant>>;
+}
+
+function createRecipeItemsRepo() {
+    return {
+        find: jest.fn(() => Promise.resolve([])),
+    } as unknown as jest.Mocked<Repository<ServiceRecipeItem>>;
 }
 
 function createAppointmentsRepo(
