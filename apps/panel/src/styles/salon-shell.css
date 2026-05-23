@@ -7122,3 +7122,36 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     font-weight: bold;
     line-height: 1;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-widget — generic panel widget (customer tabs etc.)
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-widget {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+.salonbw-widget__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f3f6;
+    font-weight: 600;
+    font-size: 13px;
+}
+.salonbw-widget__content {
+    padding: 12px 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   w-5 / h-5 — SVG icon size (Tailwind compat, 1.25rem = 20px)
+   ══════════════════════════════════════════════════════════════════ */
+.w-5 {
+    width: 1.25rem !important;
+}
+.h-5 {
+    height: 1.25rem !important;
+}
