@@ -128,4 +128,12 @@ export class WhatsappService {
             time,
         ]);
     }
+
+    async sendRescheduleNotification(
+        to: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'appointment_rescheduled', [date, time]);
+    }
 }

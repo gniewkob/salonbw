@@ -170,6 +170,35 @@ export class AppointmentsController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client)
+    @Patch(':id/accept-reschedule')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Client accepts rescheduled appointment time' })
+    @ApiResponse({
+        status: 200,
+        description: 'Reschedule accepted, appointment confirmed',
+        type: Appointment,
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Appointment not awaiting acceptance',
+    })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async acceptReschedule(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment | null> {
+        const result = await this.appointmentsService.acceptReschedule(id, {
+            id: user.userId,
+        } as User);
+        if (!result) {
+            throw new NotFoundException();
+        }
+        return result;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client)
     @Post(':id/cancellation-request')
     @ApiBearerAuth()
     @ApiOperation({

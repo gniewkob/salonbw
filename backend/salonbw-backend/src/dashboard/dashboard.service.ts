@@ -68,6 +68,7 @@ export class DashboardService {
                 status: In([
                     AppointmentStatus.Scheduled,
                     AppointmentStatus.Confirmed,
+                    AppointmentStatus.RescheduledPending,
                 ]),
             },
             relations: ['service', 'employee'],

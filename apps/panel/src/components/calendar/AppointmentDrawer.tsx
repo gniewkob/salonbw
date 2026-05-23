@@ -203,15 +203,23 @@ export default function AppointmentDrawer({
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
     const isOnlinePending = currentStatus === 'online_pending';
-    const canConfirm = currentStatus === 'scheduled' || isOnlinePending;
+    const isRescheduledPending = currentStatus === 'rescheduled_pending';
+    const canConfirm =
+        currentStatus === 'scheduled' ||
+        isOnlinePending ||
+        isRescheduledPending;
     const canStart =
         !isOnlinePending &&
+        !isRescheduledPending &&
         (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canNoShow =
         !isOnlinePending &&
+        !isRescheduledPending &&
         (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canCancel =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed';
+        currentStatus === 'scheduled' ||
+        currentStatus === 'confirmed' ||
+        isRescheduledPending;
     const canComplete = currentStatus === 'in_progress';
 
     const handleCreate = async () => {
@@ -785,6 +793,12 @@ export default function AppointmentDrawer({
                                             czeka na potwierdzenie przez salon
                                         </div>
                                     ) : null}
+                                    {isRescheduledPending ? (
+                                        <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
+                                            <strong>Zmiana terminu</strong> —
+                                            czeka na akceptację klienta
+                                        </div>
+                                    ) : null}
                                     {canConfirm ? (
                                         <button
                                             type="button"
@@ -807,6 +821,16 @@ export default function AppointmentDrawer({
                                             disabled={saving}
                                         >
                                             Odrzuć rezerwację
+                                        </button>
+                                    ) : null}
+                                    {isRescheduledPending ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-danger"
+                                            onClick={() => void handleCancel()}
+                                            disabled={saving}
+                                        >
+                                            Anuluj wizytę
                                         </button>
                                     ) : null}
                                     {canStart ? (

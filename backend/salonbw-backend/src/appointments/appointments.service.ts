@@ -592,6 +592,7 @@ export class AppointmentsService {
         const updateData: Partial<Appointment> = {
             startTime,
             endTime: newEnd,
+            status: AppointmentStatus.RescheduledPending,
         };
 
         if (employeeId && employeeId !== appointment.employee.id) {
@@ -614,18 +615,52 @@ export class AppointmentsService {
             if (updated.client.phone && updated.client.receiveNotifications) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
-                    await this.whatsappService.sendBookingConfirmation(
+                    await this.whatsappService.sendRescheduleNotification(
                         updated.client.phone,
                         date,
                         time,
                     );
                 } catch (error) {
                     console.error(
-                        'Failed to send reschedule confirmation',
+                        'Failed to send reschedule notification',
                         error,
                     );
                 }
             }
+        }
+
+        return updated;
+    }
+
+    async acceptReschedule(
+        id: number,
+        user: User,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) return null;
+
+        if (appointment.client.id !== user.id) {
+            throw new ForbiddenException();
+        }
+
+        if (appointment.status !== AppointmentStatus.RescheduledPending) {
+            throw new BadRequestException(
+                'Appointment is not awaiting reschedule acceptance',
+            );
+        }
+
+        await this.appointmentsRepository.update(id, {
+            status: AppointmentStatus.Confirmed,
+        });
+
+        const updated = await this.findOne(id);
+        if (updated) {
+            await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
+                action: 'accept_reschedule',
+                appointmentId: updated.id,
+                previousStatus: AppointmentStatus.RescheduledPending,
+                status: AppointmentStatus.Confirmed,
+            });
         }
 
         return updated;
@@ -674,6 +709,7 @@ export class AppointmentsService {
             [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
             [AppointmentStatus.RescheduledPending]: [
                 AppointmentStatus.Confirmed,
+                AppointmentStatus.Cancelled,
             ],
             [AppointmentStatus.InProgress]: [],
             [AppointmentStatus.NoShow]: [],
