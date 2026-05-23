@@ -97,7 +97,7 @@ export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
                                 </div>
                             </div>
 
-                            <div className="text-right ml-auto">
+                            <div className="text-end ms-auto">
                                 <div className="btn-group">
                                     <button
                                         className="btn btn-default btn-sm"

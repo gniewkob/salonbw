@@ -130,7 +130,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
 
                                 {selectedImage.description ? (
                                     <div className="mt-15">
-                                        <div className="text-muted fz-11">
+                                        <div className="text-muted small">
                                             opis
                                         </div>
                                         <div className="fz-12">

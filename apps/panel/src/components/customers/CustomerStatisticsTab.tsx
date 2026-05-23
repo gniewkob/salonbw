@@ -173,7 +173,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                             {formatCurrency(stats.serviceSpent)}
                         </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                         <div className="customer-stats-subtitle">
                             zakupione produkty:{' '}
                             {favoriteProductRows.reduce(

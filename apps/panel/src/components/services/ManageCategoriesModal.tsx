@@ -155,7 +155,7 @@ export default function ManageCategoriesModal({
                                         renderCategoryRow(cat),
                                     )
                                 ) : (
-                                    <div className="p-4 text-center salonbw-muted">
+                                    <div className="p-4 text-center text-muted">
                                         Brak zdefiniowanych kategorii
                                     </div>
                                 )}
@@ -164,7 +164,7 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="modal-footer">
                         <button
-                            className="btn btn-default pull-left"
+                            className="btn btn-default float-start"
                             onClick={() => handleAdd(null)}
                         >
                             <i className="fa fa-plus mr-6"></i>

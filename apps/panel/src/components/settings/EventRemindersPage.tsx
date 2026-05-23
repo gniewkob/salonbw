@@ -200,7 +200,7 @@ export default function EventRemindersPage() {
 
             <PanelSection>
                 <div className="actions">
-                    <div className="btn-group pull-right">
+                    <div className="btn-group float-end">
                         <button
                             type="button"
                             className="btn btn-default dropdown-toggle"
@@ -208,7 +208,7 @@ export default function EventRemindersPage() {
                         >
                             więcej
                         </button>
-                        <ul className="dropdown-menu pull-right">
+                        <ul className="dropdown-menu float-end">
                             <li>
                                 <span className="settings-detail-layout__nav-disabled">
                                     Szablony przypomnień
@@ -218,7 +218,7 @@ export default function EventRemindersPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn button-blue pull-right"
+                        className="btn button-blue float-end"
                         style={{ marginRight: '8px' }}
                         onClick={() => void openEdit()}
                     >

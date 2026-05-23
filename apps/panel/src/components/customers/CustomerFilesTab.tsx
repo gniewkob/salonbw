@@ -206,7 +206,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                             {file.name}
                                                         </div>
                                                         {file.description ? (
-                                                            <div className="text-muted fz-11">
+                                                            <div className="text-muted small">
                                                                 {
                                                                     file.description
                                                                 }

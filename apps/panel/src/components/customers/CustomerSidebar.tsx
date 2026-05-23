@@ -209,7 +209,7 @@ export default function CustomerSidebar({
                                 <div className="col-xs-6">
                                     <label
                                         htmlFor="filter-age-max"
-                                        className="control-label fz-11 mb-4"
+                                        className="control-label small mb-4"
                                     >
                                         do
                                     </label>

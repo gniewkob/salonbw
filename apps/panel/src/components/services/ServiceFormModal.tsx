@@ -427,7 +427,7 @@ export default function ServiceFormModal({
                 W tej sekcji możesz przypisać zasoby (gabinety, urządzenia)
                 wymagane do wykonania tej usługi.
             </div>
-            <p className="text-center salonbw-muted p-40">
+            <p className="text-center text-muted">
                 Zasoby nie są jeszcze skonfigurowane w systemie.
             </p>
         </div>
@@ -455,7 +455,7 @@ export default function ServiceFormModal({
                             <tr>
                                 <td
                                     colSpan={4}
-                                    className="text-center salonbw-muted p-20"
+                                    className="text-center text-muted"
                                 >
                                     Nie wybrano żadnych pracowników.
                                 </td>
@@ -532,7 +532,7 @@ export default function ServiceFormModal({
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="text-right">
+                                        <td className="text-end">
                                             <button
                                                 type="button"
                                                 className="btn btn-xs btn-default"

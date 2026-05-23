@@ -517,14 +517,14 @@ export default function TimetableTemplatesPage() {
                                         action="/settings/timetable/templates"
                                     >
                                         <div className="row">
-                                            <div className="info col-xs-7">
+                                            <div className="infocol-7">
                                                 Pozycje od 1 do{' '}
                                                 {templates.length} z{' '}
                                                 <span id="total_found">
                                                     {templates.length}
                                                 </span>
                                             </div>
-                                            <div className="form_pagination col-xs-5">
+                                            <div className="form_paginationcol-5">
                                                 <input
                                                     type="text"
                                                     name="page"

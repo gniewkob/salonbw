@@ -97,7 +97,7 @@ export default function SalonTopbar() {
                     </Link>
                 </div>
             </div>
-            <div className="ml-auto">
+            <div className="ms-auto">
                 <ul className="navbar-right simple-list d-flex">
                     <li className="d-flex">
                         <div className="omnibox-wrapper">
