@@ -118,13 +118,16 @@ describe('StaffAppointmentCalendarView', () => {
         expect(completeMock).not.toHaveBeenCalled();
     });
 
-    it('calls updateAppointmentStatus(... no_show) on No-show', async () => {
+    it('calls updateAppointmentStatus(... no_show) on No-show after confirm', async () => {
         updateStatusMock.mockResolvedValueOnce(undefined);
 
         render(
             <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
         );
+        // Click No-show → ConfirmModal opens
         fireEvent.click(screen.getByRole('button', { name: 'No-show' }));
+        // Confirm in modal
+        fireEvent.click(screen.getByRole('button', { name: 'Oznacz no-show' }));
 
         await waitFor(() =>
             expect(updateStatusMock).toHaveBeenCalledWith({
@@ -134,13 +137,16 @@ describe('StaffAppointmentCalendarView', () => {
         );
     });
 
-    it('calls cancelAppointment on Anuluj', async () => {
+    it('calls cancelAppointment on Anuluj after confirm', async () => {
         cancelMock.mockResolvedValueOnce(undefined);
 
         render(
             <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
         );
+        // Click Anuluj action button → ConfirmModal opens
         fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+        // Confirm in modal ("Anuluj wizytę" is the confirm label)
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj wizytę' }));
 
         await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(101));
     });
