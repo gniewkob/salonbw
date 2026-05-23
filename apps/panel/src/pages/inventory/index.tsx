@@ -65,13 +65,13 @@ export default function InventoryHistoryPage() {
         >
             <h2>HISTORIA INWENTARYZACJI</h2>
             {isLoading ? (
-                <p className="salonbw-muted p-20">
+                <p className="text-muted">
                     Ładowanie historii inwentaryzacji...
                 </p>
             ) : (
                 <>
-                    <div className="row mb-l">
-                        <div className="col-sm-7 d-flex flex-wrap mb-m mb-md-0">
+                    <div className="row mb-3">
+                        <div className="col-sm-7 d-flex flex-wrap gap-2 mb-2 mb-md-0">
                             <input
                                 type="text"
                                 placeholder="wyszukaj w historii inwentaryzacji..."
@@ -80,7 +80,7 @@ export default function InventoryHistoryPage() {
                                     setSearch(event.target.value);
                                     setPage(1);
                                 }}
-                                className="right_space"
+                                className="form-control form-control-sm"
                             />
                         </div>
                         <div className="col-sm-5 text-right">
@@ -103,7 +103,7 @@ export default function InventoryHistoryPage() {
                             </select>
                         </div>
                     </div>
-                    <div className="column_row data_table">
+                    <div>
                         <table className="table table-bordered">
                             <thead>
                                 <tr>

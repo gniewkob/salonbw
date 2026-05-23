@@ -157,7 +157,7 @@ export default function MessagesPage() {
                 <div className="actions">
                     <button
                         type="button"
-                        className="button button-blue pull-right"
+                        className="button button-blue float-end"
                         onClick={handleNewNewsletter}
                     >
                         + nowy newsletter
@@ -170,13 +170,13 @@ export default function MessagesPage() {
                 )}
 
                 {isLoading ? (
-                    <p className="salonbw-muted p-20">Ładowanie...</p>
+                    <p className="text-muted">Ładowanie...</p>
                 ) : error ? (
                     <div className="alert alert-danger">
                         Błąd ładowania wiadomości
                     </div>
                 ) : (
-                    <div className="column_row data_table">
+                    <div>
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
