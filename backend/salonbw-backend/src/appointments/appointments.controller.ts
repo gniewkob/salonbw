@@ -61,6 +61,14 @@ export class AppointmentsController {
                 status: query.status,
             });
         }
+        if (user.role === Role.Employee) {
+            return this.appointmentsService.findAllInRange({
+                from: query.from ? new Date(query.from) : undefined,
+                to: query.to ? new Date(query.to) : undefined,
+                employeeId: user.userId,
+                status: query.status,
+            });
+        }
         return this.appointmentsService.findForUser(user.userId);
     }
 

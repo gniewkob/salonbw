@@ -173,7 +173,7 @@ export default function BookingPage() {
     if (!role) return null;
 
     return (
-        <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
+        <RouteGuard roles={['client']}>
             <SalonShell role={role}>
                 <div className="salon-section">
                     <div className="salon-column-row">

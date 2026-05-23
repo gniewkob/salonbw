@@ -277,7 +277,7 @@ export class ServiceDetailsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Receptionist)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get(':id/recipe')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get service recipe items' })
