@@ -34,6 +34,12 @@ jest.mock('@tanstack/react-query', () => ({
     useQueryClient: jest.fn(() => ({ invalidateQueries: jest.fn() })),
 }));
 
+jest.mock('@/components/calendar/FinalizationModal', () => ({
+    __esModule: true,
+    default: ({ isOpen }: { isOpen: boolean }) =>
+        isOpen ? <div data-testid="finalization-modal" /> : null,
+}));
+
 const baseAppointment = {
     id: 101,
     startTime: '2026-05-01T10:00:00.000Z',
