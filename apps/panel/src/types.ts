@@ -289,6 +289,7 @@ export interface ClientDashboardResponse {
         serviceName: string;
         startTime: string;
         employeeName: string;
+        status?: string;
     } | null;
     completedCount: number;
     serviceHistory: { id: number; name: string; count: number }[];
@@ -297,6 +298,7 @@ export interface ClientDashboardResponse {
         serviceName: string;
         startTime: string;
         status: string;
+        employeeName?: string;
     }[];
 }
 

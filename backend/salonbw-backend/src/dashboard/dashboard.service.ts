@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThan } from 'typeorm';
+import { Repository, Between, MoreThan, In } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import {
@@ -65,7 +65,10 @@ export class DashboardService {
             where: {
                 client: { id: userId },
                 startTime: MoreThan(now),
-                status: AppointmentStatus.Scheduled,
+                status: In([
+                    AppointmentStatus.Scheduled,
+                    AppointmentStatus.Confirmed,
+                ]),
             },
             relations: ['service', 'employee'],
             order: { startTime: 'ASC' },
@@ -115,7 +118,7 @@ export class DashboardService {
             where: {
                 client: { id: userId },
             },
-            relations: ['service'],
+            relations: ['service', 'employee'],
             order: { startTime: 'DESC' },
             take: 10,
         });
@@ -126,6 +129,7 @@ export class DashboardService {
                       id: upcomingAppointment.id,
                       serviceName: upcomingAppointment.service?.name ?? '',
                       startTime: upcomingAppointment.startTime,
+                      status: upcomingAppointment.status,
                       employeeName:
                           upcomingAppointment.employee?.name ??
                           upcomingAppointment.employee?.email ??
@@ -139,6 +143,8 @@ export class DashboardService {
                 serviceName: apt.service?.name ?? '',
                 startTime: apt.startTime,
                 status: apt.status,
+                employeeName:
+                    apt.employee?.name ?? apt.employee?.email ?? undefined,
             })),
         };
     }
