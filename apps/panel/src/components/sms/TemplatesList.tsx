@@ -20,12 +20,12 @@ const TYPE_LABELS: Record<TemplateType, string> = {
 };
 
 const TYPE_COLORS: Record<TemplateType, string> = {
-    appointment_reminder: 'bg-blue-100 text-blue-700',
-    appointment_confirmation: 'bg-green-100 text-green-700',
-    appointment_cancellation: 'bg-red-100 text-red-700',
-    birthday_wish: 'bg-pink-100 text-pink-700',
-    follow_up: 'bg-purple-100 text-purple-700',
-    marketing: 'bg-yellow-100 text-yellow-700',
+    appointment_reminder: 'badge text-bg-info',
+    appointment_confirmation: 'badge text-bg-success',
+    appointment_cancellation: 'badge text-bg-danger',
+    birthday_wish: 'badge text-bg-secondary bg-opacity-75 text-danger-emphasis',
+    follow_up: 'badge text-bg-secondary',
+    marketing: 'badge text-bg-warning',
     custom: 'bg-secondary bg-opacity-10 text-body',
 };
 
@@ -44,7 +44,7 @@ export default function TemplatesList({
     }
 
     return (
-        <div className="gap-2">
+        <div className="d-flex flex-column gap-2">
             {templates.map((template) => (
                 <div
                     key={template.id}
@@ -56,20 +56,20 @@ export default function TemplatesList({
                         <div className="flex-fill">
                             <div className="d-flex align-items-center gap-2 mb-2">
                                 <span
-                                    className={`px-2 py-0.5 rounded small fw-medium ${TYPE_COLORS[template.type]}`}
+                                    className={`px-2 py-1 rounded small fw-medium ${TYPE_COLORS[template.type]}`}
                                 >
                                     {TYPE_LABELS[template.type]}
                                 </span>
-                                <span className="px-2 py-0.5 rounded small bg-light text-muted text-uppercase">
+                                <span className="px-2 py-1 rounded small bg-light text-muted text-uppercase">
                                     {template.channel}
                                 </span>
                                 {template.isDefault && (
-                                    <span className="px-2 py-0.5 rounded small bg-primary bg-opacity-10 text-primary">
+                                    <span className="px-2 py-1 rounded small bg-primary bg-opacity-10 text-primary">
                                         Domyślny
                                     </span>
                                 )}
                                 {!template.isActive && (
-                                    <span className="px-2 py-0.5 rounded small bg-secondary bg-opacity-25 text-muted">
+                                    <span className="px-2 py-1 rounded small bg-secondary bg-opacity-25 text-muted">
                                         Nieaktywny
                                     </span>
                                 )}
@@ -77,7 +77,15 @@ export default function TemplatesList({
                             <h4 className="fw-medium text-dark">
                                 {template.name}
                             </h4>
-                            <p className="small text-muted mt-1 line-clamp-2">
+                            <p
+                                className="small text-muted mt-1"
+                                style={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                }}
+                            >
                                 {template.content}
                             </p>
                             {template.availableVariables &&
@@ -87,7 +95,7 @@ export default function TemplatesList({
                                             (v) => (
                                                 <code
                                                     key={v}
-                                                    className="px-1.5 py-0.5 bg-light text-muted small rounded"
+                                                    className="px-2 py-1 bg-light text-muted small rounded"
                                                 >
                                                     {`{{${v}}}`}
                                                 </code>
@@ -104,11 +112,14 @@ export default function TemplatesList({
                                     onClick={() => {
                                         void onSetDefault(template.id);
                                     }}
-                                    className="p-1 text-secondary bg-opacity-10 rounded"
+                                    className="p-1 text-secondary bg-secondary bg-opacity-10 rounded"
                                     title="Ustaw jako domyślny"
                                 >
                                     <svg
-                                        className="w-4 h-4"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                        }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -130,7 +141,10 @@ export default function TemplatesList({
                                     title="Edytuj"
                                 >
                                     <svg
-                                        className="w-4 h-4"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                        }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -150,11 +164,14 @@ export default function TemplatesList({
                                     onClick={() => {
                                         void onDelete(template.id);
                                     }}
-                                    className="p-1 text-danger bg-opacity-10 rounded"
+                                    className="p-1 text-danger bg-danger bg-opacity-10 rounded"
                                     title="Usuń"
                                 >
                                     <svg
-                                        className="w-4 h-4"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                        }}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"

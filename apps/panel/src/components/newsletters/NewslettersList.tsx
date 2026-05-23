@@ -27,11 +27,11 @@ const STATUS_LABELS: Record<NewsletterStatus, string> = {
 
 const STATUS_COLORS: Record<NewsletterStatus, string> = {
     draft: 'bg-secondary bg-opacity-10 text-body',
-    scheduled: 'bg-blue-100 text-blue-700',
-    sending: 'bg-yellow-100 text-yellow-700',
-    sent: 'bg-green-100 text-green-700',
-    partial_failure: 'bg-orange-100 text-orange-700',
-    failed: 'bg-red-100 text-red-700',
+    scheduled: 'badge text-bg-info',
+    sending: 'badge text-bg-warning',
+    sent: 'badge text-bg-success',
+    partial_failure: 'badge text-bg-warning',
+    failed: 'badge text-bg-danger',
     cancelled: 'bg-secondary bg-opacity-25 text-muted',
 };
 
@@ -48,7 +48,7 @@ export default function NewslettersList({
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
                 <span className="ms-2 text-muted">
                     Ładowanie newsletterów...
                 </span>
@@ -81,11 +81,11 @@ export default function NewslettersList({
     }
 
     return (
-        <div className="gap-2">
+        <div className="d-flex flex-column gap-2">
             {newsletters.map((newsletter) => (
                 <div
                     key={newsletter.id}
-                    className="bg-white border border-secondary border-opacity-25 rounded-3 p-3 -shadow"
+                    className="bg-white border border-secondary border-opacity-25 rounded-3 p-3"
                 >
                     <div className="d-flex align-items-start justify-content-between">
                         <div className="flex-fill">
@@ -94,13 +94,13 @@ export default function NewslettersList({
                                     {newsletter.name}
                                 </h3>
                                 <span
-                                    className={`px-2 py-0.5 small rounded-circle ${
+                                    className={`px-2 py-1 small rounded-circle ${
                                         STATUS_COLORS[newsletter.status]
                                     }`}
                                 >
                                     {STATUS_LABELS[newsletter.status]}
                                 </span>
-                                <span className="px-2 py-0.5 small rounded-circle bg-light text-muted">
+                                <span className="px-2 py-1 small rounded-circle bg-light text-muted">
                                     {newsletter.channel === 'email'
                                         ? 'Email'
                                         : 'SMS'}
@@ -165,7 +165,7 @@ export default function NewslettersList({
                                         onClick={() => {
                                             void onSend(newsletter.id);
                                         }}
-                                        className="p-2 text-success bg-opacity-10 rounded-3"
+                                        className="p-2 text-success bg-success bg-opacity-10 rounded-3"
                                         title="Wyślij"
                                     >
                                         <svg
@@ -185,7 +185,7 @@ export default function NewslettersList({
                                     <button
                                         type="button"
                                         onClick={() => onEdit(newsletter)}
-                                        className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                        className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                         title="Edytuj"
                                     >
                                         <svg
@@ -235,7 +235,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onViewRecipients(newsletter.id);
                                     }}
-                                    className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                    className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                     title="Odbiorcy"
                                 >
                                     <svg
@@ -258,7 +258,7 @@ export default function NewslettersList({
                                 onClick={() => {
                                     void onDuplicate(newsletter.id);
                                 }}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Duplikuj"
                             >
                                 <svg
@@ -281,7 +281,7 @@ export default function NewslettersList({
                                     onClick={() => {
                                         void onDelete(newsletter.id);
                                     }}
-                                    className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                    className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                     title="Usuń"
                                 >
                                     <svg

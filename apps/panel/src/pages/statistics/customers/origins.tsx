@@ -161,7 +161,10 @@ export default function ClientOriginsPage() {
                                         <div className="salonbw-widget__header">
                                             Podział według źródła
                                         </div>
-                                        <div className="salonbw-widget__content h-[350px]">
+                                        <div
+                                            className="salonbw-widget__content"
+                                            style={{ height: 350 }}
+                                        >
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -217,7 +220,10 @@ export default function ClientOriginsPage() {
                                         <div className="salonbw-widget__header">
                                             Szczegóły
                                         </div>
-                                        <div className="salonbw-widget__content h-[350px]">
+                                        <div
+                                            className="salonbw-widget__content"
+                                            style={{ height: 350 }}
+                                        >
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.origins}

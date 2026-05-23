@@ -131,7 +131,7 @@ export default function SuppliersTab() {
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="px-3 py-2 bg-teal-600 text-white rounded-3"
+                    className="px-3 py-2 btn-salon text-white rounded-3"
                 >
                     + Dodaj dostawcę
                 </button>
@@ -145,8 +145,8 @@ export default function SuppliersTab() {
                     Brak dostawców. Dodaj pierwszego dostawcę.
                 </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-100">
+                <div className="overflow-auto">
+                    <table className="w-100">
                         <thead className="bg-light">
                             <tr>
                                 <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -209,7 +209,7 @@ export default function SuppliersTab() {
                                             onClick={() =>
                                                 handleOpenModal(supplier)
                                             }
-                                            className="text-teal-600 me-2"
+                                            className="text-primary me-2"
                                         >
                                             Edytuj
                                         </button>
@@ -235,7 +235,7 @@ export default function SuppliersTab() {
                     title={
                         editingSupplier ? 'Edytuj dostawcę' : 'Nowy dostawca'
                     }
-                    maxWidthClassName="max-w-md max-h-[90vh] overflow-y-auto"
+                    maxWidthClassName="overflow-y-auto"
                 >
                     {error && (
                         <div className="mb-3 rounded-3 border border-danger bg-danger bg-opacity-10 p-2 small text-danger">
@@ -281,7 +281,7 @@ export default function SuppliersTab() {
                                 className="w-100 border border-secondary border-opacity-50 rounded-3 px-3 py-2"
                             />
                         </div>
-                        <div className="-cols-2 gap-3">
+                        <div className="row row-cols-1 row-cols-sm-2 g-3">
                             <div>
                                 <label className="d-block small fw-medium text-body mb-1">
                                     Email
@@ -393,7 +393,7 @@ export default function SuppliersTab() {
                                     createSupplier.isPending ||
                                     updateSupplier.isPending
                                 }
-                                className="rounded-3 bg-teal-600 px-3 py-2 text-white"
+                                className="rounded-3 btn-salon px-3 py-2 text-white"
                             >
                                 {createSupplier.isPending ||
                                 updateSupplier.isPending

@@ -149,7 +149,10 @@ export default function CustomersReturning() {
                                         <div className="salonbw-tile__label">
                                             Powracający
                                         </div>
-                                        <div className="salonbw-tile__value text-[#11ce44]">
+                                        <div
+                                            className="salonbw-tile__value"
+                                            style={{ color: '#11ce44' }}
+                                        >
                                             {stats.returningClients}
                                             <span className="small ms-5">
                                                 ({stats.returningPercentage}%)
@@ -176,7 +179,10 @@ export default function CustomersReturning() {
                                         <div className="salonbw-widget__header">
                                             Nowi vs powracający (miesięcznie)
                                         </div>
-                                        <div className="salonbw-widget__content h-[300px]">
+                                        <div
+                                            className="salonbw-widget__content"
+                                            style={{ height: 300 }}
+                                        >
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.byMonth}
@@ -226,7 +232,10 @@ export default function CustomersReturning() {
                                         <div className="salonbw-widget__header">
                                             Podział klientów
                                         </div>
-                                        <div className="salonbw-widget__content h-[300px]">
+                                        <div
+                                            className="salonbw-widget__content"
+                                            style={{ height: 300 }}
+                                        >
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie

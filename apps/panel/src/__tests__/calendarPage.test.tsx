@@ -170,6 +170,31 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
     ),
 }));
 
+jest.mock('@/components/calendar/AppointmentQuickModal', () => ({
+    __esModule: true,
+    default: ({
+        open,
+        event,
+        onClose,
+        onOpenFull,
+    }: {
+        open: boolean;
+        event?: { id?: number } | null;
+        onClose: () => void;
+        onOpenFull: () => void;
+    }) => (
+        <div data-testid="appointment-quick-modal">
+            {open ? `open:${event?.id ?? 'none'}` : 'closed'}
+            <button type="button" onClick={onClose}>
+                close-quick
+            </button>
+            <button type="button" onClick={onOpenFull}>
+                open-full
+            </button>
+        </div>
+    ),
+}));
+
 describe('CalendarPage', () => {
     beforeEach(() => {
         originalConsoleError = console.error;

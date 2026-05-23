@@ -14,17 +14,17 @@ const STATUS_STYLES: Record<
     { bg: string; text: string; label: string }
 > = {
     pending: {
-        bg: 'bg-yellow-100',
-        text: 'text-yellow-700',
+        bg: 'bg-warning-subtle',
+        text: 'text-warning',
         label: 'Oczekuje',
     },
-    sent: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Wysłano' },
+    sent: { bg: 'bg-info-subtle', text: 'text-info', label: 'Wysłano' },
     delivered: {
-        bg: 'bg-green-100',
-        text: 'text-green-700',
+        bg: 'bg-success-subtle',
+        text: 'text-success',
         label: 'Dostarczono',
     },
-    failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Błąd' },
+    failed: { bg: 'bg-danger-subtle', text: 'text-danger', label: 'Błąd' },
     rejected: {
         bg: 'bg-secondary bg-opacity-10',
         text: 'text-body',
@@ -36,7 +36,7 @@ export default function SmsHistory({ logs, loading }: Props) {
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
                 <span className="ms-2 text-muted">Ładowanie historii...</span>
             </div>
         );
@@ -51,8 +51,8 @@ export default function SmsHistory({ logs, loading }: Props) {
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-100">
+        <div className="overflow-auto">
+            <table className="w-100">
                 <thead className="bg-light">
                     <tr>
                         <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

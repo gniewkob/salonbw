@@ -31,7 +31,10 @@ function DroppableGroupItem({
     return (
         <li
             ref={setNodeRef}
-            className={`${isActive ? 'active ' : ''}${isOver ? 'bg-[#008bb4]/10 ' : ''}rounded transition-colors duration-200`}
+            className={`${isActive ? 'active ' : ''}rounded`}
+            style={
+                isOver ? { backgroundColor: 'rgba(0,139,180,0.10)' } : undefined
+            }
         >
             <a
                 className="standard_group"
@@ -48,7 +51,9 @@ function DroppableGroupItem({
                 </div>
                 {group.name}
                 {isOver ? (
-                    <span className="ml-2 text-[11px]">↑ upuść</span>
+                    <span className="ms-2" style={{ fontSize: 11 }}>
+                        ↑ upuść
+                    </span>
                 ) : null}
             </a>
         </li>

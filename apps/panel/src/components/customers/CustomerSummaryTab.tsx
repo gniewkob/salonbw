@@ -109,8 +109,8 @@ export default function CustomerSummaryTab({
         <div className="row">
             <div className="col-sm-12">
                 {/* KPI Tiles */}
-                <div className="row mb-5 ml-0 mr-0">
-                    <div className="col-xs-6 col-sm-3 px-3">
+                <div className="row mb-5 ms-0 me-0">
+                    <div className="col-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">Wizyty</div>
                             <div className="salonbw-tile__value">
@@ -120,7 +120,7 @@ export default function CustomerSummaryTab({
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-6 col-sm-3 px-3">
+                    <div className="col-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">Wydano</div>
                             <div className="salonbw-tile__value text-accent">
@@ -130,7 +130,7 @@ export default function CustomerSummaryTab({
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-6 col-sm-3 px-3">
+                    <div className="col-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">
                                 Średnia wartość
@@ -142,7 +142,7 @@ export default function CustomerSummaryTab({
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-6 col-sm-3 px-3">
+                    <div className="col-6 col-sm-3 px-3">
                         <div className="salonbw-tile">
                             <div className="salonbw-tile__label">
                                 Ostatnia wizyta

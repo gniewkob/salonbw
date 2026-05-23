@@ -63,7 +63,7 @@ export default function DataTable<T>({
                 onChange={(e) => setSearch(e.target.value)}
                 className="border p-1 mb-2"
             />
-            <table className="min-w-100 border">
+            <table className="w-100 border">
                 <thead>
                     <tr className="bg-light">
                         {columns.map((col) => (

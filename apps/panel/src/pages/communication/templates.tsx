@@ -226,7 +226,7 @@ export default function TemplatesPage() {
                                             <td>
                                                 <strong>{template.name}</strong>
                                                 {template.description && (
-                                                    <div className="salonbw-muted small">
+                                                    <div className="text-muted small">
                                                         {template.description}
                                                     </div>
                                                 )}
@@ -247,7 +247,7 @@ export default function TemplatesPage() {
                                             <td>
                                                 <div className="salonbw-template-preview">
                                                     {template.subject && (
-                                                        <div className="salonbw-muted">
+                                                        <div className="text-muted">
                                                             Temat:{' '}
                                                             {template.subject}
                                                         </div>

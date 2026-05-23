@@ -93,7 +93,7 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
                     <input
                         type="text"
                         placeholder="Szukaj klienta (imię, nazwisko, telefon)..."
-                        className="d-block w-100 pl-10 pe-3 py-2 border border-secondary border-opacity-50 rounded-2 leading-5 bg-white placeholder-gray-500 focus:outline- focus:"
+                        className="d-block w-100 pl-10 pe-3 py-2 border border-secondary border-opacity-50 rounded-2 leading-5 bg-white placeholder-gray-500outline-"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -107,10 +107,10 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
             <div className="flex-fill overflow-auto">
                 {loading ? (
                     <div className="d-flex justify-content-center p-4">
-                        <div className="rounded-circle h-8 w-8 border-bottom-2 border-sky-600"></div>
+                        <div className="spinner-border text-info"></div>
                     </div>
                 ) : (
-                    <table className="min-w-100">
+                    <table className="w-100">
                         <thead className="bg-light">
                             <tr>
                                 <th

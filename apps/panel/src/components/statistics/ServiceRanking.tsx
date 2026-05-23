@@ -11,7 +11,7 @@ export default function ServiceRanking({ data, loading }: Props) {
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-4">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
             </div>
         );
     }
@@ -28,8 +28,8 @@ export default function ServiceRanking({ data, loading }: Props) {
     const maxBookings = Math.max(...data.map((s) => s.bookingCount));
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-100">
+        <div className="overflow-auto">
+            <table className="w-100">
                 <thead className="bg-light">
                     <tr>
                         <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

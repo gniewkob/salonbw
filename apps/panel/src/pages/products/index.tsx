@@ -154,7 +154,7 @@ export default function WarehouseProductsPage() {
             heading="Magazyn / Produkty"
             activeTab="products"
         >
-            <div className="row mb-l">
+            <div className="row mb-3">
                 <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
                     <input
                         type="text"
@@ -179,7 +179,7 @@ export default function WarehouseProductsPage() {
                     </select>
                 </div>
                 <div className="col-sm-8 col-lg-7">
-                    <div className="d-flex flex-wrap jc-end">
+                    <div className="d-flex flex-wrap justify-content-end">
                         <Link href="/sales/new" className="button ml-xs">
                             dodaj sprzedaż
                         </Link>
@@ -196,7 +196,7 @@ export default function WarehouseProductsPage() {
                 </div>
             </div>
 
-            <div className="column_row data_table">
+            <div className="">
                 <table className="table table-bordered">
                     <thead>
                         <tr>

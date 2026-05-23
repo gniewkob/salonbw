@@ -2252,6 +2252,21 @@ tr.customer-row:hover .customers-drag-handle {
 
 .navbar .navbar-toggle {
     margin-top: 3px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 9px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.navbar .navbar-toggle .icon-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 1px;
+    background-color: #888;
 }
 
 /* Omnibox (Search) */
@@ -6487,4 +6502,1144 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
+}
+
+/* Typography micro-utilities (legacy markup compatibility) */
+.fz-10 {
+    font-size: 10px;
+}
+.fz-11 {
+    font-size: 11px;
+}
+.fz-12 {
+    font-size: 12px;
+}
+.fz-13 {
+    font-size: 13px;
+}
+.fz-14 {
+    font-size: 14px;
+}
+
+.fw-400 {
+    font-weight: 400;
+}
+.fw-600 {
+    font-weight: 600;
+}
+.fw-700 {
+    font-weight: 700;
+}
+
+.lh-14 {
+    line-height: 1.4;
+}
+
+.text-333 {
+    color: #333;
+}
+.text-555 {
+    color: #555;
+}
+.text-666 {
+    color: #666;
+}
+.text-777 {
+    color: #777;
+}
+.text-888 {
+    color: #888;
+}
+.text-999 {
+    color: #999;
+}
+.text-bbb {
+    color: #bbb;
+}
+
+/* label-primary (salon brand color variant) */
+.label-primary {
+    background-color: #008bb4;
+    color: #fff;
+}
+
+/* bg-dynamic: used with inline style color — base styles only */
+.bg-dynamic {
+    background-color: currentColor;
+}
+
+/* w/h pixel helpers used in color dots */
+.w-8 {
+    width: 8px;
+}
+.h-8 {
+    height: 8px;
+}
+.w-10 {
+    width: 10px;
+}
+.h-10 {
+    height: 10px;
+}
+.w-24 {
+    width: 24px;
+}
+.h-24 {
+    height: 24px;
+}
+
+/* ── salonbw-tile: KPI stat tile ───────────────────────────────────── */
+.salonbw-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 4px;
+    min-width: 80px;
+    text-align: center;
+}
+.salonbw-tile__label {
+    font-size: 11px;
+    color: #8b949d;
+    margin-bottom: 2px;
+}
+.salonbw-tile__value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.1;
+}
+
+/* ── salonbw-stat: inline stat with value + label ───────────────────── */
+.salonbw-stat__value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.1;
+}
+.salonbw-stat__label {
+    font-size: 11px;
+    color: #8b949d;
+}
+
+/* ── salonbw-stat-card: dashboard KPI card ──────────────────────────── */
+.salonbw-stat-card {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    padding: 16px;
+}
+.salonbw-stat-card__title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b949d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 4px;
+}
+.salonbw-stat-card__value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+.salonbw-stat-card__change {
+    font-size: 11px;
+    color: #e36b5d;
+}
+.salonbw-stat-card__change.positive {
+    color: #27ae60;
+}
+.salonbw-stat-card__chart {
+    margin-top: 8px;
+}
+
+/* ── salonbw-sidebar (customer detail sidebar) ──────────────────────── */
+.salonbw-sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+/* text-accent: primary data/KPI accent color */
+.text-accent {
+    color: #2aa0cf;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-btn — standalone action buttons (used in Reception / Staff views)
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.salonbw-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.salonbw-btn--sm {
+    padding: 3px 8px;
+    font-size: 12px;
+}
+.salonbw-btn--primary {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+.salonbw-btn--primary:hover {
+    background: #0b5ed7;
+}
+.salonbw-btn--success {
+    background: #198754;
+    color: #fff;
+    border-color: #198754;
+}
+.salonbw-btn--success:hover {
+    background: #157347;
+}
+.salonbw-btn--warning {
+    background: #ffc107;
+    color: #212529;
+    border-color: #ffc107;
+}
+.salonbw-btn--warning:hover {
+    background: #e6ac06;
+}
+.salonbw-btn--danger {
+    background: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+.salonbw-btn--danger:hover {
+    background: #bb2d3b;
+}
+.salonbw-btn--secondary {
+    background: #fff;
+    color: #495057;
+    border-color: #ced4da;
+}
+.salonbw-btn--secondary:hover {
+    background: #f8f9fa;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-status-badge — appointment status pill
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.salonbw-status--scheduled {
+    background: #e9ecef;
+    color: #495057;
+}
+.salonbw-status--confirmed {
+    background: #cfe2ff;
+    color: #084298;
+}
+.salonbw-status--in-progress {
+    background: #cff4fc;
+    color: #055160;
+}
+.salonbw-status--completed {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+.salonbw-status--cancelled {
+    background: #f8d7da;
+    color: #842029;
+    opacity: 0.8;
+}
+.salonbw-status--no-show {
+    background: #fff3cd;
+    color: #664d03;
+    opacity: 0.8;
+}
+.salonbw-status--online_pending {
+    background: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffc107;
+}
+.salonbw-status--rescheduled_pending {
+    background: #fde8d8;
+    color: #7b3d00;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-loading / empty states
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-loading {
+    padding: 24px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+.salonbw-reception-empty {
+    padding: 40px 24px;
+    text-align: center;
+    color: #6c757d;
+}
+.salonbw-reception-empty__icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-reception-list — StaffAppointmentCalendarView
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-reception-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.salonbw-reception-item {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    padding: 12px 14px;
+}
+.salonbw-reception-item__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.salonbw-reception-item__title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: #2c3e50;
+}
+.salonbw-reception-item__meta {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+.salonbw-reception-item__details {
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 8px;
+}
+.salonbw-reception-item__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-reception-view — ReceptionView table layout
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-reception-view {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.salonbw-reception-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.salonbw-reception-summary__item {
+    padding: 8px 14px;
+    background: #f8f9fa;
+    border: 1px solid #e6eaee;
+    border-radius: 4px;
+    text-align: center;
+    min-width: 80px;
+}
+.salonbw-reception-summary__item--scheduled {
+    border-left: 3px solid #6c757d;
+}
+.salonbw-reception-summary__item--confirmed {
+    border-left: 3px solid #0d6efd;
+}
+.salonbw-reception-summary__item--in-progress {
+    border-left: 3px solid #0dcaf0;
+}
+.salonbw-reception-summary__item--completed {
+    border-left: 3px solid #198754;
+}
+.salonbw-reception-summary__value {
+    font-size: 20px;
+    font-weight: 700;
+    display: block;
+    color: #2c3e50;
+}
+.salonbw-reception-summary__label {
+    font-size: 11px;
+    color: #6c757d;
+}
+.salonbw-reception-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.salonbw-reception-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.salonbw-reception-table th,
+.salonbw-reception-table td {
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f3f6;
+    vertical-align: middle;
+}
+.salonbw-reception-table th {
+    font-weight: 600;
+    color: #495057;
+}
+.salonbw-reception-time {
+    white-space: nowrap;
+    font-weight: 500;
+}
+.salonbw-reception-client {
+    font-weight: 500;
+}
+.salonbw-reception-phone {
+    font-size: 12px;
+    color: #6c757d;
+}
+.salonbw-reception-actions {
+    white-space: nowrap;
+    text-align: right;
+}
+.salonbw-reception-no-actions {
+    color: #adb5bd;
+    font-size: 12px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-dashboard — AdminDashboard / ClientDashboard
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.salonbw-dashboard__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.salonbw-dashboard__title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: #2c3e50;
+}
+.salonbw-dashboard__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.salonbw-dashboard__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+.salonbw-dashboard__section {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.salonbw-dashboard__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f3f6;
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+}
+.salonbw-dashboard__section-footer {
+    padding: 10px 16px;
+    border-top: 1px solid #f0f3f6;
+    background: #fafbfc;
+    font-size: 12px;
+    text-align: center;
+}
+.salonbw-dashboard__period {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.salonbw-dashboard__period-label {
+    font-size: 12px;
+    color: #6c757d;
+}
+.salonbw-dashboard__period-btn {
+    padding: 3px 10px;
+    font-size: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    background: #fff;
+    cursor: pointer;
+    color: #495057;
+}
+.salonbw-dashboard__period-btn.active,
+.salonbw-dashboard__period-btn:hover {
+    background: #008bb4;
+    color: #fff;
+    border-color: #008bb4;
+}
+.salonbw-dashboard__loading {
+    padding: 24px;
+    text-align: center;
+    color: #6c757d;
+}
+.salonbw-dashboard__empty {
+    padding: 24px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-appointments-list — upcoming/recent appointment cards
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-appointments-list {
+    display: flex;
+    flex-direction: column;
+}
+.salonbw-appointment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f3f6;
+    font-size: 13px;
+}
+.salonbw-appointment-item:last-child {
+    border-bottom: none;
+}
+.salonbw-appointment-item--empty {
+    color: #6c757d;
+    justify-content: center;
+    padding: 20px;
+}
+.salonbw-appointment-item--upcoming {
+    background: #f8faff;
+}
+.salonbw-appointment-item__time {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #6c757d;
+    min-width: 45px;
+}
+.salonbw-appointment-item__service {
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.salonbw-appointment-item__details {
+    font-size: 12px;
+    color: #6c757d;
+}
+.salonbw-appointment-item__client {
+    font-size: 12px;
+    color: #495057;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-mini-chart — sparkline bar chart
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 32px;
+}
+.salonbw-mini-chart__bar {
+    flex: 1;
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: #dee2e6;
+}
+.salonbw-mini-chart__bar--blue {
+    background: #0d6efd;
+}
+.salonbw-mini-chart__bar--green {
+    background: #198754;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-link / salonbw-icon
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-link {
+    color: #008bb4;
+    text-decoration: none;
+    font-size: 13px;
+}
+.salonbw-link:hover {
+    text-decoration: underline;
+}
+.salonbw-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+.salonbw-icon--plus::before {
+    content: '+';
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   salonbw-widget — generic panel widget (customer tabs etc.)
+   ══════════════════════════════════════════════════════════════════ */
+.salonbw-widget {
+    background: #fff;
+    border: 1px solid #e6eaee;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+.salonbw-widget__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f3f6;
+    font-weight: 600;
+    font-size: 13px;
+}
+.salonbw-widget__content {
+    padding: 12px 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Icon / image size utilities (Tailwind-compatible names)
+   w-4=1rem  w-5=1.25rem  w-6=1.5rem  w-8=2rem  w-12=3rem
+   resize-none — disable textarea resize handle
+   max-w-7xl — wide container cap (80rem)
+   space-x-N — horizontal gap between inline siblings
+   ══════════════════════════════════════════════════════════════════ */
+.w-4 {
+    width: 1rem !important;
+}
+.h-4 {
+    height: 1rem !important;
+}
+.w-5 {
+    width: 1.25rem !important;
+}
+.h-5 {
+    height: 1.25rem !important;
+}
+.w-6 {
+    width: 1.5rem !important;
+}
+.h-6 {
+    height: 1.5rem !important;
+}
+.w-8 {
+    width: 2rem !important;
+}
+.h-8 {
+    height: 2rem !important;
+}
+.w-12 {
+    width: 3rem !important;
+}
+.h-12 {
+    height: 3rem !important;
+}
+.resize-none {
+    resize: none !important;
+}
+.max-w-sm {
+    max-width: 24rem;
+}
+.max-w-md {
+    max-width: 28rem;
+}
+.max-w-lg {
+    max-width: 32rem;
+}
+.max-w-xl {
+    max-width: 36rem;
+}
+.max-w-2xl {
+    max-width: 42rem;
+}
+.max-w-7xl {
+    max-width: 80rem;
+}
+.shadow-xl {
+    box-shadow:
+        0 20px 25px -5px rgb(0 0 0 / 0.1),
+        0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+.space-x-2 > * + * {
+    margin-left: 0.5rem;
+}
+.space-x-8 > * + * {
+    margin-left: 2rem;
+}
+
+/* ─── Utility: display / sizing ─────────────────────────────────────────── */
+.w-full {
+    width: 100%;
+}
+.auto-width {
+    width: auto;
+}
+.inline_block {
+    display: inline-block;
+}
+
+/* ─── Page layout (communication / booking wizard wrappers) ────────────── */
+.salonbw-page {
+    padding: 0 1.5rem 2rem;
+}
+.salonbw-page__description {
+    color: #6c757d;
+    margin-bottom: 1.25rem;
+    font-size: 0.9375rem;
+}
+.salonbw-page__toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* ─── Multi-step wizard ────────────────────────────────────────────────── */
+.salonbw-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+}
+.salonbw-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.45;
+}
+.salonbw-step.active {
+    opacity: 1;
+    font-weight: 600;
+}
+.salonbw-step__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: #e9ecef;
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+.salonbw-step.active .salonbw-step__number {
+    background: var(--salon-accent, #8b5cf6);
+    color: #fff;
+}
+.salonbw-step__label {
+    font-size: 0.875rem;
+}
+.salonbw-step__divider {
+    flex: 1;
+    height: 2px;
+    background: #dee2e6;
+    margin: 0 0.75rem;
+}
+
+/* ─── Mass communication layout ───────────────────────────────────────── */
+.salonbw-mass-communication {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.salonbw-mass-communication--success {
+    border-color: #198754;
+    background: #f0fdf4;
+}
+.salonbw-mass-communication__section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+.salonbw-mass-communication__section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.salonbw-mass-communication__subsection {
+    margin-top: 1rem;
+    padding-left: 1rem;
+}
+.salonbw-mass-communication__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* ─── Channel selector (SMS / Email) ──────────────────────────────────── */
+.salonbw-channel-selector {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.salonbw-channel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+}
+.salonbw-channel input[type="radio"] {
+    display: none;
+}
+.salonbw-channel.active {
+    border-color: var(--salon-accent, #8b5cf6);
+    background: #f5f0ff;
+}
+.salonbw-channel__icon {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* ─── Checkbox row ─────────────────────────────────────────────────────── */
+.salonbw-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
+    cursor: pointer;
+    font-weight: 400;
+}
+.salonbw-group-dot {
+    display: inline-block;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ─── Recipient count badge ────────────────────────────────────────────── */
+.salonbw-recipient-count {
+    font-size: 0.9375rem;
+    color: #495057;
+}
+
+/* ─── Template list & items ────────────────────────────────────────────── */
+.salonbw-template-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.salonbw-template-item {
+    padding: 0.75rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.salonbw-template-item:hover {
+    border-color: #adb5bd;
+    background: #f8f9fa;
+}
+.salonbw-template-item.active {
+    border-color: var(--salon-accent, #8b5cf6);
+    background: #f5f0ff;
+}
+.salonbw-template-item__name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+.salonbw-template-item__preview {
+    display: block;
+    font-size: 0.8125rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.salonbw-template-preview {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.875rem;
+    font-size: 0.9375rem;
+    white-space: pre-wrap;
+    color: #212529;
+}
+
+/* ─── Textarea + char count ────────────────────────────────────────────── */
+.salonbw-textarea {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: #212529;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    resize: vertical;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.salonbw-textarea:focus {
+    border-color: var(--salon-accent, #8b5cf6);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+}
+.salonbw-char-count {
+    display: block;
+    font-size: 0.8125rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    text-align: right;
+}
+
+/* ─── Variables help section ───────────────────────────────────────────── */
+.salonbw-variables-help {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    color: #6c757d;
+}
+.salonbw-variables-help h4 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-bottom: 0.375rem;
+    color: #495057;
+}
+.salonbw-variables-help code {
+    display: inline-block;
+    margin: 0.125rem 0.25rem;
+    padding: 0.125rem 0.375rem;
+    background: #e9ecef;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #495057;
+}
+
+/* ─── salonbw modal (used in communication pages) ──────────────────────── */
+.salonbw-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    z-index: 1500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.salonbw-modal {
+    background: #fff;
+    border-radius: 0.75rem;
+    width: min(560px, 100%);
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.salonbw-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    font-size: 1rem;
+}
+.salonbw-modal__close {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: #6c757d;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+.salonbw-modal__close:hover {
+    color: #212529;
+}
+.salonbw-modal__body {
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+.salonbw-modal__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* ─── Send result (post-send confirmation) ─────────────────────────────── */
+.salonbw-send-result {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+.salonbw-send-result__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: #198754;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+.salonbw-send-result__stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.5rem 0;
+}
+
+/* ─── Stat variants (used in mass communication result) ────────────────── */
+.salonbw-stat--success .salonbw-stat__value {
+    color: #198754;
+}
+.salonbw-stat--error .salonbw-stat__value {
+    color: #dc3545;
+}
+
+/* ─── Communication detail page ────────────────────────────────────────── */
+.communication-detail-page {
+    padding: 0 1.5rem 2rem;
+    max-width: 900px;
+}
+
+/* ─── Pagination column helpers ────────────────────────────────────────── */
+.infocol-7 {
+    flex: 0 0 58.33333%;
+    max-width: 58.33333%;
+    padding: 0 0.75rem;
+}
+.form_paginationcol-5 {
+    flex: 0 0 41.66667%;
+    max-width: 41.66667%;
+    padding: 0 0.75rem;
+}
+
+/* ─── button-dropdown ───────────────────────────────────────────────────── */
+.button-dropdown {
+    position: relative;
+}
+
+/* ─── Customer display helpers ──────────────────────────────────────────── */
+.customer-info-summary {
+    margin-bottom: 1.5rem;
+}
+.customers_main_show_customer {
+    cursor: pointer;
+}
+.close_all {
+    cursor: pointer;
+    opacity: 0.6;
+}
+.close_all:hover {
+    opacity: 1;
+}
+.new_customer {
+    padding: 1rem 0;
+}
+
+/* ─── Customer page helpers ─────────────────────────────────────────────── */
+.show_customer {
+    min-height: 2rem;
+}
+.icon-opacity {
+    opacity: 0.55;
+}
+.pointer {
+    cursor: pointer;
+}
+.versum-phone-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: inherit;
+    text-decoration: none;
+}
+.versum-phone-button:hover {
+    text-decoration: underline;
+}
+.salonbw-btn--default {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #212529;
+}
+.salonbw-btn--default:hover {
+    background: #e9ecef;
+    border-color: #ced4da;
+}
+
+/* ─── Versum spacing utilities (mt/mb suffixes not covered by Bootstrap) ── */
+.mt-m {
+    margin-top: 1.5rem !important;
+}
+.mt-l {
+    margin-top: 2rem !important;
 }

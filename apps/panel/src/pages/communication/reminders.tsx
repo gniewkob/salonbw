@@ -93,7 +93,10 @@ export default function RemindersPage() {
                                     </span>
                                 </div>
                                 <div className="salonbw-stat">
-                                    <span className="salonbw-stat__value text-[#25B4C1]">
+                                    <span
+                                        className="salonbw-stat__value"
+                                        style={{ color: '#25B4C1' }}
+                                    >
                                         {stats?.upcoming ?? '-'}
                                     </span>
                                     <span className="salonbw-stat__label">
@@ -106,7 +109,7 @@ export default function RemindersPage() {
                         {/* Manual trigger */}
                         <div className="salonbw-mass-communication__section">
                             <h3>Ręczne wyzwalanie</h3>
-                            <p className="salonbw-muted">
+                            <p className="text-muted">
                                 Wyślij przypomnienia do wszystkich klientów z
                                 wizytami w najbliższych godzinach.
                             </p>
@@ -152,7 +155,7 @@ export default function RemindersPage() {
                             <div className="salonbw-mass-communication__section">
                                 <h3>Wyniki wysyłki ({results.length} wizyt)</h3>
                                 {results.length === 0 ? (
-                                    <p className="salonbw-muted">
+                                    <p className="text-muted">
                                         Brak wizyt w wybranym zakresie godzin.
                                     </p>
                                 ) : (

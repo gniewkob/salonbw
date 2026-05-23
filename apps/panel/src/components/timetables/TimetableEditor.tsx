@@ -160,7 +160,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                     type="checkbox"
                                     checked={isWorking}
                                     onChange={() => toggleDay(day)}
-                                    className="w-5 h-5 text-primary rounded focus:"
+                                    className="form-check-input"
                                 />
                                 <span
                                     className={`fw-medium ${isWorking ? 'text-dark' : 'text-secondary'}`}
@@ -186,7 +186,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small focus:"
+                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small"
                                         />
                                         <label className="small text-muted">
                                             Do:
@@ -201,7 +201,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small focus:"
+                                            className="px-3 py-1 border border-secondary border-opacity-50 rounded-3 small"
                                         />
                                     </div>
 
@@ -214,7 +214,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                 onChange={() =>
                                                     toggleBreak(day)
                                                 }
-                                                className="w-4 h-4 text-warning rounded"
+                                                className="form-check-input"
                                             />
                                             Przerwa
                                         </label>
@@ -231,7 +231,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="px-2 py-1 border border-orange-200 rounded small"
+                                                    className="px-2 py-1 border rounded small"
                                                 />
                                                 <span className="text-secondary">
                                                     -
@@ -246,7 +246,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="px-2 py-1 border border-orange-200 rounded small"
+                                                    className="px-2 py-1 border rounded small"
                                                 />
                                             </div>
                                         )}

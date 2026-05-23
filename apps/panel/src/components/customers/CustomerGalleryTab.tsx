@@ -65,7 +65,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                 {images.map((image) => (
                                     <div
                                         key={image.id}
-                                        className="col-xs-6 col-sm-3 mb-15"
+                                        className="col-6 col-sm-3 mb-15"
                                     >
                                         <button
                                             type="button"
@@ -130,7 +130,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
 
                                 {selectedImage.description ? (
                                     <div className="mt-15">
-                                        <div className="text-muted fz-11">
+                                        <div className="text-muted small">
                                             opis
                                         </div>
                                         <div className="fz-12">

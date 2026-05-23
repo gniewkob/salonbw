@@ -88,7 +88,7 @@ export default function DateRangeSelector({
                         aria-label="Data początkowa"
                         value={localFrom}
                         onChange={(e) => setLocalFrom(e.target.value)}
-                        className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3 focus:"
+                        className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3"
                     />
                     <span className="text-muted">-</span>
                     <input
@@ -96,7 +96,7 @@ export default function DateRangeSelector({
                         aria-label="Data końcowa"
                         value={localTo}
                         onChange={(e) => setLocalTo(e.target.value)}
-                        className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3 focus:"
+                        className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3"
                     />
                     <button
                         onClick={handleCustomApply}

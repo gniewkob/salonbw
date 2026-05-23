@@ -21,16 +21,16 @@ const EXCEPTION_STYLES: Record<
         text: 'text-body',
         label: 'Dzień wolny',
     },
-    vacation: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Urlop' },
-    sick_leave: { bg: 'bg-red-100', text: 'text-red-700', label: 'L4' },
+    vacation: { bg: 'bg-info-subtle', text: 'text-info', label: 'Urlop' },
+    sick_leave: { bg: 'bg-danger-subtle', text: 'text-danger', label: 'L4' },
     training: {
-        bg: 'bg-purple-100',
-        text: 'text-purple-700',
+        bg: 'bg-secondary bg-opacity-10',
+        text: 'text-body',
         label: 'Szkolenie',
     },
     custom_hours: {
-        bg: 'bg-yellow-100',
-        text: 'text-yellow-700',
+        bg: 'bg-warning-subtle',
+        text: 'text-warning',
         label: 'Zmienione godziny',
     },
     other: {
@@ -72,7 +72,7 @@ export default function ExceptionsList({
                         key={exception.id}
                         className={`d-flex align-items-center justify-content-between p-2 rounded-3 border ${
                             exception.isPending
-                                ? 'border-yellow-300 bg-warning bg-opacity-10'
+                                ? 'bg-warning bg-opacity-10'
                                 : 'border-secondary border-opacity-25 bg-white'
                         }`}
                     >
@@ -100,7 +100,7 @@ export default function ExceptionsList({
                                 </div>
                             </div>
                             {exception.isPending && (
-                                <span className="px-2 py-0.5 bg-warning bg-opacity-10 text-warning rounded small">
+                                <span className="px-2 py-1 bg-warning bg-opacity-10 text-warning rounded small">
                                     Oczekuje na zatwierdzenie
                                 </span>
                             )}

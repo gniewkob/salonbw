@@ -34,6 +34,12 @@ jest.mock('@tanstack/react-query', () => ({
     useQueryClient: jest.fn(() => ({ invalidateQueries: jest.fn() })),
 }));
 
+jest.mock('@/components/calendar/FinalizationModal', () => ({
+    __esModule: true,
+    default: ({ isOpen }: { isOpen: boolean }) =>
+        isOpen ? <div data-testid="finalization-modal" /> : null,
+}));
+
 const baseAppointment = {
     id: 101,
     startTime: '2026-05-01T10:00:00.000Z',
@@ -112,13 +118,16 @@ describe('StaffAppointmentCalendarView', () => {
         expect(completeMock).not.toHaveBeenCalled();
     });
 
-    it('calls updateAppointmentStatus(... no_show) on No-show', async () => {
+    it('calls updateAppointmentStatus(... no_show) on No-show after confirm', async () => {
         updateStatusMock.mockResolvedValueOnce(undefined);
 
         render(
             <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
         );
+        // Click No-show → ConfirmModal opens
         fireEvent.click(screen.getByRole('button', { name: 'No-show' }));
+        // Confirm in modal
+        fireEvent.click(screen.getByRole('button', { name: 'Oznacz no-show' }));
 
         await waitFor(() =>
             expect(updateStatusMock).toHaveBeenCalledWith({
@@ -128,13 +137,16 @@ describe('StaffAppointmentCalendarView', () => {
         );
     });
 
-    it('calls cancelAppointment on Anuluj', async () => {
+    it('calls cancelAppointment on Anuluj after confirm', async () => {
         cancelMock.mockResolvedValueOnce(undefined);
 
         render(
             <StaffAppointmentCalendarView appointments={[baseAppointment]} />,
         );
+        // Click Anuluj action button → ConfirmModal opens
         fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+        // Confirm in modal ("Anuluj wizytę" is the confirm label)
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj wizytę' }));
 
         await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(101));
     });

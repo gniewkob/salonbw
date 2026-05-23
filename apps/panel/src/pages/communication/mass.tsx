@@ -224,7 +224,7 @@ export default function MassCommunicationPage() {
                                     <div className="salonbw-mass-communication__subsection">
                                         <h4>Grupy klientów</h4>
                                         {groups.length === 0 ? (
-                                            <p className="salonbw-muted">
+                                            <p className="text-muted">
                                                 Brak zdefiniowanych grup
                                             </p>
                                         ) : (
@@ -286,7 +286,7 @@ export default function MassCommunicationPage() {
                                     Wybrano odbiorców:{' '}
                                     <strong>{recipientCount}</strong>
                                     {recipientCount < customers.length && (
-                                        <span className="salonbw-muted">
+                                        <span className="text-muted">
                                             {' '}
                                             (z {customers.length} klientów)
                                         </span>
@@ -310,7 +310,7 @@ export default function MassCommunicationPage() {
                             <div className="salonbw-mass-communication__section">
                                 <h3>Wybierz szablon</h3>
                                 {filteredTemplates.length === 0 ? (
-                                    <p className="salonbw-muted">
+                                    <p className="text-muted">
                                         Brak szablonów dla wybranego kanału
                                     </p>
                                 ) : (

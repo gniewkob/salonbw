@@ -99,7 +99,7 @@ export default function DashboardNav() {
                             href={l.href}
                             prefetch={false}
                             aria-current={isActive ? 'page' : undefined}
-                            className={`d-block px-2 py-1 duration-150 ${isActive ? 'fw-bold text-primary border-start-4 border-primary ps-2 bg-white' : ''}`}
+                            className={`d-block px-2 py-1 ${isActive ? 'fw-bold text-primary border-start border-3 border-primary ps-2 bg-white' : ''}`}
                             data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`}
                         >
                             {l.label}

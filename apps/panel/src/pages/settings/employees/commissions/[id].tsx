@@ -69,7 +69,7 @@ export default function SettingsEmployeeCommissionDetailPage() {
                                     <div className="actions">
                                         <button
                                             type="button"
-                                            className="btn button-blue pull-right"
+                                            className="btn button-blue float-end"
                                             disabled
                                         >
                                             zapisz

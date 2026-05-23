@@ -101,7 +101,7 @@ export default function CalendarSidebar({
                         </button>
                     </div>
                 </div>
-                <div className="gap-1 max-h-64 overflow-y-auto">
+                <div className="gap-1 overflow-y-auto">
                     {employees.map((emp) => {
                         const colorStyle = {
                             backgroundColor: emp.color || '#ccc',

@@ -116,13 +116,13 @@ export default function TemplateModal({
                 onSubmit={(event) => {
                     void handleSubmit(event);
                 }}
-                className="w-[560px]"
+                style={{ width: 560 }}
             >
                 <h2 className="fs-5 fw-semibold text-dark mb-4">
                     {template ? 'Edytuj szablon' : 'Nowy szablon'}
                 </h2>
 
-                <div className="gap-2">
+                <div className="d-flex flex-column gap-2">
                     {/* Name */}
                     <div>
                         <label className="d-block small fw-medium text-body mb-1">
@@ -134,13 +134,13 @@ export default function TemplateModal({
                             onChange={(e) =>
                                 setForm({ ...form, name: e.target.value })
                             }
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                             required
                         />
                     </div>
 
                     {/* Type & Channel */}
-                    <div className="-cols-2 gap-3">
+                    <div className="row row-cols-1 row-cols-sm-2 g-3">
                         <div>
                             <label className="d-block small fw-medium text-body mb-1">
                                 Typ
@@ -153,7 +153,7 @@ export default function TemplateModal({
                                         type: e.target.value as TemplateType,
                                     })
                                 }
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                             >
                                 {TEMPLATE_TYPES.map((t) => (
                                     <option key={t.value} value={t.value}>
@@ -175,7 +175,7 @@ export default function TemplateModal({
                                             .value as MessageChannel,
                                     })
                                 }
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                             >
                                 {CHANNELS.map((c) => (
                                     <option key={c.value} value={c.value}>
@@ -201,7 +201,7 @@ export default function TemplateModal({
                                         subject: e.target.value,
                                     })
                                 }
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                             />
                         </div>
                     )}
@@ -224,7 +224,8 @@ export default function TemplateModal({
                                 setForm({ ...form, content: e.target.value })
                             }
                             rows={4}
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus: resize-none"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
+                            style={{ resize: 'none' }}
                             required
                         />
                     </div>
@@ -264,7 +265,7 @@ export default function TemplateModal({
                                 })
                             }
                             placeholder="Krótki opis szablonu..."
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3 focus:"
+                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-3"
                         />
                     </div>
 
@@ -276,7 +277,7 @@ export default function TemplateModal({
                             onChange={(e) =>
                                 setForm({ ...form, isActive: e.target.checked })
                             }
-                            className="w-4 h-4 text-primary rounded focus:"
+                            className="form-check-input"
                         />
                         <span className="small text-body">Szablon aktywny</span>
                     </label>
@@ -293,7 +294,7 @@ export default function TemplateModal({
                     <button
                         type="submit"
                         disabled={saving}
-                        className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
+                        className="px-3 py-2 bg-primary text-white rounded-3"
                     >
                         {saving ? 'Zapisywanie...' : 'Zapisz'}
                     </button>

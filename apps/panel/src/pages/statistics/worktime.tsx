@@ -290,7 +290,10 @@ export default function WorkTimeReportPage() {
                                                 <div className="salonbw-widget__header">
                                                     Godziny pracy dzień po dniu
                                                 </div>
-                                                <div className="salonbw-widget__content h-[300px]">
+                                                <div
+                                                    className="salonbw-widget__content"
+                                                    style={{ height: 300 }}
+                                                >
                                                     <ResponsiveContainer>
                                                         <BarChart
                                                             data={chartData}

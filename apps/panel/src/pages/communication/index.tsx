@@ -191,7 +191,7 @@ export default function CommunicationPage() {
                     ) : data ? (
                         <>
                             <div className="inner">
-                                <div className="column_row data_table">
+                                <div className="">
                                     <table className="table table-bordered">
                                         <thead>
                                             <tr>
@@ -331,7 +331,7 @@ export default function CommunicationPage() {
 
                             <div className="pagination_container">
                                 <div className="row">
-                                    <div className="info col-xs-7">
+                                    <div className="infocol-7">
                                         Pozycje od{' '}
                                         {Math.min(
                                             (page - 1) * data.limit + 1,
@@ -344,7 +344,7 @@ export default function CommunicationPage() {
                                         )}{' '}
                                         z {data.total}
                                     </div>
-                                    <div className="form_pagination col-xs-5">
+                                    <div className="form_paginationcol-5">
                                         <button
                                             type="button"
                                             className="button button-link"

@@ -1,6 +1,7 @@
 module.exports = {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'jsdom',
+    workerIdleMemoryLimit: '512MB',
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
     testPathIgnorePatterns: ['/node_modules/', '/.next/', '/tests/'],
     extensionsToTreatAsEsm: ['.ts', '.tsx'],

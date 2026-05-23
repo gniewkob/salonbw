@@ -58,49 +58,52 @@ export default function InventoryHistoryPage() {
             activeTab="products"
             inventoryActive
             actions={
-                <Link href="/inventory/new" className="btn btn-primary btn-xs">
+                <Link href="/inventory/new" className="button button-blue">
                     nowa inwentaryzacja
                 </Link>
             }
         >
-            <h2 className="warehouse-section-title">HISTORIA INWENTARYZACJI</h2>
+            <h2>HISTORIA INWENTARYZACJI</h2>
             {isLoading ? (
-                <p className="products-empty">
+                <p className="text-muted">
                     Ładowanie historii inwentaryzacji...
                 </p>
             ) : (
                 <>
-                    <div className="products-toolbar">
-                        <input
-                            type="text"
-                            className="salonbw-input"
-                            placeholder="wyszukaj w historii inwentaryzacji..."
-                            value={search}
-                            onChange={(event) => {
-                                setSearch(event.target.value);
-                                setPage(1);
-                            }}
-                        />
-                        <select
-                            className="salonbw-select"
-                            value={normalizedStatus ?? ''}
-                            onChange={(event) => {
-                                const status = event.target.value;
-                                setPage(1);
-                                void router.push({
-                                    pathname: '/inventory',
-                                    query: status ? { status } : {},
-                                });
-                            }}
-                        >
-                            <option value="">wszystkie</option>
-                            <option value="draft">robocze</option>
-                            <option value="in_progress">w toku</option>
-                            <option value="completed">zakończone</option>
-                            <option value="cancelled">anulowane</option>
-                        </select>
+                    <div className="row mb-3">
+                        <div className="col-sm-7 d-flex flex-wrap gap-2 mb-2 mb-md-0">
+                            <input
+                                type="text"
+                                placeholder="wyszukaj w historii inwentaryzacji..."
+                                value={search}
+                                onChange={(event) => {
+                                    setSearch(event.target.value);
+                                    setPage(1);
+                                }}
+                                className="form-control form-control-sm"
+                            />
+                        </div>
+                        <div className="col-sm-5 text-end">
+                            <select
+                                value={normalizedStatus ?? ''}
+                                onChange={(event) => {
+                                    const status = event.target.value;
+                                    setPage(1);
+                                    void router.push({
+                                        pathname: '/inventory',
+                                        query: status ? { status } : {},
+                                    });
+                                }}
+                            >
+                                <option value="">wszystkie</option>
+                                <option value="draft">robocze</option>
+                                <option value="in_progress">w toku</option>
+                                <option value="completed">zakończone</option>
+                                <option value="cancelled">anulowane</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className="column_row data_table">
+                    <div>
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
@@ -164,7 +167,7 @@ export default function InventoryHistoryPage() {
             <div className="pagination_container">
                 Pozycje od {from} do {to} z {filteredRows.length} | na stronie
                 <select
-                    className="salonbw-select salonbw-select--inline"
+                    aria-label="na stronie"
                     value={String(pageSize)}
                     disabled
                 >

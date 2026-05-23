@@ -9,10 +9,10 @@ import type {
 } from '@/types';
 
 const PRIORITY_COLORS: Record<StockAlertPriority, string> = {
-    critical: 'bg-red-100 text-red-700 border-red-200',
-    high: 'bg-orange-100 text-orange-700 border-orange-200',
-    medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    low: 'bg-blue-100 text-blue-700 border-blue-200',
+    critical: 'badge text-bg-danger border-danger',
+    high: 'badge text-bg-warning border-orange-200',
+    medium: 'badge text-bg-warning border-warning',
+    low: 'badge text-bg-info border-blue-200',
 };
 
 const PRIORITY_LABELS: Record<StockAlertPriority, string> = {
@@ -79,7 +79,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
     if (isLoading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-8 w-8 border-bottom-2 border-teal-500"></div>
+                <div className="spinner-border text-success"></div>
                 <span className="ms-2 text-muted">Ładowanie alertów...</span>
             </div>
         );
@@ -89,7 +89,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
         <div className="gap-3">
             {/* Stock Summary Cards */}
             {summary && (
-                <div className="-cols-2 gap-3">
+                <div className="row row-cols-1 row-cols-sm-2 g-3">
                     <div className="bg-white rounded-3 shadow p-3">
                         <div className="fs-3 fw-bold text-dark">
                             {summary.totalProducts}
@@ -133,7 +133,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                     <h3 className="fs-5 fw-semibold text-dark mb-3">
                         Podsumowanie alertów
                     </h3>
-                    <div className="-cols-2 gap-3 mb-3">
+                    <div className="row row-cols-1 row-cols-sm-2 g-3 mb-3">
                         <div
                             className={`rounded-3 p-2 border ${PRIORITY_COLORS.critical}`}
                         >
@@ -236,7 +236,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                     {Object.values(groupedBySupplier).map((group) => (
                         <div
                             key={group.supplierId ?? 'no-supplier'}
-                            className="bg-white rounded-3 shadow overflow-d-none"
+                            className="bg-white rounded-3 shadow overflow-hidden"
                         >
                             <div className="px-3 py-2 bg-light border-bottom d-flex align-items-center justify-content-between">
                                 <div>
@@ -263,14 +263,14 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                                         onClick={() =>
                                             onCreateDelivery(group.suggestions)
                                         }
-                                        className="px-3 py-1 small bg-teal-600 text-white rounded-3"
+                                        className="px-3 py-1 small btn-salon text-white rounded-3"
                                     >
                                         Utwórz dostawę
                                     </button>
                                 )}
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-100">
+                            <div className="overflow-auto">
+                                <table className="w-100">
                                     <thead className="bg-light">
                                         <tr>
                                             <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -333,7 +333,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                                                     {suggestion.minQuantity}
                                                 </td>
                                                 <td className="px-3 py-2 text-nowrap text-center">
-                                                    <span className="fw-semibold text-teal-600">
+                                                    <span className="fw-semibold text-primary">
                                                         {
                                                             suggestion.suggestedOrderQuantity
                                                         }

@@ -227,13 +227,13 @@ export default function LoyaltyManagementPage() {
 
                 {/* Tabs */}
                 <div className="border-bottom border-secondary border-opacity-25 mb-4">
-                    <nav className="-mb-px d-flex space-x-8">
+                    <nav className="d-flex">
                         {TABS.map((tab) => (
                             <button
                                 key={tab.id}
                                 type="button"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`py-3 px-1 border-bottom-2 fw-medium small ${
+                                className={`py-3 px-1 border-bottom border-2 fw-medium small ${
                                     activeTab === tab.id
                                         ? 'border-primary text-primary'
                                         : 'border-transparent text-muted border-opacity-50'
@@ -250,7 +250,7 @@ export default function LoyaltyManagementPage() {
                     <div className="gap-3">
                         {/* Stats Cards */}
                         {stats && (
-                            <div className="-cols-1 gap-3">
+                            <div className="d-flex flex-column gap-3">
                                 <div className="bg-white rounded-4 shadow-sm p-4">
                                     <p className="small text-muted">
                                         Członkowie programu
@@ -305,7 +305,7 @@ export default function LoyaltyManagementPage() {
                                 <h2 className="fs-5 fw-semibold mb-3">
                                     Zasady programu
                                 </h2>
-                                <div className="-cols-2 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 g-3">
                                     <div>
                                         <p className="small text-muted">
                                             Punkty za 1 PLN
@@ -393,7 +393,7 @@ export default function LoyaltyManagementPage() {
                             </button>
                         </div>
 
-                        <div className="bg-white rounded-4 shadow-sm overflow-d-none">
+                        <div className="bg-white rounded-4 shadow-sm overflow-hidden">
                             {rewardsLoading ? (
                                 <div className="p-4 text-center text-muted">
                                     Ładowanie...
@@ -403,7 +403,7 @@ export default function LoyaltyManagementPage() {
                                     Brak nagród w katalogu
                                 </div>
                             ) : (
-                                <table className="min-w-100">
+                                <table className="w-100">
                                     <thead className="bg-light">
                                         <tr>
                                             <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -536,7 +536,7 @@ export default function LoyaltyManagementPage() {
 
                 {/* Transactions Tab */}
                 {activeTab === 'transactions' && (
-                    <div className="bg-white rounded-4 shadow-sm overflow-d-none">
+                    <div className="bg-white rounded-4 shadow-sm overflow-hidden">
                         {transactionsLoading ? (
                             <div className="p-4 text-center text-muted">
                                 Ładowanie...
@@ -546,7 +546,7 @@ export default function LoyaltyManagementPage() {
                                 Brak transakcji
                             </div>
                         ) : (
-                            <table className="min-w-100">
+                            <table className="w-100">
                                 <thead className="bg-light">
                                     <tr>
                                         <th className="px-4 py-2 text-start small fw-medium text-muted text-uppercase">
@@ -655,7 +655,7 @@ export default function LoyaltyManagementPage() {
                             }}
                             className="gap-3"
                         >
-                            <div className="-cols-2 gap-3">
+                            <div className="row row-cols-1 row-cols-sm-2 g-3">
                                 <div>
                                     <label className="d-block small fw-medium text-body mb-1">
                                         Punkty za 1 PLN wydany
@@ -673,7 +673,7 @@ export default function LoyaltyManagementPage() {
                                                 ),
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
                                 <div>
@@ -695,12 +695,12 @@ export default function LoyaltyManagementPage() {
                                                 ),
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
                             </div>
 
-                            <div className="-cols-2 gap-3">
+                            <div className="row row-cols-1 row-cols-sm-2 g-3">
                                 <div>
                                     <label className="d-block small fw-medium text-body mb-1">
                                         Min. punktów do wymiany
@@ -719,7 +719,7 @@ export default function LoyaltyManagementPage() {
                                                 ),
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
                                 <div>
@@ -742,14 +742,14 @@ export default function LoyaltyManagementPage() {
                                                     : undefined,
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
                             </div>
 
                             <div className="border-top pt-3">
                                 <h3 className="fw-medium mb-2">Bonusy</h3>
-                                <div className="-cols-3 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                                     <div>
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Za rejestrację
@@ -768,7 +768,7 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         />
                                     </div>
                                     <div>
@@ -789,7 +789,7 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         />
                                     </div>
                                     <div>
@@ -810,7 +810,7 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         />
                                     </div>
                                 </div>
@@ -834,8 +834,8 @@ export default function LoyaltyManagementPage() {
 
             {/* Create/Edit Reward Modal */}
             {(modalType === 'createReward' || modalType === 'editReward') && (
-                <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
-                    <div className="bg-white rounded-4 shadow-lg w-100 mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                    <div className="bg-white rounded-4 shadow-lg w-100 mx-4 overflow-y-auto">
                         <form
                             onSubmit={(event) => {
                                 void handleSaveReward(event);
@@ -863,7 +863,7 @@ export default function LoyaltyManagementPage() {
                                                 name: e.target.value,
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
                                 <div>
@@ -879,10 +879,10 @@ export default function LoyaltyManagementPage() {
                                                 description: e.target.value,
                                             }))
                                         }
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
-                                <div className="-cols-2 gap-3">
+                                <div className="row row-cols-1 row-cols-sm-2 g-3">
                                     <div>
                                         <label className="d-block small fw-medium text-body mb-1">
                                             Typ *
@@ -896,7 +896,7 @@ export default function LoyaltyManagementPage() {
                                                         .value as RewardType,
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         >
                                             {Object.entries(
                                                 REWARD_TYPE_LABELS,
@@ -927,12 +927,12 @@ export default function LoyaltyManagementPage() {
                                                     ),
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         />
                                     </div>
                                 </div>
                                 {rewardForm.type === 'discount' && (
-                                    <div className="-cols-2 gap-3">
+                                    <div className="row row-cols-1 row-cols-sm-2 g-3">
                                         <div>
                                             <label className="d-block small fw-medium text-body mb-1">
                                                 Rabat %
@@ -957,7 +957,7 @@ export default function LoyaltyManagementPage() {
                                                             : undefined,
                                                     }))
                                                 }
-                                                className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                className="w-100 px-3 py-2 border rounded-3"
                                             />
                                         </div>
                                         <div>
@@ -984,7 +984,7 @@ export default function LoyaltyManagementPage() {
                                                             : undefined,
                                                     }))
                                                 }
-                                                className="w-100 px-3 py-2 border rounded-3 focus:"
+                                                className="w-100 px-3 py-2 border rounded-3"
                                             />
                                         </div>
                                     </div>
@@ -1010,7 +1010,7 @@ export default function LoyaltyManagementPage() {
                                                         : undefined,
                                                 }))
                                             }
-                                            className="w-100 px-3 py-2 border rounded-3 focus:"
+                                            className="w-100 px-3 py-2 border rounded-3"
                                         />
                                     </div>
                                 )}
@@ -1031,7 +1031,7 @@ export default function LoyaltyManagementPage() {
                                             }))
                                         }
                                         placeholder="Bez limitu"
-                                        className="w-100 px-3 py-2 border rounded-3 focus:"
+                                        className="w-100 px-3 py-2 border rounded-3"
                                     />
                                 </div>
                             </div>
@@ -1064,7 +1064,7 @@ export default function LoyaltyManagementPage() {
 
             {/* Use Coupon Modal */}
             {modalType === 'useCoupon' && (
-                <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark/50 d-flex align-items-center justify-content-center">
+                <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
                     <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
                         <form
                             onSubmit={(event) => {
@@ -1090,7 +1090,7 @@ export default function LoyaltyManagementPage() {
                                         )
                                     }
                                     placeholder="VIP-XXXXXXXX"
-                                    className="w-100 px-3 py-2 border rounded-3 focus: font-mono"
+                                    className="w-100 px-3 py-2 border rounded-3"
                                 />
                             </div>
                             <div className="px-4 py-3 border-top d-flex justify-content-end gap-2">

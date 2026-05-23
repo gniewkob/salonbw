@@ -24,7 +24,7 @@ export default function StatisticsToolbar({
     return (
         <div className="actions statistics-toolbar">
             <div className="statistics-toolbar__left">
-                <div className="pull-left statistics_date">
+                <div className="float-start statistics_date">
                     <button
                         type="button"
                         className="button button-link button_prev mr-s"

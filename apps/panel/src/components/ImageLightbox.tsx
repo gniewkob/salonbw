@@ -128,26 +128,32 @@ export default function ImageLightbox(props: Props) {
         <div
             role="dialog"
             aria-modal
-            className="position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center bg-dark/70"
+            className="position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center bg-dark bg-opacity-75"
             onClick={handleClose}
             onKeyDown={onKeyDown}
             ref={containerRef}
         >
             <div
-                className="position-relative w-[90vw] h-[90vh]"
+                className="position-relative"
+                style={{ width: '90vw', height: '90vh' }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <Image
                     src={currentSrc}
                     alt={alt || 'Image preview'}
                     fill
-                    className="object-contain"
+                    style={{ objectFit: 'contain' }}
                     sizes="90vw"
                 />
             </div>
             {showHint && (
                 <div
-                    className="position-absolute top-12 left-1/2 -translate-x-1/2 bg-dark/70 text-white small px-3 py-1 rounded-circle"
+                    className="position-absolute text-white small px-3 py-1 rounded-circle bg-dark bg-opacity-75"
+                    style={{
+                        top: '3rem',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                    }}
                     role="status"
                     aria-live="polite"
                     onAnimationEnd={() => setShowHint(false)}
@@ -160,7 +166,12 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label="Previous image"
-                        className="position-absolute left-3 top-1/2 -translate-y-1/2 text-white fs-3"
+                        className="position-absolute text-white fs-3"
+                        style={{
+                            left: '0.75rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                        }}
                         onClick={(props as CarouselProps).onPrev}
                     >
                         ‹
@@ -168,7 +179,12 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label="Next image"
-                        className="position-absolute right-3 top-1/2 -translate-y-1/2 text-white fs-3"
+                        className="position-absolute text-white fs-3"
+                        style={{
+                            right: '0.75rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                        }}
                         onClick={(props as CarouselProps).onNext}
                     >
                         ›
@@ -178,7 +194,8 @@ export default function ImageLightbox(props: Props) {
             <button
                 type="button"
                 aria-label="Close"
-                className="position-absolute top-3 right-3 text-white fs-3"
+                className="position-absolute text-white fs-3"
+                style={{ top: '0.75rem', right: '0.75rem' }}
                 onClick={handleClose}
                 ref={closeRef}
             >
@@ -188,7 +205,8 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Share image"
                 title="Share image"
-                className="position-absolute top-3 right-12 text-white fs-5"
+                className="position-absolute text-white fs-5"
+                style={{ top: '0.75rem', right: '3rem' }}
                 onClick={(e) => {
                     e.stopPropagation();
                     void onShare();
@@ -200,7 +218,8 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Download image"
                 title="Download image"
-                className="position-absolute top-3 right-24 text-white fs-5"
+                className="position-absolute text-white fs-5"
+                style={{ top: '0.75rem', right: '6rem' }}
                 onClick={(e) => {
                     e.stopPropagation();
                     onDownload();

@@ -97,17 +97,17 @@ export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
                                 </div>
                             </div>
 
-                            <div className="text-right ml-auto">
+                            <div className="text-end ms-auto">
                                 <div className="btn-group">
                                     <button
                                         className="btn btn-default btn-sm"
                                         onClick={onClose}
                                     >
-                                        <i className="fa fa-arrow-left mr-6"></i>
+                                        <i className="fa fa-arrow-left me-2"></i>
                                         Wróć
                                     </button>
-                                    <button className="btn btn-default btn-sm ml-8">
-                                        <i className="fa fa-pencil mr-6"></i>
+                                    <button className="btn btn-default btn-sm ms-2">
+                                        <i className="fa fa-pencil me-2"></i>
                                         Edytuj
                                     </button>
                                 </div>

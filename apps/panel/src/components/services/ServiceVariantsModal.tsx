@@ -130,7 +130,7 @@ export default function ServiceVariantsModal({
                     <div className="modal-body">
                         {isLoading ? (
                             <div className="text-center py-5">
-                                <div className="salonbw-muted">
+                                <div className="text-muted">
                                     Ładowanie wariantów...
                                 </div>
                             </div>
@@ -140,7 +140,7 @@ export default function ServiceVariantsModal({
                                 {!isFormVisible && (
                                     <>
                                         <div className="flex-between mb-15">
-                                            <span className="salonbw-muted">
+                                            <span className="text-muted">
                                                 {variants.length} wariant
                                                 {variants.length !== 1 && 'ów'}
                                             </span>
@@ -170,7 +170,7 @@ export default function ServiceVariantsModal({
                                                         <tr>
                                                             <td
                                                                 colSpan={4}
-                                                                className="text-center salonbw-muted"
+                                                                className="text-center text-muted"
                                                             >
                                                                 Brak wariantów.
                                                                 Dodaj nowy
@@ -193,7 +193,7 @@ export default function ServiceVariantsModal({
                                                                             }
                                                                         </strong>
                                                                         {variant.description && (
-                                                                            <div className="salonbw-muted fz-11">
+                                                                            <div className="text-muted small">
                                                                                 {
                                                                                     variant.description
                                                                                 }
@@ -216,7 +216,7 @@ export default function ServiceVariantsModal({
                                                                         )}{' '}
                                                                         zł
                                                                     </td>
-                                                                    <td className="text-right">
+                                                                    <td className="text-end">
                                                                         <button
                                                                             type="button"
                                                                             onClick={() =>
@@ -224,7 +224,7 @@ export default function ServiceVariantsModal({
                                                                                     variant,
                                                                                 )
                                                                             }
-                                                                            className="btn btn-default btn-xs mr-4"
+                                                                            className="btn btn-default btn-xs me-1"
                                                                         >
                                                                             edytuj
                                                                         </button>

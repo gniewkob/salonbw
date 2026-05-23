@@ -25,14 +25,14 @@ const TRIGGER_LABELS: Record<AutomaticMessageTrigger, string> = {
 };
 
 const TRIGGER_COLORS: Record<AutomaticMessageTrigger, string> = {
-    appointment_reminder: 'bg-blue-100 text-blue-700',
-    appointment_confirmation: 'bg-green-100 text-green-700',
-    appointment_cancellation: 'bg-red-100 text-red-700',
-    follow_up: 'bg-purple-100 text-purple-700',
-    birthday: 'bg-pink-100 text-pink-700',
-    inactive_client: 'bg-orange-100 text-orange-700',
-    new_client: 'bg-teal-100 text-teal-700',
-    review_request: 'bg-yellow-100 text-yellow-700',
+    appointment_reminder: 'badge text-bg-info',
+    appointment_confirmation: 'badge text-bg-success',
+    appointment_cancellation: 'badge text-bg-danger',
+    follow_up: 'badge text-bg-secondary',
+    birthday: 'badge text-bg-secondary bg-opacity-75 text-danger-emphasis',
+    inactive_client: 'badge text-bg-warning',
+    new_client: 'badge text-bg-info',
+    review_request: 'badge text-bg-warning',
 };
 
 export default function AutomaticRulesList({
@@ -46,7 +46,7 @@ export default function AutomaticRulesList({
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
                 <span className="ms-2 text-muted">Ładowanie reguł...</span>
             </div>
         );
@@ -77,7 +77,7 @@ export default function AutomaticRulesList({
     }
 
     return (
-        <div className="gap-2">
+        <div className="d-flex flex-column gap-2">
             {rules.map((rule) => (
                 <div
                     key={rule.id}
@@ -94,14 +94,14 @@ export default function AutomaticRulesList({
                                     {rule.name}
                                 </h3>
                                 <span
-                                    className={`px-2 py-0.5 small rounded-circle ${
+                                    className={`px-2 py-1 small rounded-circle ${
                                         TRIGGER_COLORS[rule.trigger]
                                     }`}
                                 >
                                     {TRIGGER_LABELS[rule.trigger]}
                                 </span>
                                 {!rule.isActive && (
-                                    <span className="px-2 py-0.5 small rounded-circle bg-secondary bg-opacity-25 text-muted">
+                                    <span className="px-2 py-1 small rounded-circle bg-secondary bg-opacity-25 text-muted">
                                         Nieaktywna
                                     </span>
                                 )}
@@ -148,7 +148,7 @@ export default function AutomaticRulesList({
                                 onClick={() => {
                                     void onProcess(rule.id);
                                 }}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Uruchom teraz"
                             >
                                 <svg
@@ -209,7 +209,7 @@ export default function AutomaticRulesList({
                             <button
                                 type="button"
                                 onClick={() => onEdit(rule)}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Edytuj"
                             >
                                 <svg
@@ -231,7 +231,7 @@ export default function AutomaticRulesList({
                                 onClick={() => {
                                     void onDelete(rule.id);
                                 }}
-                                className="p-2 text-secondary bg-opacity-10 rounded-3"
+                                className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Usuń"
                             >
                                 <svg

@@ -127,7 +127,9 @@ export default function WarehouseLayout({
                         <br className="c" />
                     </div>
                     {actions ? (
-                        <div className="d-flex jc-end mb-l">{actions}</div>
+                        <div className="d-flex justify-content-end mb-3">
+                            {actions}
+                        </div>
                     ) : null}
 
                     {children}

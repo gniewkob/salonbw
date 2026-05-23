@@ -307,7 +307,10 @@ function CategoryEditorRow({
     }, [draft]);
 
     return (
-        <div className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]">
+        <div
+            className="border rounded p-2 mb-2"
+            style={{ borderColor: '#e6eaee' }}
+        >
             <div className="form-">
                 <label
                     className="control-label"
@@ -357,7 +360,7 @@ function CategoryEditorRow({
                         ))}
                 </select>
             </div>
-            <div className="-cols-2 gap-2">
+            <div className="row row-cols-1 row-cols-sm-2 g-2">
                 <div className="form-">
                     <label
                         className="control-label"

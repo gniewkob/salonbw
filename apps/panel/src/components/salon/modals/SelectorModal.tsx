@@ -47,7 +47,7 @@ export default function SelectorModal({
                     </div>
                     <div className="modal-body modal-body-scroll">
                         {filteredItems.length === 0 ? (
-                            <div className="text-center p-3 salonbw-muted">
+                            <div className="text-center p-3 text-muted">
                                 Brak wyników
                             </div>
                         ) : (

@@ -15,17 +15,17 @@ interface Props {
 const COLOR_CLASSES = {
     default: 'bg-white',
     primary: 'bg-primary-50 border-primary-100',
-    success: 'bg-green-50 border-green-100',
-    warning: 'bg-yellow-50 border-yellow-100',
-    danger: 'bg-red-50 border-red-100',
+    success: 'bg-success-subtle border-success',
+    warning: 'bg-warning-subtle border-warning',
+    danger: 'bg-danger-subtle border-danger',
 };
 
 const ICON_COLOR_CLASSES = {
     default: 'text-secondary',
     primary: 'text-primary-500',
-    success: 'text-green-500',
-    warning: 'text-yellow-500',
-    danger: 'text-red-500',
+    success: 'text-success',
+    warning: 'text-warning',
+    danger: 'text-danger',
 };
 
 export default function KpiCard({

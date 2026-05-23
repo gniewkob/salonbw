@@ -178,12 +178,12 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     <thead>
                                         <tr>
                                             <>
-                                                <th className="w-[40px]"></th>
+                                                <th style={{ width: 40 }}></th>
                                                 <th>Nazwa pliku</th>
                                                 <th>Kategoria</th>
                                                 <th>Rozmiar</th>
                                                 <th>Data dodania</th>
-                                                <th className="w-[80px]">
+                                                <th style={{ width: 80 }}>
                                                     Opcje
                                                 </th>
                                             </>
@@ -206,7 +206,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                             {file.name}
                                                         </div>
                                                         {file.description ? (
-                                                            <div className="text-muted fz-11">
+                                                            <div className="text-muted small">
                                                                 {
                                                                     file.description
                                                                 }

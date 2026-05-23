@@ -65,10 +65,10 @@ export default function WarehouseOrdersHistoryPage() {
             activeTab="orders"
         >
             {isLoading ? (
-                <p className="salonbw-muted p-20">Ładowanie zamówień...</p>
+                <p className="text-muted">Ładowanie zamówień...</p>
             ) : (
                 <>
-                    <div className="row mb-l">
+                    <div className="row mb-3">
                         <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
                             <input
                                 type="text"
@@ -102,7 +102,7 @@ export default function WarehouseOrdersHistoryPage() {
                             </select>
                         </div>
                         <div className="col-sm-8 col-lg-7">
-                            <div className="d-flex flex-wrap jc-end">
+                            <div className="d-flex flex-wrap justify-content-end">
                                 <Link
                                     href="/orders/new"
                                     className="button button-blue ml-xs"
@@ -112,7 +112,7 @@ export default function WarehouseOrdersHistoryPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="column_row data_table">
+                    <div className="">
                         <table className="table-bordered">
                             <thead>
                                 <tr>
@@ -222,11 +222,11 @@ export default function WarehouseOrdersHistoryPage() {
                     <div className="pagination_container">
                         <div className="column_row">
                             <div className="row">
-                                <div className="info col-xs-7">
+                                <div className="infocol-7">
                                     Pozycje od {from} do {to} z{' '}
                                     {searchedOrders.length} | na stronie 20
                                 </div>
-                                <div className="form_pagination col-xs-5">
+                                <div className="form_paginationcol-5">
                                     <input
                                         type="text"
                                         className="pagination-page-input"

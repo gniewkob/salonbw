@@ -79,7 +79,7 @@ export default function SettingsCustomerOriginsPage() {
                             action={
                                 <button
                                     type="button"
-                                    className="btn button-blue pull-right"
+                                    className="btn button-blue float-end"
                                     onClick={() => setIsAdding(true)}
                                 >
                                     + Dodaj nowe źródło

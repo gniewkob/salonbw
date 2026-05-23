@@ -19,7 +19,7 @@ export default function CashRegister({ data, loading }: Props) {
     if (loading) {
         return (
             <div className="d-flex align-items-center justify-content-center py-5">
-                <div className="rounded-circle h-6 w-6 border-bottom-2 border-primary"></div>
+                <div className="spinner-border spinner-border-sm text-primary"></div>
             </div>
         );
     }
@@ -35,7 +35,7 @@ export default function CashRegister({ data, loading }: Props) {
     return (
         <div className="gap-3">
             {/* Summary cards */}
-            <div className="-cols-2 gap-3">
+            <div className="row row-cols-1 row-cols-sm-2 g-3">
                 <div className="bg-success bg-opacity-10 border border-success rounded-3 p-3">
                     <p className="small text-success fw-medium">Suma</p>
                     <p className="fs-3 fw-bold text-success">
@@ -54,7 +54,7 @@ export default function CashRegister({ data, loading }: Props) {
                         {data.totals.card.toLocaleString('pl-PL')} PLN
                     </p>
                 </div>
-                <div className="bg-warning bg-opacity-10 border border-yellow-100 rounded-3 p-3">
+                <div className="bg-warning bg-opacity-10 border rounded-3 p-3">
                     <p className="small text-warning fw-medium">Napiwki</p>
                     <p className="fs-5 fw-bold text-warning">
                         {data.totals.tips.toLocaleString('pl-PL')} PLN
@@ -63,8 +63,8 @@ export default function CashRegister({ data, loading }: Props) {
             </div>
 
             {/* Entries table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-100">
+            <div className="overflow-auto">
+                <table className="w-100">
                     <thead className="bg-light">
                         <tr>
                             <th className="px-3 py-2 text-start small fw-medium text-muted text-uppercase">

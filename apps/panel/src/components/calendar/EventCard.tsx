@@ -14,40 +14,26 @@ interface EventCardProps {
 
 const TIME_BLOCK_COLORS: Record<
     TimeBlockType,
-    { bg: string; border: string; text: string }
+    { bg: string; border: string; color: string }
 > = {
-    break: {
-        bg: 'bg-secondary bg-opacity-10',
-        border: 'border-gray-300',
-        text: 'text-muted',
-    },
-    vacation: {
-        bg: 'bg-green-100',
-        border: 'border-green-300',
-        text: 'text-green-700',
-    },
-    training: {
-        bg: 'bg-blue-100',
-        border: 'border-blue-300',
-        text: 'text-blue-700',
-    },
-    sick: { bg: 'bg-red-100', border: 'border-red-300', text: 'text-red-700' },
-    other: {
-        bg: 'bg-yellow-100',
-        border: 'border-yellow-300',
-        text: 'text-yellow-700',
-    },
+    break: { bg: '#f0f0f0', border: '#ccc', color: '#666' },
+    vacation: { bg: '#d4edda', border: '#c3e6cb', color: '#155724' },
+    training: { bg: '#cce5ff', border: '#b8daff', color: '#004085' },
+    sick: { bg: '#f8d7da', border: '#f5c6cb', color: '#721c24' },
+    other: { bg: '#fff3cd', border: '#ffeeba', color: '#856404' },
 };
 
-const STATUS_STYLES: Record<string, string> = {
-    scheduled: 'opacity-100',
-    confirmed: 'opacity-100 ring-2 ring-green-500',
-    in_progress: 'opacity-100 ring-2 ring-blue-500',
-    completed: 'opacity-60',
-    cancelled: 'opacity-40 line-through',
-    no_show: 'opacity-40 bg-red-100',
-    online_pending: 'opacity-100 ring-2 ring-yellow-400',
-    rescheduled_pending: 'opacity-100 ring-2 ring-orange-400',
+const STATUS_RING: Record<string, string | undefined> = {
+    confirmed: '0 0 0 2px #28a745',
+    in_progress: '0 0 0 2px #007bff',
+    online_pending: '0 0 0 2px #ffc107',
+    rescheduled_pending: '0 0 0 2px #fd7e14',
+};
+
+const STATUS_OPACITY: Record<string, number> = {
+    completed: 0.6,
+    cancelled: 0.4,
+    no_show: 0.4,
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -61,7 +47,7 @@ const STATUS_LABELS: Record<string, string> = {
     rescheduled_pending: 'Zmiana terminu',
 };
 
-const ALERT_BADGE_STYLES: Record<ReceptionAlertSeverity, string> = {
+const ALERT_BADGE_CLASS: Record<ReceptionAlertSeverity, string> = {
     info: 'bg-info-subtle text-info-emphasis',
     warning: 'bg-warning-subtle text-warning-emphasis',
     danger: 'bg-danger-subtle text-danger-emphasis',
@@ -83,10 +69,36 @@ export default function EventCard({
             ? TIME_BLOCK_COLORS[event.blockType]
             : null;
 
-    const statusStyle = event.status ? (STATUS_STYLES[event.status] ?? '') : '';
+    const ring = event.status
+        ? (STATUS_RING[event.status] ?? undefined)
+        : undefined;
+    const opacity = event.status ? (STATUS_OPACITY[event.status] ?? 1) : 1;
+
     const alertSeverity =
         event.customerAlertSeverity ??
         (event.hasCustomerAlerts ? 'warning' : undefined);
+
+    const containerStyle: React.CSSProperties = {
+        cursor: 'pointer',
+        opacity,
+        borderRadius: 4,
+        padding: '2px 6px',
+        fontSize: 12,
+        transition: 'box-shadow 0.1s',
+        boxShadow: ring,
+        ...(isTimeBlock && blockColors
+            ? {
+                  backgroundColor: blockColors.bg,
+                  border: `1px solid ${blockColors.border}`,
+                  color: blockColors.color,
+              }
+            : {
+                  borderLeft: `4px solid ${employeeColor}`,
+                  backgroundColor: `${employeeColor}15`,
+                  textDecoration:
+                      event.status === 'cancelled' ? 'line-through' : undefined,
+              }),
+    };
 
     return (
         <div
@@ -101,29 +113,17 @@ export default function EventCard({
                 }
             }}
             onDragStart={() => onDragStart?.(event)}
-            className={`
-                rounded-md px-2 py-1 small cursor-pointer transition-shadow
-                
-                ${
-                    isTimeBlock
-                        ? `${blockColors?.bg} ${blockColors?.border} border`
-                        : 'border-l-4'
-                }
-                ${statusStyle}
-            `}
-            style={
-                !isTimeBlock
-                    ? {
-                          borderLeftColor: employeeColor,
-                          backgroundColor: `${employeeColor}15`,
-                      }
-                    : undefined
-            }
+            style={containerStyle}
         >
             <div className="d-flex align-items-start justify-content-between gap-1">
-                <div className="flex-fill min-w-0">
+                <div style={{ minWidth: 0, flex: 1 }}>
                     <div
-                        className={`fw-medium text-truncate ${isTimeBlock ? blockColors?.text : ''}`}
+                        className="fw-medium text-truncate"
+                        style={
+                            isTimeBlock && blockColors
+                                ? { color: blockColors.color }
+                                : undefined
+                        }
                     >
                         {event.title}
                     </div>
@@ -133,7 +133,12 @@ export default function EventCard({
                         </div>
                     )}
                     <div
-                        className={`text-muted ${isTimeBlock ? blockColors?.text : ''}`}
+                        className="text-muted"
+                        style={
+                            isTimeBlock && blockColors
+                                ? { color: blockColors.color }
+                                : undefined
+                        }
                     >
                         {event.allDay ? 'Cały dzień' : timeStr}
                     </div>
@@ -156,7 +161,7 @@ export default function EventCard({
                             ) : null}
                             {alertSeverity ? (
                                 <span
-                                    className={`badge ${ALERT_BADGE_STYLES[alertSeverity]}`}
+                                    className={`badge ${ALERT_BADGE_CLASS[alertSeverity]}`}
                                 >
                                     Alert CRM
                                 </span>
@@ -166,7 +171,15 @@ export default function EventCard({
                 </div>
                 {isTimeBlock && event.blockType && (
                     <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] fw-medium ${blockColors?.text} ${blockColors?.bg}`}
+                        style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            padding: '1px 5px',
+                            borderRadius: 3,
+                            backgroundColor: blockColors?.bg,
+                            color: blockColors?.color,
+                            flexShrink: 0,
+                        }}
                     >
                         {getBlockTypeLabel(event.blockType)}
                     </span>

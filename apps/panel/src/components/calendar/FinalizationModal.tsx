@@ -51,7 +51,7 @@ export default function FinalizationModal({
         [],
     );
     const [showProductPicker, setShowProductPicker] = useState(false);
-    const [usageItems, setUsageItems] = useState<UsageItem[]>([]);
+    const [usageItems, setUsageItems] = useState<UsageMaterialItem[]>([]);
     const [showUsagePicker, setShowUsagePicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
