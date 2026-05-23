@@ -171,7 +171,7 @@ export default function SettingsExtraFieldsPage() {
                             action={
                                 <button
                                     type="button"
-                                    className="btn button-blue pull-right"
+                                    className="btn button-blue float-end"
                                     onClick={() => setIsAdding(true)}
                                 >
                                     + dodaj pole

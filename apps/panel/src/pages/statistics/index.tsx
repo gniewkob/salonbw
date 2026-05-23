@@ -517,9 +517,9 @@ function StatisticsPageContent() {
             />
 
             {reportLoading ? (
-                <div className="salonbw-muted p-20">Ładowanie raportu...</div>
+                <div className="text-muted">Ładowanie raportu...</div>
             ) : reportError ? (
-                <div className="salonbw-muted p-20">
+                <div className="text-muted">
                     Nie udało się pobrać raportu finansowego.
                 </div>
             ) : (
@@ -577,7 +577,7 @@ function StatisticsPageContent() {
                                             </tr>
                                             <tr>
                                                 <td
-                                                    className="empty text-right bigger text-wrap"
+                                                    className="empty text-end bigger text-wrap"
                                                     colSpan={3}
                                                 >
                                                     Utarg ze sprzedaży usług i
@@ -629,7 +629,7 @@ function StatisticsPageContent() {
                         </div>
                         <div className="col-lg-7">
                             <div style={{ width: '500px' }}>
-                                <div className="text-center strong mb-m">
+                                <div className="text-center strong mb-2">
                                     <span>Udział metod płatności w utargu</span>
                                     <div
                                         className="info_tip ml-s"

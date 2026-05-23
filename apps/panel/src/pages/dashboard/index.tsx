@@ -11,9 +11,7 @@ const ClientDashboard = dynamic<
     ComponentProps<typeof ClientDashboardComponent>
 >(() => import('@/components/dashboard/ClientDashboard'), {
     ssr: false,
-    loading: () => (
-        <div className="p-4 small text-muted">Ładowanie pulpitu...</div>
-    ),
+    loading: () => <div className="text-muted p-3">Ładowanie pulpitu...</div>,
 });
 
 const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
@@ -21,7 +19,7 @@ const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="p-4 small text-muted">Ładowanie pulpitu...</div>
+            <div className="text-muted p-3">Ładowanie pulpitu...</div>
         ),
     },
 );

@@ -307,7 +307,7 @@ export default function CommissionsPage() {
                 />
 
                 <div className="actions">
-                    <div className="pull-left statistics_date">
+                    <div className="float-start statistics_date">
                         <button
                             type="button"
                             className="button button-link button_prev mr-s"
@@ -381,9 +381,9 @@ export default function CommissionsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="salonbw-muted p-20">Ładowanie...</div>
+                    <div className="text-muted">Ładowanie...</div>
                 ) : error ? (
-                    <div className="salonbw-muted p-20">
+                    <div className="text-muted">
                         Nie udało się pobrać raportu prowizji.
                     </div>
                 ) : (
@@ -431,7 +431,7 @@ export default function CommissionsPage() {
                                                     <br />
                                                     <Link
                                                         href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                        className="button mt-xs"
+                                                        className="button mt-1"
                                                         prefetch={false}
                                                     >
                                                         <div

@@ -66,7 +66,7 @@ export default function ClientsStatisticsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 small salonbw-muted">Ładowanie...</div>
+                    <div className="text-muted p-3">Ładowanie...</div>
                 ) : (
                     <div>
                         {/* Summary cards */}

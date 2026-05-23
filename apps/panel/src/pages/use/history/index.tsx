@@ -17,7 +17,7 @@ export default function WarehouseUsageHistoryPage() {
             heading="Magazyn / Historia zużycia"
             activeTab="use"
         >
-            <div className="row mb-l">
+            <div className="row mb-3">
                 <div className="col-sm-12">
                     <div className="d-flex flex-wrap jc-end">
                         <Link
@@ -36,12 +36,10 @@ export default function WarehouseUsageHistoryPage() {
                 </div>
             </div>
             {isLoading ? (
-                <p className="salonbw-muted p-20">
-                    Ładowanie historii zużycia...
-                </p>
+                <p className="text-muted">Ładowanie historii zużycia...</p>
             ) : (
                 <>
-                    <div className="column_row data_table">
+                    <div className="">
                         <table className="table-bordered">
                             <thead>
                                 <tr>
@@ -94,7 +92,7 @@ export default function WarehouseUsageHistoryPage() {
                     <div className="pagination_container">
                         <div className="column_row">
                             <div className="row">
-                                <div className="info col-xs-7">
+                                <div className="infocol-7">
                                     Pozycje od {from} do {to} z {usage.length} |
                                     na stronie 20
                                 </div>

@@ -349,7 +349,7 @@ function ExtensionToolContent() {
                                                             {/* Copy-first parity with source gallery markup. */}
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img
-                                                                className={`gthumbnail img-responsive ${idx === 1 ? 'center-block' : ''} ${idx === 2 ? 'pull-right' : ''}`}
+                                                                className={`gthumbnail img-responsive ${idx === 1 ? 'center-block' : ''} ${idx === 2 ? 'float-end' : ''}`}
                                                                 alt=""
                                                                 src={thumbUrl}
                                                             />
@@ -421,7 +421,7 @@ function ExtensionToolContent() {
                     </table>
                 </div>
             ) : (
-                <p className="salonbw-muted p-20">Nie znaleziono dodatku.</p>
+                <p className="text-muted">Nie znaleziono dodatku.</p>
             )}
         </div>
     );

@@ -226,7 +226,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                         }}
                     />
                 </div>
-                <div className="col-sm-6 text-right mt-xs">
+                <div className="col-sm-6 text-end mt-1">
                     <Link href="/services/new" className="button button-blue">
                         dodaj usługę
                     </Link>
@@ -234,10 +234,10 @@ function ServicesPageContent({ role }: { role: Role }) {
             </div>
 
             {isLoading ? (
-                <div className="salonbw-muted p-20">Ładowanie usług...</div>
+                <div className="text-muted">Ładowanie usług...</div>
             ) : (
                 <>
-                    <div className="column_row data_table">
+                    <div className="">
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
@@ -320,7 +320,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                                     service.popularity,
                                                 )}
                                             </td>
-                                            <td className="text-right pr-m">
+                                            <td className="text-end pe-2">
                                                 {service.displayPrice}
                                             </td>
                                             <td>{service.vatRate ?? 23}%</td>
@@ -330,7 +330,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                     <tr>
                                         <td
                                             colSpan={7}
-                                            className="salonbw-muted p-20 text-center"
+                                            className="text-muted text-center"
                                         >
                                             Brak usług spełniających kryteria
                                         </td>
@@ -343,7 +343,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                     <div className="pagination_container">
                         <div className="column_row">
                             <div className="row">
-                                <div className="info col-xs-7">
+                                <div className="infocol-7">
                                     Pozycje od{' '}
                                     {(currentPage - 1) * itemsPerPage + 1} do{' '}
                                     {Math.min(
@@ -370,7 +370,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                         <option value={100}>100</option>
                                     </select>
                                 </div>
-                                <div className="form_pagination col-xs-5 text-right">
+                                <div className="form_paginationcol-5 text-end">
                                     <input
                                         type="text"
                                         className="pagination-page-input"

@@ -110,7 +110,7 @@ function DraggableCustomerRow({
                             onClick={(e) => e.stopPropagation()}
                             onPointerDown={(e) => e.stopPropagation()}
                         >
-                            <div className="icon_box pull-left">
+                            <div className="icon_box float-start">
                                 <i className="icon sprite-customer_telephone" />
                             </div>
                             {customer.phone}
@@ -118,7 +118,7 @@ function DraggableCustomerRow({
                     </div>
                 ) : null}
             </td>
-            <td className="hidden-xs">
+            <td className="d-none d-sm-table-cell">
                 <div
                     className="icon_box"
                     title={
@@ -132,7 +132,7 @@ function DraggableCustomerRow({
                 <span>{formatLastVisit(customer.lastVisitDate)}</span>
             </td>
             <td
-                className="text-right hidden-xs"
+                className="text-end d-none d-sm-table-cell"
                 onClick={(e) => e.stopPropagation()}
                 onPointerDown={(e) => e.stopPropagation()}
             >
@@ -300,8 +300,8 @@ export default function ClientsPage() {
                             ]}
                         />
 
-                        <div className="row mb-l">
-                            <div className="col-sm-7 d-flex flex-wrap mb-m mb-md-0">
+                        <div className="row mb-3">
+                            <div className="col-sm-7 d-flex flex-wrap mb-2 mb-md-0">
                                 <input
                                     type="text"
                                     name="query"
@@ -311,10 +311,10 @@ export default function ClientsPage() {
                                         setSearchTerm(e.target.value);
                                         setPage(1);
                                     }}
-                                    className="right_space"
+                                    className="form-control form-control-sm"
                                 />
                             </div>
-                            <div className="col-sm-5 text-right">
+                            <div className="col-sm-5 text-end">
                                 <Link
                                     href="/customers/new"
                                     className="button button-blue"
@@ -372,10 +372,10 @@ export default function ClientsPage() {
                         )}
 
                         {isLoading ? (
-                            <p className="salonbw-muted p-20">Ładowanie...</p>
+                            <p className="text-muted">Ładowanie...</p>
                         ) : (
                             <>
-                                <div className="column_row all_customers_checker">
+                                <div className="all_customers_checker">
                                     <label>
                                         <input
                                             type="checkbox"
@@ -385,10 +385,7 @@ export default function ClientsPage() {
                                         <span>{filteredCustomers.length}</span>)
                                     </label>
                                 </div>
-                                <div
-                                    className="column_row data_table"
-                                    id="customers_list"
-                                >
+                                <div id="customers_list">
                                     <table className="table table-bordered">
                                         <thead>
                                             <tr>
@@ -398,11 +395,11 @@ export default function ClientsPage() {
                                                 <th>
                                                     <div>Kontakt</div>
                                                 </th>
-                                                <th className="hidden-xs">
+                                                <th className="d-none d-sm-table-cell">
                                                     <div>Ostatnia wizyta</div>
                                                 </th>
                                                 <th
-                                                    className="text-right hidden-xs"
+                                                    className="text-end d-none d-sm-table-cell"
                                                     aria-label="Akcje"
                                                 />
                                             </tr>
@@ -438,7 +435,7 @@ export default function ClientsPage() {
 
                         <div className="pagination_container">
                             <div className="row">
-                                <div className="info col-xs-7">
+                                <div className="infocol-7">
                                     Pozycje od {fromItem} do {toItem} z{' '}
                                     <span id="total_found">{totalCount}</span> |
                                     na stronie{' '}
@@ -456,7 +453,7 @@ export default function ClientsPage() {
                                         <option value="100">100</option>
                                     </select>
                                 </div>
-                                <div className="form_pagination col-xs-5">
+                                <div className="form_paginationcol-5">
                                     <button
                                         type="button"
                                         className="button button-link"

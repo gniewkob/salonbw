@@ -237,7 +237,7 @@ export default function SettingsCategoriesPage() {
                             ]}
                         />
                         <PanelSection title="Kategorie produktów">
-                            <div className="actions mb-m">
+                            <div className="actions mb-2">
                                 <Link
                                     href="/products"
                                     className="btn btn-default"

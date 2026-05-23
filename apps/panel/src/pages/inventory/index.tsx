@@ -83,7 +83,7 @@ export default function InventoryHistoryPage() {
                                 className="form-control form-control-sm"
                             />
                         </div>
-                        <div className="col-sm-5 text-right">
+                        <div className="col-sm-5 text-end">
                             <select
                                 value={normalizedStatus ?? ''}
                                 onChange={(event) => {

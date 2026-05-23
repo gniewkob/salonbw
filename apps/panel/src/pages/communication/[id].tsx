@@ -352,7 +352,7 @@ export default function CommunicationDetailPage() {
                         </div>
                     ) : (
                         <div className="communication-detail-layout">
-                            <div className="row mb-l">
+                            <div className="row mb-3">
                                 <div className="col-xs-12 text-end">
                                     <button
                                         type="button"

@@ -81,7 +81,7 @@ export default function TipsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 small salonbw-muted">Ładowanie...</div>
+                    <div className="text-muted p-3">Ładowanie...</div>
                 ) : (
                     <>
                         {/* Summary cards */}

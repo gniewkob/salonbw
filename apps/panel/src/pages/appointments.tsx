@@ -467,13 +467,13 @@ export default function AppointmentsPage() {
                 {totalPages > 1 && (
                     <div className="pagination_container mt-3">
                         <div className="row">
-                            <div className="info col-xs-7">
+                            <div className="infocol-7">
                                 <span>
                                     Strona {page} z {totalPages} ({data?.total}{' '}
                                     wyników)
                                 </span>
                             </div>
-                            <div className="form_pagination col-xs-5 d-flex gap-1 justify-content-end">
+                            <div className="form_paginationcol-5 d-flex gap-1 justify-content-end">
                                 <button
                                     className="btn btn-sm btn-outline-secondary"
                                     disabled={page <= 1}

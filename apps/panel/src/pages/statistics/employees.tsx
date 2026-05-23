@@ -133,7 +133,7 @@ export default function EmployeeActivityPage() {
                 />
 
                 {loading ? (
-                    <div className="salonbw-muted p-20">Ładowanie...</div>
+                    <div className="text-muted">Ładowanie...</div>
                 ) : error ? (
                     <div className="alert alert-warning">
                         Raport aktywności chwilowo niedostępny.

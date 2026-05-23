@@ -82,7 +82,7 @@ export default function SettingsEmployeeDetailPage() {
                                             ? `/settings/employees/${id}/edit`
                                             : '#'
                                     }
-                                    className="btn button-blue pull-right"
+                                    className="btn button-blue float-end"
                                 >
                                     edytuj
                                 </Link>

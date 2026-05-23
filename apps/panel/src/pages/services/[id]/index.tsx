@@ -288,7 +288,7 @@ export default function ServiceDetailsPage() {
                                                                 variant.duration,
                                                             )}
                                                         </div>
-                                                        <div className="col-xs-3 text-right">
+                                                        <div className="col-xs-3 text-end">
                                                             {formatCurrency(
                                                                 variant.price,
                                                             )}
@@ -509,7 +509,7 @@ export default function ServiceDetailsPage() {
                                                             <div className="service-variant-name">
                                                                 {variant.name}
                                                             </div>
-                                                            <div className="salonbw-muted fz-11">
+                                                            <div className="text-muted fz-11">
                                                                 {formatDuration(
                                                                     variant.duration,
                                                                 )}
@@ -522,7 +522,7 @@ export default function ServiceDetailsPage() {
                                                         <td className="align-top">
                                                             {assigned.length ===
                                                             0 ? (
-                                                                <div className="salonbw-muted">
+                                                                <div className="text-muted">
                                                                     Brak
                                                                     przypisań
                                                                 </div>
@@ -545,7 +545,7 @@ export default function ServiceDetailsPage() {
                                                                                             ?.name
                                                                                     }
                                                                                 </span>
-                                                                                <span className="salonbw-muted">
+                                                                                <span className="text-muted">
                                                                                     {formatDuration(
                                                                                         assignment.customDuration ??
                                                                                             variant.duration,

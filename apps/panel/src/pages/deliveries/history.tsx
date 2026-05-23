@@ -72,12 +72,10 @@ export default function WarehouseDeliveriesHistoryPage() {
             activeTab="deliveries"
         >
             {isLoading ? (
-                <p className="salonbw-muted p-20">
-                    Ładowanie historii dostaw...
-                </p>
+                <p className="text-muted">Ładowanie historii dostaw...</p>
             ) : (
                 <>
-                    <div className="row mb-l">
+                    <div className="row mb-3">
                         <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
                             <input
                                 type="text"
@@ -118,7 +116,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="column_row data_table">
+                    <div className="">
                         <table className="table-bordered">
                             <thead>
                                 <tr>
@@ -201,11 +199,11 @@ export default function WarehouseDeliveriesHistoryPage() {
                     <div className="pagination_container">
                         <div className="column_row">
                             <div className="row">
-                                <div className="info col-xs-7">
+                                <div className="infocol-7">
                                     Pozycje od {from} do {to} z{' '}
                                     {visibleDeliveries.length} | na stronie 20
                                 </div>
-                                <div className="form_pagination col-xs-5">
+                                <div className="form_paginationcol-5">
                                     <input
                                         type="text"
                                         className="pagination-page-input"
