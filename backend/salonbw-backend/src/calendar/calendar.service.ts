@@ -332,8 +332,6 @@ export class CalendarService {
                         employee: { id: emp.id },
                         startTime: Between(startOfDay(dayStart), dayEnd),
                     },
-                    relations: ['employee'],
-                    select: ['startTime', 'endTime'],
                 }),
             ]);
 
