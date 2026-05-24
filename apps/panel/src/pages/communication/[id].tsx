@@ -585,7 +585,7 @@ export default function CommunicationDetailPage() {
                                 <div id="reply_form">
                                     <ol className="communication-reply-list">
                                         <li className="control-group">
-                                            <label className="control-label">
+                                            <label className="form-label">
                                                 Dane odbiorcy
                                             </label>
                                             <div className="controls">
@@ -593,7 +593,7 @@ export default function CommunicationDetailPage() {
                                             </div>
                                         </li>
                                         <li className="control-group">
-                                            <label className="control-label">
+                                            <label className="form-label">
                                                 Szablon
                                             </label>
                                             <div className="controls">
@@ -638,7 +638,7 @@ export default function CommunicationDetailPage() {
                                         {replyMode === 'template' ? (
                                             <li className="control-group">
                                                 <label
-                                                    className="control-label"
+                                                    className="form-label"
                                                     htmlFor="reply-template"
                                                 >
                                                     Istniejący szablon
@@ -680,7 +680,7 @@ export default function CommunicationDetailPage() {
                                                     <div className="communication-template-actions">
                                                         <button
                                                             type="button"
-                                                            className="button button-link"
+                                                            className="btn btn-link"
                                                             onClick={
                                                                 handlePreviewTemplate
                                                             }
@@ -710,7 +710,7 @@ export default function CommunicationDetailPage() {
                                         {activeKind === 'email' ? (
                                             <li className="control-group">
                                                 <label
-                                                    className="control-label"
+                                                    className="form-label"
                                                     htmlFor="reply-subject"
                                                 >
                                                     Tytuł wiadomości
@@ -733,7 +733,7 @@ export default function CommunicationDetailPage() {
                                         ) : null}
                                         <li className="control-group">
                                             <label
-                                                className="control-label"
+                                                className="form-label"
                                                 htmlFor="reply-content"
                                             >
                                                 Treść wiadomości
@@ -770,7 +770,7 @@ export default function CommunicationDetailPage() {
                                                     </p>
                                                     <button
                                                         type="button"
-                                                        className="button button-link"
+                                                        className="btn btn-link"
                                                         onClick={
                                                             handlePreviewDraft
                                                         }
@@ -808,7 +808,7 @@ export default function CommunicationDetailPage() {
 
                                     <button
                                         type="button"
-                                        className="button button-blue"
+                                        className="btn btn-primary"
                                         disabled={
                                             isSending ||
                                             !replyText.trim() ||
@@ -825,7 +825,7 @@ export default function CommunicationDetailPage() {
                                     <div className="l">
                                         <button
                                             type="button"
-                                            className="button button-blue"
+                                            className="btn btn-primary"
                                             onClick={handleShowReply}
                                         >
                                             Wyślij odpowiedź do: {recipientName}{' '}
@@ -898,7 +898,7 @@ export default function CommunicationDetailPage() {
                             <div className="salonbw-modal__footer">
                                 <button
                                     type="button"
-                                    className="button button-blue"
+                                    className="btn btn-primary"
                                     onClick={() => setPreviewVisible(false)}
                                 >
                                     zamknij

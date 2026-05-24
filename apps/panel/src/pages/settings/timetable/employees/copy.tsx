@@ -228,9 +228,9 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                         >
                                             <fieldset>
                                                 <legend>Dane kopiowania</legend>
-                                                <div className="form-group">
+                                                <div className="mb-3">
                                                     <label
-                                                        className="control-label"
+                                                        className="form-label"
                                                         htmlFor="copy-from-employee"
                                                     >
                                                         Kopiuj od pracownika
@@ -271,8 +271,8 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                     </select>
                                                 </div>
 
-                                                <div className="form-group">
-                                                    <label className="control-label">
+                                                <div className="mb-3">
+                                                    <label className="form-label">
                                                         Kopiowany okres
                                                     </label>
                                                     <div className="data-protection-limits__editor">
@@ -322,9 +322,9 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                     ) : null}
                                                 </div>
 
-                                                <div className="form-group">
+                                                <div className="mb-3">
                                                     <label
-                                                        className="control-label"
+                                                        className="form-label"
                                                         htmlFor="copy-target-employees"
                                                     >
                                                         Wklej pracownikom
@@ -370,10 +370,10 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                     </p>
                                                 </div>
 
-                                                <div className="form-group">
+                                                <div className="mb-3">
                                                     <button
                                                         type="submit"
-                                                        className="btn button-blue"
+                                                        className="btn btn-primary"
                                                         disabled={
                                                             createTimetable.isPending
                                                         }

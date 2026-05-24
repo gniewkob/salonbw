@@ -310,7 +310,7 @@ export default function CommissionsPage() {
                     <div className="float-start statistics_date">
                         <button
                             type="button"
-                            className="button button-link button_prev mr-s"
+                            className="btn btn-link button_prev mr-s"
                             onClick={() => navigateDate('prev')}
                             aria-label="Poprzedni dzień"
                         >
@@ -346,7 +346,7 @@ export default function CommissionsPage() {
                         </div>
                         <button
                             type="button"
-                            className="button button-link button_next ml-s"
+                            className="btn btn-link button_next ml-s"
                             onClick={() => navigateDate('next')}
                             aria-label="Następny dzień"
                         >
@@ -369,7 +369,7 @@ export default function CommissionsPage() {
                     </button>
                     <button
                         type="button"
-                        className="button button-link statistics-print-button"
+                        className="btn btn-link statistics-print-button"
                         onClick={() => window.print()}
                         aria-label="Drukuj"
                     >

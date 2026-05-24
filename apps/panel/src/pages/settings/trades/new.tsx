@@ -140,10 +140,10 @@ export default function SettingsTradesNewPage() {
                                     </div>
                                 )}
 
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="name"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Nazwa
                                     </label>
@@ -159,10 +159,10 @@ export default function SettingsTradesNewPage() {
                                     />
                                 </div>
 
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="parentId"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Branża nadrzędna
                                     </label>
@@ -186,10 +186,10 @@ export default function SettingsTradesNewPage() {
                                     </select>
                                 </div>
 
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="description"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Opis
                                     </label>
@@ -204,10 +204,10 @@ export default function SettingsTradesNewPage() {
                                     />
                                 </div>
 
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="color"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Kolor
                                     </label>
@@ -237,13 +237,10 @@ export default function SettingsTradesNewPage() {
                                     </label>
                                 </div>
 
-                                <div
-                                    className="form-group"
-                                    style={{ marginTop: 16 }}
-                                >
+                                <div className="mb-3" style={{ marginTop: 16 }}>
                                     <button
                                         type="submit"
-                                        className="btn button-blue"
+                                        className="btn btn-primary"
                                         disabled={createCategory.isPending}
                                     >
                                         {createCategory.isPending

@@ -146,7 +146,7 @@ function DraggableCustomerRow({
                 </span>
                 <Link
                     href={`/customers/${customer.id}/edit`}
-                    className="button button-link"
+                    className="btn btn-link"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                     title="Edytuj"
@@ -317,7 +317,7 @@ export default function ClientsPage() {
                             <div className="col-sm-5 text-end">
                                 <Link
                                     href="/customers/new"
-                                    className="button button-blue"
+                                    className="btn btn-primary"
                                     id="add_customer_button"
                                 >
                                     <i className="icon sprite-add_customer" />
@@ -456,7 +456,7 @@ export default function ClientsPage() {
                                 <div className="form_paginationcol-5">
                                     <button
                                         type="button"
-                                        className="button button-link"
+                                        className="btn btn-link"
                                         aria-label="Poprzednia strona"
                                         disabled={page <= 1}
                                         onClick={() => setPage((p) => p - 1)}
@@ -478,7 +478,7 @@ export default function ClientsPage() {
                                     <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
-                                        className="button button-link button_next ml-s"
+                                        className="btn btn-link button_next ml-s"
                                         aria-label="Następna strona"
                                         disabled={page >= totalPages}
                                         onClick={() => setPage((p) => p + 1)}

@@ -175,8 +175,8 @@ export default function SettingsDataProtectionPage() {
                                     </div>
                                 )}
 
-                                <div className="form-group">
-                                    <label className="control-label">
+                                <div className="mb-3">
+                                    <label className="form-label">
                                         Tryb ochrony danych
                                     </label>
                                     <div>
@@ -197,8 +197,8 @@ export default function SettingsDataProtectionPage() {
 
                                 {paranoiaMode && (
                                     <>
-                                        <div className="form-group">
-                                            <label className="control-label">
+                                        <div className="mb-3">
+                                            <label className="form-label">
                                                 Limit kontaktów
                                             </label>
                                             <div className="input-group input-group--narrow">
@@ -228,8 +228,8 @@ export default function SettingsDataProtectionPage() {
                                             </p>
                                         </div>
 
-                                        <div className="form-group">
-                                            <label className="control-label">
+                                        <div className="mb-3">
+                                            <label className="form-label">
                                                 E-mail powiadomień
                                             </label>
                                             <input
@@ -250,7 +250,7 @@ export default function SettingsDataProtectionPage() {
                                             </p>
                                         </div>
 
-                                        <div className="form-group">
+                                        <div className="mb-3">
                                             <h2>
                                                 Indywidualne limity dla
                                                 pracowników
@@ -382,7 +382,7 @@ export default function SettingsDataProtectionPage() {
                                                                                 zapisz
                                                                             </button>
                                                                             <button
-                                                                                className="button-link"
+                                                                                className="btn btn-link p-0"
                                                                                 disabled={
                                                                                     isSavingThisRow
                                                                                 }
@@ -406,7 +406,7 @@ export default function SettingsDataProtectionPage() {
                                                                                 klientow
                                                                             </span>
                                                                             <button
-                                                                                className="button-link"
+                                                                                className="btn btn-link p-0"
                                                                                 type="button"
                                                                                 onClick={() =>
                                                                                     startEmployeeLimitEdit(
@@ -421,7 +421,7 @@ export default function SettingsDataProtectionPage() {
                                                                             {employee.paranoiaLimitOverride !==
                                                                                 null && (
                                                                                 <button
-                                                                                    className="button-link"
+                                                                                    className="btn btn-link p-0"
                                                                                     disabled={
                                                                                         isSavingThisRow
                                                                                     }
@@ -452,7 +452,7 @@ export default function SettingsDataProtectionPage() {
                                     primary={
                                         <button
                                             type="submit"
-                                            className="btn button-blue"
+                                            className="btn btn-primary"
                                             disabled={
                                                 updateDataProtection.isPending
                                             }

@@ -89,10 +89,10 @@ export default function SettingsEmployeeEditPage() {
                             ) : (
                                 <form onSubmit={(e) => void handleSubmit(e)}>
                                     <h2>Edytuj pracownika</h2>
-                                    <div className="form-group">
+                                    <div className="mb-3">
                                         <label
                                             htmlFor="firstName"
-                                            className="control-label"
+                                            className="form-label"
                                         >
                                             Imię
                                         </label>
@@ -107,10 +107,10 @@ export default function SettingsEmployeeEditPage() {
                                             required
                                         />
                                     </div>
-                                    <div className="form-group">
+                                    <div className="mb-3">
                                         <label
                                             htmlFor="lastName"
-                                            className="control-label"
+                                            className="form-label"
                                         >
                                             Nazwisko
                                         </label>
@@ -125,10 +125,10 @@ export default function SettingsEmployeeEditPage() {
                                             required
                                         />
                                     </div>
-                                    <div className="form-group">
+                                    <div className="mb-3">
                                         <button
                                             type="submit"
-                                            className="btn button-blue"
+                                            className="btn btn-primary"
                                             disabled={updateEmployee.isPending}
                                         >
                                             {updateEmployee.isPending

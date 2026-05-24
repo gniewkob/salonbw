@@ -79,7 +79,7 @@ export default function SettingsCustomerOriginsPage() {
                             action={
                                 <button
                                     type="button"
-                                    className="btn button-blue float-end"
+                                    className="btn btn-primary float-end"
                                     onClick={() => setIsAdding(true)}
                                 >
                                     + Dodaj nowe źródło
@@ -87,8 +87,8 @@ export default function SettingsCustomerOriginsPage() {
                             }
                         >
                             {isAdding && (
-                                <div className="form-group">
-                                    <label className="control-label">
+                                <div className="mb-3">
+                                    <label className="form-label">
                                         Nazwa źródła
                                     </label>
                                     <div className="input-group">
@@ -218,7 +218,7 @@ export default function SettingsCustomerOriginsPage() {
                                                                     <span className="btn-group">
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-xs button-blue"
+                                                                            className="btn btn-primary btn-sm"
                                                                             onClick={() =>
                                                                                 handleEditSave(
                                                                                     origin.id,

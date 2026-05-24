@@ -20,10 +20,7 @@ export default function WarehouseUsageHistoryPage() {
             <div className="row mb-3">
                 <div className="col-sm-12">
                     <div className="d-flex flex-wrap justify-content-end">
-                        <Link
-                            href="/use/new"
-                            className="button button-blue ml-xs"
-                        >
+                        <Link href="/use/new" className="btn btn-primary ml-xs">
                             dodaj zużycie
                         </Link>
                         <Link

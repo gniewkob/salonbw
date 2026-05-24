@@ -58,7 +58,7 @@ export default function InventoryHistoryPage() {
             activeTab="products"
             inventoryActive
             actions={
-                <Link href="/inventory/new" className="button button-blue">
+                <Link href="/inventory/new" className="btn btn-primary">
                     nowa inwentaryzacja
                 </Link>
             }
