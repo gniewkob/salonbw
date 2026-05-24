@@ -35,7 +35,7 @@ export class AppointmentFormulasController {
     addFormula(
         @Param('appointmentId', ParseIntPipe) appointmentId: number,
         @Body() body: CreateFormulaDto,
-        @CurrentUser() user: { userId: number; role: string },
+        @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Formula> {
         return this.formulasService.addToAppointment(
             appointmentId,

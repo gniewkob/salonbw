@@ -25,7 +25,7 @@ export class FormulasService {
     async addToAppointment(
         appointmentId: number,
         userId: number,
-        role: Role | string,
+        role: Role,
         data: { description: string; date: Date },
     ): Promise<Formula> {
         const appointment = await this.appointmentsRepository.findOne({
