@@ -159,7 +159,7 @@ export default function CustomerSidebar({
                             <div className="mb-0">
                                 <label
                                     htmlFor="filter-gender"
-                                    className="form-label salonbw-label-xs"
+                                    className="form-label form-label-xs"
                                 >
                                     Płeć
                                 </label>
@@ -187,7 +187,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-age-min"
-                                        className="form-label salonbw-label-xs"
+                                        className="form-label form-label-xs"
                                     >
                                         Wiek od
                                     </label>
@@ -238,7 +238,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-spent-min"
-                                        className="form-label salonbw-label-xs"
+                                        className="form-label form-label-xs"
                                     >
                                         Wydane od
                                     </label>
@@ -262,7 +262,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-spent-max"
-                                        className="form-label salonbw-label-xs"
+                                        className="form-label form-label-xs"
                                     >
                                         do
                                     </label>

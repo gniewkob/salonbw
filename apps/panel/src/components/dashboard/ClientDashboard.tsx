@@ -129,10 +129,7 @@ export default function ClientDashboard() {
         <div className="salonbw-dashboard">
             <div className="salonbw-dashboard__header">
                 <h1 className="salonbw-dashboard__title">Mój panel</h1>
-                <Link
-                    href="/booking"
-                    className="salonbw-btn salonbw-btn--primary"
-                >
+                <Link href="/booking" className="btn btn-primary">
                     Zarezerwuj wizytę
                 </Link>
             </div>

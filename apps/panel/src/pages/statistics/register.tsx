@@ -66,10 +66,10 @@ export default function CashRegisterPage() {
                 />
 
                 <div className="salonbw-page__toolbar">
-                    <div className="salonbw-actions">
+                    <div className="d-flex gap-2 align-items-center">
                         <button
                             type="button"
-                            className="salonbw-toolbar-btn btn btn-outline-secondary"
+                            className="btn btn-outline-secondary"
                             onClick={() => navigateDate('prev')}
                         >
                             ◀
@@ -77,13 +77,13 @@ export default function CashRegisterPage() {
                         <input
                             type="date"
                             aria-label="Wybierz datę"
-                            className="form-control salonbw-toolbar-search"
+                            className="form-control"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                         />
                         <button
                             type="button"
-                            className="salonbw-toolbar-btn btn btn-outline-secondary"
+                            className="btn btn-outline-secondary"
                             onClick={() => navigateDate('next')}
                         >
                             ▶

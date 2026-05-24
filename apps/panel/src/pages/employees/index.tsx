@@ -92,7 +92,7 @@ export default function EmployeesPage() {
                     <div className="salonbw-page__toolbar">
                         <button
                             type="button"
-                            className="salonbw-btn salonbw-btn--primary"
+                            className="btn btn-primary"
                             onClick={() => {
                                 setEditing(null);
                                 setOpenForm(true);
@@ -110,7 +110,7 @@ export default function EmployeesPage() {
                             renderActions={(r) => (
                                 <span className="space-x-2">
                                     <button
-                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--light"
+                                        className="btn btn-sm btn-outline-secondary"
                                         onClick={() => {
                                             setEditing(r);
                                             setOpenForm(true);
@@ -119,7 +119,7 @@ export default function EmployeesPage() {
                                         Edytuj
                                     </button>
                                     <button
-                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--danger"
+                                        className="btn btn-sm btn-danger"
                                         onClick={() => void handleDelete(r)}
                                     >
                                         Usuń

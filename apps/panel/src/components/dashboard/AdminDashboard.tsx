@@ -157,10 +157,7 @@ export default function AdminDashboard() {
         <div className="salonbw-dashboard">
             <div className="salonbw-dashboard__header">
                 <h1 className="salonbw-dashboard__title">Pulpit</h1>
-                <Link
-                    href="/customers/new"
-                    className="salonbw-btn salonbw-btn--primary"
-                >
+                <Link href="/customers/new" className="btn btn-primary">
                     <i className="salonbw-icon salonbw-icon--plus"></i>
                     Dodaj klienta
                 </Link>
@@ -275,7 +272,7 @@ export default function AdminDashboard() {
                 <div className="salonbw-dashboard__section">
                     <div className="salonbw-dashboard__section-header">
                         <h2>najbliższe wizyty</h2>
-                        <Link href="/calendar" className="salonbw-link">
+                        <Link href="/calendar" className="btn btn-link">
                             kalendarz
                         </Link>
                     </div>
@@ -350,7 +347,7 @@ export default function AdminDashboard() {
                 <div className="salonbw-dashboard__section">
                     <div className="salonbw-dashboard__section-header">
                         <h2>podsumowanie miesiąca</h2>
-                        <Link href="/statistics" className="salonbw-link">
+                        <Link href="/statistics" className="btn btn-link">
                             szczegóły
                         </Link>
                     </div>

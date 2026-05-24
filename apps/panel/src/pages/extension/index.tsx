@@ -105,7 +105,7 @@ export default function ExtensionPage() {
                         iconClass="sprite-breadcrumbs_extensions"
                         items={[{ label: 'Dodatki' }]}
                     />
-                    <div className="extensions_boxes versum-extension-grid salonbw-extension-grid">
+                    <div className="extensions_boxes versum-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div
                                 key={`row-${rowIndex}`}

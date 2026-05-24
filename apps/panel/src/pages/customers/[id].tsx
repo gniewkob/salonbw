@@ -160,7 +160,7 @@ export default function CustomerDetailPage() {
                                 </p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="salonbw-btn salonbw-btn--default"
+                                    className="btn btn-outline-secondary"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -186,7 +186,7 @@ export default function CustomerDetailPage() {
                                 <p>Nieprawidłowy identyfikator klienta</p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="salonbw-btn salonbw-btn--default"
+                                    className="btn btn-outline-secondary"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -196,7 +196,7 @@ export default function CustomerDetailPage() {
                                 <p>Nie udało się załadować danych klienta</p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="salonbw-btn salonbw-btn--default"
+                                    className="btn btn-outline-secondary"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -334,7 +334,7 @@ export default function CustomerDetailPage() {
                                 <p>Nie znaleziono klienta</p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="salonbw-btn salonbw-btn--default"
+                                    className="btn btn-outline-secondary"
                                 >
                                     Wróć do listy klientów
                                 </Link>

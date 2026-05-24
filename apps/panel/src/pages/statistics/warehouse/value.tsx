@@ -105,7 +105,7 @@ export default function WarehouseValuePage() {
                             onClick={() =>
                                 setRefreshToken((value) => value + 1)
                             }
-                            className="salonbw-btn salonbw-btn--default"
+                            className="btn btn-outline-secondary"
                             disabled={isLoading}
                         >
                             {isLoading ? 'Ładowanie...' : 'Odśwież'}

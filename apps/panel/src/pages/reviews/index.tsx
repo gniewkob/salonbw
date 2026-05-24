@@ -133,11 +133,11 @@ export default function ReviewsPage() {
                     />
                     <div className="salonbw-page__toolbar">
                         {isAdmin && (
-                            <label className="salonbw-label">
+                            <label className="form-label">
                                 Employee
                                 <input
                                     type="number"
-                                    className="salonbw-input salonbw-input--sm"
+                                    className="form-control form-control-sm"
                                     value={employeeId}
                                     onChange={(e) => {
                                         const n = Number(e.target.value);
@@ -149,7 +149,7 @@ export default function ReviewsPage() {
                         )}
                         <button
                             type="button"
-                            className="salonbw-btn salonbw-btn--primary"
+                            className="btn btn-primary"
                             onClick={() => {
                                 setEditing(null);
                                 setOpenForm(true);
@@ -165,7 +165,7 @@ export default function ReviewsPage() {
                         renderActions={(r) => (
                             <span className="space-x-2">
                                 <button
-                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--light"
+                                    className="btn btn-sm btn-outline-secondary"
                                     onClick={() => {
                                         setEditing(r);
                                         setOpenForm(true);
@@ -174,7 +174,7 @@ export default function ReviewsPage() {
                                     Edytuj
                                 </button>
                                 <button
-                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--danger"
+                                    className="btn btn-sm btn-danger"
                                     onClick={() => void handleDelete(r)}
                                 >
                                     Usuń

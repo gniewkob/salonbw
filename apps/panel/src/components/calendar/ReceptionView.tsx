@@ -81,11 +81,11 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
 };
 
 const ACTION_LABELS: Record<string, { label: string; className: string }> = {
-    confirm: { label: 'Potwierdź', className: 'salonbw-btn--success' },
-    start: { label: 'Rozpocznij', className: 'salonbw-btn--primary' },
-    finalize: { label: 'Finalizuj', className: 'salonbw-btn--success' },
-    cancel: { label: 'Anuluj', className: 'salonbw-btn--danger' },
-    no_show: { label: 'Nieobecny', className: 'salonbw-btn--warning' },
+    confirm: { label: 'Potwierdź', className: 'btn-success' },
+    start: { label: 'Rozpocznij', className: 'btn-primary' },
+    finalize: { label: 'Finalizuj', className: 'btn-success' },
+    cancel: { label: 'Anuluj', className: 'btn-danger' },
+    no_show: { label: 'Nieobecny', className: 'btn-warning' },
 };
 
 export default function ReceptionView({
@@ -478,7 +478,7 @@ export default function ReceptionView({
                                         <div className="salonbw-reception-actions">
                                             <button
                                                 type="button"
-                                                className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
+                                                className="btn btn-sm btn-outline-secondary"
                                                 onClick={() => {
                                                     const customerAlertSeverity =
                                                         appointment.client?.id
@@ -528,7 +528,7 @@ export default function ReceptionView({
                                                               <button
                                                                   key={action}
                                                                   type="button"
-                                                                  className={`salonbw-btn salonbw-btn--sm ${actionConfig.className}`}
+                                                                  className={`btn btn-sm ${actionConfig.className}`}
                                                                   onClick={() =>
                                                                       void handleAction(
                                                                           appointment,
