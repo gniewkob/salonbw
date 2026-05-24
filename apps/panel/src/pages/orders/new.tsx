@@ -86,7 +86,7 @@ export default function WarehouseOrderCreatePage() {
             actions={
                 <Link
                     href="/orders/history"
-                    className="btn btn-outline-secondary btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                 >
                     historia zamówień
                 </Link>
@@ -188,7 +188,7 @@ export default function WarehouseOrderCreatePage() {
                                     <td>
                                         <button
                                             type="button"
-                                            className="btn btn-outline-secondary btn-xs"
+                                            className="btn btn-outline-secondary btn-sm"
                                             onClick={() =>
                                                 setLines((current) =>
                                                     current.filter(
@@ -210,14 +210,14 @@ export default function WarehouseOrderCreatePage() {
                 <div className="warehouse-actions-row">
                     <button
                         type="button"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                         onClick={addLine}
                     >
                         dodaj kolejną pozycję
                     </button>
                     <Link
                         href="/products/new"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         dodaj nowy produkt
                     </Link>
@@ -251,7 +251,7 @@ export default function WarehouseOrderCreatePage() {
                             </select>
                             <Link
                                 href="/suppliers"
-                                className="btn btn-outline-secondary btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                             >
                                 dodaj dostawcę
                             </Link>
@@ -283,7 +283,7 @@ export default function WarehouseOrderCreatePage() {
                             </span>
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={() => setNotesEnabled(true)}
                             >
                                 dodaj uwagi
@@ -293,13 +293,13 @@ export default function WarehouseOrderCreatePage() {
                     <div className="warehouse-entry-actions">
                         <Link
                             href="/orders/history"
-                            className="btn btn-outline-secondary btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                         >
                             anuluj
                         </Link>
                         <button
                             type="button"
-                            className="btn btn-primary btn-xs"
+                            className="btn btn-primary btn-sm"
                             onClick={() => void submit()}
                             disabled={createMutation.isPending}
                         >

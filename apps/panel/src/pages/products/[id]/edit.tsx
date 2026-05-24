@@ -333,7 +333,7 @@ export default function EditProductPage() {
                             <div className="product-form__actions">
                                 <button
                                     type="submit"
-                                    className="btn btn-primary btn-xs"
+                                    className="btn btn-primary btn-sm"
                                     disabled={isSaving}
                                 >
                                     {isSaving
@@ -342,7 +342,7 @@ export default function EditProductPage() {
                                 </button>
                                 <Link
                                     href={`/products/${productId ?? ''}`}
-                                    className="btn btn-outline-secondary btn-xs"
+                                    className="btn btn-outline-secondary btn-sm"
                                 >
                                     anuluj
                                 </Link>

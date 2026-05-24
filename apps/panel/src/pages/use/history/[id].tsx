@@ -23,7 +23,7 @@ export default function WarehouseUsageDetailsPage() {
             actions={
                 <Link
                     href="/use/history"
-                    className="btn btn-outline-secondary btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                 >
                     historia zużycia
                 </Link>

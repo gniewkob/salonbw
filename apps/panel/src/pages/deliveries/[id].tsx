@@ -48,7 +48,7 @@ export default function DeliveryDetailsPage() {
                 <div className="btn-group">
                     <Link
                         href="/deliveries/history"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         historia dostaw
                     </Link>
@@ -57,14 +57,14 @@ export default function DeliveryDetailsPage() {
                         <>
                             <button
                                 type="button"
-                                className="btn btn-primary btn-xs"
+                                className="btn btn-primary btn-sm"
                                 onClick={() => void receive()}
                             >
                                 przyjmij dostawę
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={() => void cancel()}
                             >
                                 anuluj

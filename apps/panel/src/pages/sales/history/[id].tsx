@@ -155,16 +155,16 @@ export default function WarehouseSaleDetailsPage() {
                 <div className="btn-group">
                     <Link
                         href="/sales/history"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         historia sprzedaży
                     </Link>
-                    <Link href="/sales/new" className="btn btn-primary btn-xs">
+                    <Link href="/sales/new" className="btn btn-primary btn-sm">
                         dodaj sprzedaż
                     </Link>
                     <button
                         type="button"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         drukuj
                     </button>
@@ -449,7 +449,7 @@ export default function WarehouseSaleDetailsPage() {
                             <div className="btn-group">
                                 <button
                                     type="button"
-                                    className="btn btn-outline-secondary btn-xs"
+                                    className="btn btn-outline-secondary btn-sm"
                                     disabled={voidMutation.isPending}
                                     onClick={() => void handleAction('void')}
                                 >
@@ -457,7 +457,7 @@ export default function WarehouseSaleDetailsPage() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-outline-secondary btn-xs"
+                                    className="btn btn-outline-secondary btn-sm"
                                     disabled={refundMutation.isPending}
                                     onClick={() => void handleAction('refund')}
                                 >
@@ -465,7 +465,7 @@ export default function WarehouseSaleDetailsPage() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-primary btn-xs"
+                                    className="btn btn-primary btn-sm"
                                     disabled={correctionMutation.isPending}
                                     onClick={() =>
                                         void handleAction('correction')

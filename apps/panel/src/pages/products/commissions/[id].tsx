@@ -71,7 +71,7 @@ export default function ProductCommissionsPage() {
                     <div className="products-commissions__actions">
                         <button
                             type="button"
-                            className="btn btn-primary btn-xs"
+                            className="btn btn-primary btn-sm"
                             onClick={() => void save()}
                             disabled={updateMutation.isPending}
                         >

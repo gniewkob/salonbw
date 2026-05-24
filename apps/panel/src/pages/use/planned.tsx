@@ -20,13 +20,13 @@ export default function WarehouseUsagePlannedPage() {
                 <>
                     <Link
                         href="/use/new?scope=planned"
-                        className="btn btn-primary btn-xs"
+                        className="btn btn-primary btn-sm"
                     >
                         dodaj planowane zużycie
                     </Link>
                     <Link
                         href="/use/history"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         historia zużycia
                     </Link>

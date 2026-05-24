@@ -97,13 +97,13 @@ export default function WarehouseUsageCreatePage() {
                 <>
                     <Link
                         href="/use/history"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         historia zużycia
                     </Link>
                     <Link
                         href="/use/planned"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         planowane zużycie
                     </Link>
@@ -161,7 +161,7 @@ export default function WarehouseUsageCreatePage() {
                                 <td>
                                     <button
                                         type="button"
-                                        className="btn btn-outline-secondary btn-xs"
+                                        className="btn btn-outline-secondary btn-sm"
                                         onClick={() => removeLine(index)}
                                     >
                                         usuń
@@ -176,7 +176,7 @@ export default function WarehouseUsageCreatePage() {
             <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="btn btn-outline-secondary btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={addLine}
                 >
                     dodaj kolejną pozycję
@@ -229,7 +229,7 @@ export default function WarehouseUsageCreatePage() {
             <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="btn btn-primary btn-xs"
+                    className="btn btn-primary btn-sm"
                     onClick={() => void submit()}
                     disabled={createMutation.isPending}
                 >

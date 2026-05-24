@@ -57,14 +57,14 @@ export default function InventoryDetailsPage() {
                 <div className="btn-group">
                     <Link
                         href="/inventory"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         historia inwentaryzacji
                     </Link>
                     {data?.status === 'draft' ? (
                         <button
                             type="button"
-                            className="btn btn-primary btn-xs"
+                            className="btn btn-primary btn-sm"
                             onClick={() => void start()}
                         >
                             rozpocznij
@@ -73,7 +73,7 @@ export default function InventoryDetailsPage() {
                     {data?.status === 'in_progress' ? (
                         <button
                             type="button"
-                            className="btn btn-primary btn-xs"
+                            className="btn btn-primary btn-sm"
                             onClick={() => void complete()}
                         >
                             zakończ

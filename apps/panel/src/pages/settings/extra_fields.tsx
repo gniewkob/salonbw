@@ -488,7 +488,7 @@ export default function SettingsExtraFieldsPage() {
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs btn-outline-secondary"
+                                                                    className="btn btn-sm btn-outline-secondary"
                                                                     onClick={() =>
                                                                         setEditForm(
                                                                             null,
@@ -530,7 +530,7 @@ export default function SettingsExtraFieldsPage() {
                                                             <span className="btn-group">
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs btn-outline-secondary"
+                                                                    className="btn btn-sm btn-outline-secondary"
                                                                     onClick={() =>
                                                                         openEditForm(
                                                                             field,
@@ -541,7 +541,7 @@ export default function SettingsExtraFieldsPage() {
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs btn-outline-secondary"
+                                                                    className="btn btn-sm btn-outline-secondary"
                                                                     onClick={() =>
                                                                         deleteField.mutate(
                                                                             field.id,
