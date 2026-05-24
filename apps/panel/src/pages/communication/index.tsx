@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import Modal from '@/components/Modal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import CommunicationNav from '@/components/salon/navs/CommunicationNav';
 import { useSmsHistory, useSmsMutations } from '@/hooks/useSms';
 import { useEmailHistory, useEmailMutations } from '@/hooks/useEmails';
 
@@ -53,6 +56,9 @@ export default function CommunicationPage() {
     const [content, setContent] = useState('');
     const [isSending, setIsSending] = useState(false);
 
+    const secondaryNav = useMemo(() => <CommunicationNav />, []);
+    useSetSecondaryNav(secondaryNav);
+
     if (!role) return null;
 
     const loading = kind === 'sms' ? smsHistory.loading : emailHistory.loading;
@@ -71,10 +77,7 @@ export default function CommunicationPage() {
         setIsSending(true);
         try {
             if (kind === 'sms') {
-                await sendSms.mutateAsync({
-                    recipient,
-                    content,
-                });
+                await sendSms.mutateAsync({ recipient, content });
                 await smsHistory.refetch();
             } else {
                 await sendEmailAuth.mutateAsync({
@@ -93,6 +96,8 @@ export default function CommunicationPage() {
         setIsSending(false);
     };
 
+    const totalPages = data ? Math.ceil(data.total / data.limit) || 1 : 1;
+
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonShell role={role}>
@@ -105,394 +110,341 @@ export default function CommunicationPage() {
                         ]}
                     />
 
-                    <div className="inner">
-                        <div className="actions">
-                            <button
-                                type="button"
-                                className="button button-blue"
-                                onClick={() => setIsModalOpen(true)}
+                    <div className="salonbw-page__toolbar mb-3">
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => setIsModalOpen(true)}
+                        >
+                            Wyślij wiadomość pojedynczą
+                        </button>
+                        <Link
+                            href="/communication/mass"
+                            className="btn btn-outline-secondary btn-sm"
+                        >
+                            Wyślij wiadomość masową
+                        </Link>
+                    </div>
+
+                    <div className="row g-2 mb-3">
+                        <div className="col-md-3 col-sm-6">
+                            <label
+                                className="form-label small mb-1"
+                                htmlFor="comm-kind"
                             >
-                                wyślij wiadomość pojedynczą
-                            </button>
+                                Rodzaj:
+                            </label>
+                            <select
+                                id="comm-kind"
+                                className="form-select form-select-sm"
+                                value={kind}
+                                onChange={(e) => {
+                                    setKind(e.target.value as 'sms' | 'email');
+                                    setStatus('');
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="sms">SMS i email</option>
+                                <option value="email">tylko email</option>
+                            </select>
+                        </div>
+                        <div className="col-md-3 col-sm-6">
+                            <label
+                                className="form-label small mb-1"
+                                htmlFor="comm-status"
+                            >
+                                Status:
+                            </label>
+                            <select
+                                id="comm-status"
+                                className="form-select form-select-sm"
+                                value={status}
+                                onChange={(e) => {
+                                    setStatus(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="">
+                                    odczytane i nieodczytane
+                                </option>
+                                <option value="sent">wysłane</option>
+                                <option value="delivered">dostarczone</option>
+                                <option value="failed">nieudane</option>
+                                <option value="pending">oczekujące</option>
+                            </select>
+                        </div>
+                        <div className="col-md-3 col-sm-6 d-flex align-items-end gap-2">
                             <Link
-                                href="/communication/mass"
-                                className="button button-blue"
+                                href="/communication/templates"
+                                className="btn btn-outline-secondary btn-sm"
                             >
-                                wyślij wiadomość masową
+                                Szablony
+                            </Link>
+                            <Link
+                                href="/communication/reminders"
+                                className="btn btn-outline-secondary btn-sm"
+                            >
+                                Przypomnienia
                             </Link>
                         </div>
                     </div>
 
-                    <div className="inner">
-                        <div className="row">
-                            <div className="col-md-3 col-sm-6 mb-xs">
-                                <span className="mr-s">Rodzaj:</span>
-                                <select
-                                    className="w-full"
-                                    value={kind}
-                                    aria-label="Rodzaj wiadomości"
-                                    onChange={(event) => {
-                                        setKind(
-                                            event.target.value as
-                                                | 'sms'
-                                                | 'email',
-                                        );
-                                        setStatus('');
-                                        setPage(1);
-                                    }}
-                                >
-                                    <option value="sms">SMS i email</option>
-                                    <option value="email">tylko email</option>
-                                </select>
-                            </div>
-                            <div className="col-md-3 col-sm-6 mb-xs">
-                                <span className="mr-s">Status:</span>
-                                <select
-                                    className="w-full"
-                                    value={status}
-                                    aria-label="Status wiadomości"
-                                    onChange={(event) => {
-                                        setStatus(event.target.value);
-                                        setPage(1);
-                                    }}
-                                >
-                                    <option value="">
-                                        odczytane i nieodczytane
-                                    </option>
-                                    <option value="sent">wysłane</option>
-                                    <option value="delivered">
-                                        dostarczone
-                                    </option>
-                                    <option value="failed">nieudane</option>
-                                    <option value="pending">oczekujące</option>
-                                </select>
-                            </div>
-                            <div className="col-md-3 col-sm-6 mb-xs">
-                                <Link
-                                    href="/communication/templates"
-                                    className="button"
-                                >
-                                    szablony
-                                </Link>
-                                <Link
-                                    href="/communication/reminders"
-                                    className="button ml-xs"
-                                >
-                                    przypomnienia
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-
                     {loading ? (
-                        <div className="products-empty">
+                        <div className="salonbw-loading">
                             Ładowanie wiadomości...
                         </div>
-                    ) : data ? (
+                    ) : data && data.total > 0 ? (
                         <>
-                            <div className="inner">
-                                <div className="">
-                                    <table className="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Odbiorca</th>
-                                                <th>Wiadomość</th>
-                                                <th>Rodzaj</th>
-                                                <th>Wysłano</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {kind !== 'email'
-                                                ? smsHistory.data.items.map(
-                                                      (entry, i) => (
-                                                          <tr
-                                                              key={`sms-${entry.id}`}
-                                                              className={
-                                                                  i % 2 === 0
-                                                                      ? 'odd row'
-                                                                      : 'even row'
-                                                              }
-                                                          >
-                                                              <td className="wrap">
-                                                                  <Link
-                                                                      href={getCommunicationHref(
-                                                                          entry.id,
-                                                                          'sms',
-                                                                      )}
-                                                                  >
-                                                                      {
-                                                                          entry.recipient
-                                                                      }
-                                                                  </Link>
-                                                              </td>
-                                                              <td className="wrap">
-                                                                  <Link
-                                                                      href={getCommunicationHref(
-                                                                          entry.id,
-                                                                          'sms',
-                                                                      )}
-                                                                  >
-                                                                      {entry.subject ||
-                                                                          'Wiadomość'}
-                                                                  </Link>
-                                                                  <div className="excerpt">
-                                                                      {entry.content.slice(
-                                                                          0,
-                                                                          120,
-                                                                      )}
-                                                                      {entry
-                                                                          .content
-                                                                          .length >
-                                                                      120
-                                                                          ? '...'
-                                                                          : ''}
-                                                                  </div>
-                                                              </td>
-                                                              <td className="wrap">
-                                                                  <span className="v2-label v2-label-info">
-                                                                      {entry.channel ||
-                                                                          'sms standard'}
-                                                                  </span>
-                                                              </td>
-                                                              <td className="wrap">
-                                                                  {formatDateTime(
-                                                                      entry.sentAt ||
-                                                                          entry.createdAt,
+                            <div className="table-responsive">
+                                <table className="table table-bordered table-hover table-sm">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th>Odbiorca</th>
+                                            <th>Wiadomość</th>
+                                            <th>Rodzaj</th>
+                                            <th>Wysłano</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {kind !== 'email'
+                                            ? smsHistory.data.items.map(
+                                                  (entry) => (
+                                                      <tr
+                                                          key={`sms-${entry.id}`}
+                                                      >
+                                                          <td>
+                                                              <Link
+                                                                  href={getCommunicationHref(
+                                                                      entry.id,
+                                                                      'sms',
                                                                   )}
-                                                              </td>
-                                                          </tr>
-                                                      ),
-                                                  )
-                                                : emailHistory.data.items.map(
-                                                      (entry, i) => (
-                                                          <tr
-                                                              key={`email-${entry.id}`}
-                                                              className={
-                                                                  i % 2 === 0
-                                                                      ? 'odd row'
-                                                                      : 'even row'
-                                                              }
-                                                          >
-                                                              <td className="wrap">
-                                                                  <Link
-                                                                      href={getCommunicationHref(
-                                                                          entry.id,
-                                                                          'email',
-                                                                      )}
-                                                                  >
-                                                                      {entry.to}
-                                                                  </Link>
-                                                              </td>
-                                                              <td className="wrap">
-                                                                  <Link
-                                                                      href={getCommunicationHref(
-                                                                          entry.id,
-                                                                          'email',
-                                                                      )}
-                                                                  >
-                                                                      {entry.subject ||
-                                                                          'Email'}
-                                                                  </Link>
-                                                                  <div className="excerpt">
-                                                                      {(
-                                                                          entry.template ??
-                                                                          ''
-                                                                      ).slice(
-                                                                          0,
-                                                                          120,
-                                                                      )}
-                                                                      {(
-                                                                          entry.template ??
-                                                                          ''
-                                                                      ).length >
-                                                                      120
-                                                                          ? '...'
-                                                                          : ''}
-                                                                  </div>
-                                                              </td>
-                                                              <td className="wrap">
-                                                                  <span className="v2-label v2-label-info">
-                                                                      email
-                                                                  </span>
-                                                              </td>
-                                                              <td className="wrap">
-                                                                  {formatDateTime(
-                                                                      entry.sentAt ||
-                                                                          entry.createdAt,
+                                                              >
+                                                                  {
+                                                                      entry.recipient
+                                                                  }
+                                                              </Link>
+                                                          </td>
+                                                          <td>
+                                                              <Link
+                                                                  href={getCommunicationHref(
+                                                                      entry.id,
+                                                                      'sms',
                                                                   )}
-                                                              </td>
-                                                          </tr>
-                                                      ),
-                                                  )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                              >
+                                                                  {entry.subject ||
+                                                                      'Wiadomość'}
+                                                              </Link>
+                                                              <div className="text-muted small">
+                                                                  {entry.content.slice(
+                                                                      0,
+                                                                      120,
+                                                                  )}
+                                                                  {entry.content
+                                                                      .length >
+                                                                  120
+                                                                      ? '...'
+                                                                      : ''}
+                                                              </div>
+                                                          </td>
+                                                          <td>
+                                                              <span className="badge bg-info text-dark">
+                                                                  {entry.channel ||
+                                                                      'sms'}
+                                                              </span>
+                                                          </td>
+                                                          <td className="text-nowrap">
+                                                              {formatDateTime(
+                                                                  entry.sentAt ||
+                                                                      entry.createdAt,
+                                                              )}
+                                                          </td>
+                                                      </tr>
+                                                  ),
+                                              )
+                                            : emailHistory.data.items.map(
+                                                  (entry) => (
+                                                      <tr
+                                                          key={`email-${entry.id}`}
+                                                      >
+                                                          <td>
+                                                              <Link
+                                                                  href={getCommunicationHref(
+                                                                      entry.id,
+                                                                      'email',
+                                                                  )}
+                                                              >
+                                                                  {entry.to}
+                                                              </Link>
+                                                          </td>
+                                                          <td>
+                                                              <Link
+                                                                  href={getCommunicationHref(
+                                                                      entry.id,
+                                                                      'email',
+                                                                  )}
+                                                              >
+                                                                  {entry.subject ||
+                                                                      'Email'}
+                                                              </Link>
+                                                              <div className="text-muted small">
+                                                                  {(
+                                                                      entry.template ??
+                                                                      ''
+                                                                  ).slice(
+                                                                      0,
+                                                                      120,
+                                                                  )}
+                                                                  {(
+                                                                      entry.template ??
+                                                                      ''
+                                                                  ).length > 120
+                                                                      ? '...'
+                                                                      : ''}
+                                                              </div>
+                                                          </td>
+                                                          <td>
+                                                              <span className="badge bg-info text-dark">
+                                                                  email
+                                                              </span>
+                                                          </td>
+                                                          <td className="text-nowrap">
+                                                              {formatDateTime(
+                                                                  entry.sentAt ||
+                                                                      entry.createdAt,
+                                                              )}
+                                                          </td>
+                                                      </tr>
+                                                  ),
+                                              )}
+                                    </tbody>
+                                </table>
                             </div>
 
-                            <div className="pagination_container">
-                                <div className="row">
-                                    <div className="infocol-7">
-                                        Pozycje od{' '}
-                                        {Math.min(
-                                            (page - 1) * data.limit + 1,
-                                            data.total,
-                                        )}{' '}
-                                        do{' '}
-                                        {Math.min(
-                                            page * data.limit,
-                                            data.total,
-                                        )}{' '}
-                                        z {data.total}
-                                    </div>
-                                    <div className="form_paginationcol-5">
-                                        <button
-                                            type="button"
-                                            className="button button-link"
-                                            aria-label="Poprzednia strona"
-                                            disabled={page <= 1}
-                                            onClick={() =>
-                                                setPage((current) =>
-                                                    Math.max(1, current - 1),
-                                                )
-                                            }
-                                        >
-                                            <span
-                                                className="fc-icon fc-icon-left-single-arrow"
-                                                aria-hidden="true"
-                                            />
-                                        </button>
-                                        <input
-                                            type="text"
-                                            className="pagination-page-input"
-                                            aria-label="strona"
-                                            value={page}
-                                            readOnly
-                                        />
-                                        {' z '}
-                                        <a className="pointer">
-                                            {Math.ceil(
-                                                data.total / data.limit,
-                                            ) || 1}
-                                        </a>
-                                        <button
-                                            type="button"
-                                            className="button button-link button_next ml-s"
-                                            aria-label="Następna strona"
-                                            disabled={
-                                                page * data.limit >= data.total
-                                            }
-                                            onClick={() =>
-                                                setPage(
-                                                    (current) => current + 1,
-                                                )
-                                            }
-                                        >
-                                            <span
-                                                className="fc-icon fc-icon-right-single-arrow"
-                                                aria-hidden="true"
-                                            />
-                                        </button>
-                                    </div>
+                            <div className="d-flex align-items-center justify-content-between mt-2">
+                                <span className="text-muted small">
+                                    Pozycje od{' '}
+                                    {Math.min(
+                                        (page - 1) * data.limit + 1,
+                                        data.total,
+                                    )}{' '}
+                                    do {Math.min(page * data.limit, data.total)}{' '}
+                                    z {data.total}
+                                </span>
+                                <div className="d-flex align-items-center gap-2">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary btn-sm"
+                                        aria-label="Poprzednia strona"
+                                        disabled={page <= 1}
+                                        onClick={() =>
+                                            setPage((p) => Math.max(1, p - 1))
+                                        }
+                                    >
+                                        ‹
+                                    </button>
+                                    <span className="small">
+                                        {page} / {totalPages}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary btn-sm"
+                                        aria-label="Następna strona"
+                                        disabled={page >= totalPages}
+                                        onClick={() => setPage((p) => p + 1)}
+                                    >
+                                        ›
+                                    </button>
                                 </div>
                             </div>
                         </>
                     ) : (
-                        <div className="products-empty">Brak wiadomości</div>
+                        <div className="salonbw-empty">Brak wiadomości</div>
                     )}
                 </div>
 
-                {isModalOpen && (
-                    <div className="salonbw-modal-overlay">
-                        <div className="salonbw-modal" role="dialog">
-                            <div className="salonbw-modal__header">
-                                <h3>Wyślij wiadomość ({kind})</h3>
-                                <button
-                                    type="button"
-                                    className="salonbw-modal__close"
-                                    onClick={() => {
-                                        setIsModalOpen(false);
-                                        resetCompose();
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-
-                            <div className="salonbw-modal__body">
-                                <div className="salonbw-form-group">
-                                    <label>
-                                        Odbiorca{' '}
-                                        {kind === 'sms'
-                                            ? '(telefon)'
-                                            : '(email)'}
-                                    </label>
-                                    <input
-                                        value={recipient}
-                                        onChange={(e) =>
-                                            setRecipient(e.target.value)
-                                        }
-                                        placeholder={
-                                            kind === 'sms'
-                                                ? '+48...'
-                                                : 'klient@example.com'
-                                        }
-                                    />
-                                </div>
-
-                                {kind === 'email' && (
-                                    <div className="salonbw-form-group">
-                                        <label>Temat</label>
-                                        <input
-                                            value={subject}
-                                            onChange={(e) =>
-                                                setSubject(e.target.value)
-                                            }
-                                            placeholder="Temat wiadomości"
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="salonbw-form-group">
-                                    <label htmlFor="comm-content">Treść</label>
-                                    <textarea
-                                        id="comm-content"
-                                        rows={6}
-                                        value={content}
-                                        onChange={(e) =>
-                                            setContent(e.target.value)
-                                        }
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="salonbw-modal__footer">
-                                <button
-                                    type="button"
-                                    className="button"
-                                    onClick={() => {
-                                        setIsModalOpen(false);
-                                        resetCompose();
-                                    }}
-                                >
-                                    Anuluj
-                                </button>
-                                <button
-                                    type="button"
-                                    className="button button-blue ml-s"
-                                    disabled={
-                                        isSending ||
-                                        !recipient.trim() ||
-                                        !content.trim() ||
-                                        (kind === 'email' && !subject.trim())
-                                    }
-                                    onClick={() => void handleSend()}
-                                >
-                                    {isSending ? 'Wysyłanie...' : 'Wyślij'}
-                                </button>
-                            </div>
-                        </div>
+                <Modal
+                    open={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        resetCompose();
+                    }}
+                    size="sm"
+                >
+                    <h5 className="fw-bold mb-4">
+                        Wyślij wiadomość ({kind === 'sms' ? 'SMS' : 'Email'})
+                    </h5>
+                    <div className="mb-3">
+                        <label
+                            htmlFor="compose-recipient"
+                            className="form-label"
+                        >
+                            Odbiorca {kind === 'sms' ? '(telefon)' : '(email)'}
+                        </label>
+                        <input
+                            id="compose-recipient"
+                            className="form-control"
+                            value={recipient}
+                            onChange={(e) => setRecipient(e.target.value)}
+                            placeholder={
+                                kind === 'sms' ? '+48...' : 'klient@example.com'
+                            }
+                        />
                     </div>
-                )}
+                    {kind === 'email' && (
+                        <div className="mb-3">
+                            <label
+                                htmlFor="compose-subject"
+                                className="form-label"
+                            >
+                                Temat
+                            </label>
+                            <input
+                                id="compose-subject"
+                                className="form-control"
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
+                                placeholder="Temat wiadomości"
+                            />
+                        </div>
+                    )}
+                    <div className="mb-4">
+                        <label htmlFor="compose-content" className="form-label">
+                            Treść
+                        </label>
+                        <textarea
+                            id="compose-content"
+                            className="form-control"
+                            rows={6}
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                        />
+                    </div>
+                    <div className="d-flex gap-2 justify-content-end">
+                        <button
+                            type="button"
+                            className="btn btn-light"
+                            onClick={() => {
+                                setIsModalOpen(false);
+                                resetCompose();
+                            }}
+                        >
+                            Anuluj
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            disabled={
+                                isSending ||
+                                !recipient.trim() ||
+                                !content.trim() ||
+                                (kind === 'email' && !subject.trim())
+                            }
+                            onClick={() => void handleSend()}
+                        >
+                            {isSending ? 'Wysyłanie...' : 'Wyślij'}
+                        </button>
+                    </div>
+                </Modal>
             </SalonShell>
         </RouteGuard>
     );
