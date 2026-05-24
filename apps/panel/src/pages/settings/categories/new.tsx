@@ -155,7 +155,7 @@ export default function SettingsCategoriesNewPage() {
                                     </button>
                                     <Link
                                         href="/settings/categories"
-                                        className="btn btn-default"
+                                        className="btn btn-outline-secondary"
                                         style={{ marginLeft: 8 }}
                                     >
                                         Anuluj

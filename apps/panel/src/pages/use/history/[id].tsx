@@ -21,7 +21,10 @@ export default function WarehouseUsageDetailsPage() {
             heading={`Magazyn / Historia zużycia / ${data?.usageNumber ?? ''}`}
             activeTab="use"
             actions={
-                <Link href="/use/history" className="btn btn-default btn-xs">
+                <Link
+                    href="/use/history"
+                    className="btn btn-outline-secondary btn-xs"
+                >
                     historia zużycia
                 </Link>
             }

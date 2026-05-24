@@ -252,7 +252,7 @@ export default function SettingsTradesNewPage() {
                                     </button>
                                     <Link
                                         href="/services"
-                                        className="btn btn-default"
+                                        className="btn btn-outline-secondary"
                                         style={{ marginLeft: 8 }}
                                     >
                                         Anuluj

@@ -172,7 +172,7 @@ export default function CustomerEditPage() {
                                         href={
                                             `/customers/${customer.id}` as Route
                                         }
-                                        className="btn btn-default btn-xs"
+                                        className="btn btn-outline-secondary btn-xs"
                                     >
                                         wróć do karty klienta
                                     </Link>

@@ -258,7 +258,7 @@ export default function NewCustomerPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn btn-default btn-xs"
+                                    className="btn btn-outline-secondary btn-xs"
                                     onClick={() => setSubmitMode('next')}
                                     disabled={create.isPending}
                                 >
@@ -266,7 +266,7 @@ export default function NewCustomerPage() {
                                 </button>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="btn btn-default btn-xs"
+                                    className="btn btn-outline-secondary btn-xs"
                                 >
                                     wróć do listy
                                 </Link>

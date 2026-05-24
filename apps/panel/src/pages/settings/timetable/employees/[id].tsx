@@ -485,7 +485,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                 </div>
                                 <button
                                     type="button"
-                                    className="btn btn-default"
+                                    className="btn btn-outline-secondary"
                                     onClick={() => void refetch()}
                                 >
                                     odśwież
@@ -793,7 +793,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                             </div>
                                             <button
                                                 type="button"
-                                                className="btn btn-default"
+                                                className="btn btn-outline-secondary"
                                                 disabled={!activeTimetable}
                                                 onClick={() => {
                                                     setEditingException(null);

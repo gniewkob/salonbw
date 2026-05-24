@@ -349,7 +349,7 @@ export default function SettingsTimetableBranchPage() {
                                     </p>
                                     <button
                                         type="button"
-                                        className="btn btn-default"
+                                        className="btn btn-outline-secondary"
                                         onClick={() => {
                                             void refetchPrimary();
                                             void refetchBranches();

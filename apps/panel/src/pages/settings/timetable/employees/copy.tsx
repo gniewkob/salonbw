@@ -384,7 +384,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                     </button>
                                                     <Link
                                                         href="/settings/timetable/employees"
-                                                        className="btn btn-default"
+                                                        className="btn btn-outline-secondary"
                                                         style={{
                                                             marginLeft: 8,
                                                         }}

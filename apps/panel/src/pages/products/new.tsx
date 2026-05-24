@@ -278,7 +278,7 @@ export default function NewProductPage() {
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-default btn-xs"
+                                className="btn btn-outline-secondary btn-xs"
                                 onClick={() => void router.push('/products')}
                             >
                                 wróć do listy

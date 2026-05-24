@@ -282,7 +282,7 @@ export default function SettingsExtraFieldsPage() {
                                             </button>
                                             <button
                                                 type="button"
-                                                className="btn btn-default"
+                                                className="btn btn-outline-secondary"
                                                 onClick={() =>
                                                     setIsAdding(false)
                                                 }
@@ -488,7 +488,7 @@ export default function SettingsExtraFieldsPage() {
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs btn-default"
+                                                                    className="btn btn-xs btn-outline-secondary"
                                                                     onClick={() =>
                                                                         setEditForm(
                                                                             null,
@@ -530,7 +530,7 @@ export default function SettingsExtraFieldsPage() {
                                                             <span className="btn-group">
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs btn-default"
+                                                                    className="btn btn-xs btn-outline-secondary"
                                                                     onClick={() =>
                                                                         openEditForm(
                                                                             field,
@@ -541,7 +541,7 @@ export default function SettingsExtraFieldsPage() {
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs btn-default"
+                                                                    className="btn btn-xs btn-outline-secondary"
                                                                     onClick={() =>
                                                                         deleteField.mutate(
                                                                             field.id,
