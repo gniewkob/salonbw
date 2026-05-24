@@ -3,13 +3,19 @@ import { Employee } from '@/types';
 
 interface Props {
     initial?: Partial<Employee>;
-    onSubmit: (data: { firstName: string; lastName: string }) => Promise<void>;
+    onSubmit: (data: {
+        firstName: string;
+        lastName: string;
+        email?: string;
+    }) => Promise<void>;
     onCancel: () => void;
 }
 
 export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
+    const isEditing = Boolean(initial?.id);
     const [firstName, setFirstName] = useState(initial?.firstName ?? '');
     const [lastName, setLastName] = useState(initial?.lastName ?? '');
+    const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -18,58 +24,97 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
         const trimmedFirst = firstName.trim();
         const trimmedLast = lastName.trim();
         if (!trimmedFirst) {
-            setError('First name is required');
+            setError('Imię jest wymagane');
             return;
         }
         if (!trimmedLast) {
-            setError('Last name is required');
+            setError('Nazwisko jest wymagane');
             return;
         }
 
         setError('');
         setSubmitting(true);
         try {
-            await onSubmit({ firstName: trimmedFirst, lastName: trimmedLast });
+            await onSubmit({
+                firstName: trimmedFirst,
+                lastName: trimmedLast,
+                ...(!isEditing && email.trim() ? { email: email.trim() } : {}),
+            });
         } catch (err) {
-            setError(err instanceof Error ? err.message || 'Error' : 'Error');
+            setError(err instanceof Error ? err.message || 'Błąd zapisu' : 'Błąd zapisu');
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
-            <input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="border p-1 w-100"
-                placeholder="First name"
-            />
-            <input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="border p-1 w-100"
-                placeholder="Last name"
-            />
+        <form onSubmit={(e) => void handleSubmit(e)} noValidate>
+            <div className="mb-3">
+                <label className="form-label fw-medium">
+                    Imię <span className="text-danger">*</span>
+                </label>
+                <input
+                    type="text"
+                    className="form-control"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    autoFocus
+                    disabled={submitting}
+                />
+            </div>
+            <div className="mb-3">
+                <label className="form-label fw-medium">
+                    Nazwisko <span className="text-danger">*</span>
+                </label>
+                <input
+                    type="text"
+                    className="form-control"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    disabled={submitting}
+                />
+            </div>
+            {!isEditing && (
+                <div className="mb-3">
+                    <label className="form-label fw-medium">
+                        Email{' '}
+                        <span className="text-muted fw-normal small">
+                            (opcjonalnie)
+                        </span>
+                    </label>
+                    <input
+                        type="email"
+                        className="form-control"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="pracownik@salon.pl"
+                        disabled={submitting}
+                    />
+                    <div className="form-text">
+                        Jeśli nie podano, zostanie wygenerowany automatycznie.
+                    </div>
+                </div>
+            )}
             {error && (
-                <p role="alert" className="text-danger small">
+                <div role="alert" className="alert alert-danger py-2 small mb-3">
                     {error}
-                </p>
+                </div>
             )}
             <div className="d-flex gap-2 justify-content-end">
                 <button
                     type="button"
+                    className="btn btn-light"
                     onClick={onCancel}
-                    className="border px-2 py-1"
+                    disabled={submitting}
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
-                    className="border px-2 py-1"
+                    className="btn btn-primary"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>

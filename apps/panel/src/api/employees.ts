@@ -6,7 +6,11 @@ export function useEmployeeApi() {
     const { apiFetch } = useAuth();
     const toast = useToast();
 
-    const create = async (data: { firstName: string; lastName: string }) => {
+    const create = async (data: {
+        firstName: string;
+        lastName: string;
+        email?: string;
+    }) => {
         try {
             const res = await apiFetch<Employee>('/employees', {
                 method: 'POST',

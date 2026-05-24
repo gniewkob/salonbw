@@ -179,12 +179,13 @@ export interface Category {
 export interface Employee {
     id: number;
     name: string;
-    // Optional fields for compatibility in UI components that may still reference them
     firstName?: string;
     lastName?: string;
     fullName?: string;
     color?: string;
     role?: 'admin' | 'employee' | 'receptionist' | 'client';
+    email?: string;
+    phone?: string | null;
 }
 
 export interface StaffOption {
