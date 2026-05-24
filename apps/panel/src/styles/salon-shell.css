@@ -7738,3 +7738,210 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     margin: 0 auto 1.5rem;
     font-size: 1.5rem;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   Klienci — missing structural classes
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Breadcrumb nav */
+.salonbw-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0 0 12px;
+    list-style: none;
+    font-size: 11px;
+    color: #8b949d;
+    gap: 4px;
+}
+.salonbw-breadcrumb li + li::before {
+    content: '›';
+    margin-right: 4px;
+    color: #bcc2c8;
+}
+.salonbw-breadcrumb li.active {
+    color: #3f4852;
+    font-weight: 600;
+}
+.salonbw-breadcrumb a {
+    color: #8b949d;
+    text-decoration: none;
+}
+.salonbw-breadcrumb a:hover {
+    color: #25b4c1;
+}
+
+/* Small form label */
+.salonbw-label-xs {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8b949d;
+    margin-bottom: 2px;
+}
+
+/* Blue accent text */
+.text-salonbw-blue {
+    color: #25b4c1 !important;
+}
+
+/* Consent / sub-panel block */
+.salonbw-panel-sub {
+    padding: 14px 0;
+    border-bottom: 1px solid #eef0f3;
+}
+.salonbw-panel-sub:last-child {
+    border-bottom: none;
+}
+.salonbw-panel-sub__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3f4852;
+    margin-bottom: 4px;
+}
+.salonbw-panel-sub__description {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+.salonbw-panel-sub__meta {
+    font-size: 11px;
+    color: #8b949d;
+}
+
+/* Large checkbox (consent forms) */
+.salonbw-checkbox-large {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #25b4c1;
+    margin-top: 2px;
+}
+
+/* Alert info block */
+.salonbw-alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin: 12px 0;
+}
+.salonbw-alert-info {
+    background: #e8f6f8;
+    border: 1px solid #b2dfe5;
+    color: #0d5e6a;
+}
+
+/* Section title (like a small h4) */
+.salonbw-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b949d;
+    margin-bottom: 8px;
+}
+
+/* Notes list */
+.salonbw-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CalendarNav — mini calendar + employee filter
+   ══════════════════════════════════════════════════════════════════ */
+
+.salonbw-mini-cal {
+    padding: 8px 12px 12px;
+}
+.salonbw-mini-cal__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+}
+.salonbw-mini-cal__weekdays span {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #8b949d;
+    padding: 2px 0;
+}
+.salonbw-mini-cal__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+.salonbw-mini-cal__day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    font-size: 11px;
+    color: #3f4852;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+.salonbw-mini-cal__day:hover {
+    background: #edf1f4;
+}
+.salonbw-mini-cal__day--other-month {
+    color: #c0c7ce;
+}
+.salonbw-mini-cal__day--today {
+    color: #25b4c1;
+    font-weight: 700;
+}
+.salonbw-mini-cal__day--selected {
+    background: #25b4c1;
+    color: #fff;
+    font-weight: 700;
+}
+.salonbw-mini-cal__day--selected:hover {
+    background: #1ea3af;
+}
+
+/* Employee filter list */
+.salonbw-employee-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+}
+.salonbw-employee-filter__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    cursor: pointer;
+    font-size: 12px;
+    color: #3f4852;
+    user-select: none;
+}
+.salonbw-employee-filter__item:hover {
+    color: #25b4c1;
+}
+.salonbw-checkbox {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #25b4c1;
+    flex-shrink: 0;
+}
+.salonbw-employee-filter__color {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.salonbw-employee-filter__name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
