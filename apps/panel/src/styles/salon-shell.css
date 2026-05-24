@@ -6544,11 +6544,13 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     overflow-y: auto;
     padding: 8px 0;
 }
-.salonbw-sidebar__section {
+.salonbw-sidebar__section,
+.salonbw-sidebar-section {
     padding: 4px 14px 10px;
     border-bottom: 1px solid #f0f3f6;
 }
-.salonbw-sidebar__section:last-child {
+.salonbw-sidebar__section:last-child,
+.salonbw-sidebar-section:last-child {
     border-bottom: none;
 }
 .salonbw-sidebar__nav {
