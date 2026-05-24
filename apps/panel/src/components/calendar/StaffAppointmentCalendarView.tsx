@@ -73,21 +73,21 @@ const ACTION_CONFIG: Record<
 > = {
     start: {
         label: 'Rozpocznij',
-        className: 'salonbw-btn--primary',
+        className: 'btn-primary',
         nextStatus: 'in_progress',
     },
     finalize: {
         label: 'Finalizuj',
-        className: 'salonbw-btn--success',
+        className: 'btn-success',
     },
     no_show: {
         label: 'No-show',
-        className: 'salonbw-btn--warning',
+        className: 'btn-warning',
         nextStatus: 'no_show',
     },
     cancel: {
         label: 'Anuluj',
-        className: 'salonbw-btn--danger',
+        className: 'btn-danger',
     },
 };
 
@@ -288,7 +288,7 @@ export default function StaffAppointmentCalendarView({
                                         <button
                                             key={action}
                                             type="button"
-                                            className={`salonbw-btn salonbw-btn--sm ${config.className}`}
+                                            className={`btn btn-sm ${config.className}`}
                                             onClick={() =>
                                                 handleAction(
                                                     appointment,
@@ -305,7 +305,7 @@ export default function StaffAppointmentCalendarView({
                                 })}
                                 <button
                                     type="button"
-                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--secondary"
+                                    className="btn btn-sm btn-outline-secondary"
                                     onClick={() =>
                                         onOpenAppointment?.(appointment.id)
                                     }
