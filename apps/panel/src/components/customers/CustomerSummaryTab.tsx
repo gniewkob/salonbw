@@ -442,7 +442,7 @@ export default function CustomerSummaryTab({
                             </div>
                             <div className="salonbw-widget__content form-horizontal">
                                 <div className="form-">
-                                    <label className="control-label">
+                                    <label className="form-label">
                                         Telefon
                                     </label>
                                     <div className="control-content">
@@ -450,17 +450,13 @@ export default function CustomerSummaryTab({
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="control-label">
-                                        E-mail
-                                    </label>
+                                    <label className="form-label">E-mail</label>
                                     <div className="control-content">
                                         {customer.email || '-'}
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="control-label">
-                                        Adres
-                                    </label>
+                                    <label className="form-label">Adres</label>
                                     <div className="control-content">
                                         {[
                                             customer.address,
@@ -472,7 +468,7 @@ export default function CustomerSummaryTab({
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="control-label">
+                                    <label className="form-label">
                                         Klient od
                                     </label>
                                     <div className="control-content">
@@ -482,7 +478,7 @@ export default function CustomerSummaryTab({
 
                                 {/* Grupy klienta - jak w source UI */}
                                 <div className="form-">
-                                    <label className="control-label">
+                                    <label className="form-label">
                                         należy do grup
                                     </label>
                                     <div className="control-content">
@@ -663,7 +659,7 @@ export default function CustomerSummaryTab({
                             <div className="modal-footer">
                                 <button
                                     type="button"
-                                    className="btn btn-default"
+                                    className="btn btn-outline-secondary"
                                     onClick={() =>
                                         setShowAddToGroupModal(false)
                                     }

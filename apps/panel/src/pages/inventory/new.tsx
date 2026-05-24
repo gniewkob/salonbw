@@ -31,7 +31,7 @@ export default function InventoryNewPage() {
             actions={
                 <Link
                     href="/inventory"
-                    className="btn btn-outline-secondary btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                 >
                     wróć do historii
                 </Link>
@@ -67,7 +67,7 @@ export default function InventoryNewPage() {
             <div className="warehouse-entry-actions warehouse-new-screen">
                 <button
                     type="button"
-                    className="btn btn-primary btn-xs"
+                    className="btn btn-primary btn-sm"
                     onClick={() => void create()}
                     disabled={createMutation.isPending}
                 >
@@ -77,7 +77,7 @@ export default function InventoryNewPage() {
                 </button>
                 <Link
                     href="/inventory"
-                    className="btn btn-outline-secondary btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                 >
                     anuluj
                 </Link>

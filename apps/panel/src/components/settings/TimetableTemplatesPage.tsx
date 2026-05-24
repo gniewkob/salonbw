@@ -341,7 +341,7 @@ export default function TimetableTemplatesPage() {
                 <div>Nie udało się pobrać szablonów grafików.</div>
                 <button
                     type="button"
-                    className="btn btn-default"
+                    className="btn btn-outline-secondary"
                     onClick={() => void refetch()}
                 >
                     odśwież
@@ -369,7 +369,7 @@ export default function TimetableTemplatesPage() {
                     <div className="buttons">
                         <button
                             type="button"
-                            className="button button-blue"
+                            className="btn btn-primary"
                             onClick={() => void handleAdd()}
                         >
                             Dodaj szablon

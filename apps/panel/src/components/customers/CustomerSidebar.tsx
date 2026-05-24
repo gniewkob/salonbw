@@ -36,7 +36,7 @@ export default function CustomerSidebar({
         <div className="salonbw-sidebar">
             {/* Search */}
             <div className="salonbw-sidebar__search">
-                <div className="form-group mb-0">
+                <div className="mb-0">
                     <input
                         type="text"
                         placeholder="Szukaj klientów..."
@@ -56,7 +56,7 @@ export default function CustomerSidebar({
                         {onCreateGroup && (
                             <button
                                 onClick={onCreateGroup}
-                                className="btn btn-link btn-xs p-0 text-salonbw-blue"
+                                className="btn btn-link btn-sm p-0 text-salonbw-blue"
                             >
                                 + dodaj
                             </button>
@@ -156,10 +156,10 @@ export default function CustomerSidebar({
 
                     {showAdvancedFilters && (
                         <div className="salonbw-sidebar__filters">
-                            <div className="form-group mb-0">
+                            <div className="mb-0">
                                 <label
                                     htmlFor="filter-gender"
-                                    className="control-label salonbw-label-xs"
+                                    className="form-label salonbw-label-xs"
                                 >
                                     Płeć
                                 </label>
@@ -187,7 +187,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-age-min"
-                                        className="control-label salonbw-label-xs"
+                                        className="form-label salonbw-label-xs"
                                     >
                                         Wiek od
                                     </label>
@@ -211,7 +211,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-age-max"
-                                        className="control-label small mb-4"
+                                        className="form-label small mb-4"
                                     >
                                         do
                                     </label>
@@ -238,7 +238,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-spent-min"
-                                        className="control-label salonbw-label-xs"
+                                        className="form-label salonbw-label-xs"
                                     >
                                         Wydane od
                                     </label>
@@ -262,7 +262,7 @@ export default function CustomerSidebar({
                                 <div className="col-6">
                                     <label
                                         htmlFor="filter-spent-max"
-                                        className="control-label salonbw-label-xs"
+                                        className="form-label salonbw-label-xs"
                                     >
                                         do
                                     </label>
@@ -329,7 +329,7 @@ export default function CustomerSidebar({
                                         limit: filters.limit,
                                     })
                                 }
-                                className="btn btn-default btn-xs btn-block mt-5"
+                                className="btn btn-outline-secondary btn-sm d-block mt-5"
                             >
                                 Wyczyść filtry
                             </button>

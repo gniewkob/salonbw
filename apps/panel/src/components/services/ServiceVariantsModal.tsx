@@ -147,7 +147,7 @@ export default function ServiceVariantsModal({
                                             <button
                                                 type="button"
                                                 onClick={() => handleOpenForm()}
-                                                className="btn btn-primary btn-xs"
+                                                className="btn btn-primary btn-sm"
                                             >
                                                 dodaj wariant
                                             </button>
@@ -224,7 +224,7 @@ export default function ServiceVariantsModal({
                                                                                     variant,
                                                                                 )
                                                                             }
-                                                                            className="btn btn-default btn-xs me-1"
+                                                                            className="btn btn-outline-secondary btn-sm me-1"
                                                                         >
                                                                             edytuj
                                                                         </button>
@@ -235,7 +235,7 @@ export default function ServiceVariantsModal({
                                                                                     variant.id,
                                                                                 )
                                                                             }
-                                                                            className="btn btn-default btn-xs"
+                                                                            className="btn btn-outline-secondary btn-sm"
                                                                         >
                                                                             usuń
                                                                         </button>
@@ -260,7 +260,7 @@ export default function ServiceVariantsModal({
                                         </h5>
 
                                         <div className="control-group">
-                                            <label className="control-label">
+                                            <label className="form-label">
                                                 Nazwa wariantu *
                                             </label>
                                             <div className="controls">
@@ -283,7 +283,7 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label className="control-label">
+                                            <label className="form-label">
                                                 Opis (opcjonalnie)
                                             </label>
                                             <div className="controls">
@@ -308,7 +308,7 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label className="control-label">
+                                            <label className="form-label">
                                                 Czas trwania (min) *
                                             </label>
                                             <div className="controls">
@@ -335,7 +335,7 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label className="control-label">
+                                            <label className="form-label">
                                                 Cena (zł) *
                                             </label>
                                             <div className="controls">
@@ -392,7 +392,7 @@ export default function ServiceVariantsModal({
                                         <div className="form-actions bg-none border-top p-20-0">
                                             <button
                                                 type="button"
-                                                className="btn btn-default mr-10"
+                                                className="btn btn-outline-secondary mr-10"
                                                 onClick={handleCancelForm}
                                             >
                                                 anuluj
@@ -424,7 +424,7 @@ export default function ServiceVariantsModal({
                         <div className="modal-footer">
                             <button
                                 type="button"
-                                className="btn btn-default"
+                                className="btn btn-outline-secondary"
                                 onClick={onClose}
                             >
                                 zamknij

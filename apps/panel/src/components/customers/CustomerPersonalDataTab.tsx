@@ -92,7 +92,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
             <div className="customer-new-actions customer-new-actions--sticky">
                 <button
                     type="button"
-                    className="btn btn-primary btn-xs"
+                    className="btn btn-primary btn-sm"
                     onClick={() => void handleSave()}
                     disabled={!isDirty || isSaving}
                 >
@@ -100,7 +100,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 </button>
                 <button
                     type="button"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={handleReset}
                     disabled={!isDirty || isSaving}
                 >

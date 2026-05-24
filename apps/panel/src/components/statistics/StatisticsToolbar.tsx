@@ -27,7 +27,7 @@ export default function StatisticsToolbar({
                 <div className="float-start statistics_date">
                     <button
                         type="button"
-                        className="button button-link button_prev mr-s"
+                        className="btn btn-link button_prev mr-s"
                         onClick={onPrev}
                         aria-label="Poprzedni dzień"
                     >
@@ -62,7 +62,7 @@ export default function StatisticsToolbar({
                     </div>
                     <button
                         type="button"
-                        className="button button-link button_next ml-s"
+                        className="btn btn-link button_next ml-s"
                         onClick={onNext}
                         aria-label="Następny dzień"
                     >
@@ -77,7 +77,7 @@ export default function StatisticsToolbar({
                 {onExcel ? (
                     <button
                         type="button"
-                        className="button"
+                        className="btn btn-outline-secondary"
                         onClick={onExcel}
                         disabled={excelDisabled}
                     >
@@ -91,7 +91,7 @@ export default function StatisticsToolbar({
                 {onPrint ? (
                     <button
                         type="button"
-                        className="button button-link statistics-print-button"
+                        className="btn btn-link statistics-print-button"
                         onClick={onPrint}
                         aria-label="Drukuj"
                     >

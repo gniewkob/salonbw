@@ -232,7 +232,7 @@ export default function SettingsCustomerOriginsPage() {
                                                                         </button>
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-xs btn-outline-secondary"
+                                                                            className="btn btn-sm btn-outline-secondary"
                                                                             onClick={() =>
                                                                                 setEditingId(
                                                                                     null,
@@ -246,7 +246,7 @@ export default function SettingsCustomerOriginsPage() {
                                                                     <span className="btn-group">
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-xs btn-outline-secondary"
+                                                                            className="btn btn-sm btn-outline-secondary"
                                                                             onClick={() => {
                                                                                 setEditingId(
                                                                                     origin.id,
@@ -260,7 +260,7 @@ export default function SettingsCustomerOriginsPage() {
                                                                         </button>
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-xs btn-outline-secondary"
+                                                                            className="btn btn-sm btn-outline-secondary"
                                                                             onClick={() =>
                                                                                 deleteOrigin.mutate(
                                                                                     origin.id,

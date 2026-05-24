@@ -168,7 +168,7 @@ export default function SmsSettingsPage() {
                 <div>Nie udało się pobrać ustawień SMS.</div>
                 <button
                     type="button"
-                    className="btn btn-default"
+                    className="btn btn-outline-secondary"
                     onClick={() => void refetch()}
                 >
                     odśwież

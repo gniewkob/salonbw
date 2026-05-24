@@ -417,7 +417,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                 e.preventDefault();
                                 downloadCsvPriceList();
                             }}
-                            className="button"
+                            className="btn btn-outline-secondary"
                         >
                             <div
                                 className="icon sprite-exel_blue mr-xs"

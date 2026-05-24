@@ -160,7 +160,7 @@ export default function CalendarSettingsForm() {
                 <div>Nie udało się pobrać ustawień kalendarza.</div>
                 <button
                     type="button"
-                    className="btn btn-default"
+                    className="btn btn-outline-secondary"
                     onClick={() => void refetch()}
                 >
                     odśwież
@@ -208,7 +208,7 @@ export default function CalendarSettingsForm() {
                     <ol>
                         <li className="control-group">
                             <label
-                                className="select optional control-label"
+                                className="select optional form-label"
                                 htmlFor="setting-calendar-default-view"
                             >
                                 Domyślny widok kalendarza
@@ -237,7 +237,7 @@ export default function CalendarSettingsForm() {
                         </li>
                         <li className="control-group">
                             <label
-                                className="select optional control-label"
+                                className="select optional form-label"
                                 htmlFor="setting-calendar-from"
                             >
                                 Pokaż godziny od
@@ -261,7 +261,7 @@ export default function CalendarSettingsForm() {
                         </li>
                         <li className="control-group">
                             <label
-                                className="select optional control-label"
+                                className="select optional form-label"
                                 htmlFor="setting-calendar-to"
                             >
                                 Pokaż godziny do
@@ -287,7 +287,7 @@ export default function CalendarSettingsForm() {
                         </li>
                         <li className="control-group">
                             <label
-                                className="select optional control-label"
+                                className="select optional form-label"
                                 htmlFor="setting-first-visible-hour"
                             >
                                 Przewiń kalendarz do godziny
@@ -311,7 +311,7 @@ export default function CalendarSettingsForm() {
                         </li>
                         <li className="control-group">
                             <label
-                                className="string required control-label"
+                                className="string required form-label"
                                 htmlFor="setting-slot-length"
                             >
                                 Podział godziny
@@ -341,7 +341,7 @@ export default function CalendarSettingsForm() {
                         </li>
                         <li className="control-group">
                             <label
-                                className="select optional control-label"
+                                className="select optional form-label"
                                 htmlFor="setting-days-while-editable"
                             >
                                 Ograniczenie wprowadzania zmian wstecz
@@ -405,7 +405,7 @@ export default function CalendarSettingsForm() {
                         </li>
                         <li className="control-group">
                             <label
-                                className="select optional control-label"
+                                className="select optional form-label"
                                 htmlFor="setting-customer-naming-order"
                             >
                                 Kolejność wyświetlania danych klienta

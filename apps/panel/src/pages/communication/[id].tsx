@@ -333,7 +333,7 @@ export default function CommunicationDetailPage() {
                             jak i email. Wybierz właściwy typ wiadomości:
                             <div className="mt-m">
                                 <Link
-                                    className="button"
+                                    className="btn btn-outline-secondary"
                                     href={getCommunicationHref(id!, 'sms')}
                                 >
                                     otwórz jako SMS
@@ -384,7 +384,7 @@ export default function CommunicationDetailPage() {
                                     </ul>
                                     <br />
                                     <Link
-                                        className="button"
+                                        className="btn btn-outline-secondary"
                                         href={`/calendar?event=${sms.appointment.id}`}
                                     >
                                         Pokaż wizytę w kalendarzu
@@ -692,7 +692,7 @@ export default function CommunicationDetailPage() {
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="button"
+                                                            className="btn btn-outline-secondary"
                                                             onClick={
                                                                 handleModifySelectedTemplate
                                                             }

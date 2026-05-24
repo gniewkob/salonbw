@@ -271,14 +271,14 @@ export default function NewProductPage() {
                         <div className="product-form__actions">
                             <button
                                 type="submit"
-                                className="btn btn-primary btn-xs"
+                                className="btn btn-primary btn-sm"
                                 disabled={isSaving}
                             >
                                 {isSaving ? 'zapisywanie...' : 'dodaj produkt'}
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={() => void router.push('/products')}
                             >
                                 wróć do listy

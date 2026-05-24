@@ -89,7 +89,7 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="btn-group">
                         <button
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                             onClick={() => handleEdit(category)}
                             title="Edytuj kategorię"
                             aria-label="Edytuj kategorię"
@@ -97,7 +97,7 @@ export default function ManageCategoriesModal({
                             <i className="fa fa-pencil"></i>
                         </button>
                         <button
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                             onClick={() => handleAdd(category.id)}
                             title="Dodaj podkategorię"
                             aria-label="Dodaj podkategorię"
@@ -105,7 +105,7 @@ export default function ManageCategoriesModal({
                             <i className="fa fa-plus"></i>
                         </button>
                         <button
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                             onClick={() => {
                                 void handleDelete(category.id, category.name);
                             }}
@@ -164,7 +164,7 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="modal-footer">
                         <button
-                            className="btn btn-default float-start"
+                            className="btn btn-outline-secondary float-start"
                             onClick={() => handleAdd(null)}
                         >
                             <i className="fa fa-plus me-2"></i>

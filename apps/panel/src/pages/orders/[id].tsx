@@ -41,7 +41,7 @@ export default function WarehouseOrderDetailsPage() {
                 <div className="btn-group">
                     <Link
                         href="/orders/history"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         historia zamówień
                     </Link>
@@ -49,7 +49,7 @@ export default function WarehouseOrderDetailsPage() {
                         <>
                             <button
                                 type="button"
-                                className="btn btn-primary btn-xs"
+                                className="btn btn-primary btn-sm"
                                 onClick={() =>
                                     orderId
                                         ? void sendMutation.mutateAsync(orderId)
@@ -60,7 +60,7 @@ export default function WarehouseOrderDetailsPage() {
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={() =>
                                     orderId
                                         ? void cancelMutation.mutateAsync(
@@ -77,7 +77,7 @@ export default function WarehouseOrderDetailsPage() {
                         <>
                             <button
                                 type="button"
-                                className="btn btn-primary btn-xs"
+                                className="btn btn-primary btn-sm"
                                 onClick={() =>
                                     orderId
                                         ? void receiveMutation.mutateAsync(
@@ -90,7 +90,7 @@ export default function WarehouseOrderDetailsPage() {
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={() =>
                                     orderId
                                         ? void cancelMutation.mutateAsync(

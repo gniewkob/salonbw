@@ -14,7 +14,7 @@ export default function WarehouseLowStockPage() {
             heading="Magazyn / Niski stan magazynowy"
             activeTab="deliveries"
             actions={
-                <Link href="/deliveries/new" className="btn btn-primary btn-xs">
+                <Link href="/deliveries/new" className="btn btn-primary btn-sm">
                     dodaj dostawę
                 </Link>
             }

@@ -90,7 +90,7 @@ export default function PaymentConfigurationPage() {
                     <div>Nie udało się pobrać ustawień płatności.</div>
                     <button
                         type="button"
-                        className="btn btn-default"
+                        className="btn btn-outline-secondary"
                         onClick={() => void refetch()}
                     >
                         odśwież
@@ -112,7 +112,7 @@ export default function PaymentConfigurationPage() {
                     primary={
                         <button
                             type="button"
-                            className={`btn ${isEnabled ? 'btn-default' : 'btn-primary'}`}
+                            className={`btn ${isEnabled ? 'btn-outline-secondary' : 'btn-primary'}`}
                             disabled={updatePaymentConfiguration.isPending}
                             onClick={() =>
                                 void saveConfiguration({

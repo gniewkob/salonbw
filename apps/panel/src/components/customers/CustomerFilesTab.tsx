@@ -117,7 +117,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     ),
                                 )}
                             </select>
-                            <label className="btn btn-primary btn-xs m-0">
+                            <label className="btn btn-primary btn-sm m-0">
                                 dodaj plik
                                 <input
                                     type="file"
@@ -143,7 +143,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                 <button
                                     type="button"
                                     onClick={() => setFilterCategory('all')}
-                                    className={`btn btn-xs ${filterCategory === 'all' ? 'btn-primary' : 'btn-default'}`}
+                                    className={`btn btn-sm ${filterCategory === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
                                 >
                                     wszystkie
                                 </button>
@@ -157,7 +157,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                     key as CustomerFileCategory,
                                                 )
                                             }
-                                            className={`btn btn-xs ${filterCategory === key ? 'btn-primary' : 'btn-default'}`}
+                                            className={`btn btn-sm ${filterCategory === key ? 'btn-primary' : 'btn-outline-secondary'}`}
                                         >
                                             {config.label.toLowerCase()}
                                         </button>
@@ -241,7 +241,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                                         file.downloadUrl,
                                                                     )
                                                                 }
-                                                                className="btn btn-default btn-xs"
+                                                                className="btn btn-outline-secondary btn-sm"
                                                                 title="Pobierz plik"
                                                                 aria-label="Pobierz plik"
                                                             >
@@ -254,7 +254,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                                         file.id,
                                                                     )
                                                                 }
-                                                                className="btn btn-danger btn-xs"
+                                                                className="btn btn-danger btn-sm"
                                                                 title="Usuń plik"
                                                                 aria-label="Usuń plik"
                                                                 disabled={

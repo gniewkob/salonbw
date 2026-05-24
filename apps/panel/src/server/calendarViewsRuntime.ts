@@ -180,8 +180,8 @@ export function renderCalendarViewsIndex(
 <div class='calendar-view-drafts__meta'>${escapeHtml(names)}</div>
 </div>
 <div class='calendar-view-drafts__actions'>
-<a class='btn btn-link btn-xs' data-calendar-view-form-link title='Edytuj widok' href='/salonblackandwhite/calendar/views/${view.id}/edit'>edytuj</a>
-<a class='btn btn-link btn-xs text-danger' data-destroy-calendar-view data-confirmation-message='Czy na pewno chcesz usunąć ten widok?' href='/api/runtime/calendar-views/${view.id}'>usuń</a>
+<a class='btn btn-link btn-sm' data-calendar-view-form-link title='Edytuj widok' href='/salonblackandwhite/calendar/views/${view.id}/edit'>edytuj</a>
+<a class='btn btn-link btn-sm text-danger' data-destroy-calendar-view data-confirmation-message='Czy na pewno chcesz usunąć ten widok?' href='/api/runtime/calendar-views/${view.id}'>usuń</a>
 </div>
 </div>
 </div>`;
@@ -221,7 +221,7 @@ export function renderCalendarViewForm(options: {
 ${errorHtml}
 <ul class="calendar-view-form-list">
 <li>
-<label class="control-label" for="calendar_view_name">Nazwa</label>
+<label class="form-label" for="calendar_view_name">Nazwa</label>
 <input id="calendar_view_name" class="form-control" name="name" value="${escapeHtml(options.value?.name ?? '')}" autofocus />
 </li>
 </ul>

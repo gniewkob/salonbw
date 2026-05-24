@@ -189,7 +189,7 @@ export default function BranchIdentityForm() {
                 </p>
                 <button
                     type="button"
-                    className="btn btn-default"
+                    className="btn btn-outline-secondary"
                     onClick={() => void refetch()}
                 >
                     spróbuj ponownie
@@ -214,7 +214,7 @@ export default function BranchIdentityForm() {
             <ol>
                 <li className="control-group">
                     <label
-                        className="string required control-label"
+                        className="string required form-label"
                         htmlFor="branch-name"
                     >
                         Nazwa
@@ -238,7 +238,7 @@ export default function BranchIdentityForm() {
                 </li>
                 <li className="control-group">
                     <label
-                        className="email optional control-label"
+                        className="email optional form-label"
                         htmlFor="branch-email"
                     >
                         Email
@@ -260,7 +260,7 @@ export default function BranchIdentityForm() {
                     </div>
                 </li>
                 <li className="control-group">
-                    <label className="string optional control-label">
+                    <label className="string optional form-label">
                         Numer telefonu
                     </label>
                     <div className="controls phones">
@@ -306,7 +306,7 @@ export default function BranchIdentityForm() {
                 </li>
                 <li className="control-group">
                     <label
-                        className="string optional control-label"
+                        className="string optional form-label"
                         htmlFor="branch-website"
                     >
                         Adres strony internetowej
@@ -329,7 +329,7 @@ export default function BranchIdentityForm() {
                 </li>
                 <li className="control-group">
                     <label
-                        className="string optional control-label"
+                        className="string optional form-label"
                         htmlFor="branch-facebook"
                     >
                         Facebook
@@ -346,7 +346,7 @@ export default function BranchIdentityForm() {
                 </li>
                 <li className="control-group">
                     <label
-                        className="string optional control-label"
+                        className="string optional form-label"
                         htmlFor="branch-instagram"
                     >
                         Instagram
@@ -363,7 +363,7 @@ export default function BranchIdentityForm() {
                 </li>
                 <li className="control-group">
                     <label
-                        className="file optional control-label"
+                        className="file optional form-label"
                         htmlFor="branch-logo-url"
                     >
                         Logo

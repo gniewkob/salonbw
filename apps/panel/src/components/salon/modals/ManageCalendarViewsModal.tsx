@@ -76,7 +76,7 @@ export default function ManageCalendarViewsModal({
                                             <div className="calendar-view-drafts__actions">
                                                 <button
                                                     type="button"
-                                                    className="btn btn-link btn-xs"
+                                                    className="btn btn-link btn-sm"
                                                     onClick={() =>
                                                         onEdit(view.id)
                                                     }
@@ -85,7 +85,7 @@ export default function ManageCalendarViewsModal({
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    className="btn btn-link btn-xs text-danger"
+                                                    className="btn btn-link btn-sm text-danger"
                                                     onClick={() =>
                                                         onDelete(view.id)
                                                     }
@@ -112,7 +112,7 @@ export default function ManageCalendarViewsModal({
                         </Link>
                         <button
                             type="button"
-                            className="btn btn-default"
+                            className="btn btn-outline-secondary"
                             onClick={onClose}
                         >
                             zamknij

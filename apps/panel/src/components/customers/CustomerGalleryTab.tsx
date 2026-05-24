@@ -30,7 +30,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                 <div className="salonbw-widget">
                     <div className="salonbw-widget__header flex-between">
                         <span>galeria zdjęć</span>
-                        <label className="btn btn-primary btn-xs m-0">
+                        <label className="btn btn-primary btn-sm m-0">
                             dodaj zdjęcie
                             <input
                                 type="file"
@@ -142,7 +142,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                             <div className="modal-footer">
                                 <button
                                     type="button"
-                                    className="btn btn-default btn-sm"
+                                    className="btn btn-outline-secondary btn-sm"
                                     onClick={() => setSelectedImageId(null)}
                                 >
                                     zamknij

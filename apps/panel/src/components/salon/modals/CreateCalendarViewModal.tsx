@@ -90,7 +90,7 @@ export default function CreateCalendarViewModal({
                         <ul className="calendar-view-form-list">
                             <li>
                                 <label
-                                    className="control-label"
+                                    className="form-label"
                                     htmlFor="calendar_view_name"
                                 >
                                     Nazwa
@@ -143,7 +143,7 @@ export default function CreateCalendarViewModal({
                         </button>
                         <button
                             type="button"
-                            className="btn btn-default"
+                            className="btn btn-outline-secondary"
                             onClick={onCancel}
                             disabled={submitting}
                         >

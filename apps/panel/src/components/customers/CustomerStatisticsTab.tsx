@@ -276,14 +276,14 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                 <div className="customer-stats-lists__tabs">
                     <button
                         type="button"
-                        className={`btn btn-default btn-xs ${activeList === 'services' ? 'active' : ''}`}
+                        className={`btn btn-outline-secondary btn-sm ${activeList === 'services' ? 'active' : ''}`}
                         onClick={() => setActiveList('services')}
                     >
                         wykonane usługi {favoriteServiceRows.length}
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-default btn-xs ${activeList === 'products' ? 'active' : ''}`}
+                        className={`btn btn-outline-secondary btn-sm ${activeList === 'products' ? 'active' : ''}`}
                         onClick={() => setActiveList('products')}
                     >
                         zakupione produkty {favoriteProductRows.length}

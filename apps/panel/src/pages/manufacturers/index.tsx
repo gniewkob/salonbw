@@ -35,7 +35,7 @@ export default function WarehouseManufacturersPage() {
             heading="Magazyn / Producenci"
             activeTab="deliveries"
             actions={
-                <Link href="/products/new" className="btn btn-primary btn-xs">
+                <Link href="/products/new" className="btn btn-primary btn-sm">
                     dodaj produkt
                 </Link>
             }

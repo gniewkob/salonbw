@@ -320,7 +320,7 @@ export default function WarehouseProductsPage() {
                 <button
                     type="button"
                     onClick={exportProductsCsv}
-                    className="button"
+                    className="btn btn-outline-secondary"
                 >
                     <div
                         className="icon sprite-exel_blue mr-xs"

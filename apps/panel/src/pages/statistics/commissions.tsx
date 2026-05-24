@@ -358,7 +358,7 @@ export default function CommissionsPage() {
                     </div>
                     <button
                         type="button"
-                        className="button"
+                        className="btn btn-outline-secondary"
                         onClick={downloadCommissionCsv}
                     >
                         <div

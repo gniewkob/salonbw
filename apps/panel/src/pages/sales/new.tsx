@@ -159,7 +159,7 @@ export default function WarehouseSaleCreatePage() {
             actions={
                 <Link
                     href="/sales/history"
-                    className="btn btn-outline-secondary btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                 >
                     historia sprzedaży
                 </Link>
@@ -282,7 +282,7 @@ export default function WarehouseSaleCreatePage() {
                                     <td>
                                         <button
                                             type="button"
-                                            className="btn btn-outline-secondary btn-xs"
+                                            className="btn btn-outline-secondary btn-sm"
                                             onClick={() => removeLine(index)}
                                         >
                                             usuń
@@ -297,14 +297,14 @@ export default function WarehouseSaleCreatePage() {
                 <div className="warehouse-actions-row">
                     <button
                         type="button"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                         onClick={addLine}
                     >
                         dodaj kolejną pozycję
                     </button>
                     <Link
                         href="/products/new"
-                        className="btn btn-outline-secondary btn-xs"
+                        className="btn btn-outline-secondary btn-sm"
                     >
                         dodaj nowy produkt
                     </Link>
@@ -326,7 +326,7 @@ export default function WarehouseSaleCreatePage() {
                                 />
                                 <Link
                                     href="/customers/new"
-                                    className="btn btn-outline-secondary btn-xs"
+                                    className="btn btn-outline-secondary btn-sm"
                                 >
                                     nowy klient
                                 </Link>
@@ -428,13 +428,13 @@ export default function WarehouseSaleCreatePage() {
                     <div className="warehouse-actions-row">
                         <Link
                             href="/sales/history"
-                            className="btn btn-outline-secondary btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                         >
                             anuluj
                         </Link>
                         <button
                             type="button"
-                            className="btn btn-primary btn-xs"
+                            className="btn btn-primary btn-sm"
                             onClick={() => void submit()}
                             disabled={createMutation.isPending}
                         >
