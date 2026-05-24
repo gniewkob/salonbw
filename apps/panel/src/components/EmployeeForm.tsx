@@ -54,10 +54,11 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
     return (
         <form onSubmit={(e) => void handleSubmit(e)} noValidate>
             <div className="mb-3">
-                <label className="form-label fw-medium">
+                <label htmlFor="ef-firstName" className="form-label fw-medium">
                     Imię <span className="text-danger">*</span>
                 </label>
                 <input
+                    id="ef-firstName"
                     type="text"
                     className="form-control"
                     value={firstName}
@@ -67,10 +68,11 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
                 />
             </div>
             <div className="mb-3">
-                <label className="form-label fw-medium">
+                <label htmlFor="ef-lastName" className="form-label fw-medium">
                     Nazwisko <span className="text-danger">*</span>
                 </label>
                 <input
+                    id="ef-lastName"
                     type="text"
                     className="form-control"
                     value={lastName}
@@ -80,13 +82,14 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
             </div>
             {!isEditing && (
                 <div className="mb-3">
-                    <label className="form-label fw-medium">
+                    <label htmlFor="ef-email" className="form-label fw-medium">
                         Email{' '}
                         <span className="text-muted fw-normal small">
                             (opcjonalnie)
                         </span>
                     </label>
                     <input
+                        id="ef-email"
                         type="email"
                         className="form-control"
                         value={email}
