@@ -146,13 +146,13 @@ export default function AutomaticMessagesPage() {
                     <div className="salonbw-page__toolbar">
                         <Link
                             href="/communication"
-                            className="salonbw-btn salonbw-btn--light"
+                            className="btn btn-outline-secondary"
                         >
                             ← Powrót
                         </Link>
                         <button
                             type="button"
-                            className="salonbw-btn salonbw-btn--primary"
+                            className="btn btn-primary"
                             onClick={openAdd}
                         >
                             + Nowa reguła
@@ -174,7 +174,7 @@ export default function AutomaticMessagesPage() {
                             <p>Brak zdefiniowanych reguł automatycznych.</p>
                             <button
                                 type="button"
-                                className="salonbw-btn salonbw-btn--primary mt-2"
+                                className="btn btn-primary mt-2"
                                 onClick={openAdd}
                             >
                                 Utwórz pierwszą regułę
@@ -325,7 +325,7 @@ export default function AutomaticMessagesPage() {
 
                             <form onSubmit={(e) => void handleSubmit(e)}>
                                 <div className="salonbw-modal__body">
-                                    <div className="salonbw-mb-3">
+                                    <div className="mb-3">
                                         <label htmlFor="rule-name">
                                             Nazwa reguły{' '}
                                             <span className="text-danger">
@@ -346,7 +346,7 @@ export default function AutomaticMessagesPage() {
                                         />
                                     </div>
 
-                                    <div className="salonbw-mb-3">
+                                    <div className="mb-3">
                                         <label htmlFor="rule-trigger">
                                             Wyzwalacz
                                         </label>
@@ -377,7 +377,7 @@ export default function AutomaticMessagesPage() {
 
                                     <div className="row g-2">
                                         <div className="col-6">
-                                            <div className="salonbw-mb-3">
+                                            <div className="mb-3">
                                                 <label htmlFor="rule-channel">
                                                     Kanał
                                                 </label>
@@ -408,7 +408,7 @@ export default function AutomaticMessagesPage() {
                                         </div>
                                         {showOffset && (
                                             <div className="col-6">
-                                                <div className="salonbw-mb-3">
+                                                <div className="mb-3">
                                                     <label htmlFor="rule-offset">
                                                         Czas (h)
                                                     </label>
@@ -441,7 +441,7 @@ export default function AutomaticMessagesPage() {
 
                                     <div className="row g-2">
                                         <div className="col-6">
-                                            <div className="salonbw-mb-3">
+                                            <div className="mb-3">
                                                 <label htmlFor="rule-window-start">
                                                     Okno od
                                                 </label>
@@ -464,7 +464,7 @@ export default function AutomaticMessagesPage() {
                                             </div>
                                         </div>
                                         <div className="col-6">
-                                            <div className="salonbw-mb-3">
+                                            <div className="mb-3">
                                                 <label htmlFor="rule-window-end">
                                                     Okno do
                                                 </label>
@@ -488,7 +488,7 @@ export default function AutomaticMessagesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="salonbw-mb-3">
+                                    <div className="mb-3">
                                         <label htmlFor="rule-template">
                                             Szablon wiadomości
                                         </label>
@@ -527,7 +527,7 @@ export default function AutomaticMessagesPage() {
                                     </div>
 
                                     {!form.templateId && (
-                                        <div className="salonbw-mb-3">
+                                        <div className="mb-3">
                                             <label htmlFor="rule-content">
                                                 Treść wiadomości
                                             </label>

@@ -11,6 +11,7 @@ import {
     Appointment,
     AppointmentStatus,
 } from '../appointments/appointment.entity';
+import { Role } from '../users/role.enum';
 
 @Injectable()
 export class FormulasService {
@@ -24,6 +25,7 @@ export class FormulasService {
     async addToAppointment(
         appointmentId: number,
         userId: number,
+        role: Role,
         data: { description: string; date: Date },
     ): Promise<Formula> {
         const appointment = await this.appointmentsRepository.findOne({
@@ -34,15 +36,16 @@ export class FormulasService {
         if (!appointment) {
             throw new NotFoundException('Appointment not found');
         }
-        if (appointment.employee.id !== userId) {
+        if (role !== Role.Admin && appointment.employee.id !== userId) {
             throw new ForbiddenException();
         }
         if (
             appointment.status !== AppointmentStatus.Completed &&
-            appointment.status !== AppointmentStatus.InProgress
+            appointment.status !== AppointmentStatus.InProgress &&
+            appointment.status !== AppointmentStatus.Confirmed
         ) {
             throw new BadRequestException(
-                'Appointment must be in progress or completed to add a formula',
+                'Appointment must be confirmed, in progress or completed to add a formula',
             );
         }
         const formula = this.formulasRepository.create({

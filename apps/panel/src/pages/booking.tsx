@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -267,9 +267,8 @@ function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
         <div className="mb-4">
             <div className="salonbw-steps mb-3">
                 {steps.map((s, i) => (
-                    <>
+                    <Fragment key={s.key}>
                         <div
-                            key={s.key}
                             className={`salonbw-step${s.key === step ? ' active' : ''}`}
                         >
                             <span className="salonbw-step__number">
@@ -280,12 +279,9 @@ function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
                             </span>
                         </div>
                         {i < steps.length - 1 && (
-                            <div
-                                key={`div-${s.key}`}
-                                className="salonbw-step__divider"
-                            />
+                            <div className="salonbw-step__divider" />
                         )}
-                    </>
+                    </Fragment>
                 ))}
             </div>
             {onBack && (

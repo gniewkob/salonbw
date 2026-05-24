@@ -206,7 +206,7 @@ export default function MassCommunicationPage() {
                             <div className="salonbw-mass-communication__section">
                                 <h3>Wybierz odbiorców</h3>
 
-                                <label className="salonbw-checkbox-row">
+                                <label className="d-flex align-items-center gap-2 mb-2">
                                     <input
                                         type="checkbox"
                                         checked={includeAll}
@@ -231,7 +231,7 @@ export default function MassCommunicationPage() {
                                             groups.map((group) => (
                                                 <label
                                                     key={group.id}
-                                                    className="salonbw-checkbox-row"
+                                                    className="d-flex align-items-center gap-2 mb-2"
                                                 >
                                                     <input
                                                         type="checkbox"
@@ -282,7 +282,7 @@ export default function MassCommunicationPage() {
                             </div>
 
                             <div className="salonbw-mass-communication__footer">
-                                <span className="salonbw-recipient-count">
+                                <span className="text-muted small">
                                     Wybrano odbiorców:{' '}
                                     <strong>{recipientCount}</strong>
                                     {recipientCount < customers.length && (
@@ -294,7 +294,7 @@ export default function MassCommunicationPage() {
                                 </span>
                                 <button
                                     type="button"
-                                    className="salonbw-btn salonbw-btn--primary"
+                                    className="btn btn-primary"
                                     disabled={recipientCount === 0}
                                     onClick={() => setStep('message')}
                                 >
@@ -339,7 +339,7 @@ export default function MassCommunicationPage() {
                                                         : ''}
                                                 </span>
                                                 {template.type && (
-                                                    <span className="salonbw-badge salonbw-badge--sm">
+                                                    <span className="badge">
                                                         {template.type}
                                                     </span>
                                                 )}
@@ -353,11 +353,11 @@ export default function MassCommunicationPage() {
                                 <h3>Treść wiadomości</h3>
 
                                 {channel === 'email' && (
-                                    <div className="salonbw-mb-3">
+                                    <div className="mb-3">
                                         <label>Temat</label>
                                         <input
                                             type="text"
-                                            className="salonbw-input"
+                                            className="form-control"
                                             value={subject}
                                             onChange={(e) =>
                                                 setSubject(e.target.value)
@@ -367,10 +367,10 @@ export default function MassCommunicationPage() {
                                     </div>
                                 )}
 
-                                <div className="salonbw-mb-3">
+                                <div className="mb-3">
                                     <label>Treść</label>
                                     <textarea
-                                        className="salonbw-textarea"
+                                        className="form-control"
                                         value={content}
                                         onChange={(e) => {
                                             setContent(e.target.value);
@@ -380,7 +380,7 @@ export default function MassCommunicationPage() {
                                         rows={6}
                                         placeholder="Wpisz treść wiadomości..."
                                     />
-                                    <span className="salonbw-char-count">
+                                    <span className="form-text text-muted">
                                         {content.length} znaków
                                         {channel === 'sms' && (
                                             <>
@@ -394,7 +394,7 @@ export default function MassCommunicationPage() {
                                     </span>
                                 </div>
 
-                                <div className="salonbw-variables-help">
+                                <div className="form-text text-muted small">
                                     <h4>Dostępne zmienne:</h4>
                                     <code>{'{{client_name}}'}</code>
                                     <code>{'{{salon_name}}'}</code>
@@ -407,14 +407,14 @@ export default function MassCommunicationPage() {
                             <div className="salonbw-mass-communication__footer">
                                 <button
                                     type="button"
-                                    className="salonbw-btn salonbw-btn--light"
+                                    className="btn btn-outline-secondary"
                                     onClick={() => setStep('recipients')}
                                 >
                                     Wstecz
                                 </button>
                                 <button
                                     type="button"
-                                    className="salonbw-btn salonbw-btn--primary"
+                                    className="btn btn-primary"
                                     disabled={
                                         !content.trim() ||
                                         (channel === 'email' &&
@@ -463,7 +463,7 @@ export default function MassCommunicationPage() {
 
                                 <button
                                     type="button"
-                                    className="salonbw-btn salonbw-btn--primary"
+                                    className="btn btn-primary"
                                     onClick={() => {
                                         setStep('recipients');
                                         setSendResult(null);

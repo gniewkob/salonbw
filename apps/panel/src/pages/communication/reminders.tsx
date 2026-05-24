@@ -57,7 +57,7 @@ export default function RemindersPage() {
                     <div className="salonbw-page__toolbar">
                         <Link
                             href="/communication"
-                            className="salonbw-btn salonbw-btn--light"
+                            className="btn btn-outline-secondary"
                         >
                             ← Powrót
                         </Link>
@@ -113,15 +113,15 @@ export default function RemindersPage() {
                                 Wyślij przypomnienia do wszystkich klientów z
                                 wizytami w najbliższych godzinach.
                             </p>
-                            <div className="salonbw-mb-3">
+                            <div className="mb-3">
                                 <label htmlFor="hours-input">
                                     Zakres godzin
                                 </label>
-                                <div className="salonbw-actions">
+                                <div className="d-flex gap-2 align-items-center">
                                     <input
                                         id="hours-input"
                                         type="number"
-                                        className="salonbw-input"
+                                        className="form-control"
                                         value={hours}
                                         onChange={(e) =>
                                             setHours(
@@ -135,7 +135,7 @@ export default function RemindersPage() {
                                     <span>godzin</span>
                                     <button
                                         type="button"
-                                        className="salonbw-btn salonbw-btn--primary"
+                                        className="btn btn-primary"
                                         onClick={() => void handleTrigger()}
                                         disabled={
                                             isTriggering ||
@@ -159,8 +159,8 @@ export default function RemindersPage() {
                                         Brak wizyt w wybranym zakresie godzin.
                                     </p>
                                 ) : (
-                                    <div className="salonbw-table-wrap">
-                                        <table className="salonbw-table">
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
                                                     <th>Klient</th>
@@ -175,22 +175,22 @@ export default function RemindersPage() {
                                                         <td>{r.clientName}</td>
                                                         <td>
                                                             {r.smsSent ? (
-                                                                <span className="salonbw-badge salonbw-badge--success">
+                                                                <span className="badge bg-success">
                                                                     Wysłany
                                                                 </span>
                                                             ) : (
-                                                                <span className="salonbw-badge salonbw-badge--inactive">
+                                                                <span className="badge bg-secondary">
                                                                     -
                                                                 </span>
                                                             )}
                                                         </td>
                                                         <td>
                                                             {r.emailSent ? (
-                                                                <span className="salonbw-badge salonbw-badge--success">
+                                                                <span className="badge bg-success">
                                                                     Wysłany
                                                                 </span>
                                                             ) : (
-                                                                <span className="salonbw-badge salonbw-badge--inactive">
+                                                                <span className="badge bg-secondary">
                                                                     -
                                                                 </span>
                                                             )}
@@ -198,7 +198,7 @@ export default function RemindersPage() {
                                                         <td>
                                                             {r.error ? (
                                                                 <span
-                                                                    className="salonbw-badge salonbw-badge--error"
+                                                                    className="badge bg-danger"
                                                                     title={
                                                                         r.error
                                                                     }
@@ -207,11 +207,11 @@ export default function RemindersPage() {
                                                                 </span>
                                                             ) : r.smsSent ||
                                                               r.emailSent ? (
-                                                                <span className="salonbw-badge salonbw-badge--success">
+                                                                <span className="badge bg-success">
                                                                     OK
                                                                 </span>
                                                             ) : (
-                                                                <span className="salonbw-badge salonbw-badge--inactive">
+                                                                <span className="badge bg-secondary">
                                                                     Pominięty
                                                                 </span>
                                                             )}
