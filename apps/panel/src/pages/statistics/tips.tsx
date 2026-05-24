@@ -73,7 +73,7 @@ export default function TipsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-outline-secondary salonbw-toolbar-btn"
+                        className="btn btn-outline-secondary"
                         onClick={() => window.print()}
                     >
                         🖨️
@@ -153,7 +153,7 @@ export default function TipsPage() {
                                                 <td>
                                                     <Link
                                                         href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                        className="salonbw-link"
+                                                        className="btn btn-link"
                                                     >
                                                         {employee.employeeName}
                                                     </Link>

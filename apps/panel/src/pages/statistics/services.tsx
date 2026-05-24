@@ -81,7 +81,7 @@ export default function ServicesStatisticsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-outline-secondary salonbw-toolbar-btn"
+                        className="btn btn-outline-secondary"
                         onClick={() => window.print()}
                     >
                         🖨️
@@ -143,7 +143,7 @@ export default function ServicesStatisticsPage() {
                                                 <td>
                                                     <Link
                                                         href={`/services/${service.serviceId}`}
-                                                        className="salonbw-link"
+                                                        className="btn btn-link"
                                                     >
                                                         {service.serviceName}
                                                     </Link>

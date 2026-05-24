@@ -44,7 +44,7 @@ export default function InvoicesPage() {
                                             <td>{inv.number}</td>
                                             <td>
                                                 <a
-                                                    className="salonbw-link"
+                                                    className="btn btn-link"
                                                     href={inv.pdfUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"

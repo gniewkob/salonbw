@@ -58,7 +58,7 @@ export default function ClientsStatisticsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-outline-secondary salonbw-toolbar-btn"
+                        className="btn btn-outline-secondary"
                         onClick={() => window.print()}
                     >
                         🖨️
@@ -152,7 +152,7 @@ export default function ClientsStatisticsPage() {
                                                             <td>
                                                                 <Link
                                                                     href={`/customers/${client.clientId}`}
-                                                                    className="salonbw-link"
+                                                                    className="btn btn-link"
                                                                 >
                                                                     {
                                                                         client.clientName

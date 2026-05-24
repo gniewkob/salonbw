@@ -190,7 +190,7 @@ export default function AppointmentsPage() {
                 />
 
                 <div className="column_row mb-3">
-                    <div className="salonbw-filters d-flex flex-wrap gap-2 align-items-end">
+                    <div className="d-flex flex-wrap gap-2 align-items-end">
                         <div>
                             <label className="form-label mb-1 small">Od</label>
                             <input

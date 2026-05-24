@@ -174,7 +174,7 @@ export default function EmployeeActivityPage() {
                                                 <td>
                                                     <Link
                                                         href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                        className="salonbw-link"
+                                                        className="btn btn-link"
                                                     >
                                                         {employee.employeeName}
                                                     </Link>
