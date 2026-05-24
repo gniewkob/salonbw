@@ -210,7 +210,7 @@ export default function BranchesManagementPage() {
                                             <img
                                                 src={branch.coverImageUrl}
                                                 alt={`Okładka salonu ${branch.name}`}
-                                                className="w-100 h-100 object-cover"
+                                                className="w-100 h-100 object-fit-cover"
                                             />
                                         </div>
                                     )}

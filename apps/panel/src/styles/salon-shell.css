@@ -7338,10 +7338,12 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     border-radius: 0.5rem;
     cursor: pointer;
     font-weight: 500;
-    transition: border-color 0.15s, background 0.15s;
+    transition:
+        border-color 0.15s,
+        background 0.15s;
     user-select: none;
 }
-.salonbw-channel input[type="radio"] {
+.salonbw-channel input[type='radio'] {
     display: none;
 }
 .salonbw-channel.active {
@@ -7388,7 +7390,9 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     border: 2px solid #dee2e6;
     border-radius: 0.5rem;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition:
+        border-color 0.15s,
+        background 0.15s;
 }
 .salonbw-template-item:hover {
     border-color: #adb5bd;
@@ -7434,12 +7438,14 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     border: 1px solid #ced4da;
     border-radius: 0.375rem;
     resize: vertical;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
 }
 .salonbw-textarea:focus {
     border-color: var(--salon-accent, #8b5cf6);
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 .salonbw-char-count {
     display: block;
@@ -7636,10 +7642,219 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     border-color: #ced4da;
 }
 
+/* ─── Missing semantic classes: warehouse, customer, product modules ──────── */
+
+/* Table cell text wrap */
+.wrap {
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 0;
+}
+
+/* Colored text */
+.blue_text {
+    color: #56aef0;
+}
+
+/* Link-body: subtle link style in table cells */
+.link_body {
+    color: #56aef0;
+    text-decoration: none;
+    cursor: pointer;
+}
+.link_body:hover {
+    text-decoration: underline;
+}
+
+/* Text alignment */
+.center_text {
+    text-align: center;
+}
+
+/* Customers page wrapper */
+.customers_index {
+    position: relative;
+}
+
+/* Checkbox+label layout in filter rows */
+.checkbox_container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+}
+
+/* Results info row (customers list) */
+.results_info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.results_size_info {
+    font-size: 0.8125rem;
+    color: #6c757d;
+}
+.results_title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+/* Alternating table rows (Versum odd/even pattern) */
+.odd {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* inverse_decoration: link without underline */
+.inverse_decoration {
+    text-decoration: none;
+    color: inherit;
+}
+.inverse_decoration:hover {
+    text-decoration: underline;
+}
+
+/* Stockroom action indicators (products table) */
+.stockroom_sell {
+    color: #28a745;
+    font-size: 0.8125rem;
+}
+.stockroom_consumption {
+    color: #fd7e14;
+    font-size: 0.8125rem;
+}
+
+/* Warehouse sales table helpers */
+.warehouse-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+.warehouse-full {
+    font-weight: 600;
+    color: #28a745;
+}
+
+/* Secondary button (Versum button-default = outlined .button) */
+.button-default {
+    color: #6c757d;
+    background: transparent;
+    border: 1px solid #dee2e6;
+}
+.button.button-default:hover {
+    background: #f8f9fa;
+}
+
+/* Sprite icon placeholders (fallback when sprite sheet not available) */
+.icon.sprite-pencil::before {
+    content: '✏';
+    font-style: normal;
+    font-size: 0.85em;
+}
+.icon.sprite-add_customer::before {
+    content: '+';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 1em;
+}
+
 /* ─── Versum spacing utilities (mt/mb suffixes not covered by Bootstrap) ── */
 .mt-m {
     margin-top: 1.5rem !important;
 }
 .mt-l {
     margin-top: 2rem !important;
+}
+
+/* ─── Booking wizard ─────────────────────────────────────────────────────── */
+
+/* Primary CTA button (brand accent) */
+.btn-salon {
+    color: #fff;
+    background-color: var(--salon-accent, #8b5cf6);
+    border-color: var(--salon-accent, #8b5cf6);
+}
+.btn-salon:hover,
+.btn-salon:focus {
+    color: #fff;
+    background-color: color-mix(
+        in srgb,
+        var(--salon-accent, #8b5cf6) 85%,
+        #000
+    );
+    border-color: color-mix(in srgb, var(--salon-accent, #8b5cf6) 85%, #000);
+}
+.btn-salon:disabled {
+    color: #fff;
+    background-color: var(--salon-accent, #8b5cf6);
+    border-color: var(--salon-accent, #8b5cf6);
+    opacity: 0.65;
+}
+
+/* Service picker card */
+.booking-service-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: #fff;
+    cursor: pointer;
+    text-align: start;
+    width: 100%;
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
+}
+.booking-service-card:hover,
+.booking-service-card:focus-visible {
+    border-color: var(--salon-accent, #8b5cf6);
+    box-shadow: 0 0 0 3px
+        color-mix(in srgb, var(--salon-accent, #8b5cf6) 15%, transparent);
+    outline: none;
+}
+
+/* Slot time chip */
+.booking-slot-btn {
+    min-width: 4rem;
+    font-variant-numeric: tabular-nums;
+}
+.booking-slot-btn:hover,
+.booking-slot-btn.active {
+    background-color: var(--salon-accent, #8b5cf6);
+    border-color: var(--salon-accent, #8b5cf6);
+    color: #fff;
+}
+
+/* Service price accent */
+.booking-service-price {
+    color: var(--salon-accent, #8b5cf6);
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 1rem;
+}
+
+/* Category label above service group */
+.booking-category-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+/* Success check circle */
+.booking-success-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--salon-accent, #8b5cf6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.5rem;
 }

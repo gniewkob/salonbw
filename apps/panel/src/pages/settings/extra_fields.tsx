@@ -191,8 +191,8 @@ export default function SettingsExtraFieldsPage() {
                             </div>
 
                             {isAdding && (
-                                <div className="panel panel-default extra-fields-add-panel">
-                                    <div className="panel-body">
+                                <div className="card extra-fields-add-panel">
+                                    <div className="card-body">
                                         <div className="form-inline extra-fields-add-form">
                                             <input
                                                 type="text"

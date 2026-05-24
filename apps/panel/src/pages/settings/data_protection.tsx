@@ -217,11 +217,11 @@ export default function SettingsDataProtectionPage() {
                                                         )
                                                     }
                                                 />
-                                                <span className="input-group-addon">
+                                                <span className="input-group-text">
                                                     kontakty
                                                 </span>
                                             </div>
-                                            <p className="help-block">
+                                            <p className="form-text text-muted">
                                                 Pracownik może wyświetlić dane
                                                 kontaktowe maksymalnie tylu
                                                 klientów dziennie.
@@ -243,7 +243,7 @@ export default function SettingsDataProtectionPage() {
                                                 }
                                                 placeholder="np. admin@salon.pl"
                                             />
-                                            <p className="help-block">
+                                            <p className="form-text text-muted">
                                                 Na ten adres będą wysyłane
                                                 powiadomienia o przekroczeniu
                                                 limitu.
@@ -255,7 +255,7 @@ export default function SettingsDataProtectionPage() {
                                                 Indywidualne limity dla
                                                 pracowników
                                             </h2>
-                                            <p className="help-block">
+                                            <p className="form-text text-muted">
                                                 Ustal indywidualnie liczbę
                                                 klientów, których dane
                                                 kontaktowe mogą przeglądać
@@ -263,7 +263,7 @@ export default function SettingsDataProtectionPage() {
                                                 jednego dnia.
                                             </p>
                                             {employeeLimits.isLoading && (
-                                                <p className="help-block">
+                                                <p className="form-text text-muted">
                                                     Ładowanie listy
                                                     pracowników...
                                                 </p>
@@ -368,7 +368,7 @@ export default function SettingsDataProtectionPage() {
                                                                                 }
                                                                             />
                                                                             <button
-                                                                                className="btn button-blue btn_small"
+                                                                                className="btn btn-primary btn-sm"
                                                                                 disabled={
                                                                                     isSavingThisRow
                                                                                 }

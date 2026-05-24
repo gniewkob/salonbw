@@ -46,12 +46,14 @@ export default function EmployeesPage() {
 
     const columns: Column<Employee>[] = [
         { header: 'ID', accessor: 'id' },
-        { header: 'Name', accessor: 'fullName' },
+        { header: 'Pracownik', accessor: 'fullName' },
+        { header: 'Email', accessor: 'email' },
     ];
 
     const handleCreate = async (values: {
         firstName: string;
         lastName: string;
+        email?: string;
     }) => {
         const created = await api.create(values);
         setRows((c) => [...c, created]);
@@ -61,6 +63,7 @@ export default function EmployeesPage() {
     const handleUpdate = async (values: {
         firstName: string;
         lastName: string;
+        email?: string;
     }) => {
         if (!editing) return;
         const updated = await api.update(editing.id, values);
@@ -70,7 +73,7 @@ export default function EmployeesPage() {
     };
 
     const handleDelete = async (row: Employee) => {
-        if (!confirm(`Delete ${row.fullName}?`)) return;
+        if (!confirm(`Usunąć pracownika ${row.fullName ?? row.name}?`)) return;
         await api.remove(row.id);
         setRows((c) => c.filter((cl) => cl.id !== row.id));
     };
@@ -131,7 +134,11 @@ export default function EmployeesPage() {
                             setOpenForm(false);
                             setEditing(null);
                         }}
+                        size="sm"
                     >
+                        <h5 className="fw-bold mb-4">
+                            {editing ? 'Edytuj pracownika' : 'Nowy pracownik'}
+                        </h5>
                         <EmployeeForm
                             initial={editing ?? undefined}
                             onCancel={() => {
