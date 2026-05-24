@@ -132,7 +132,7 @@ jobs:
       - name: Decide if job should run
         id: should_run
         run: |
-          if [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/main" ]]; then
+          if [[ "$EVENT_NAME" == "push" && ("$REF" == "refs/heads/master" || "$REF" == "refs/heads/main") ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
@@ -152,7 +152,7 @@ jobs:
         if: steps.should_run.outputs.run == 'true'
         id: api
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "api_url=https://api.salon-bw.pl" >> "$GITHUB_OUTPUT"
           else
             echo "api_url=/api" >> "$GITHUB_OUTPUT"
