@@ -120,10 +120,10 @@ export default function CategoryFormModal({
 
                     <form className="form-horizontal" onSubmit={handleSubmit}>
                         <div className="modal-body py-20">
-                            <div className="form-group">
+                            <div className="mb-3">
                                 <label
                                     htmlFor="category_name"
-                                    className="col-sm-3 control-label"
+                                    className="col-sm-3 form-label"
                                 >
                                     Nazwa kategorii *
                                 </label>
@@ -144,10 +144,10 @@ export default function CategoryFormModal({
                                 </div>
                             </div>
 
-                            <div className="form-group">
+                            <div className="mb-3">
                                 <label
                                     htmlFor="category_description"
-                                    className="col-sm-3 control-label"
+                                    className="col-sm-3 form-label"
                                 >
                                     Opis
                                 </label>
@@ -167,10 +167,10 @@ export default function CategoryFormModal({
                                 </div>
                             </div>
 
-                            <div className="form-group">
+                            <div className="mb-3">
                                 <label
                                     htmlFor="category_parent"
-                                    className="col-sm-3 control-label"
+                                    className="col-sm-3 form-label"
                                 >
                                     Kategoria nadrzędna
                                 </label>
@@ -201,8 +201,8 @@ export default function CategoryFormModal({
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <label className="col-sm-3 control-label">
+                            <div className="mb-3">
+                                <label className="col-sm-3 form-label">
                                     Kolor
                                 </label>
                                 <div className="col-sm-9">
@@ -259,7 +259,7 @@ export default function CategoryFormModal({
                                 </div>
                             </div>
 
-                            <div className="form-group">
+                            <div className="mb-3">
                                 <div className="col-sm-offset-3 col-sm-9">
                                     <div className="checkbox">
                                         <label>
@@ -285,7 +285,7 @@ export default function CategoryFormModal({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="btn btn-default"
+                                className="btn btn-outline-secondary"
                             >
                                 Anuluj
                             </button>

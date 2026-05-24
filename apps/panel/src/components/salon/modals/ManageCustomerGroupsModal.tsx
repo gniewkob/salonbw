@@ -129,7 +129,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                         <form onSubmit={(e) => void handleCreate(e)}>
                             <div className="form-">
                                 <label
-                                    className="control-label"
+                                    className="form-label"
                                     htmlFor="new_group_name"
                                 >
                                     Dodaj nową grupę
@@ -150,7 +150,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                             </div>
                             <div className="form-">
                                 <label
-                                    className="control-label"
+                                    className="form-label"
                                     htmlFor="new_group_desc"
                                 >
                                     Opis (opcjonalnie)
@@ -170,7 +170,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                 />
                             </div>
                             <div className="form-">
-                                <label className="control-label">Kolor</label>
+                                <label className="form-label">Kolor</label>
                                 <div className="salonbw-color-picker">
                                     {colorOptions.map((color) => {
                                         return (
@@ -197,7 +197,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                             <div className="d-flex gap-2">
                                 <button
                                     type="submit"
-                                    className="btn btn-primary btn-xs"
+                                    className="btn btn-primary btn-sm"
                                     disabled={isBusy || !newGroup.name.trim()}
                                 >
                                     {create.isPending
@@ -206,7 +206,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-default btn-xs"
+                                    className="btn btn-outline-secondary btn-sm"
                                     onClick={() =>
                                         setNewGroup({
                                             name: '',
@@ -276,7 +276,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 <div className="btn-">
                                                     <button
                                                         type="button"
-                                                        className="btn btn-default btn-xs"
+                                                        className="btn btn-outline-secondary btn-sm"
                                                         onClick={() =>
                                                             void handleSave(
                                                                 g.id,
@@ -291,7 +291,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        className="btn btn-danger btn-xs"
+                                                        className="btn btn-danger btn-sm"
                                                         onClick={() =>
                                                             void handleDelete(
                                                                 g.id,
@@ -306,7 +306,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
 
                                             <div className="form-">
                                                 <label
-                                                    className="control-label"
+                                                    className="form-label"
                                                     htmlFor={`group_name_${g.id}`}
                                                 >
                                                     Nazwa
@@ -331,7 +331,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
 
                                             <div className="form-">
                                                 <label
-                                                    className="control-label"
+                                                    className="form-label"
                                                     htmlFor={`group_desc_${g.id}`}
                                                 >
                                                     Opis
@@ -357,7 +357,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                             </div>
 
                                             <div className="form-">
-                                                <label className="control-label">
+                                                <label className="form-label">
                                                     Kolor
                                                 </label>
                                                 <div className="salonbw-color-picker">
@@ -413,7 +413,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                     <div className="modal-footer">
                         <button
                             type="button"
-                            className="btn btn-default"
+                            className="btn btn-outline-secondary"
                             onClick={onClose}
                             disabled={isBusy}
                         >

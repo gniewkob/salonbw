@@ -83,7 +83,7 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                     <div className="customer-communication-actions">
                         <Link
                             href={`/customers/${customer.id}/edit`}
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                         >
                             Edytuj
                         </Link>
@@ -273,14 +273,14 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                 <div className="customer-communication-history-switcher">
                     <button
                         type="button"
-                        className={`btn btn-xs ${historyChannel === 'sms' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${historyChannel === 'sms' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => setHistoryChannel('sms')}
                     >
                         SMS
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-xs ${historyChannel === 'email' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${historyChannel === 'email' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => setHistoryChannel('email')}
                     >
                         Email

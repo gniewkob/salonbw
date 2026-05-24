@@ -341,7 +341,7 @@ export default function TimetableEmployeesPage() {
                 <div>Nie udało się pobrać grafików pracowników.</div>
                 <button
                     type="button"
-                    className="btn btn-default"
+                    className="btn btn-outline-secondary"
                     onClick={() => void refetch()}
                 >
                     odśwież
@@ -369,7 +369,7 @@ export default function TimetableEmployeesPage() {
                     <div className="date">
                         <div className="button-group">
                             <Link
-                                className="button"
+                                className="btn btn-outline-secondary"
                                 href={{
                                     pathname: '/settings/timetable/employees',
                                     query: {
@@ -387,7 +387,7 @@ export default function TimetableEmployeesPage() {
                                 <span className="fc-icon fc-icon-left-single-arrow" />
                             </Link>
                             <Link
-                                className="button"
+                                className="btn btn-outline-secondary"
                                 href={{
                                     pathname: '/settings/timetable/employees',
                                     query: {
@@ -442,7 +442,7 @@ export default function TimetableEmployeesPage() {
                             <Link
                                 className={
                                     kind === 'day'
-                                        ? 'button button-blue'
+                                        ? 'btn btn-primary'
                                         : 'button'
                                 }
                                 href={{
@@ -464,7 +464,7 @@ export default function TimetableEmployeesPage() {
                             <Link
                                 className={
                                     kind === 'week'
-                                        ? 'button button-blue'
+                                        ? 'btn btn-primary'
                                         : 'button'
                                 }
                                 href={{

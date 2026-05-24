@@ -210,7 +210,7 @@ export default function CustomerGroupsListPage() {
                 <div id="general-actions">
                     <button
                         type="button"
-                        className="button"
+                        className="btn btn-outline-secondary"
                         onClick={() => {
                             setDraftGroups(groups);
                             setReorderMode(true);
@@ -223,7 +223,7 @@ export default function CustomerGroupsListPage() {
                     </button>
                     <button
                         type="button"
-                        className="button button-blue"
+                        className="btn btn-primary"
                         onClick={() =>
                             void sort
                                 .mutateAsync(flattenForSort(draftTree))
@@ -237,7 +237,7 @@ export default function CustomerGroupsListPage() {
                     </button>
                     <button
                         type="button"
-                        className="button"
+                        className="btn btn-outline-secondary"
                         onClick={() => {
                             setDraftGroups(groups);
                             setReorderMode(false);
@@ -248,11 +248,14 @@ export default function CustomerGroupsListPage() {
                     >
                         anuluj
                     </button>
-                    <Link className="button" href="/customers">
+                    <Link
+                        className="btn btn-outline-secondary"
+                        href="/customers"
+                    >
                         wróć do listy klientów
                     </Link>
                     <Link
-                        className="button button-blue"
+                        className="btn btn-primary"
                         href="/settings/customer_groups/new"
                     >
                         dodaj grupę
@@ -267,7 +270,7 @@ export default function CustomerGroupsListPage() {
                     <div>Nie udało się pobrać grup klientów.</div>
                     <button
                         type="button"
-                        className="btn btn-default"
+                        className="btn btn-outline-secondary"
                         onClick={() => void refetch()}
                     >
                         odśwież
@@ -323,9 +326,9 @@ export default function CustomerGroupsListPage() {
                                 <h4 className="modal-title">Edycja grupy</h4>
                             </div>
                             <div className="modal-body">
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
-                                        className="control-label"
+                                        className="form-label"
                                         htmlFor="customer-group-edit-name"
                                     >
                                         Nazwa
@@ -339,9 +342,9 @@ export default function CustomerGroupsListPage() {
                                         }
                                     />
                                 </div>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
-                                        className="control-label"
+                                        className="form-label"
                                         htmlFor="customer-group-edit-parent"
                                     >
                                         Grupa nadrzędna
@@ -375,7 +378,7 @@ export default function CustomerGroupsListPage() {
                             <div className="modal-footer">
                                 <button
                                     type="button"
-                                    className="btn btn-default"
+                                    className="btn btn-outline-secondary"
                                     onClick={() => setEditingGroup(null)}
                                 >
                                     anuluj

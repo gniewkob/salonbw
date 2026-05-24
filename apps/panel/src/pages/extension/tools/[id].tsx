@@ -311,7 +311,7 @@ function ExtensionToolContent() {
                                     {tool.status === 'Aktywny' &&
                                         tool.settingsUrl && (
                                             <a
-                                                className="button"
+                                                className="btn btn-outline-secondary"
                                                 href={tool.settingsUrl}
                                             >
                                                 <div className="icon sprite-settings_blue" />

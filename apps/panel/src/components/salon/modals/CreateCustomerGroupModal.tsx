@@ -60,11 +60,8 @@ export default function CreateCustomerGroupModal({
                         <h4 className="modal-title">Nowa grupa klientów</h4>
                     </div>
                     <div className="modal-body modal-body-scroll">
-                        <div className="form-group">
-                            <label
-                                className="control-label"
-                                htmlFor="group_name"
-                            >
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="group_name">
                                 Nazwa grupy
                             </label>
                             <input
@@ -83,9 +80,9 @@ export default function CreateCustomerGroupModal({
                                 autoFocus
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="mb-3">
                             <label
-                                className="control-label"
+                                className="form-label"
                                 htmlFor="group_description"
                             >
                                 Opis (opcjonalnie)
@@ -105,8 +102,8 @@ export default function CreateCustomerGroupModal({
                                 aria-label="Opis grupy"
                             />
                         </div>
-                        <div className="form-group">
-                            <label className="control-label">Kolor</label>
+                        <div className="mb-3">
+                            <label className="form-label">Kolor</label>
                             <div className="salonbw-color-picker">
                                 {colorOptions.map((color) => (
                                     <button
@@ -129,7 +126,7 @@ export default function CreateCustomerGroupModal({
                     <div className="modal-footer">
                         <button
                             type="button"
-                            className="btn btn-default"
+                            className="btn btn-outline-secondary"
                             onClick={onClose}
                         >
                             Anuluj

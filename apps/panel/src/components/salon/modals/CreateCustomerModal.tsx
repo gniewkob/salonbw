@@ -51,8 +51,8 @@ export default function CreateCustomerModal({
                         <h4 className="modal-title">Dodaj klienta</h4>
                     </div>
                     <div className="modal-body">
-                        <div className="form-group">
-                            <label className="control-label">Imię</label>
+                        <div className="mb-3">
+                            <label className="form-label">Imię</label>
                             <input
                                 className="form-control"
                                 value={form.firstName}
@@ -67,8 +67,8 @@ export default function CreateCustomerModal({
                                 autoFocus
                             />
                         </div>
-                        <div className="form-group">
-                            <label className="control-label">Nazwisko</label>
+                        <div className="mb-3">
+                            <label className="form-label">Nazwisko</label>
                             <input
                                 className="form-control"
                                 value={form.lastName}
@@ -82,8 +82,8 @@ export default function CreateCustomerModal({
                                 aria-label="Nazwisko"
                             />
                         </div>
-                        <div className="form-group">
-                            <label className="control-label">Email</label>
+                        <div className="mb-3">
+                            <label className="form-label">Email</label>
                             <input
                                 className="form-control"
                                 type="email"
@@ -97,8 +97,8 @@ export default function CreateCustomerModal({
                                 aria-label="Email"
                             />
                         </div>
-                        <div className="form-group">
-                            <label className="control-label">Telefon</label>
+                        <div className="mb-3">
+                            <label className="form-label">Telefon</label>
                             <input
                                 className="form-control"
                                 value={form.phone}
@@ -115,7 +115,7 @@ export default function CreateCustomerModal({
                     <div className="modal-footer">
                         <button
                             type="button"
-                            className="btn btn-default"
+                            className="btn btn-outline-secondary"
                             onClick={onClose}
                         >
                             Anuluj

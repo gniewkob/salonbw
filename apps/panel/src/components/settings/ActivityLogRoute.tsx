@@ -191,7 +191,7 @@ export default function ActivityLogRoute({
                 <div className="settings-employee-activity-page">
                     <div>
                         <button
-                            className="button"
+                            className="btn btn-outline-secondary"
                             id="filters_toggle"
                             type="button"
                             onClick={() => {
@@ -340,7 +340,7 @@ export default function ActivityLogRoute({
                                         </div>
                                         <div className="col-sm-12 filter settings-employee-activity-page__filter-actions">
                                             <button
-                                                className="button button-blue"
+                                                className="btn btn-primary"
                                                 type="submit"
                                             >
                                                 zastosuj
@@ -372,7 +372,7 @@ export default function ActivityLogRoute({
                                         </div>
                                         <button
                                             type="button"
-                                            className="btn btn-default"
+                                            className="btn btn-outline-secondary"
                                             onClick={() =>
                                                 void activityLogs.refetch()
                                             }

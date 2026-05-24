@@ -180,7 +180,10 @@ export default function CustomerHistoryTab({ customerId }: Props) {
     return (
         <div className="customer-history-tab customer-history-tab--salonbw">
             <div className="customer-history-toolbar">
-                <button type="button" className="btn btn-default btn-xs">
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                >
                     filtruj
                 </button>
             </div>
@@ -189,7 +192,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                 <div className="customer-history-filters">
                     <button
                         type="button"
-                        className={`btn btn-xs ${status === 'all' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${status === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => {
                             setStatus('all');
                             setPage(1);
@@ -199,7 +202,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-xs ${status === 'upcoming' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${status === 'upcoming' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => {
                             setStatus('upcoming');
                             setPage(1);
@@ -209,7 +212,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-xs ${status === 'completed' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${status === 'completed' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => {
                             setStatus('completed');
                             setPage(1);
@@ -219,7 +222,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-xs ${status === 'cancelled' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${status === 'cancelled' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => {
                             setStatus('cancelled');
                             setPage(1);
@@ -229,7 +232,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-xs ${status === 'no_show' ? 'btn-primary' : 'btn-default'}`}
+                        className={`btn btn-sm ${status === 'no_show' ? 'btn-primary' : 'btn-outline-secondary'}`}
                         onClick={() => {
                             setStatus('no_show');
                             setPage(1);
@@ -499,7 +502,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <div className="btn-group">
                         <button
                             type="button"
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                             disabled={page <= 1}
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                         >
@@ -507,7 +510,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                         </button>
                         <button
                             type="button"
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                             disabled={page >= totalPages}
                             onClick={() =>
                                 setPage((p) => Math.min(totalPages, p + 1))

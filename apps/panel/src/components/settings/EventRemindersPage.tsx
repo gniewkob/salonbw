@@ -203,7 +203,7 @@ export default function EventRemindersPage() {
                     <div className="btn-group float-end">
                         <button
                             type="button"
-                            className="btn btn-default dropdown-toggle"
+                            className="btn btn-outline-secondary dropdown-toggle"
                             data-toggle="dropdown"
                         >
                             więcej
@@ -218,7 +218,7 @@ export default function EventRemindersPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn button-blue float-end"
+                        className="btn btn-primary float-end"
                         style={{ marginRight: '8px' }}
                         onClick={() => void openEdit()}
                     >
@@ -265,8 +265,8 @@ export default function EventRemindersPage() {
                         onSubmit={(event) => void handleSave(event)}
                     >
                         <h3>Edytuj przypomnienie</h3>
-                        <div className="form-group">
-                            <label className="control-label">Status</label>
+                        <div className="mb-3">
+                            <label className="form-label">Status</label>
                             <div>
                                 <label className="radio-inline">
                                     <input
@@ -298,11 +298,8 @@ export default function EventRemindersPage() {
                                 </label>
                             </div>
                         </div>
-                        <div className="form-group">
-                            <label
-                                htmlFor="timingHours"
-                                className="control-label"
-                            >
+                        <div className="mb-3">
+                            <label htmlFor="timingHours" className="form-label">
                                 Czas wysyłki
                             </label>
                             <select
@@ -328,10 +325,10 @@ export default function EventRemindersPage() {
                                 <option value={48}>Dwa dni przed wizytą</option>
                             </select>
                         </div>
-                        <div className="form-group">
+                        <div className="mb-3">
                             <label
                                 htmlFor="preferredChannel"
-                                className="control-label"
+                                className="form-label"
                             >
                                 Preferowany kanał
                             </label>
@@ -354,11 +351,8 @@ export default function EventRemindersPage() {
                                 <option value="both">SMS i e-mail</option>
                             </select>
                         </div>
-                        <div className="form-group">
-                            <label
-                                htmlFor="smsTemplate"
-                                className="control-label"
-                            >
+                        <div className="mb-3">
+                            <label htmlFor="smsTemplate" className="form-label">
                                 Treść SMS
                             </label>
                             <textarea
@@ -374,10 +368,10 @@ export default function EventRemindersPage() {
                                 }
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="mb-3">
                             <label
                                 htmlFor="emailSubject"
-                                className="control-label"
+                                className="form-label"
                             >
                                 Temat e-maila
                             </label>
@@ -394,10 +388,10 @@ export default function EventRemindersPage() {
                                 }
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="mb-3">
                             <label
                                 htmlFor="emailTemplate"
-                                className="control-label"
+                                className="form-label"
                             >
                                 Treść e-maila
                             </label>
@@ -414,10 +408,10 @@ export default function EventRemindersPage() {
                                 }
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="mb-3">
                             <button
                                 type="submit"
-                                className="btn button-blue"
+                                className="btn btn-primary"
                                 disabled={updateReminderSettings.isPending}
                             >
                                 {updateReminderSettings.isPending
@@ -426,7 +420,7 @@ export default function EventRemindersPage() {
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-default"
+                                className="btn btn-outline-secondary"
                                 style={{ marginLeft: '8px' }}
                                 onClick={() => void closeEdit()}
                                 disabled={updateReminderSettings.isPending}
@@ -489,7 +483,7 @@ export default function EventRemindersPage() {
                 <div className="reminder-how-it-works">
                     <button
                         type="button"
-                        className="btn btn-default"
+                        className="btn btn-outline-secondary"
                         onClick={() => setHowItWorksOpen((v) => !v)}
                     >
                         Jak to działa?{' '}

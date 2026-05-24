@@ -236,7 +236,7 @@ export default function HelpContactPage() {
                         target="_blank"
                         rel="noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
-                        className="button button-blue"
+                        className="btn btn-primary"
                     >
                         Przejdź do Bazy Wiedzy »
                     </a>
@@ -265,7 +265,7 @@ export default function HelpContactPage() {
                     <ol>
                         <li className="control-group text required physical_help_query">
                             <label
-                                className="text required control-label"
+                                className="text required form-label"
                                 htmlFor="physical_help_query"
                             >
                                 Pytanie
@@ -285,7 +285,7 @@ export default function HelpContactPage() {
                         </li>
                         <li className="control-group email required physical_help_email">
                             <label
-                                className="email required control-label"
+                                className="email required form-label"
                                 htmlFor="physical_help_email"
                             >
                                 Adres email
@@ -322,7 +322,7 @@ export default function HelpContactPage() {
                         </li>
                         <li className="control-group file optional physical_help_attachment">
                             <label
-                                className="file optional control-label"
+                                className="file optional form-label"
                                 htmlFor="physical_help_attachment"
                             >
                                 Załącznik

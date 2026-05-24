@@ -229,7 +229,7 @@ export default function ServiceDetailsPage() {
                         <button
                             type="button"
                             onClick={() => setIsEditModalOpen(true)}
-                            className="button"
+                            className="btn btn-outline-secondary"
                             disabled={!summaryData || user?.role !== 'admin'}
                         >
                             edytuj

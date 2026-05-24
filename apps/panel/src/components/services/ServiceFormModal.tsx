@@ -174,11 +174,8 @@ export default function ServiceFormModal({
 
     const renderBasicTab = () => (
         <div className="tab-pane active py-20">
-            <div className="form-group">
-                <label
-                    htmlFor="service_name"
-                    className="col-sm-3 control-label"
-                >
+            <div className="mb-3">
+                <label htmlFor="service_name" className="col-sm-3 form-label">
                     Nazwa usługi *
                 </label>
                 <div className="col-sm-9">
@@ -196,10 +193,10 @@ export default function ServiceFormModal({
                 </div>
             </div>
 
-            <div className="form-group">
+            <div className="mb-3">
                 <label
                     htmlFor="service_category"
-                    className="col-sm-3 control-label"
+                    className="col-sm-3 form-label"
                 >
                     Kategoria
                 </label>
@@ -227,10 +224,10 @@ export default function ServiceFormModal({
                 </div>
             </div>
 
-            <div className="form-group">
+            <div className="mb-3">
                 <label
                     htmlFor="service_duration"
-                    className="col-sm-3 control-label"
+                    className="col-sm-3 form-label"
                 >
                     Czas trwania *
                 </label>
@@ -259,11 +256,8 @@ export default function ServiceFormModal({
                 </div>
             </div>
 
-            <div className="form-group">
-                <label
-                    htmlFor="service_price"
-                    className="col-sm-3 control-label"
-                >
+            <div className="mb-3">
+                <label htmlFor="service_price" className="col-sm-3 form-label">
                     Cena (PLN) *
                 </label>
                 <div className="col-sm-4">
@@ -283,7 +277,7 @@ export default function ServiceFormModal({
                             }
                             required
                         />
-                        <span className="input-group-addon">zł</span>
+                        <span className="input-group-text">zł</span>
                     </div>
                 </div>
                 <div className="col-sm-5">
@@ -305,8 +299,8 @@ export default function ServiceFormModal({
                 </div>
             </div>
 
-            <div className="form-group">
-                <label htmlFor="service_vat" className="col-sm-3 control-label">
+            <div className="mb-3">
+                <label htmlFor="service_vat" className="col-sm-3 form-label">
                     Stawka VAT
                 </label>
                 <div className="col-sm-4">
@@ -328,12 +322,12 @@ export default function ServiceFormModal({
                             className="form-control"
                             placeholder="23"
                         />
-                        <span className="input-group-addon">%</span>
+                        <span className="input-group-text">%</span>
                     </div>
                 </div>
             </div>
 
-            <div className="form-group">
+            <div className="mb-3">
                 <div className="col-sm-offset-3 col-sm-9">
                     <div className="checkbox">
                         <label>
@@ -372,10 +366,10 @@ export default function ServiceFormModal({
 
     const renderDescriptionTab = () => (
         <div className="tab-pane active py-20">
-            <div className="form-group">
+            <div className="mb-3">
                 <label
                     htmlFor="service_desc_private"
-                    className="col-sm-3 control-label"
+                    className="col-sm-3 form-label"
                 >
                     Opis (prywatny)
                 </label>
@@ -395,10 +389,10 @@ export default function ServiceFormModal({
                     />
                 </div>
             </div>
-            <div className="form-group">
+            <div className="mb-3">
                 <label
                     htmlFor="service_desc_public"
-                    className="col-sm-3 control-label"
+                    className="col-sm-3 form-label"
                 >
                     Opis publiczny
                 </label>
@@ -527,7 +521,7 @@ export default function ServiceFormModal({
                                                         )
                                                     }
                                                 />
-                                                <span className="input-group-addon">
+                                                <span className="input-group-text">
                                                     zł
                                                 </span>
                                             </div>
@@ -535,7 +529,7 @@ export default function ServiceFormModal({
                                         <td className="text-end">
                                             <button
                                                 type="button"
-                                                className="btn btn-xs btn-default"
+                                                className="btn btn-sm btn-outline-secondary"
                                                 onClick={() =>
                                                     handleRemoveEmployee(
                                                         assignment.employeeId,
@@ -557,7 +551,7 @@ export default function ServiceFormModal({
             <div className="mt-15">
                 <button
                     type="button"
-                    className="btn btn-default btn-sm"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => setIsEmployeeSelectorOpen(true)}
                 >
                     + dodaj pracownika
@@ -663,7 +657,7 @@ export default function ServiceFormModal({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="btn btn-default"
+                                className="btn btn-outline-secondary"
                             >
                                 Anuluj
                             </button>

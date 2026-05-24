@@ -65,7 +65,7 @@ export default function NewCustomerGroupPage() {
                 <ol>
                     <li className="control-group">
                         <label
-                            className="string required control-label"
+                            className="string required form-label"
                             htmlFor="physical-customers-group-name"
                         >
                             Nazwa
@@ -85,7 +85,7 @@ export default function NewCustomerGroupPage() {
                     </li>
                     <li className="control-group">
                         <label
-                            className="select optional control-label"
+                            className="select optional form-label"
                             htmlFor="physical-customers-group-parent-id"
                         >
                             Grupa nadrzędna

@@ -88,7 +88,7 @@ export default function ManageCategoriesModal({ type, onClose }: Props) {
                         <div className="modal-footer">
                             <button
                                 type="button"
-                                className="btn btn-default btn-xs"
+                                className="btn btn-outline-secondary btn-sm"
                                 onClick={onClose}
                             >
                                 zamknij
@@ -182,7 +182,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                         <form onSubmit={(e) => void handleCreate(e)}>
                             <div className="form-">
                                 <label
-                                    className="control-label"
+                                    className="form-label"
                                     htmlFor="new_category_name"
                                 >
                                     Dodaj kategorię
@@ -198,7 +198,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                             </div>
                             <div className="form-">
                                 <label
-                                    className="control-label"
+                                    className="form-label"
                                     htmlFor="new_category_parent"
                                 >
                                     Kategoria nadrzędna
@@ -227,7 +227,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                             </div>
                             <button
                                 type="submit"
-                                className="btn btn-primary btn-xs"
+                                className="btn btn-primary btn-sm"
                                 disabled={!newName.trim() || isBusy}
                             >
                                 {createCategory.isPending
@@ -271,7 +271,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                     <div className="modal-footer">
                         <button
                             type="button"
-                            className="btn btn-default btn-xs"
+                            className="btn btn-outline-secondary btn-sm"
                             onClick={onClose}
                         >
                             zamknij
@@ -312,10 +312,7 @@ function CategoryEditorRow({
             style={{ borderColor: '#e6eaee' }}
         >
             <div className="form-">
-                <label
-                    className="control-label"
-                    htmlFor={`cat_name_${draft.id}`}
-                >
+                <label className="form-label" htmlFor={`cat_name_${draft.id}`}>
                     Nazwa
                 </label>
                 <input
@@ -330,7 +327,7 @@ function CategoryEditorRow({
             </div>
             <div className="form-">
                 <label
-                    className="control-label"
+                    className="form-label"
                     htmlFor={`cat_parent_${draft.id}`}
                 >
                     Kategoria nadrzędna
@@ -363,7 +360,7 @@ function CategoryEditorRow({
             <div className="row row-cols-1 row-cols-sm-2 g-2">
                 <div className="form-">
                     <label
-                        className="control-label"
+                        className="form-label"
                         htmlFor={`cat_sort_order_${draft.id}`}
                     >
                         Kolejność
@@ -384,7 +381,7 @@ function CategoryEditorRow({
                 </div>
                 <div className="form-">
                     <label
-                        className="control-label"
+                        className="form-label"
                         htmlFor={`cat_active_${draft.id}`}
                     >
                         Aktywna
@@ -410,7 +407,7 @@ function CategoryEditorRow({
             <div className="d-flex gap-2">
                 <button
                     type="button"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => void onSave(state)}
                     disabled={isBusy || !state.name.trim()}
                 >
@@ -418,7 +415,7 @@ function CategoryEditorRow({
                 </button>
                 <button
                     type="button"
-                    className="btn btn-danger btn-xs"
+                    className="btn btn-danger btn-sm"
                     onClick={() => void onDelete(state.id, state.name)}
                     disabled={isBusy}
                 >

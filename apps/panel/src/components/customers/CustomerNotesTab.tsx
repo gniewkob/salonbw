@@ -129,7 +129,7 @@ export default function CustomerNotesTab({ customerId }: Props) {
                 <div className="customer-comments-actions">
                     <button
                         type="button"
-                        className="btn btn-primary btn-xs"
+                        className="btn btn-primary btn-sm"
                         onClick={() => void handleAdd()}
                         disabled={!content.trim() || create.isPending}
                     >
@@ -217,14 +217,14 @@ function NoteRow({
             <div className="customer-comment-controls">
                 <button
                     type="button"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => void onTogglePin()}
                 >
                     {note.isPinned ? 'ukryj z alertów' : 'pokaż w alertach'}
                 </button>
                 <button
                     type="button"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => void onDelete()}
                 >
                     usuń

@@ -22,19 +22,22 @@ export default function ProductViewShell({
 }: ProductViewShellProps) {
     const actions = (
         <div className="products-card-actions">
-            <Link href="/sales/new" className="btn btn-default btn-xs">
+            <Link
+                href="/sales/new"
+                className="btn btn-outline-secondary btn-sm"
+            >
                 sprzedaj
             </Link>
-            <Link href="/use/new" className="btn btn-default btn-xs">
+            <Link href="/use/new" className="btn btn-outline-secondary btn-sm">
                 zużyj
             </Link>
             <Link
                 href={`/products/${productId}/edit`}
-                className="btn btn-default btn-xs"
+                className="btn btn-outline-secondary btn-sm"
             >
                 edytuj
             </Link>
-            <Link href="/products/new" className="btn btn-primary btn-xs">
+            <Link href="/products/new" className="btn btn-primary btn-sm">
                 dodaj produkt
             </Link>
         </div>

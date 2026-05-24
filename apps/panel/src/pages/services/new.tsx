@@ -834,7 +834,7 @@ function NewServicePageContent() {
                                         <div className="mt-m">
                                             <button
                                                 type="button"
-                                                className="button"
+                                                className="btn btn-outline-secondary"
                                                 onClick={addVariant}
                                             >
                                                 dodaj kolejny wariant
@@ -1200,7 +1200,7 @@ function NewServicePageContent() {
                                                 </table>
                                                 <button
                                                     type="button"
-                                                    className="button"
+                                                    className="btn btn-outline-secondary"
                                                     onClick={addRecipeItem}
                                                 >
                                                     dodaj kolejną pozycję
@@ -1232,7 +1232,7 @@ function NewServicePageContent() {
                         </button>
                         <button
                             type="button"
-                            className="button"
+                            className="btn btn-outline-secondary"
                             disabled={isSaving}
                             onClick={() =>
                                 void handleSubmit('save_and_add_another')

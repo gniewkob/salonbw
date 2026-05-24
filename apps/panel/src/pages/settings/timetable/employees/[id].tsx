@@ -526,7 +526,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                 <div className="date">
                                     <div className="button-group">
                                         <Link
-                                            className="button"
+                                            className="btn btn-outline-secondary"
                                             href={{
                                                 pathname:
                                                     '/settings/timetable/employees/[id]',
@@ -541,7 +541,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                             <span className="fc-icon fc-icon-left-single-arrow" />
                                         </Link>
                                         <Link
-                                            className="button"
+                                            className="btn btn-outline-secondary"
                                             href={{
                                                 pathname:
                                                     '/settings/timetable/employees/[id]',
@@ -587,7 +587,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                 <div className="buttons">
                                     <Link
                                         href={`/settings/employees/${id}`}
-                                        className="button"
+                                        className="btn btn-outline-secondary"
                                     >
                                         powrót do pracownika
                                     </Link>

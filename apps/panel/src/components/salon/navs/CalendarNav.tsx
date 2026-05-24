@@ -113,14 +113,14 @@ export default function CalendarNav() {
             <div className="nav-header flex-between">
                 <button
                     onClick={() => changeMonth(-1)}
-                    className="btn btn-xs btn-link p-0"
+                    className="btn btn-sm btn-link p-0"
                 >
                     &lt;
                 </button>
                 <span>{monthYear}</span>
                 <button
                     onClick={() => changeMonth(1)}
-                    className="btn btn-xs btn-link p-0"
+                    className="btn btn-sm btn-link p-0"
                 >
                     &gt;
                 </button>
