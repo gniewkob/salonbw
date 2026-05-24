@@ -178,10 +178,10 @@ export default function SettingsCategoriesEditPage() {
                                 onSubmit={(event) => void handleSubmit(event)}
                             >
                                 <h2>Edytuj kategorię produktów</h2>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="name"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Nazwa
                                     </label>
@@ -196,10 +196,10 @@ export default function SettingsCategoriesEditPage() {
                                         required
                                     />
                                 </div>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="parentId"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Kategoria nadrzędna (opcjonalnie)
                                     </label>
@@ -223,10 +223,10 @@ export default function SettingsCategoriesEditPage() {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <button
                                         type="submit"
-                                        className="btn button-blue"
+                                        className="btn btn-primary"
                                         disabled={updateCategory.isPending}
                                     >
                                         {updateCategory.isPending

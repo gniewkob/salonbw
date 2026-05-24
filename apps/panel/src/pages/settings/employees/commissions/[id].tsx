@@ -69,7 +69,7 @@ export default function SettingsEmployeeCommissionDetailPage() {
                                     <div className="actions">
                                         <button
                                             type="button"
-                                            className="btn button-blue float-end"
+                                            className="btn btn-primary float-end"
                                             disabled
                                         >
                                             zapisz
@@ -78,10 +78,10 @@ export default function SettingsEmployeeCommissionDetailPage() {
                                     <h2>
                                         Prowizje — {employee?.name ?? '...'}
                                     </h2>
-                                    <div className="form-group">
+                                    <div className="mb-3">
                                         <label
                                             htmlFor="serviceCommission"
-                                            className="control-label"
+                                            className="form-label"
                                         >
                                             Prowizja za usługi (%)
                                         </label>
@@ -95,10 +95,10 @@ export default function SettingsEmployeeCommissionDetailPage() {
                                             disabled
                                         />
                                     </div>
-                                    <div className="form-group">
+                                    <div className="mb-3">
                                         <label
                                             htmlFor="productCommission"
-                                            className="control-label"
+                                            className="form-label"
                                         >
                                             Prowizja za produkty (%)
                                         </label>

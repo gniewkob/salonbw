@@ -353,7 +353,7 @@ export default function MassCommunicationPage() {
                                 <h3>Treść wiadomości</h3>
 
                                 {channel === 'email' && (
-                                    <div className="salonbw-form-group">
+                                    <div className="salonbw-mb-3">
                                         <label>Temat</label>
                                         <input
                                             type="text"
@@ -367,7 +367,7 @@ export default function MassCommunicationPage() {
                                     </div>
                                 )}
 
-                                <div className="salonbw-form-group">
+                                <div className="salonbw-mb-3">
                                     <label>Treść</label>
                                     <textarea
                                         className="salonbw-textarea"

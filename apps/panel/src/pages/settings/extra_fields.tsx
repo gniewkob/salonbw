@@ -171,7 +171,7 @@ export default function SettingsExtraFieldsPage() {
                             action={
                                 <button
                                     type="button"
-                                    className="btn button-blue float-end"
+                                    className="btn btn-primary float-end"
                                     onClick={() => setIsAdding(true)}
                                 >
                                     + dodaj pole
@@ -193,7 +193,7 @@ export default function SettingsExtraFieldsPage() {
                             {isAdding && (
                                 <div className="card extra-fields-add-panel">
                                     <div className="card-body">
-                                        <div className="form-inline extra-fields-add-form">
+                                        <div className="d-flex flex-wrap gap-2 align-items-center extra-fields-add-form">
                                             <input
                                                 type="text"
                                                 className="form-control"
@@ -266,7 +266,7 @@ export default function SettingsExtraFieldsPage() {
                                             </label>
                                             <button
                                                 type="button"
-                                                className="btn button-blue"
+                                                className="btn btn-primary"
                                                 onClick={handleAdd}
                                                 disabled={
                                                     createField.isPending ||
@@ -468,7 +468,7 @@ export default function SettingsExtraFieldsPage() {
                                                             <span className="btn-group">
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-xs button-blue"
+                                                                    className="btn btn-primary btn-sm"
                                                                     onClick={
                                                                         handleEditSave
                                                                     }

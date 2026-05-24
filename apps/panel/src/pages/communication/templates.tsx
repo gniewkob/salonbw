@@ -332,7 +332,7 @@ export default function TemplatesPage() {
                                 </div>
                                 <form onSubmit={(e) => void handleSubmit(e)}>
                                     <div className="salonbw-modal__body">
-                                        <div className="salonbw-form-group">
+                                        <div className="salonbw-mb-3">
                                             <label htmlFor="modal-name">
                                                 Nazwa *
                                             </label>
@@ -353,7 +353,7 @@ export default function TemplatesPage() {
                                         </div>
 
                                         <div className="salonbw-form-row">
-                                            <div className="salonbw-form-group">
+                                            <div className="salonbw-mb-3">
                                                 <label htmlFor="modal-type">
                                                     Typ *
                                                 </label>
@@ -380,7 +380,7 @@ export default function TemplatesPage() {
                                                 </select>
                                             </div>
 
-                                            <div className="salonbw-form-group">
+                                            <div className="salonbw-mb-3">
                                                 <label htmlFor="modal-channel">
                                                     Kanał *
                                                 </label>
@@ -409,7 +409,7 @@ export default function TemplatesPage() {
                                         </div>
 
                                         {formData.channel === 'email' && (
-                                            <div className="salonbw-form-group">
+                                            <div className="salonbw-mb-3">
                                                 <label htmlFor="modal-subject">
                                                     Temat
                                                 </label>
@@ -430,7 +430,7 @@ export default function TemplatesPage() {
                                             </div>
                                         )}
 
-                                        <div className="salonbw-form-group">
+                                        <div className="salonbw-mb-3">
                                             <label htmlFor="modal-content">
                                                 Treść *
                                             </label>
@@ -472,7 +472,7 @@ export default function TemplatesPage() {
                                             <code>{'{{salon_name}}'}</code>
                                         </div>
 
-                                        <div className="salonbw-form-group">
+                                        <div className="salonbw-mb-3">
                                             <label htmlFor="modal-description">
                                                 Opis (opcjonalny)
                                             </label>

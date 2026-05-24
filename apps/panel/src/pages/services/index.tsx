@@ -227,7 +227,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                     />
                 </div>
                 <div className="col-sm-6 text-end mt-1">
-                    <Link href="/services/new" className="button button-blue">
+                    <Link href="/services/new" className="btn btn-primary">
                         dodaj usługę
                     </Link>
                 </div>

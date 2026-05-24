@@ -157,7 +157,7 @@ export default function MessagesPage() {
                 <div className="actions">
                     <button
                         type="button"
-                        className="button button-blue float-end"
+                        className="btn btn-primary float-end"
                         onClick={handleNewNewsletter}
                     >
                         + nowy newsletter
@@ -253,7 +253,7 @@ export default function MessagesPage() {
                                                         <>
                                                             <button
                                                                 type="button"
-                                                                className="button button-link"
+                                                                className="btn btn-link"
                                                                 onClick={() =>
                                                                     handleEdit(
                                                                         nl,
@@ -264,7 +264,7 @@ export default function MessagesPage() {
                                                             </button>
                                                             <button
                                                                 type="button"
-                                                                className="button button-blue"
+                                                                className="btn btn-primary"
                                                                 onClick={() => {
                                                                     void handleSend(
                                                                         nl.id,
@@ -279,7 +279,7 @@ export default function MessagesPage() {
                                                         'scheduled' && (
                                                         <button
                                                             type="button"
-                                                            className="button button-link"
+                                                            className="btn btn-link"
                                                             onClick={() => {
                                                                 void handleCancel(
                                                                     nl.id,
@@ -291,7 +291,7 @@ export default function MessagesPage() {
                                                     )}
                                                     <button
                                                         type="button"
-                                                        className="button button-link"
+                                                        className="btn btn-link"
                                                         onClick={() => {
                                                             void handleDuplicate(
                                                                 nl.id,
@@ -307,7 +307,7 @@ export default function MessagesPage() {
                                                                 <>
                                                                     <button
                                                                         type="button"
-                                                                        className="button button-link"
+                                                                        className="btn btn-link"
                                                                         onClick={() => {
                                                                             void handleDelete(
                                                                                 nl.id,
@@ -318,7 +318,7 @@ export default function MessagesPage() {
                                                                     </button>
                                                                     <button
                                                                         type="button"
-                                                                        className="button button-link"
+                                                                        className="btn btn-link"
                                                                         onClick={() =>
                                                                             setConfirmDeleteId(
                                                                                 null,
@@ -331,7 +331,7 @@ export default function MessagesPage() {
                                                             ) : (
                                                                 <button
                                                                     type="button"
-                                                                    className="button button-link"
+                                                                    className="btn btn-link"
                                                                     onClick={() =>
                                                                         setConfirmDeleteId(
                                                                             nl.id,

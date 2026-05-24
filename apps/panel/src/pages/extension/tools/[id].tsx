@@ -267,7 +267,7 @@ function ExtensionToolContent() {
                                                 <div className="col-6">
                                                     <button
                                                         type="button"
-                                                        className="button button-blue"
+                                                        className="btn btn-primary"
                                                     >
                                                         wypróbuj za darmo
                                                     </button>

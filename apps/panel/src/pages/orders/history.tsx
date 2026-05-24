@@ -105,7 +105,7 @@ export default function WarehouseOrdersHistoryPage() {
                             <div className="d-flex flex-wrap justify-content-end">
                                 <Link
                                     href="/orders/new"
-                                    className="button button-blue ml-xs"
+                                    className="btn btn-primary ml-xs"
                                 >
                                     dodaj zamówienie
                                 </Link>
@@ -247,7 +247,7 @@ export default function WarehouseOrdersHistoryPage() {
                                     <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
-                                        className="button button-link button_next ml-s"
+                                        className="btn btn-link button_next ml-s"
                                         aria-label="Następna strona"
                                         disabled={safePage >= totalPages}
                                         onClick={() =>

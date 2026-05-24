@@ -87,10 +87,10 @@ export default function SettingsEmployeeNewPage() {
                         <PanelSection>
                             <form onSubmit={(e) => void handleSubmit(e)}>
                                 <h2>Dodaj pracownika</h2>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="firstName"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Imię
                                     </label>
@@ -105,10 +105,10 @@ export default function SettingsEmployeeNewPage() {
                                         required
                                     />
                                 </div>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <label
                                         htmlFor="lastName"
-                                        className="control-label"
+                                        className="form-label"
                                     >
                                         Nazwisko
                                     </label>
@@ -123,10 +123,10 @@ export default function SettingsEmployeeNewPage() {
                                         required
                                     />
                                 </div>
-                                <div className="form-group">
+                                <div className="mb-3">
                                     <button
                                         type="submit"
-                                        className="btn button-blue"
+                                        className="btn btn-primary"
                                         disabled={createEmployee.isPending}
                                     >
                                         {createEmployee.isPending

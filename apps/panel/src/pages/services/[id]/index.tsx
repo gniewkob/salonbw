@@ -237,7 +237,7 @@ export default function ServiceDetailsPage() {
                         <button
                             type="button"
                             onClick={() => setIsVariantsModalOpen(true)}
-                            className="button button-blue ml-s"
+                            className="btn btn-primary ml-s"
                             disabled={!summaryData || user?.role !== 'admin'}
                         >
                             zarządzaj wariantami

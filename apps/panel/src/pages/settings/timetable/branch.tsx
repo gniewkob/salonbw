@@ -592,7 +592,7 @@ export default function SettingsTimetableBranchPage() {
                                         <div className="form-actions">
                                             <button
                                                 type="submit"
-                                                className="btn button-blue"
+                                                className="btn btn-primary"
                                                 disabled={
                                                     updateBranch.isPending ||
                                                     Boolean(validationError)

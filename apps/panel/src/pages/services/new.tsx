@@ -563,7 +563,7 @@ function NewServicePageContent() {
                                 </select>
                                 <button
                                     type="button"
-                                    className="button button-link"
+                                    className="btn btn-link"
                                     onClick={() => setIsCategoriesOpen(true)}
                                 >
                                     Dodaj kategorię
@@ -591,7 +591,7 @@ function NewServicePageContent() {
                                     <span>minut</span>
                                     <button
                                         type="button"
-                                        className="button button-link"
+                                        className="btn btn-link"
                                         onClick={() =>
                                             setShowDurationModal(true)
                                         }
@@ -720,7 +720,7 @@ function NewServicePageContent() {
                                         </span>
                                         <button
                                             type="button"
-                                            className="button button-link"
+                                            className="btn btn-link"
                                             onClick={() =>
                                                 setShowMeasureKindBox(
                                                     (current) => !current,
@@ -817,7 +817,7 @@ function NewServicePageContent() {
                                                         <td className="text-center">
                                                             <button
                                                                 type="button"
-                                                                className="button button-link services-create-delete"
+                                                                className="btn btn-link services-create-delete"
                                                                 onClick={() =>
                                                                     removeVariant(
                                                                         variant.key,
@@ -965,7 +965,7 @@ function NewServicePageContent() {
                         Zaawansowane{' '}
                         <button
                             type="button"
-                            className="button button-link"
+                            className="btn btn-link"
                             onClick={() =>
                                 setShowAdvancedSection((current) => !current)
                             }
@@ -1010,7 +1010,7 @@ function NewServicePageContent() {
                                     <div className="services-create-panel">
                                         <button
                                             type="button"
-                                            className="button button-link"
+                                            className="btn btn-link"
                                             onClick={() =>
                                                 setShowRecipeTable(
                                                     (current) => !current,
@@ -1183,7 +1183,7 @@ function NewServicePageContent() {
                                                                     <td className="text-center">
                                                                         <button
                                                                             type="button"
-                                                                            className="button button-link services-create-delete"
+                                                                            className="btn btn-link services-create-delete"
                                                                             onClick={() =>
                                                                                 removeRecipeItem(
                                                                                     item.key,

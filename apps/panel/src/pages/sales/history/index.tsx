@@ -177,7 +177,7 @@ export default function WarehouseSalesHistoryPage() {
                                 ) : null}
                                 <Link
                                     href="/sales/new"
-                                    className="button button-blue ml-xs"
+                                    className="btn btn-primary ml-xs"
                                 >
                                     dodaj sprzedaż
                                 </Link>
@@ -267,7 +267,7 @@ export default function WarehouseSalesHistoryPage() {
                                     <a className="pointer">{totalPages}</a>
                                     <button
                                         type="button"
-                                        className="button button-link button_next ml-s"
+                                        className="btn btn-link button_next ml-s"
                                         aria-label="Następna strona"
                                         disabled={safePage >= totalPages}
                                         onClick={() =>

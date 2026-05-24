@@ -113,7 +113,7 @@ export default function RemindersPage() {
                                 Wyślij przypomnienia do wszystkich klientów z
                                 wizytami w najbliższych godzinach.
                             </p>
-                            <div className="salonbw-form-group">
+                            <div className="salonbw-mb-3">
                                 <label htmlFor="hours-input">
                                     Zakres godzin
                                 </label>

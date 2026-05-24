@@ -188,7 +188,7 @@ export default function WarehouseProductsPage() {
                         </Link>
                         <Link
                             href="/products/new"
-                            className="button button-blue ml-xs"
+                            className="btn btn-primary ml-xs"
                         >
                             dodaj produkt
                         </Link>

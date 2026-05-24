@@ -247,7 +247,7 @@ export default function SettingsCategoriesPage() {
                                 </Link>
                                 <Link
                                     href="/settings/categories/new"
-                                    className="btn button-blue"
+                                    className="btn btn-primary"
                                     style={{ marginRight: 8 }}
                                 >
                                     + dodaj kategorię produktów
@@ -256,7 +256,7 @@ export default function SettingsCategoriesPage() {
                                     <>
                                         <button
                                             type="button"
-                                            className="btn button-blue"
+                                            className="btn btn-primary"
                                             disabled={
                                                 reorderCategories.isPending
                                             }
