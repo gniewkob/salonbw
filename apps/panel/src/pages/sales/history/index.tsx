@@ -169,7 +169,7 @@ export default function WarehouseSalesHistoryPage() {
                                 {hasAppointmentFilters || hasCustomerFilter ? (
                                     <button
                                         type="button"
-                                        className="button button-default ml-xs"
+                                        className="btn btn-outline-secondary ml-xs"
                                         onClick={clearAppointmentFilters}
                                     >
                                         Pokaż wszystko

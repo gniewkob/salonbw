@@ -528,7 +528,7 @@ export default function SettingsTimetableBranchPage() {
                                                                                     1 ? (
                                                                                     <button
                                                                                         type="button"
-                                                                                        className="button-link"
+                                                                                        className="btn btn-link p-0"
                                                                                         onClick={() =>
                                                                                             handleAddRange(
                                                                                                 day.key,
@@ -545,7 +545,7 @@ export default function SettingsTimetableBranchPage() {
                                                                                 1 ? (
                                                                                     <button
                                                                                         type="button"
-                                                                                        className="button-link"
+                                                                                        className="btn btn-link p-0"
                                                                                         onClick={() =>
                                                                                             handleRemoveRange(
                                                                                                 day.key,

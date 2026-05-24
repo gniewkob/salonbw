@@ -382,7 +382,7 @@ export default function SettingsDataProtectionPage() {
                                                                                 zapisz
                                                                             </button>
                                                                             <button
-                                                                                className="button-link"
+                                                                                className="btn btn-link p-0"
                                                                                 disabled={
                                                                                     isSavingThisRow
                                                                                 }
@@ -406,7 +406,7 @@ export default function SettingsDataProtectionPage() {
                                                                                 klientow
                                                                             </span>
                                                                             <button
-                                                                                className="button-link"
+                                                                                className="btn btn-link p-0"
                                                                                 type="button"
                                                                                 onClick={() =>
                                                                                     startEmployeeLimitEdit(
@@ -421,7 +421,7 @@ export default function SettingsDataProtectionPage() {
                                                                             {employee.paranoiaLimitOverride !==
                                                                                 null && (
                                                                                 <button
-                                                                                    className="button-link"
+                                                                                    className="btn btn-link p-0"
                                                                                     disabled={
                                                                                         isSavingThisRow
                                                                                     }

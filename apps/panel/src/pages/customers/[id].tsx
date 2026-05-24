@@ -207,12 +207,12 @@ export default function CustomerDetailPage() {
                                     <div className="right-buttons">
                                         <Link
                                             href={`/customers/${customer.id}/edit`}
-                                            className="button button-small"
+                                            className="btn btn-sm btn-outline-secondary"
                                         >
                                             edytuj
                                         </Link>
                                         <details className="customer-more-dropdown">
-                                            <summary className="button button-small customer-more-dropdown__trigger">
+                                            <summary className="btn btn-sm btn-outline-secondary customer-more-dropdown__trigger">
                                                 więcej{' '}
                                                 <span className="caret" />
                                             </summary>
