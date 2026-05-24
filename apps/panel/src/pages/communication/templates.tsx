@@ -145,15 +145,12 @@ export default function TemplatesPage() {
                     />
 
                     <div className="salonbw-page__toolbar">
-                        <label
-                            className="salonbw-label"
-                            htmlFor="filter-channel"
-                        >
+                        <label className="form-label" htmlFor="filter-channel">
                             Kanał:
                         </label>
                         <select
                             id="filter-channel"
-                            className="salonbw-select"
+                            className="form-select"
                             value={filterChannel}
                             onChange={(e) =>
                                 setFilterChannel(
@@ -168,12 +165,12 @@ export default function TemplatesPage() {
                                 </option>
                             ))}
                         </select>
-                        <label className="salonbw-label" htmlFor="filter-type">
+                        <label className="form-label" htmlFor="filter-type">
                             Typ:
                         </label>
                         <select
                             id="filter-type"
-                            className="salonbw-select"
+                            className="form-select"
                             value={filterType}
                             onChange={(e) =>
                                 setFilterType(
@@ -190,7 +187,7 @@ export default function TemplatesPage() {
                         </select>
                         <button
                             type="button"
-                            className="salonbw-btn salonbw-btn--primary"
+                            className="btn btn-primary"
                             onClick={openAddModal}
                         >
                             + Nowy szablon
@@ -208,8 +205,8 @@ export default function TemplatesPage() {
                                 : 'Brak szablonów pasujących do filtrów.'}
                         </div>
                     ) : (
-                        <div className="salonbw-table-wrap">
-                            <table className="salonbw-table">
+                        <div className="table-responsive">
+                            <table className="table table-bordered table-sm">
                                 <thead>
                                     <tr>
                                         <th>Nazwa</th>
@@ -235,7 +232,7 @@ export default function TemplatesPage() {
                                                 {getTypeLabel(template.type)}
                                             </td>
                                             <td>
-                                                <span className="salonbw-badge">
+                                                <span className="badge bg-info text-dark">
                                                     {getChannelIcon(
                                                         template.channel,
                                                     )}{' '}
@@ -264,20 +261,20 @@ export default function TemplatesPage() {
                                             </td>
                                             <td>
                                                 {template.isActive ? (
-                                                    <span className="salonbw-badge salonbw-badge--success">
+                                                    <span className="badge bg-success">
                                                         Aktywny
                                                     </span>
                                                 ) : (
-                                                    <span className="salonbw-badge salonbw-badge--inactive">
+                                                    <span className="badge bg-secondary">
                                                         Nieaktywny
                                                     </span>
                                                 )}
                                             </td>
                                             <td>
-                                                <div className="salonbw-actions">
+                                                <div className="d-flex gap-2 align-items-center">
                                                     <button
                                                         type="button"
-                                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--light"
+                                                        className="btn btn-outline-secondary btn-sm"
                                                         onClick={() =>
                                                             openEditModal(
                                                                 template,
@@ -288,7 +285,7 @@ export default function TemplatesPage() {
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--danger"
+                                                        className="btn btn-danger btn-sm"
                                                         onClick={() =>
                                                             void handleDelete(
                                                                 template.id,
@@ -332,14 +329,14 @@ export default function TemplatesPage() {
                                 </div>
                                 <form onSubmit={(e) => void handleSubmit(e)}>
                                     <div className="salonbw-modal__body">
-                                        <div className="salonbw-mb-3">
+                                        <div className="mb-3">
                                             <label htmlFor="modal-name">
                                                 Nazwa *
                                             </label>
                                             <input
                                                 id="modal-name"
                                                 type="text"
-                                                className="salonbw-input"
+                                                className="form-control"
                                                 value={formData.name}
                                                 onChange={(e) =>
                                                     setFormData({
@@ -352,14 +349,14 @@ export default function TemplatesPage() {
                                             />
                                         </div>
 
-                                        <div className="salonbw-form-row">
-                                            <div className="salonbw-mb-3">
+                                        <div className="d-flex gap-2 flex-wrap">
+                                            <div className="mb-3">
                                                 <label htmlFor="modal-type">
                                                     Typ *
                                                 </label>
                                                 <select
                                                     id="modal-type"
-                                                    className="salonbw-select"
+                                                    className="form-select"
                                                     value={formData.type}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -380,13 +377,13 @@ export default function TemplatesPage() {
                                                 </select>
                                             </div>
 
-                                            <div className="salonbw-mb-3">
+                                            <div className="mb-3">
                                                 <label htmlFor="modal-channel">
                                                     Kanał *
                                                 </label>
                                                 <select
                                                     id="modal-channel"
-                                                    className="salonbw-select"
+                                                    className="form-select"
                                                     value={formData.channel}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -409,14 +406,14 @@ export default function TemplatesPage() {
                                         </div>
 
                                         {formData.channel === 'email' && (
-                                            <div className="salonbw-mb-3">
+                                            <div className="mb-3">
                                                 <label htmlFor="modal-subject">
                                                     Temat
                                                 </label>
                                                 <input
                                                     id="modal-subject"
                                                     type="text"
-                                                    className="salonbw-input"
+                                                    className="form-control"
                                                     value={formData.subject}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -430,13 +427,13 @@ export default function TemplatesPage() {
                                             </div>
                                         )}
 
-                                        <div className="salonbw-mb-3">
+                                        <div className="mb-3">
                                             <label htmlFor="modal-content">
                                                 Treść *
                                             </label>
                                             <textarea
                                                 id="modal-content"
-                                                className="salonbw-textarea"
+                                                className="form-control"
                                                 value={formData.content}
                                                 onChange={(e) =>
                                                     setFormData({
@@ -447,7 +444,7 @@ export default function TemplatesPage() {
                                                 rows={6}
                                                 required
                                             />
-                                            <span className="salonbw-char-count">
+                                            <span className="form-text text-muted">
                                                 {formData.content.length} znaków
                                                 {formData.channel === 'sms' && (
                                                     <>
@@ -462,7 +459,7 @@ export default function TemplatesPage() {
                                             </span>
                                         </div>
 
-                                        <div className="salonbw-variables-help">
+                                        <div className="form-text text-muted small">
                                             <h4>Dostępne zmienne:</h4>
                                             <code>{'{{client_name}}'}</code>
                                             <code>{'{{service_name}}'}</code>
@@ -472,14 +469,14 @@ export default function TemplatesPage() {
                                             <code>{'{{salon_name}}'}</code>
                                         </div>
 
-                                        <div className="salonbw-mb-3">
+                                        <div className="mb-3">
                                             <label htmlFor="modal-description">
                                                 Opis (opcjonalny)
                                             </label>
                                             <input
                                                 id="modal-description"
                                                 type="text"
-                                                className="salonbw-input"
+                                                className="form-control"
                                                 value={formData.description}
                                                 onChange={(e) =>
                                                     setFormData({
@@ -492,7 +489,7 @@ export default function TemplatesPage() {
                                             />
                                         </div>
 
-                                        <label className="salonbw-checkbox-row">
+                                        <label className="d-flex align-items-center gap-2 mb-2">
                                             <input
                                                 type="checkbox"
                                                 checked={formData.isActive}
@@ -510,7 +507,7 @@ export default function TemplatesPage() {
                                     <div className="salonbw-modal__footer">
                                         <button
                                             type="button"
-                                            className="salonbw-btn salonbw-btn--light"
+                                            className="btn btn-outline-secondary"
                                             onClick={() =>
                                                 setIsModalOpen(false)
                                             }
@@ -519,7 +516,7 @@ export default function TemplatesPage() {
                                         </button>
                                         <button
                                             type="submit"
-                                            className="salonbw-btn salonbw-btn--primary"
+                                            className="btn btn-primary"
                                             disabled={
                                                 !formData.name.trim() ||
                                                 !formData.content.trim() ||

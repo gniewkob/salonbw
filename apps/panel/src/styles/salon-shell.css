@@ -6490,6 +6490,12 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 
 /* ── salonbw-stat: inline stat with value + label ───────────────────── */
+.salonbw-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
 .salonbw-stat__value {
     font-size: 22px;
     font-weight: 700;
@@ -6669,6 +6675,12 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
    ══════════════════════════════════════════════════════════════════ */
 .salonbw-loading {
     padding: 24px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+.salonbw-empty {
+    padding: 40px 24px;
     text-align: center;
     color: #6c757d;
     font-size: 14px;
