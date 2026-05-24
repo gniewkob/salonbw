@@ -112,28 +112,24 @@ export default function SettingsCustomerOriginsPage() {
                                                 }
                                             }}
                                         />
-                                        <span className="input-group-btn">
-                                            <button
-                                                type="button"
-                                                className="btn button-blue"
-                                                onClick={handleAdd}
-                                                disabled={
-                                                    createOrigin.isPending
-                                                }
-                                            >
-                                                Zapisz
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-default"
-                                                onClick={() => {
-                                                    setIsAdding(false);
-                                                    setAddingName('');
-                                                }}
-                                            >
-                                                Anuluj
-                                            </button>
-                                        </span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={handleAdd}
+                                            disabled={createOrigin.isPending}
+                                        >
+                                            Zapisz
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() => {
+                                                setIsAdding(false);
+                                                setAddingName('');
+                                            }}
+                                        >
+                                            Anuluj
+                                        </button>
                                     </div>
                                 </div>
                             )}

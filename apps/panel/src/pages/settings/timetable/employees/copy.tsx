@@ -302,7 +302,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                         />
                                                     </div>
                                                     {sourceTimetable ? (
-                                                        <p className="help-block">
+                                                        <p className="form-text text-muted">
                                                             Zostanie użyty
                                                             grafik:{' '}
                                                             <strong>
@@ -363,7 +363,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                             ),
                                                         )}
                                                     </select>
-                                                    <p className="help-block">
+                                                    <p className="form-text text-muted">
                                                         Przytrzymaj Ctrl lub
                                                         Cmd, aby wybrać wielu
                                                         pracowników.

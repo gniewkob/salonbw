@@ -331,7 +331,7 @@ function ExtensionToolContent() {
                                                     {/* Copy-first parity with source gallery markup. */}
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
-                                                        className="gthumbnail img-responsive"
+                                                        className="gthumbnail img-fluid"
                                                         alt=""
                                                         src={tool.gallery.main}
                                                     />
@@ -349,7 +349,7 @@ function ExtensionToolContent() {
                                                             {/* Copy-first parity with source gallery markup. */}
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img
-                                                                className={`gthumbnail img-responsive ${idx === 1 ? 'center-block' : ''} ${idx === 2 ? 'float-end' : ''}`}
+                                                                className={`gthumbnail img-fluid ${idx === 1 ? 'center-block' : ''} ${idx === 2 ? 'float-end' : ''}`}
                                                                 alt=""
                                                                 src={thumbUrl}
                                                             />
