@@ -35,11 +35,12 @@ export class AppointmentFormulasController {
     addFormula(
         @Param('appointmentId', ParseIntPipe) appointmentId: number,
         @Body() body: CreateFormulaDto,
-        @CurrentUser() user: { userId: number },
+        @CurrentUser() user: { userId: number; role: string },
     ): Promise<Formula> {
         return this.formulasService.addToAppointment(
             appointmentId,
             user.userId,
+            user.role,
             {
                 description: body.description,
                 date: new Date(body.date),
