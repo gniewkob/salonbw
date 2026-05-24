@@ -95,7 +95,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5 # v4
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
           fetch-depth: 2
 
       - name: Detect changes
@@ -177,37 +177,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Resolve API URL
-        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
-        id: api
-        shell: bash
-        run: |
-          INPUT_API="${{ github.event.inputs.api_url }}"
-          if [ -n "$INPUT_API" ]; then
-            API_URL="$INPUT_API"
-          elif [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
-            API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
-          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
-            API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
-          else
-            # Default fallback if secret is missing or env is unknown
-            API_URL="https://api.salon-bw.pl"
-          fi
-          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve Proxy URL
-        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
-        id: proxy
-        shell: bash
-        run: |
-          PROXY_URL="https://api.salon-bw.pl"
-          if [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
-            PROXY_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
-          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
-            PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
-          fi
-          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
 
       - name: Load optional variables
         shell: bash
@@ -351,6 +320,36 @@ jobs:
           validate "$P_PUB" "$A_PUB" "public"
           validate "$P_PAN" "$A_PAN" "panel"
           validate "$P_API" "$A_API" "api"
+
+      - name: Resolve API URL
+        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
+        id: api
+        shell: bash
+        run: |
+          INPUT_API="${{ github.event.inputs.api_url }}"
+          if [ -n "$INPUT_API" ]; then
+            API_URL="$INPUT_API"
+          elif [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+            API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
+          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+            API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
+          else
+            API_URL="https://api.salon-bw.pl"
+          fi
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Proxy URL
+        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
+        id: proxy
+        shell: bash
+        run: |
+          PROXY_URL="https://api.salon-bw.pl"
+          if [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+            PROXY_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
+          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+            PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
+          fi
+          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
 
       - name: Build frontend (Landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
@@ -694,7 +693,7 @@ jobs:
       - name: Install dependencies (frontend panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
@@ -718,7 +717,7 @@ jobs:
       - name: Install dependencies (frontend landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
@@ -806,7 +805,7 @@ jobs:
       - name: "Diagnostic: Expose and Print logs (panel)"
         if: ${{ always() && (steps.dest.outputs.deploy_panel == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -833,7 +832,7 @@ jobs:
       - name: "Diagnostic: Expose logs (landing)"
         if: ${{ always() && (steps.dest.outputs.deploy_landing == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -852,16 +851,16 @@ jobs:
           rsync -az --delete --timeout=300 \
             --exclude='.git' \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/dist/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/dist/
+            vetternkraft@s0.mydevil.net:${{ steps.dest.outputs.remote_path_api }}/dist/
           rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/package.json \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
+            vetternkraft@s0.mydevil.net:${{ steps.dest.outputs.remote_path_api }}/
           rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/app.js \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
+            vetternkraft@s0.mydevil.net:${{ steps.dest.outputs.remote_path_api }}/
 
       - name: Install dependencies (backend)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           install_cmd="npm install --omit=dev --ignore-scripts"
@@ -884,7 +883,7 @@ jobs:
       - name: "Diagnostic: Startup Probe (frontend)"
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -940,7 +939,7 @@ jobs:
       - name: "Diagnostic: Startup Probe (panel)"
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' APP_NAME='${{ steps.dest.outputs.app_name_panel }}' bash -s" <<'END_PROBE'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' APP_NAME='${{ steps.dest.outputs.app_name_panel }}' bash -s" <<'END_PROBE'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -1062,10 +1061,10 @@ jobs:
           # Upload the generated base .env (without SMTP credentials).
           # SMTP_* must be set directly on the server and is preserved across deploys.
           rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env.generated
+            vetternkraft@s0.mydevil.net:${{ steps.dest.outputs.remote_path_api }}/.env.generated
 
           # Merge server-side to avoid moving SMTP credentials through CI/CD.
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
@@ -1084,7 +1083,7 @@ jobs:
       - name: Validate DB connectivity (api)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
@@ -1096,7 +1095,7 @@ jobs:
       - name: Run DB migrations (api)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
@@ -1158,14 +1157,14 @@ jobs:
 
       - name: Debug - List Apps
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www list"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www list"
 
       - name: Restart app (backend)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
           APP_NAME="${{ steps.dest.outputs.app_name_api }}"
           echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
       - name: Smoke test (backend)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -1202,7 +1201,7 @@ jobs:
         if: ${{ always() && steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            vetternkraft@s0.mydevil.net \
             "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
           echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
@@ -1223,7 +1222,7 @@ jobs:
         if: ${{ always() && steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_api == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            vetternkraft@s0.mydevil.net \
             "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' APP='${{ steps.dest.outputs.app_name_api }}' bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
           echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
@@ -1259,7 +1258,7 @@ jobs:
               import subprocess
               cmd = [
                   'ssh','-i','~/.ssh/mydevil','-o','IdentitiesOnly=yes',
-                  '${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}',
+                  'vetternkraft@s0.mydevil.net',
                   "cat '${{ steps.dest.outputs.remote_path_public }}/.next/BUILD_ID'"
               ]
               build_id = subprocess.check_output(cmd, timeout=10).decode().strip()
@@ -1305,7 +1304,7 @@ jobs:
         run: |
           set -euo pipefail
           NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-            "${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}" \
+            "vetternkraft@s0.mydevil.net" \
             "ls -1 '${{ steps.dest.outputs.remote_path_public }}/.next/static/chunks' | head -n 1" || true)"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
 
