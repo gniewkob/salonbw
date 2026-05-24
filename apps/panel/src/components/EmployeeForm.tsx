@@ -41,7 +41,11 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
                 ...(!isEditing && email.trim() ? { email: email.trim() } : {}),
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message || 'Błąd zapisu' : 'Błąd zapisu');
+            setError(
+                err instanceof Error
+                    ? err.message || 'Błąd zapisu'
+                    : 'Błąd zapisu',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -96,7 +100,10 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
                 </div>
             )}
             {error && (
-                <div role="alert" className="alert alert-danger py-2 small mb-3">
+                <div
+                    role="alert"
+                    className="alert alert-danger py-2 small mb-3"
+                >
                     {error}
                 </div>
             )}
