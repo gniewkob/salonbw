@@ -1,4 +1,4 @@
-import { isPublicPage } from '@/components/Layout';
+import { isPublicPage } from '@/utils/isPublicPage';
 
 describe('isPublicPage', () => {
     it('does not mark /services-old as public', () => {
