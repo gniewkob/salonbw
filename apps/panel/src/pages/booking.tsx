@@ -256,38 +256,48 @@ export default function BookingPage() {
 }
 
 function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
-    const labels: Record<Step, string> = {
-        service: 'Wybierz usługę',
-        slot: 'Wybierz termin',
-        confirm: 'Potwierdzenie',
-    };
-    const stepNr: Record<Step, number> = {
-        service: 1,
-        slot: 2,
-        confirm: 3,
-    };
+    const steps: { key: Step; label: string }[] = [
+        { key: 'service', label: 'Usługa' },
+        { key: 'slot', label: 'Termin' },
+        { key: 'confirm', label: 'Potwierdzenie' },
+    ];
+    const currentIdx = steps.findIndex((s) => s.key === step);
 
     return (
-        <div className="d-flex align-items-center gap-3 mb-4">
+        <div className="mb-4">
+            <div className="salonbw-steps mb-3">
+                {steps.map((s, i) => (
+                    <>
+                        <div
+                            key={s.key}
+                            className={`salonbw-step${s.key === step ? ' active' : ''}`}
+                        >
+                            <span className="salonbw-step__number">
+                                {i + 1}
+                            </span>
+                            <span className="salonbw-step__label">
+                                {s.label}
+                            </span>
+                        </div>
+                        {i < steps.length - 1 && (
+                            <div
+                                key={`div-${s.key}`}
+                                className="salonbw-step__divider"
+                            />
+                        )}
+                    </>
+                ))}
+            </div>
             {onBack && (
                 <button
                     type="button"
-                    className="btn btn-link p-0 text-muted"
+                    className="btn btn-link p-0 text-muted small"
                     onClick={onBack}
-                    aria-label="Wróć"
                 >
-                    ←
+                    ← Wróć
                 </button>
             )}
-            <div>
-                <p
-                    className="text-muted mb-0"
-                    style={{ fontSize: '0.75rem', letterSpacing: '0.08em' }}
-                >
-                    Krok {stepNr[step]} z 3
-                </p>
-                <h2 className="mb-0">{labels[step]}</h2>
-            </div>
+            {currentIdx === 0 && <h2 className="mb-0">Wybierz usługę</h2>}
         </div>
     );
 }
@@ -331,37 +341,14 @@ function ServiceStep({
         <div className="d-flex flex-column gap-3">
             {Object.entries(byCategory).map(([cat, svcs]) => (
                 <div key={cat}>
-                    <p
-                        className="text-muted mb-2"
-                        style={{
-                            fontSize: '0.7rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
-                        }}
-                    >
-                        {cat}
-                    </p>
+                    <p className="booking-category-label">{cat}</p>
                     <div className="d-flex flex-column gap-2">
                         {svcs.map((svc) => (
                             <button
                                 key={svc.id}
                                 type="button"
-                                className="d-flex justify-content-between align-items-center border rounded p-3 bg-white text-start w-100"
-                                style={{
-                                    cursor: 'pointer',
-                                    transition: 'border-color 0.15s',
-                                }}
+                                className="booking-service-card"
                                 onClick={() => onSelect(svc)}
-                                onMouseEnter={(e) => {
-                                    (
-                                        e.currentTarget as HTMLButtonElement
-                                    ).style.borderColor = 'var(--salon-brand)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    (
-                                        e.currentTarget as HTMLButtonElement
-                                    ).style.borderColor = '';
-                                }}
                             >
                                 <div>
                                     <strong className="d-block">
@@ -376,14 +363,7 @@ function ServiceStep({
                                         {svc.duration} min
                                     </span>
                                 </div>
-                                <span
-                                    style={{
-                                        color: 'var(--salon-accent)',
-                                        fontWeight: 600,
-                                        whiteSpace: 'nowrap',
-                                        marginLeft: '1rem',
-                                    }}
-                                >
+                                <span className="booking-service-price">
                                     {formatPrice(svc.price, svc.priceType)}
                                 </span>
                             </button>
@@ -467,14 +447,7 @@ function SlotStep({
                     {Object.entries(slotsByEmployee).map(
                         ([employeeName, empSlots]) => (
                             <div key={employeeName}>
-                                <p
-                                    className="text-muted mb-2"
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.08em',
-                                    }}
-                                >
+                                <p className="booking-category-label">
                                     {employeeName}
                                 </p>
                                 <div className="d-flex flex-wrap gap-2">
@@ -482,9 +455,8 @@ function SlotStep({
                                         <button
                                             key={slot.time}
                                             type="button"
-                                            className="btn btn-outline-secondary btn-sm"
+                                            className="btn btn-outline-secondary btn-sm booking-slot-btn"
                                             onClick={() => onSelect(slot)}
-                                            style={{ minWidth: 64 }}
                                         >
                                             {formatTime(slot.time)}
                                         </button>
@@ -594,21 +566,7 @@ function SuccessScreen({
 }) {
     return (
         <div className="text-center py-4">
-            <div
-                style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '50%',
-                    background: 'var(--salon-brand)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 1.5rem',
-                    fontSize: '1.5rem',
-                }}
-            >
-                ✓
-            </div>
+            <div className="booking-success-icon">✓</div>
             <h2 className="mb-1">Wizyta zarezerwowana!</h2>
             {service && slot && (
                 <p className="text-muted mb-0">
