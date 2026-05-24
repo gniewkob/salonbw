@@ -74,23 +74,6 @@ body.e2e-body {
     color: #7d8790;
 }
 
-.btn-default {
-    background: #fff;
-    border: 1px solid var(--salon-border);
-    color: #4d565e;
-}
-
-.btn-default:hover {
-    background: #f7f8f9;
-}
-
-.btn-xs {
-    padding: 4px 9px;
-    font-size: 12px;
-    line-height: 1.2;
-    border-radius: 2px;
-}
-
 .btn-group {
     display: inline-flex;
     gap: 6px;
@@ -459,16 +442,6 @@ body.e2e-body {
     margin-top: 16px;
 }
 
-.form-group {
-    margin: 0 0 12px;
-}
-
-.control-label {
-    display: block;
-    font-size: 11px;
-    color: #6b7680;
-    margin: 0 0 6px;
-}
 
 .form-control {
     width: 100%;
@@ -3877,41 +3850,6 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     color: #313140;
 }
 
-/* --- SalonBW buttons --- */
-.button {
-    display: inline-block;
-    padding: 4px 10px;
-    font-size: 13px;
-    line-height: 18.2px;
-    color: #56aef0;
-    background: transparent;
-    border: 1px solid transparent;
-    cursor: pointer;
-    text-decoration: none;
-    vertical-align: middle;
-    box-sizing: border-box;
-}
-.button.button-blue {
-    color: #fff;
-    background: #56aef0;
-    border-color: #56aef0;
-}
-.button:hover {
-    text-decoration: none;
-    opacity: 0.9;
-}
-/* Edit-style button (outlined) used in detail toolbars */
-.buttons-row .button {
-    color: #56aef0;
-    background: #fff;
-    border: 1px solid #56aef0;
-    padding: 4px 10px;
-}
-.buttons-row .button.button-blue {
-    color: #fff;
-    background: #56aef0;
-}
-
 /* --- table-bordered (list tables) --- */
 .table-bordered {
     border-collapse: collapse;
@@ -4187,10 +4125,6 @@ h2.column_row small {
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
 }
-.button-small {
-    padding: 2px 8px;
-    font-size: 12px;
-}
 .box-rows .link-more {
     display: block;
     margin-top: 8px;
@@ -4404,15 +4338,7 @@ body.settings-dashboard-landing .main-content > .inner {
     margin-bottom: 14px;
 }
 
-.settings-detail-layout .simple_form.edit_branch .control-label {
-    color: #686868;
-    flex: 0 0 118px;
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 18px;
-    margin: 0;
-    padding-top: 7px;
-}
+
 
 .settings-detail-layout .simple_form.edit_branch .controls {
     align-items: flex-start;
@@ -4631,15 +4557,7 @@ body.settings-dashboard-landing .main-content > .inner {
     margin-bottom: 14px;
 }
 
-.settings-calendar-page .simple_form.edit_setting .control-label {
-    color: #686868;
-    flex: 0 0 180px;
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 18px;
-    margin: 0;
-    padding-top: 7px;
-}
+
 
 .settings-calendar-page .simple_form.edit_setting .controls {
     align-items: flex-start;
@@ -4890,16 +4808,7 @@ body.settings-dashboard-landing .main-content > .inner {
     margin-bottom: 14px;
 }
 
-.settings-customer-group-form-page
-    .simple_form.new_physical_customers_group
-    .control-label {
-    color: #686868;
-    flex: 0 0 118px;
-    font-size: 13px;
-    line-height: 18px;
-    margin: 0;
-    padding-top: 7px;
-}
+
 
 .settings-customer-group-form-page
     .simple_form.new_physical_customers_group
@@ -5630,12 +5539,6 @@ body.settings-dashboard-landing .main-content > .inner {
         display: block;
     }
 
-    .settings-detail-layout .simple_form.edit_branch .control-label {
-        display: block;
-        margin-bottom: 6px;
-        padding-top: 0;
-    }
-
     .settings-detail-layout .simple_form.edit_branch .controls {
         display: block;
     }
@@ -5647,12 +5550,6 @@ body.settings-dashboard-landing .main-content > .inner {
 
     .settings-calendar-page .simple_form.edit_setting li.control-group {
         display: block;
-    }
-
-    .settings-calendar-page .simple_form.edit_setting .control-label {
-        display: block;
-        margin-bottom: 6px;
-        padding-top: 0;
     }
 
     .settings-calendar-page .simple_form.edit_setting .controls {
@@ -5699,13 +5596,6 @@ body.settings-dashboard-landing .main-content > .inner {
         display: block;
     }
 
-    .settings-customer-group-form-page
-        .simple_form.new_physical_customers_group
-        .control-label {
-        display: block;
-        margin-bottom: 6px;
-        padding-top: 0;
-    }
 }
 
 /* Body-scoped (1,3,1) overrides the body#extension .main-content .inner (1,2,1) rule.
@@ -6341,19 +6231,6 @@ body.e2e-extension .main-content .inner.extension_info {
 
 .data-protection-limits__input {
     width: 90px;
-}
-
-.button-link {
-    background: none;
-    border: 0;
-    color: #2575ed;
-    cursor: pointer;
-    padding: 0;
-}
-
-.button-link[disabled] {
-    color: #8ca7d9;
-    cursor: default;
 }
 
 /* ========================================
@@ -7736,15 +7613,6 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     color: #28a745;
 }
 
-/* Secondary button (Versum button-default = outlined .button) */
-.button-default {
-    color: #6c757d;
-    background: transparent;
-    border: 1px solid #dee2e6;
-}
-.button.button-default:hover {
-    background: #f8f9fa;
-}
 
 /* Sprite icon placeholders (fallback when sprite sheet not available) */
 .icon.sprite-pencil::before {
