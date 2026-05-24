@@ -26,7 +26,7 @@ export default function WarehouseUsagePlannedPage() {
                     </Link>
                     <Link
                         href="/use/history"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                     >
                         historia zużycia
                     </Link>

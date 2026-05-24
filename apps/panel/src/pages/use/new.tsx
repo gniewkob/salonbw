@@ -97,13 +97,13 @@ export default function WarehouseUsageCreatePage() {
                 <>
                     <Link
                         href="/use/history"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                     >
                         historia zużycia
                     </Link>
                     <Link
                         href="/use/planned"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                     >
                         planowane zużycie
                     </Link>
@@ -161,7 +161,7 @@ export default function WarehouseUsageCreatePage() {
                                 <td>
                                     <button
                                         type="button"
-                                        className="btn btn-default btn-xs"
+                                        className="btn btn-outline-secondary btn-xs"
                                         onClick={() => removeLine(index)}
                                     >
                                         usuń
@@ -176,7 +176,7 @@ export default function WarehouseUsageCreatePage() {
             <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-outline-secondary btn-xs"
                     onClick={addLine}
                 >
                     dodaj kolejną pozycję

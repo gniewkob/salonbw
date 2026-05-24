@@ -342,7 +342,7 @@ export default function EditProductPage() {
                                 </button>
                                 <Link
                                     href={`/products/${productId ?? ''}`}
-                                    className="btn btn-default btn-xs"
+                                    className="btn btn-outline-secondary btn-xs"
                                 >
                                     anuluj
                                 </Link>

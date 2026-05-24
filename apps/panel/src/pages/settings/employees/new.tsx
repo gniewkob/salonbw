@@ -135,7 +135,7 @@ export default function SettingsEmployeeNewPage() {
                                     </button>
                                     <Link
                                         href="/settings/employees"
-                                        className="btn btn-default"
+                                        className="btn btn-outline-secondary"
                                         style={{ marginLeft: 8 }}
                                     >
                                         Anuluj

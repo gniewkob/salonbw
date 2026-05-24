@@ -55,7 +55,10 @@ export default function InventoryDetailsPage() {
             inventoryActive
             actions={
                 <div className="btn-group">
-                    <Link href="/inventory" className="btn btn-default btn-xs">
+                    <Link
+                        href="/inventory"
+                        className="btn btn-outline-secondary btn-xs"
+                    >
                         historia inwentaryzacji
                     </Link>
                     {data?.status === 'draft' ? (

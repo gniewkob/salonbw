@@ -73,7 +73,7 @@ export default function TipsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-default salonbw-toolbar-btn"
+                        className="btn btn-outline-secondary salonbw-toolbar-btn"
                         onClick={() => window.print()}
                     >
                         🖨️

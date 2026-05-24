@@ -69,7 +69,7 @@ export default function CashRegisterPage() {
                     <div className="salonbw-actions">
                         <button
                             type="button"
-                            className="salonbw-toolbar-btn btn btn-default"
+                            className="salonbw-toolbar-btn btn btn-outline-secondary"
                             onClick={() => navigateDate('prev')}
                         >
                             ◀
@@ -83,7 +83,7 @@ export default function CashRegisterPage() {
                         />
                         <button
                             type="button"
-                            className="salonbw-toolbar-btn btn btn-default"
+                            className="salonbw-toolbar-btn btn btn-outline-secondary"
                             onClick={() => navigateDate('next')}
                         >
                             ▶
@@ -116,7 +116,7 @@ export default function CashRegisterPage() {
                     <button type="button" className="btn btn-primary">
                         dodaj wpływ (kasa przyjmie)
                     </button>
-                    <button type="button" className="btn btn-default">
+                    <button type="button" className="btn btn-outline-secondary">
                         dodaj wypływ (kasa wypłaci)
                     </button>
                 </div>

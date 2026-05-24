@@ -100,7 +100,7 @@ export default function SettingsEmployeeCommissionsPage() {
                                             <td style={{ textAlign: 'right' }}>
                                                 <Link
                                                     href={`/settings/employees/commissions/${emp.id}`}
-                                                    className="btn btn-xs btn-default"
+                                                    className="btn btn-xs btn-outline-secondary"
                                                 >
                                                     edytuj
                                                 </Link>

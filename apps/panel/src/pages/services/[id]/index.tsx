@@ -679,7 +679,7 @@ export default function ServiceDetailsPage() {
                                                             <td>
                                                                 <button
                                                                     type="button"
-                                                                    className="btn btn-default btn-sm"
+                                                                    className="btn btn-outline-secondary btn-sm"
                                                                     disabled={
                                                                         deleteComment.isPending
                                                                     }

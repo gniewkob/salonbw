@@ -909,7 +909,7 @@ function NewServicePageContent() {
                             <div className="services-create-control">
                                 <div className="services-create-gallery">
                                     <div className="services-create-panel services-create-upload-panel">
-                                        <label className="btn btn-default services-create-upload-trigger">
+                                        <label className="btn btn-outline-secondary services-create-upload-trigger">
                                             dodaj zdjęcia
                                             <input
                                                 type="file"
@@ -1389,7 +1389,7 @@ function NewServicePageContent() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-default"
+                                    className="btn btn-outline-secondary"
                                     onClick={() => setShowDurationModal(false)}
                                 >
                                     anuluj

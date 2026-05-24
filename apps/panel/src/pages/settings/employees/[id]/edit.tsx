@@ -141,7 +141,7 @@ export default function SettingsEmployeeEditPage() {
                                                     ? `/settings/employees/${id}`
                                                     : '/settings/employees'
                                             }
-                                            className="btn btn-default"
+                                            className="btn btn-outline-secondary"
                                             style={{ marginLeft: 8 }}
                                         >
                                             Anuluj

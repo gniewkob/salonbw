@@ -103,7 +103,7 @@ function renderCategoryRows(
                         <span className="btn-group">
                             <button
                                 type="button"
-                                className="btn btn-xs btn-default"
+                                className="btn btn-xs btn-outline-secondary"
                                 disabled={index === 0}
                                 onClick={() =>
                                     options.onMove(category.id, 'up')
@@ -113,7 +113,7 @@ function renderCategoryRows(
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-xs btn-default"
+                                className="btn btn-xs btn-outline-secondary"
                                 disabled={index === siblings - 1}
                                 onClick={() =>
                                     options.onMove(category.id, 'down')
@@ -126,19 +126,19 @@ function renderCategoryRows(
                         <span className="btn-group">
                             <Link
                                 href={`/settings/categories/${category.id}/edit`}
-                                className="btn btn-xs btn-default"
+                                className="btn btn-xs btn-outline-secondary"
                             >
                                 edytuj
                             </Link>
                             <Link
                                 href={`/settings/categories/new?parent_id=${category.id}`}
-                                className="btn btn-xs btn-default"
+                                className="btn btn-xs btn-outline-secondary"
                             >
                                 dodaj podkategorię
                             </Link>
                             <button
                                 type="button"
-                                className="btn btn-xs btn-default"
+                                className="btn btn-xs btn-outline-secondary"
                                 disabled={options.deletingId === category.id}
                                 onClick={() => options.onDelete(category)}
                             >
@@ -240,7 +240,7 @@ export default function SettingsCategoriesPage() {
                             <div className="actions mb-2">
                                 <Link
                                     href="/products"
-                                    className="btn btn-default"
+                                    className="btn btn-outline-secondary"
                                     style={{ marginRight: 8 }}
                                 >
                                     lista produktów
@@ -270,7 +270,7 @@ export default function SettingsCategoriesPage() {
                                         </button>
                                         <button
                                             type="button"
-                                            className="btn btn-default"
+                                            className="btn btn-outline-secondary"
                                             style={{ marginLeft: 8 }}
                                             onClick={cancelReorder}
                                         >
@@ -280,7 +280,7 @@ export default function SettingsCategoriesPage() {
                                 ) : (
                                     <button
                                         type="button"
-                                        className="btn btn-default"
+                                        className="btn btn-outline-secondary"
                                         onClick={beginReorder}
                                     >
                                         zmień układ

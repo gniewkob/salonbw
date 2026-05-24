@@ -41,7 +41,7 @@ export default function WarehouseOrderDetailsPage() {
                 <div className="btn-group">
                     <Link
                         href="/orders/history"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                     >
                         historia zamówień
                     </Link>
@@ -60,7 +60,7 @@ export default function WarehouseOrderDetailsPage() {
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-default btn-xs"
+                                className="btn btn-outline-secondary btn-xs"
                                 onClick={() =>
                                     orderId
                                         ? void cancelMutation.mutateAsync(
@@ -90,7 +90,7 @@ export default function WarehouseOrderDetailsPage() {
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-default btn-xs"
+                                className="btn btn-outline-secondary btn-xs"
                                 onClick={() =>
                                     orderId
                                         ? void cancelMutation.mutateAsync(

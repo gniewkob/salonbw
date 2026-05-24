@@ -29,7 +29,10 @@ export default function InventoryNewPage() {
             activeTab="products"
             inventoryActive
             actions={
-                <Link href="/inventory" className="btn btn-default btn-xs">
+                <Link
+                    href="/inventory"
+                    className="btn btn-outline-secondary btn-xs"
+                >
                     wróć do historii
                 </Link>
             }
@@ -72,7 +75,10 @@ export default function InventoryNewPage() {
                         ? 'tworzenie...'
                         : 'utwórz inwentaryzację'}
                 </button>
-                <Link href="/inventory" className="btn btn-default btn-xs">
+                <Link
+                    href="/inventory"
+                    className="btn btn-outline-secondary btn-xs"
+                >
                     anuluj
                 </Link>
             </div>

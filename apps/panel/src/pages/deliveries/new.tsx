@@ -119,7 +119,7 @@ export default function WarehouseDeliveryCreatePage() {
             actions={
                 <Link
                     href="/deliveries/history"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-outline-secondary btn-xs"
                 >
                     historia dostaw
                 </Link>
@@ -216,7 +216,7 @@ export default function WarehouseDeliveryCreatePage() {
                                     <td>
                                         <button
                                             type="button"
-                                            className="btn btn-default btn-xs"
+                                            className="btn btn-outline-secondary btn-xs"
                                             onClick={() => removeLine(index)}
                                         >
                                             usuń
@@ -231,14 +231,14 @@ export default function WarehouseDeliveryCreatePage() {
                 <div className="warehouse-actions-row">
                     <button
                         type="button"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                         onClick={addLine}
                     >
                         dodaj kolejną pozycję
                     </button>
                     <Link
                         href="/products/new"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                     >
                         dodaj nowy produkt
                     </Link>
@@ -272,7 +272,7 @@ export default function WarehouseDeliveryCreatePage() {
                             </select>
                             <Link
                                 href="/suppliers"
-                                className="btn btn-default btn-xs"
+                                className="btn btn-outline-secondary btn-xs"
                             >
                                 dodaj dostawcę
                             </Link>
@@ -320,13 +320,13 @@ export default function WarehouseDeliveryCreatePage() {
                 <div className="warehouse-entry-actions">
                     <Link
                         href="/deliveries/history"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                     >
                         anuluj
                     </Link>
                     <button
                         type="button"
-                        className="btn btn-default btn-xs"
+                        className="btn btn-outline-secondary btn-xs"
                         onClick={() => void saveDraftAndExit()}
                         disabled={
                             createDelivery.isPending ||

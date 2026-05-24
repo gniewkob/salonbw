@@ -111,7 +111,7 @@ export default function SettingsEmployeeDetailPage() {
                                                     ? `/settings/employees/${id}/events-history`
                                                     : '#'
                                             }
-                                            className="btn btn-default"
+                                            className="btn btn-outline-secondary"
                                         >
                                             Historia wizyt
                                         </Link>
