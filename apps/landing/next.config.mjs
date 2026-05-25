@@ -101,28 +101,27 @@ const nextConfig = {
             },
         ];
 
-        // Dev-only: avoid stale HTML on dev host by disabling HTML caching.
-        if (process.env.NEXT_HTML_NOSTORE === 'true') {
-            rules.push({
-                source: '/:path*',
-                has: [
-                    {
-                        type: 'header',
-                        key: 'host',
-                        value: 'dev\\.salon-bw\\.pl',
-                    },
-                    { type: 'header', key: 'accept', value: 'text/html.*' },
-                ],
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'no-store, no-cache, must-revalidate',
-                    },
-                    { key: 'Pragma', value: 'no-cache' },
-                    { key: 'Expires', value: '0' },
-                ],
-            });
-        }
+        // Dev host always gets no-store HTML headers — scoped to dev.salon-bw.pl
+        // so production domain is unaffected.
+        rules.push({
+            source: '/:path*',
+            has: [
+                {
+                    type: 'header',
+                    key: 'host',
+                    value: 'dev\\.salon-bw\\.pl',
+                },
+                { type: 'header', key: 'accept', value: 'text/html.*' },
+            ],
+            headers: [
+                {
+                    key: 'Cache-Control',
+                    value: 'no-store, no-cache, must-revalidate',
+                },
+                { key: 'Pragma', value: 'no-cache' },
+                { key: 'Expires', value: '0' },
+            ],
+        });
 
         // Optionally disable HTML caching on panel host as well.
         if (process.env.NEXT_PANEL_HTML_NOSTORE === 'true') {
