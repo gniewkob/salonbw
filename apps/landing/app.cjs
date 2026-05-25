@@ -116,13 +116,14 @@ function linkStaticAssets() {
     if (!fs.existsSync(staticSource)) return;
     try {
         fs.mkdirSync(standaloneNextDir, { recursive: true });
-        if (!fs.existsSync(staticTarget)) {
-            try {
-                fs.symlinkSync(staticSource, staticTarget, 'junction');
-            } catch {
-                // fallback: copy
-                fs.cpSync(staticSource, staticTarget, { recursive: true });
-            }
+        // Always recreate — stale symlink from a previous deploy would point to
+        // the renamed .next.prev.* directory and serve old/missing chunk hashes.
+        try { fs.rmSync(staticTarget, { recursive: true, force: true }); } catch {}
+        try {
+            fs.symlinkSync(staticSource, staticTarget, 'junction');
+        } catch {
+            // fallback: copy
+            fs.cpSync(staticSource, staticTarget, { recursive: true });
         }
         const relative = path.relative(standaloneNextDir, staticSource) || '.';
         if (process.env.NODE_DEBUG?.includes('standalone')) {
