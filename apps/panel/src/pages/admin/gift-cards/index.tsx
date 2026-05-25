@@ -67,7 +67,6 @@ export default function GiftCardsManagementPage() {
     });
     const [adjustForm, setAdjustForm] = useState({ amount: 0, notes: '' });
 
-
     const handleOpenCreateModal = () => {
         setCreateForm({
             initialValue: 100,

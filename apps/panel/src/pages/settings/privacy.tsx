@@ -58,7 +58,6 @@ export default function PrivacySettingsPage() {
         }
     };
 
-
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
             <SalonShell role={role}>

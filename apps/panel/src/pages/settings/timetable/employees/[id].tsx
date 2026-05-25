@@ -443,7 +443,6 @@ export default function SettingsTimetableEmployeeDetailPage() {
         }
     };
 
-
     if (employeeLoading || timetablesLoading) {
         return (
             <RouteGuard roles={['admin']} permission="nav:settings">

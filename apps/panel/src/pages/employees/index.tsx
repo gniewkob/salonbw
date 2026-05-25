@@ -42,7 +42,6 @@ export default function EmployeesPage() {
     }, [data, rows.length]);
     useSetSecondaryNav(secondaryNav);
 
-
     const columns: Column<Employee>[] = [
         { header: 'ID', accessor: 'id' },
         { header: 'Pracownik', accessor: 'fullName' },

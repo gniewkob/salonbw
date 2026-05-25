@@ -59,7 +59,6 @@ export default function CommunicationPage() {
     const secondaryNav = useMemo(() => <CommunicationNav />, []);
     useSetSecondaryNav(secondaryNav);
 
-
     const loading = kind === 'sms' ? smsHistory.loading : emailHistory.loading;
     const data = kind === 'sms' ? smsHistory.data : emailHistory.data;
 

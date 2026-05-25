@@ -116,7 +116,6 @@ export default function MassCommunicationPage() {
         setIsSending(false);
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonShell role={role}>

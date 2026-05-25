@@ -1644,7 +1644,6 @@ export default function CalendarPage() {
         });
     };
 
-
     return (
         <RouteGuard
             permission="nav:calendar"

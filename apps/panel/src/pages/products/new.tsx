@@ -43,7 +43,6 @@ export default function NewProductPage() {
             }));
         };
 
-
     const handleSubmit = async () => {
         setApiError(null);
         if (!form.name.trim()) return;

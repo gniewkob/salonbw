@@ -282,7 +282,6 @@ export default function SettingsTimetableBranchPage() {
         }
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

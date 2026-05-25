@@ -142,7 +142,6 @@ export default function CustomerDetailPage() {
     // Push custom sidebar to persistent outer shell (must be before any early return)
     useSetSecondaryNav(secondaryNav);
 
-
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}

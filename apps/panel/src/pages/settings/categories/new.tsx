@@ -75,7 +75,6 @@ export default function SettingsCategoriesNewPage() {
         void router.push('/settings/categories');
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

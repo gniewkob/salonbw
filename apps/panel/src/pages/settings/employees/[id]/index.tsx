@@ -50,7 +50,6 @@ export default function SettingsEmployeeDetailPage() {
 
     const { data: employee, isLoading } = useEmployee(id);
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

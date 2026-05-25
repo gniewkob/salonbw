@@ -6,7 +6,6 @@ import EmailList from '@/components/EmailList';
 export default function EmailsPage() {
     const { role } = useAuth();
 
-
     return (
         <RouteGuard permission="nav:emails">
             <SalonShell role={role}>

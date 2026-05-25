@@ -118,7 +118,6 @@ const mainTiles: SettingsTile[] = [
 export default function SettingsPage() {
     const { role } = useAuth();
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

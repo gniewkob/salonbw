@@ -105,7 +105,6 @@ export default function SettingsCategoriesEditPage() {
         void router.push('/settings/categories');
     };
 
-
     if (isLoading) {
         return (
             <RouteGuard roles={['admin']} permission="nav:settings">

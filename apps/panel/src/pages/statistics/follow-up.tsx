@@ -205,7 +205,6 @@ export default function FollowUpStatisticsPage() {
         };
     }, [apiFetch, from, role, to, refreshToken, rangeError]);
 
-
     const hasData = summary !== null && !error;
 
     return (

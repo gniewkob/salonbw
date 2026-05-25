@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function HelpContactRoute() {
     const { role } = useAuth();
 
-
     return (
         <RouteGuard>
             <SalonShell role={role}>

@@ -125,7 +125,6 @@ export default function CustomerEditPage() {
     // Must be called before any early return (Rules of Hooks)
     useSetSecondaryNav(secondaryNav);
 
-
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}

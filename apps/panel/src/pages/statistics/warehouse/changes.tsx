@@ -89,7 +89,6 @@ export default function WarehouseChangesPage() {
         };
     }, [apiFetch, dateRange]);
 
-
     const chartData =
         stats?.byType.map((t) => ({
             name: TYPE_LABELS[t.type] || t.type,

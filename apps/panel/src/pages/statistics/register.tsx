@@ -52,7 +52,6 @@ export default function CashRegisterPage() {
 
     const summary = data ? calculateSummary(data.entries) : null;
 
-
     return (
         <SalonShell role={role}>
             <div className="salonbw-page" data-testid="cash-register-page">

@@ -52,7 +52,6 @@ export default function SettingsEmployeeCommissionsPage() {
     const { data: employeesRaw, loading: isLoading } = useEmployees();
     const employees = employeesRaw ?? [];
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>
