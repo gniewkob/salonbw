@@ -22,11 +22,16 @@
   - FinalizationModal: usageMaterials (from recipe) + usageItems (manual) + deduction — all wired
   - AppointmentDrawer: formula UI, internalNote, client contact (tel:/mailto:), visit history
   - Online pending badge in topbar — implemented
+- **Dead code cleanup — COMPLETE (2026-05-25)** (PR #1352)
+  - `if (!role) return null` guards removed from 74 panel pages
+  - `docs/VERSUM_CLONE_PROGRESS.md` REFERENCJE section cleaned
+  - `app.cjs` (landing): static symlink always recreated on start
+  - `next.config.mjs` (landing): `dev.salon-bw.pl` HTML always no-cache (fixes stale-hash 404 after deploy)
 - **Faza D — Panel UI Kit Sprint 1 — COMPLETE** (2026-03-18)
 
 ## In-progress work
 
-- Branch: master (latest commit `6f906e29`)
+- Branch: master (latest commit `2005d85b` via PR #1352)
 - Panel production: `d9e72660` | Next.js 15.5.10 — DEPLOYED (2026-03-28); **needs redeploy** for PRs #1345–#1349
 - API production: `e56e39ff` | 2026-03-24 — **STALE**: missing online_pending migration, available-slots endpoint, formula fix
 - Landing production: `e74331ee` | Next.js 15.5.10 | 2026-02-26 — unchanged
