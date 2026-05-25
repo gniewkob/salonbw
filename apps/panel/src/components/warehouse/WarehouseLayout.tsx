@@ -67,7 +67,6 @@ export default function WarehouseLayout({
     children,
 }: WarehouseLayoutProps) {
     const { role } = useAuth();
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">

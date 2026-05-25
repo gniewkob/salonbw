@@ -159,9 +159,10 @@ Dla aktualnego, operacyjnego statusu projektu używaj:
 
 ## 🔗 REFERENCJE
 
-- **Analiza Versum:** `docs/VERSUM_DETAILED_ANALYSIS.md`
 - **Architektura sesji:** `docs/SESSION_ARCHITECTURE.md`
-- **Kompletny przewodnik:** `docs/VERSUM_CLONE_COMPLETE_GUIDE.md`
+- **Standard klonowania:** `docs/VERSUM_CLONING_STANDARD.md`
+
+> Uwaga: `VERSUM_DETAILED_ANALYSIS.md`, `VERSUM_CLONE_COMPLETE_GUIDE.md` — usunięte 2026-03-17 (repo cleanup).
 
 ---
 

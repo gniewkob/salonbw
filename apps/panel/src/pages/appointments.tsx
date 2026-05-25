@@ -169,7 +169,6 @@ export default function AppointmentsPage() {
         [apiFetch, toast, queryClient],
     );
 
-    if (!role) return null;
 
     if (role !== 'admin' && role !== 'receptionist') {
         return (

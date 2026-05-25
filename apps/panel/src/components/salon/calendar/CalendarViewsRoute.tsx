@@ -74,7 +74,6 @@ export default function CalendarViewsRoute({ nestedCreate = false }: Props) {
         }
     }, [editIdParam, editingView, nestedCreate, views]);
 
-    if (!role) return null;
 
     const handleCloseManage = () => {
         void router.push('/calendar');

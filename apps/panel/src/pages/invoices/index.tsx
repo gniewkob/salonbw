@@ -13,7 +13,6 @@ export default function InvoicesPage() {
     const myInvoices = useMyInvoices({ enabled: Boolean(role) && !isAdmin });
     const { data, loading } = isAdmin ? allInvoices : myInvoices;
 
-    if (!role) return null;
 
     return (
         <RouteGuard permission="nav:invoices">

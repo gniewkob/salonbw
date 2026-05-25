@@ -24,7 +24,6 @@ const branchNavItems = [
 export default function BranchSettingsPage() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">

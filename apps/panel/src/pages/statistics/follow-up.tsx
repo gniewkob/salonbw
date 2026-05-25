@@ -174,7 +174,6 @@ export default function FollowUpStatisticsPage() {
     const rangeError = useMemo(() => validateDateRange(from, to), [from, to]);
 
     useEffect(() => {
-        if (!role) return;
         if (rangeError) {
             setLoading(false);
             setError(false);
@@ -206,7 +205,6 @@ export default function FollowUpStatisticsPage() {
         };
     }, [apiFetch, from, role, to, refreshToken, rangeError]);
 
-    if (!role) return null;
 
     const hasData = summary !== null && !error;
 

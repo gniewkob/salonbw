@@ -172,7 +172,6 @@ export default function ActivityLogRoute({
         setPageInput(String(page));
     }, [page]);
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">

@@ -31,7 +31,6 @@ export default function ServicesStatisticsPage() {
         }
     };
 
-    if (!role) return null;
 
     const totalRevenue =
         data?.reduce((sum, item) => sum + item.revenue, 0) || 0;

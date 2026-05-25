@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function HelpContactRoute() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     return (
         <RouteGuard>

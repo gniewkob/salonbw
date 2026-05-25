@@ -142,7 +142,6 @@ export default function MessagesPage() {
         });
     };
 
-    if (!role) return null;
 
     return (
         <SalonShell role={role}>

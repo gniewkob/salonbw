@@ -58,7 +58,6 @@ export default function SettingsEmployeeEditPage() {
         void router.push(`/settings/employees/${id}`);
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">

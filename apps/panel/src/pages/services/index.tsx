@@ -18,7 +18,6 @@ interface ServiceWithDisplay extends Service {
 export default function ServicesPage() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     return (
         <SalonShell role={role}>

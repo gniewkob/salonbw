@@ -64,7 +64,6 @@ export default function EditProductPage() {
         });
     }, [product]);
 
-    if (!role) return null;
 
     const handleSubmit = async () => {
         if (!productId || !form.name.trim()) return;

@@ -48,7 +48,6 @@ export default function ReviewsPage() {
         );
     }, [data]);
 
-    if (!role) return null;
 
     const columns: Column<Row>[] = [
         { header: 'ID', accessor: 'id' },

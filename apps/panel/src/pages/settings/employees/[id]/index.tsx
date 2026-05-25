@@ -50,7 +50,6 @@ export default function SettingsEmployeeDetailPage() {
 
     const { data: employee, isLoading } = useEmployee(id);
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">

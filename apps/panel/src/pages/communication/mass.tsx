@@ -116,7 +116,6 @@ export default function MassCommunicationPage() {
         setIsSending(false);
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">

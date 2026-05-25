@@ -6,7 +6,6 @@ import NotificationList from '@/components/NotificationList';
 export default function NotificationsPage() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     return (
         <RouteGuard>

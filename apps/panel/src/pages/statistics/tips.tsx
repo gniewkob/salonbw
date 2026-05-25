@@ -31,7 +31,6 @@ export default function TipsPage() {
         }
     };
 
-    if (!role) return null;
 
     const totalTips = data?.reduce((sum, item) => sum + item.tipsTotal, 0) || 0;
     const totalCount =

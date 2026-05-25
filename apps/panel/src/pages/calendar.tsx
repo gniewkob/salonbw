@@ -1644,7 +1644,6 @@ export default function CalendarPage() {
         });
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard

@@ -52,7 +52,6 @@ export default function CashRegisterPage() {
 
     const summary = data ? calculateSummary(data.entries) : null;
 
-    if (!role) return null;
 
     return (
         <SalonShell role={role}>
