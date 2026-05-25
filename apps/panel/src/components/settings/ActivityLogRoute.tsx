@@ -172,7 +172,6 @@ export default function ActivityLogRoute({
         setPageInput(String(page));
     }, [page]);
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
             <SalonShell role={role}>

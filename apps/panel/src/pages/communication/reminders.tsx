@@ -41,7 +41,6 @@ export default function RemindersPage() {
         setIsTriggering(false);
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonShell role={role}>

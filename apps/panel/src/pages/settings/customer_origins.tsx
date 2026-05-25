@@ -33,7 +33,6 @@ export default function SettingsCustomerOriginsPage() {
     const systemOrigins = (origins ?? []).filter((o) => o.isSystem);
     const customOrigins = (origins ?? []).filter((o) => !o.isSystem);
 
-
     const handleAdd = () => {
         const name = addingName.trim();
         if (!name) return;

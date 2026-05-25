@@ -58,7 +58,6 @@ export default function SettingsEmployeeEditPage() {
         void router.push(`/settings/employees/${id}`);
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

@@ -21,7 +21,6 @@ export default function ClientsStatisticsPage() {
         return value.toFixed(2).replace('.', ',') + ' zł';
     };
 
-
     return (
         <SalonShell role={role}>
             <div className="salonbw-page" data-testid="clients-statistics-page">

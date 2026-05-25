@@ -72,7 +72,6 @@ export default function CustomersReturning() {
         };
     }, [apiFetch, dateRange]);
 
-
     const pieData = stats
         ? [
               { name: 'Nowi', value: stats.newClients, color: COLORS.new },

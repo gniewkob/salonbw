@@ -48,7 +48,6 @@ export default function ReviewsPage() {
         );
     }, [data]);
 
-
     const columns: Column<Row>[] = [
         { header: 'ID', accessor: 'id' },
         { header: 'Appointment', accessor: 'appointmentDisplay' },

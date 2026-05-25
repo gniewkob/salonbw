@@ -215,7 +215,6 @@ export default function SettingsCategoriesPage() {
         ]);
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

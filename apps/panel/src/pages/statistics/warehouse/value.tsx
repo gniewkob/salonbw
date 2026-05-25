@@ -83,7 +83,6 @@ export default function WarehouseValuePage() {
         };
     }, [apiFetch, refreshToken]);
 
-
     const pieData =
         stats?.byCategory.map((c, index) => ({
             name: c.category,

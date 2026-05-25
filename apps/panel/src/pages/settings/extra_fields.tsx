@@ -145,7 +145,6 @@ export default function SettingsExtraFieldsPage() {
         });
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

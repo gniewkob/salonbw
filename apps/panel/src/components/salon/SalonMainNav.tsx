@@ -6,7 +6,7 @@ import type { SalonModule } from './navigation';
 interface SalonMainNavProps {
     modules: SalonModule[];
     activeModule: SalonModule;
-    role: Role;
+    role: Role | null;
 }
 
 // Badge counts for each module (in real app, these would come from API)

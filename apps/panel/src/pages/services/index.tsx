@@ -18,7 +18,6 @@ interface ServiceWithDisplay extends Service {
 export default function ServicesPage() {
     const { role } = useAuth();
 
-
     return (
         <SalonShell role={role}>
             <ServicesPageContent role={role} />
@@ -26,7 +25,7 @@ export default function ServicesPage() {
     );
 }
 
-function ServicesPageContent({ role }: { role: Role }) {
+function ServicesPageContent({ role }: { role: Role | null }) {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);

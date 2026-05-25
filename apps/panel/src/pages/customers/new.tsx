@@ -132,7 +132,6 @@ export default function NewCustomerPage() {
     // Must be called before any early return (Rules of Hooks)
     useSetSecondaryNav(secondaryNav);
 
-
     const onSubmit = async (e: FormEvent) => {
         e.preventDefault();
         let created;

@@ -75,7 +75,6 @@ function formatCategoryLabel(name: string, depth: number) {
 export default function NewServicePage() {
     const { role } = useAuth();
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
             <SalonShell role={role}>

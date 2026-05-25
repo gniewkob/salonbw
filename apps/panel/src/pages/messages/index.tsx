@@ -142,7 +142,6 @@ export default function MessagesPage() {
         });
     };
 
-
     return (
         <SalonShell role={role}>
             <SalonBreadcrumbs

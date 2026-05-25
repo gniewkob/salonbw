@@ -48,7 +48,6 @@ export default function SettingsEmployeeEventsHistoryPage() {
         limit: 50,
     });
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>

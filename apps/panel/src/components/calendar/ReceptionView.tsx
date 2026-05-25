@@ -45,7 +45,13 @@ type StatusConfig = {
     actions: string[];
 };
 
-type ActionKey = 'confirm' | 'start' | 'finalize' | 'cancel' | 'no_show' | 'reject';
+type ActionKey =
+    | 'confirm'
+    | 'start'
+    | 'finalize'
+    | 'cancel'
+    | 'no_show'
+    | 'reject';
 
 const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     online_pending: {
@@ -309,10 +315,12 @@ export default function ReceptionView({
         {} as Record<string, number>,
     );
     const pendingAppointments = sortedAppointments.filter(
-        (a) => a.status === 'online_pending' || a.status === 'rescheduled_pending',
+        (a) =>
+            a.status === 'online_pending' || a.status === 'rescheduled_pending',
     );
     const regularAppointments = sortedAppointments.filter(
-        (a) => a.status !== 'online_pending' && a.status !== 'rescheduled_pending',
+        (a) =>
+            a.status !== 'online_pending' && a.status !== 'rescheduled_pending',
     );
     const toFinalizeCount = appointments.filter(
         (appointment) => appointment.status === 'in_progress',
@@ -396,12 +404,12 @@ export default function ReceptionView({
                             type="button"
                             className="btn btn-sm btn-outline-secondary"
                             onClick={() => {
-                                const customerAlertSeverity =
-                                    appointment.client?.id
-                                        ? customerAlertSeverityByCustomerId[
-                                              appointment.client.id
-                                          ]
-                                        : undefined;
+                                const customerAlertSeverity = appointment.client
+                                    ?.id
+                                    ? customerAlertSeverityByCustomerId[
+                                          appointment.client.id
+                                      ]
+                                    : undefined;
                                 trackReceptionAction({
                                     action: 'open_appointment_drawer',
                                     appointmentId: appointment.id,

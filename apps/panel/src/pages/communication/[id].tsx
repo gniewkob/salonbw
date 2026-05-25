@@ -304,7 +304,6 @@ export default function CommunicationDetailPage() {
         }
     };
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonShell role={role}>

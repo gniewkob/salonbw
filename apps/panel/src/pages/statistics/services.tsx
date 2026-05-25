@@ -31,7 +31,6 @@ export default function ServicesStatisticsPage() {
         }
     };
 
-
     const totalRevenue =
         data?.reduce((sum, item) => sum + item.revenue, 0) || 0;
     const totalBookings =

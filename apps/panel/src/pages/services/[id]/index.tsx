@@ -207,7 +207,6 @@ export default function ServiceDetailsPage() {
         }
     };
 
-
     return (
         <SalonShell role={role || 'admin'}>
             <div

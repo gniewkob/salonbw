@@ -27,7 +27,6 @@ const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
 export default function DashboardPage() {
     const { role } = useAuth();
 
-
     const renderDashboard = () => {
         switch (role) {
             case 'client':

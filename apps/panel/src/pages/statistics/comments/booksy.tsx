@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function BooksyCommentsPage() {
     const { role } = useAuth();
 
-
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
             <SalonShell role={role}>

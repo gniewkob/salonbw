@@ -11,7 +11,7 @@ import { resolveSalonModule, visibleSalonModules } from './navigation';
 import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
 
 interface SalonShellProps {
-    role: Role;
+    role: Role | null;
     children: ReactNode;
 }
 

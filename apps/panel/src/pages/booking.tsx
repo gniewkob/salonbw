@@ -171,7 +171,6 @@ export default function BookingPage() {
         }
     };
 
-
     return (
         <RouteGuard roles={['client']}>
             <SalonShell role={role}>

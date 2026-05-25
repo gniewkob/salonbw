@@ -290,7 +290,6 @@ export default function CommissionsPage() {
         totalCommission: toNumber(totals.totalCommission),
     };
 
-
     return (
         <SalonShell role={role}>
             <div
