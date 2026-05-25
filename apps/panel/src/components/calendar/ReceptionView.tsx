@@ -45,9 +45,19 @@ type StatusConfig = {
     actions: string[];
 };
 
-type ActionKey = 'confirm' | 'start' | 'finalize' | 'cancel' | 'no_show';
+type ActionKey = 'confirm' | 'start' | 'finalize' | 'cancel' | 'no_show' | 'reject';
 
 const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
+    online_pending: {
+        label: 'Oczekuje na potwierdzenie',
+        className: 'salonbw-status--online-pending',
+        actions: ['confirm', 'reject'],
+    },
+    rescheduled_pending: {
+        label: 'Zmiana terminu — oczekuje',
+        className: 'salonbw-status--rescheduled-pending',
+        actions: ['confirm', 'reject'],
+    },
     scheduled: {
         label: 'Zaplanowana',
         className: 'salonbw-status--scheduled',
@@ -82,6 +92,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
 
 const ACTION_LABELS: Record<string, { label: string; className: string }> = {
     confirm: { label: 'Potwierdź', className: 'btn-success' },
+    reject: { label: 'Odrzuć', className: 'btn-outline-danger' },
     start: { label: 'Rozpocznij', className: 'btn-primary' },
     finalize: { label: 'Finalizuj', className: 'btn-success' },
     cancel: { label: 'Anuluj', className: 'btn-danger' },
@@ -224,6 +235,9 @@ export default function ReceptionView({
                         customerAlertSeverity,
                     });
                     break;
+                case 'reject':
+                    await cancelAppointment.mutateAsync(appointment.id);
+                    break;
                 default:
                     console.warn('Unknown action:', action);
             }
@@ -294,6 +308,12 @@ export default function ReceptionView({
         },
         {} as Record<string, number>,
     );
+    const pendingAppointments = sortedAppointments.filter(
+        (a) => a.status === 'online_pending' || a.status === 'rescheduled_pending',
+    );
+    const regularAppointments = sortedAppointments.filter(
+        (a) => a.status !== 'online_pending' && a.status !== 'rescheduled_pending',
+    );
     const toFinalizeCount = appointments.filter(
         (appointment) => appointment.status === 'in_progress',
     ).length;
@@ -303,6 +323,146 @@ export default function ReceptionView({
     const overdueCount = appointments.filter((appointment) =>
         isOverdueAppointmentAt(appointment, now),
     ).length;
+
+    const renderAppointmentRow = (appointment: Appointment) => {
+        const status = appointment.status || 'scheduled';
+        const config = STATUS_CONFIG[status] || STATUS_CONFIG.scheduled;
+        const isRowPending = pendingAction?.appointmentId === appointment.id;
+        const isOverdue = isOverdueAppointmentAt(appointment, now);
+        const alertSeverity = hasCustomerAlert(
+            appointment,
+            customerAlertSeverityByCustomerId,
+        )
+            ? appointment.client?.id
+                ? customerAlertSeverityByCustomerId[appointment.client.id]
+                : undefined
+            : undefined;
+        const isInProgress = status === 'in_progress';
+
+        return (
+            <tr
+                key={appointment.id}
+                className={`${isOverdue ? 'salonbw-reception-row--overdue' : ''} ${isRowPending ? 'salonbw-reception-row--processing' : ''}`}
+            >
+                <td className="salonbw-reception-time">
+                    <div className="d-flex flex-column gap-1">
+                        <span>{formatTime(appointment.startTime)}</span>
+                        {isInProgress ? (
+                            <span className="badge text-bg-success">
+                                Do finalizacji
+                            </span>
+                        ) : null}
+                        {isOverdue ? (
+                            <span className="badge text-bg-danger">
+                                Opóźniona
+                            </span>
+                        ) : null}
+                    </div>
+                </td>
+                <td>
+                    <div className="salonbw-reception-client">
+                        <strong>
+                            {appointment.client?.name || 'Brak klienta'}
+                        </strong>
+                        {appointment.client?.phone && (
+                            <div className="salonbw-reception-phone">
+                                📞 {appointment.client.phone}
+                            </div>
+                        )}
+                        {alertSeverity ? (
+                            <span
+                                className={`badge mt-1 ${
+                                    alertSeverity === 'danger'
+                                        ? 'text-bg-danger'
+                                        : alertSeverity === 'warning'
+                                          ? 'text-bg-warning'
+                                          : 'text-bg-info'
+                                }`}
+                            >
+                                Alert CRM
+                            </span>
+                        ) : null}
+                    </div>
+                </td>
+                <td>{appointment.service?.name || '-'}</td>
+                <td>{appointment.employee?.name || '-'}</td>
+                <td>
+                    {formatDuration(appointment.startTime, appointment.endTime)}
+                </td>
+                <td>{getStatusBadge(status)}</td>
+                <td>
+                    <div className="salonbw-reception-actions">
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => {
+                                const customerAlertSeverity =
+                                    appointment.client?.id
+                                        ? customerAlertSeverityByCustomerId[
+                                              appointment.client.id
+                                          ]
+                                        : undefined;
+                                trackReceptionAction({
+                                    action: 'open_appointment_drawer',
+                                    appointmentId: appointment.id,
+                                    customerId: appointment.client?.id,
+                                    customerAlertSeverity,
+                                    source: 'reception_view',
+                                });
+                                onActionTracked?.({
+                                    action: 'open_appointment_drawer',
+                                    appointmentId: appointment.id,
+                                    customerAlertSeverity,
+                                });
+                                onOpenAppointment?.(appointment.id);
+                            }}
+                            disabled={isRowPending}
+                        >
+                            Otwórz
+                        </button>
+                        {readOnly
+                            ? null
+                            : config.actions.map((action) => {
+                                  const actionConfig = ACTION_LABELS[action];
+                                  const isActionPending =
+                                      pendingAction?.appointmentId ===
+                                          appointment.id &&
+                                      pendingAction.action === action;
+                                  return (
+                                      <button
+                                          key={action}
+                                          type="button"
+                                          className={`btn btn-sm ${actionConfig.className}`}
+                                          onClick={() =>
+                                              void handleAction(
+                                                  appointment,
+                                                  action as ActionKey,
+                                              )
+                                          }
+                                          disabled={isRowPending}
+                                      >
+                                          {isActionPending
+                                              ? 'Trwa...'
+                                              : actionConfig.label}
+                                      </button>
+                                  );
+                              })}
+                        {(readOnly || config.actions.length === 0) && (
+                            <span className="salonbw-reception-no-actions">
+                                -
+                            </span>
+                        )}
+                    </div>
+                    {actionErrorByAppointmentId[appointment.id] ? (
+                        <div className="small text-danger mt-1">
+                            Wystąpił błąd podczas aktualizacji wizyty:{' '}
+                            {actionErrorByAppointmentId[appointment.id]}
+                        </div>
+                    ) : null}
+                </td>
+            </tr>
+        );
+    };
 
     return (
         <div className="salonbw-reception-view">
@@ -316,6 +476,16 @@ export default function ReceptionView({
                         Wszystkich
                     </span>
                 </div>
+                {pendingAppointments.length > 0 && (
+                    <div className="salonbw-reception-summary__item salonbw-reception-summary__item--pending">
+                        <span className="salonbw-reception-summary__value">
+                            {pendingAppointments.length}
+                        </span>
+                        <span className="salonbw-reception-summary__label">
+                            Do potwierdzenia
+                        </span>
+                    </div>
+                )}
                 <div className="salonbw-reception-summary__item salonbw-reception-summary__item--scheduled">
                     <span className="salonbw-reception-summary__value">
                         {byStatus.scheduled || 0}
@@ -374,6 +544,38 @@ export default function ReceptionView({
                 </div>
             </div>
 
+            {/* Pending confirmations section */}
+            {pendingAppointments.length > 0 && (
+                <div className="salonbw-reception-pending-section">
+                    <div className="salonbw-reception-pending-section__header">
+                        <span className="badge text-bg-warning me-2">
+                            {pendingAppointments.length}
+                        </span>
+                        Wymagają potwierdzenia
+                    </div>
+                    <div className="salonbw-reception-table-wrap">
+                        <table className="salonbw-reception-table">
+                            <thead>
+                                <tr>
+                                    <th>Godzina</th>
+                                    <th>Klient</th>
+                                    <th>Usługa</th>
+                                    <th>Pracownik</th>
+                                    <th>Czas</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pendingAppointments.map((appointment) =>
+                                    renderAppointmentRow(appointment),
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
             {/* Appointments Table */}
             <div className="salonbw-reception-table-wrap">
                 <table className="salonbw-reception-table">
@@ -389,188 +591,9 @@ export default function ReceptionView({
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedAppointments.map((appointment) => {
-                            const status = appointment.status || 'scheduled';
-                            const config =
-                                STATUS_CONFIG[status] ||
-                                STATUS_CONFIG.scheduled;
-                            const isRowPending =
-                                pendingAction?.appointmentId === appointment.id;
-                            const isOverdue = isOverdueAppointmentAt(
-                                appointment,
-                                now,
-                            );
-                            const alertSeverity = hasCustomerAlert(
-                                appointment,
-                                customerAlertSeverityByCustomerId,
-                            )
-                                ? appointment.client?.id
-                                    ? customerAlertSeverityByCustomerId[
-                                          appointment.client.id
-                                      ]
-                                    : undefined
-                                : undefined;
-                            const isInProgress = status === 'in_progress';
-
-                            return (
-                                <tr
-                                    key={appointment.id}
-                                    className={`${isOverdue ? 'salonbw-reception-row--overdue' : ''} ${isRowPending ? 'salonbw-reception-row--processing' : ''}`}
-                                >
-                                    <td className="salonbw-reception-time">
-                                        <div className="d-flex flex-column gap-1">
-                                            <span>
-                                                {formatTime(
-                                                    appointment.startTime,
-                                                )}
-                                            </span>
-                                            {isInProgress ? (
-                                                <span className="badge text-bg-success">
-                                                    Do finalizacji
-                                                </span>
-                                            ) : null}
-                                            {isOverdue ? (
-                                                <span className="badge text-bg-danger">
-                                                    Opóźniona
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="salonbw-reception-client">
-                                            <strong>
-                                                {appointment.client?.name ||
-                                                    'Brak klienta'}
-                                            </strong>
-                                            {appointment.client?.phone && (
-                                                <div className="salonbw-reception-phone">
-                                                    📞{' '}
-                                                    {appointment.client.phone}
-                                                </div>
-                                            )}
-                                            {alertSeverity ? (
-                                                <span
-                                                    className={`badge mt-1 ${
-                                                        alertSeverity ===
-                                                        'danger'
-                                                            ? 'text-bg-danger'
-                                                            : alertSeverity ===
-                                                                'warning'
-                                                              ? 'text-bg-warning'
-                                                              : 'text-bg-info'
-                                                    }`}
-                                                >
-                                                    Alert CRM
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                    </td>
-                                    <td>{appointment.service?.name || '-'}</td>
-                                    <td>{appointment.employee?.name || '-'}</td>
-                                    <td>
-                                        {formatDuration(
-                                            appointment.startTime,
-                                            appointment.endTime,
-                                        )}
-                                    </td>
-                                    <td>{getStatusBadge(status)}</td>
-                                    <td>
-                                        <div className="salonbw-reception-actions">
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-outline-secondary"
-                                                onClick={() => {
-                                                    const customerAlertSeverity =
-                                                        appointment.client?.id
-                                                            ? customerAlertSeverityByCustomerId[
-                                                                  appointment
-                                                                      .client.id
-                                                              ]
-                                                            : undefined;
-                                                    trackReceptionAction({
-                                                        action: 'open_appointment_drawer',
-                                                        appointmentId:
-                                                            appointment.id,
-                                                        customerId:
-                                                            appointment.client
-                                                                ?.id,
-                                                        customerAlertSeverity,
-                                                        source: 'reception_view',
-                                                    });
-                                                    onActionTracked?.({
-                                                        action: 'open_appointment_drawer',
-                                                        appointmentId:
-                                                            appointment.id,
-                                                        customerAlertSeverity,
-                                                    });
-                                                    onOpenAppointment?.(
-                                                        appointment.id,
-                                                    );
-                                                }}
-                                                disabled={isRowPending}
-                                            >
-                                                Otwórz
-                                            </button>
-                                            {readOnly
-                                                ? null
-                                                : config.actions.map(
-                                                      (action) => {
-                                                          const actionConfig =
-                                                              ACTION_LABELS[
-                                                                  action
-                                                              ];
-                                                          const isActionPending =
-                                                              pendingAction?.appointmentId ===
-                                                                  appointment.id &&
-                                                              pendingAction.action ===
-                                                                  action;
-                                                          return (
-                                                              <button
-                                                                  key={action}
-                                                                  type="button"
-                                                                  className={`btn btn-sm ${actionConfig.className}`}
-                                                                  onClick={() =>
-                                                                      void handleAction(
-                                                                          appointment,
-                                                                          action as ActionKey,
-                                                                      )
-                                                                  }
-                                                                  disabled={
-                                                                      isRowPending
-                                                                  }
-                                                              >
-                                                                  {isActionPending
-                                                                      ? 'Trwa...'
-                                                                      : actionConfig.label}
-                                                              </button>
-                                                          );
-                                                      },
-                                                  )}
-                                            {(readOnly ||
-                                                config.actions.length ===
-                                                    0) && (
-                                                <span className="salonbw-reception-no-actions">
-                                                    -
-                                                </span>
-                                            )}
-                                        </div>
-                                        {actionErrorByAppointmentId[
-                                            appointment.id
-                                        ] ? (
-                                            <div className="small text-danger mt-1">
-                                                Wystąpił błąd podczas
-                                                aktualizacji wizyty:{' '}
-                                                {
-                                                    actionErrorByAppointmentId[
-                                                        appointment.id
-                                                    ]
-                                                }
-                                            </div>
-                                        ) : null}
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                        {regularAppointments.map((appointment) =>
+                            renderAppointmentRow(appointment),
+                        )}
                     </tbody>
                 </table>
             </div>
