@@ -48,6 +48,8 @@ const standaloneAppDir = fs.existsSync(serverMonorepo)
     : standaloneDir;
 const standaloneNextDir = path.join(standaloneAppDir, '.next');
 const staticTarget = path.join(standaloneNextDir, 'static');
+const serverPagesSource = path.join(__dirname, '.next', 'server', 'pages');
+const serverPagesTarget = path.join(standaloneNextDir, 'server', 'pages');
 const publicSource = path.join(__dirname, 'public');
 const publicTarget = path.join(standaloneAppDir, 'public');
 const isStandaloneRuntime = fs.existsSync(server);
@@ -158,12 +160,32 @@ function linkPublicAssets() {
     }
 }
 
+function syncServerPages() {
+    if (!isStandaloneRuntime) return;
+    if (!fs.existsSync(serverPagesSource)) return;
+    try {
+        fs.mkdirSync(path.dirname(serverPagesTarget), { recursive: true });
+        if (fs.existsSync(serverPagesTarget)) {
+            fs.rmSync(serverPagesTarget, { recursive: true, force: true });
+        }
+        fs.cpSync(serverPagesSource, serverPagesTarget, { recursive: true });
+        if (process.env.NODE_DEBUG?.includes('standalone')) {
+            console.log('[standalone] synced server pages ->', serverPagesTarget);
+        }
+    } catch (error) {
+        console.warn(
+            `Unable to sync prerendered pages into standalone bundle (${error.message}).`,
+        );
+    }
+}
+
 configureModuleResolution();
 linkDependency('sharp');
 linkDependency('next');
 syncNextDist();
 linkStaticAssets();
 linkPublicAssets();
+syncServerPages();
 
 // Initialize webcrypto polyfill if needed
 if (typeof globalThis.crypto === 'undefined') {
