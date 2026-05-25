@@ -90,7 +90,6 @@ const cards: ExtensionCard[] = [
 export default function ExtensionPage() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     const rows: Array<ExtensionCard[]> = [];
     for (let i = 0; i < cards.length; i += 2) {

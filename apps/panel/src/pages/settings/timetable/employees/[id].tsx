@@ -443,7 +443,6 @@ export default function SettingsTimetableEmployeeDetailPage() {
         }
     };
 
-    if (!role) return null;
 
     if (employeeLoading || timetablesLoading) {
         return (

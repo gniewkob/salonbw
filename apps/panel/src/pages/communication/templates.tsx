@@ -130,7 +130,6 @@ export default function TemplatesPage() {
     const getChannelIcon = (channel: MessageChannel) =>
         CHANNELS.find((c) => c.value === channel)?.icon || '📄';
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">

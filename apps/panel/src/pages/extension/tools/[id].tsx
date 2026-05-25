@@ -186,7 +186,6 @@ const TOOL_ALIASES: Record<string, string> = {
 export default function ExtensionToolPage() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">

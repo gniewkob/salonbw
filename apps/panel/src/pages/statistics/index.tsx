@@ -78,7 +78,6 @@ const formatDuration = (minutes: number): string => {
 export default function StatisticsPage() {
     const { role } = useAuth();
 
-    if (!role) return null;
 
     return (
         <SalonShell role={role}>

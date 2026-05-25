@@ -80,7 +80,6 @@ export default function WorkTimeReportPage() {
         };
     }, [apiFetch, dateRange]);
 
-    if (!role) return null;
 
     const selectedData = data.find((d) => d.employeeId === selectedEmployee);
 

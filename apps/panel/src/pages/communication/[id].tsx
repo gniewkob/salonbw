@@ -304,7 +304,6 @@ export default function CommunicationDetailPage() {
         }
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">

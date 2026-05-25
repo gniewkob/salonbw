@@ -171,7 +171,6 @@ export default function BookingPage() {
         }
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['client']}>

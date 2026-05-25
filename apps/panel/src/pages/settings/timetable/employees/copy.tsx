@@ -181,7 +181,6 @@ export default function SettingsTimetableEmployeesCopyPage() {
         }
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">

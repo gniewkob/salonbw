@@ -84,7 +84,6 @@ export default function SettingsTradesNewPage() {
     const [isActive, setIsActive] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    if (!role) return null;
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();

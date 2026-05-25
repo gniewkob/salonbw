@@ -92,7 +92,6 @@ export default function EmployeeActivityPage() {
         return `${hours} h ${mins} min`;
     };
 
-    if (!role) return null;
     const rows = data?.employees?.length
         ? data.employees
         : [

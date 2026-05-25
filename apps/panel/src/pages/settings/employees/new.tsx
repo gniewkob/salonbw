@@ -51,7 +51,6 @@ export default function SettingsEmployeeNewPage() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
 
-    if (!role) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

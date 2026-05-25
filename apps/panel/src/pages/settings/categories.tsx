@@ -215,7 +215,6 @@ export default function SettingsCategoriesPage() {
         ]);
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">

@@ -58,7 +58,6 @@ export default function PrivacySettingsPage() {
         }
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>

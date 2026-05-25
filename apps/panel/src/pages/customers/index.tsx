@@ -278,7 +278,6 @@ export default function ClientsPage() {
     const fromItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
     const toItem = Math.min(page * pageSize, totalCount);
 
-    if (!role) return null;
 
     return (
         <RouteGuard

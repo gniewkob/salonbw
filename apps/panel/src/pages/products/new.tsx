@@ -43,7 +43,6 @@ export default function NewProductPage() {
             }));
         };
 
-    if (!role) return null;
 
     const handleSubmit = async () => {
         setApiError(null);

@@ -21,7 +21,6 @@ export default function ClientsStatisticsPage() {
         return value.toFixed(2).replace('.', ',') + ' zł';
     };
 
-    if (!role) return null;
 
     return (
         <SalonShell role={role}>

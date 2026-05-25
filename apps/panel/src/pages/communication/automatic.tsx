@@ -129,7 +129,6 @@ export default function AutomaticMessagesPage() {
         form.trigger as AutomaticMessageTrigger,
     );
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">

@@ -73,7 +73,6 @@ export default function ClientOriginsPage() {
         };
     }, [apiFetch, dateRange]);
 
-    if (!role) return null;
 
     const pieData =
         stats?.origins.map((o, index) => ({

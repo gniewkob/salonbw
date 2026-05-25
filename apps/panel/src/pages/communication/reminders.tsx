@@ -41,7 +41,6 @@ export default function RemindersPage() {
         setIsTriggering(false);
     };
 
-    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">

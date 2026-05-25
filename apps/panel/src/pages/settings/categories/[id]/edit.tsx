@@ -105,7 +105,6 @@ export default function SettingsCategoriesEditPage() {
         void router.push('/settings/categories');
     };
 
-    if (!role) return null;
 
     if (isLoading) {
         return (

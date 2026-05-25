@@ -72,7 +72,6 @@ export default function CustomersReturning() {
         };
     }, [apiFetch, dateRange]);
 
-    if (!role) return null;
 
     const pieData = stats
         ? [
