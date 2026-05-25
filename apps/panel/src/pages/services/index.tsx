@@ -25,7 +25,7 @@ export default function ServicesPage() {
     );
 }
 
-function ServicesPageContent({ role }: { role: Role }) {
+function ServicesPageContent({ role }: { role: Role | null }) {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);

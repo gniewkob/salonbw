@@ -1,12 +1,10 @@
 import Link from 'next/link';
-import type { Role } from '@/types';
 import SalonIcon from './SalonIcon';
 import type { SalonModule } from './navigation';
 
 interface SalonMainNavProps {
     modules: SalonModule[];
     activeModule: SalonModule;
-    role: Role;
 }
 
 // Badge counts for each module (in real app, these would come from API)

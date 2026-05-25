@@ -11,7 +11,7 @@ import { resolveSalonModule, visibleSalonModules } from './navigation';
 import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
 
 interface SalonShellProps {
-    role: Role;
+    role: Role | null;
     children: ReactNode;
 }
 
@@ -95,7 +95,6 @@ export default function SalonShell({ role, children }: SalonShellProps) {
             <div className="main-container" id="main-container">
                 <div className="sidebar hidden-print" id="sidebar">
                     <SalonMainNav
-                        role={role}
                         modules={modules}
                         activeModule={activeModule}
                     />
