@@ -215,7 +215,7 @@ Critical environment variables (see `docs/ENV.md` for comprehensive list):
 ### Frontend (`.env.local` in `apps/landing` and `apps/panel`)
 - `NEXT_PUBLIC_API_URL`: Backend URL (e.g., `http://localhost:3001` or `https://api.salon-bw.pl`)
 - `NEXT_PUBLIC_SENTRY_DSN`: Sentry error tracking
-- `NEXT_PUBLIC_LOG_TOKEN`: Must match backend `CLIENT_LOG_TOKEN` for log forwarding
+- `CLIENT_LOG_TOKEN`: Server-only token injected by frontend `/api/logs/client` proxy routes
 - `NEXT_PUBLIC_ENABLE_DEBUG`: Enables debug mode with `X-Request-Id` header correlation
 - `INSTAGRAM_ACCESS_TOKEN`: Server-side Instagram token for gallery page
 
@@ -290,7 +290,7 @@ Husky enforces lint and typecheck before commits. Lint-staged auto-fixes on stag
 
 ### Logging
 - **Backend**: Pino logger with Loki transport (configured via `LOKI_URL` and `LOKI_BASIC_AUTH`)
-- **Frontend**: Client errors forwarded to backend `/logs/client` endpoint (requires `NEXT_PUBLIC_LOG_TOKEN`)
+- **Frontend**: Client errors forwarded through same-origin `/api/logs/client` proxies (server injects `CLIENT_LOG_TOKEN`)
 - **Correlation**: `X-Request-Id` header links frontend requests to backend logs and Sentry traces
 
 ### Metrics

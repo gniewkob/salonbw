@@ -349,7 +349,7 @@ describe('AppointmentsService', () => {
             'Nie mogę przyjść',
         );
 
-        expect(result?.status).toBe(AppointmentStatus.Scheduled);
+        expect(result?.status).toBe(AppointmentStatus.OnlinePending);
         expect(logActionSpy).toHaveBeenCalledWith(
             users[0],
             LogAction.APPOINTMENT_CANCELLATION_REQUESTED,
@@ -425,7 +425,7 @@ describe('AppointmentsService', () => {
             'fail',
         );
         const appt = await service.findOne(id);
-        expect(appt?.status).toBe(AppointmentStatus.Scheduled);
+        expect(appt?.status).toBe(AppointmentStatus.OnlinePending);
     });
 
     it('should complete an appointment even if logging fails', async () => {

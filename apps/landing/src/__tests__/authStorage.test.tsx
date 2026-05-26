@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 jest.mock('@/api/auth', () => ({
     login: jest.fn().mockResolvedValue({ accessToken: 'a', refreshToken: 'r' }),
     register: jest.fn(),
+    logout: jest.fn().mockResolvedValue(undefined),
     refreshToken: jest.fn(),
     REFRESH_TOKEN_KEY: 'refreshToken',
     setLogoutCallback: jest.fn(),
@@ -40,7 +41,8 @@ describe('AuthContext localStorage', () => {
         });
         await waitFor(() => expect(result.current.user).toEqual(profile));
         expect(localStorage.getItem('jwtToken')).toBe('a');
-        expect(localStorage.getItem('refreshToken')).toBe('r');
+        // Refresh token is intentionally httpOnly-cookie only (not localStorage).
+        expect(localStorage.getItem('refreshToken')).toBeNull();
 
         await act(async () => {
             await result.current.logout();

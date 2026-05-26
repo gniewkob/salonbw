@@ -85,8 +85,8 @@ Operational SMTP note (mydevil, 2026-05-23):
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | ➖ | `0.1` | Sampling rate for Sentry tracing. |
 | `NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE` | ➖ | `0` | Fraction of sessions recorded with Sentry Replay for passive RUM. |
 | `NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE` | ➖ | `1` | Fraction of sessions recorded when an error occurs. Keep ≤1. |
-| `NEXT_PUBLIC_ENABLE_CLIENT_LOGS` | ➖ | `true` | Toggles `logClientError` forwarding to `/logs/client`. Useful to disable in preview builds. |
-| `NEXT_PUBLIC_LOG_TOKEN` | ➖ | *(unset)* | Token that must match backend `CLIENT_LOG_TOKEN` to accept client log posts. |
+| `NEXT_PUBLIC_ENABLE_CLIENT_LOGS` | ➖ | `true` | Toggles `logClientError` forwarding to same-origin `/api/logs/client` proxy routes. Useful to disable in preview builds. |
+| `CLIENT_LOG_TOKEN` | ➖ | *(unset)* | Server-only token injected by frontend API proxy routes as `x-log-token` for backend `/logs/client` ingest. Must never use `NEXT_PUBLIC_*`. |
 | `NEXT_IMAGE_UNOPTIMIZED` | ➖ | `true` | When `true`, disables Next image optimizer (avoid 400s on shared hosts). Set to `false` to enable optimization. |
 | `NEXT_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `dev.salon-bw.pl` to prevent stale pages. Build-time flag. |
 | `NEXT_PANEL_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `panel.salon-bw.pl`. Build-time flag. |

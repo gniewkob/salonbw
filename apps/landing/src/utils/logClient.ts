@@ -10,9 +10,9 @@ const ENABLED =
     process.env.NEXT_PUBLIC_ENABLE_CLIENT_LOGS !== 'false' &&
     typeof window !== 'undefined';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '/api';
-const CLIENT_LOG_URL = `${API_BASE}/logs/client`;
-const LOG_TOKEN = process.env.NEXT_PUBLIC_LOG_TOKEN;
+// Always forward through same-origin API route so the log token can stay
+// server-side in CLIENT_LOG_TOKEN (never bundled into public JS).
+const CLIENT_LOG_URL = '/api/logs/client';
 
 export async function logClientError(payload: ClientLogPayload) {
     if (!ENABLED) return;
@@ -21,7 +21,6 @@ export async function logClientError(payload: ClientLogPayload) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(LOG_TOKEN ? { 'x-log-token': LOG_TOKEN } : {}),
             },
             body: JSON.stringify({
                 ...payload,

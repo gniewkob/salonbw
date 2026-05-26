@@ -360,7 +360,6 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
-          NEXT_PUBLIC_LOG_TOKEN: ${{ secrets.NEXT_PUBLIC_LOG_TOKEN }}
 
       - name: Read BUILD_ID (frontend)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
@@ -465,7 +464,6 @@ jobs:
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
           NEXT_PANEL_HTML_NOSTORE: "true"
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NEXT_PUBLIC_LOG_TOKEN: ${{ secrets.NEXT_PUBLIC_LOG_TOKEN }}
 
       - name: Ensure remote directories exist (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
@@ -1063,18 +1061,48 @@ jobs:
           rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
             vetternkraft@s0.mydevil.net:${{ steps.dest.outputs.remote_path_api }}/.env.generated
 
-          # Merge server-side to avoid moving SMTP credentials through CI/CD.
+          # Merge server-side to preserve all existing runtime keys in .env.
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
           touch .env
-          # Preserve existing SMTP_* lines (if any) from the server-managed .env.
-          SMTP_LINES="$(grep -E '^SMTP_' .env || true)"
-          cat .env.generated > .env.new
-          if [ -n "$SMTP_LINES" ]; then
-            printf "\n%s\n" "$SMTP_LINES" >> .env.new
-          fi
+          # Replace only keys present in .env.generated; keep all other existing keys.
+          awk -F= '
+            function trim(s) {
+              sub(/^[[:space:]]+/, "", s);
+              sub(/[[:space:]]+$/, "", s);
+              return s;
+            }
+            NR == FNR {
+              if ($0 ~ /^[[:space:]]*#/ || $0 !~ /=/) next;
+              key = trim($1);
+              generated[key] = $0;
+              order[++generatedCount] = key;
+              next;
+            }
+            {
+              if ($0 ~ /^[[:space:]]*#/ || $0 !~ /=/) {
+                print $0;
+                next;
+              }
+              key = trim($1);
+              if (key in generated) {
+                print generated[key];
+                seen[key] = 1;
+              } else {
+                print $0;
+              }
+            }
+            END {
+              for (i = 1; i <= generatedCount; i++) {
+                key = order[i];
+                if (!(key in seen)) {
+                  print generated[key];
+                }
+              }
+            }
+          ' .env.generated .env > .env.new
           mv .env.new .env
           rm -f .env.generated
           chmod 600 .env

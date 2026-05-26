@@ -87,8 +87,9 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
   - `FRONTEND_URL=https://dev.salon-bw.pl,https://panel.salon-bw.pl`
   - `JWT_SECRET` / `JWT_REFRESH_SECRET`
   - `CLIENT_LOG_TOKEN` — shared secret for `/logs/client` ingest; the
-    panel posts client-side error logs through the same-origin proxy at
-    `/api/logs/client` and the proxy injects this header server-side.
+    landing and panel post client-side error logs through same-origin
+    proxies at `/api/logs/client`, and each proxy injects this header
+    server-side.
     Must never live in any `NEXT_PUBLIC_*` env var.
 - Never commit secrets. See `docs/ENV.md`.
 
