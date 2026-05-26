@@ -28,6 +28,7 @@ on:
           - probe
           - public
           - dashboard
+          - admin
       environment:
         description: Deployment environment (staging/production)
         required: true
