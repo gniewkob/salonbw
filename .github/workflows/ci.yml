@@ -248,6 +248,9 @@ jobs:
       - name: Typecheck and build backend
         run: pnpm turbo run typecheck build --filter=salonbw-backend --cache-dir=.turbo
 
+      - name: Test backend
+        run: pnpm --filter salonbw-backend test
+
   security:
     name: Security Audit
     runs-on: ubuntu-latest

@@ -33,7 +33,7 @@ import { CustomerStatisticsService } from './customer-statistics.service';
 import { CustomerMediaService } from './customer-media.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { createReadStream } from 'node:fs';
@@ -427,7 +427,7 @@ export class CustomersController {
                         .extname(file.originalname || '')
                         .toLowerCase()
                         .slice(0, 10);
-                    const name = `${uuidv4()}${ext || ''}`;
+                    const name = `${randomUUID()}${ext || ''}`;
                     req.__storedName = name;
                     cb(null, name);
                 },
@@ -540,7 +540,7 @@ export class CustomersController {
                         .extname(file.originalname || '')
                         .toLowerCase()
                         .slice(0, 10);
-                    const base = uuidv4();
+                    const base = randomUUID();
                     req.__galleryBase = base;
                     cb(null, `${base}${ext || ''}`);
                 },

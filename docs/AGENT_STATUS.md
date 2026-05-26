@@ -1,6 +1,16 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-05-23 (booking role-gating + privacy consent guard + SMTP/Instagram ops fixes)_
+_Last updated: 2026-05-26 (deploy env merge hardening + landing log proxy + backend CI tests)_
+
+Operational note (2026-05-26) — deploy/runtime hardening + CI parity:
+- Hardened API deploy env merge in `.github/workflows/deploy.yml`:
+  - deploy now preserves existing server-side `.env` keys and only overrides keys explicitly generated in CI,
+  - prevents accidental runtime config loss during deploy (including security-related keys).
+- Removed public client-log token flow from frontend build/runtime:
+  - landing moved to same-origin `/api/logs/client` proxy with server-side `CLIENT_LOG_TOKEN` injection,
+  - panel + landing env examples/docs now mark `CLIENT_LOG_TOKEN` as server-only (no `NEXT_PUBLIC_*` token).
+- CI now executes backend tests in `ci.yml` (`pnpm --filter salonbw-backend test`) in addition to lint/typecheck/build.
+- Backend test suite updated to current contracts (consent defaults, formula API signature, appointment status expectations), and customer controller now uses `node:crypto` `randomUUID()` to avoid ESM `uuid` Jest parse break.
 
 Operational note (2026-05-23) — production SMTP + Instagram health remediation:
 - Verified and fixed API SMTP credentials directly on server (`/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`):

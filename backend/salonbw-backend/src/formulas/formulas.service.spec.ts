@@ -8,6 +8,7 @@ import {
     AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
+import { Role } from '../users/role.enum';
 
 describe('FormulasService', () => {
     let service: FormulasService;
@@ -88,7 +89,9 @@ describe('FormulasService', () => {
         const createSpy = jest.spyOn(formulasRepo, 'create');
         const saveSpy = jest.spyOn(formulasRepo, 'save');
         const findOneSpy = jest.spyOn(appointmentsRepo, 'findOne');
-        await expect(service.addToAppointment(1, 1, data)).resolves.toEqual({
+        await expect(
+            service.addToAppointment(1, 1, Role.Employee, data),
+        ).resolves.toEqual({
             id: 1,
             description: 'Cut',
             date: data.date,

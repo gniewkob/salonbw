@@ -30,7 +30,7 @@ describe('Gallery lightbox', () => {
                 ]}
             />,
         );
-        fireEvent.click(screen.getByLabelText('Open image 1'));
+        fireEvent.click(screen.getByLabelText(/one/i));
         expect(screen.getByRole('dialog')).toBeInTheDocument();
         fireEvent.click(screen.getByLabelText('Close'));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('Gallery lightbox', () => {
                 items={[{ id: '1', imageUrl: '/img1.jpg', caption: 'One' }]}
             />,
         );
-        fireEvent.click(screen.getByLabelText('Open image 1'));
+        fireEvent.click(screen.getByLabelText(/one/i));
         const share = screen.getByLabelText('Share image');
         fireEvent.click(share);
         expect(shareMock).toHaveBeenCalled();
@@ -65,7 +65,7 @@ describe('Gallery lightbox', () => {
                 ]}
             />,
         );
-        fireEvent.click(screen.getByLabelText('Open image 1'));
+        fireEvent.click(screen.getByLabelText(/one/i));
         // use keyboard to navigate next/prev
         fireEvent.keyDown(document, { key: 'ArrowRight' });
         fireEvent.keyDown(document, { key: 'ArrowLeft' });
