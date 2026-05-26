@@ -105,6 +105,10 @@ describe('UsersService', () => {
                 phone: dto.phone,
                 commissionBase: dto.commissionBase,
                 receiveNotifications: dto.receiveNotifications,
+                gdprConsent: false,
+                gdprConsentDate: undefined,
+                smsConsent: false,
+                emailConsent: false,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
@@ -151,6 +155,10 @@ describe('UsersService', () => {
                 phone: null,
                 commissionBase: 0,
                 receiveNotifications: true,
+                gdprConsent: false,
+                gdprConsentDate: undefined,
+                smsConsent: false,
+                emailConsent: false,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.commissionBase).toBe(0);

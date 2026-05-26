@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import type {
     Newsletter,
     CreateNewsletterRequest,
@@ -124,10 +125,15 @@ export default function NewsletterEditorModal({
         }
     };
 
+    const sanitizedPreview = useMemo(() => {
+        if (!content) return '';
+        return DOMPurify.sanitize(content, { USE_PROFILES: { html: true } });
+    }, [content]);
+
     if (!isOpen) return null;
 
-    // Simple HTML preview - admin-only feature, content created by admin
-    // Note: In production, sanitize with DOMPurify for additional safety
+    // HTML preview for admin-authored content. Sanitized to block script
+    // execution and inline event handlers in preview.
     const renderHtmlPreview = () => {
         if (channel !== 'email' || !content) return null;
         return (
@@ -138,7 +144,7 @@ export default function NewsletterEditorModal({
                 <div
                     className="bg-white border rounded-3 p-3 overflow-auto"
                     // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{ __html: content }}
+                    dangerouslySetInnerHTML={{ __html: sanitizedPreview }}
                 />
             </div>
         );

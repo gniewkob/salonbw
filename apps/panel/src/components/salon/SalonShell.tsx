@@ -95,7 +95,6 @@ export default function SalonShell({ role, children }: SalonShellProps) {
             <div className="main-container" id="main-container">
                 <div className="sidebar hidden-print" id="sidebar">
                     <SalonMainNav
-                        role={role}
                         modules={modules}
                         activeModule={activeModule}
                     />

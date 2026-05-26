@@ -11,6 +11,10 @@ Operational note (2026-02-14):
 - Remote dependency install steps are retry-guarded in workflow (`3` attempts for panel/landing/api) to absorb transient npm/network failures.
 - Push-triggered deploy follow-up steps are target-aware: landing smoke/log collection only runs when landing is actually deployed, and SSH-based diagnostics are skipped when the SSH setup step did not complete.
 
+Operational note (2026-05-26):
+- API deploy env merge now preserves existing server-side `.env` keys and overrides only keys generated in CI for the current deploy.
+- This prevents accidental deletion of runtime-only settings during deploy (for example logging/auth-related keys not part of the generated subset).
+
 ## 0. Recommended: targeted deploys (GitHub Actions)
 
 Use the workflow inputs to deploy only the app that changed and restart only that domain:

@@ -266,7 +266,7 @@ Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 #### 5.1 Centralised logging stack
 
 - **Ingestion pipeline:** Promtail runs alongside each Node app on mydevil and tails `~/logs/nodejs/<app>/app.log`. It attaches `{service, environment}` labels and pushes to Grafana Loki (`https://observability.salon-bw.pl/loki/api/v1/push`). API logs and frontend client error events both flow through this channel.
-- **Credentials:** Grafana and Loki share the same basic-auth secret as `LOKI_BASIC_AUTH` in production (`docs/ENV.md`). For client-side logs, set `CLIENT_LOG_TOKEN` on the API and `NEXT_PUBLIC_LOG_TOKEN` in each frontend build so the browser can POST to `/logs/client`.
+- **Credentials:** Grafana and Loki share the same basic-auth secret as `LOKI_BASIC_AUTH` in production (`docs/ENV.md`). For client-side logs, set `CLIENT_LOG_TOKEN` on the API; frontends should post via same-origin `/api/logs/client` proxy routes that inject `x-log-token` server-side.
 - **Manual verification:**
 
 ```bash
