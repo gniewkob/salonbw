@@ -6623,14 +6623,17 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     color: #664d03;
     opacity: 0.8;
 }
-.salonbw-status--online_pending {
+.salonbw-status--online_pending,
+.salonbw-status--online-pending {
     background: #fff3cd;
     color: #664d03;
     border: 1px solid #ffc107;
 }
-.salonbw-status--rescheduled_pending {
+.salonbw-status--rescheduled_pending,
+.salonbw-status--rescheduled-pending {
     background: #fde8d8;
     color: #7b3d00;
+    border: 1px solid #fd7e14;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -6736,6 +6739,9 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 .salonbw-reception-summary__item--completed {
     border-left: 3px solid #198754;
 }
+.salonbw-reception-summary__item--pending {
+    border-left: 3px solid #ffc107;
+}
 .salonbw-reception-summary__value {
     font-size: 20px;
     font-weight: 700;
@@ -6745,6 +6751,25 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 .salonbw-reception-summary__label {
     font-size: 11px;
     color: #6c757d;
+}
+.salonbw-reception-pending-section {
+    margin-bottom: 16px;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.salonbw-reception-pending-section__header {
+    background: #fff8e1;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #7b5a00;
+    border-bottom: 1px solid #ffc107;
+    display: flex;
+    align-items: center;
+}
+.salonbw-reception-pending-section .salonbw-reception-table-wrap {
+    border: none;
 }
 .salonbw-reception-table-wrap {
     overflow-x: auto;
