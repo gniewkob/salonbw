@@ -1,6 +1,16 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-05-26 (deploy env merge hardening + landing log proxy + backend CI tests)_
+_Last updated: 2026-05-27 (SMTP runtime sync + Instagram parity)_
+
+Operational note (2026-05-27) — SMTP runtime sync + Instagram parity:
+- Rotated SMTP runtime credential for API (`SMTP_PASSWORD`) on production server and restarted `api.salon-bw.pl`.
+- During first update attempt, API `.env` was accidentally serialized with literal `\\n`; restored `.env` from backup and re-applied only `SMTP_PASSWORD` using line-safe update.
+- Synced `INSTAGRAM_ACCESS_TOKEN` from landing runtime env (`dev.salon-bw.pl/public_nodejs/.env`) to API runtime env (`/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`).
+- Verification after restart:
+  - `GET https://api.salon-bw.pl/healthz` -> `status: ok`,
+  - `services.database: ok`,
+  - `services.smtp: ok`,
+  - `services.instagram: ok`.
 
 Operational note (2026-05-26) — deploy/runtime hardening + CI parity:
 - Hardened API deploy env merge in `.github/workflows/deploy.yml`:
