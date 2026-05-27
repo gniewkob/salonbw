@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import SalonShell from '@/components/salon/SalonShell';
@@ -10,13 +10,6 @@ import type { Appointment, AppointmentStatus, ServiceVariant } from '@/types';
 
 interface AppointmentWithVariant extends Appointment {
     serviceVariant?: ServiceVariant | null;
-}
-
-interface AppointmentPage {
-    items: AppointmentWithVariant[];
-    total: number;
-    page: number;
-    pageSize: number;
 }
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
@@ -83,16 +76,13 @@ export default function AppointmentsPage() {
 
     const queryParams = new URLSearchParams();
     if (from) queryParams.set('from', from);
-    if (to) queryParams.set('to', to + 'T23:59:59');
+    if (to) queryParams.set('to', to);
     if (status) queryParams.set('status', status);
-    if (search) queryParams.set('search', search);
-    queryParams.set('page', String(page));
-    queryParams.set('limit', String(limit));
 
-    const { data, isLoading, error } = useQuery<AppointmentPage>({
-        queryKey: ['appointments-list', from, to, status, search, page],
+    const { data, isLoading, error } = useQuery<AppointmentWithVariant[]>({
+        queryKey: ['appointments-list', from, to, status],
         queryFn: () =>
-            apiFetch<AppointmentPage>(
+            apiFetch<AppointmentWithVariant[]>(
                 `/appointments?${queryParams.toString()}`,
             ),
         enabled: !!role && (role === 'admin' || role === 'receptionist'),
@@ -111,7 +101,37 @@ export default function AppointmentsPage() {
         setPage(1);
     }, [from, to, status]);
 
-    const totalPages = data ? Math.ceil(data.total / limit) : 0;
+    const filteredAppointments = useMemo(() => {
+        if (!data) return [];
+        const needle = search.trim().toLowerCase();
+        if (!needle) return data;
+        return data.filter((appt) => {
+            const fields = [
+                appt.client?.name,
+                appt.client?.phone,
+                appt.employee?.name,
+                appt.service?.name,
+            ];
+            return fields.some((value) =>
+                String(value ?? '')
+                    .toLowerCase()
+                    .includes(needle),
+            );
+        });
+    }, [data, search]);
+
+    const totalResults = filteredAppointments.length;
+    const totalPages = Math.ceil(totalResults / limit);
+    const pageItems = useMemo(() => {
+        const start = (page - 1) * limit;
+        return filteredAppointments.slice(start, start + limit);
+    }, [filteredAppointments, page, limit]);
+
+    useEffect(() => {
+        if (totalPages > 0 && page > totalPages) {
+            setPage(totalPages);
+        }
+    }, [page, totalPages]);
 
     const openInCalendar = (appt: AppointmentWithVariant) => {
         if (!appt.startTime) return;
@@ -275,9 +295,7 @@ export default function AppointmentsPage() {
 
                 <div className="column_row results_info mb-2">
                     <span className="results_title">
-                        {isLoading
-                            ? 'Ładowanie...'
-                            : `${data?.total ?? 0} wizyt`}
+                        {isLoading ? 'Ładowanie...' : `${totalResults} wizyt`}
                     </span>
                 </div>
 
@@ -316,7 +334,7 @@ export default function AppointmentsPage() {
                                     </td>
                                 </tr>
                             )}
-                            {!isLoading && data?.items.length === 0 && (
+                            {!isLoading && pageItems.length === 0 && (
                                 <tr>
                                     <td
                                         colSpan={8}
@@ -326,7 +344,7 @@ export default function AppointmentsPage() {
                                     </td>
                                 </tr>
                             )}
-                            {data?.items.map((appt) => (
+                            {pageItems.map((appt) => (
                                 <tr
                                     key={appt.id}
                                     className=""
@@ -467,7 +485,7 @@ export default function AppointmentsPage() {
                         <div className="row">
                             <div className="infocol-7">
                                 <span>
-                                    Strona {page} z {totalPages} ({data?.total}{' '}
+                                    Strona {page} z {totalPages} ({totalResults}{' '}
                                     wyników)
                                 </span>
                             </div>

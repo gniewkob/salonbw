@@ -2,7 +2,10 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 import { useServices } from '@/hooks/useServices';
-import { useAppointments } from '@/hooks/useAppointments';
+import {
+    useAppointments,
+    usePendingBookingsCount,
+} from '@/hooks/useAppointments';
 import { useProducts } from '@/hooks/useProducts';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useList } from '@/hooks/useList';
@@ -70,6 +73,22 @@ describe('list hooks', () => {
         expect(apiFetch).toHaveBeenCalledWith('/appointments');
         expect(apiFetch).toHaveBeenCalledWith('/products');
         expect(apiFetch).toHaveBeenCalledWith('/customers');
+    });
+
+    it('usePendingBookingsCount counts online pending appointments', async () => {
+        const apiFetch = jest.fn().mockResolvedValue([{ id: 1 }, { id: 2 }]);
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({ apiFetch, role: 'admin' }),
+        );
+        const wrapper = createWrapper();
+        const { result } = renderHook(() => usePendingBookingsCount(), {
+            wrapper,
+        });
+
+        await waitFor(() => expect(result.current).toBe(2));
+        expect(apiFetch).toHaveBeenCalledWith(
+            '/appointments?status=online_pending',
+        );
     });
 });
 
