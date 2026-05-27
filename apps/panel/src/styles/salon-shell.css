@@ -2390,6 +2390,31 @@ tr.customer-row:hover .customers-drag-handle {
     left: 11px;
 }
 
+.navbar .dropdown-menu-tasks .main-menu-li > a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.navbar .tasks-menu-count {
+    min-width: 22px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: #f6b425;
+    color: #2b2b2b;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.navbar .tasks-menu-empty {
+    display: block;
+    padding: 8px 16px;
+    color: #687382;
+    font-size: 12px;
+}
+
 /* User initials badge */
 .navbar .border-color {
     display: flex;

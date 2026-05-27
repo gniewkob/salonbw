@@ -11,9 +11,11 @@ export default function SalonTopbar() {
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+    const [tasksMenuOpen, setTasksMenuOpen] = useState(false);
     const pendingCount = usePendingBookingsCount();
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
+    const tasksMenuRef = useRef<HTMLLIElement>(null);
     const topbar = buildTopbarViewModel(user);
     const tasksCount = Math.max(topbar.tasks.count ?? 0, pendingCount);
 
@@ -32,6 +34,12 @@ export default function SalonTopbar() {
                 !helpMenuRef.current.contains(event.target as Node)
             ) {
                 setHelpMenuOpen(false);
+            }
+            if (
+                tasksMenuRef.current &&
+                !tasksMenuRef.current.contains(event.target as Node)
+            ) {
+                setTasksMenuOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -140,13 +148,19 @@ export default function SalonTopbar() {
                         </li>
                     ) : null}
                     {topbar.tasks.enabled ? (
-                        <li className="all_complete tasks_tooltip">
+                        <li
+                            ref={tasksMenuRef}
+                            className={`all_complete tasks_tooltip dropdown right-menu${tasksMenuOpen ? ' open' : ''}`}
+                        >
                             <a
-                                aria-expanded="false"
+                                aria-expanded={tasksMenuOpen}
                                 className="link"
                                 href="#"
                                 title="Twoje zadania"
-                                onClick={(event) => event.preventDefault()}
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    setTasksMenuOpen((value) => !value);
+                                }}
                             >
                                 <div
                                     className="assigned_tasks"
@@ -159,11 +173,33 @@ export default function SalonTopbar() {
                                 </div>
                             </a>
                             <div className="dropdown_cover"></div>
-                            <div
-                                className="dropdown-menu-tasks"
+                            <ul
+                                className="dropdown-menu dropdown-menu-tasks"
                                 id="dropdownTasks"
                                 role="menu"
-                            ></div>
+                            >
+                                <li className="main-menu-li">
+                                    <Link
+                                        href="/appointments?status=online_pending"
+                                        onClick={() => setTasksMenuOpen(false)}
+                                    >
+                                        Wizyty oczekujące na potwierdzenie
+                                        <span className="tasks-menu-count">
+                                            {pendingCount}
+                                        </span>
+                                    </Link>
+                                </li>
+                                {pendingCount === 0 ? (
+                                    <>
+                                        <li className="divider"></li>
+                                        <li className="main-menu-li">
+                                            <span className="tasks-menu-empty">
+                                                Brak oczekujących wizyt.
+                                            </span>
+                                        </li>
+                                    </>
+                                ) : null}
+                            </ul>
                         </li>
                     ) : null}
                     <li
