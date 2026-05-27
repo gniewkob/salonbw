@@ -15,6 +15,7 @@ export default function SalonTopbar() {
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
     const topbar = buildTopbarViewModel(user);
+    const tasksCount = Math.max(topbar.tasks.count ?? 0, pendingCount);
 
     useEffect(() => {
         const handleClickOutside = (
@@ -113,22 +114,6 @@ export default function SalonTopbar() {
                             ></div>
                         </div>
                     </li>
-                    {pendingCount > 0 ? (
-                        <li className="d-flex align-items-center">
-                            <Link
-                                href="/appointments?status=online_pending"
-                                className="link d-flex align-items-center gap-1 px-2"
-                                title="Wizyty oczekujące na potwierdzenie"
-                            >
-                                <span className="badge bg-warning text-dark">
-                                    {pendingCount}
-                                </span>
-                                <span className="d-none d-md-inline small">
-                                    oczekujące
-                                </span>
-                            </Link>
-                        </li>
-                    ) : null}
                     {topbar.notifications.enabled ? (
                         <li
                             className="notification_center"
@@ -165,9 +150,7 @@ export default function SalonTopbar() {
                             >
                                 <div
                                     className="assigned_tasks"
-                                    data-assigned_tasks={
-                                        topbar.tasks.count ?? 0
-                                    }
+                                    data-assigned_tasks={tasksCount}
                                 >
                                     <SalonIcon
                                         id="svg-todo"

@@ -1,4 +1,7 @@
-import { normalizeCompatStatus } from '@/pages/api/[...path]';
+import {
+    buildTargetUrl,
+    normalizeCompatStatus,
+} from '@/pages/api/[...path]';
 
 describe('api proxy compat status normalization', () => {
     // normalizeCompatStatus used to remap POST /graphql 201 → 200 for the
@@ -12,5 +15,39 @@ describe('api proxy compat status normalization', () => {
         expect(
             normalizeCompatStatus('/settings/timetable/schedules/1', 200),
         ).toBe(200);
+    });
+});
+
+describe('api proxy target url builder', () => {
+    it('forwards query params to backend url', () => {
+        const target = buildTargetUrl(
+            'https://api.salon-bw.pl',
+            ['calendar', 'events'],
+            {
+                path: ['calendar', 'events'],
+                date: '2026-05-27',
+                view: 'day',
+                employeeIds: '1,2',
+            },
+        );
+
+        expect(target).toBe(
+            'https://api.salon-bw.pl/calendar/events?date=2026-05-27&view=day&employeeIds=1%2C2',
+        );
+    });
+
+    it('supports repeated query values', () => {
+        const target = buildTargetUrl(
+            'https://api.salon-bw.pl',
+            ['calendar', 'events'],
+            {
+                path: ['calendar', 'events'],
+                employeeIds: ['1', '2'],
+            },
+        );
+
+        expect(target).toBe(
+            'https://api.salon-bw.pl/calendar/events?employeeIds=1&employeeIds=2',
+        );
     });
 });

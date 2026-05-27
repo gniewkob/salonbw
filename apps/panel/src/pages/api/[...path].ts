@@ -16,6 +16,29 @@ export function normalizeCompatStatus(
     return status;
 }
 
+export function buildTargetUrl(
+    baseUrl: string,
+    pathSegments: string[],
+    query: NextApiRequest['query'],
+): string {
+    const targetPath = '/' + pathSegments.join('/');
+    const params = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(query)) {
+        if (key === 'path' || value === undefined) continue;
+        if (Array.isArray(value)) {
+            for (const entry of value) {
+                params.append(key, entry);
+            }
+            continue;
+        }
+        params.append(key, value);
+    }
+
+    const queryString = params.toString();
+    return `${baseUrl}${targetPath}${queryString ? `?${queryString}` : ''}`;
+}
+
 /**
  * Catch-all API proxy that forwards requests to the backend
  * with the Authorization header extracted from the accessToken cookie.
@@ -25,7 +48,15 @@ export default async function handler(
     res: NextApiResponse,
 ) {
     const { path } = req.query;
-    const pathSegments = Array.isArray(path) ? path : [path];
+    const pathSegments = (Array.isArray(path) ? path : [path]).filter(
+        (segment): segment is string =>
+            typeof segment === 'string' && segment.length > 0,
+    );
+
+    if (pathSegments.length === 0) {
+        res.status(400).json({ error: 'Missing proxy path' });
+        return;
+    }
 
     // Don't proxy local routes - let Next.js handle them
     const firstSegment = pathSegments[0];
@@ -92,7 +123,7 @@ export default async function handler(
         headers['Content-Length'] = String(body.byteLength);
     }
 
-    const targetUrl = `${BACKEND_URL}${targetPath}`;
+    const targetUrl = buildTargetUrl(BACKEND_URL, pathSegments, req.query);
 
     try {
         const backendRes = await fetch(targetUrl, {
