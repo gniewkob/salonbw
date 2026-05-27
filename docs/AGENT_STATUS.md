@@ -1,6 +1,11 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-05-27 (SMTP runtime sync + Instagram parity)_
+_Last updated: 2026-05-27 (role enum parity + SMTP/Instagram runtime sync)_
+
+Operational note (2026-05-27) — role enum parity for receptionist:
+- Production DB enum `users_role_enum` was missing `receptionist` while app code already supports this role.
+- Added repository migration `1760970000000-AddReceptionistRoleToUsersEnum.ts` to keep future environments/deploys aligned.
+- Added role test fixtures in production users table for auth/navigation verification (`client`, `employee`, `admin`, `receptionist`).
 
 Operational note (2026-05-27) — SMTP runtime sync + Instagram parity:
 - Rotated SMTP runtime credential for API (`SMTP_PASSWORD`) on production server and restarted `api.salon-bw.pl`.
