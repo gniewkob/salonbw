@@ -1,7 +1,4 @@
-import {
-    buildTargetUrl,
-    normalizeCompatStatus,
-} from '@/pages/api/[...path]';
+import { buildTargetUrl, normalizeCompatStatus } from '@/pages/api/[...path]';
 
 describe('api proxy compat status normalization', () => {
     // normalizeCompatStatus used to remap POST /graphql 201 → 200 for the
