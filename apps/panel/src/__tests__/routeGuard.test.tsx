@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
 const replace = jest.fn();
+let asPath = '/';
 jest.mock('next/router', () => ({
-    useRouter: () => ({ replace, push: jest.fn() }),
+    useRouter: () => ({ replace, push: jest.fn(), asPath }),
 }));
 jest.mock('@/contexts/AuthContext');
 
@@ -15,8 +16,10 @@ const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 describe('RouteGuard', () => {
     beforeEach(() => {
         replace.mockClear();
+        asPath = '/';
     });
     it('redirects when unauthenticated', () => {
+        asPath = '';
         mockedUseAuth.mockReturnValue(
             createAuthValue({ isAuthenticated: false }),
         );
@@ -55,12 +58,26 @@ describe('RouteGuard', () => {
         expect(screen.getByText('Secret')).toBeInTheDocument();
     });
 
-    it('renders Forbidden when role not permitted', () => {
+    it('redirects to role home when role not permitted', () => {
+        asPath = '/settings';
         mockedUseAuth.mockReturnValue(
             createAuthValue({ isAuthenticated: true, role: 'client' }),
         );
         render(
             <RouteGuard roles={['admin']}>
+                <div>Secret</div>
+            </RouteGuard>,
+        );
+        expect(replace).toHaveBeenCalledWith('/booking');
+        expect(screen.queryByText('Secret')).toBeNull();
+    });
+
+    it('renders Forbidden when permission not permitted', () => {
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({ isAuthenticated: true, role: 'client' }),
+        );
+        render(
+            <RouteGuard permission="nav:settings">
                 <div>Secret</div>
             </RouteGuard>,
         );
