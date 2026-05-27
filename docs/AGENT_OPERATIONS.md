@@ -255,6 +255,11 @@ Post-env-change restart note:
 - After any API `.env` change, run `devil www restart api.salon-bw.pl` and immediately verify `/healthz`.
 - If the new env is not picked up, force Passenger reload with:
   `touch /usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/tmp/restart.txt`
+- For manual runtime `.env` mutations, prefer `scripts/safe-update-api-env.sh` (backup + single-key update + `.env` guardrail + optional restart/health verify) instead of ad-hoc inline editors.
+
+```bash
+printf '%s' "$NEW_SECRET" | scripts/safe-update-api-env.sh --key SMTP_PASSWORD --read-stdin
+```
 
 
 Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.

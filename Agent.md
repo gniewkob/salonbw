@@ -92,6 +92,7 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
     server-side.
     Must never live in any `NEXT_PUBLIC_*` env var.
 - Never commit secrets. See `docs/ENV.md`.
+- For manual production API `.env` changes, use `scripts/safe-update-api-env.sh` (single-key update with backup + guardrail + health verification) instead of ad-hoc shell rewrites.
 
 ### Cookie scope — SSO is intentional, not a leak
 - API issues auth cookies (`accessToken`, `refreshToken`, `sbw_auth`,

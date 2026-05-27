@@ -12,6 +12,17 @@ Operational note (2026-05-27) — SMTP runtime sync + Instagram parity:
   - `services.smtp: ok`,
   - `services.instagram: ok`.
 
+Review closure (2026-05-27) — fixed / residual risk / done:
+- Fixed:
+  - deploy dispatch alias gap for `target=admin` in `.github/workflows/deploy.yml` (PR #1355, merged),
+  - SMTP runtime auth restored (`smtp: ok`) and Instagram parity restored (`instagram: ok`) on API health checks,
+  - manual API `.env` updates hardened with `scripts/safe-update-api-env.sh` guardrail (backup + malformed `.env` detection + health verification).
+- Residual risk:
+  - SMTP password was disclosed in chat; treat as exposed and rotate once more out-of-band, then re-sync runtime env.
+- Done:
+  - deploy monitor green (`Deploy (MyDevil)` success on latest master push),
+  - production smoke baseline green (`api /healthz`, `dev` 200, `panel` 307).
+
 Operational note (2026-05-26) — deploy/runtime hardening + CI parity:
 - Hardened API deploy env merge in `.github/workflows/deploy.yml`:
   - deploy now preserves existing server-side `.env` keys and only overrides keys explicitly generated in CI,

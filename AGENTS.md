@@ -225,6 +225,8 @@ API .env must include:
 
 Rule: never commit secrets; reference docs/ENV.md as the canonical inventory.
 
+Manual production API `.env` updates must use `scripts/safe-update-api-env.sh` (single-key update with backup + `.env` guardrail + health verification), not ad-hoc inline file rewrites.
+
 ---
 
 ## 9) Logs (where to look first)
