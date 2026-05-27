@@ -27,12 +27,16 @@ export class CalendarQueryDto {
     @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
-    @Type(() => Number)
     @Transform(({ value }) => {
-        if (typeof value === 'string') {
-            return value.split(',').map((v) => parseInt(v, 10));
+        if (value === undefined || value === null || value === '') {
+            return undefined;
         }
-        return value;
+
+        const entries = Array.isArray(value) ? value : String(value).split(',');
+
+        return entries.map((entry) =>
+            typeof entry === 'number' ? entry : parseInt(String(entry), 10),
+        );
     })
     employeeIds?: number[];
 
