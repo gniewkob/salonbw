@@ -2155,23 +2155,7 @@ tr.customer-row:hover .customers-drag-handle {
     color: #818488;
 }
 
-.navbar .brand a .svg-logo {
-    width: 95px;
-    height: 13px;
-    margin-right: 8px;
-}
-
-.navbar .brand a .svg-dashboard-ico {
-    display: none;
-    width: 18px;
-    height: 13px;
-}
-
-.navbar:hover .svg-dashboard-ico {
-    display: block !important;
-}
-
-.salon-topbar-logo {
+.navbar .brand a .salon-topbar-logo {
     height: 28px;
     width: auto;
     display: block;
@@ -2216,9 +2200,6 @@ tr.customer-row:hover .customers-drag-handle {
     background: transparent;
     border: none;
     padding: 9px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
 }
 
 .navbar .navbar-toggle .icon-bar {
@@ -6275,6 +6256,8 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
+        gap: 4px;
     }
 
     /* --- Sidebar wrapper: no left padding (mainnav is fixed/overlaid) --- */
