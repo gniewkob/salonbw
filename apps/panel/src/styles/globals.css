@@ -2414,6 +2414,71 @@ h3 {
     color: #6c757d;
 }
 
+/* --- FullCalendar: light theme override ---
+   Replaces the dark-luxury palette set in the "VERSUM CALENDAR STYLES"
+   section above. All rules use !important to win against those originals. */
+.fc {
+    --fc-border-color: #dee2e6;
+    --fc-page-bg-color: #ffffff;
+    --fc-neutral-bg-color: #f8f9fa;
+}
+
+.fc-view-harness,
+.fc-timegrid-body,
+.fc-timegrid-slots,
+.fc-timegrid-slot,
+.fc-timegrid-slot-lane,
+.fc-daygrid-day {
+    background: #ffffff !important;
+}
+
+.fc-timegrid-slot {
+    border-bottom-color: #f0f2f4 !important;
+}
+
+.fc-daygrid-day.fc-day-today {
+    background: rgba(197, 168, 128, 0.08) !important;
+}
+
+.fc-col-header-cell {
+    background: #f8f9fa !important;
+    border-bottom-color: #dee2e6 !important;
+}
+
+.fc-col-header-cell-cushion {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.fc-timegrid-axis {
+    background: #f8f9fa !important;
+    color: #6c757d !important;
+}
+
+.fc-daygrid-day-number {
+    color: #495057 !important;
+}
+
+.fc-button {
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #495057 !important;
+    box-shadow: none !important;
+}
+
+.fc-button:hover {
+    background: #e9ecef !important;
+    border-color: #ced4da !important;
+    color: #212529 !important;
+}
+
+.fc-button-active,
+.fc-button.fc-button-active {
+    background: var(--salon-brand, #c5a880) !important;
+    border-color: var(--salon-brand, #c5a880) !important;
+    color: #ffffff !important;
+}
+
 /* --- Mobile: tables scrollable --- */
 @media (max-width: 768px) {
     .salonbw-reception-view,
