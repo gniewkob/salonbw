@@ -208,7 +208,7 @@ export const SERVICE_CATEGORIES = [
     subcategories: [
       { name: 'Botox na włosy', slug: 'botox' },
       { name: 'Złote proteiny', slug: 'zlote-proteiny' },
-      { name: 'Sauna - SPA dla włosów', slug: 'sauna-spa' },
+      { name: 'Olaplex', slug: 'olaplex' },
     ],
   },
   {
@@ -243,11 +243,11 @@ export const FOOTER_LINKS = {
 
 // SEO Meta
 export const SEO_META = {
-  title: 'Salon fryzjerski Black&White, fryzjer i barber – Bytom',
+  title: 'Akademia Zdrowych Włosów Black&White — fryzjer, pielęgnacja, barber · Bytom',
   description:
-    'Salon fryzjerski i kosmetyczny Black&White - Bytom oferuje zabiegi pielęgnacyjne włosów - Kerastase oraz skóry głowy Nioxin. Profesjonalne usługi fryzjerskie, barber i przedłużanie włosów.',
+    'Akademia Zdrowych Włosów Black&White w Bytomiu — zabiegi regeneracyjne (Botox, Złote proteiny, Olaplex), koloryzacja Wella (Air Touch, Koleston Perfect), fryzjer damski, barber i przedłużanie włosów HairTalk.',
   keywords:
-    'bytom, salon fryzjerski, salon kosmetyczny, kerastase, stylizacja, fryzjer bytom, barber bytom, przedłużanie włosów',
+    'akademia zdrowych włosów, salon fryzjerski bytom, fryzjer bytom, barber bytom, pielęgnacja włosów bytom, olaplex bytom, air touch bytom, kerastase bytom, botox na włosy, przedłużanie włosów hairtalk, zdrowe włosy',
   author: 'Vetternkraft.eu',
   locale: 'pl_PL',
   geo: {
