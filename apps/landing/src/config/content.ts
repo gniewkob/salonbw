@@ -247,7 +247,7 @@ export const SEO_META = {
   description:
     'Fryzjer damski, stylista i barber w Bytomiu. Salon Black&White — Akademia Zdrowych Włosów — specjalizuje się w koloryzacji Wella (Air Touch, Koleston Perfect), pielęgnacji (Botox, Złote proteiny, Olaplex) i przedłużaniu włosów HairTalk.',
   keywords:
-    'salon fryzjerski bytom, fryzjer bytom, stylista bytom, koloryzacja bytom, pielęgnacja włosów bytom, barber bytom, air touch bytom, olaplex bytom, kerastase bytom, botox na włosy bytom, przedłużanie włosów bytom, akademia zdrowych włosów',
+    'salon fryzjerski bytom, fryzjer bytom, stylista bytom, koloryzacja bytom, pielęgnacja włosów bytom, barber bytom, air touch bytom, olaplex bytom, kerastase bytom, botox na włosy bytom, przedłużanie włosów bytom',
   author: 'Vetternkraft.eu',
   locale: 'pl_PL',
   geo: {
