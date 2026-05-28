@@ -105,9 +105,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 <TrustStrip />
 
                 {/* 4. Services */}
-                <ScrollReveal direction="up">
-                    <ServicesTeaser />
-                </ScrollReveal>
+                <ServicesTeaser />
 
                 {/* 5. Gold ticker separator */}
                 <GoldTickerStrip />
