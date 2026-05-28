@@ -199,7 +199,11 @@ function readRawBody(req: NextApiRequest): Promise<Uint8Array> {
             totalBytes += chunk.byteLength;
             if (totalBytes > MAX_BODY_BYTES) {
                 req.destroy();
-                reject(Object.assign(new Error('Request body too large'), { code: 'BODY_TOO_LARGE' }));
+                reject(
+                    Object.assign(new Error('Request body too large'), {
+                        code: 'BODY_TOO_LARGE',
+                    }),
+                );
                 return;
             }
             chunks.push(chunk);
