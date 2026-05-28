@@ -243,11 +243,11 @@ export const FOOTER_LINKS = {
 
 // SEO Meta
 export const SEO_META = {
-  title: 'Akademia Zdrowych Włosów Black&White — fryzjer, pielęgnacja, barber · Bytom',
+  title: 'Salon fryzjerski Black&White — fryzjer, koloryzacja, stylista · Bytom',
   description:
-    'Akademia Zdrowych Włosów Black&White w Bytomiu — zabiegi regeneracyjne (Botox, Złote proteiny, Olaplex), koloryzacja Wella (Air Touch, Koleston Perfect), fryzjer damski, barber i przedłużanie włosów HairTalk.',
+    'Fryzjer damski, stylista i barber w Bytomiu. Salon Black&White — Akademia Zdrowych Włosów — specjalizuje się w koloryzacji Wella (Air Touch, Koleston Perfect), pielęgnacji (Botox, Złote proteiny, Olaplex) i przedłużaniu włosów HairTalk.',
   keywords:
-    'akademia zdrowych włosów, salon fryzjerski bytom, fryzjer bytom, barber bytom, pielęgnacja włosów bytom, olaplex bytom, air touch bytom, kerastase bytom, botox na włosy, przedłużanie włosów hairtalk, zdrowe włosy',
+    'salon fryzjerski bytom, fryzjer bytom, stylista bytom, koloryzacja bytom, pielęgnacja włosów bytom, barber bytom, air touch bytom, olaplex bytom, kerastase bytom, botox na włosy bytom, przedłużanie włosów bytom, akademia zdrowych włosów',
   author: 'Vetternkraft.eu',
   locale: 'pl_PL',
   geo: {
