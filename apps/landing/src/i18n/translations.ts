@@ -96,8 +96,8 @@ const t = {
             ctaSub: 'Zarezerwuj termin online lub zadzwoń. Czekamy na Ciebie od {hours} w tygodniu.',
             from: 'od',
             items: [
-                { title: 'Fryzjerstwo', subtitle: 'Strzyżenie & Koloryzacja', description: 'Cięcia damskie i męskie, koloryzacja, balayage, ombre — tworzone z pasją przez doświadczonych stylistów.', keyServices: ['Strzyżenie damskie', 'Strzyżenie męskie', 'Koloryzacja', 'Balayage', 'Ombre', 'Regulacja brody'] },
-                { title: 'Akademia Pielęgnacji', subtitle: 'Botox • Złote Proteiny • SPA', description: 'Zabiegi regeneracyjne Kérastase i Nioxin, botox na włosy oraz luksusowe SPA dla zniszczonych lub cienkich włosów.' },
+                { title: 'Fryzjerstwo', subtitle: 'Strzyżenie & Koloryzacja', description: 'Cięcia damskie i męskie, koloryzacja Wella (Koleston Perfect, Ilumina, Color Touch) i nowoczesna technika Air Touch — fryzury codzienne, wieczorowe i ślubne.', keyServices: ['Strzyżenie damskie', 'Strzyżenie męskie', 'Air Touch', 'Fryzura ślubna', 'Trwała ondulacja', 'Modelowanie'] },
+                { title: 'Akademia Pielęgnacji', subtitle: 'Botox • Złote Proteiny • Olaplex', description: 'Zabiegi regeneracyjne Kérastase, botox na włosy, złote proteiny oraz Olaplex — dedykowana pielęgnacja dla zniszczonych i cienkich włosów.' },
                 { title: 'Przedłużanie Włosów', subtitle: 'Metoda HairTalk', description: 'Naturalne przedłużanie i zagęszczanie włosów metodą HairTalk — dyskretne, trwałe, dopasowane do Ciebie.' },
             ],
         },
@@ -322,8 +322,8 @@ const t = {
             ctaSub: 'Book online or call us. We\'re here from {hours} on weekdays.',
             from: 'from',
             items: [
-                { title: 'Hairdressing', subtitle: 'Cuts & Colouring', description: 'Women\'s and men\'s cuts, colouring, balayage, ombre — crafted with passion by experienced stylists.', keyServices: ['Women\'s cut', 'Men\'s cut', 'Colouring', 'Balayage', 'Ombre', 'Beard trim'] },
-                { title: 'Care Academy', subtitle: 'Botox • Golden Proteins • SPA', description: 'Regenerative treatments by Kérastase and Nioxin, hair botox, and luxury SPA for damaged or fine hair.' },
+                { title: 'Hairdressing', subtitle: 'Cuts & Colouring', description: 'Women\'s and men\'s cuts, Wella colouring (Koleston Perfect, Ilumina, Color Touch) and the modern Air Touch technique — everyday, evening and wedding styles.', keyServices: ['Women\'s cut', 'Men\'s cut', 'Air Touch', 'Wedding style', 'Permanent wave', 'Blow-dry'] },
+                { title: 'Care Academy', subtitle: 'Botox • Golden Proteins • Olaplex', description: 'Regenerative treatments by Kérastase, hair botox, golden proteins and Olaplex — dedicated care for damaged or fine hair.' },
                 { title: 'Hair Extensions', subtitle: 'HairTalk Method', description: 'Natural hair extensions and thickening using the HairTalk method — discreet, lasting, tailored to you.' },
             ],
         },
@@ -548,8 +548,8 @@ const t = {
             ctaSub: 'Online buchen oder anrufen. Wir sind von {hours} unter der Woche für Sie da.',
             from: 'ab',
             items: [
-                { title: 'Friseurleistungen', subtitle: 'Schnitt & Färbung', description: 'Damen- und Herrenschnitte, Färbung, Balayage, Ombré — mit Leidenschaft von erfahrenen Stylisten gestaltet.', keyServices: ['Damenhaarschnitt', 'Herrenhaarschnitt', 'Färbung', 'Balayage', 'Ombré', 'Bartpflege'] },
-                { title: 'Pflege-Akademie', subtitle: 'Botox • Goldene Proteine • SPA', description: 'Regenerationsbehandlungen von Kérastase und Nioxin, Haarbotox und luxuriöses SPA für geschädigtes oder feines Haar.' },
+                { title: 'Friseurleistungen', subtitle: 'Schnitt & Färbung', description: 'Damen- und Herrenschnitte, Wella-Färbung (Koleston Perfect, Ilumina, Color Touch) und moderne Air Touch-Technik — für Alltag, Abend und Hochzeit.', keyServices: ['Damenhaarschnitt', 'Herrenhaarschnitt', 'Air Touch', 'Hochzeitsfrisur', 'Dauerwelle', 'Föhnen'] },
+                { title: 'Pflege-Akademie', subtitle: 'Botox • Goldene Proteine • Olaplex', description: 'Regenerationsbehandlungen von Kérastase, Haarbotox, goldene Proteine und Olaplex — gezielte Pflege für geschädigtes oder feines Haar.' },
                 { title: 'Haarverlängerung', subtitle: 'HairTalk-Methode', description: 'Natürliche Haarverlängerung und -verdichtung mit der HairTalk-Methode — diskret, langlebig, auf Sie zugeschnitten.' },
             ],
         },
