@@ -113,9 +113,19 @@ export default async function handler(
         }
     }
 
-    const body: Uint8Array | undefined = isBodyAllowed
-        ? await readRawBody(req)
-        : undefined;
+    let body: Uint8Array | undefined;
+    if (isBodyAllowed) {
+        try {
+            body = await readRawBody(req);
+        } catch (err) {
+            const code = (err as NodeJS.ErrnoException).code;
+            if (code === 'BODY_TOO_LARGE') {
+                res.status(413).json({ error: 'Request body too large' });
+                return;
+            }
+            throw err;
+        }
+    }
 
     // Some upstream stacks (Passenger/proxies) can be sensitive to chunked uploads.
     // When we buffer the full request body, we can safely set Content-Length.
@@ -179,10 +189,19 @@ export const config = {
     },
 };
 
+const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10 MB
+
 function readRawBody(req: NextApiRequest): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         const chunks: Buffer[] = [];
+        let totalBytes = 0;
         req.on('data', (chunk: Buffer) => {
+            totalBytes += chunk.byteLength;
+            if (totalBytes > MAX_BODY_BYTES) {
+                req.destroy();
+                reject(Object.assign(new Error('Request body too large'), { code: 'BODY_TOO_LARGE' }));
+                return;
+            }
             chunks.push(chunk);
         });
         req.on('end', () => resolve(Buffer.concat(chunks)));

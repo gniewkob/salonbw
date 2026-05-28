@@ -15,7 +15,17 @@ export default async function handler(
         return;
     }
 
-    const body = await readRawBody(req);
+    let body: Uint8Array;
+    try {
+        body = await readRawBody(req);
+    } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code === 'BODY_TOO_LARGE') {
+            res.status(413).json({ error: 'Request body too large' });
+            return;
+        }
+        throw err;
+    }
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
@@ -60,10 +70,21 @@ export const config = {
     },
 };
 
+const MAX_BODY_BYTES = 64 * 1024; // 64 KB — log payloads should be small
+
 function readRawBody(req: NextApiRequest): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         const chunks: Buffer[] = [];
-        req.on('data', (chunk: Buffer) => chunks.push(chunk));
+        let totalBytes = 0;
+        req.on('data', (chunk: Buffer) => {
+            totalBytes += chunk.byteLength;
+            if (totalBytes > MAX_BODY_BYTES) {
+                req.destroy();
+                reject(Object.assign(new Error('Request body too large'), { code: 'BODY_TOO_LARGE' }));
+                return;
+            }
+            chunks.push(chunk);
+        });
         req.on('end', () => resolve(Buffer.concat(chunks)));
         req.on('error', reject);
     });

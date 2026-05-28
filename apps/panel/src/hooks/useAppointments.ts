@@ -94,6 +94,9 @@ export function useAppointmentMutations() {
         void queryClient.invalidateQueries({
             queryKey: MY_APPOINTMENTS_QUERY_KEY,
         });
+        void queryClient.invalidateQueries({
+            queryKey: ['pending-bookings-count'],
+        });
     };
 
     const cancelAppointment = useMutation({

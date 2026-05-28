@@ -34,9 +34,11 @@ export class CalendarQueryDto {
 
         const entries = Array.isArray(value) ? value : String(value).split(',');
 
-        return entries.map((entry) =>
-            typeof entry === 'number' ? entry : parseInt(String(entry), 10),
-        );
+        return entries.map((entry) => {
+            if (typeof entry === 'number') return entry;
+            const n = parseInt(String(entry).trim(), 10);
+            return isNaN(n) ? entry : n; // keep original string so @IsNumber rejects it
+        });
     })
     employeeIds?: number[];
 
