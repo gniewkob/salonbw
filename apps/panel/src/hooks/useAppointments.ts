@@ -143,13 +143,10 @@ export function usePendingBookingsCount() {
     const query = useQuery({
         queryKey: ['pending-bookings-count'],
         queryFn: async () => {
-            const response = await apiFetch<
-                LocalAppointment[] | { items?: LocalAppointment[] }
-            >(`/appointments?status=online_pending`);
-            if (Array.isArray(response)) {
-                return response.length;
-            }
-            return Array.isArray(response.items) ? response.items.length : 0;
+            const response = await apiFetch<{ count: number }>(
+                `/appointments/online-pending-count`,
+            );
+            return response.count ?? 0;
         },
         enabled: isStaff,
         refetchInterval: 2 * 60 * 1000,
