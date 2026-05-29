@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { format } from 'date-fns';
 import type {
     CalendarEvent,
@@ -24,27 +25,26 @@ const TIME_BLOCK_COLORS: Record<
 };
 
 const STATUS_RING: Record<string, string | undefined> = {
-    confirmed: '0 0 0 2px #28a745',
     in_progress: '0 0 0 2px #007bff',
     online_pending: '0 0 0 2px #ffc107',
     rescheduled_pending: '0 0 0 2px #fd7e14',
 };
 
 const STATUS_OPACITY: Record<string, number> = {
-    completed: 0.6,
-    cancelled: 0.4,
-    no_show: 0.4,
+    completed: 0.55,
+    cancelled: 0.35,
+    no_show: 0.35,
 };
 
+// Only show status badge when it's non-trivial (skip 'scheduled' — it's the default)
 const STATUS_LABELS: Record<string, string> = {
-    scheduled: 'Zaplanowana',
     confirmed: 'Potwierdzona',
     in_progress: 'W trakcie',
     completed: 'Zakończona',
     cancelled: 'Anulowana',
     no_show: 'No-show',
-    online_pending: 'Oczekuje na potwierdzenie',
-    rescheduled_pending: 'Zmiana terminu',
+    online_pending: 'Online — czeka',
+    rescheduled_pending: 'Nowy termin',
 };
 
 const ALERT_BADGE_CLASS: Record<ReceptionAlertSeverity, string> = {
@@ -61,7 +61,7 @@ export default function EventCard({
 }: EventCardProps) {
     const startTime = new Date(event.startTime);
     const endTime = new Date(event.endTime);
-    const timeStr = `${format(startTime, 'HH:mm')} - ${format(endTime, 'HH:mm')}`;
+    const timeStr = `${format(startTime, 'HH:mm')} – ${format(endTime, 'HH:mm')}`;
 
     const isTimeBlock = event.type === 'time_block';
     const blockColors =
@@ -78,14 +78,20 @@ export default function EventCard({
         event.customerAlertSeverity ??
         (event.hasCustomerAlerts ? 'warning' : undefined);
 
-    const containerStyle: React.CSSProperties = {
+    const statusLabel = event.status
+        ? (STATUS_LABELS[event.status] ?? null)
+        : null;
+
+    const containerStyle: CSSProperties = {
         cursor: 'pointer',
         opacity,
-        borderRadius: 4,
-        padding: '2px 6px',
+        borderRadius: 5,
+        padding: '3px 7px 4px',
         fontSize: 12,
+        lineHeight: 1.4,
         transition: 'box-shadow 0.1s',
         boxShadow: ring,
+        overflow: 'hidden',
         ...(isTimeBlock && blockColors
             ? {
                   backgroundColor: blockColors.bg,
@@ -93,18 +99,56 @@ export default function EventCard({
                   color: blockColors.color,
               }
             : {
-                  borderLeft: `4px solid ${employeeColor}`,
-                  backgroundColor: `${employeeColor}15`,
+                  borderLeft: `3px solid ${employeeColor}`,
+                  backgroundColor: `${employeeColor}18`,
                   textDecoration:
                       event.status === 'cancelled' ? 'line-through' : undefined,
               }),
     };
 
+    if (isTimeBlock) {
+        return (
+            <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onClick(event)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onClick(event);
+                    }
+                }}
+                style={containerStyle}
+            >
+                <div
+                    className="fw-medium text-truncate"
+                    style={
+                        blockColors ? { color: blockColors.color } : undefined
+                    }
+                >
+                    {event.title}
+                </div>
+                {!event.allDay && (
+                    <div
+                        className="text-truncate"
+                        style={{
+                            fontSize: 11,
+                            color: blockColors?.color ?? '#666',
+                            opacity: 0.85,
+                        }}
+                    >
+                        {timeStr}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div
             role="button"
             tabIndex={0}
-            draggable={!isTimeBlock}
+            draggable
             onClick={() => onClick(event)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -115,87 +159,52 @@ export default function EventCard({
             onDragStart={() => onDragStart?.(event)}
             style={containerStyle}
         >
-            <div className="d-flex align-items-start justify-content-between gap-1">
-                <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                        className="fw-medium text-truncate"
-                        style={
-                            isTimeBlock && blockColors
-                                ? { color: blockColors.color }
-                                : undefined
-                        }
-                    >
-                        {event.title}
-                    </div>
-                    {!isTimeBlock && event.clientName && (
-                        <div className="text-muted text-truncate">
-                            {event.clientName}
-                        </div>
-                    )}
-                    <div
-                        className="text-muted"
-                        style={
-                            isTimeBlock && blockColors
-                                ? { color: blockColors.color }
-                                : undefined
-                        }
-                    >
-                        {event.allDay ? 'Cały dzień' : timeStr}
-                    </div>
-                    {!isTimeBlock && (
-                        <div className="d-flex flex-wrap gap-1 mt-1">
-                            {event.status ? (
-                                <span className="badge text-bg-light border">
-                                    {STATUS_LABELS[event.status] ??
-                                        event.status}
-                                </span>
-                            ) : null}
-                            {event.paymentStatus ? (
-                                <span className="badge text-bg-light border">
-                                    {event.paymentStatus === 'paid'
-                                        ? 'Opłacona'
-                                        : event.paymentStatus === 'partial'
-                                          ? 'Częściowo opłacona'
-                                          : 'Nieopłacona'}
-                                </span>
-                            ) : null}
-                            {alertSeverity ? (
-                                <span
-                                    className={`badge ${ALERT_BADGE_CLASS[alertSeverity]}`}
-                                >
-                                    Alert CRM
-                                </span>
-                            ) : null}
-                        </div>
+            {/* Client name — primary info */}
+            {event.clientName && (
+                <div
+                    className="text-truncate"
+                    style={{ fontWeight: 600, fontSize: 12.5 }}
+                >
+                    {event.clientName}
+                    {alertSeverity && (
+                        <span
+                            className={`ms-1 badge ${ALERT_BADGE_CLASS[alertSeverity]}`}
+                            style={{ fontSize: 9, verticalAlign: 'middle' }}
+                        >
+                            !
+                        </span>
                     )}
                 </div>
-                {isTimeBlock && event.blockType && (
-                    <span
-                        style={{
-                            fontSize: 10,
-                            fontWeight: 600,
-                            padding: '1px 5px',
-                            borderRadius: 3,
-                            backgroundColor: blockColors?.bg,
-                            color: blockColors?.color,
-                            flexShrink: 0,
-                        }}
-                    >
-                        {getBlockTypeLabel(event.blockType)}
-                    </span>
-                )}
+            )}
+
+            {/* Service title */}
+            <div
+                className="text-truncate"
+                style={{
+                    color: '#555',
+                    fontSize: 11.5,
+                    fontWeight: event.clientName ? 400 : 600,
+                }}
+            >
+                {event.title}
             </div>
+
+            {/* Time */}
+            <div style={{ color: '#777', fontSize: 11 }}>
+                {event.allDay ? 'Cały dzień' : timeStr}
+            </div>
+
+            {/* Non-default status badge */}
+            {statusLabel && (
+                <div className="mt-1">
+                    <span
+                        className="badge text-bg-light border"
+                        style={{ fontSize: 10 }}
+                    >
+                        {statusLabel}
+                    </span>
+                </div>
+            )}
         </div>
     );
-}
-
-function getBlockTypeLabel(type: TimeBlockType): string {
-    const labels: Record<TimeBlockType, string> = {
-        break: 'Przerwa',
-        vacation: 'Urlop',
-        training: 'Szkolenie',
-        sick: 'Choroba',
-        other: 'Inne',
-    };
-    return labels[type];
 }
