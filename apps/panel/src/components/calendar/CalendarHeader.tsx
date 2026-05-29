@@ -67,17 +67,26 @@ export default function CalendarHeader({
     const formatDateLabel = (short = false) => {
         switch (view) {
             case 'day':
-                return format(date, short ? 'EEE, d MMM' : 'EEEE, d MMMM yyyy', { locale: pl });
+                return format(
+                    date,
+                    short ? 'EEE, d MMM' : 'EEEE, d MMMM yyyy',
+                    { locale: pl },
+                );
             case 'week':
-                return format(date, short ? "'Tydz.' w, MMM yyyy" : "'Tydzień' w, MMMM yyyy", { locale: pl });
+                return format(
+                    date,
+                    short ? "'Tydz.' w, MMM yyyy" : "'Tydzień' w, MMMM yyyy",
+                    { locale: pl },
+                );
             case 'month':
-                return format(date, short ? 'MMM yyyy' : 'MMMM yyyy', { locale: pl });
+                return format(date, short ? 'MMM yyyy' : 'MMMM yyyy', {
+                    locale: pl,
+                });
         }
     };
 
     return (
         <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-sm-between border-bottom border-secondary border-opacity-25 bg-white px-3 py-2 gap-2">
-
             {/* Navigation row: Dzisiaj + prev/date/next */}
             <div className="d-flex align-items-center gap-2">
                 <button
@@ -95,15 +104,32 @@ export default function CalendarHeader({
                         aria-label="Poprzedni"
                         style={{ lineHeight: 1 }}
                     >
-                        <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        <svg
+                            style={{ width: 20, height: 20 }}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                            />
                         </svg>
                     </button>
 
-                    <h2 className="mb-0 fw-semibold text-dark text-capitalize" style={{ fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                    <h2
+                        className="mb-0 fw-semibold text-dark text-capitalize"
+                        style={{ fontSize: '0.95rem', whiteSpace: 'nowrap' }}
+                    >
                         {/* Short on xs, full on sm+ */}
-                        <span className="d-inline d-sm-none">{formatDateLabel(true)}</span>
-                        <span className="d-none d-sm-inline">{formatDateLabel(false)}</span>
+                        <span className="d-inline d-sm-none">
+                            {formatDateLabel(true)}
+                        </span>
+                        <span className="d-none d-sm-inline">
+                            {formatDateLabel(false)}
+                        </span>
                     </h2>
 
                     <button
@@ -112,21 +138,38 @@ export default function CalendarHeader({
                         aria-label="Następny"
                         style={{ lineHeight: 1 }}
                     >
-                        <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                            style={{ width: 20, height: 20 }}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                            />
                         </svg>
                     </button>
                 </div>
 
                 {currentTime && (
-                    <span className="d-none d-sm-inline fw-light text-primary" style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                    <span
+                        className="d-none d-sm-inline fw-light text-primary"
+                        style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+                    >
                         {format(currentTime, 'HH:mm')}
                     </span>
                 )}
             </div>
 
             {/* View toggle: Dzień | Tydzień | Miesiąc */}
-            <div className="btn-group btn-group-sm" role="group" aria-label="Widok kalendarza">
+            <div
+                className="btn-group btn-group-sm"
+                role="group"
+                aria-label="Widok kalendarza"
+            >
                 <button
                     type="button"
                     onClick={() => onViewChange('day')}

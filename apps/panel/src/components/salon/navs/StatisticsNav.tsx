@@ -100,15 +100,26 @@ export default function StatisticsNav() {
         <div className="column_row tree">
             <ul id="statistics_menu_list">
                 {REPORTS.map((item) => (
-                    <li key={item.id} className={isActive(item.href) ? 'active' : ''}>
+                    <li
+                        key={item.id}
+                        className={isActive(item.href) ? 'active' : ''}
+                    >
                         <Link href={item.href} title={item.label}>
                             {item.label}
                         </Link>
                         {item.children ? (
                             <ul>
                                 {item.children.map((child) => (
-                                    <li key={child.id} className={isActive(child.href) ? 'active' : ''}>
-                                        <Link href={child.href} title={child.label}>
+                                    <li
+                                        key={child.id}
+                                        className={
+                                            isActive(child.href) ? 'active' : ''
+                                        }
+                                    >
+                                        <Link
+                                            href={child.href}
+                                            title={child.label}
+                                        >
                                             {child.label}
                                         </Link>
                                     </li>

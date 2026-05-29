@@ -41,40 +41,44 @@ export default function NewCustomerNav({
 }: NewCustomerNavProps) {
     return (
         <div className="sidenav" id="sidenav">
-        <div className="show_action_content client-detail-nav">
-            <div className="column_row">
-                <div className="nav-header">{title}</div>
-                <div className="tree">
-                    <ul>
-                        {tabs.map((tab) => (
-                            <li
-                                key={tab.id}
-                                className={
-                                    activeTab === tab.id ? 'active' : undefined
-                                }
-                            >
-                                <a
-                                    href={tab.href}
-                                    className={tab.isLast ? 'last' : undefined}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        onSelect(tab.id);
-                                    }}
+            <div className="show_action_content client-detail-nav">
+                <div className="column_row">
+                    <div className="nav-header">{title}</div>
+                    <div className="tree">
+                        <ul>
+                            {tabs.map((tab) => (
+                                <li
+                                    key={tab.id}
+                                    className={
+                                        activeTab === tab.id
+                                            ? 'active'
+                                            : undefined
+                                    }
                                 >
-                                    <div className="icon_box">
-                                        <i
-                                            className={`icon ${tab.iconClass}`}
-                                            aria-hidden="true"
-                                        />
-                                    </div>
-                                    {tab.label}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
+                                    <a
+                                        href={tab.href}
+                                        className={
+                                            tab.isLast ? 'last' : undefined
+                                        }
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            onSelect(tab.id);
+                                        }}
+                                    >
+                                        <div className="icon_box">
+                                            <i
+                                                className={`icon ${tab.iconClass}`}
+                                                aria-hidden="true"
+                                            />
+                                        </div>
+                                        {tab.label}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 }
