@@ -93,7 +93,7 @@ export function buildTopbarViewModel(
             searchUrl: '/global_searches',
         },
         notifications: {
-            enabled: true,
+            enabled: false,
             unreadCount: null,
         },
         tasks: {

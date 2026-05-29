@@ -7,10 +7,7 @@ interface SalonMainNavProps {
     activeModule: SalonModule;
 }
 
-// Badge counts for each module (in real app, these would come from API)
-const MODULE_BADGES: Record<string, string> = {
-    communication: '140',
-};
+const MODULE_BADGES: Record<string, string> = {};
 
 export default function SalonMainNav({
     modules,
