@@ -40,9 +40,10 @@ export default function NewCustomerNav({
     title = 'NOWY KLIENT',
 }: NewCustomerNavProps) {
     return (
+        <div className="sidenav" id="sidenav">
         <div className="show_action_content client-detail-nav">
             <div className="column_row">
-                <h4>{title}</h4>
+                <div className="nav-header">{title}</div>
                 <div className="tree">
                     <ul>
                         {tabs.map((tab) => (
@@ -73,6 +74,7 @@ export default function NewCustomerNav({
                     </ul>
                 </div>
             </div>
+        </div>
         </div>
     );
 }

@@ -149,7 +149,7 @@ export default function ClientsNav() {
                 >
                     <div className="index_action_content">
                         <div className="customer_groups column_row">
-                            <h4>Grupy klientów</h4>
+                            <div className="nav-header">GRUPY KLIENTÓW</div>
                             <div className="tree" id="groups">
                                 <a
                                     className={`root ${activeQuickGroup === 'all' ? 'active' : ''}`}
@@ -315,7 +315,7 @@ export default function ClientsNav() {
                             className={`column_row ${currentGroupId ? '' : 'hidden'}`}
                             id="filter_boxes_container"
                         >
-                            <h4>Kryteria wyszukiwania</h4>
+                            <div className="nav-header">KRYTERIA WYSZUKIWANIA</div>
                             <div id="filter_boxes">
                                 {groups
                                     ?.filter((g) => currentGroupId === g.id)
@@ -344,7 +344,7 @@ export default function ClientsNav() {
                         </div>
 
                         <div className="column_row" id="search_criteria">
-                            <h4>Wybierz kryteria</h4>
+                            <div className="nav-header">WYBIERZ KRYTERIA</div>
                             <div className="list_container">
                                 <ul
                                     className="simple-list"

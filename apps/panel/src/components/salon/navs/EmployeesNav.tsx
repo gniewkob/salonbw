@@ -12,7 +12,7 @@ export default function EmployeesNav() {
     return (
         <div className="sidenav" id="sidenav">
             <div className="column_row tree">
-                <h4>Pracownicy</h4>
+                <div className="nav-header">PRACOWNICY</div>
                 <Link
                     className={`root ${isActive('/settings/employees') ? 'active' : ''}`.trim()}
                     href="/settings/employees"

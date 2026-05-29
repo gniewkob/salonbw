@@ -94,7 +94,7 @@ export default function ClientDetailNav({
     return (
         <div className="show_action_content client-detail-nav">
             <div className="column_row">
-                <h4>Karta klienta</h4>
+                <div className="nav-header">KARTA KLIENTA</div>
                 <div className="tree">
                     <Link
                         href={`/customers/${customerId}`}
