@@ -2077,8 +2077,40 @@ h3 {
 /* ============================================================
    LIGHT THEME — unified overrides for all salonbw-* components
    Replaces legacy dark-luxury palette with a clean, light UI.
-   The navbar/sidenav keep their explicit dark colors above.
    ============================================================ */
+
+/* --- Sidenav (secondary nav) — light background matching content area --- */
+#sidenav,
+.sidenav {
+    background: #ffffff;
+    border-right-color: #dee2e6;
+}
+
+#sidenav .nav-header,
+.sidenav .nav-header {
+    color: #7d848c;
+}
+
+#sidenav .nav-list li a,
+.sidenav .nav-list li a {
+    color: #495057;
+}
+
+#sidenav .nav-list li a:hover,
+#sidenav .nav-list li.active a,
+.sidenav .nav-list li a:hover,
+.sidenav .nav-list li.active a {
+    background: #f0f4f8;
+    color: #c5a880;
+}
+
+.sidenav .btn-link {
+    color: #6c757d;
+    text-decoration: none;
+}
+.sidenav .btn-link:hover {
+    color: #212529;
+}
 
 /* --- Component backgrounds & borders --- */
 .salonbw-mass-communication__section,
@@ -2281,11 +2313,23 @@ h3 {
 }
 
 /* --- Employee filter --- */
+.salonbw-employee-filter {
+    flex-direction: column;
+    align-items: stretch;
+}
+.salonbw-employee-filter__item {
+    padding: 4px 0;
+    border-radius: 0;
+}
 .salonbw-employee-filter__item:hover {
-    background: #f0f2f4;
+    background: #f0f4f8;
+    color: #212529;
 }
 .salonbw-employee-filter__name {
     color: #495057;
+}
+.salonbw-checkbox {
+    accent-color: #c5a880;
 }
 
 /* --- Templates --- */

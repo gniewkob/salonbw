@@ -110,19 +110,27 @@ export default function CalendarNav() {
     return (
         <>
             {/* Mini Calendar Header */}
-            <div className="nav-header flex-between">
+            <div className="nav-header flex-between" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px 4px' }}>
                 <button
                     onClick={() => changeMonth(-1)}
                     className="btn btn-sm btn-link p-0"
+                    aria-label="Poprzedni miesiąc"
+                    style={{ lineHeight: 1 }}
                 >
-                    &lt;
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
                 </button>
-                <span>{monthYear}</span>
+                <span style={{ fontWeight: 600, fontSize: '11px', letterSpacing: '0.05em' }}>{monthYear}</span>
                 <button
                     onClick={() => changeMonth(1)}
                     className="btn btn-sm btn-link p-0"
+                    aria-label="Następny miesiąc"
+                    style={{ lineHeight: 1 }}
                 >
-                    &gt;
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
                 </button>
             </div>
 
