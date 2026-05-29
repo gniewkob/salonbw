@@ -83,7 +83,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
 
             {/* Content — centred vertically */}
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4">
-                <div key={currentSlide} className="max-w-3xl mx-auto text-center text-white">
+                <div className="max-w-3xl mx-auto text-center text-white">
                     {/* Academy eyebrow */}
                     <p
                         className="hero-tag mb-3 uppercase text-xs md:text-sm"
