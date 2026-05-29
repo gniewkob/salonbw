@@ -1,5 +1,3 @@
-'use client';
-
 import type { CalendarView } from '@/types';
 import {
     format,
@@ -11,7 +9,7 @@ import {
     subMonths,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import React, { useState, useEffect } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 
 interface CalendarHeaderProps {
     date: Date;
@@ -19,7 +17,7 @@ interface CalendarHeaderProps {
     onDateChange: (date: Date) => void;
     onViewChange: (view: CalendarView) => void;
     onTodayClick: () => void;
-    extraAction?: React.ReactNode;
+    extraAction?: ReactNode;
 }
 
 export default function CalendarHeader({
@@ -41,6 +39,7 @@ export default function CalendarHeader({
     const handlePrev = () => {
         switch (view) {
             case 'day':
+            case 'reception':
                 onDateChange(subDays(date, 1));
                 break;
             case 'week':
@@ -55,6 +54,7 @@ export default function CalendarHeader({
     const handleNext = () => {
         switch (view) {
             case 'day':
+            case 'reception':
                 onDateChange(addDays(date, 1));
                 break;
             case 'week':
@@ -69,6 +69,7 @@ export default function CalendarHeader({
     const formatDateLabel = (short = false) => {
         switch (view) {
             case 'day':
+            case 'reception':
                 return format(
                     date,
                     short ? 'EEE, d MMM' : 'EEEE, d MMMM yyyy',
