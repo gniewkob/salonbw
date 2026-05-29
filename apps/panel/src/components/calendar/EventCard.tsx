@@ -17,7 +17,7 @@ const TIME_BLOCK_COLORS: Record<
     TimeBlockType,
     { bg: string; border: string; color: string }
 > = {
-    break: { bg: '#f0f0f0', border: '#ccc', color: '#666' },
+    break: { bg: '#f0f0f0', border: '#ccc', color: '#555' },
     vacation: { bg: '#d4edda', border: '#c3e6cb', color: '#155724' },
     training: { bg: '#cce5ff', border: '#b8daff', color: '#004085' },
     sick: { bg: '#f8d7da', border: '#f5c6cb', color: '#721c24' },
@@ -36,7 +36,6 @@ const STATUS_OPACITY: Record<string, number> = {
     no_show: 0.35,
 };
 
-// Only show status badge when it's non-trivial (skip 'scheduled' — it's the default)
 const STATUS_LABELS: Record<string, string> = {
     confirmed: 'Potwierdzona',
     in_progress: 'W trakcie',
@@ -47,15 +46,21 @@ const STATUS_LABELS: Record<string, string> = {
     rescheduled_pending: 'Nowy termin',
 };
 
-const ALERT_BADGE_CLASS: Record<ReceptionAlertSeverity, string> = {
-    info: 'bg-info-subtle text-info-emphasis',
-    warning: 'bg-warning-subtle text-warning-emphasis',
-    danger: 'bg-danger-subtle text-danger-emphasis',
+const ALERT_ICON: Record<ReceptionAlertSeverity, string> = {
+    info: '●',
+    warning: '●',
+    danger: '●',
+};
+
+const ALERT_COLOR: Record<ReceptionAlertSeverity, string> = {
+    info: '#0dcaf0',
+    warning: '#ffc107',
+    danger: '#dc3545',
 };
 
 export default function EventCard({
     event,
-    employeeColor = '#4A90D9',
+    employeeColor = '#d48cb0',
     onClick,
     onDragStart,
 }: EventCardProps) {
@@ -82,31 +87,18 @@ export default function EventCard({
         ? (STATUS_LABELS[event.status] ?? null)
         : null;
 
-    const containerStyle: CSSProperties = {
+    const wrapperStyle: CSSProperties = {
         cursor: 'pointer',
         opacity,
-        borderRadius: 5,
-        padding: '3px 7px 4px',
-        fontSize: 12,
-        lineHeight: 1.4,
-        transition: 'box-shadow 0.1s',
-        boxShadow: ring,
+        borderRadius: 4,
         overflow: 'hidden',
-        ...(isTimeBlock && blockColors
-            ? {
-                  backgroundColor: blockColors.bg,
-                  border: `1px solid ${blockColors.border}`,
-                  color: blockColors.color,
-              }
-            : {
-                  borderLeft: `3px solid ${employeeColor}`,
-                  backgroundColor: `${employeeColor}18`,
-                  textDecoration:
-                      event.status === 'cancelled' ? 'line-through' : undefined,
-              }),
+        boxShadow: ring ?? '0 1px 2px rgba(0,0,0,0.08)',
+        transition: 'box-shadow 0.1s',
+        textDecoration:
+            event.status === 'cancelled' ? 'line-through' : undefined,
     };
 
-    if (isTimeBlock) {
+    if (isTimeBlock && blockColors) {
         return (
             <div
                 role="button"
@@ -118,23 +110,26 @@ export default function EventCard({
                         onClick(event);
                     }
                 }}
-                style={containerStyle}
+                style={{
+                    ...wrapperStyle,
+                    backgroundColor: blockColors.bg,
+                    border: `1px solid ${blockColors.border}`,
+                    padding: '3px 7px',
+                    fontSize: 12,
+                }}
             >
                 <div
                     className="fw-medium text-truncate"
-                    style={
-                        blockColors ? { color: blockColors.color } : undefined
-                    }
+                    style={{ color: blockColors.color }}
                 >
                     {event.title}
                 </div>
                 {!event.allDay && (
                     <div
-                        className="text-truncate"
                         style={{
-                            fontSize: 11,
-                            color: blockColors?.color ?? '#666',
-                            opacity: 0.85,
+                            fontSize: 10.5,
+                            color: blockColors.color,
+                            opacity: 0.8,
                         }}
                     >
                         {timeStr}
@@ -157,54 +152,76 @@ export default function EventCard({
                 }
             }}
             onDragStart={() => onDragStart?.(event)}
-            style={containerStyle}
+            style={wrapperStyle}
         >
-            {/* Client name — primary info */}
-            {event.clientName && (
-                <div
-                    className="text-truncate"
-                    style={{ fontWeight: 600, fontSize: 12.5 }}
-                >
-                    {event.clientName}
-                    {alertSeverity && (
-                        <span
-                            className={`ms-1 badge ${ALERT_BADGE_CLASS[alertSeverity]}`}
-                            style={{ fontSize: 9, verticalAlign: 'middle' }}
-                        >
-                            !
-                        </span>
-                    )}
-                </div>
-            )}
-
-            {/* Service title */}
+            {/* Versum-style: darker header strip with time */}
             <div
-                className="text-truncate"
                 style={{
-                    color: '#555',
-                    fontSize: 11.5,
-                    fontWeight: event.clientName ? 400 : 600,
+                    backgroundColor: employeeColor,
+                    padding: '2px 7px',
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: 'white',
+                    lineHeight: 1.4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
                 }}
             >
-                {event.title}
-            </div>
-
-            {/* Time */}
-            <div style={{ color: '#777', fontSize: 11 }}>
-                {event.allDay ? 'Cały dzień' : timeStr}
-            </div>
-
-            {/* Non-default status badge */}
-            {statusLabel && (
-                <div className="mt-1">
+                <span>{event.allDay ? 'Cały dzień' : timeStr}</span>
+                {alertSeverity && (
                     <span
-                        className="badge text-bg-light border"
-                        style={{ fontSize: 10 }}
+                        style={{
+                            color: ALERT_COLOR[alertSeverity],
+                            fontSize: 9,
+                            lineHeight: 1,
+                        }}
+                    >
+                        {ALERT_ICON[alertSeverity]}
+                    </span>
+                )}
+            </div>
+
+            {/* Light-fill body: client + service */}
+            <div
+                style={{
+                    backgroundColor: `${employeeColor}22`,
+                    padding: '2px 7px 3px',
+                    fontSize: 12,
+                    lineHeight: 1.35,
+                }}
+            >
+                {event.clientName && (
+                    <div
+                        className="text-truncate"
+                        style={{ fontWeight: 600, color: '#1a1a2e' }}
+                    >
+                        {event.clientName}
+                    </div>
+                )}
+                <div
+                    className="text-truncate"
+                    style={{
+                        color: '#444',
+                        fontWeight: event.clientName ? 400 : 600,
+                        fontSize: 11.5,
+                    }}
+                >
+                    {event.title}
+                </div>
+                {statusLabel && (
+                    <div
+                        style={{
+                            fontSize: 10,
+                            color: employeeColor,
+                            fontWeight: 600,
+                            marginTop: 1,
+                        }}
                     >
                         {statusLabel}
-                    </span>
-                </div>
-            )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

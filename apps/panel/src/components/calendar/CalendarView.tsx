@@ -220,10 +220,10 @@ export default function CalendarView({
 
     return (
         <div className="d-flex h-100">
-            {/* Sidebar matches source layout: Left side filters */}
+            {/* Sidebar: hidden on mobile, shown on desktop (md+) */}
             {!hideSidebar && (
                 <div
-                    className="flex-shrink-0 border-end border-secondary border-opacity-25 bg-white"
+                    className="d-none d-md-flex flex-column flex-shrink-0 border-end border-secondary border-opacity-25 bg-white"
                     style={{ width: 220 }}
                 >
                     <CalendarSidebar

@@ -45,7 +45,7 @@ describe('EventCard', () => {
             />,
         );
 
-        // Alert shown inline as compact "!" badge next to client name
-        expect(screen.getByText('!')).toBeInTheDocument();
+        // Alert shown inline as a coloured dot (●) in the time strip
+        expect(screen.getByText('●')).toBeInTheDocument();
     });
 });
