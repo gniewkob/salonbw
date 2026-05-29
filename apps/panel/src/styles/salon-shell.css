@@ -6247,9 +6247,9 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
    ======================================== */
 
 @media (max-width: 767px) {
-    /* --- Topbar: remove mainnav offset, keep hamburger visible --- */
+    /* --- Topbar: mainnav is off-screen, no left offset needed --- */
     .navbar.navbar-default {
-        padding-left: 48px;
+        padding-left: 0;
     }
 
     .navbar .menu-toggler {
