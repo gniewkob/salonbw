@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import type { ParsedUrlQuery } from 'querystring';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import CalendarView from '@/components/calendar/CalendarView';
+import CalendarHeader from '@/components/calendar/CalendarHeader';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import ReceptionView from '@/components/calendar/ReceptionView';
@@ -1656,28 +1656,45 @@ export default function CalendarPage() {
                         items={[{ label: 'Kalendarz' }]}
                     />
 
-                    <div className="d-flex align-items-center justify-content-between gap-2 px-3 pb-2">
-                        <div className="small text-muted">
-                            Natywny kalendarz Booksy-like (beta). Legacy:{' '}
-                            <Link href="/calendar">/calendar</Link>
-                        </div>
-                        {role !== 'client' ? (
-                            <button
-                                type="button"
-                                className="btn btn-primary btn-sm"
-                                onClick={() =>
-                                    setDrawer({
-                                        open: true,
-                                        mode: 'create',
-                                        appointment: null,
-                                        initialStartTime: new Date(),
-                                    })
-                                }
-                            >
-                                Nowa wizyta
-                            </button>
-                        ) : null}
-                    </div>
+                    {!employeeMode && !clientMode && (
+                        <CalendarHeader
+                            date={currentDate}
+                            view={currentView}
+                            onDateChange={(date) => {
+                                setCurrentDate(date);
+                                updateCalendarQuery({
+                                    date: toDateParam(date),
+                                });
+                            }}
+                            onViewChange={(view) => {
+                                setCurrentView(view);
+                                updateCalendarQuery({ view });
+                            }}
+                            onTodayClick={() => {
+                                const today = new Date();
+                                setCurrentDate(today);
+                                updateCalendarQuery({
+                                    date: toDateParam(today),
+                                });
+                            }}
+                            extraAction={
+                                <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() =>
+                                        setDrawer({
+                                            open: true,
+                                            mode: 'create',
+                                            appointment: null,
+                                            initialStartTime: new Date(),
+                                        })
+                                    }
+                                >
+                                    + Wizyta
+                                </button>
+                            }
+                        />
+                    )}
 
                     <div className="px-3 pb-3">
                         {deepLinkError ? (

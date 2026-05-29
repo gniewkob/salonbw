@@ -315,7 +315,9 @@ export default function ClientsNav() {
                             className={`column_row ${currentGroupId ? '' : 'hidden'}`}
                             id="filter_boxes_container"
                         >
-                            <div className="nav-header">KRYTERIA WYSZUKIWANIA</div>
+                            <div className="nav-header">
+                                KRYTERIA WYSZUKIWANIA
+                            </div>
                             <div id="filter_boxes">
                                 {groups
                                     ?.filter((g) => currentGroupId === g.id)

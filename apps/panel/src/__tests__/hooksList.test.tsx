@@ -76,7 +76,7 @@ describe('list hooks', () => {
     });
 
     it('usePendingBookingsCount counts online pending appointments', async () => {
-        const apiFetch = jest.fn().mockResolvedValue([{ id: 1 }, { id: 2 }]);
+        const apiFetch = jest.fn().mockResolvedValue({ count: 2 });
         mockedUseAuth.mockReturnValue(
             createAuthValue({ apiFetch, role: 'admin' }),
         );
@@ -87,7 +87,7 @@ describe('list hooks', () => {
 
         await waitFor(() => expect(result.current).toBe(2));
         expect(apiFetch).toHaveBeenCalledWith(
-            '/appointments?status=online_pending',
+            '/appointments/online-pending-count',
         );
     });
 });
