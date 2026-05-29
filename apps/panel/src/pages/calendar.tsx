@@ -1677,22 +1677,6 @@ export default function CalendarPage() {
                                     date: toDateParam(today),
                                 });
                             }}
-                            extraAction={
-                                <button
-                                    type="button"
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() =>
-                                        setDrawer({
-                                            open: true,
-                                            mode: 'create',
-                                            appointment: null,
-                                            initialStartTime: new Date(),
-                                        })
-                                    }
-                                >
-                                    + Wizyta
-                                </button>
-                            }
                         />
                     )}
 
@@ -2273,11 +2257,47 @@ export default function CalendarPage() {
                                 currentDate={currentDate}
                                 currentView={currentView}
                                 selectedEmployeeIds={selectedEmployeeIds}
-                                hideSidebar
                             />
                         )}
                     </div>
                 </div>
+
+                {/* FAB: floating action button for new appointment (Versum/Booksy style) */}
+                {!employeeMode && !clientMode && (
+                    <button
+                        type="button"
+                        aria-label="Nowa wizyta"
+                        onClick={() =>
+                            setDrawer({
+                                open: true,
+                                mode: 'create',
+                                appointment: null,
+                                initialStartTime: new Date(),
+                            })
+                        }
+                        style={{
+                            position: 'fixed',
+                            bottom: 28,
+                            right: 28,
+                            width: 52,
+                            height: 52,
+                            borderRadius: '50%',
+                            background: '#1a1a2e',
+                            color: 'white',
+                            border: 'none',
+                            fontSize: 26,
+                            lineHeight: 1,
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.28)',
+                            cursor: 'pointer',
+                            zIndex: 1040,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        +
+                    </button>
+                )}
 
                 <AppointmentQuickModal
                     open={quickModal.event !== null}

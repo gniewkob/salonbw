@@ -17,7 +17,7 @@ const appointmentEvent: CalendarEvent = {
 };
 
 describe('EventCard', () => {
-    it('renders core appointment context badges', () => {
+    it('renders core appointment content', () => {
         render(
             <EventCard
                 event={appointmentEvent}
@@ -28,11 +28,12 @@ describe('EventCard', () => {
 
         expect(screen.getByText('Koloryzacja')).toBeInTheDocument();
         expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
-        expect(screen.getByText('Zaplanowana')).toBeInTheDocument();
-        expect(screen.getByText('Opłacona')).toBeInTheDocument();
+        // 'scheduled' and 'paid' are defaults — not shown as badges to reduce noise
+        expect(screen.queryByText('Zaplanowana')).not.toBeInTheDocument();
+        expect(screen.queryByText('Opłacona')).not.toBeInTheDocument();
     });
 
-    it('shows CRM alert indicator when event has customer alert flag', () => {
+    it('shows compact alert indicator when event has customer alert flag', () => {
         render(
             <EventCard
                 event={{
@@ -44,6 +45,7 @@ describe('EventCard', () => {
             />,
         );
 
-        expect(screen.getByText('Alert CRM')).toBeInTheDocument();
+        // Alert shown inline as a coloured dot (●) in the time strip
+        expect(screen.getByText('●')).toBeInTheDocument();
     });
 });

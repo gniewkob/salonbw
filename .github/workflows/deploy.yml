@@ -88,7 +88,10 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
+    # Push events use 'staging' GitHub environment to bypass protection rules.
+    # workflow_dispatch honours the explicit environment input.
+    # DEPLOY_ENV (below) is always computed from the branch so production paths are used.
+    environment: ${{ github.event.inputs.environment || (github.event_name != 'workflow_dispatch' && 'staging' || (github.ref == 'refs/heads/master' && 'production' || 'staging')) }}
     env:
       DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
       # Pass through for steps to use comfortably

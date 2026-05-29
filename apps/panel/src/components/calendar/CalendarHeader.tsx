@@ -1,5 +1,3 @@
-'use client';
-
 import type { CalendarView } from '@/types';
 import {
     format,
@@ -9,9 +7,10 @@ import {
     subWeeks,
     addMonths,
     subMonths,
+    isToday,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import React, { useState, useEffect } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 
 interface CalendarHeaderProps {
     date: Date;
@@ -19,7 +18,7 @@ interface CalendarHeaderProps {
     onDateChange: (date: Date) => void;
     onViewChange: (view: CalendarView) => void;
     onTodayClick: () => void;
-    extraAction?: React.ReactNode;
+    extraAction?: ReactNode;
 }
 
 export default function CalendarHeader({
@@ -31,6 +30,7 @@ export default function CalendarHeader({
     extraAction,
 }: CalendarHeaderProps) {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    const viewingToday = isToday(date);
 
     useEffect(() => {
         setCurrentTime(new Date());
@@ -41,6 +41,7 @@ export default function CalendarHeader({
     const handlePrev = () => {
         switch (view) {
             case 'day':
+            case 'reception':
                 onDateChange(subDays(date, 1));
                 break;
             case 'week':
@@ -55,6 +56,7 @@ export default function CalendarHeader({
     const handleNext = () => {
         switch (view) {
             case 'day':
+            case 'reception':
                 onDateChange(addDays(date, 1));
                 break;
             case 'week':
@@ -66,48 +68,53 @@ export default function CalendarHeader({
         }
     };
 
-    const formatDateLabel = (short = false) => {
+    const formatDateLabel = () => {
         switch (view) {
             case 'day':
-                return format(
-                    date,
-                    short ? 'EEE, d MMM' : 'EEEE, d MMMM yyyy',
-                    { locale: pl },
-                );
+            case 'reception':
+                return format(date, 'EEEE, d MMMM', { locale: pl });
             case 'week':
-                return format(
-                    date,
-                    short ? "'Tydz.' w, MMM yyyy" : "'Tydzień' w, MMMM yyyy",
-                    { locale: pl },
-                );
+                return format(date, "'Tydzień' w · MMMM yyyy", { locale: pl });
             case 'month':
-                return format(date, short ? 'MMM yyyy' : 'MMMM yyyy', {
-                    locale: pl,
-                });
+                return format(date, 'LLLL yyyy', { locale: pl });
         }
     };
 
-    return (
-        <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-sm-between border-bottom border-secondary border-opacity-25 bg-white px-3 py-2 gap-2">
-            {/* Navigation row: Dzisiaj + prev/date/next */}
-            <div className="d-flex align-items-center gap-2">
-                <button
-                    onClick={onTodayClick}
-                    className="btn btn-sm btn-outline-secondary fw-medium"
-                    style={{ whiteSpace: 'nowrap' }}
-                >
-                    Dzisiaj
-                </button>
+    const formatDateLabelShort = () => {
+        switch (view) {
+            case 'day':
+            case 'reception':
+                return format(date, 'EEE, d MMM', { locale: pl });
+            case 'week':
+                return format(date, "'Tydz.' w · MMM yyyy", { locale: pl });
+            case 'month':
+                return format(date, 'LLL yyyy', { locale: pl });
+        }
+    };
 
-                <div className="d-flex align-items-center flex-grow-1 justify-content-between justify-content-sm-start gap-1">
+    const views: { key: CalendarView; label: string }[] = [
+        { key: 'day', label: 'Dzień' },
+        { key: 'week', label: 'Tydzień' },
+        { key: 'month', label: 'Miesiąc' },
+    ];
+
+    return (
+        <div
+            className="bg-white border-bottom"
+            style={{ borderColor: '#e9ecef' }}
+        >
+            <div className="d-flex align-items-center justify-content-between px-3 py-2 gap-2">
+                {/* Left: nav arrows + date label */}
+                <div className="d-flex align-items-center gap-1 min-w-0">
                     <button
                         onClick={handlePrev}
-                        className="btn btn-sm btn-link text-muted p-1"
+                        className="btn btn-sm btn-light border-0 text-secondary p-2 flex-shrink-0"
                         aria-label="Poprzedni"
-                        style={{ lineHeight: 1 }}
+                        style={{ lineHeight: 1, borderRadius: 8 }}
                     >
                         <svg
-                            style={{ width: 20, height: 20 }}
+                            width="16"
+                            height="16"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -115,33 +122,57 @@ export default function CalendarHeader({
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 d="M15 19l-7-7 7-7"
                             />
                         </svg>
                     </button>
 
-                    <h2
-                        className="mb-0 fw-semibold text-dark text-capitalize"
-                        style={{ fontSize: '0.95rem', whiteSpace: 'nowrap' }}
+                    <button
+                        onClick={onTodayClick}
+                        className="btn btn-sm border-0 px-2 py-1 text-start flex-shrink-0"
+                        style={{ background: 'none', lineHeight: 1.2 }}
+                        aria-label="Wróć do dziś"
                     >
-                        {/* Short on xs, full on sm+ */}
-                        <span className="d-inline d-sm-none">
-                            {formatDateLabel(true)}
+                        <span
+                            className="d-none d-sm-block fw-semibold text-capitalize"
+                            style={{
+                                fontSize: '1.05rem',
+                                color: viewingToday ? '#212529' : '#0d6efd',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {formatDateLabel()}
                         </span>
-                        <span className="d-none d-sm-inline">
-                            {formatDateLabel(false)}
+                        <span
+                            className="d-block d-sm-none fw-semibold text-capitalize"
+                            style={{
+                                fontSize: '0.95rem',
+                                color: viewingToday ? '#212529' : '#0d6efd',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {formatDateLabelShort()}
                         </span>
-                    </h2>
+                        {!viewingToday && (
+                            <span
+                                className="d-none d-sm-block text-primary"
+                                style={{ fontSize: '0.72rem', marginTop: 1 }}
+                            >
+                                Kliknij, by wrócić do dziś
+                            </span>
+                        )}
+                    </button>
 
                     <button
                         onClick={handleNext}
-                        className="btn btn-sm btn-link text-muted p-1"
+                        className="btn btn-sm btn-light border-0 text-secondary p-2 flex-shrink-0"
                         aria-label="Następny"
-                        style={{ lineHeight: 1 }}
+                        style={{ lineHeight: 1, borderRadius: 8 }}
                     >
                         <svg
-                            style={{ width: 20, height: 20 }}
+                            width="16"
+                            height="16"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -149,53 +180,59 @@ export default function CalendarHeader({
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 d="M9 5l7 7-7 7"
                             />
                         </svg>
                     </button>
+
+                    {currentTime && (
+                        <span
+                            className="d-none d-md-inline text-secondary ms-1"
+                            style={{ fontSize: '0.82rem' }}
+                        >
+                            {format(currentTime, 'HH:mm')}
+                        </span>
+                    )}
                 </div>
 
-                {currentTime && (
-                    <span
-                        className="d-none d-sm-inline fw-light text-primary"
-                        style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}
-                    >
-                        {format(currentTime, 'HH:mm')}
-                    </span>
-                )}
-            </div>
+                {/* Right: view toggle + extra action */}
+                <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                    {extraAction}
 
-            <div className="d-flex align-items-center gap-2">
-                {extraAction}
-
-                {/* View toggle: Dzień | Tydzień | Miesiąc */}
-                <div
-                    className="btn-group btn-group-sm"
-                    role="group"
-                    aria-label="Widok kalendarza"
-                >
-                    <button
-                        type="button"
-                        onClick={() => onViewChange('day')}
-                        className={`btn btn-sm ${view === 'day' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    <div
+                        className="d-flex align-items-center gap-1"
+                        style={{
+                            background: '#f1f3f5',
+                            borderRadius: 10,
+                            padding: '3px',
+                        }}
+                        role="group"
+                        aria-label="Widok kalendarza"
                     >
-                        Dzień
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => onViewChange('week')}
-                        className={`btn btn-sm ${view === 'week' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                    >
-                        Tydzień
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => onViewChange('month')}
-                        className={`btn btn-sm ${view === 'month' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                    >
-                        Miesiąc
-                    </button>
+                        {views.map(({ key, label }) => (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => onViewChange(key)}
+                                className={`btn btn-sm border-0 px-2 py-1${view === key ? ' shadow-sm' : ''}`}
+                                style={{
+                                    fontSize: '0.8rem',
+                                    fontWeight: view === key ? 600 : 400,
+                                    borderRadius: 7,
+                                    background:
+                                        view === key
+                                            ? '#ffffff'
+                                            : 'transparent',
+                                    color: view === key ? '#212529' : '#6c757d',
+                                    transition: 'background 0.15s, color 0.15s',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
