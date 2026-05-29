@@ -2,7 +2,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const STAT_NUMBERS = ['15', '3 000', '4.9', '5'];
+const STAT_NUMBERS = ['15', '3 000', '4.9', '30'];
 
 function useInView(ref: React.RefObject<HTMLDivElement | null>) {
     const [inView, setInView] = useState(false);
