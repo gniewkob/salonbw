@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import type { EventDropArg } from '@fullcalendar/core';
+import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
@@ -159,6 +160,22 @@ export default function CalendarView({
         [onEventDrop],
     );
 
+    const handleEventResize = useCallback(
+        (info: EventResizeDoneArg) => {
+            const eventParts = info.event.id.split('-');
+            const eventId = parseInt(eventParts[1], 10);
+            if (!info.event.start || !info.event.end) return;
+            void onEventDrop(
+                eventId,
+                info.event.start,
+                info.event.end,
+                undefined,
+                info.revert,
+            );
+        },
+        [onEventDrop],
+    );
+
     const handleDatesSet = useCallback(
         (arg: { view: { type: string; currentStart: Date } }) => {
             const viewType = arg.view.type;
@@ -290,12 +307,14 @@ export default function CalendarView({
                                 )
                             }
                             eventDrop={handleEventDrop}
+                            eventResize={handleEventResize}
                             select={(info) =>
                                 onDateSelect(info.start, info.end)
                             }
                             datesSet={handleDatesSet}
                             selectable
                             editable
+                            eventResizableFromStart
                             locale="pl"
                             firstDay={1}
                             slotMinTime="07:00:00"
