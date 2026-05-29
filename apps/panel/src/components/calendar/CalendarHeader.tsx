@@ -11,7 +11,7 @@ import {
     subMonths,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface CalendarHeaderProps {
     date: Date;
@@ -19,6 +19,7 @@ interface CalendarHeaderProps {
     onDateChange: (date: Date) => void;
     onViewChange: (view: CalendarView) => void;
     onTodayClick: () => void;
+    extraAction?: React.ReactNode;
 }
 
 export default function CalendarHeader({
@@ -27,6 +28,7 @@ export default function CalendarHeader({
     onDateChange,
     onViewChange,
     onTodayClick,
+    extraAction,
 }: CalendarHeaderProps) {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
@@ -164,33 +166,37 @@ export default function CalendarHeader({
                 )}
             </div>
 
-            {/* View toggle: Dzień | Tydzień | Miesiąc */}
-            <div
-                className="btn-group btn-group-sm"
-                role="group"
-                aria-label="Widok kalendarza"
-            >
-                <button
-                    type="button"
-                    onClick={() => onViewChange('day')}
-                    className={`btn btn-sm ${view === 'day' ? 'btn-primary' : 'btn-outline-secondary'}`}
+            <div className="d-flex align-items-center gap-2">
+                {extraAction}
+
+                {/* View toggle: Dzień | Tydzień | Miesiąc */}
+                <div
+                    className="btn-group btn-group-sm"
+                    role="group"
+                    aria-label="Widok kalendarza"
                 >
-                    Dzień
-                </button>
-                <button
-                    type="button"
-                    onClick={() => onViewChange('week')}
-                    className={`btn btn-sm ${view === 'week' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                >
-                    Tydzień
-                </button>
-                <button
-                    type="button"
-                    onClick={() => onViewChange('month')}
-                    className={`btn btn-sm ${view === 'month' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                >
-                    Miesiąc
-                </button>
+                    <button
+                        type="button"
+                        onClick={() => onViewChange('day')}
+                        className={`btn btn-sm ${view === 'day' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    >
+                        Dzień
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onViewChange('week')}
+                        className={`btn btn-sm ${view === 'week' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    >
+                        Tydzień
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onViewChange('month')}
+                        className={`btn btn-sm ${view === 'month' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    >
+                        Miesiąc
+                    </button>
+                </div>
             </div>
         </div>
     );

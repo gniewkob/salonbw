@@ -202,10 +202,13 @@ export default function CalendarView({
     }, [currentView]);
 
     return (
-        <div className={`d-flex h-100 ${hideSidebar ? '' : 'flex-column '}`}>
+        <div className="d-flex h-100">
             {/* Sidebar matches source layout: Left side filters */}
             {!hideSidebar && (
-                <div className="w-100 flex-flex-shrink-0 border-end border-secondary border-opacity-25 bg-white">
+                <div
+                    className="flex-shrink-0 border-end border-secondary border-opacity-25 bg-white"
+                    style={{ width: 220 }}
+                >
                     <CalendarSidebar
                         employees={employees}
                         selectedEmployeeIds={selectedEmployeeIds}
@@ -299,11 +302,7 @@ export default function CalendarView({
                             slotMaxTime="21:00:00" // source UI usually ends late
                             slotDuration="00:15:00"
                             allDaySlot={false}
-                            headerToolbar={{
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: 'timeGridDay,timeGridWeek,dayGridMonth',
-                            }}
+                            headerToolbar={false}
                             height="auto"
                             contentHeight="auto"
                             nowIndicator
