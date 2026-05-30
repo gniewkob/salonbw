@@ -162,7 +162,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                 <>
                                                     <button
                                                         type="button"
-                                                        className="blue_text"
+                                                        className="btn btn-link btn-sm p-0"
                                                         onClick={() =>
                                                             void sendMutation.mutateAsync(
                                                                 order.id,
@@ -174,7 +174,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                     {' · '}
                                                     <button
                                                         type="button"
-                                                        className="blue_text"
+                                                        className="btn btn-link btn-sm p-0"
                                                         onClick={() =>
                                                             void cancelMutation.mutateAsync(
                                                                 order.id,
@@ -188,7 +188,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                 <>
                                                     <button
                                                         type="button"
-                                                        className="blue_text"
+                                                        className="btn btn-link btn-sm p-0"
                                                         onClick={() =>
                                                             void receiveMutation.mutateAsync(
                                                                 order.id,
@@ -200,7 +200,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                     {' · '}
                                                     <button
                                                         type="button"
-                                                        className="blue_text"
+                                                        className="btn btn-link btn-sm p-0"
                                                         onClick={() =>
                                                             void cancelMutation.mutateAsync(
                                                                 order.id,
