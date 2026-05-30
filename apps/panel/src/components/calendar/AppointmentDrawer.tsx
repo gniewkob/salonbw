@@ -34,6 +34,8 @@ interface AppointmentDrawerProps {
     initialEndTime?: Date;
     initialEmployeeId?: number;
     initialServiceId?: number;
+    initialClientId?: number;
+    initialClientName?: string;
     appointment?: Appointment | null;
     onClose: () => void;
     onSaved: () => void;
@@ -86,6 +88,8 @@ export default function AppointmentDrawer({
     initialEndTime,
     initialEmployeeId,
     initialServiceId,
+    initialClientId,
+    initialClientName,
     appointment,
     onClose,
     onSaved,
@@ -241,8 +245,8 @@ export default function AppointmentDrawer({
         setStartTime(toLocalDateTimeInput(start));
         setEmployeeId(initialEmployeeId ?? '');
         setServiceId(initialServiceId ?? '');
-        setClientId('');
-        setCustomerSearch('');
+        setClientId(initialClientId ?? '');
+        setCustomerSearch(initialClientName ?? '');
         setDebouncedCustomerSearch('');
         setShowQuickCreateCustomer(false);
         setNewCustomerFirstName('');
@@ -261,6 +265,8 @@ export default function AppointmentDrawer({
         initialEndTime,
         initialEmployeeId,
         initialServiceId,
+        initialClientId,
+        initialClientName,
         apiFetch,
     ]);
 

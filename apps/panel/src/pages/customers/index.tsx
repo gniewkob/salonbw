@@ -151,6 +151,18 @@ function DraggableCustomerRow({
                     ⋮⋮
                 </span>
                 <Link
+                    href={`/calendar?newClient=${customer.id}&clientName=${encodeURIComponent(customer.fullName ?? customer.name)}`}
+                    className="btn btn-link"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    title="Umów wizytę"
+                >
+                    <i
+                        className="icon sprite-add_appointment"
+                        aria-hidden="true"
+                    />
+                </Link>
+                <Link
                     href={`/customers/${customer.id}/edit`}
                     className="btn btn-link"
                     onClick={(e) => e.stopPropagation()}

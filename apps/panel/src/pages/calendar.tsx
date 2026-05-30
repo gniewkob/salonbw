@@ -41,6 +41,8 @@ interface DrawerState {
     initialEndTime?: Date;
     initialEmployeeId?: number;
     initialServiceId?: number;
+    initialClientId?: number;
+    initialClientName?: string;
 }
 
 interface CustomerStatisticsBatchItem {
@@ -1351,6 +1353,32 @@ export default function CalendarPage() {
         void router.replace({ query: rest }, undefined, { shallow: true });
     }, [router.query.newService, isRouterReady, router]);
 
+    useEffect(() => {
+        if (!isRouterReady) return;
+        const clientIdParam = Array.isArray(router.query.newClient)
+            ? router.query.newClient[0]
+            : router.query.newClient;
+        if (!clientIdParam) return;
+        const clientId = Number(clientIdParam);
+        if (!Number.isFinite(clientId) || clientId <= 0) return;
+        const clientName = Array.isArray(router.query.clientName)
+            ? router.query.clientName[0]
+            : (router.query.clientName ?? '');
+        setDrawer({
+            open: true,
+            mode: 'create',
+            appointment: null,
+            initialClientId: clientId,
+            initialClientName: clientName,
+        });
+        const rest = Object.fromEntries(
+            Object.entries(router.query).filter(
+                ([k]) => k !== 'newClient' && k !== 'clientName',
+            ),
+        );
+        void router.replace({ query: rest }, undefined, { shallow: true });
+    }, [router.query.newClient, isRouterReady, router]);
+
     const visibleCustomerIds = useMemo(
         () =>
             Array.from(
@@ -2318,6 +2346,8 @@ export default function CalendarPage() {
                     initialEndTime={drawer.initialEndTime}
                     initialEmployeeId={drawer.initialEmployeeId}
                     initialServiceId={drawer.initialServiceId}
+                    initialClientId={drawer.initialClientId}
+                    initialClientName={drawer.initialClientName}
                     onClose={() => {
                         clearAppointmentDeepLink();
                         setDrawer((current) => ({
