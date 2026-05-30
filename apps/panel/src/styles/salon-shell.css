@@ -7634,6 +7634,10 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     margin-left: 2px;
 }
 
+.customers-infinite-sentinel {
+    min-height: 40px;
+}
+
 /* Checkbox+label layout in filter rows */
 .checkbox_container {
     display: flex;

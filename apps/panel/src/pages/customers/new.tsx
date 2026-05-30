@@ -8,7 +8,7 @@ import NewCustomerNav from '@/components/salon/navs/NewCustomerNav';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
-import { useCreateCustomer } from '@/hooks/useCustomers';
+import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import CustomerFormFields, {
     type CustomerFormDraft,
     type CustomerFormOnChange,
@@ -49,6 +49,24 @@ export default function NewCustomerPage() {
         emailConsent: false,
         smsConsent: false,
     });
+
+    const [dupSearch, setDupSearch] = useState('');
+    useEffect(() => {
+        const phone = form.phone.trim();
+        const email = form.email.trim();
+        const query = phone || email;
+        if (!query) {
+            setDupSearch('');
+            return;
+        }
+        const tid = setTimeout(() => setDupSearch(query), 600);
+        return () => clearTimeout(tid);
+    }, [form.phone, form.email]);
+
+    const { data: dupData } = useCustomers(
+        dupSearch ? { search: dupSearch, limit: 5 } : {},
+    );
+    const duplicates = dupSearch ? (dupData?.items ?? []) : [];
 
     const handleSelectTab = (tab: 'basic' | 'extended' | 'advanced') => {
         setActiveTab(tab);
@@ -224,6 +242,38 @@ export default function NewCustomerPage() {
                         <p className="small text-muted">
                             Klienci / Nowy klient
                         </p>
+
+                        {duplicates.length > 0 ? (
+                            <div
+                                className="alert alert-warning d-flex align-items-start gap-2 py-2"
+                                role="alert"
+                            >
+                                <span>⚠️</span>
+                                <div>
+                                    <strong>Możliwy duplikat</strong> —
+                                    znaleziono klientów z podanym telefonem lub
+                                    emailem:
+                                    <ul className="mb-0 mt-1">
+                                        {duplicates.map((d) => (
+                                            <li key={d.id}>
+                                                <Link
+                                                    href={
+                                                        `/customers/${d.id}` as Route
+                                                    }
+                                                    className="alert-link"
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {d.fullName || d.name}
+                                                </Link>
+                                                {d.phone ? ` — ${d.phone}` : ''}
+                                                {d.email ? ` — ${d.email}` : ''}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        ) : null}
 
                         <form
                             onSubmit={(e) => void onSubmit(e)}

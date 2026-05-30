@@ -9,7 +9,7 @@ import {
 } from '@/hooks/useCustomers';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type { CustomerFilterParams, Customer } from '@/types';
 import {
     DndContext,
@@ -201,6 +201,17 @@ export default function ClientsPage() {
     const [bulkGroupId, setBulkGroupId] = useState<string>('');
     const [bulkGroupPending, setBulkGroupPending] = useState(false);
     const [quickFilter, setQuickFilter] = useState<string>('');
+    const [isMobile, setIsMobile] = useState(false);
+    const [mobileAccumulated, setMobileAccumulated] = useState<Customer[]>([]);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 575px)');
+        setIsMobile(mq.matches);
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
 
     useEffect(() => {
         setPage(1);
@@ -266,7 +277,10 @@ export default function ClientsPage() {
     );
 
     const { data: customersData, isLoading } = useCustomers(filters);
-    const customers = customersData?.items ?? [];
+    const customers = useMemo(
+        () => customersData?.items ?? [],
+        [customersData],
+    );
     const { data: groups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
     const [searchTerm, setSearchTerm] = useState('');
@@ -292,14 +306,30 @@ export default function ClientsPage() {
     };
 
     const filteredCustomers = searchTerm
-        ? customers.filter(
-              (c) =>
-                  c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  c.phone?.includes(searchTerm),
-          )
+        ? customers.filter((c) => {
+              const term = searchTerm.toLowerCase();
+              return (
+                  c.name?.toLowerCase().includes(term) ||
+                  c.phone?.includes(searchTerm) ||
+                  c.email?.toLowerCase().includes(term)
+              );
+          })
         : customers;
 
-    const allVisibleIds = filteredCustomers.map((c) => c.id);
+    const mobileTerm = searchTerm.toLowerCase();
+    const mobileFilteredItems = searchTerm
+        ? mobileAccumulated.filter(
+              (c) =>
+                  c.name?.toLowerCase().includes(mobileTerm) ||
+                  c.phone?.includes(searchTerm) ||
+                  c.email?.toLowerCase().includes(mobileTerm),
+          )
+        : mobileAccumulated;
+    const displayedCustomers = isMobile
+        ? mobileFilteredItems
+        : filteredCustomers;
+
+    const allVisibleIds = displayedCustomers.map((c) => c.id);
     const allChecked =
         allVisibleIds.length > 0 &&
         allVisibleIds.every((id) => selectedIds.has(id));
@@ -390,6 +420,57 @@ export default function ClientsPage() {
     const fromItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
     const toItem = Math.min(page * pageSize, totalCount);
 
+    // Mobile infinite scroll: accumulate items across pages
+    const mobileResetKey = JSON.stringify({
+        currentGroupId,
+        currentTagId,
+        currentServiceId,
+        currentEmployeeId,
+        quickFilter,
+        sortBy,
+        sortOrder,
+        pageSize,
+    });
+    const mobileResetKeyRef = useRef(mobileResetKey);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        if (mobileResetKey !== mobileResetKeyRef.current) {
+            mobileResetKeyRef.current = mobileResetKey;
+            setPage(1);
+            setMobileAccumulated([]);
+            return;
+        }
+        if (customers.length === 0 && page === 1) {
+            setMobileAccumulated([]);
+            return;
+        }
+        if (page === 1) {
+            setMobileAccumulated(customers);
+        } else {
+            setMobileAccumulated((prev) => {
+                const ids = new Set(prev.map((c) => c.id));
+                return [...prev, ...customers.filter((c) => !ids.has(c.id))];
+            });
+        }
+    }, [customers, page, isMobile, mobileResetKey]);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !isLoading && page < totalPages) {
+                    setPage((p) => p + 1);
+                }
+            },
+            { threshold: 0.1 },
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [isMobile, isLoading, page, totalPages]);
+
     return (
         <RouteGuard
             roles={['employee', 'receptionist', 'admin']}
@@ -415,7 +496,7 @@ export default function ClientsPage() {
                                 <input
                                     type="text"
                                     name="query"
-                                    placeholder="wyszukaj klienta"
+                                    placeholder="wyszukaj po nazwie, telefonie lub emailu"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -553,7 +634,7 @@ export default function ClientsPage() {
                                 </div>
                                 <div className="results_size_info">
                                     Klientów spełniających kryteria:{' '}
-                                    <strong>{filteredCustomers.length}</strong>
+                                    <strong>{displayedCustomers.length}</strong>
                                     <a
                                         href="#"
                                         id="create_group_button"
@@ -596,7 +677,8 @@ export default function ClientsPage() {
                                             onChange={toggleSelectAll}
                                         />
                                         zaznacz wszystkich (
-                                        <span>{filteredCustomers.length}</span>)
+                                        <span>{displayedCustomers.length}</span>
+                                        )
                                     </label>
                                 </div>
                                 <div id="customers_list">
@@ -653,7 +735,7 @@ export default function ClientsPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredCustomers.map(
+                                            {displayedCustomers.map(
                                                 (customer, i) => (
                                                     <DraggableCustomerRow
                                                         key={customer.id}
@@ -687,64 +769,92 @@ export default function ClientsPage() {
                             </>
                         )}
 
-                        <div className="pagination_container">
-                            <div className="row">
-                                <div className="infocol-7">
-                                    Pozycje od {fromItem} do {toItem} z{' '}
-                                    <span id="total_found">{totalCount}</span> |
-                                    na stronie{' '}
-                                    <select
-                                        name="size"
-                                        aria-label="na stronie"
-                                        value={pageSize}
-                                        onChange={(e) => {
-                                            setPageSize(Number(e.target.value));
-                                            setPage(1);
-                                        }}
-                                    >
-                                        <option value="20">20</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
-                                <div className="form_paginationcol-5">
-                                    <button
-                                        type="button"
-                                        className="btn btn-link"
-                                        aria-label="Poprzednia strona"
-                                        disabled={page <= 1}
-                                        onClick={() => setPage((p) => p - 1)}
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-left-single-arrow"
-                                            aria-hidden="true"
+                        {isMobile && (
+                            <div
+                                ref={sentinelRef}
+                                className="customers-infinite-sentinel"
+                                aria-hidden="true"
+                            >
+                                {isLoading && page > 1 ? (
+                                    <p className="text-muted text-center small py-2">
+                                        Ładowanie...
+                                    </p>
+                                ) : page < totalPages ? (
+                                    <p className="text-muted text-center small py-2">
+                                        Przewiń, aby załadować więcej
+                                    </p>
+                                ) : null}
+                            </div>
+                        )}
+
+                        {!isMobile && (
+                            <div className="pagination_container">
+                                <div className="row">
+                                    <div className="infocol-7">
+                                        Pozycje od {fromItem} do {toItem} z{' '}
+                                        <span id="total_found">
+                                            {totalCount}
+                                        </span>{' '}
+                                        | na stronie{' '}
+                                        <select
+                                            name="size"
+                                            aria-label="na stronie"
+                                            value={pageSize}
+                                            onChange={(e) => {
+                                                setPageSize(
+                                                    Number(e.target.value),
+                                                );
+                                                setPage(1);
+                                            }}
+                                        >
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
+                                    <div className="form_paginationcol-5">
+                                        <button
+                                            type="button"
+                                            className="btn btn-link"
+                                            aria-label="Poprzednia strona"
+                                            disabled={page <= 1}
+                                            onClick={() =>
+                                                setPage((p) => p - 1)
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-left-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                        <input
+                                            type="text"
+                                            name="page"
+                                            className="pagination-page-input"
+                                            aria-label="strona"
+                                            value={page}
+                                            readOnly
                                         />
-                                    </button>
-                                    <input
-                                        type="text"
-                                        name="page"
-                                        className="pagination-page-input"
-                                        aria-label="strona"
-                                        value={page}
-                                        readOnly
-                                    />
-                                    {' z '}
-                                    <a className="pointer">{totalPages}</a>
-                                    <button
-                                        type="button"
-                                        className="btn btn-link button_next ml-s"
-                                        aria-label="Następna strona"
-                                        disabled={page >= totalPages}
-                                        onClick={() => setPage((p) => p + 1)}
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-right-single-arrow"
-                                            aria-hidden="true"
-                                        />
-                                    </button>
+                                        {' z '}
+                                        <a className="pointer">{totalPages}</a>
+                                        <button
+                                            type="button"
+                                            className="btn btn-link button_next ml-s"
+                                            aria-label="Następna strona"
+                                            disabled={page >= totalPages}
+                                            onClick={() =>
+                                                setPage((p) => p + 1)
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-right-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <DragOverlay dropAnimation={null}>
