@@ -25,7 +25,7 @@ export default function WarehouseUsageHistoryPage() {
                         </Link>
                         <Link
                             href="/use/new?scope=planned"
-                            className="button ml-xs"
+                            className="btn btn-outline-secondary btn-sm ml-xs"
                         >
                             dodaj planowane zużycie
                         </Link>
@@ -37,7 +37,7 @@ export default function WarehouseUsageHistoryPage() {
             ) : (
                 <>
                     <div className="">
-                        <table className="table-bordered">
+                        <table className="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>nr zużycia</th>

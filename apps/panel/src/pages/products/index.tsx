@@ -180,10 +180,16 @@ export default function WarehouseProductsPage() {
                 </div>
                 <div className="col-sm-8 col-lg-7">
                     <div className="d-flex flex-wrap justify-content-end">
-                        <Link href="/sales/new" className="button ml-xs">
+                        <Link
+                            href="/sales/new"
+                            className="btn btn-outline-secondary btn-sm ml-xs"
+                        >
                             dodaj sprzedaż
                         </Link>
-                        <Link href="/use/new" className="button ml-xs">
+                        <Link
+                            href="/use/new"
+                            className="btn btn-outline-secondary btn-sm ml-xs"
+                        >
                             dodaj zużycie
                         </Link>
                         <Link

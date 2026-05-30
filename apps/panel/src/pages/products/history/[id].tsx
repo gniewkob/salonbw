@@ -94,7 +94,7 @@ export default function ProductHistoryPage() {
                         </tbody>
                     </table>
                     <div className="products-pagination">
-                        Pozycje od 1 do {history.length} | na stronie 20
+                        Łącznie: {history.length} pozycji
                     </div>
                 </div>
             )}
