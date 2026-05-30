@@ -304,11 +304,14 @@ export default function ClientAppointmentHistoryView({
                         </dd>
                         <dt className="col-sm-3">Status</dt>
                         <dd className="col-sm-9">
-                            {(
-                                STATUS_CONFIG[
-                                    selectedAppointment.status ?? 'scheduled'
-                                ] ?? DEFAULT_STATUS
-                            ).label}
+                            {
+                                (
+                                    STATUS_CONFIG[
+                                        selectedAppointment.status ??
+                                            'scheduled'
+                                    ] ?? DEFAULT_STATUS
+                                ).label
+                            }
                         </dd>
                         <dt className="col-sm-3">Termin</dt>
                         <dd className="col-sm-9">
