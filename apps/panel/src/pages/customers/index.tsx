@@ -40,11 +40,15 @@ function formatLastVisit(date: string | null | undefined) {
 function DraggableCustomerRow({
     customer,
     isDragging,
+    isSelected,
+    onToggleSelect,
     onOpen,
     rowClass,
 }: {
     customer: Customer;
     isDragging: boolean;
+    isSelected: boolean;
+    onToggleSelect: (id: number) => void;
     onOpen: (id: number) => void;
     rowClass?: string;
 }) {
@@ -62,7 +66,7 @@ function DraggableCustomerRow({
         <tr
             ref={setNodeRef}
             {...{ style }}
-            className={`customer-row ${rowClass ?? ''} ${isDragging ? 'opacity-50' : ''}`.trim()}
+            className={`customer-row ${rowClass ?? ''} ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'table-active' : ''}`.trim()}
             onClick={() => onOpen(customer.id)}
         >
             <td className="w-50p">
@@ -70,6 +74,8 @@ function DraggableCustomerRow({
                     <input
                         type="checkbox"
                         aria-label="Wybierz klienta"
+                        checked={isSelected}
+                        onChange={() => onToggleSelect(customer.id)}
                         onClick={(e) => e.stopPropagation()}
                         onPointerDown={(e) => e.stopPropagation()}
                     />
@@ -177,10 +183,35 @@ export default function ClientsPage() {
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [sortBy, setSortBy] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+    const [bulkGroupId, setBulkGroupId] = useState<string>('');
+    const [bulkGroupPending, setBulkGroupPending] = useState(false);
+    const [quickFilter, setQuickFilter] = useState<string>('');
 
     useEffect(() => {
         setPage(1);
     }, [currentGroupId, currentTagId, currentServiceId, currentEmployeeId]);
+
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [page, pageSize]);
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder((o) => (o === 'ASC' ? 'DESC' : 'ASC'));
+        } else {
+            setSortBy(field);
+            setSortOrder('ASC');
+        }
+        setPage(1);
+    };
+
+    const sortIndicator = (field: string) => {
+        if (sortBy !== field) return ' ↕';
+        return sortOrder === 'ASC' ? ' ↑' : ' ↓';
+    };
 
     const filters: CustomerFilterParams = useMemo(
         () => ({
@@ -189,9 +220,24 @@ export default function ClientsPage() {
             serviceId: currentServiceId,
             employeeId: currentEmployeeId,
             hasUpcomingVisit:
-                router.query.hasUpcomingVisit === 'true' ? true : undefined,
+                router.query.hasUpcomingVisit === 'true'
+                    ? true
+                    : quickFilter === 'upcoming'
+                      ? true
+                      : undefined,
+            noVisitSince:
+                quickFilter === 'inactive6m'
+                    ? new Date(
+                          Date.now() - 180 * 24 * 60 * 60 * 1000,
+                      ).toISOString()
+                    : undefined,
+            recentlyAdded: quickFilter === 'new' ? true : undefined,
+            emailConsent: quickFilter === 'noEmailConsent' ? false : undefined,
+            smsConsent: quickFilter === 'noSmsConsent' ? false : undefined,
             limit: pageSize,
             page,
+            sortBy: sortBy || undefined,
+            sortOrder: sortBy ? sortOrder : undefined,
         }),
         [
             currentGroupId,
@@ -201,6 +247,9 @@ export default function ClientsPage() {
             router.query.hasUpcomingVisit,
             page,
             pageSize,
+            sortBy,
+            sortOrder,
+            quickFilter,
         ],
     );
 
@@ -237,6 +286,57 @@ export default function ClientsPage() {
                   c.phone?.includes(searchTerm),
           )
         : customers;
+
+    const allVisibleIds = filteredCustomers.map((c) => c.id);
+    const allChecked =
+        allVisibleIds.length > 0 &&
+        allVisibleIds.every((id) => selectedIds.has(id));
+    const someChecked =
+        !allChecked && allVisibleIds.some((id) => selectedIds.has(id));
+
+    const toggleSelectAll = () => {
+        if (allChecked) {
+            setSelectedIds((prev) => {
+                const next = new Set(prev);
+                allVisibleIds.forEach((id) => next.delete(id));
+                return next;
+            });
+        } else {
+            setSelectedIds((prev) => new Set([...prev, ...allVisibleIds]));
+        }
+    };
+
+    const toggleSelect = (id: number) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    const handleBulkAddToGroup = async () => {
+        if (!bulkGroupId || selectedIds.size === 0) return;
+        setBulkGroupPending(true);
+        try {
+            await addToGroup.mutateAsync({
+                groupId: Number(bulkGroupId),
+                customerIds: [...selectedIds],
+            });
+            setSelectedIds(new Set());
+            setBulkGroupId('');
+        } finally {
+            setBulkGroupPending(false);
+        }
+    };
+
+    const handleBulkNewsletter = () => {
+        const ids = [...selectedIds].join(',');
+        void router.push(`/newsletters/new?customerIds=${ids}`);
+    };
 
     const handleDragStart = (event: DragStartEvent) => {
         const customer = customers.find((c) => c.id === event.active.id);
@@ -298,7 +398,7 @@ export default function ClientsPage() {
                             ]}
                         />
 
-                        <div className="row mb-3">
+                        <div className="row mb-2">
                             <div className="col-sm-7 d-flex flex-wrap mb-2 mb-md-0">
                                 <input
                                     type="text"
@@ -323,6 +423,103 @@ export default function ClientsPage() {
                                 </Link>
                             </div>
                         </div>
+
+                        <div className="customers-quick-filters mb-3">
+                            {[
+                                {
+                                    key: 'upcoming',
+                                    label: 'Nadchodząca wizyta',
+                                },
+                                {
+                                    key: 'inactive6m',
+                                    label: 'Brak wizyty >6 mies.',
+                                },
+                                { key: 'new', label: 'Nowi klienci' },
+                                {
+                                    key: 'noEmailConsent',
+                                    label: 'Brak zgody email',
+                                },
+                                {
+                                    key: 'noSmsConsent',
+                                    label: 'Brak zgody SMS',
+                                },
+                            ].map(({ key, label }) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    className={`customers-quick-filter-chip${quickFilter === key ? ' active' : ''}`}
+                                    onClick={() => {
+                                        setQuickFilter((prev) =>
+                                            prev === key ? '' : key,
+                                        );
+                                        setPage(1);
+                                    }}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {selectedIds.size > 0 && (
+                            <div className="customers-bulk-bar">
+                                <span className="customers-bulk-bar__count">
+                                    Zaznaczono:{' '}
+                                    <strong>{selectedIds.size}</strong>
+                                </span>
+                                <div className="customers-bulk-bar__actions">
+                                    <select
+                                        className="form-select form-select-sm"
+                                        value={bulkGroupId}
+                                        onChange={(e) =>
+                                            setBulkGroupId(e.target.value)
+                                        }
+                                        aria-label="Wybierz grupę"
+                                    >
+                                        <option value="">
+                                            Dodaj do grupy...
+                                        </option>
+                                        {groups?.map((g) => (
+                                            <option
+                                                key={g.id}
+                                                value={String(g.id)}
+                                            >
+                                                {g.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-primary"
+                                        disabled={
+                                            !bulkGroupId || bulkGroupPending
+                                        }
+                                        onClick={() =>
+                                            void handleBulkAddToGroup()
+                                        }
+                                    >
+                                        {bulkGroupPending
+                                            ? 'Dodawanie...'
+                                            : 'Dodaj do grupy'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={handleBulkNewsletter}
+                                    >
+                                        Newsletter
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-link text-muted"
+                                        onClick={() =>
+                                            setSelectedIds(new Set())
+                                        }
+                                    >
+                                        Odznacz wszystkich
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {activeGroup && (
                             <div className="column_row results_info">
@@ -378,6 +575,13 @@ export default function ClientsPage() {
                                         <input
                                             type="checkbox"
                                             aria-label="zaznacz wszystkich"
+                                            checked={allChecked}
+                                            ref={(el) => {
+                                                if (el)
+                                                    el.indeterminate =
+                                                        someChecked;
+                                            }}
+                                            onChange={toggleSelectAll}
                                         />
                                         zaznacz wszystkich (
                                         <span>{filteredCustomers.length}</span>)
@@ -387,14 +591,48 @@ export default function ClientsPage() {
                                     <table className="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>
-                                                    <div>Klient</div>
+                                                <th
+                                                    className="customers-sort-th"
+                                                    onClick={() =>
+                                                        handleSort('name')
+                                                    }
+                                                    title="Sortuj po nazwie"
+                                                >
+                                                    <div>
+                                                        Klient
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className="customers-sort-indicator"
+                                                        >
+                                                            {sortIndicator(
+                                                                'name',
+                                                            )}
+                                                        </span>
+                                                    </div>
                                                 </th>
                                                 <th>
                                                     <div>Kontakt</div>
                                                 </th>
-                                                <th className="d-none d-sm-table-cell">
-                                                    <div>Ostatnia wizyta</div>
+                                                <th
+                                                    className="d-none d-sm-table-cell customers-sort-th"
+                                                    onClick={() =>
+                                                        handleSort(
+                                                            'lastVisitDate',
+                                                        )
+                                                    }
+                                                    title="Sortuj po ostatniej wizycie"
+                                                >
+                                                    <div>
+                                                        Ostatnia wizyta
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className="customers-sort-indicator"
+                                                        >
+                                                            {sortIndicator(
+                                                                'lastVisitDate',
+                                                            )}
+                                                        </span>
+                                                    </div>
                                                 </th>
                                                 <th
                                                     className="text-end d-none d-sm-table-cell"
@@ -411,6 +649,12 @@ export default function ClientsPage() {
                                                         isDragging={
                                                             draggedCustomer?.id ===
                                                             customer.id
+                                                        }
+                                                        isSelected={selectedIds.has(
+                                                            customer.id,
+                                                        )}
+                                                        onToggleSelect={
+                                                            toggleSelect
                                                         }
                                                         rowClass={
                                                             i % 2 === 0
