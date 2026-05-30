@@ -9,7 +9,7 @@ import {
 } from '@/hooks/useCustomers';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type { CustomerFilterParams, Customer } from '@/types';
 import {
     DndContext,
@@ -40,11 +40,15 @@ function formatLastVisit(date: string | null | undefined) {
 function DraggableCustomerRow({
     customer,
     isDragging,
+    isSelected,
+    onToggleSelect,
     onOpen,
     rowClass,
 }: {
     customer: Customer;
     isDragging: boolean;
+    isSelected: boolean;
+    onToggleSelect: (id: number) => void;
     onOpen: (id: number) => void;
     rowClass?: string;
 }) {
@@ -62,7 +66,7 @@ function DraggableCustomerRow({
         <tr
             ref={setNodeRef}
             {...{ style }}
-            className={`customer-row ${rowClass ?? ''} ${isDragging ? 'opacity-50' : ''}`.trim()}
+            className={`customer-row ${rowClass ?? ''} ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'table-active' : ''}`.trim()}
             onClick={() => onOpen(customer.id)}
         >
             <td className="w-50p">
@@ -70,6 +74,8 @@ function DraggableCustomerRow({
                     <input
                         type="checkbox"
                         aria-label="Wybierz klienta"
+                        checked={isSelected}
+                        onChange={() => onToggleSelect(customer.id)}
                         onClick={(e) => e.stopPropagation()}
                         onPointerDown={(e) => e.stopPropagation()}
                     />
@@ -82,26 +88,11 @@ function DraggableCustomerRow({
                 >
                     {customer.fullName || customer.name}
                 </Link>
+                <div className="d-block d-sm-none small text-muted mt-1">
+                    {formatLastVisit(customer.lastVisitDate)}
+                </div>
             </td>
             <td>
-                {customer.email ? (
-                    <a
-                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&single=1`}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        <div
-                            className="icon_box"
-                            title={`wyślij email: ${customer.email}`}
-                        >
-                            <i className="icon sprite-customer_email" />
-                        </div>
-                    </a>
-                ) : (
-                    <div className="icon_box" title="nie podano">
-                        <i className="icon sprite-customer_email icon-opacity" />
-                    </div>
-                )}
                 {customer.phone ? (
                     <div className="inline_block">
                         <a
@@ -116,6 +107,21 @@ function DraggableCustomerRow({
                             {customer.phone}
                         </a>
                     </div>
+                ) : null}
+                {customer.email ? (
+                    <a
+                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&single=1`}
+                        className="d-none d-sm-inline"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
+                        <div
+                            className="icon_box"
+                            title={`wyślij email: ${customer.email}`}
+                        >
+                            <i className="icon sprite-customer_email" />
+                        </div>
+                    </a>
                 ) : null}
             </td>
             <td className="d-none d-sm-table-cell">
@@ -144,6 +150,18 @@ function DraggableCustomerRow({
                 >
                     ⋮⋮
                 </span>
+                <Link
+                    href={`/calendar?newClient=${customer.id}&clientName=${encodeURIComponent(customer.fullName ?? customer.name)}`}
+                    className="btn btn-link"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    title="Umów wizytę"
+                >
+                    <i
+                        className="icon sprite-add_appointment"
+                        aria-hidden="true"
+                    />
+                </Link>
                 <Link
                     href={`/customers/${customer.id}/edit`}
                     className="btn btn-link"
@@ -177,10 +195,46 @@ export default function ClientsPage() {
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [sortBy, setSortBy] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+    const [bulkGroupId, setBulkGroupId] = useState<string>('');
+    const [bulkGroupPending, setBulkGroupPending] = useState(false);
+    const [quickFilter, setQuickFilter] = useState<string>('');
+    const [isMobile, setIsMobile] = useState(false);
+    const [mobileAccumulated, setMobileAccumulated] = useState<Customer[]>([]);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 575px)');
+        setIsMobile(mq.matches);
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
 
     useEffect(() => {
         setPage(1);
     }, [currentGroupId, currentTagId, currentServiceId, currentEmployeeId]);
+
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [page, pageSize]);
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder((o) => (o === 'ASC' ? 'DESC' : 'ASC'));
+        } else {
+            setSortBy(field);
+            setSortOrder('ASC');
+        }
+        setPage(1);
+    };
+
+    const sortIndicator = (field: string) => {
+        if (sortBy !== field) return ' ↕';
+        return sortOrder === 'ASC' ? ' ↑' : ' ↓';
+    };
 
     const filters: CustomerFilterParams = useMemo(
         () => ({
@@ -189,9 +243,24 @@ export default function ClientsPage() {
             serviceId: currentServiceId,
             employeeId: currentEmployeeId,
             hasUpcomingVisit:
-                router.query.hasUpcomingVisit === 'true' ? true : undefined,
+                router.query.hasUpcomingVisit === 'true'
+                    ? true
+                    : quickFilter === 'upcoming'
+                      ? true
+                      : undefined,
+            noVisitSince:
+                quickFilter === 'inactive6m'
+                    ? new Date(
+                          Date.now() - 180 * 24 * 60 * 60 * 1000,
+                      ).toISOString()
+                    : undefined,
+            recentlyAdded: quickFilter === 'new' ? true : undefined,
+            emailConsent: quickFilter === 'noEmailConsent' ? false : undefined,
+            smsConsent: quickFilter === 'noSmsConsent' ? false : undefined,
             limit: pageSize,
             page,
+            sortBy: sortBy || undefined,
+            sortOrder: sortBy ? sortOrder : undefined,
         }),
         [
             currentGroupId,
@@ -201,11 +270,17 @@ export default function ClientsPage() {
             router.query.hasUpcomingVisit,
             page,
             pageSize,
+            sortBy,
+            sortOrder,
+            quickFilter,
         ],
     );
 
     const { data: customersData, isLoading } = useCustomers(filters);
-    const customers = customersData?.items ?? [];
+    const customers = useMemo(
+        () => customersData?.items ?? [],
+        [customersData],
+    );
     const { data: groups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
     const [searchTerm, setSearchTerm] = useState('');
@@ -231,12 +306,79 @@ export default function ClientsPage() {
     };
 
     const filteredCustomers = searchTerm
-        ? customers.filter(
-              (c) =>
-                  c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  c.phone?.includes(searchTerm),
-          )
+        ? customers.filter((c) => {
+              const term = searchTerm.toLowerCase();
+              return (
+                  c.name?.toLowerCase().includes(term) ||
+                  c.phone?.includes(searchTerm) ||
+                  c.email?.toLowerCase().includes(term)
+              );
+          })
         : customers;
+
+    const mobileTerm = searchTerm.toLowerCase();
+    const mobileFilteredItems = searchTerm
+        ? mobileAccumulated.filter(
+              (c) =>
+                  c.name?.toLowerCase().includes(mobileTerm) ||
+                  c.phone?.includes(searchTerm) ||
+                  c.email?.toLowerCase().includes(mobileTerm),
+          )
+        : mobileAccumulated;
+    const displayedCustomers = isMobile
+        ? mobileFilteredItems
+        : filteredCustomers;
+
+    const allVisibleIds = displayedCustomers.map((c) => c.id);
+    const allChecked =
+        allVisibleIds.length > 0 &&
+        allVisibleIds.every((id) => selectedIds.has(id));
+    const someChecked =
+        !allChecked && allVisibleIds.some((id) => selectedIds.has(id));
+
+    const toggleSelectAll = () => {
+        if (allChecked) {
+            setSelectedIds((prev) => {
+                const next = new Set(prev);
+                allVisibleIds.forEach((id) => next.delete(id));
+                return next;
+            });
+        } else {
+            setSelectedIds((prev) => new Set([...prev, ...allVisibleIds]));
+        }
+    };
+
+    const toggleSelect = (id: number) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    const handleBulkAddToGroup = async () => {
+        if (!bulkGroupId || selectedIds.size === 0) return;
+        setBulkGroupPending(true);
+        try {
+            await addToGroup.mutateAsync({
+                groupId: Number(bulkGroupId),
+                customerIds: [...selectedIds],
+            });
+            setSelectedIds(new Set());
+            setBulkGroupId('');
+        } finally {
+            setBulkGroupPending(false);
+        }
+    };
+
+    const handleBulkNewsletter = () => {
+        const ids = [...selectedIds].join(',');
+        void router.push(`/newsletters/new?customerIds=${ids}`);
+    };
 
     const handleDragStart = (event: DragStartEvent) => {
         const customer = customers.find((c) => c.id === event.active.id);
@@ -278,6 +420,57 @@ export default function ClientsPage() {
     const fromItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
     const toItem = Math.min(page * pageSize, totalCount);
 
+    // Mobile infinite scroll: accumulate items across pages
+    const mobileResetKey = JSON.stringify({
+        currentGroupId,
+        currentTagId,
+        currentServiceId,
+        currentEmployeeId,
+        quickFilter,
+        sortBy,
+        sortOrder,
+        pageSize,
+    });
+    const mobileResetKeyRef = useRef(mobileResetKey);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        if (mobileResetKey !== mobileResetKeyRef.current) {
+            mobileResetKeyRef.current = mobileResetKey;
+            setPage(1);
+            setMobileAccumulated([]);
+            return;
+        }
+        if (customers.length === 0 && page === 1) {
+            setMobileAccumulated([]);
+            return;
+        }
+        if (page === 1) {
+            setMobileAccumulated(customers);
+        } else {
+            setMobileAccumulated((prev) => {
+                const ids = new Set(prev.map((c) => c.id));
+                return [...prev, ...customers.filter((c) => !ids.has(c.id))];
+            });
+        }
+    }, [customers, page, isMobile, mobileResetKey]);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !isLoading && page < totalPages) {
+                    setPage((p) => p + 1);
+                }
+            },
+            { threshold: 0.1 },
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [isMobile, isLoading, page, totalPages]);
+
     return (
         <RouteGuard
             roles={['employee', 'receptionist', 'admin']}
@@ -298,12 +491,12 @@ export default function ClientsPage() {
                             ]}
                         />
 
-                        <div className="row mb-3">
+                        <div className="row mb-2">
                             <div className="col-sm-7 d-flex flex-wrap mb-2 mb-md-0">
                                 <input
                                     type="text"
                                     name="query"
-                                    placeholder="wyszukaj klienta"
+                                    placeholder="wyszukaj po nazwie, telefonie lub emailu"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -323,6 +516,103 @@ export default function ClientsPage() {
                                 </Link>
                             </div>
                         </div>
+
+                        <div className="customers-quick-filters mb-3">
+                            {[
+                                {
+                                    key: 'upcoming',
+                                    label: 'Nadchodząca wizyta',
+                                },
+                                {
+                                    key: 'inactive6m',
+                                    label: 'Brak wizyty >6 mies.',
+                                },
+                                { key: 'new', label: 'Nowi klienci' },
+                                {
+                                    key: 'noEmailConsent',
+                                    label: 'Brak zgody email',
+                                },
+                                {
+                                    key: 'noSmsConsent',
+                                    label: 'Brak zgody SMS',
+                                },
+                            ].map(({ key, label }) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    className={`customers-quick-filter-chip${quickFilter === key ? ' active' : ''}`}
+                                    onClick={() => {
+                                        setQuickFilter((prev) =>
+                                            prev === key ? '' : key,
+                                        );
+                                        setPage(1);
+                                    }}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {selectedIds.size > 0 && (
+                            <div className="customers-bulk-bar">
+                                <span className="customers-bulk-bar__count">
+                                    Zaznaczono:{' '}
+                                    <strong>{selectedIds.size}</strong>
+                                </span>
+                                <div className="customers-bulk-bar__actions">
+                                    <select
+                                        className="form-select form-select-sm"
+                                        value={bulkGroupId}
+                                        onChange={(e) =>
+                                            setBulkGroupId(e.target.value)
+                                        }
+                                        aria-label="Wybierz grupę"
+                                    >
+                                        <option value="">
+                                            Dodaj do grupy...
+                                        </option>
+                                        {groups?.map((g) => (
+                                            <option
+                                                key={g.id}
+                                                value={String(g.id)}
+                                            >
+                                                {g.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-primary"
+                                        disabled={
+                                            !bulkGroupId || bulkGroupPending
+                                        }
+                                        onClick={() =>
+                                            void handleBulkAddToGroup()
+                                        }
+                                    >
+                                        {bulkGroupPending
+                                            ? 'Dodawanie...'
+                                            : 'Dodaj do grupy'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={handleBulkNewsletter}
+                                    >
+                                        Newsletter
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-link text-muted"
+                                        onClick={() =>
+                                            setSelectedIds(new Set())
+                                        }
+                                    >
+                                        Odznacz wszystkich
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {activeGroup && (
                             <div className="column_row results_info">
@@ -344,7 +634,7 @@ export default function ClientsPage() {
                                 </div>
                                 <div className="results_size_info">
                                     Klientów spełniających kryteria:{' '}
-                                    <strong>{filteredCustomers.length}</strong>
+                                    <strong>{displayedCustomers.length}</strong>
                                     <a
                                         href="#"
                                         id="create_group_button"
@@ -378,23 +668,65 @@ export default function ClientsPage() {
                                         <input
                                             type="checkbox"
                                             aria-label="zaznacz wszystkich"
+                                            checked={allChecked}
+                                            ref={(el) => {
+                                                if (el)
+                                                    el.indeterminate =
+                                                        someChecked;
+                                            }}
+                                            onChange={toggleSelectAll}
                                         />
                                         zaznacz wszystkich (
-                                        <span>{filteredCustomers.length}</span>)
+                                        <span>{displayedCustomers.length}</span>
+                                        )
                                     </label>
                                 </div>
                                 <div id="customers_list">
                                     <table className="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>
-                                                    <div>Klient</div>
+                                                <th
+                                                    className="customers-sort-th"
+                                                    onClick={() =>
+                                                        handleSort('name')
+                                                    }
+                                                    title="Sortuj po nazwie"
+                                                >
+                                                    <div>
+                                                        Klient
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className="customers-sort-indicator"
+                                                        >
+                                                            {sortIndicator(
+                                                                'name',
+                                                            )}
+                                                        </span>
+                                                    </div>
                                                 </th>
                                                 <th>
                                                     <div>Kontakt</div>
                                                 </th>
-                                                <th className="d-none d-sm-table-cell">
-                                                    <div>Ostatnia wizyta</div>
+                                                <th
+                                                    className="d-none d-sm-table-cell customers-sort-th"
+                                                    onClick={() =>
+                                                        handleSort(
+                                                            'lastVisitDate',
+                                                        )
+                                                    }
+                                                    title="Sortuj po ostatniej wizycie"
+                                                >
+                                                    <div>
+                                                        Ostatnia wizyta
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className="customers-sort-indicator"
+                                                        >
+                                                            {sortIndicator(
+                                                                'lastVisitDate',
+                                                            )}
+                                                        </span>
+                                                    </div>
                                                 </th>
                                                 <th
                                                     className="text-end d-none d-sm-table-cell"
@@ -403,7 +735,7 @@ export default function ClientsPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredCustomers.map(
+                                            {displayedCustomers.map(
                                                 (customer, i) => (
                                                     <DraggableCustomerRow
                                                         key={customer.id}
@@ -411,6 +743,12 @@ export default function ClientsPage() {
                                                         isDragging={
                                                             draggedCustomer?.id ===
                                                             customer.id
+                                                        }
+                                                        isSelected={selectedIds.has(
+                                                            customer.id,
+                                                        )}
+                                                        onToggleSelect={
+                                                            toggleSelect
                                                         }
                                                         rowClass={
                                                             i % 2 === 0
@@ -431,64 +769,92 @@ export default function ClientsPage() {
                             </>
                         )}
 
-                        <div className="pagination_container">
-                            <div className="row">
-                                <div className="infocol-7">
-                                    Pozycje od {fromItem} do {toItem} z{' '}
-                                    <span id="total_found">{totalCount}</span> |
-                                    na stronie{' '}
-                                    <select
-                                        name="size"
-                                        aria-label="na stronie"
-                                        value={pageSize}
-                                        onChange={(e) => {
-                                            setPageSize(Number(e.target.value));
-                                            setPage(1);
-                                        }}
-                                    >
-                                        <option value="20">20</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
-                                <div className="form_paginationcol-5">
-                                    <button
-                                        type="button"
-                                        className="btn btn-link"
-                                        aria-label="Poprzednia strona"
-                                        disabled={page <= 1}
-                                        onClick={() => setPage((p) => p - 1)}
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-left-single-arrow"
-                                            aria-hidden="true"
+                        {isMobile && (
+                            <div
+                                ref={sentinelRef}
+                                className="customers-infinite-sentinel"
+                                aria-hidden="true"
+                            >
+                                {isLoading && page > 1 ? (
+                                    <p className="text-muted text-center small py-2">
+                                        Ładowanie...
+                                    </p>
+                                ) : page < totalPages ? (
+                                    <p className="text-muted text-center small py-2">
+                                        Przewiń, aby załadować więcej
+                                    </p>
+                                ) : null}
+                            </div>
+                        )}
+
+                        {!isMobile && (
+                            <div className="pagination_container">
+                                <div className="row">
+                                    <div className="infocol-7">
+                                        Pozycje od {fromItem} do {toItem} z{' '}
+                                        <span id="total_found">
+                                            {totalCount}
+                                        </span>{' '}
+                                        | na stronie{' '}
+                                        <select
+                                            name="size"
+                                            aria-label="na stronie"
+                                            value={pageSize}
+                                            onChange={(e) => {
+                                                setPageSize(
+                                                    Number(e.target.value),
+                                                );
+                                                setPage(1);
+                                            }}
+                                        >
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
+                                    <div className="form_paginationcol-5">
+                                        <button
+                                            type="button"
+                                            className="btn btn-link"
+                                            aria-label="Poprzednia strona"
+                                            disabled={page <= 1}
+                                            onClick={() =>
+                                                setPage((p) => p - 1)
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-left-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                        <input
+                                            type="text"
+                                            name="page"
+                                            className="pagination-page-input"
+                                            aria-label="strona"
+                                            value={page}
+                                            readOnly
                                         />
-                                    </button>
-                                    <input
-                                        type="text"
-                                        name="page"
-                                        className="pagination-page-input"
-                                        aria-label="strona"
-                                        value={page}
-                                        readOnly
-                                    />
-                                    {' z '}
-                                    <a className="pointer">{totalPages}</a>
-                                    <button
-                                        type="button"
-                                        className="btn btn-link button_next ml-s"
-                                        aria-label="Następna strona"
-                                        disabled={page >= totalPages}
-                                        onClick={() => setPage((p) => p + 1)}
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-right-single-arrow"
-                                            aria-hidden="true"
-                                        />
-                                    </button>
+                                        {' z '}
+                                        <a className="pointer">{totalPages}</a>
+                                        <button
+                                            type="button"
+                                            className="btn btn-link button_next ml-s"
+                                            aria-label="Następna strona"
+                                            disabled={page >= totalPages}
+                                            onClick={() =>
+                                                setPage((p) => p + 1)
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-right-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <DragOverlay dropAnimation={null}>

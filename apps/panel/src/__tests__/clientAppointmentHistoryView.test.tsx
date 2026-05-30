@@ -57,13 +57,9 @@ describe('ClientAppointmentHistoryView', () => {
         );
 
         expect(screen.getByText('Nadchodzące wizyty')).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: /Koloryzacja/i }),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja')).toBeInTheDocument();
         expect(screen.getByText('Historia wizyt')).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: /Modelowanie/i }),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Modelowanie')).toBeInTheDocument();
     });
 
     it('shows empty states for missing future and archived appointments', () => {
@@ -108,7 +104,7 @@ describe('ClientAppointmentHistoryView', () => {
 
         fireEvent.click(
             screen.getByRole('button', {
-                name: /Masaż/i,
+                name: /Szczegóły/i,
             }),
         );
 
@@ -160,7 +156,7 @@ describe('ClientAppointmentHistoryView', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /Peeling/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Szczegóły/i }));
         expect(
             screen.getByTestId('client-appointment-details'),
         ).toHaveTextContent('Peeling');

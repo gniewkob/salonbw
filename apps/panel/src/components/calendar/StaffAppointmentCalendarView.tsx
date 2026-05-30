@@ -16,7 +16,7 @@ interface StaffAppointmentCalendarViewProps {
     onOpenAppointment?: (appointmentId: number) => void;
 }
 
-type ActionKey = 'start' | 'finalize' | 'no_show' | 'cancel';
+type ActionKey = 'confirm' | 'start' | 'finalize' | 'no_show' | 'cancel';
 
 type StatusConfig = {
     label: string;
@@ -58,7 +58,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     online_pending: {
         label: 'Oczekuje online',
         className: 'salonbw-status--online_pending',
-        actions: ['cancel'],
+        actions: ['confirm', 'cancel'],
     },
     rescheduled_pending: {
         label: 'Przeniesiona',
@@ -71,6 +71,11 @@ const ACTION_CONFIG: Record<
     ActionKey,
     { label: string; className: string; nextStatus?: AppointmentStatus }
 > = {
+    confirm: {
+        label: 'Potwierdź',
+        className: 'btn-success',
+        nextStatus: 'confirmed',
+    },
     start: {
         label: 'Rozpocznij',
         className: 'btn-primary',
