@@ -82,26 +82,11 @@ function DraggableCustomerRow({
                 >
                     {customer.fullName || customer.name}
                 </Link>
+                <div className="d-block d-sm-none small text-muted mt-1">
+                    {formatLastVisit(customer.lastVisitDate)}
+                </div>
             </td>
             <td>
-                {customer.email ? (
-                    <a
-                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&single=1`}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        <div
-                            className="icon_box"
-                            title={`wyślij email: ${customer.email}`}
-                        >
-                            <i className="icon sprite-customer_email" />
-                        </div>
-                    </a>
-                ) : (
-                    <div className="icon_box" title="nie podano">
-                        <i className="icon sprite-customer_email icon-opacity" />
-                    </div>
-                )}
                 {customer.phone ? (
                     <div className="inline_block">
                         <a
@@ -116,6 +101,21 @@ function DraggableCustomerRow({
                             {customer.phone}
                         </a>
                     </div>
+                ) : null}
+                {customer.email ? (
+                    <a
+                        href={`/newsletters/new?platform=email&recipient=${encodeURIComponent(customer.email)}&single=1`}
+                        className="d-none d-sm-inline"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
+                        <div
+                            className="icon_box"
+                            title={`wyślij email: ${customer.email}`}
+                        >
+                            <i className="icon sprite-customer_email" />
+                        </div>
+                    </a>
                 ) : null}
             </td>
             <td className="d-none d-sm-table-cell">
