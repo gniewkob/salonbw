@@ -291,12 +291,12 @@ export default function ClientAppointmentHistoryView({
                     )}
                 </section>
             </div>
-            {selectedAppointment ? (
-                <section
-                    className="salonbw-reception-item"
-                    data-testid="client-appointment-details"
-                >
-                    <h3 className="h6 mb-2">Szczegóły wizyty</h3>
+            <section
+                className="salonbw-reception-item"
+                data-testid="client-appointment-details"
+            >
+                <h3 className="h6 mb-2">Szczegóły wizyty (tylko odczyt)</h3>
+                {selectedAppointment ? (
                     <dl className="row mb-0 small">
                         <dt className="col-sm-3">Usługa</dt>
                         <dd className="col-sm-9">
@@ -304,14 +304,11 @@ export default function ClientAppointmentHistoryView({
                         </dd>
                         <dt className="col-sm-3">Status</dt>
                         <dd className="col-sm-9">
-                            {
-                                (
-                                    STATUS_CONFIG[
-                                        selectedAppointment.status ??
-                                            'scheduled'
-                                    ] ?? DEFAULT_STATUS
-                                ).label
-                            }
+                            {(
+                                STATUS_CONFIG[
+                                    selectedAppointment.status ?? 'scheduled'
+                                ] ?? DEFAULT_STATUS
+                            ).label}
                         </dd>
                         <dt className="col-sm-3">Termin</dt>
                         <dd className="col-sm-9">
@@ -322,8 +319,12 @@ export default function ClientAppointmentHistoryView({
                             {selectedAppointment.employee?.name ?? '-'}
                         </dd>
                     </dl>
-                </section>
-            ) : null}
+                ) : (
+                    <p className="text-muted small mb-0">
+                        Wybierz wizytę z listy, aby zobaczyć szczegóły.
+                    </p>
+                )}
+            </section>
         </div>
     );
 }

@@ -949,7 +949,9 @@ describe('CalendarPage', () => {
             screen.getAllByRole('button', { name: 'Poproś o anulowanie' }),
         ).toHaveLength(1);
 
-        fireEvent.click(screen.getByRole('button', { name: /Koloryzacja/i }));
+        fireEvent.click(
+            screen.getAllByRole('button', { name: /Szczegóły/i })[1],
+        );
         expect(
             screen.getByTestId('client-appointment-details'),
         ).toHaveTextContent('Szczegóły wizyty (tylko odczyt)');
