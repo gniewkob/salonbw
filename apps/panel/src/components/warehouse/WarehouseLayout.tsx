@@ -8,7 +8,13 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
-type WarehouseMainTab = 'products' | 'sales' | 'use' | 'deliveries' | 'orders';
+type WarehouseMainTab =
+    | 'products'
+    | 'deliveries'
+    | 'orders'
+    | 'sales'
+    | 'use'
+    | 'inventory';
 
 const tabConfig: Array<{
     id: WarehouseMainTab;
@@ -23,6 +29,18 @@ const tabConfig: Array<{
         icon: 'stock_products_on',
     },
     {
+        id: 'deliveries',
+        label: 'DOSTAWY',
+        href: '/deliveries/history',
+        icon: 'stock_delivery',
+    },
+    {
+        id: 'orders',
+        label: 'ZAMÓWIENIA',
+        href: '/orders/history',
+        icon: 'stock_new_order',
+    },
+    {
         id: 'sales',
         label: 'SPRZEDAŻ',
         href: '/sales/history',
@@ -35,16 +53,10 @@ const tabConfig: Array<{
         icon: 'stock_consumption',
     },
     {
-        id: 'deliveries',
-        label: 'DOSTAWY',
-        href: '/deliveries/history',
-        icon: 'stock_delivery',
-    },
-    {
-        id: 'orders',
-        label: 'ZAMÓWIENIA',
-        href: '/orders/history',
-        icon: 'stock_new_order',
+        id: 'inventory',
+        label: 'INWENTARYZACJA',
+        href: '/inventory',
+        icon: 'stock_stocktaking',
     },
 ];
 
@@ -53,6 +65,7 @@ interface WarehouseLayoutProps {
     heading: string;
     breadcrumb?: string;
     activeTab: WarehouseMainTab;
+    /** @deprecated use activeTab="inventory" instead */
     inventoryActive?: boolean;
     actions?: ReactNode;
     children: ReactNode;
@@ -61,11 +74,12 @@ interface WarehouseLayoutProps {
 export default function WarehouseLayout({
     pageTitle,
     heading,
-    activeTab,
+    activeTab: activeTabProp,
     inventoryActive = false,
     actions,
     children,
 }: WarehouseLayoutProps) {
+    const activeTab = inventoryActive ? 'inventory' : activeTabProp;
     const { role } = useAuth();
 
     return (
@@ -84,46 +98,26 @@ export default function WarehouseLayout({
                     />
 
                     <div className="column_row secondary_menu">
-                        <div className="pull_left">
-                            <ul className="simple-list">
-                                {tabConfig.map((tab) => (
-                                    <li
-                                        key={tab.id}
-                                        className={
-                                            activeTab === tab.id
-                                                ? 'active'
-                                                : undefined
-                                        }
-                                    >
-                                        <Link href={tab.href}>
-                                            <i
-                                                className={`icon sprite-${tab.icon}`}
-                                                aria-hidden="true"
-                                            />{' '}
-                                            {tab.label}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="pull_right">
-                            <ul className="simple-list">
+                        <ul className="simple-list">
+                            {tabConfig.map((tab) => (
                                 <li
+                                    key={tab.id}
                                     className={
-                                        inventoryActive ? 'active' : undefined
+                                        activeTab === tab.id
+                                            ? 'active'
+                                            : undefined
                                     }
                                 >
-                                    <Link href="/inventory">
+                                    <Link href={tab.href}>
                                         <i
-                                            className="icon sprite-stock_stocktaking"
+                                            className={`icon sprite-${tab.icon}`}
                                             aria-hidden="true"
                                         />{' '}
-                                        INWENTARYZACJA
+                                        {tab.label}
                                     </Link>
                                 </li>
-                            </ul>
-                        </div>
-                        <br className="c" />
+                            ))}
+                        </ul>
                     </div>
                     {actions ? (
                         <div className="d-flex justify-content-end mb-3">
