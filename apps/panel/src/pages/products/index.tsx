@@ -246,7 +246,7 @@ export default function WarehouseProductsPage() {
                 </div>
             </div>
 
-            <div className="">
+            <div className="table-responsive">
                 <table className="table table-bordered">
                     <thead>
                         <tr>
