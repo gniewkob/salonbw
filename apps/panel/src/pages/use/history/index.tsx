@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseUsage } from '@/hooks/useWarehouseViews';
@@ -7,9 +8,13 @@ import { useWarehouseUsage } from '@/hooks/useWarehouseViews';
 export default function WarehouseUsageHistoryPage() {
     const { data: usage = [], isLoading } = useWarehouseUsage('completed');
     const pageSize = 20;
-    const visibleUsage = usage.slice(0, pageSize);
-    const from = usage.length ? 1 : 0;
-    const to = usage.length ? Math.min(pageSize, usage.length) : 0;
+    const [page, setPage] = useState(1);
+    const totalPages = Math.max(1, Math.ceil(usage.length / pageSize));
+    const safePage = Math.min(Math.max(page, 1), totalPages);
+    const startIndex = (safePage - 1) * pageSize;
+    const visibleUsage = usage.slice(startIndex, startIndex + pageSize);
+    const from = usage.length ? startIndex + 1 : 0;
+    const to = usage.length ? Math.min(startIndex + pageSize, usage.length) : 0;
 
     return (
         <WarehouseLayout
@@ -86,12 +91,97 @@ export default function WarehouseUsageHistoryPage() {
                             </tbody>
                         </table>
                     </div>
+                    <div className="products-export">
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => {
+                                const header = [
+                                    'Nr zużycia',
+                                    'Data',
+                                    'Klient',
+                                    'Pracownik',
+                                    'Liczba pozycji',
+                                ];
+                                const rows = usage.map((entry) => [
+                                    entry.usageNumber,
+                                    new Date(entry.usedAt).toLocaleDateString(
+                                        'pl-PL',
+                                    ),
+                                    entry.clientName ?? '',
+                                    entry.employee?.name ?? '',
+                                    String(
+                                        entry.summary?.totalItems ??
+                                            entry.items?.reduce(
+                                                (sum, item) =>
+                                                    sum +
+                                                    Number(item.quantity ?? 0),
+                                                0,
+                                            ) ??
+                                            0,
+                                    ),
+                                ]);
+                                const csv = [header, ...rows]
+                                    .map((line) =>
+                                        line
+                                            .map(
+                                                (v) =>
+                                                    `"${String(v).replaceAll('"', '""')}"`,
+                                            )
+                                            .join(';'),
+                                    )
+                                    .join('\n');
+                                const blob = new Blob([`﻿${csv}`], {
+                                    type: 'text/csv;charset=utf-8;',
+                                });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'historia-zuzycia.csv';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                        >
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz historię zużycia w pliku Excel
+                        </button>
+                    </div>
                     <div className="pagination_container">
                         <div className="column_row">
                             <div className="row">
                                 <div className="infocol-7">
                                     Pozycje od {from} do {to} z {usage.length} |
                                     na stronie 20
+                                </div>
+                                <div className="form_paginationcol-5">
+                                    <input
+                                        type="text"
+                                        className="pagination-page-input"
+                                        aria-label="strona"
+                                        value={safePage}
+                                        readOnly
+                                    />
+                                    {' z '}
+                                    <a className="pointer">{totalPages}</a>
+                                    <button
+                                        type="button"
+                                        className="btn btn-link button_next ml-s"
+                                        aria-label="Następna strona"
+                                        disabled={safePage >= totalPages}
+                                        onClick={() =>
+                                            setPage((p) =>
+                                                Math.min(p + 1, totalPages),
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
                                 </div>
                             </div>
                         </div>
