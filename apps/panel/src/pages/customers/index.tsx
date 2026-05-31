@@ -480,6 +480,53 @@ export default function ClientsPage() {
         return () => observer.disconnect();
     }, [isMobile, isLoading, page, totalPages]);
 
+    const exportCustomersCsv = () => {
+        const header = [
+            'Imię',
+            'Nazwisko',
+            'Telefon',
+            'Email',
+            'Data urodzenia',
+            'Płeć',
+            'Miasto',
+            'Ostatnia wizyta',
+            'Zgoda email',
+            'Zgoda SMS',
+        ];
+        const rows = (isMobile ? mobileAccumulated : filteredCustomers).map(
+            (c) => [
+                c.firstName || '',
+                c.lastName || '',
+                c.phone || '',
+                c.email || '',
+                c.birthDate || '',
+                c.gender || '',
+                c.city || '',
+                c.lastVisitDate
+                    ? new Date(c.lastVisitDate).toLocaleDateString('pl-PL')
+                    : '',
+                c.emailConsent ? 'tak' : 'nie',
+                c.smsConsent ? 'tak' : 'nie',
+            ],
+        );
+        const csv = [header, ...rows]
+            .map((line) =>
+                line
+                    .map((v) => `"${String(v).replaceAll('"', '""')}"`)
+                    .join(';'),
+            )
+            .join('\n');
+        const blob = new Blob([`﻿${csv}`], {
+            type: 'text/csv;charset=utf-8;',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'klienci.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <RouteGuard
             roles={['employee', 'receptionist', 'admin']}
@@ -870,6 +917,20 @@ export default function ClientsPage() {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    <div className="products-export">
+                        <button
+                            type="button"
+                            onClick={exportCustomersCsv}
+                            className="btn btn-outline-secondary"
+                        >
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz bazę klientów w pliku Excel
+                        </button>
                     </div>
 
                     <DragOverlay dropAnimation={null}>
