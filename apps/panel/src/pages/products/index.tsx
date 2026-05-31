@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
+import NewProductModal from '@/components/warehouse/NewProductModal';
 import {
     useWarehouseProducts,
     useProductCategories,
@@ -51,6 +52,7 @@ export default function WarehouseProductsPage() {
     const [search, setSearch] = useState('');
     const [productTypeFilter, setProductTypeFilter] =
         useState<ProductTypeFilter>('all');
+    const [newProductOpen, setNewProductOpen] = useState(false);
     const selectedCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
@@ -192,12 +194,13 @@ export default function WarehouseProductsPage() {
                         >
                             dodaj zużycie
                         </Link>
-                        <Link
-                            href="/products/new"
+                        <button
+                            type="button"
                             className="btn btn-primary ml-xs"
+                            onClick={() => setNewProductOpen(true)}
                         >
                             dodaj produkt
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -335,6 +338,11 @@ export default function WarehouseProductsPage() {
                     pobierz bazę produktów w pliku Excel
                 </button>
             </div>
+            <NewProductModal
+                open={newProductOpen}
+                onClose={() => setNewProductOpen(false)}
+                onSuccess={() => setNewProductOpen(false)}
+            />
         </WarehouseLayout>
     );
 }

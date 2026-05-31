@@ -1,6 +1,7 @@
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -201,6 +202,7 @@ export default function ClientsPage() {
     const [bulkGroupId, setBulkGroupId] = useState<string>('');
     const [bulkGroupPending, setBulkGroupPending] = useState(false);
     const [quickFilter, setQuickFilter] = useState<string>('');
+    const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [mobileAccumulated, setMobileAccumulated] = useState<Customer[]>([]);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -506,14 +508,15 @@ export default function ClientsPage() {
                                 />
                             </div>
                             <div className="col-sm-5 text-end">
-                                <Link
-                                    href="/customers/new"
+                                <button
+                                    type="button"
                                     className="btn btn-primary"
                                     id="add_customer_button"
+                                    onClick={() => setNewCustomerOpen(true)}
                                 >
                                     <i className="icon sprite-add_customer" />
                                     Dodaj klienta
-                                </Link>
+                                </button>
                             </div>
                         </div>
 
@@ -866,6 +869,11 @@ export default function ClientsPage() {
                     </DragOverlay>
                 </DndContext>
             </SalonShell>
+            <NewCustomerModal
+                open={newCustomerOpen}
+                onClose={() => setNewCustomerOpen(false)}
+                onSuccess={() => setNewCustomerOpen(false)}
+            />
         </RouteGuard>
     );
 }
