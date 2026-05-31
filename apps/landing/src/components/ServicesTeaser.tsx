@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Scissors, Sparkles, Wand2, type LucideIcon } from 'lucide-react';
 import SectionHeader from './SectionHeader';
+import StaggerReveal from './StaggerReveal';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
@@ -22,7 +23,7 @@ export default function ServicesTeaser() {
                     subtitle={T.services.teaserSubtitle}
                 />
 
-                <div className="services-editorial-grid">
+                <StaggerReveal className="services-editorial-grid">
                     {T.services.items.map(({ title, subtitle, description }, idx) => {
                         const Icon = SERVICE_ICONS[idx]!;
                         const href = SERVICE_HREFS[idx]!;
@@ -115,7 +116,7 @@ export default function ServicesTeaser() {
                             </Link>
                         );
                     })}
-                </div>
+                </StaggerReveal>
 
                 <div className="text-center mt-12">
                     <Link

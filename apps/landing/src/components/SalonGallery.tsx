@@ -82,6 +82,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                     sizes="(max-width: 768px) 50vw, 25vw"
                                     className="gallery-img"
                                 />
+                                <div className="gallery-blend" aria-hidden="true" />
                                 <div className="gallery-caption">
                                     <span className="gallery-caption__accent" />
                                     <span className="gallery-caption__text">{image.caption}</span>
@@ -112,6 +113,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 sizes="50vw"
                                 className="gallery-img"
                             />
+                            <div className="gallery-blend" aria-hidden="true" />
                         </div>
                     ))}
                 </div>
