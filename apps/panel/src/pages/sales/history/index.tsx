@@ -185,7 +185,7 @@ export default function WarehouseSalesHistoryPage() {
                         </div>
                     </div>
                     <div className="">
-                        <table className="table-bordered">
+                        <table className="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>Nazwa</th>
@@ -238,6 +238,60 @@ export default function WarehouseSalesHistoryPage() {
                                 })}
                             </tbody>
                         </table>
+                    </div>
+                    <div className="products-export">
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => {
+                                const header = [
+                                    'Nazwa',
+                                    'Rodzaj',
+                                    'Suma brutto',
+                                    'Sprzedano',
+                                    'Pracownik',
+                                    'Klient',
+                                ];
+                                const rows = items.map((sale) => [
+                                    sale.items?.[0]?.productName ??
+                                        sale.saleNumber,
+                                    saleKindLabel(sale),
+                                    formatCurrency(
+                                        Number(sale.totalGross ?? 0),
+                                    ),
+                                    new Date(sale.soldAt).toLocaleDateString(
+                                        'pl-PL',
+                                    ),
+                                    sale.employee?.name ?? '',
+                                    sale.clientName ?? '',
+                                ]);
+                                const csv = [header, ...rows]
+                                    .map((line) =>
+                                        line
+                                            .map(
+                                                (v) =>
+                                                    `"${String(v).replaceAll('"', '""')}"`,
+                                            )
+                                            .join(';'),
+                                    )
+                                    .join('\n');
+                                const blob = new Blob([`﻿${csv}`], {
+                                    type: 'text/csv;charset=utf-8;',
+                                });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'historia-sprzedazy.csv';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                        >
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz historię sprzedaży w pliku Excel
+                        </button>
                     </div>
                     <div className="pagination_container">
                         <div className="column_row">

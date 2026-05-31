@@ -117,7 +117,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                         </div>
                     </div>
                     <div className="">
-                        <table className="table-bordered">
+                        <table className="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>wystawiono</th>
@@ -195,6 +195,76 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 })}
                             </tbody>
                         </table>
+                    </div>
+                    <div className="products-export">
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => {
+                                const header = [
+                                    'Wystawiono',
+                                    'Liczba pozycji',
+                                    'Numer faktury',
+                                    'Wartość netto',
+                                    'Wartość brutto',
+                                    'Dostawca',
+                                    'Rodzaj',
+                                    'Wprowadzone',
+                                ];
+                                const rows = visibleDeliveries.map(
+                                    (delivery) => {
+                                        const date = delivery.deliveryDate
+                                            ? new Date(delivery.deliveryDate)
+                                            : new Date(delivery.createdAt);
+                                        const created = new Date(
+                                            delivery.updatedAt ??
+                                                delivery.createdAt,
+                                        );
+                                        const gross = Number(
+                                            delivery.totalCost ?? 0,
+                                        );
+                                        const net = gross / 1.23;
+                                        return [
+                                            date.toLocaleDateString('pl-PL'),
+                                            String(delivery.items?.length ?? 0),
+                                            delivery.invoiceNumber ?? '',
+                                            formatCurrency(net),
+                                            formatCurrency(gross),
+                                            delivery.supplier?.name ?? '',
+                                            typeLabel[delivery.status] ??
+                                                statusLabel[delivery.status] ??
+                                                delivery.status,
+                                            created.toLocaleDateString('pl-PL'),
+                                        ];
+                                    },
+                                );
+                                const csv = [header, ...rows]
+                                    .map((line) =>
+                                        line
+                                            .map(
+                                                (v) =>
+                                                    `"${String(v).replaceAll('"', '""')}"`,
+                                            )
+                                            .join(';'),
+                                    )
+                                    .join('\n');
+                                const blob = new Blob([`﻿${csv}`], {
+                                    type: 'text/csv;charset=utf-8;',
+                                });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'historia-dostaw.csv';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                        >
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz historię dostaw w pliku Excel
+                        </button>
                     </div>
                     <div className="pagination_container">
                         <div className="column_row">

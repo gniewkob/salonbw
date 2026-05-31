@@ -83,6 +83,56 @@ export default function WarehouseLowStockPage() {
             <div className="products-pagination">
                 Pozycje od 1 do {rows.length} | na stronie 20
             </div>
+
+            <div className="products-export">
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => {
+                        const header = [
+                            'Nazwa',
+                            'SKU',
+                            'Stan',
+                            'Min.',
+                            'Brak',
+                            'Dostawca',
+                        ];
+                        const data = rows.map((row) => [
+                            row.name,
+                            row.sku ?? '',
+                            `${row.stock} ${row.unit ?? 'op.'}`,
+                            `${row.minQuantity} ${row.unit ?? 'op.'}`,
+                            `${row.deficit} ${row.unit ?? 'op.'}`,
+                            row.defaultSupplierName ?? '',
+                        ]);
+                        const csv = [header, ...data]
+                            .map((line) =>
+                                line
+                                    .map(
+                                        (v) =>
+                                            `"${String(v).replaceAll('"', '""')}"`,
+                                    )
+                                    .join(';'),
+                            )
+                            .join('\n');
+                        const blob = new Blob([`﻿${csv}`], {
+                            type: 'text/csv;charset=utf-8;',
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'niski-stan.csv';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }}
+                >
+                    <div
+                        className="icon sprite-exel_blue mr-xs"
+                        aria-hidden="true"
+                    />
+                    pobierz listę niskich stanów w pliku Excel
+                </button>
+            </div>
         </WarehouseLayout>
     );
 }

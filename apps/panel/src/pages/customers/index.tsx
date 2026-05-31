@@ -1,6 +1,8 @@
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import NewCustomerModal from '@/components/customers/NewCustomerModal';
+import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -43,6 +45,7 @@ function DraggableCustomerRow({
     isSelected,
     onToggleSelect,
     onOpen,
+    onEdit,
     rowClass,
 }: {
     customer: Customer;
@@ -50,6 +53,7 @@ function DraggableCustomerRow({
     isSelected: boolean;
     onToggleSelect: (id: number) => void;
     onOpen: (id: number) => void;
+    onEdit: (id: number) => void;
     rowClass?: string;
 }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -162,15 +166,18 @@ function DraggableCustomerRow({
                         aria-hidden="true"
                     />
                 </Link>
-                <Link
-                    href={`/customers/${customer.id}/edit`}
+                <button
+                    type="button"
                     className="btn btn-link"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(customer.id);
+                    }}
                     onPointerDown={(e) => e.stopPropagation()}
                     title="Edytuj"
                 >
                     <i className="icon sprite-pencil" aria-hidden="true" />
-                </Link>
+                </button>
             </td>
         </tr>
     );
@@ -201,6 +208,8 @@ export default function ClientsPage() {
     const [bulkGroupId, setBulkGroupId] = useState<string>('');
     const [bulkGroupPending, setBulkGroupPending] = useState(false);
     const [quickFilter, setQuickFilter] = useState<string>('');
+    const [newCustomerOpen, setNewCustomerOpen] = useState(false);
+    const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
     const [isMobile, setIsMobile] = useState(false);
     const [mobileAccumulated, setMobileAccumulated] = useState<Customer[]>([]);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -471,6 +480,53 @@ export default function ClientsPage() {
         return () => observer.disconnect();
     }, [isMobile, isLoading, page, totalPages]);
 
+    const exportCustomersCsv = () => {
+        const header = [
+            'Imię',
+            'Nazwisko',
+            'Telefon',
+            'Email',
+            'Data urodzenia',
+            'Płeć',
+            'Miasto',
+            'Ostatnia wizyta',
+            'Zgoda email',
+            'Zgoda SMS',
+        ];
+        const rows = (isMobile ? mobileAccumulated : filteredCustomers).map(
+            (c) => [
+                c.firstName || '',
+                c.lastName || '',
+                c.phone || '',
+                c.email || '',
+                c.birthDate || '',
+                c.gender || '',
+                c.city || '',
+                c.lastVisitDate
+                    ? new Date(c.lastVisitDate).toLocaleDateString('pl-PL')
+                    : '',
+                c.emailConsent ? 'tak' : 'nie',
+                c.smsConsent ? 'tak' : 'nie',
+            ],
+        );
+        const csv = [header, ...rows]
+            .map((line) =>
+                line
+                    .map((v) => `"${String(v).replaceAll('"', '""')}"`)
+                    .join(';'),
+            )
+            .join('\n');
+        const blob = new Blob([`﻿${csv}`], {
+            type: 'text/csv;charset=utf-8;',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'klienci.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <RouteGuard
             roles={['employee', 'receptionist', 'admin']}
@@ -506,14 +562,15 @@ export default function ClientsPage() {
                                 />
                             </div>
                             <div className="col-sm-5 text-end">
-                                <Link
-                                    href="/customers/new"
+                                <button
+                                    type="button"
                                     className="btn btn-primary"
                                     id="add_customer_button"
+                                    onClick={() => setNewCustomerOpen(true)}
                                 >
                                     <i className="icon sprite-add_customer" />
                                     Dodaj klienta
-                                </Link>
+                                </button>
                             </div>
                         </div>
 
@@ -760,6 +817,11 @@ export default function ClientsPage() {
                                                                 `/customers/${id}` as Route,
                                                             )
                                                         }
+                                                        onEdit={(id) =>
+                                                            setEditCustomerId(
+                                                                id,
+                                                            )
+                                                        }
                                                     />
                                                 ),
                                             )}
@@ -857,6 +919,20 @@ export default function ClientsPage() {
                         )}
                     </div>
 
+                    <div className="products-export">
+                        <button
+                            type="button"
+                            onClick={exportCustomersCsv}
+                            className="btn btn-outline-secondary"
+                        >
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz bazę klientów w pliku Excel
+                        </button>
+                    </div>
+
                     <DragOverlay dropAnimation={null}>
                         {draggedCustomer ? (
                             <div className="clients-drag-overlay">
@@ -866,6 +942,18 @@ export default function ClientsPage() {
                     </DragOverlay>
                 </DndContext>
             </SalonShell>
+            <NewCustomerModal
+                open={newCustomerOpen}
+                onClose={() => setNewCustomerOpen(false)}
+                onSuccess={() => setNewCustomerOpen(false)}
+            />
+            <EditCustomerModal
+                open={editCustomerId !== null}
+                customerId={editCustomerId}
+                onClose={() => setEditCustomerId(null)}
+                onSuccess={() => setEditCustomerId(null)}
+                onDeleted={() => setEditCustomerId(null)}
+            />
         </RouteGuard>
     );
 }

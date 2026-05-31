@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
+import NewProductModal from '@/components/warehouse/NewProductModal';
+import EditProductModal from '@/components/warehouse/EditProductModal';
 import {
     useWarehouseProducts,
     useProductCategories,
@@ -51,10 +53,28 @@ export default function WarehouseProductsPage() {
     const [search, setSearch] = useState('');
     const [productTypeFilter, setProductTypeFilter] =
         useState<ProductTypeFilter>('all');
+    const [newProductOpen, setNewProductOpen] = useState(false);
+    const [editProductId, setEditProductId] = useState<number | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const [mobileCount, setMobileCount] = useState(20);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 575px)');
+        setIsMobile(mq.matches);
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
+
     const selectedCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
     const showUncategorized = router.query.uncategorized === 'true';
+
+    useEffect(() => {
+        setMobileCount(20);
+    }, [search, productTypeFilter, selectedCategoryId, showUncategorized]);
 
     const { data: categories = [] } = useProductCategories();
     const { data: products = [], isLoading } = useWarehouseProducts({
@@ -105,6 +125,29 @@ export default function WarehouseProductsPage() {
         showUncategorized,
         productTypeFilter,
     ]);
+
+    const displayedProducts = isMobile
+        ? filteredProducts.slice(0, mobileCount)
+        : filteredProducts;
+
+    useEffect(() => {
+        if (!isMobile) return;
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (
+                    entry.isIntersecting &&
+                    mobileCount < filteredProducts.length
+                ) {
+                    setMobileCount((n) => n + 20);
+                }
+            },
+            { threshold: 0.1 },
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [isMobile, mobileCount, filteredProducts.length]);
 
     const exportProductsCsv = () => {
         const formatCsvNumber = (value: number) =>
@@ -192,12 +235,13 @@ export default function WarehouseProductsPage() {
                         >
                             dodaj zużycie
                         </Link>
-                        <Link
-                            href="/products/new"
+                        <button
+                            type="button"
                             className="btn btn-primary ml-xs"
+                            onClick={() => setNewProductOpen(true)}
                         >
                             dodaj produkt
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -247,7 +291,7 @@ export default function WarehouseProductsPage() {
                                 </td>
                             </tr>
                         ) : (
-                            filteredProducts.map((product) => {
+                            displayedProducts.map((product) => {
                                 const volume =
                                     Number(product.volumeMl ?? 0) > 0
                                         ? product.stock *
@@ -313,6 +357,19 @@ export default function WarehouseProductsPage() {
                                                     aria-hidden="true"
                                                 />
                                             </Link>
+                                            <button
+                                                type="button"
+                                                className="icon_link btn btn-link p-0"
+                                                title="edytuj"
+                                                onClick={() =>
+                                                    setEditProductId(product.id)
+                                                }
+                                            >
+                                                <i
+                                                    className="icon sprite-edit"
+                                                    aria-hidden="true"
+                                                />
+                                            </button>
                                         </td>
                                     </tr>
                                 );
@@ -321,6 +378,20 @@ export default function WarehouseProductsPage() {
                     </tbody>
                 </table>
             </div>
+
+            {isMobile && (
+                <div
+                    ref={sentinelRef}
+                    className="customers-infinite-sentinel"
+                    aria-hidden="true"
+                >
+                    {mobileCount < filteredProducts.length ? (
+                        <p className="text-muted text-center small py-2">
+                            Przewiń, aby załadować więcej
+                        </p>
+                    ) : null}
+                </div>
+            )}
 
             <div className="products-export">
                 <button
@@ -335,6 +406,18 @@ export default function WarehouseProductsPage() {
                     pobierz bazę produktów w pliku Excel
                 </button>
             </div>
+            <NewProductModal
+                open={newProductOpen}
+                onClose={() => setNewProductOpen(false)}
+                onSuccess={() => setNewProductOpen(false)}
+            />
+            <EditProductModal
+                open={editProductId !== null}
+                productId={editProductId}
+                onClose={() => setEditProductId(null)}
+                onSuccess={() => setEditProductId(null)}
+                onDeleted={() => setEditProductId(null)}
+            />
         </WarehouseLayout>
     );
 }
