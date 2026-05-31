@@ -429,7 +429,7 @@ export default function CommissionsPage() {
                                                     <br />
                                                     <Link
                                                         href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                        className="button mt-1"
+                                                        className="btn btn-outline-secondary btn-sm mt-1"
                                                         prefetch={false}
                                                     >
                                                         <div

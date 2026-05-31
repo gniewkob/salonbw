@@ -230,7 +230,7 @@ export default function TemplatesPage() {
                                                 {getTypeLabel(template.type)}
                                             </td>
                                             <td>
-                                                <span className="badge bg-info text-dark">
+                                                <span className="badge text-bg-info">
                                                     {getChannelIcon(
                                                         template.channel,
                                                     )}{' '}
@@ -259,11 +259,11 @@ export default function TemplatesPage() {
                                             </td>
                                             <td>
                                                 {template.isActive ? (
-                                                    <span className="badge bg-success">
+                                                    <span className="badge text-bg-success">
                                                         Aktywny
                                                     </span>
                                                 ) : (
-                                                    <span className="badge bg-secondary">
+                                                    <span className="badge text-bg-secondary">
                                                         Nieaktywny
                                                     </span>
                                                 )}

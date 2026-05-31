@@ -89,7 +89,7 @@ export default function WarehouseManufacturersPage() {
             ) : filtered.length === 0 ? (
                 <p className="products-empty">Brak producentów.</p>
             ) : (
-                <div>
+                <div className="table-responsive">
                     <table className="table table-bordered">
                         <thead>
                             <tr>

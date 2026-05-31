@@ -174,7 +174,7 @@ export default function MessagesPage() {
                         Błąd ładowania wiadomości
                     </div>
                 ) : (
-                    <div>
+                    <div className="table-responsive">
                         <table className="table table-bordered">
                             <thead>
                                 <tr>

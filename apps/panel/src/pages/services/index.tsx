@@ -235,7 +235,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                 <div className="text-muted">Ładowanie usług...</div>
             ) : (
                 <>
-                    <div className="">
+                    <div className="table-responsive">
                         <table className="table table-bordered">
                             <thead>
                                 <tr>

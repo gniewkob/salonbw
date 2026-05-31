@@ -173,22 +173,22 @@ export default function RemindersPage() {
                                                         <td>{r.clientName}</td>
                                                         <td>
                                                             {r.smsSent ? (
-                                                                <span className="badge bg-success">
+                                                                <span className="badge text-bg-success">
                                                                     Wysłany
                                                                 </span>
                                                             ) : (
-                                                                <span className="badge bg-secondary">
+                                                                <span className="badge text-bg-secondary">
                                                                     -
                                                                 </span>
                                                             )}
                                                         </td>
                                                         <td>
                                                             {r.emailSent ? (
-                                                                <span className="badge bg-success">
+                                                                <span className="badge text-bg-success">
                                                                     Wysłany
                                                                 </span>
                                                             ) : (
-                                                                <span className="badge bg-secondary">
+                                                                <span className="badge text-bg-secondary">
                                                                     -
                                                                 </span>
                                                             )}
@@ -196,7 +196,7 @@ export default function RemindersPage() {
                                                         <td>
                                                             {r.error ? (
                                                                 <span
-                                                                    className="badge bg-danger"
+                                                                    className="badge text-bg-danger"
                                                                     title={
                                                                         r.error
                                                                     }
@@ -205,11 +205,11 @@ export default function RemindersPage() {
                                                                 </span>
                                                             ) : r.smsSent ||
                                                               r.emailSent ? (
-                                                                <span className="badge bg-success">
+                                                                <span className="badge text-bg-success">
                                                                     OK
                                                                 </span>
                                                             ) : (
-                                                                <span className="badge bg-secondary">
+                                                                <span className="badge text-bg-secondary">
                                                                     Pominięty
                                                                 </span>
                                                             )}

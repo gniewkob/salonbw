@@ -41,7 +41,7 @@ export default function WarehouseUsageHistoryPage() {
                 <p className="text-muted">Ładowanie historii zużycia...</p>
             ) : (
                 <>
-                    <div className="">
+                    <div className="table-responsive">
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
