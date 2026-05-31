@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import NewProductModal from '@/components/warehouse/NewProductModal';
+import EditProductModal from '@/components/warehouse/EditProductModal';
 import {
     useWarehouseProducts,
     useProductCategories,
@@ -53,6 +54,7 @@ export default function WarehouseProductsPage() {
     const [productTypeFilter, setProductTypeFilter] =
         useState<ProductTypeFilter>('all');
     const [newProductOpen, setNewProductOpen] = useState(false);
+    const [editProductId, setEditProductId] = useState<number | null>(null);
     const selectedCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
@@ -316,6 +318,19 @@ export default function WarehouseProductsPage() {
                                                     aria-hidden="true"
                                                 />
                                             </Link>
+                                            <button
+                                                type="button"
+                                                className="icon_link btn btn-link p-0"
+                                                title="edytuj"
+                                                onClick={() =>
+                                                    setEditProductId(product.id)
+                                                }
+                                            >
+                                                <i
+                                                    className="icon sprite-edit"
+                                                    aria-hidden="true"
+                                                />
+                                            </button>
                                         </td>
                                     </tr>
                                 );
@@ -342,6 +357,13 @@ export default function WarehouseProductsPage() {
                 open={newProductOpen}
                 onClose={() => setNewProductOpen(false)}
                 onSuccess={() => setNewProductOpen(false)}
+            />
+            <EditProductModal
+                open={editProductId !== null}
+                productId={editProductId}
+                onClose={() => setEditProductId(null)}
+                onSuccess={() => setEditProductId(null)}
+                onDeleted={() => setEditProductId(null)}
             />
         </WarehouseLayout>
     );
