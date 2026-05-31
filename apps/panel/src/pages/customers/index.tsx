@@ -738,7 +738,10 @@ export default function ClientsPage() {
                                         )
                                     </label>
                                 </div>
-                                <div id="customers_list">
+                                <div
+                                    id="customers_list"
+                                    className="table-responsive"
+                                >
                                     <table className="table table-bordered">
                                         <thead>
                                             <tr>

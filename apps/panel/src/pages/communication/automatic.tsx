@@ -208,7 +208,7 @@ export default function AutomaticMessagesPage() {
                                                     rule.trigger}
                                             </td>
                                             <td>
-                                                <span className="badge bg-secondary">
+                                                <span className="badge text-bg-secondary">
                                                     {CHANNEL_LABELS[
                                                         rule.channel
                                                     ] ?? rule.channel}

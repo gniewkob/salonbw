@@ -337,7 +337,7 @@ export default function CommunicationDetailPage() {
                                     otwórz jako SMS
                                 </Link>
                                 <Link
-                                    className="button ml-s"
+                                    className="btn btn-outline-secondary btn-sm ms-2"
                                     href={getCommunicationHref(id!, 'email')}
                                 >
                                     otwórz jako email

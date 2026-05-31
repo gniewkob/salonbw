@@ -245,7 +245,7 @@ export default function CommunicationPage() {
                                                               </div>
                                                           </td>
                                                           <td>
-                                                              <span className="badge bg-info text-dark">
+                                                              <span className="badge text-bg-info">
                                                                   {entry.channel ||
                                                                       'sms'}
                                                               </span>
@@ -301,7 +301,7 @@ export default function CommunicationPage() {
                                                               </div>
                                                           </td>
                                                           <td>
-                                                              <span className="badge bg-info text-dark">
+                                                              <span className="badge text-bg-info">
                                                                   email
                                                               </span>
                                                           </td>

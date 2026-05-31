@@ -112,7 +112,7 @@ export default function WarehouseOrdersHistoryPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="">
+                    <div className="table-responsive">
                         <table className="table table-bordered">
                             <thead>
                                 <tr>

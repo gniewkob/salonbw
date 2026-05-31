@@ -103,7 +103,7 @@ export default function InventoryHistoryPage() {
                             </select>
                         </div>
                     </div>
-                    <div>
+                    <div className="table-responsive">
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
