@@ -184,7 +184,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                             </div>
 
                             <div className="relative self-start">
-                                <div className="absolute" style={{ inset: 0, border: '1px solid rgba(197,168,128,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
+                                <div className="absolute" style={{ inset: 0, border: '1px solid rgba(180,184,190,0.25)', borderRadius: '3px', transform: 'translate(8px, 8px)', zIndex: 0 }} />
                                 <iframe
                                     src={`https://maps.google.com/maps?q=${BUSINESS_INFO.coordinates.lat},${BUSINESS_INFO.coordinates.lng}&z=16&output=embed&hl=pl`}
                                     className="relative w-full"

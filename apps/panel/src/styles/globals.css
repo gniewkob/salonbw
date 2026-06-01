@@ -84,7 +84,7 @@ body {
 }
 
 .salonbw-step.active .salonbw-step__number {
-    background: #c5a880;
+    background: #b4b8be;
     color: #0d0d0d;
 }
 
@@ -123,7 +123,7 @@ body {
 }
 
 .salonbw-channel:hover {
-    border-color: #c5a880;
+    border-color: #b4b8be;
 }
 
 .salonbw-channel input {
@@ -131,8 +131,8 @@ body {
 }
 
 .salonbw-channel.active {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.07);
+    border-color: #b4b8be;
+    background: rgba(180, 184, 190, 0.07);
 }
 
 .salonbw-channel__icon {
@@ -180,13 +180,13 @@ body {
 }
 
 .salonbw-template-item:hover {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.05);
+    border-color: #b4b8be;
+    background: rgba(180, 184, 190, 0.05);
 }
 
 .salonbw-template-item.active {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.08);
+    border-color: #b4b8be;
+    background: rgba(180, 184, 190, 0.08);
 }
 
 .salonbw-template-item__name {
@@ -227,8 +227,8 @@ body {
 
 .salonbw-input:focus {
     outline: none;
-    border-color: #c5a880;
-    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+    border-color: #b4b8be;
+    box-shadow: 0 0 0 2px rgba(180, 184, 190, 0.2);
 }
 
 .salonbw-input--sm {
@@ -253,8 +253,8 @@ body {
 
 .salonbw-textarea:focus {
     outline: none;
-    border-color: #c5a880;
-    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+    border-color: #b4b8be;
+    box-shadow: 0 0 0 2px rgba(180, 184, 190, 0.2);
 }
 
 .salonbw-char-count {
@@ -287,7 +287,7 @@ body {
     background: #252525;
     border-radius: 4px;
     font-size: 0.75rem;
-    color: #c5a880;
+    color: #b4b8be;
     margin-right: 8px;
     font-family: monospace;
 }
@@ -521,8 +521,8 @@ body {
 
 .salonbw-select:focus {
     outline: none;
-    border-color: #c5a880;
-    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+    border-color: #b4b8be;
+    box-shadow: 0 0 0 2px rgba(180, 184, 190, 0.2);
 }
 
 .salonbw-select--inline {
@@ -550,7 +550,7 @@ body {
     border-bottom: 1px solid #252525;
     background: #141414;
     font-weight: 600;
-    color: #c5a880;
+    color: #b4b8be;
     font-size: 0.875rem;
 }
 
@@ -701,7 +701,7 @@ body {
 }
 
 .salonbw-modal__close:hover {
-    color: #c5a880;
+    color: #b4b8be;
     background: #2a2414;
 }
 
@@ -800,7 +800,7 @@ body {
     border-bottom: 1px solid #252525;
     background: #141414;
     font-weight: 600;
-    color: #c5a880;
+    color: #b4b8be;
     font-size: 0.875rem;
 }
 
@@ -884,8 +884,8 @@ body {
 }
 
 .salonbw-status--in-progress {
-    background: rgba(197, 168, 128, 0.15);
-    color: #c5a880;
+    background: rgba(180, 184, 190, 0.15);
+    color: #b4b8be;
 }
 
 .salonbw-status--completed {
@@ -1013,7 +1013,7 @@ body {
 
 .salonbw-icon-btn:hover {
     background: #1e1a14;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 /* Alert */
@@ -1240,7 +1240,7 @@ body {
     border-bottom: 1px solid #252525;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 .salonbw-widget__content {
@@ -1492,7 +1492,7 @@ body {
 .salonbw-appointment-item__time {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #c5a880;
+    color: #b4b8be;
     width: 48px;
     flex-shrink: 0;
 }
@@ -1558,7 +1558,7 @@ body {
 }
 
 .fc-col-header-cell-cushion {
-    color: #c5a880 !important;
+    color: #b4b8be !important;
     font-weight: 600 !important;
     font-size: 13px !important;
 }
@@ -1603,7 +1603,7 @@ body {
 }
 
 .fc-daygrid-day.fc-day-today {
-    background: rgba(197, 168, 128, 0.06) !important;
+    background: rgba(180, 184, 190, 0.06) !important;
 }
 
 .fc-daygrid-day-top {
@@ -1643,8 +1643,8 @@ body {
 
 .fc-button-active {
     background: #2a2114 !important;
-    border-color: #c5a880 !important;
-    color: #c5a880 !important;
+    border-color: #b4b8be !important;
+    color: #b4b8be !important;
 }
 
 /* ============================================
@@ -1713,18 +1713,18 @@ body {
 
 .salonbw-mini-cal__day:hover {
     background: #1e1a14;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 .salonbw-mini-cal__day--selected {
-    background: #c5a880 !important;
+    background: #b4b8be !important;
     color: #0d0d0d !important;
 }
 
 .salonbw-mini-cal__day--today {
-    border: 1px solid #c5a880;
+    border: 1px solid #b4b8be;
     font-weight: 600;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 .salonbw-mini-cal__day--other-month {
@@ -1748,8 +1748,8 @@ body {
     --bs-secondary-color: #7a7068;
     --bs-tertiary-color: #5a5450;
     --bs-emphasis-color: #f0e8dc;
-    --bs-link-color: #c5a880;
-    --bs-link-hover-color: #d4b896;
+    --bs-link-color: #b4b8be;
+    --bs-link-hover-color: #c4c8cd;
     --bs-heading-color: #e8e0d5;
     --bs-card-bg: #161616;
     --bs-card-border-color: #252525;
@@ -1762,8 +1762,8 @@ body {
     --bs-dropdown-link-color: #e8e0d5;
     --bs-dropdown-link-hover-bg: #2a2414;
     --bs-table-bg: transparent;
-    --bs-table-striped-bg: rgba(197, 168, 128, 0.04);
-    --bs-table-hover-bg: rgba(197, 168, 128, 0.06);
+    --bs-table-striped-bg: rgba(180, 184, 190, 0.04);
+    --bs-table-hover-bg: rgba(180, 184, 190, 0.06);
     --bs-table-border-color: #252525;
     --bs-modal-bg: #1c1c1c;
     --bs-modal-header-border-color: #252525;
@@ -1773,13 +1773,13 @@ body {
     --bs-nav-tabs-border-color: #252525;
     --bs-nav-tabs-link-active-bg: #161616;
     --bs-nav-tabs-link-active-border-color: #252525;
-    --bs-nav-pills-link-active-bg: #c5a880;
+    --bs-nav-pills-link-active-bg: #b4b8be;
     --bs-pagination-bg: #161616;
     --bs-pagination-border-color: #252525;
-    --bs-pagination-active-bg: #c5a880;
-    --bs-pagination-active-border-color: #c5a880;
+    --bs-pagination-active-bg: #b4b8be;
+    --bs-pagination-active-border-color: #b4b8be;
     --bs-progress-bg: #1e1e1e;
-    --bs-code-color: #c5a880;
+    --bs-code-color: #b4b8be;
 }
 
 /* Topbar */
@@ -1789,11 +1789,11 @@ body {
 }
 
 .navbar .brand a {
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 .navbar .brand a:hover {
-    color: #d4b896;
+    color: #c4c8cd;
 }
 
 .navbar .navbar-right > li > a:not(.button) {
@@ -1822,7 +1822,7 @@ body {
 .sidenav .nav-list li a:hover,
 .sidenav .nav-list li.active a {
     background: #1e1a14;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 /* Main content */
@@ -1856,7 +1856,7 @@ body {
 }
 
 .close:hover {
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 /* Legacy buttons */
@@ -1890,7 +1890,7 @@ body {
 /* Shell table overrides */
 #salonbw-shell-root .salonbw-table th {
     background: #141414;
-    color: #c5a880;
+    color: #b4b8be;
     border-color: #252525;
 }
 
@@ -2047,7 +2047,7 @@ h3 {
 }
 
 .navbar .omnibox:focus {
-    border-color: #c5a880;
+    border-color: #b4b8be;
     box-shadow: none;
 }
 
@@ -2071,7 +2071,7 @@ h3 {
 
 .navbar .dropdown-menu .main-menu-li a:hover {
     background: #2a2414;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 /* ============================================================
@@ -2101,7 +2101,7 @@ h3 {
 .sidenav .nav-list li a:hover,
 .sidenav .nav-list li.active a {
     background: #f0f4f8;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 .sidenav .btn-link {
@@ -2329,7 +2329,7 @@ h3 {
     color: #495057;
 }
 .salonbw-checkbox {
-    accent-color: #c5a880;
+    accent-color: #b4b8be;
 }
 
 /* --- Templates --- */
@@ -2337,12 +2337,12 @@ h3 {
     border-color: #dee2e6;
 }
 .salonbw-template-item:hover {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.05);
+    border-color: #b4b8be;
+    background: rgba(180, 184, 190, 0.05);
 }
 .salonbw-template-item.active {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.08);
+    border-color: #b4b8be;
+    background: rgba(180, 184, 190, 0.08);
 }
 
 /* --- Channel selector --- */
@@ -2481,7 +2481,7 @@ h3 {
 }
 
 .fc-daygrid-day.fc-day-today {
-    background: rgba(197, 168, 128, 0.08) !important;
+    background: rgba(180, 184, 190, 0.08) !important;
 }
 
 .fc-col-header-cell {
@@ -2518,8 +2518,8 @@ h3 {
 
 .fc-button-active,
 .fc-button.fc-button-active {
-    background: var(--salon-brand, #c5a880) !important;
-    border-color: var(--salon-brand, #c5a880) !important;
+    background: var(--salon-brand, #b4b8be) !important;
+    border-color: var(--salon-brand, #b4b8be) !important;
     color: #ffffff !important;
 }
 

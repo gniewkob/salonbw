@@ -26,21 +26,21 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                 <button
                                     type="button"
                                     onClick={() => toggle(item.id)}
-                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-inset"
+                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-inset"
                                     aria-expanded={isOpen}
                                     aria-controls={`history-content-${item.id}`}
                                 >
                                     <div className="flex items-center gap-5">
-                                        <span className="text-xs font-mono w-10 shrink-0" style={{ color: '#c5a880' }}>
+                                        <span className="text-xs font-mono w-10 shrink-0" style={{ color: '#b4b8be' }}>
                                             {T.history.yearMap[item.id as keyof typeof T.history.yearMap] ?? '—'}
                                         </span>
-                                        <h3 className="text-lg font-semibold" style={{ fontFamily: "var(--font-playfair), serif", color: isOpen ? '#c5a880' : '#ffffff', transition: 'color 0.2s' }}>
+                                        <h3 className="text-lg font-semibold" style={{ fontFamily: "var(--font-playfair), serif", color: isOpen ? '#b4b8be' : '#ffffff', transition: 'color 0.2s' }}>
                                             {item.title}
                                         </h3>
                                     </div>
                                     <svg
                                         className="shrink-0 ml-4 transition-transform duration-300"
-                                        style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', color: '#c5a880' }}
+                                        style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', color: '#b4b8be' }}
                                         width={18} height={18} fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />

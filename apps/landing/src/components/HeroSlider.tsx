@@ -116,7 +116,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                         <a
                             href={bookingUrl}
                             className="btn-gold inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
-                            style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(197,168,128,0.4)' }}
+                            style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(180,184,190,0.4)' }}
                         >
                             {T.nav.booking}
                         </a>

@@ -115,7 +115,7 @@ export default function LoginPage() {
         width: '100%',
         padding: '0.85rem 1rem',
         background: 'rgba(255,255,255,0.05)',
-        border: `1px solid ${focusedField === field ? '#c5a880' : touched[field] && errors[field] ? 'rgba(220,60,60,0.7)' : 'rgba(255,255,255,0.12)'}`,
+        border: `1px solid ${focusedField === field ? '#b4b8be' : touched[field] && errors[field] ? 'rgba(220,60,60,0.7)' : 'rgba(255,255,255,0.12)'}`,
         borderRadius: '2px',
         color: '#ffffff',
         fontSize: '0.875rem',
@@ -191,7 +191,7 @@ export default function LoginPage() {
                                 fontSize: '0.6rem',
                                 letterSpacing: '0.2em',
                                 textTransform: 'uppercase',
-                                color: '#c5a880',
+                                color: '#b4b8be',
                                 marginBottom: '0.75rem',
                             }}
                         >
@@ -213,7 +213,7 @@ export default function LoginPage() {
                             style={{
                                 width: '32px',
                                 height: '2px',
-                                background: '#c5a880',
+                                background: '#b4b8be',
                                 margin: '1rem auto 0',
                             }}
                         />
@@ -351,7 +351,7 @@ export default function LoginPage() {
                                 display: 'block',
                                 width: '100%',
                                 padding: '0.9rem 1.5rem',
-                                background: submitting ? '#a8895f' : '#c5a880',
+                                background: submitting ? '#8e9298' : '#b4b8be',
                                 color: '#0d0d0d',
                                 border: 'none',
                                 borderRadius: '2px',
@@ -397,7 +397,7 @@ export default function LoginPage() {
                             href="/auth/register"
                             prefetch={false}
                             style={{
-                                color: '#c5a880',
+                                color: '#b4b8be',
                                 textDecoration: 'none',
                                 fontWeight: 600,
                             }}
