@@ -2,6 +2,10 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Script from 'next/script';
 import { useState, useEffect } from 'react';
+import {
+    ChevronLeftIcon,
+    MinusSmallIcon,
+} from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
 import BookingModal from '@/components/BookingModal';
 import { BUSINESS_INFO } from '@/config/content';
@@ -158,7 +162,7 @@ export default function HighlightsPage() {
             </section>
 
             {/* Light content section */}
-            <section style={{ background: '#faf9f7', padding: '5rem 2rem' }}>
+            <section style={{ background: 'var(--brand-warm-bg)', padding: '5rem 2rem' }}>
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {ITEMS.map((item) => (
@@ -169,17 +173,22 @@ export default function HighlightsPage() {
                                     alignItems: 'baseline',
                                     gap: '0.75rem',
                                     padding: '0.85rem 0',
-                                    borderBottom: '1px solid #ede9e3',
+                                    borderBottom: '1px solid var(--brand-warm-border)',
                                     fontFamily: 'var(--font-open-sans), sans-serif',
-                                    color: '#3a3028',
+                                    color: 'var(--brand-warm-ink)',
                                     fontSize: '0.95rem',
                                 }}
                             >
-                                <span
-                                    style={{ color: '#b4b8be', flexShrink: 0 }}
-                                >
-                                    —
-                                </span>
+                                <MinusSmallIcon
+                                    aria-hidden="true"
+                                    style={{
+                                        color: '#b4b8be',
+                                        flexShrink: 0,
+                                        width: 16,
+                                        height: 16,
+                                        alignSelf: 'center',
+                                    }}
+                                />
                                 {item}
                             </li>
                         ))}
@@ -189,6 +198,9 @@ export default function HighlightsPage() {
                         <Link
                             href="/services"
                             style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
                                 color: '#4a4a4a',
                                 fontSize: '0.8rem',
                                 letterSpacing: '0.12em',
@@ -197,7 +209,11 @@ export default function HighlightsPage() {
                                 fontFamily: 'var(--font-open-sans), sans-serif',
                             }}
                         >
-                            ← Pełna oferta i cennik
+                            <ChevronLeftIcon
+                                aria-hidden="true"
+                                style={{ width: 14, height: 14 }}
+                            />
+                            Pełna oferta i cennik
                         </Link>
                     </div>
                 </div>

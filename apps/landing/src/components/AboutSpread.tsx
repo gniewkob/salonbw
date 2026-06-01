@@ -14,7 +14,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
     const principles = (T.values.items as unknown as { id: string; title: string; description: string }[]).slice(0, 3);
 
     return (
-        <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
+        <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <div className="max-w-5xl mx-auto">
 
@@ -49,7 +49,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                     style={{
                                         fontFamily: "var(--font-playfair), serif",
                                         fontStyle: 'italic',
-                                        color: '#3a3028',
+                                        color: 'var(--brand-warm-ink)',
                                         fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
                                     }}
                                 >
@@ -62,7 +62,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                     >
                                         {data.name}
                                     </cite>
-                                    <span className="text-xs mt-1 block" style={{ color: '#8a7060', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                    <span className="text-xs mt-1 block" style={{ color: 'var(--brand-warm-muted)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                         {T.founder.role}
                                     </span>
                                 </footer>
@@ -85,7 +85,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                         >
                                             {T.history.yearMap[item.id as keyof typeof T.history.yearMap]}
                                         </span>
-                                        <p className="text-sm leading-relaxed" style={{ color: '#8a7060' }}>
+                                        <p className="text-sm leading-relaxed" style={{ color: 'var(--brand-warm-muted)' }}>
                                             {item.content.split('. ')[0]}.
                                         </p>
                                     </div>
@@ -113,7 +113,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                             sizes="280px"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center" style={{ background: '#e8e2da' }}>
+                                        <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--brand-warm-bg-3)' }}>
                                             <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b4b8be' }}>A</span>
                                         </div>
                                     )}
@@ -125,7 +125,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                     {/* 3 Principles */}
                     <div
                         className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 md:pt-14"
-                        style={{ borderTop: '1px solid #ede9e3' }}
+                        style={{ borderTop: '1px solid var(--brand-warm-border)' }}
                     >
                         {principles.map((p, idx) => {
                             const Icon = PRINCIPLE_ICONS[idx]!;
@@ -144,7 +144,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                         >
                                             {p.title}
                                         </h3>
-                                        <p className="text-sm leading-relaxed" style={{ color: '#6b5f52' }}>
+                                        <p className="text-sm leading-relaxed" style={{ color: 'var(--brand-warm-soft)' }}>
                                             {p.description.split('. ')[0]}.
                                         </p>
                                     </div>

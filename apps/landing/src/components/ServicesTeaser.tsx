@@ -35,8 +35,8 @@ export default function ServicesTeaser() {
                                 href={href}
                                 className={`group relative flex flex-col p-8 md:p-10 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-4 ${featured ? 'service-card-dark' : ''}`}
                                 style={{
-                                    background: featured ? '#0d0d0d' : '#faf9f7',
-                                    border: featured ? 'none' : '1px solid #ede9e3',
+                                    background: featured ? '#0d0d0d' : 'var(--brand-warm-bg)',
+                                    border: featured ? 'none' : '1px solid var(--brand-warm-border)',
                                     borderRadius: '3px',
                                     textDecoration: 'none',
                                     transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease',
@@ -77,7 +77,7 @@ export default function ServicesTeaser() {
                                 <p className="relative z-10 text-xs tracking-wider uppercase mb-4" style={{ color: '#b4b8be', letterSpacing: '0.14em' }}>
                                     {subtitle}
                                 </p>
-                                <p className="relative z-10 text-sm leading-relaxed" style={{ color: featured ? 'rgba(255,255,255,0.65)' : '#6b5f52' }}>
+                                <p className="relative z-10 text-sm leading-relaxed" style={{ color: featured ? 'rgba(255,255,255,0.65)' : 'var(--brand-warm-soft)' }}>
                                     {description}
                                 </p>
 
@@ -93,7 +93,7 @@ export default function ServicesTeaser() {
                                                 style={{
                                                     borderBottom: '1px solid rgba(180,184,190,0.12)',
                                                     padding: '0.65rem 0',
-                                                    color: featured ? 'rgba(255,255,255,0.6)' : '#6b5f52',
+                                                    color: featured ? 'rgba(255,255,255,0.6)' : 'var(--brand-warm-soft)',
                                                     fontSize: '0.78rem',
                                                     letterSpacing: '0.04em',
                                                     fontFamily: 'var(--font-open-sans), sans-serif',

@@ -27,7 +27,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
             {subtitle && (
                 <p
                     className={`text-sm mt-5 max-w-lg ${isLeft ? '' : 'mx-auto'}`}
-                    style={{ color: dark ? 'rgba(255,255,255,0.55)' : '#8a7060', lineHeight: 1.8, fontFamily: "var(--font-open-sans), sans-serif" }}
+                    style={{ color: dark ? 'rgba(255,255,255,0.55)' : 'var(--brand-warm-muted)', lineHeight: 1.8, fontFamily: "var(--font-open-sans), sans-serif" }}
                 >
                     {subtitle}
                 </p>

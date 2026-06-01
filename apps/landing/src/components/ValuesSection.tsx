@@ -42,7 +42,7 @@ export default function ValuesSection() {
     }, [data]);
 
     return (
-        <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
+        <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <SectionHeader eyebrow={T.values.eyebrow} title={T.values.title} />
 
@@ -73,7 +73,7 @@ export default function ValuesSection() {
                                 </div>
                                 <span
                                     className="text-center leading-tight"
-                                    style={{ fontFamily: "var(--font-open-sans), sans-serif", fontSize: '0.7rem', fontWeight: 600, color: isActive ? '#ffffff' : '#6b5f52', letterSpacing: '0.03em' }}
+                                    style={{ fontFamily: "var(--font-open-sans), sans-serif", fontSize: '0.7rem', fontWeight: 600, color: isActive ? '#ffffff' : 'var(--brand-warm-soft)', letterSpacing: '0.03em' }}
                                 >
                                     {value.title}
                                 </span>
@@ -84,7 +84,7 @@ export default function ValuesSection() {
 
                 {activeValue && (
                     <div id={`tabpanel-${activeValue.id}`} role="tabpanel" aria-labelledby={`tab-${activeValue.id}`} className="max-w-2xl mx-auto text-center">
-                        <p className="text-base leading-relaxed" style={{ color: '#4a3f35', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic' }}>
+                        <p className="text-base leading-relaxed" style={{ color: 'var(--brand-warm-deep)', fontFamily: "var(--font-playfair), serif", fontStyle: 'italic' }}>
                             &ldquo;{activeValue.description}&rdquo;
                         </p>
                     </div>

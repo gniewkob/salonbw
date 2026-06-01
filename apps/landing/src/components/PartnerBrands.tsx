@@ -6,10 +6,10 @@ export default function PartnerBrands() {
     return (
         <section
             className="py-10 overflow-hidden"
-            style={{ borderTop: '1px solid #f0ece6', borderBottom: '1px solid #f0ece6', background: '#faf9f7' }}
+            style={{ borderTop: '1px solid #f0ece6', borderBottom: '1px solid #f0ece6', background: 'var(--brand-warm-bg)' }}
             aria-label="Marki partnerskie"
         >
-            <p className="text-center text-xs uppercase mb-6" style={{ color: '#b0a090', letterSpacing: '0.22em' }}>
+            <p className="text-center text-xs uppercase mb-6" style={{ color: 'var(--brand-warm-label)', letterSpacing: '0.22em' }}>
                 Pracujemy z najlepszymi markami
             </p>
             <div className="relative overflow-hidden" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
@@ -25,7 +25,7 @@ export default function PartnerBrands() {
                                 style={{
                                     fontFamily: "'Playfair Display', serif",
                                     fontSize: '0.95rem',
-                                    color: '#8a7060',
+                                    color: 'var(--brand-warm-muted)',
                                     letterSpacing: '0.18em',
                                 }}
                             >

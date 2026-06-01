@@ -21,12 +21,12 @@ export default function TrustStrip() {
     return (
         <section
             aria-label="Marki partnerskie"
-            style={{ background: '#f7f5f2', borderTop: '1px solid #ede9e3', borderBottom: '1px solid #ede9e3' }}
+            style={{ background: 'var(--brand-warm-bg-2)', borderTop: '1px solid var(--brand-warm-border)', borderBottom: '1px solid var(--brand-warm-border)' }}
         >
             <div className="container mx-auto px-4 md:px-8 py-8 md:py-10">
                 <p
                     className="text-center text-xs uppercase mb-7"
-                    style={{ color: '#b0a090', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                    style={{ color: 'var(--brand-warm-label)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
                 >
                     {T.trust.label}
                 </p>
@@ -34,7 +34,7 @@ export default function TrustStrip() {
                     {PARTNER_BRANDS.map(brand => (
                         <span
                             key={brand}
-                            style={{ color: '#7a6e65', textTransform: 'uppercase', ...BRAND_STYLES[brand] }}
+                            style={{ color: 'var(--brand-warm-secondary)', textTransform: 'uppercase', ...BRAND_STYLES[brand] }}
                         >
                             {DISPLAY_NAMES[brand] ?? brand}
                         </span>

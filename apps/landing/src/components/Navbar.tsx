@@ -143,7 +143,7 @@ export default function Navbar() {
                                     onClick={() => setLang(code)}
                                     className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] px-1 py-0.5"
                                     style={{
-                                        color: lang === code ? '#b4b8be' : '#8a7060',
+                                        color: lang === code ? '#b4b8be' : 'var(--brand-warm-muted)',
                                         borderBottom: lang === code ? '1px solid #b4b8be' : '1px solid transparent',
                                     }}
                                     aria-pressed={lang === code}
@@ -250,7 +250,7 @@ export default function Navbar() {
                                     type="button"
                                     onClick={() => { setLang(code); }}
                                     className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none"
-                                    style={{ color: lang === code ? '#b4b8be' : '#8a7060', borderBottom: lang === code ? '1px solid #b4b8be' : '1px solid transparent' }}
+                                    style={{ color: lang === code ? '#b4b8be' : 'var(--brand-warm-muted)', borderBottom: lang === code ? '1px solid #b4b8be' : '1px solid transparent' }}
                                     aria-pressed={lang === code}
                                 >
                                     {label}

@@ -6,6 +6,17 @@
     --brand-silver: #b4b8be;
     --brand-silver-dark: #8e9298;
     --brand-black: #0d0d0d;
+    /* Warm-brown sub-palette — used on light/cream surfaces */
+    --brand-warm-ink: #3a3028;        /* primary text on warm bg */
+    --brand-warm-deep: #4a3f35;       /* emphasized warm text */
+    --brand-warm-soft: #6b5f52;       /* softer warm text */
+    --brand-warm-secondary: #7a6e65;  /* secondary warm */
+    --brand-warm-muted: #8a7060;      /* muted body text */
+    --brand-warm-label: #b0a090;      /* eyebrow/label text */
+    --brand-warm-bg: #faf9f7;         /* warm cream background — primary */
+    --brand-warm-bg-2: #f7f5f2;       /* warm cream — slightly darker (strips) */
+    --brand-warm-bg-3: #e8e2da;       /* warm cream — image placeholders */
+    --brand-warm-border: #ede9e3;     /* warm divider */
 }
 
 @media (prefers-color-scheme: dark) {

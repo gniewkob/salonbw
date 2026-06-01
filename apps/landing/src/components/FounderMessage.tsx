@@ -11,7 +11,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
     const data = founder ?? (FOUNDER_MESSAGE as FounderData);
 
     return (
-        <section className="py-20 md:py-28" style={{ background: '#faf9f7' }}>
+        <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <div className="max-w-5xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
@@ -33,7 +33,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                                             sizes="280px"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center" style={{ background: '#e8e2da' }}>
+                                        <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--brand-warm-bg-3)' }}>
                                             <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b4b8be' }}>A</span>
                                         </div>
                                     )}
@@ -50,14 +50,14 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                             <div className="mb-2" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3.5rem', color: '#b4b8be', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
 
                             <blockquote>
-                                <p className="text-lg leading-relaxed mb-8" style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}>
+                                <p className="text-lg leading-relaxed mb-8" style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: 'var(--brand-warm-ink)' }}>
                                     {data.quote}
                                 </p>
                                 <footer>
                                     <cite className="not-italic block" style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#b4b8be', lineHeight: 1.1 }}>
                                         {data.name}
                                     </cite>
-                                    <span className="text-xs mt-1 block tracking-wider" style={{ color: '#8a7060', letterSpacing: '0.12em' }}>
+                                    <span className="text-xs mt-1 block tracking-wider" style={{ color: 'var(--brand-warm-muted)', letterSpacing: '0.12em' }}>
                                         {T.founder.role}
                                     </span>
                                 </footer>
