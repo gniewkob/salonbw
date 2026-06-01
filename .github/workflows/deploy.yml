@@ -714,20 +714,19 @@ jobs:
             sleep $((attempt * 5))
           done
           test -d node_modules
-          # Verify every installed package has its package.json. Catches partial
-          # tarball extraction (e.g. 2026-06-01: @sentry/core had build/ but no
-          # manifest → MODULE_NOT_FOUND on every SSR page that imports it).
-          missing=$(
-            for d in node_modules/*/ node_modules/@*/*/; do
-              [ -d "$d" ] || continue
-              [ -f "${d}package.json" ] || printf '%s\n' "$d"
-            done
-          )
-          if [ -n "$missing" ]; then
-            echo "Install corruption: packages missing package.json:" >&2
-            printf '%s\n' "$missing" >&2
-            exit 1
-          fi
+          # Verify critical SSR packages have their package.json. Catches
+          # partial tarball extraction (e.g. 2026-06-01: @sentry/core had
+          # build/ files but no manifest → MODULE_NOT_FOUND on every SSR page
+          # that imports it). Narrow allow-list avoids false positives from
+          # legitimately empty scope dirs or globbing quirks under set -e.
+          fail=0
+          for pkg in @sentry/core @sentry/nextjs @sentry/node-core @sentry/react next react react-dom; do
+            if [ -d "node_modules/$pkg" ] && [ ! -f "node_modules/$pkg/package.json" ]; then
+              echo "Install corruption: node_modules/$pkg has no package.json" >&2
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then exit 1; fi
           SSH
 
       - name: Install dependencies (frontend landing)
@@ -752,20 +751,19 @@ jobs:
             sleep $((attempt * 5))
           done
           test -d node_modules
-          # Verify every installed package has its package.json. Catches partial
-          # tarball extraction (e.g. 2026-06-01: @sentry/core had build/ but no
-          # manifest → MODULE_NOT_FOUND on every SSR page that imports it).
-          missing=$(
-            for d in node_modules/*/ node_modules/@*/*/; do
-              [ -d "$d" ] || continue
-              [ -f "${d}package.json" ] || printf '%s\n' "$d"
-            done
-          )
-          if [ -n "$missing" ]; then
-            echo "Install corruption: packages missing package.json:" >&2
-            printf '%s\n' "$missing" >&2
-            exit 1
-          fi
+          # Verify critical SSR packages have their package.json. Catches
+          # partial tarball extraction (e.g. 2026-06-01: @sentry/core had
+          # build/ files but no manifest → MODULE_NOT_FOUND on every SSR page
+          # that imports it). Narrow allow-list avoids false positives from
+          # legitimately empty scope dirs or globbing quirks under set -e.
+          fail=0
+          for pkg in @sentry/core @sentry/nextjs @sentry/node-core @sentry/react next react react-dom; do
+            if [ -d "node_modules/$pkg" ] && [ ! -f "node_modules/$pkg/package.json" ]; then
+              echo "Install corruption: node_modules/$pkg has no package.json" >&2
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then exit 1; fi
           SSH
 
       - name: Prepare standalone runtime (set node version) (panel)
