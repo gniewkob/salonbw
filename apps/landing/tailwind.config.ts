@@ -11,7 +11,7 @@ const config: Config = {
                 brand: {
                     black: '#000000',
                     white: '#ffffff',
-                    silver: '#b8bcc8',
+                    gold: '#b4b8be',
                 },
             },
             fontFamily: {

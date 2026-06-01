@@ -55,7 +55,7 @@ export default function Navbar() {
         }
     }, [mobileMenuOpen]);
 
-    const navLinkClass = 'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[#b8bcc8] focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const navLinkClass = 'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[#b4b8be] focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     return (
         <>
@@ -74,7 +74,7 @@ export default function Navbar() {
                     {/* Logo */}
                     <Link
                         href={'/' as Route}
-                        className="flex items-center focus:outline-none focus:ring-2 focus:ring-[#b8bcc8]"
+                        className="flex items-center focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                         onClick={() => setMobileMenuOpen(false)}
                         aria-label="Black & White — strona główna"
                     >
@@ -104,7 +104,7 @@ export default function Navbar() {
                                         <Link
                                             href={href as Route}
                                             className={navLinkClass}
-                                            style={active ? { color: '#b8bcc8', borderBottom: '1px solid #b8bcc8', paddingBottom: '2px' } : undefined}
+                                            style={active ? { color: '#b4b8be', borderBottom: '1px solid #b4b8be', paddingBottom: '2px' } : undefined}
                                             aria-current={active ? 'page' : undefined}
                                         >
                                             {label}
@@ -141,10 +141,10 @@ export default function Navbar() {
                                     key={code}
                                     type="button"
                                     onClick={() => setLang(code)}
-                                    className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] px-1 py-0.5"
+                                    className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] px-1 py-0.5"
                                     style={{
-                                        color: lang === code ? '#b8bcc8' : '#888c98',
-                                        borderBottom: lang === code ? '1px solid #b8bcc8' : '1px solid transparent',
+                                        color: lang === code ? '#b4b8be' : '#8a7060',
+                                        borderBottom: lang === code ? '1px solid #b4b8be' : '1px solid transparent',
                                     }}
                                     aria-pressed={lang === code}
                                     aria-label={`Język: ${label}`}
@@ -155,7 +155,7 @@ export default function Navbar() {
                         </div>
 
                         <button
-                            className="btn-silver px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-2"
+                            className="btn-gold px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2"
                             style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                             onClick={() => { trackEvent('begin_checkout', { cta: 'navbar' }); setBookingModalOpen(true); }}
                         >
@@ -165,7 +165,7 @@ export default function Navbar() {
 
                     {/* Mobile Hamburger */}
                     <button
-                        className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#b8bcc8]"
+                        className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         aria-label="Toggle menu"
                         aria-expanded={mobileMenuOpen}
@@ -207,7 +207,7 @@ export default function Navbar() {
                                         <Link
                                             href={href as Route}
                                             className="block py-2.5 px-4 text-sm font-medium transition"
-                                            style={{ color: active ? '#b8bcc8' : undefined }}
+                                            style={{ color: active ? '#b4b8be' : undefined }}
                                             onClick={() => setMobileMenuOpen(false)}
                                             aria-current={active ? 'page' : undefined}
                                         >
@@ -218,11 +218,11 @@ export default function Navbar() {
                             })}
                             {dashboardRoute ? (
                                 <>
-                                    <li><a href={dashboardRoute} className="block py-2.5 px-4 text-gray-800 hover:text-[#b8bcc8] text-sm font-medium transition">{T.nav.panel}</a></li>
+                                    <li><a href={dashboardRoute} className="block py-2.5 px-4 text-gray-800 hover:text-[#b4b8be] text-sm font-medium transition">{T.nav.panel}</a></li>
                                     <li>
                                         <button
                                             onClick={() => { void handleLogout(); setMobileMenuOpen(false); }}
-                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#b8bcc8] text-sm font-medium transition"
+                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#b4b8be] text-sm font-medium transition"
                                             type="button"
                                         >
                                             {T.nav.logout}
@@ -234,7 +234,7 @@ export default function Navbar() {
                                     <button
                                         type="button"
                                         onClick={() => { setBookingModalOpen(true); setMobileMenuOpen(false); }}
-                                        className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#b8bcc8] text-sm font-medium transition"
+                                        className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#b4b8be] text-sm font-medium transition"
                                     >
                                         {T.nav.login}
                                     </button>
@@ -250,7 +250,7 @@ export default function Navbar() {
                                     type="button"
                                     onClick={() => { setLang(code); }}
                                     className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none"
-                                    style={{ color: lang === code ? '#b8bcc8' : '#888c98', borderBottom: lang === code ? '1px solid #b8bcc8' : '1px solid transparent' }}
+                                    style={{ color: lang === code ? '#b4b8be' : '#8a7060', borderBottom: lang === code ? '1px solid #b4b8be' : '1px solid transparent' }}
                                     aria-pressed={lang === code}
                                 >
                                     {label}
@@ -260,7 +260,7 @@ export default function Navbar() {
 
                         <div className="px-4 mt-4">
                             <button
-                                className="btn-silver block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b8bcc8]"
+                                className="btn-gold block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                                 style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
                                 onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); setBookingModalOpen(true); }}
                             >

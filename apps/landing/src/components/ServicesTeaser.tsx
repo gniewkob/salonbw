@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Scissors, Sparkles, Wand2, type LucideIcon } from 'lucide-react';
 import SectionHeader from './SectionHeader';
+import StaggerReveal from './StaggerReveal';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
@@ -22,7 +23,7 @@ export default function ServicesTeaser() {
                     subtitle={T.services.teaserSubtitle}
                 />
 
-                <div className="services-editorial-grid">
+                <StaggerReveal className="services-editorial-grid">
                     {T.services.items.map(({ title, subtitle, description }, idx) => {
                         const Icon = SERVICE_ICONS[idx]!;
                         const href = SERVICE_HREFS[idx]!;
@@ -32,7 +33,7 @@ export default function ServicesTeaser() {
                             <Link
                                 key={title}
                                 href={href}
-                                className={`group relative flex flex-col p-8 md:p-10 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-4 ${featured ? 'service-card-dark' : ''}`}
+                                className={`group relative flex flex-col p-8 md:p-10 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-4 ${featured ? 'service-card-dark' : ''}`}
                                 style={{
                                     background: featured ? '#0d0d0d' : '#faf9f7',
                                     border: featured ? 'none' : '1px solid #ede9e3',
@@ -61,19 +62,19 @@ export default function ServicesTeaser() {
                                 <span className="service-numeral" aria-hidden="true">{numeral}</span>
 
                                 {featured && (
-                                    <span className="absolute top-4 right-4 text-xs tracking-widest uppercase px-2 py-1 z-10" style={{ color: '#b8bcc8', border: '1px solid #b8bcc8', fontSize: '9px', letterSpacing: '0.2em' }}>
+                                    <span className="absolute top-4 right-4 text-xs tracking-widest uppercase px-2 py-1 z-10" style={{ color: '#b4b8be', border: '1px solid #b4b8be', fontSize: '9px', letterSpacing: '0.2em' }}>
                                         {T.services.featured}
                                     </span>
                                 )}
 
-                                <div className="relative z-10 mb-6 w-11 h-11 flex items-center justify-center" style={{ background: featured ? 'rgba(197,168,128,0.15)' : 'rgba(197,168,128,0.1)', borderRadius: '2px' }}>
-                                    <Icon size={22} style={{ color: '#b8bcc8', strokeWidth: 1.5 }} />
+                                <div className="relative z-10 mb-6 w-11 h-11 flex items-center justify-center" style={{ background: featured ? 'rgba(180,184,190,0.15)' : 'rgba(180,184,190,0.1)', borderRadius: '2px' }}>
+                                    <Icon size={22} style={{ color: '#b4b8be', strokeWidth: 1.5 }} />
                                 </div>
 
                                 <h3 className="relative z-10 text-xl font-bold mb-1" style={{ fontFamily: "var(--font-playfair), serif", color: featured ? '#ffffff' : '#0d0d0d' }}>
                                     {title}
                                 </h3>
-                                <p className="relative z-10 text-xs tracking-wider uppercase mb-4" style={{ color: '#b8bcc8', letterSpacing: '0.14em' }}>
+                                <p className="relative z-10 text-xs tracking-wider uppercase mb-4" style={{ color: '#b4b8be', letterSpacing: '0.14em' }}>
                                     {subtitle}
                                 </p>
                                 <p className="relative z-10 text-sm leading-relaxed" style={{ color: featured ? 'rgba(255,255,255,0.65)' : '#6b5f52' }}>
@@ -83,14 +84,14 @@ export default function ServicesTeaser() {
                                 {'keyServices' in T.services.items[idx] && T.services.items[idx].keyServices && (
                                     <ul
                                         className="relative z-10 flex-grow flex flex-col justify-between"
-                                        style={{ listStyle: 'none', padding: 0, margin: '1.5rem 0 0', borderTop: '1px solid rgba(197,168,128,0.15)' }}
+                                        style={{ listStyle: 'none', padding: 0, margin: '1.5rem 0 0', borderTop: '1px solid rgba(180,184,190,0.15)' }}
                                     >
                                         {(T.services.items[idx].keyServices as string[]).map((name) => (
                                             <li
                                                 key={name}
                                                 className="flex items-center gap-3"
                                                 style={{
-                                                    borderBottom: '1px solid rgba(197,168,128,0.12)',
+                                                    borderBottom: '1px solid rgba(180,184,190,0.12)',
                                                     padding: '0.65rem 0',
                                                     color: featured ? 'rgba(255,255,255,0.6)' : '#6b5f52',
                                                     fontSize: '0.78rem',
@@ -98,7 +99,7 @@ export default function ServicesTeaser() {
                                                     fontFamily: 'var(--font-open-sans), sans-serif',
                                                 }}
                                             >
-                                                <span style={{ color: '#b8bcc8', flexShrink: 0, fontSize: '0.9rem' }}>—</span>
+                                                <span style={{ color: '#b4b8be', flexShrink: 0, fontSize: '0.9rem' }}>—</span>
                                                 {name}
                                             </li>
                                         ))}
@@ -106,7 +107,7 @@ export default function ServicesTeaser() {
                                 )}
                                 {!('keyServices' in T.services.items[idx]) && <div className="flex-grow" />}
 
-                                <span className="relative z-10 mt-8 inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase transition-all duration-200" style={{ color: '#b8bcc8', letterSpacing: '0.16em' }}>
+                                <span className="relative z-10 mt-8 inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase transition-all duration-200" style={{ color: '#b4b8be', letterSpacing: '0.16em' }}>
                                     {T.services.learnMore}
                                     <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -115,12 +116,12 @@ export default function ServicesTeaser() {
                             </Link>
                         );
                     })}
-                </div>
+                </StaggerReveal>
 
                 <div className="text-center mt-12">
                     <Link
                         href="/services"
-                        className="btn-outline-dark inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-2"
+                        className="btn-outline-dark inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2"
                         style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         {T.services.viewAll}

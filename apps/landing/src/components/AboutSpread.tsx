@@ -23,7 +23,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                         <div>
                             <p
                                 className="text-xs uppercase mb-4"
-                                style={{ color: '#b8bcc8', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                                style={{ color: '#b4b8be', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
                             >
                                 {T.founder.eyebrow}
                             </p>
@@ -33,7 +33,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                 style={{
                                     fontFamily: "var(--font-playfair), serif",
                                     fontSize: 'clamp(5rem, 10vw, 9rem)',
-                                    color: '#b8bcc8',
+                                    color: '#b4b8be',
                                     lineHeight: 0.75,
                                     opacity: 0.25,
                                     marginBottom: '-0.25rem',
@@ -58,7 +58,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                 <footer>
                                     <cite
                                         className="not-italic block"
-                                        style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', fontSize: '1.5rem', color: '#b8bcc8', lineHeight: 1.1 }}
+                                        style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', fontSize: '1.5rem', color: '#b4b8be', lineHeight: 1.1 }}
                                     >
                                         {data.name}
                                     </cite>
@@ -69,8 +69,8 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                             </blockquote>
 
                             <div className="mt-6 flex items-center gap-3">
-                                <div style={{ width: '32px', height: '1px', background: '#b8bcc8' }} />
-                                <span className="text-xs" style={{ color: '#b8bcc8', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                <div style={{ width: '32px', height: '1px', background: '#b4b8be' }} />
+                                <span className="text-xs" style={{ color: '#b4b8be', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                     {T.founder.since}
                                 </span>
                             </div>
@@ -81,7 +81,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                     <div key={item.id} className="timeline-item">
                                         <span
                                             className="text-xs font-bold block mb-0.5"
-                                            style={{ color: '#b8bcc8', fontFamily: "var(--font-open-sans), sans-serif", letterSpacing: '0.1em' }}
+                                            style={{ color: '#b4b8be', fontFamily: "var(--font-open-sans), sans-serif", letterSpacing: '0.1em' }}
                                         >
                                             {T.history.yearMap[item.id as keyof typeof T.history.yearMap]}
                                         </span>
@@ -98,7 +98,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                             <div className="relative">
                                 <div
                                     className="absolute"
-                                    style={{ top: '-12px', right: '-12px', left: '12px', bottom: '12px', border: '1px solid #b8bcc8', borderRadius: '3px', zIndex: 0 }}
+                                    style={{ top: '-12px', right: '-12px', left: '12px', bottom: '12px', border: '1px solid #b4b8be', borderRadius: '3px', zIndex: 0 }}
                                 />
                                 <div
                                     className="relative overflow-hidden"
@@ -114,7 +114,7 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center" style={{ background: '#e8e2da' }}>
-                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b8bcc8' }}>A</span>
+                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b4b8be' }}>A</span>
                                         </div>
                                     )}
                                 </div>
@@ -133,9 +133,9 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                 <div key={p.id} className="flex gap-4">
                                     <div
                                         className="shrink-0 w-9 h-9 flex items-center justify-center mt-1"
-                                        style={{ background: 'rgba(197,168,128,0.1)', borderRadius: '2px' }}
+                                        style={{ background: 'rgba(180,184,190,0.1)', borderRadius: '2px' }}
                                     >
-                                        <Icon size={18} strokeWidth={1.5} style={{ color: '#b8bcc8' }} />
+                                        <Icon size={18} strokeWidth={1.5} style={{ color: '#b4b8be' }} />
                                     </div>
                                     <div>
                                         <h3

@@ -98,7 +98,7 @@ export default function BalayagePage() {
                 >
                     <p
                         style={{
-                            color: '#b8bcc8',
+                            color: '#b4b8be',
                             fontSize: '0.7rem',
                             letterSpacing: '0.2em',
                             textTransform: 'uppercase',
@@ -177,7 +177,7 @@ export default function BalayagePage() {
                                 }}
                             >
                                 <span
-                                    style={{ color: '#b8bcc8', flexShrink: 0 }}
+                                    style={{ color: '#b4b8be', flexShrink: 0 }}
                                 >
                                     —
                                 </span>
@@ -190,7 +190,7 @@ export default function BalayagePage() {
                         <Link
                             href="/services"
                             style={{
-                                color: '#b8bcc8',
+                                color: '#b4b8be',
                                 fontSize: '0.8rem',
                                 letterSpacing: '0.12em',
                                 textTransform: 'uppercase',

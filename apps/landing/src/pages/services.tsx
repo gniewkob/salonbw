@@ -100,7 +100,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
         <PublicLayout>
             <Head>
                 <title>Usługi fryzjerskie, barber i pielęgnacja — {BUSINESS_INFO.name}</title>
-                <meta name="description" content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, pielęgnacja włosów (Botox, Złote proteiny, Sauna-SPA), przedłużanie włosów metodą HairTalk.`} />
+                <meta name="description" content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, koloryzacja Wella (Air Touch, Koleston Perfect), pielęgnacja (Botox, Złote proteiny, Olaplex), przedłużanie włosów HairTalk.`} />
                 <meta name="keywords" content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom" />
                 <meta property="og:title" content={`Usługi fryzjerskie — ${BUSINESS_INFO.name}`} />
                 <meta property="og:description" content={`Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów w ${BUSINESS_INFO.address.city}. Koloryzacja, balayage, botox, HairTalk.`} />
@@ -118,7 +118,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     <p className="svcs-hero__desc">{s.pageDesc}</p>
                     <button
                         onClick={() => setGeneralBookingOpen(true)}
-                        className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                         style={{ color: '#fff', padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         {T.nav.booking}
@@ -201,7 +201,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         </p>
                         <button
                             onClick={() => setGeneralBookingOpen(true)}
-                            className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                            className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                             style={{ color: '#fff', padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
                         >
                             {T.nav.booking}
@@ -242,28 +242,24 @@ export const getServerSideProps: GetServerSideProps<ServicesPageProps> = async (
     const fallbackCategories: ServiceCategory[] = [
         {
             id: null,
-            name: 'Usługi fryzjerskie',
+            name: 'Usługi dla kobiet',
             services: [
-                { id: 1, name: 'Strzyżenie damskie', duration: 45, price: 120 } as Service,
-                { id: 2, name: 'Koloryzacja', duration: 90, price: 240 } as Service,
-                { id: 3, name: 'Balayage', duration: 120, price: 320 } as Service,
+                { id: 1, name: 'Strzyżenie damskie', duration: 45, price: 150, priceType: 'from' } as Service,
+                { id: 2, name: 'Koloryzacja Air Touch', duration: 180, price: 600, priceType: 'from' } as Service,
+                { id: 3, name: 'Farbowanie Koleston Perfect', duration: 90, price: 320, priceType: 'from' } as Service,
+                { id: 4, name: 'Fryzura ślubna', duration: 150, price: 280 } as Service,
+                { id: 5, name: 'Botox na włosy', duration: 60, price: 300, priceType: 'from' } as Service,
+                { id: 6, name: 'Złote proteiny', duration: 90, price: 350, priceType: 'from' } as Service,
             ],
         },
         {
             id: null,
-            name: 'Barber',
+            name: 'Usługi dla mężczyzn',
             services: [
-                { id: 4, name: 'Strzyżenie męskie', duration: 30, price: 80 } as Service,
-                { id: 5, name: 'Strzyżenie brody', duration: 20, price: 50 } as Service,
-            ],
-        },
-        {
-            id: null,
-            name: 'Pielęgnacja',
-            services: [
-                { id: 6, name: 'Botox na włosy', duration: 60, price: 200 } as Service,
-                { id: 7, name: 'Złote proteiny', duration: 45, price: 150 } as Service,
-                { id: 8, name: 'Sauna – SPA dla włosów', duration: 30, price: 100 } as Service,
+                { id: 7, name: 'Strzyżenie męskie', duration: 30, price: 80, priceType: 'from' } as Service,
+                { id: 8, name: 'Strzyżenie brody', duration: 20, price: 60 } as Service,
+                { id: 9, name: 'Combo włosy + broda + kompres', duration: 60, price: 130 } as Service,
+                { id: 10, name: 'Golenie twarzy', duration: 25, price: 70 } as Service,
             ],
         },
     ];

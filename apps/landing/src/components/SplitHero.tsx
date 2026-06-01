@@ -60,6 +60,7 @@ export default function SplitHero() {
                     style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
                     sizes="50vw"
                 />
+                <div className="split-hero__gold-tint" aria-hidden="true" />
                 <div className="split-hero__right-overlay" aria-hidden="true" />
 
                 <div className="split-hero__float-card">

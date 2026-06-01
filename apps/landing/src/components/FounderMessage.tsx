@@ -21,7 +21,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                             <div className="relative">
                                 <div
                                     className="absolute"
-                                    style={{ top: '-12px', left: '-12px', right: '12px', bottom: '12px', border: '1px solid #b8bcc8', borderRadius: '3px', zIndex: 0 }}
+                                    style={{ top: '-12px', left: '-12px', right: '12px', bottom: '12px', border: '1px solid #b4b8be', borderRadius: '3px', zIndex: 0 }}
                                 />
                                 <div className="relative overflow-hidden" style={{ width: '280px', height: '340px', borderRadius: '3px', zIndex: 1 }}>
                                     {data.photo ? (
@@ -34,7 +34,7 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center" style={{ background: '#e8e2da' }}>
-                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b8bcc8' }}>A</span>
+                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b4b8be' }}>A</span>
                                         </div>
                                     )}
                                 </div>
@@ -43,18 +43,18 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
 
                         {/* Text */}
                         <div>
-                            <p className="text-xs tracking-widest uppercase mb-4" style={{ color: '#b8bcc8', letterSpacing: '0.22em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                            <p className="text-xs tracking-widest uppercase mb-4" style={{ color: '#b4b8be', letterSpacing: '0.22em', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                 {T.founder.eyebrow}
                             </p>
 
-                            <div className="mb-2" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3.5rem', color: '#b8bcc8', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
+                            <div className="mb-2" style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3.5rem', color: '#b4b8be', lineHeight: 0.8, opacity: 0.5 }}>&ldquo;</div>
 
                             <blockquote>
                                 <p className="text-lg leading-relaxed mb-8" style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', color: '#3a3028' }}>
                                     {data.quote}
                                 </p>
                                 <footer>
-                                    <cite className="not-italic block" style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#b8bcc8', lineHeight: 1.1 }}>
+                                    <cite className="not-italic block" style={{ fontFamily: "var(--font-tangerine), cursive", fontSize: '2.4rem', color: '#b4b8be', lineHeight: 1.1 }}>
                                         {data.name}
                                     </cite>
                                     <span className="text-xs mt-1 block tracking-wider" style={{ color: '#8a7060', letterSpacing: '0.12em' }}>
@@ -64,8 +64,8 @@ export default function FounderMessage({ founder }: FounderMessageProps) {
                             </blockquote>
 
                             <div className="mt-8 flex items-center gap-3">
-                                <div style={{ width: '32px', height: '1px', background: '#b8bcc8' }} />
-                                <span className="text-xs tracking-widest" style={{ color: '#b8bcc8', letterSpacing: '0.2em' }}>
+                                <div style={{ width: '32px', height: '1px', background: '#b4b8be' }} />
+                                <span className="text-xs tracking-widest" style={{ color: '#b4b8be', letterSpacing: '0.2em' }}>
                                     {T.founder.since}
                                 </span>
                             </div>
