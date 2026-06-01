@@ -1298,7 +1298,7 @@ ol.legal-list { list-style: decimal; }
 .legal-date {
     font-family: var(--font-open-sans), sans-serif;
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.55);
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(180,184,190,0.1);
