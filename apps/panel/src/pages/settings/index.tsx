@@ -54,7 +54,7 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-employees',
     },
     {
-        href: '/settings/extra_fields',
+        href: '/settings/extra-fields',
         label: 'klienci',
         boxClass: 'customers',
         iconId: 'svg-customers',

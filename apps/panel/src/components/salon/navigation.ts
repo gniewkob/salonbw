@@ -253,10 +253,7 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (
-        path.startsWith('/settings/customer_origins') ||
-        path.startsWith('/settings/customer-origins')
-    ) {
+    if (path.startsWith('/settings/customer-origins')) {
         return {
             bodyId: 'settings_customer_origins',
         } satisfies Partial<SalonShellProfile>;
@@ -268,10 +265,7 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (
-        path.startsWith('/settings/data_protection') ||
-        path.startsWith('/settings/data-protection')
-    ) {
+    if (path.startsWith('/settings/data-protection')) {
         return {
             bodyId: 'settings_data_protection',
         } satisfies Partial<SalonShellProfile>;
@@ -286,10 +280,7 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (
-        path.startsWith('/settings/extra_fields') ||
-        path.startsWith('/settings/extra-fields')
-    ) {
+    if (path.startsWith('/settings/extra-fields')) {
         return {
             bodyId: 'settings_extra_fields',
         } satisfies Partial<SalonShellProfile>;
