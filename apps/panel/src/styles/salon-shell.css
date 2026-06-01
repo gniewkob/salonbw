@@ -7741,6 +7741,23 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     margin-top: 2rem !important;
 }
 
+/* ─── Touch target compliance for primary action surfaces ───────────────────
+   WCAG 2.5.5: interactive elements need ≥44px hit area. We extend hit
+   area without changing visual padding for:
+   - role="dialog" descendants (modals, drawers, lightboxes)
+   - page-level form action footers (.customer-new-actions, .product-form__actions)
+   Table filters outside these contexts intentionally keep their dense
+   sizing — they are visual chrome, not primary touch targets. */
+[role='dialog'] .btn,
+[role='dialog'] .form-control,
+[role='dialog'] .form-control-sm,
+[role='dialog'] .form-select,
+[role='dialog'] .form-select-sm,
+.customer-new-actions .btn,
+.product-form__actions .btn {
+    min-height: 44px;
+}
+
 /* ─── Booking wizard ─────────────────────────────────────────────────────── */
 /* .btn-salon is owned by salon-theme.css (silver bg + #0d0d0d text,
    contrast 9.7:1). Do not redefine here. */
