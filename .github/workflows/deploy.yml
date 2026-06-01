@@ -714,6 +714,20 @@ jobs:
             sleep $((attempt * 5))
           done
           test -d node_modules
+          # Verify every installed package has its package.json. Catches partial
+          # tarball extraction (e.g. 2026-06-01: @sentry/core had build/ but no
+          # manifest → MODULE_NOT_FOUND on every SSR page that imports it).
+          missing=$(
+            for d in node_modules/*/ node_modules/@*/*/; do
+              [ -d "$d" ] || continue
+              [ -f "${d}package.json" ] || printf '%s\n' "$d"
+            done
+          )
+          if [ -n "$missing" ]; then
+            echo "Install corruption: packages missing package.json:" >&2
+            printf '%s\n' "$missing" >&2
+            exit 1
+          fi
           SSH
 
       - name: Install dependencies (frontend landing)
@@ -738,6 +752,20 @@ jobs:
             sleep $((attempt * 5))
           done
           test -d node_modules
+          # Verify every installed package has its package.json. Catches partial
+          # tarball extraction (e.g. 2026-06-01: @sentry/core had build/ but no
+          # manifest → MODULE_NOT_FOUND on every SSR page that imports it).
+          missing=$(
+            for d in node_modules/*/ node_modules/@*/*/; do
+              [ -d "$d" ] || continue
+              [ -f "${d}package.json" ] || printf '%s\n' "$d"
+            done
+          )
+          if [ -n "$missing" ]; then
+            echo "Install corruption: packages missing package.json:" >&2
+            printf '%s\n' "$missing" >&2
+            exit 1
+          fi
           SSH
 
       - name: Prepare standalone runtime (set node version) (panel)
