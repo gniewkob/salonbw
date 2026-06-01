@@ -40,7 +40,7 @@ export default function ContactPage() {
                         {/* Left: info + map */}
                         <div>
                             <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group mb-10">
-                                <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.phoneLabel}</span>
+                                <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.phoneLabel}</span>
                                 <span
                                     className="block transition-opacity duration-200 group-hover:opacity-70"
                                     style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', color: '#ffffff', letterSpacing: '-0.01em' }}
@@ -50,7 +50,7 @@ export default function ContactPage() {
                             </a>
 
                             <div className="mb-10">
-                                <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.addressLabel}</span>
+                                <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.addressLabel}</span>
                                 <address className="not-italic" style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.8, fontFamily: "var(--font-open-sans), sans-serif" }}>
                                     {BUSINESS_INFO.address.street}<br />
                                     {BUSINESS_INFO.address.postalCode} {BUSINESS_INFO.address.city}
@@ -58,15 +58,15 @@ export default function ContactPage() {
                             </div>
 
                             <div className="mb-10">
-                                <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.hoursTitle}</span>
+                                <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>{c.hoursTitle}</span>
                                 {[
                                     { day: c.dayMonFri, hours: BUSINESS_INFO.hours.mondayFriday, closed: false },
                                     { day: c.daySat, hours: BUSINESS_INFO.hours.saturday, closed: false },
                                     { day: c.daySun, hours: T.footer.sunday, closed: true },
                                 ].map(({ day, hours, closed }) => (
                                     <div key={day} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                        <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "var(--font-open-sans), sans-serif" }}>{day}</span>
-                                        <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.2)' : '#b4b8be', fontFamily: "var(--font-open-sans), sans-serif" }}>{hours}</span>
+                                        <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: "var(--font-open-sans), sans-serif" }}>{day}</span>
+                                        <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.55)' : '#b4b8be', fontFamily: "var(--font-open-sans), sans-serif" }}>{hours}</span>
                                     </div>
                                 ))}
                             </div>
@@ -108,7 +108,7 @@ export default function ContactPage() {
                             {/* Contact form */}
                             <p
                                 className="text-xs uppercase mb-6"
-                                style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                                style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
                             >
                                 {c.formSubtitle}
                             </p>

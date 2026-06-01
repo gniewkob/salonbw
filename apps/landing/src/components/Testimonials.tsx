@@ -58,7 +58,7 @@ export default function Testimonials() {
                     <p key={`name-${active}`} className="testimonial-text font-semibold text-sm" style={{ color: '#ffffff', fontFamily: "var(--font-open-sans), sans-serif" }}>
                         {testimonials[active]?.name}
                     </p>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         {T.testimonials.clientSince.replace('{year}', String(testimonials[active]?.sinceYear ?? ''))}
                     </p>
                 </div>

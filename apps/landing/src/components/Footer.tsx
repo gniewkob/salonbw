@@ -37,7 +37,7 @@ export default function Footer() {
                                 style={{ filter: 'brightness(0) invert(1)', height: '43px', width: 'auto' }}
                             />
                         </Link>
-                        <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, letterSpacing: '0.04em' }}>
+                        <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, letterSpacing: '0.04em' }}>
                             {BUSINESS_INFO.tagline}<br />
                             {BUSINESS_INFO.address.street}, {BUSINESS_INFO.address.city}
                         </p>
@@ -72,7 +72,7 @@ export default function Footer() {
                             <div className="space-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
                                 <p>{T.footer.monFri} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.mondayFriday}</span></p>
                                 <p>{T.footer.sat} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.saturday}</span></p>
-                                <p>{T.footer.sun} <span style={{ color: 'rgba(255,255,255,0.35)' }}>{T.footer.sunday}</span></p>
+                                <p>{T.footer.sun} <span style={{ color: 'rgba(255,255,255,0.55)' }}>{T.footer.sunday}</span></p>
                             </div>
                         </div>
 
@@ -115,7 +115,7 @@ export default function Footer() {
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>{T.footer.copyright}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>{T.footer.copyright}</p>
                     <div className="flex gap-5">
                         {[{ href: '/privacy', label: T.footer.privacy }, { href: '/policy', label: T.footer.terms }].map(l => (
                             <Link key={l.href} href={l.href as Route}

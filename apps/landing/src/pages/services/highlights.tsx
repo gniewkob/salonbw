@@ -189,7 +189,7 @@ export default function HighlightsPage() {
                         <Link
                             href="/services"
                             style={{
-                                color: '#b4b8be',
+                                color: '#4a4a4a',
                                 fontSize: '0.8rem',
                                 letterSpacing: '0.12em',
                                 textTransform: 'uppercase',

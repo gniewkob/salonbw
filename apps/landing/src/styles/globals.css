@@ -878,7 +878,7 @@ html {
     outline: none;
 }
 .footer-link--muted {
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.6);
     transition: color 0.15s;
 }
 .footer-link--muted:hover,
@@ -887,7 +887,7 @@ html {
     outline: none;
 }
 .footer-link--dim {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.6);
     transition: color 0.15s;
 }
 .footer-link--dim:hover,
