@@ -1,8 +1,16 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import {
+    ArrowDownTrayIcon,
+    ArrowUpTrayIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    XMarkIcon,
+} from '@heroicons/react/20/solid';
 import { absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BaseProps {
     alt?: string;
@@ -43,6 +51,8 @@ interface SingleProps extends BaseProps {
 
 export default function ImageLightbox(props: Props) {
     const { alt, onClose } = props;
+    const { T } = useLanguage();
+    const g = T.gallery;
     const isCarouselProps = (p: Props): p is CarouselProps =>
         'sources' in p && Array.isArray(p.sources) && p.sources.length > 0;
     const carouselProps = isCarouselProps(props) ? props : null;
@@ -152,61 +162,61 @@ export default function ImageLightbox(props: Props) {
                     aria-live="polite"
                     onAnimationEnd={() => setShowHint(false)}
                 >
-                    Tip: swipe or use arrows; tap ⤴ to share, ⤓ to download
+                    {g.lightboxHint}
                 </div>
             )}
             {hasCarousel && (
                 <>
                     <button
                         type="button"
-                        aria-label="Previous image"
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-2xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-silver"
+                        aria-label={g.lightboxPrev}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                         onClick={(props as CarouselProps).onPrev}
                     >
-                        ‹
+                        <ChevronLeftIcon style={{ width: 24, height: 24 }} />
                     </button>
                     <button
                         type="button"
-                        aria-label="Next image"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white text-2xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-silver"
+                        aria-label={g.lightboxNext}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                         onClick={(props as CarouselProps).onNext}
                     >
-                        ›
+                        <ChevronRightIcon style={{ width: 24, height: 24 }} />
                     </button>
                 </>
             )}
             <button
                 type="button"
-                aria-label="Close"
-                className="absolute top-3 right-3 text-white text-2xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-silver"
+                aria-label={g.lightboxClose}
+                className="absolute top-3 right-3 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                 onClick={handleClose}
                 ref={closeRef}
             >
-                ×
+                <XMarkIcon style={{ width: 24, height: 24 }} />
             </button>
             <button
                 type="button"
-                aria-label="Share image"
-                title="Share image"
-                className="absolute top-3 right-12 text-white text-xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-silver"
+                aria-label={g.lightboxShare}
+                title={g.lightboxShare}
+                className="absolute top-3 right-14 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                 onClick={(e) => {
                     e.stopPropagation();
                     void onShare();
                 }}
             >
-                ⤴
+                <ArrowUpTrayIcon style={{ width: 20, height: 20 }} />
             </button>
             <button
                 type="button"
-                aria-label="Download image"
-                title="Download image"
-                className="absolute top-3 right-24 text-white text-xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-silver"
+                aria-label={g.lightboxDownload}
+                title={g.lightboxDownload}
+                className="absolute top-3 right-24 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                 onClick={(e) => {
                     e.stopPropagation();
                     onDownload();
                 }}
             >
-                ⤓
+                <ArrowDownTrayIcon style={{ width: 20, height: 20 }} />
             </button>
         </div>
     );

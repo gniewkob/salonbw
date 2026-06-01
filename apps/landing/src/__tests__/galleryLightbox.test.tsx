@@ -32,7 +32,7 @@ describe('Gallery lightbox', () => {
         );
         fireEvent.click(screen.getByLabelText(/one/i));
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-        fireEvent.click(screen.getByLabelText('Close'));
+        fireEvent.click(screen.getByLabelText('Zamknij'));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
@@ -46,7 +46,7 @@ describe('Gallery lightbox', () => {
             />,
         );
         fireEvent.click(screen.getByLabelText(/one/i));
-        const share = screen.getByLabelText('Share image');
+        const share = screen.getByLabelText('Udostępnij zdjęcie');
         fireEvent.click(share);
         expect(shareMock).toHaveBeenCalled();
         // cleanup
@@ -69,7 +69,7 @@ describe('Gallery lightbox', () => {
         // use keyboard to navigate next/prev
         fireEvent.keyDown(document, { key: 'ArrowRight' });
         fireEvent.keyDown(document, { key: 'ArrowLeft' });
-        fireEvent.click(screen.getByLabelText('Download image'));
+        fireEvent.click(screen.getByLabelText('Pobierz zdjęcie'));
         const calls = (window.gtag as jest.Mock).mock.calls.map((c) => c[1]);
         expect(calls).toContain('lightbox_next');
         expect(calls).toContain('lightbox_prev');

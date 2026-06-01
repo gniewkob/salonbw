@@ -74,7 +74,7 @@ export default function Testimonials() {
                                 width: i === active ? '36px' : '8px',
                                 height: '6px',
                                 borderRadius: '3px',
-                                background: i === active ? '#b4b8be' : 'rgba(255,255,255,0.2)',
+                                background: i === active ? '#b4b8be' : 'rgba(255,255,255,0.45)',
                                 transition: 'width 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.3s',
                                 border: 'none',
                                 cursor: 'pointer',

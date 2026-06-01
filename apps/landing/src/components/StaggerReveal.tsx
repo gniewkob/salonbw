@@ -13,7 +13,10 @@ export default function StaggerReveal({ children, className = '', delay = 130 }:
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        if (!('IntersectionObserver' in window)) {
+        const prefersReducedMotion =
+            typeof window !== 'undefined' &&
+            window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion || !('IntersectionObserver' in window)) {
             el.classList.add('sr-stagger-visible');
             return;
         }

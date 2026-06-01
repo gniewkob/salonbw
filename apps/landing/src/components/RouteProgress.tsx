@@ -19,7 +19,15 @@ export default function RouteProgress() {
     }, [router.events]);
 
     if (!loading) return null;
+    const reduce =
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     return (
-        <div className="fixed top-0 left-0 right-0 h-1 bg-brand-silver animate-pulse z-50" />
+        <div
+            className={`fixed top-0 left-0 right-0 h-1 z-50 ${reduce ? '' : 'animate-pulse'}`}
+            style={{ background: 'var(--brand-silver)' }}
+            role="progressbar"
+            aria-label="Page loading"
+        />
     );
 }

@@ -14,7 +14,10 @@ export default function ScrollReveal({ children, delay = 0, direction = 'up', cl
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        if (!('IntersectionObserver' in window)) {
+        const prefersReducedMotion =
+            typeof window !== 'undefined' &&
+            window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion || !('IntersectionObserver' in window)) {
             el.classList.add('sr-visible');
             return;
         }

@@ -258,7 +258,12 @@ export default function GalleryPage({
                 )}
 
                 {error && (
-                    <p className="text-center text-xs pb-8" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <p
+                        className="text-center text-xs pb-8"
+                        role="alert"
+                        aria-live="assertive"
+                        style={{ color: 'rgba(255,255,255,0.6)' }}
+                    >
                         {error}
                     </p>
                 )}

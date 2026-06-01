@@ -206,7 +206,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         >
                             {T.nav.booking}
                         </button>
-                        <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>
+                        <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
                             <a
                                 href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
                                 className="footer-link"
