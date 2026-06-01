@@ -61,7 +61,7 @@ export default function ValuesSection() {
                                 tabIndex={isActive ? 0 : -1}
                                 onClick={() => setActive(value.id)}
                                 onKeyDown={e => handleKeyDown(e, value.id)}
-                                className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2"
+                                className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-2"
                                 style={{
                                     background: isActive ? '#0d0d0d' : '#ffffff',
                                     border: isActive ? '1px solid #0d0d0d' : '1px solid #ede9e3',
@@ -69,7 +69,7 @@ export default function ValuesSection() {
                                 }}
                             >
                                 <div className="w-9 h-9 flex items-center justify-center" style={{ background: isActive ? 'rgba(197,168,128,0.2)' : 'rgba(197,168,128,0.1)', borderRadius: '2px' }}>
-                                    <Icon size={18} strokeWidth={1.5} style={{ color: '#c5a880' }} />
+                                    <Icon size={18} strokeWidth={1.5} style={{ color: '#b8bcc8' }} />
                                 </div>
                                 <span
                                     className="text-center leading-tight"

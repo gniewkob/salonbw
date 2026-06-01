@@ -87,7 +87,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Academy eyebrow */}
                     <p
                         className="hero-tag mb-3 uppercase text-xs md:text-sm"
-                        style={{ color: 'var(--brand-gold)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
+                        style={{ color: 'var(--brand-silver)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
                     >
                         Akademia Zdrowych Włosów
                     </p>
@@ -103,7 +103,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Tangerine script accent */}
                     <p
                         className="hero-tag mb-6"
-                        style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-gold)', lineHeight: 1.2 }}
+                        style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-silver)', lineHeight: 1.2 }}
                     >
                         Black &amp; White
                     </p>
@@ -115,7 +115,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center">
                         <a
                             href={bookingUrl}
-                            className="btn-gold inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            className="btn-silver inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
                             style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(197,168,128,0.4)' }}
                         >
                             {T.nav.booking}
@@ -166,7 +166,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                             width: index === currentSlide ? '28px' : '8px',
                             height: '8px',
                             borderRadius: '4px',
-                            background: index === currentSlide ? 'var(--brand-gold)' : 'rgba(255,255,255,0.45)',
+                            background: index === currentSlide ? 'var(--brand-silver)' : 'rgba(255,255,255,0.45)',
                         }}
                         aria-label={`Go to slide ${index + 1}`}
                         aria-current={index === currentSlide}

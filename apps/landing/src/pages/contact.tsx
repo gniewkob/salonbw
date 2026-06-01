@@ -66,7 +66,7 @@ export default function ContactPage() {
                                 ].map(({ day, hours, closed }) => (
                                     <div key={day} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                         <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "var(--font-open-sans), sans-serif" }}>{day}</span>
-                                        <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.2)' : '#c5a880', fontFamily: "var(--font-open-sans), sans-serif" }}>{hours}</span>
+                                        <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.2)' : '#b8bcc8', fontFamily: "var(--font-open-sans), sans-serif" }}>{hours}</span>
                                     </div>
                                 ))}
                             </div>
@@ -89,7 +89,7 @@ export default function ContactPage() {
                         <div>
                             {/* Primary CTA */}
                             <div className="mb-10" style={{ paddingBottom: '2.5rem', borderBottom: '1px solid rgba(197,168,128,0.12)' }}>
-                                <p className="text-xs uppercase mb-3" style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                <p className="text-xs uppercase mb-3" style={{ color: '#b8bcc8', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                     {c.bookingTitle}
                                 </p>
                                 <p className="mb-5" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.9rem', lineHeight: 1.7, fontFamily: "var(--font-open-sans), sans-serif" }}>
@@ -98,7 +98,7 @@ export default function ContactPage() {
                                 <button
                                     type="button"
                                     onClick={() => setBookingOpen(true)}
-                                    className="btn-gold"
+                                    className="btn-silver"
                                     style={{ padding: '0.85rem 2rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#fff', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
                                 >
                                     {c.bookingBtn}

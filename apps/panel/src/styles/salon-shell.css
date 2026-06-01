@@ -11,7 +11,7 @@
     --salon-text: #1a1a1a;
     --salon-muted: #6b7280;
     /* brand active/link gold */
-    --salon-accent: #c5a880;
+    --salon-accent: #b8bcc8;
     --salon-mainnav-bg: #0a0a0a;
     --salon-mainnav-active: #060606;
     --salon-green: #2ecc71;
@@ -5065,8 +5065,8 @@ body.settings-dashboard-landing .main-content > .inner {
 }
 
 .sms-settings-page__type-card--active {
-    border-color: #c5a880;
-    box-shadow: 0 10px 25px rgba(197, 168, 128, 0.12);
+    border-color: #b8bcc8;
+    box-shadow: 0 10px 25px rgba(184, 188, 200, 0.12);
 }
 
 .sms-settings-page__type-card--inactive {
@@ -5101,7 +5101,7 @@ body.settings-dashboard-landing .main-content > .inner {
 }
 
 .sms-settings-page__type-price {
-    color: #c5a880;
+    color: #b8bcc8;
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 12px;

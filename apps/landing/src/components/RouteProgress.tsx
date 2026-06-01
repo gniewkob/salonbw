@@ -20,6 +20,6 @@ export default function RouteProgress() {
 
     if (!loading) return null;
     return (
-        <div className="fixed top-0 left-0 right-0 h-1 bg-brand-gold animate-pulse z-50" />
+        <div className="fixed top-0 left-0 right-0 h-1 bg-brand-silver animate-pulse z-50" />
     );
 }

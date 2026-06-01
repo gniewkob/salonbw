@@ -139,7 +139,7 @@ export default function ContactForm() {
             <button
                 type="submit"
                 disabled={!isValid}
-                className="btn-gold contact-form__submit"
+                className="btn-silver contact-form__submit"
             >
                 {c.formSubmit}
             </button>

@@ -96,7 +96,7 @@ export default function BookingModal({
         background: 'rgba(255,255,255,0.04)',
         border: `1px solid ${
             focusedField === field
-                ? '#c5a880'
+                ? '#b8bcc8'
                 : (field === 'email' && emailError) ||
                     (field === 'password' && passwordError)
                   ? 'rgba(220,60,60,0.6)'
@@ -139,7 +139,7 @@ export default function BookingModal({
                     style={{
                         height: '3px',
                         background:
-                            'linear-gradient(90deg, #c5a880, #e8d5b0, #c5a880)',
+                            'linear-gradient(90deg, #b8bcc8, #d0d4e0, #b8bcc8)',
                     }}
                 />
 
@@ -153,7 +153,7 @@ export default function BookingModal({
                                 fontSize: '0.6rem',
                                 letterSpacing: '0.2em',
                                 textTransform: 'uppercase',
-                                color: '#c5a880',
+                                color: '#b8bcc8',
                                 marginBottom: '0.5rem',
                             }}
                         >
@@ -209,7 +209,7 @@ export default function BookingModal({
                             style={{
                                 width: '28px',
                                 height: '1px',
-                                background: '#c5a880',
+                                background: '#b8bcc8',
                                 marginTop: '1rem',
                                 opacity: 0.6,
                             }}
@@ -236,7 +236,7 @@ export default function BookingModal({
                                     display: 'block',
                                     width: '100%',
                                     padding: '0.85rem 1.5rem',
-                                    background: '#c5a880',
+                                    background: '#b8bcc8',
                                     color: '#0d0d0d',
                                     border: 'none',
                                     borderRadius: '2px',
@@ -398,8 +398,8 @@ export default function BookingModal({
                                     width: '100%',
                                     padding: '0.85rem 1.5rem',
                                     background: submitting
-                                        ? '#a8895f'
-                                        : '#c5a880',
+                                        ? '#9098a8'
+                                        : '#b8bcc8',
                                     color: '#0d0d0d',
                                     border: 'none',
                                     borderRadius: '2px',
@@ -432,7 +432,7 @@ export default function BookingModal({
                                 <a
                                     href={getPanelUrl('/auth/register')}
                                     style={{
-                                        color: '#c5a880',
+                                        color: '#b8bcc8',
                                         textDecoration: 'none',
                                     }}
                                 >

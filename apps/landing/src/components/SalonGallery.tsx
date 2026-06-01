@@ -119,7 +119,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 <div className="text-center mt-10">
                     <Link
                         href="/gallery"
-                        className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b8bcc8] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                         style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         {g.viewAll}

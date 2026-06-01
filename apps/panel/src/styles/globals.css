@@ -28,7 +28,7 @@ body {
 .salonbw-mass-communication__section h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #e8e0d5;
+    color: #e4e6ee;
     margin-bottom: 16px;
     font-family: 'Playfair Display', Georgia, serif;
 }
@@ -42,7 +42,7 @@ body {
 .salonbw-mass-communication__subsection h4 {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #7a7068;
+    color: #74788a;
     margin-bottom: 12px;
 }
 
@@ -75,7 +75,7 @@ body {
     height: 32px;
     border-radius: 50%;
     background: #2a2520;
-    color: #7a7068;
+    color: #74788a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -84,18 +84,18 @@ body {
 }
 
 .salonbw-step.active .salonbw-step__number {
-    background: #c5a880;
+    background: #b8bcc8;
     color: #0d0d0d;
 }
 
 .salonbw-step__label {
     font-size: 0.875rem;
-    color: #7a7068;
+    color: #74788a;
     font-weight: 500;
 }
 
 .salonbw-step.active .salonbw-step__label {
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-step__divider {
@@ -123,7 +123,7 @@ body {
 }
 
 .salonbw-channel:hover {
-    border-color: #c5a880;
+    border-color: #b8bcc8;
 }
 
 .salonbw-channel input {
@@ -131,8 +131,8 @@ body {
 }
 
 .salonbw-channel.active {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.07);
+    border-color: #b8bcc8;
+    background: rgba(184, 188, 200, 0.07);
 }
 
 .salonbw-channel__icon {
@@ -180,26 +180,26 @@ body {
 }
 
 .salonbw-template-item:hover {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.05);
+    border-color: #b8bcc8;
+    background: rgba(184, 188, 200, 0.05);
 }
 
 .salonbw-template-item.active {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.08);
+    border-color: #b8bcc8;
+    background: rgba(184, 188, 200, 0.08);
 }
 
 .salonbw-template-item__name {
     display: block;
     font-weight: 500;
-    color: #e8e0d5;
+    color: #e4e6ee;
     margin-bottom: 4px;
 }
 
 .salonbw-template-item__preview {
     display: block;
     font-size: 0.875rem;
-    color: #7a7068;
+    color: #74788a;
 }
 
 /* Form styles */
@@ -211,7 +211,7 @@ body {
     display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #7a7068;
+    color: #74788a;
     margin-bottom: 4px;
     letter-spacing: 0.02em;
 }
@@ -222,13 +222,13 @@ body {
     background: #141414;
     border: 1px solid #2a2a2a;
     border-radius: 6px;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-input:focus {
     outline: none;
-    border-color: #c5a880;
-    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+    border-color: #b8bcc8;
+    box-shadow: 0 0 0 2px rgba(184, 188, 200, 0.2);
 }
 
 .salonbw-input--sm {
@@ -248,13 +248,13 @@ body {
     border: 1px solid #2a2a2a;
     border-radius: 6px;
     resize: none;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-textarea:focus {
     outline: none;
-    border-color: #c5a880;
-    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+    border-color: #b8bcc8;
+    box-shadow: 0 0 0 2px rgba(184, 188, 200, 0.2);
 }
 
 .salonbw-char-count {
@@ -277,7 +277,7 @@ body {
 .salonbw-variables-help h4 {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #7a7068;
+    color: #74788a;
     margin-bottom: 8px;
 }
 
@@ -287,7 +287,7 @@ body {
     background: #252525;
     border-radius: 4px;
     font-size: 0.75rem;
-    color: #c5a880;
+    color: #b8bcc8;
     margin-right: 8px;
     font-family: monospace;
 }
@@ -320,7 +320,7 @@ body {
 .salonbw-send-result h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #e8e0d5;
+    color: #e4e6ee;
     font-family: 'Playfair Display', Georgia, serif;
     margin-bottom: 24px;
 }
@@ -353,12 +353,12 @@ body {
 
 .salonbw-stat__label {
     font-size: 0.875rem;
-    color: #7a7068;
+    color: #74788a;
 }
 
 .salonbw-recipient-count {
     font-size: 0.875rem;
-    color: #7a7068;
+    color: #74788a;
 }
 
 /* Button styles */
@@ -388,7 +388,7 @@ body {
 
 .salonbw-btn--light {
     background: #1e1e1e;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-btn--light:hover {
@@ -413,12 +413,12 @@ body {
 .salonbw-btn--default {
     background: #1a1a1a;
     border: 1px solid #2a2a2a;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-btn--default:hover {
     background: #242420;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-btn--success {
@@ -477,12 +477,12 @@ body {
     border-radius: 4px;
     font-size: 0.875rem;
     cursor: pointer;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-toolbar-btn:hover {
     background: #242420;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-toolbar-search {
@@ -492,13 +492,13 @@ body {
     border-radius: 4px;
     font-size: 0.875rem;
     width: 200px;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 /* Labels */
 .salonbw-label {
     font-size: 0.875rem;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-label-xs {
@@ -516,13 +516,13 @@ body {
     background: #141414;
     border: 1px solid #2a2a2a;
     border-radius: 6px;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-select:focus {
     outline: none;
-    border-color: #c5a880;
-    box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+    border-color: #b8bcc8;
+    box-shadow: 0 0 0 2px rgba(184, 188, 200, 0.2);
 }
 
 .salonbw-select--inline {
@@ -531,7 +531,7 @@ body {
     border: 1px solid #2a2a2a;
     border-radius: 4px;
     font-size: 0.875rem;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 /* Table */
@@ -550,7 +550,7 @@ body {
     border-bottom: 1px solid #252525;
     background: #141414;
     font-weight: 600;
-    color: #c5a880;
+    color: #b8bcc8;
     font-size: 0.875rem;
 }
 
@@ -559,7 +559,7 @@ body {
     padding: 12px;
     border-bottom: 1px solid #252525;
     font-size: 0.875rem;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-table tr:hover {
@@ -576,7 +576,7 @@ body {
     font-weight: 500;
     border-radius: 9999px;
     background: #252525;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-badge--success {
@@ -607,7 +607,7 @@ body {
 
 /* Text utilities */
 .salonbw-muted {
-    color: #7a7068;
+    color: #74788a;
 }
 
 .salonbw-link {
@@ -630,7 +630,7 @@ body {
 /* Template preview */
 .salonbw-template-preview {
     max-width: 320px;
-    color: #7a7068;
+    color: #74788a;
 }
 
 /* Empty / loading states */
@@ -638,7 +638,7 @@ body {
 .salonbw-empty-state {
     text-align: center;
     padding: 48px 0;
-    color: #7a7068;
+    color: #74788a;
     background: #161616;
     border-radius: 8px;
     border: 1px solid #252525;
@@ -684,7 +684,7 @@ body {
 .salonbw-modal__header h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #e8e0d5;
+    color: #e4e6ee;
     font-family: 'Playfair Display', Georgia, serif;
 }
 
@@ -701,8 +701,8 @@ body {
 }
 
 .salonbw-modal__close:hover {
-    color: #c5a880;
-    background: #2a2414;
+    color: #b8bcc8;
+    background: #252830;
 }
 
 .salonbw-modal__body {
@@ -772,13 +772,13 @@ body {
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-reception-summary__label {
     display: block;
     font-size: 0.875rem;
-    color: #7a7068;
+    color: #74788a;
     margin-top: 4px;
 }
 
@@ -800,7 +800,7 @@ body {
     border-bottom: 1px solid #252525;
     background: #141414;
     font-weight: 600;
-    color: #c5a880;
+    color: #b8bcc8;
     font-size: 0.875rem;
 }
 
@@ -809,7 +809,7 @@ body {
     padding: 12px;
     border-bottom: 1px solid #252525;
     font-size: 0.875rem;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-reception-table tbody tr:hover {
@@ -884,8 +884,8 @@ body {
 }
 
 .salonbw-status--in-progress {
-    background: rgba(197, 168, 128, 0.15);
-    color: #c5a880;
+    background: rgba(184, 188, 200, 0.15);
+    color: #b8bcc8;
 }
 
 .salonbw-status--completed {
@@ -895,7 +895,7 @@ body {
 
 .salonbw-status--cancelled {
     background: rgba(107, 114, 128, 0.15);
-    color: #7a7068;
+    color: #74788a;
 }
 
 .salonbw-status--no-show {
@@ -931,13 +931,13 @@ body {
 .salonbw-reception-empty h3 {
     font-size: 1.125rem;
     font-weight: 500;
-    color: #e8e0d5;
+    color: #e4e6ee;
     font-family: 'Playfair Display', Georgia, serif;
     margin-bottom: 8px;
 }
 
 .salonbw-reception-empty p {
-    color: #7a7068;
+    color: #74788a;
 }
 
 /* Pagination */
@@ -962,7 +962,7 @@ body {
     border: 1px solid #252525;
     border-top: 0;
     background: #161616;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .salonbw-list-item:first-child {
@@ -1012,8 +1012,8 @@ body {
 }
 
 .salonbw-icon-btn:hover {
-    background: #1e1a14;
-    color: #c5a880;
+    background: #1c1e24;
+    color: #b8bcc8;
 }
 
 /* Alert */
@@ -1022,7 +1022,7 @@ body {
     border-radius: 6px;
     border: 1px solid #252525;
     background: #141414;
-    color: #c0b8af;
+    color: #bcc0cc;
     margin-bottom: 16px;
 }
 
@@ -1125,7 +1125,7 @@ body {
     border-radius: 4px;
     font-size: 0.875rem;
     margin-bottom: 12px;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-sidebar__nav {
@@ -1166,13 +1166,13 @@ body {
 .salonbw-panel-sub__title {
     font-size: 1rem;
     font-weight: 600;
-    color: #e8e0d5;
+    color: #e4e6ee;
     margin-bottom: 4px;
 }
 
 .salonbw-panel-sub__description {
     font-size: 0.875rem;
-    color: #7a7068;
+    color: #74788a;
 }
 
 .salonbw-panel-sub__meta {
@@ -1210,7 +1210,7 @@ body {
 }
 
 .salonbw-employee-filter__item:hover {
-    background: #1e1a14;
+    background: #1c1e24;
 }
 
 .salonbw-employee-filter__color {
@@ -1222,7 +1222,7 @@ body {
 
 .salonbw-employee-filter__name {
     font-size: 0.875rem;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 /* Widget (stats sub-panel) */
@@ -1240,7 +1240,7 @@ body {
     border-bottom: 1px solid #252525;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #c5a880;
+    color: #b8bcc8;
 }
 
 .salonbw-widget__content {
@@ -1270,7 +1270,7 @@ body {
 .salonbw-dashboard__title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #e8e0d5;
+    color: #e4e6ee;
     font-family: 'Playfair Display', Georgia, serif;
 }
 
@@ -1287,7 +1287,7 @@ body {
     padding: 4px 12px;
     font-size: 0.875rem;
     border-radius: 4px;
-    color: #7a7068;
+    color: #74788a;
     background: transparent;
     border: 0;
     cursor: pointer;
@@ -1333,7 +1333,7 @@ body {
     gap: 8px;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #e8e0d5;
+    color: #e4e6ee;
     margin-bottom: 12px;
 }
 
@@ -1401,7 +1401,7 @@ body {
 .salonbw-dashboard__section-header h2 {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .salonbw-dashboard__section-actions {
@@ -1468,7 +1468,7 @@ body {
 
 .salonbw-activity-item__title {
     font-size: 0.875rem;
-    color: #e8e0d5;
+    color: #e4e6ee;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1476,7 +1476,7 @@ body {
 
 .salonbw-activity-item__meta {
     font-size: 0.75rem;
-    color: #7a7068;
+    color: #74788a;
     margin-top: 2px;
 }
 
@@ -1492,7 +1492,7 @@ body {
 .salonbw-appointment-item__time {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #c5a880;
+    color: #b8bcc8;
     width: 48px;
     flex-shrink: 0;
 }
@@ -1504,7 +1504,7 @@ body {
 
 .salonbw-appointment-item__client {
     font-size: 0.875rem;
-    color: #e8e0d5;
+    color: #e4e6ee;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1512,7 +1512,7 @@ body {
 
 .salonbw-appointment-item__service {
     font-size: 0.75rem;
-    color: #7a7068;
+    color: #74788a;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1558,7 +1558,7 @@ body {
 }
 
 .fc-col-header-cell-cushion {
-    color: #c5a880 !important;
+    color: #b8bcc8 !important;
     font-weight: 600 !important;
     font-size: 13px !important;
 }
@@ -1603,7 +1603,7 @@ body {
 }
 
 .fc-daygrid-day.fc-day-today {
-    background: rgba(197, 168, 128, 0.06) !important;
+    background: rgba(184, 188, 200, 0.06) !important;
 }
 
 .fc-daygrid-day-top {
@@ -1612,7 +1612,7 @@ body {
 
 .fc-daygrid-day-number {
     font-size: 13px !important;
-    color: #7a7068 !important;
+    color: #74788a !important;
     font-weight: 500 !important;
 }
 
@@ -1628,7 +1628,7 @@ body {
 .fc-button {
     background: #1a1a1a !important;
     border: 1px solid #2a2a2a !important;
-    color: #c0b8af !important;
+    color: #bcc0cc !important;
     font-weight: 500 !important;
     text-transform: lowercase !important;
     padding: 6px 12px !important;
@@ -1638,13 +1638,13 @@ body {
 .fc-button:hover {
     background: #242420 !important;
     border-color: #3a3a38 !important;
-    color: #e8e0d5 !important;
+    color: #e4e6ee !important;
 }
 
 .fc-button-active {
     background: #2a2114 !important;
-    border-color: #c5a880 !important;
-    color: #c5a880 !important;
+    border-color: #b8bcc8 !important;
+    color: #b8bcc8 !important;
 }
 
 /* ============================================
@@ -1702,7 +1702,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: #c0b8af;
+    color: #bcc0cc;
     background: transparent;
     border: none;
     border-radius: 3px;
@@ -1712,19 +1712,19 @@ body {
 }
 
 .salonbw-mini-cal__day:hover {
-    background: #1e1a14;
-    color: #c5a880;
+    background: #1c1e24;
+    color: #b8bcc8;
 }
 
 .salonbw-mini-cal__day--selected {
-    background: #c5a880 !important;
+    background: #b8bcc8 !important;
     color: #0d0d0d !important;
 }
 
 .salonbw-mini-cal__day--today {
-    border: 1px solid #c5a880;
+    border: 1px solid #b8bcc8;
     font-weight: 600;
-    color: #c5a880;
+    color: #b8bcc8;
 }
 
 .salonbw-mini-cal__day--other-month {
@@ -1740,46 +1740,46 @@ body {
 /* Bootstrap 5.3 dark mode luxury token overrides */
 [data-bs-theme='dark'] {
     --bs-body-bg: #0d0d0d;
-    --bs-body-color: #e8e0d5;
+    --bs-body-color: #e4e6ee;
     --bs-secondary-bg: #161616;
     --bs-tertiary-bg: #111111;
     --bs-border-color: #252525;
     --bs-border-color-translucent: rgba(255, 255, 255, 0.06);
-    --bs-secondary-color: #7a7068;
+    --bs-secondary-color: #74788a;
     --bs-tertiary-color: #5a5450;
     --bs-emphasis-color: #f0e8dc;
-    --bs-link-color: #c5a880;
-    --bs-link-hover-color: #d4b896;
-    --bs-heading-color: #e8e0d5;
+    --bs-link-color: #b8bcc8;
+    --bs-link-hover-color: #ccd0dc;
+    --bs-heading-color: #e4e6ee;
     --bs-card-bg: #161616;
     --bs-card-border-color: #252525;
     --bs-input-bg: #141414;
     --bs-input-border-color: #353535;
-    --bs-input-color: #e8e0d5;
+    --bs-input-color: #e4e6ee;
     --bs-form-select-bg: #141414;
     --bs-dropdown-bg: #1c1c1c;
     --bs-dropdown-border-color: #2a2a2a;
-    --bs-dropdown-link-color: #e8e0d5;
-    --bs-dropdown-link-hover-bg: #2a2414;
+    --bs-dropdown-link-color: #e4e6ee;
+    --bs-dropdown-link-hover-bg: #252830;
     --bs-table-bg: transparent;
-    --bs-table-striped-bg: rgba(197, 168, 128, 0.04);
-    --bs-table-hover-bg: rgba(197, 168, 128, 0.06);
+    --bs-table-striped-bg: rgba(184, 188, 200, 0.04);
+    --bs-table-hover-bg: rgba(184, 188, 200, 0.06);
     --bs-table-border-color: #252525;
     --bs-modal-bg: #1c1c1c;
     --bs-modal-header-border-color: #252525;
     --bs-list-group-bg: #161616;
     --bs-list-group-border-color: #252525;
-    --bs-list-group-action-hover-bg: #1e1a14;
+    --bs-list-group-action-hover-bg: #1c1e24;
     --bs-nav-tabs-border-color: #252525;
     --bs-nav-tabs-link-active-bg: #161616;
     --bs-nav-tabs-link-active-border-color: #252525;
-    --bs-nav-pills-link-active-bg: #c5a880;
+    --bs-nav-pills-link-active-bg: #b8bcc8;
     --bs-pagination-bg: #161616;
     --bs-pagination-border-color: #252525;
-    --bs-pagination-active-bg: #c5a880;
-    --bs-pagination-active-border-color: #c5a880;
+    --bs-pagination-active-bg: #b8bcc8;
+    --bs-pagination-active-border-color: #b8bcc8;
     --bs-progress-bg: #1e1e1e;
-    --bs-code-color: #c5a880;
+    --bs-code-color: #b8bcc8;
 }
 
 /* Topbar */
@@ -1789,15 +1789,15 @@ body {
 }
 
 .navbar .brand a {
-    color: #c5a880;
+    color: #b8bcc8;
 }
 
 .navbar .brand a:hover {
-    color: #d4b896;
+    color: #ccd0dc;
 }
 
 .navbar .navbar-right > li > a:not(.button) {
-    color: #7a7068;
+    color: #74788a;
 }
 
 /* Sidenav */
@@ -1814,15 +1814,15 @@ body {
 
 #sidenav .nav-list li a,
 .sidenav .nav-list li a {
-    color: #7a7068;
+    color: #74788a;
 }
 
 #sidenav .nav-list li a:hover,
 #sidenav .nav-list li.active a,
 .sidenav .nav-list li a:hover,
 .sidenav .nav-list li.active a {
-    background: #1e1a14;
-    color: #c5a880;
+    background: #1c1e24;
+    color: #b8bcc8;
 }
 
 /* Main content */
@@ -1842,7 +1842,7 @@ body {
 }
 
 .modal-title {
-    color: #e8e0d5;
+    color: #e4e6ee;
     font-family: 'Playfair Display', Georgia, serif;
 }
 
@@ -1856,26 +1856,26 @@ body {
 }
 
 .close:hover {
-    color: #c5a880;
+    color: #b8bcc8;
 }
 
 /* Legacy buttons */
 .btn-default {
     background: #1a1a1a;
     border-color: #2a2a2a;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .btn-default:hover {
     background: #222220;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 /* Legacy label */
 .label-default {
     background: #1e1e1e;
     border-color: #2a2a2a;
-    color: #7a7068;
+    color: #74788a;
 }
 
 /* Breadcrumb */
@@ -1890,12 +1890,12 @@ body {
 /* Shell table overrides */
 #salonbw-shell-root .salonbw-table th {
     background: #141414;
-    color: #c5a880;
+    color: #b8bcc8;
     border-color: #252525;
 }
 
 #salonbw-shell-root .salonbw-table td {
-    color: #c0b8af;
+    color: #bcc0cc;
     border-color: #252525;
 }
 
@@ -1919,22 +1919,22 @@ body {
 
 .calendar-view-drafts__title,
 .calendar-view-form-list__heading {
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .calendar-view-drafts__meta {
-    color: #7a7068;
+    color: #74788a;
 }
 
 .calendar-view-checkbox {
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 /* Communication */
 .communication-reminder-card {
     background: #161616;
     border-color: #252525;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .sms_thread .message {
@@ -1951,11 +1951,11 @@ body {
 .communication-preview-email__body {
     background: #161616;
     border-color: #252525;
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .communication-preview-email__subject {
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 /* Reception list card (StaffAppointmentCalendarView) */
@@ -1982,7 +1982,7 @@ body {
 .salonbw-reception-item__title {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: #e8e0d5;
+    color: #e4e6ee;
     margin: 0;
     font-family: 'Playfair Display', Georgia, serif;
 }
@@ -1992,7 +1992,7 @@ body {
     align-items: center;
     gap: 6px;
     font-size: 0.8125rem;
-    color: #7a7068;
+    color: #74788a;
     margin-top: 3px;
 }
 
@@ -2011,13 +2011,13 @@ body {
 /* Secondary button variant (missing from original) */
 .salonbw-btn--secondary {
     background: #1e1e1e;
-    color: #c0b8af;
+    color: #bcc0cc;
     border: 1px solid #2a2a2a;
 }
 
 .salonbw-btn--secondary:hover {
     background: #2a2a2a;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 /* Luxury typography for content headings */
@@ -2043,16 +2043,16 @@ h3 {
 .navbar .omnibox {
     background-color: #1a1a1a;
     border-color: #2a2a2a;
-    color: #e8e0d5;
+    color: #e4e6ee;
 }
 
 .navbar .omnibox:focus {
-    border-color: #c5a880;
+    border-color: #b8bcc8;
     box-shadow: none;
 }
 
 .navbar .dropdown-toggle {
-    color: #7a7068;
+    color: #74788a;
 }
 
 .navbar .dropdown-menu {
@@ -2066,12 +2066,12 @@ h3 {
 }
 
 .navbar .dropdown-menu .main-menu-li a {
-    color: #c0b8af;
+    color: #bcc0cc;
 }
 
 .navbar .dropdown-menu .main-menu-li a:hover {
-    background: #2a2414;
-    color: #c5a880;
+    background: #252830;
+    color: #b8bcc8;
 }
 
 /* ============================================================
@@ -2101,7 +2101,7 @@ h3 {
 .sidenav .nav-list li a:hover,
 .sidenav .nav-list li.active a {
     background: #f0f4f8;
-    color: #c5a880;
+    color: #b8bcc8;
 }
 
 .sidenav .btn-link {
@@ -2329,7 +2329,7 @@ h3 {
     color: #495057;
 }
 .salonbw-checkbox {
-    accent-color: #c5a880;
+    accent-color: #b8bcc8;
 }
 
 /* --- Templates --- */
@@ -2337,12 +2337,12 @@ h3 {
     border-color: #dee2e6;
 }
 .salonbw-template-item:hover {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.05);
+    border-color: #b8bcc8;
+    background: rgba(184, 188, 200, 0.05);
 }
 .salonbw-template-item.active {
-    border-color: #c5a880;
-    background: rgba(197, 168, 128, 0.08);
+    border-color: #b8bcc8;
+    background: rgba(184, 188, 200, 0.08);
 }
 
 /* --- Channel selector --- */
@@ -2481,7 +2481,7 @@ h3 {
 }
 
 .fc-daygrid-day.fc-day-today {
-    background: rgba(197, 168, 128, 0.08) !important;
+    background: rgba(184, 188, 200, 0.08) !important;
 }
 
 .fc-col-header-cell {
@@ -2518,8 +2518,8 @@ h3 {
 
 .fc-button-active,
 .fc-button.fc-button-active {
-    background: var(--salon-brand, #c5a880) !important;
-    border-color: var(--salon-brand, #c5a880) !important;
+    background: var(--salon-brand, #b8bcc8) !important;
+    border-color: var(--salon-brand, #b8bcc8) !important;
     color: #ffffff !important;
 }
 
