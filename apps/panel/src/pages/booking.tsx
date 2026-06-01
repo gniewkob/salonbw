@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { useRouter } from 'next/router';
+import {
+    CheckIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+} from '@heroicons/react/20/solid';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,6 +49,12 @@ function todayISODate(): string {
     return new Date().toISOString().slice(0, 10);
 }
 
+function addDaysISO(dateStr: string, days: number): string {
+    const d = new Date(`${dateStr}T00:00:00`);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+}
+
 type Step = 'service' | 'slot' | 'confirm';
 
 export default function BookingPage() {
@@ -54,6 +65,7 @@ export default function BookingPage() {
     const [services, setServices] = useState<OnlineService[]>([]);
     const [servicesLoading, setServicesLoading] = useState(true);
     const [servicesError, setServicesError] = useState('');
+    const [servicesNotice, setServicesNotice] = useState('');
 
     const [selectedService, setSelectedService] =
         useState<OnlineService | null>(null);
@@ -88,6 +100,10 @@ export default function BookingPage() {
                     if (preSelected) {
                         setSelectedService(preSelected);
                         setStep('slot');
+                    } else {
+                        setServicesNotice(
+                            'Usługa z linku nie jest dostępna do rezerwacji online. Wybierz inną z listy.',
+                        );
                     }
                 }
             })
@@ -176,7 +192,7 @@ export default function BookingPage() {
             <SalonShell role={role}>
                 <div className="salon-section">
                     <div className="salon-column-row">
-                        <div className="salon-column" style={{ maxWidth: 640 }}>
+                        <div className="salon-column booking-column">
                             {submitted ? (
                                 <SuccessScreen
                                     appointmentId={createdAppointmentId}
@@ -213,6 +229,7 @@ export default function BookingPage() {
                                             services={services}
                                             loading={servicesLoading}
                                             error={servicesError}
+                                            notice={servicesNotice}
                                             onSelect={handleSelectService}
                                         />
                                     )}
@@ -319,7 +336,8 @@ function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
                     className="btn btn-link booking-back-link text-muted small"
                     onClick={onBack}
                 >
-                    ← {current.backLabel}
+                    <ChevronLeftIcon aria-hidden="true" />
+                    {current.backLabel}
                 </button>
             )}
             <h2 className="mb-0">{current.heading}</h2>
@@ -331,11 +349,13 @@ function ServiceStep({
     services,
     loading,
     error,
+    notice,
     onSelect,
 }: {
     services: OnlineService[];
     loading: boolean;
     error: string;
+    notice: string;
     onSelect: (svc: OnlineService) => void;
 }) {
     if (loading) {
@@ -372,6 +392,11 @@ function ServiceStep({
 
     return (
         <div className="d-flex flex-column gap-3">
+            {notice && (
+                <div className="booking-notice" role="status">
+                    {notice}
+                </div>
+            )}
             {Object.entries(byCategory).map(([cat, svcs]) => (
                 <div key={cat}>
                     <p className="booking-category-label">{cat}</p>
@@ -468,9 +493,23 @@ function SlotStep({
             </div>
 
             {loading && (
-                <p className="text-muted" role="status" aria-live="polite">
-                    Szukam wolnych terminów...
-                </p>
+                <>
+                    <p
+                        className="text-muted visually-hidden"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        Szukam wolnych terminów...
+                    </p>
+                    <div className="booking-slot-skeleton" aria-hidden="true">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="booking-slot-skeleton__chip"
+                            />
+                        ))}
+                    </div>
+                </>
             )}
             {error && (
                 <p className="text-danger" role="alert">
@@ -479,9 +518,12 @@ function SlotStep({
             )}
 
             {!loading && !error && slots.length === 0 && (
-                <p className="text-muted">
-                    Brak wolnych terminów w tym dniu. Wybierz inną datę.
-                </p>
+                <div>
+                    <p className="text-muted mb-3">
+                        Brak wolnych terminów w tym dniu. Wybierz inną datę.
+                    </p>
+                    <DayStepper date={date} onDateChange={onDateChange} />
+                </div>
             )}
 
             {!loading && slots.length > 0 && (
@@ -509,6 +551,47 @@ function SlotStep({
                     )}
                 </div>
             )}
+        </div>
+    );
+}
+
+function DayStepper({
+    date,
+    onDateChange,
+}: {
+    date: string;
+    onDateChange: (d: string) => void;
+}) {
+    const today = todayISODate();
+    const prevDate = addDaysISO(date, -1);
+    const nextDate = addDaysISO(date, 1);
+    const canGoBack = prevDate >= today;
+
+    return (
+        <div className="d-flex gap-2">
+            <button
+                type="button"
+                className="btn btn-outline-secondary"
+                disabled={!canGoBack}
+                onClick={() => onDateChange(prevDate)}
+            >
+                <ChevronLeftIcon
+                    aria-hidden="true"
+                    style={{ width: 16, height: 16 }}
+                />
+                {' Poprzedni dzień'}
+            </button>
+            <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => onDateChange(nextDate)}
+            >
+                {'Następny dzień '}
+                <ChevronRightIcon
+                    aria-hidden="true"
+                    style={{ width: 16, height: 16 }}
+                />
+            </button>
         </div>
     );
 }
@@ -619,7 +702,7 @@ function SuccessScreen({
     return (
         <div className="text-center py-4" role="status" aria-live="polite">
             <div className="booking-success-icon" aria-hidden="true">
-                ✓
+                <CheckIcon />
             </div>
             <h2 ref={headingRef} tabIndex={-1} className="mb-1">
                 Wizyta zarezerwowana!

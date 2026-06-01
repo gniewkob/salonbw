@@ -137,7 +137,7 @@ export default function DeliveriesTab() {
                 </div>
                 <button
                     onClick={handleOpenModal}
-                    className="px-3 py-2 btn-salon text-white rounded-3"
+                    className="px-3 py-2 btn-salon rounded-3"
                 >
                     + Nowa dostawa
                 </button>
@@ -374,7 +374,7 @@ export default function DeliveriesTab() {
                             <button
                                 type="submit"
                                 disabled={createDelivery.isPending}
-                                className="rounded-3 btn-salon px-3 py-2 text-white"
+                                className="rounded-3 btn-salon px-3 py-2"
                             >
                                 {createDelivery.isPending
                                     ? 'Tworzenie...'

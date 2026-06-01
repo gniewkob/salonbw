@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import {
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
+    PlusIcon,
+} from '@heroicons/react/20/solid';
 import type { Appointment } from '@/types';
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -145,11 +150,15 @@ export default function ClientAppointmentHistoryView({
             !!onRequestCancellation &&
             !TERMINAL_STATUSES.has(status);
 
+        const isError = requestState?.kind === 'error';
+        const FeedbackIcon = isError
+            ? ExclamationTriangleIcon
+            : CheckCircleIcon;
+
         return (
             <article
                 key={appointment.id}
-                className="salonbw-reception-item"
-                style={isSelected ? { borderColor: '#0d6efd' } : undefined}
+                className={`salonbw-reception-item${isSelected ? ' salonbw-reception-item--selected' : ''}`}
             >
                 <div className="salonbw-reception-item__header">
                     <div>
@@ -174,7 +183,9 @@ export default function ClientAppointmentHistoryView({
                 <div className="salonbw-reception-item__actions">
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className="btn btn-outline-secondary"
+                        aria-expanded={isSelected}
+                        aria-controls="client-appointment-details"
                         onClick={() =>
                             setSelectedAppointmentId(
                                 isSelected ? null : appointment.id,
@@ -187,11 +198,12 @@ export default function ClientAppointmentHistoryView({
                     onAcceptReschedule ? (
                         <button
                             type="button"
-                            className="btn btn-sm btn-success"
+                            className="btn btn-success"
                             onClick={() =>
                                 void handleAcceptReschedule(appointment.id)
                             }
                             disabled={pendingAcceptId === appointment.id}
+                            aria-busy={pendingAcceptId === appointment.id}
                         >
                             {pendingAcceptId === appointment.id
                                 ? 'Akceptowanie...'
@@ -201,11 +213,12 @@ export default function ClientAppointmentHistoryView({
                     {canCancel ? (
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger"
+                            className="btn btn-outline-danger"
                             onClick={() =>
                                 void handleRequestCancellation(appointment.id)
                             }
                             disabled={pendingRequestId === appointment.id}
+                            aria-busy={pendingRequestId === appointment.id}
                         >
                             {pendingRequestId === appointment.id
                                 ? 'Wysyłanie...'
@@ -215,18 +228,21 @@ export default function ClientAppointmentHistoryView({
                 </div>
                 {requestState?.appointmentId === appointment.id ? (
                     <p
-                        className={`small mb-0 mt-2 ${
-                            requestState.kind === 'success'
-                                ? 'text-success'
-                                : 'text-danger'
+                        className={`client-history-feedback ${
+                            isError ? 'text-danger' : 'text-success'
                         }`}
+                        role={isError ? 'alert' : 'status'}
+                        aria-live={isError ? 'assertive' : 'polite'}
                     >
-                        {requestState.message}
+                        <FeedbackIcon aria-hidden="true" />
+                        <span>{requestState.message}</span>
                     </p>
                 ) : null}
             </article>
         );
     };
+
+    const goToBooking = () => void router.push('/booking');
 
     return (
         <div className="d-flex flex-column gap-3">
@@ -234,16 +250,20 @@ export default function ClientAppointmentHistoryView({
                 <h2 className="h5 mb-0">Twoje wizyty</h2>
                 <button
                     type="button"
-                    className="btn btn-salon btn-sm"
-                    onClick={() => void router.push('/booking')}
+                    className="btn btn-salon d-inline-flex align-items-center gap-1"
+                    onClick={goToBooking}
                 >
-                    + Zarezerwuj wizytę
+                    <PlusIcon
+                        aria-hidden="true"
+                        style={{ width: 16, height: 16 }}
+                    />
+                    Zarezerwuj wizytę
                 </button>
             </div>
             <div className="d-flex flex-wrap align-items-end gap-3 rounded border bg-white p-2">
                 <div>
                     <label
-                        className="form-label form-label-sm mb-1"
+                        className="form-label mb-1"
                         htmlFor="client-calendar-date"
                     >
                         Data referencyjna
@@ -251,7 +271,7 @@ export default function ClientAppointmentHistoryView({
                     <input
                         id="client-calendar-date"
                         type="date"
-                        className="form-control form-control-sm"
+                        className="form-control"
                         value={currentDateParam}
                         onChange={(event) => {
                             const nextDate = new Date(
@@ -267,9 +287,18 @@ export default function ClientAppointmentHistoryView({
                 <section className="col-12 col-lg-6">
                     <h3 className="h6 mb-2">Nadchodzące wizyty</h3>
                     {futureAppointments.length === 0 ? (
-                        <p className="text-muted small mb-0">
-                            Brak nadchodzących wizyt.
-                        </p>
+                        <div>
+                            <p className="text-muted small mb-2">
+                                Brak nadchodzących wizyt.
+                            </p>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary"
+                                onClick={goToBooking}
+                            >
+                                Zarezerwuj pierwszą wizytę
+                            </button>
+                        </div>
                     ) : (
                         <div className="salonbw-reception-list">
                             {futureAppointments.map((a) => renderCard(a, true))}

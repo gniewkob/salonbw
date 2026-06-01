@@ -263,7 +263,7 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
                                         onClick={() =>
                                             onCreateDelivery(group.suggestions)
                                         }
-                                        className="px-3 py-1 small btn-salon text-white rounded-3"
+                                        className="px-3 py-1 small btn-salon rounded-3"
                                     >
                                         Utwórz dostawę
                                     </button>
