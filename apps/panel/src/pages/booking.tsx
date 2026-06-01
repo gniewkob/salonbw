@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Fragment } from 'react';
+import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -253,45 +253,76 @@ export default function BookingPage() {
     );
 }
 
+const STEP_DEFINITIONS: {
+    key: Step;
+    label: string;
+    heading: string;
+    backLabel: string;
+}[] = [
+    {
+        key: 'service',
+        label: 'Usługa',
+        heading: 'Wybierz usługę',
+        backLabel: '',
+    },
+    {
+        key: 'slot',
+        label: 'Termin',
+        heading: 'Wybierz termin',
+        backLabel: 'Wybór usługi',
+    },
+    {
+        key: 'confirm',
+        label: 'Potwierdzenie',
+        heading: 'Potwierdź rezerwację',
+        backLabel: 'Wybór terminu',
+    },
+];
+
 function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
-    const steps: { key: Step; label: string }[] = [
-        { key: 'service', label: 'Usługa' },
-        { key: 'slot', label: 'Termin' },
-        { key: 'confirm', label: 'Potwierdzenie' },
-    ];
-    const currentIdx = steps.findIndex((s) => s.key === step);
+    const current = STEP_DEFINITIONS.find((s) => s.key === step)!;
 
     return (
         <div className="mb-4">
-            <div className="salonbw-steps mb-3">
-                {steps.map((s, i) => (
-                    <Fragment key={s.key}>
-                        <div
-                            className={`salonbw-step${s.key === step ? ' active' : ''}`}
-                        >
-                            <span className="salonbw-step__number">
-                                {i + 1}
-                            </span>
-                            <span className="salonbw-step__label">
-                                {s.label}
-                            </span>
-                        </div>
-                        {i < steps.length - 1 && (
-                            <div className="salonbw-step__divider" />
-                        )}
-                    </Fragment>
-                ))}
-            </div>
+            <ol className="salonbw-steps mb-3" aria-label="Kroki rezerwacji">
+                {STEP_DEFINITIONS.map((s, i) => {
+                    const isActive = s.key === step;
+                    return (
+                        <Fragment key={s.key}>
+                            <li
+                                className={`salonbw-step${isActive ? ' active' : ''}`}
+                                aria-current={isActive ? 'step' : undefined}
+                            >
+                                <span
+                                    className="salonbw-step__number"
+                                    aria-hidden="true"
+                                >
+                                    {i + 1}
+                                </span>
+                                <span className="salonbw-step__label">
+                                    {s.label}
+                                </span>
+                            </li>
+                            {i < STEP_DEFINITIONS.length - 1 && (
+                                <li
+                                    className="salonbw-step__divider"
+                                    aria-hidden="true"
+                                />
+                            )}
+                        </Fragment>
+                    );
+                })}
+            </ol>
             {onBack && (
                 <button
                     type="button"
-                    className="btn btn-link p-0 text-muted small"
+                    className="btn btn-link booking-back-link text-muted small"
                     onClick={onBack}
                 >
-                    ← Wróć
+                    ← {current.backLabel}
                 </button>
             )}
-            {currentIdx === 0 && <h2 className="mb-0">Wybierz usługę</h2>}
+            <h2 className="mb-0">{current.heading}</h2>
         </div>
     );
 }
@@ -308,10 +339,18 @@ function ServiceStep({
     onSelect: (svc: OnlineService) => void;
 }) {
     if (loading) {
-        return <p className="text-muted">Ładowanie usług...</p>;
+        return (
+            <p className="text-muted" role="status" aria-live="polite">
+                Ładowanie usług...
+            </p>
+        );
     }
     if (error) {
-        return <p className="text-danger">{error}</p>;
+        return (
+            <p className="text-danger" role="alert">
+                {error}
+            </p>
+        );
     }
     if (services.length === 0) {
         return (
@@ -419,16 +458,25 @@ function SlotStep({
                     value={date}
                     min={todayISODate()}
                     onChange={(e) => onDateChange(e.target.value)}
+                    aria-describedby={date ? 'booking-date-hint' : undefined}
                 />
                 {date && (
-                    <p className="text-muted small mt-1">{formatDate(date)}</p>
+                    <p id="booking-date-hint" className="text-muted small mt-1">
+                        {formatDate(date)}
+                    </p>
                 )}
             </div>
 
             {loading && (
-                <p className="text-muted">Szukam wolnych terminów...</p>
+                <p className="text-muted" role="status" aria-live="polite">
+                    Szukam wolnych terminów...
+                </p>
             )}
-            {error && <p className="text-danger">{error}</p>}
+            {error && (
+                <p className="text-danger" role="alert">
+                    {error}
+                </p>
+            )}
 
             {!loading && !error && slots.length === 0 && (
                 <p className="text-muted">
@@ -521,7 +569,11 @@ function ConfirmStep({
                 </dl>
             </div>
 
-            {error && <p className="text-danger mb-3">{error}</p>}
+            {error && (
+                <p className="text-danger mb-3" role="alert">
+                    {error}
+                </p>
+            )}
 
             <div className="d-flex gap-2">
                 <button
@@ -529,6 +581,7 @@ function ConfirmStep({
                     className="btn btn-salon flex-fill"
                     onClick={onConfirm}
                     disabled={submitting}
+                    aria-busy={submitting}
                 >
                     {submitting ? 'Rezerwuję...' : 'Potwierdź rezerwację'}
                 </button>
@@ -558,10 +611,19 @@ function SuccessScreen({
     onNew: () => void;
     onHistory: () => void;
 }) {
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    useEffect(() => {
+        headingRef.current?.focus();
+    }, []);
+
     return (
-        <div className="text-center py-4">
-            <div className="booking-success-icon">✓</div>
-            <h2 className="mb-1">Wizyta zarezerwowana!</h2>
+        <div className="text-center py-4" role="status" aria-live="polite">
+            <div className="booking-success-icon" aria-hidden="true">
+                ✓
+            </div>
+            <h2 ref={headingRef} tabIndex={-1} className="mb-1">
+                Wizyta zarezerwowana!
+            </h2>
             {service && slot && (
                 <p className="text-muted mb-0">
                     {service.name} ·{' '}

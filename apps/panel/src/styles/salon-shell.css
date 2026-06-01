@@ -7150,15 +7150,17 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     gap: 0;
     margin-bottom: 2rem;
     padding: 1rem 0;
+    list-style: none;
+    padding-inline-start: 0;
 }
 .salonbw-step {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    opacity: 0.45;
+    color: #6c757d; /* 4.6:1 on white — AA pass */
 }
 .salonbw-step.active {
-    opacity: 1;
+    color: #1a1a1a;
     font-weight: 600;
 }
 .salonbw-step__number {
@@ -7173,8 +7175,8 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     font-weight: 700;
 }
 .salonbw-step.active .salonbw-step__number {
-    background: var(--salon-accent, #8b5cf6);
-    color: #fff;
+    background: var(--salon-accent, #b4b8be);
+    color: #0d0d0d;
 }
 .salonbw-step__label {
     font-size: 0.875rem;
@@ -7246,8 +7248,8 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     display: none;
 }
 .salonbw-channel.active {
-    border-color: var(--salon-accent, #8b5cf6);
-    background: #f5f0ff;
+    border-color: var(--salon-accent, #b4b8be);
+    background: #f3f4f6;
 }
 .salonbw-channel__icon {
     font-size: 1.25rem;
@@ -7298,8 +7300,8 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     background: #f8f9fa;
 }
 .salonbw-template-item.active {
-    border-color: var(--salon-accent, #8b5cf6);
-    background: #f5f0ff;
+    border-color: var(--salon-accent, #b4b8be);
+    background: #f3f4f6;
 }
 .salonbw-template-item__name {
     display: block;
@@ -7342,9 +7344,9 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
         box-shadow 0.15s;
 }
 .salonbw-textarea:focus {
-    border-color: var(--salon-accent, #8b5cf6);
+    border-color: var(--salon-accent, #b4b8be);
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 0 3px rgba(180, 184, 190, 0.35);
 }
 .salonbw-char-count {
     display: block;
@@ -7721,29 +7723,8 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 
 /* ─── Booking wizard ─────────────────────────────────────────────────────── */
-
-/* Primary CTA button (brand accent) */
-.btn-salon {
-    color: #fff;
-    background-color: var(--salon-accent, #8b5cf6);
-    border-color: var(--salon-accent, #8b5cf6);
-}
-.btn-salon:hover,
-.btn-salon:focus {
-    color: #fff;
-    background-color: color-mix(
-        in srgb,
-        var(--salon-accent, #8b5cf6) 85%,
-        #000
-    );
-    border-color: color-mix(in srgb, var(--salon-accent, #8b5cf6) 85%, #000);
-}
-.btn-salon:disabled {
-    color: #fff;
-    background-color: var(--salon-accent, #8b5cf6);
-    border-color: var(--salon-accent, #8b5cf6);
-    opacity: 0.65;
-}
+/* .btn-salon is owned by salon-theme.css (silver bg + #0d0d0d text,
+   contrast 9.7:1). Do not redefine here. */
 
 /* Service picker card */
 .booking-service-card {
@@ -7763,27 +7744,29 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 .booking-service-card:hover,
 .booking-service-card:focus-visible {
-    border-color: var(--salon-accent, #8b5cf6);
+    border-color: var(--salon-accent, #b4b8be);
     box-shadow: 0 0 0 3px
-        color-mix(in srgb, var(--salon-accent, #8b5cf6) 15%, transparent);
+        color-mix(in srgb, var(--salon-accent, #b4b8be) 25%, transparent);
     outline: none;
 }
 
-/* Slot time chip */
+/* Slot time chip — min-height meets 44pt touch target */
 .booking-slot-btn {
     min-width: 4rem;
+    min-height: 44px;
+    padding: 0.5rem 0.875rem;
     font-variant-numeric: tabular-nums;
 }
 .booking-slot-btn:hover,
 .booking-slot-btn.active {
-    background-color: var(--salon-accent, #8b5cf6);
-    border-color: var(--salon-accent, #8b5cf6);
-    color: #fff;
+    background-color: var(--salon-accent, #b4b8be);
+    border-color: var(--salon-accent, #b4b8be);
+    color: #0d0d0d;
 }
 
-/* Service price accent */
+/* Service price accent (darkened for AA contrast on white) */
 .booking-service-price {
-    color: var(--salon-accent, #8b5cf6);
+    color: #4a4a4a;
     font-weight: 600;
     white-space: nowrap;
     margin-left: 1rem;
@@ -7803,13 +7786,23 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--salon-accent, #8b5cf6);
-    color: #fff;
+    background: var(--salon-accent, #b4b8be);
+    color: #0d0d0d;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 1.5rem;
     font-size: 1.5rem;
+}
+
+/* Back link — meets touch target minimum */
+.booking-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    margin-left: -0.75rem; /* keep visual flush-left while preserving hit area */
 }
 
 /* ══════════════════════════════════════════════════════════════════
