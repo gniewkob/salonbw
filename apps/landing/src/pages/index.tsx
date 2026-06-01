@@ -159,7 +159,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         ].map(({ day, hours, closed }) => (
                                             <div key={day} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                                 <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{day}</span>
-                                                <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.25)' : 'var(--brand-gold)' }}>{hours}</span>
+                                                <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.25)' : 'var(--brand-silver)' }}>{hours}</span>
                                             </div>
                                         ))}
                                     </div>

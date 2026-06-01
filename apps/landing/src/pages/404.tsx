@@ -23,7 +23,7 @@ export default function NotFound() {
                 }}>404</span>
 
                 <div className="text-center px-6" style={{ position: 'relative', zIndex: 1 }}>
-                    <p className="text-xs uppercase mb-6" style={{ color: 'var(--brand-gold)', letterSpacing: '0.28em' }}>Strona nie istnieje</p>
+                    <p className="text-xs uppercase mb-6" style={{ color: 'var(--brand-silver)', letterSpacing: '0.28em' }}>Strona nie istnieje</p>
                     <h1 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: '#fff', lineHeight: 1.1, marginBottom: '1.5rem' }}>
                         Zgubiłaś się?
                     </h1>
