@@ -22,7 +22,7 @@ export default function Footer() {
 
     return (
         <footer style={{ background: 'var(--brand-black)', color: 'rgba(255,255,255,0.75)' }}>
-            <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--brand-gold), transparent)' }} />
+            <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--brand-silver), transparent)' }} />
 
             <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '4rem', paddingBottom: '2.5rem' }}>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 mb-14">
@@ -52,7 +52,7 @@ export default function Footer() {
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                         <div>
-                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>{T.footer.navigation}</p>
+                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-silver)', letterSpacing: '0.18em' }}>{T.footer.navigation}</p>
                             <ul className="space-y-2.5">
                                 {navLinks.map(link => (
                                     <li key={link.href}>
@@ -68,7 +68,7 @@ export default function Footer() {
                         </div>
 
                         <div>
-                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>{T.footer.hours}</p>
+                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-silver)', letterSpacing: '0.18em' }}>{T.footer.hours}</p>
                             <div className="space-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
                                 <p>{T.footer.monFri} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.mondayFriday}</span></p>
                                 <p>{T.footer.sat} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.saturday}</span></p>
@@ -77,7 +77,7 @@ export default function Footer() {
                         </div>
 
                         <div>
-                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-gold)', letterSpacing: '0.18em' }}>{T.footer.contact}</p>
+                            <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-silver)', letterSpacing: '0.18em' }}>{T.footer.contact}</p>
                             <div className="space-y-2.5 text-sm">
                                 {BUSINESS_INFO.contact.phone && (
                                     <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}

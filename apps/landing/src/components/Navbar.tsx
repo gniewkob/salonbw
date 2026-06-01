@@ -155,8 +155,8 @@ export default function Navbar() {
                         </div>
 
                         <button
-                            className="btn-gold px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2"
-                            style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
+                            className="btn-silver px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2"
+                            style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
                             onClick={() => { trackEvent('begin_checkout', { cta: 'navbar' }); setBookingModalOpen(true); }}
                         >
                             {T.nav.booking}
@@ -260,8 +260,8 @@ export default function Navbar() {
 
                         <div className="px-4 mt-4">
                             <button
-                                className="btn-gold block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
-                                style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
+                                className="btn-silver block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
+                                style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
                                 onClick={() => { setMobileMenuOpen(false); trackEvent('begin_checkout', { cta: 'mobile_menu' }); setBookingModalOpen(true); }}
                             >
                                 {T.nav.booking}

@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { PauseIcon, PlayIcon } from '@heroicons/react/20/solid';
 import { HERO_SLIDES, BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,12 +16,26 @@ interface HeroSliderProps {
 export default function HeroSlider({ slides }: HeroSliderProps) {
     const { T } = useLanguage();
     const data = slides ?? (HERO_SLIDES as unknown as HeroSlide[]);
+    const sectionRef = useRef<HTMLElement>(null);
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [userPaused, setUserPaused] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
     const bookingUrl = getPanelUrl(
         `/auth/login?redirect=${encodeURIComponent('/appointments')}`
     );
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const update = () => setPrefersReducedMotion(mq.matches);
+        update();
+        mq.addEventListener('change', update);
+        return () => mq.removeEventListener('change', update);
+    }, []);
+
+    const isPlaying = !userPaused && !isHovered && !prefersReducedMotion;
 
     const nextSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev + 1) % data.length);
@@ -32,29 +47,50 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
 
     const goToSlide = useCallback((index: number) => {
         setCurrentSlide(index);
-        setIsAutoPlaying(false);
     }, []);
 
     useEffect(() => {
-        if (!isAutoPlaying) return;
+        if (!isPlaying) return;
         const interval = setInterval(nextSlide, 5500);
         return () => clearInterval(interval);
-    }, [isAutoPlaying, nextSlide]);
+    }, [isPlaying, nextSlide]);
 
     useEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowLeft') { prevSlide(); setIsAutoPlaying(false); }
-            else if (e.key === 'ArrowRight') { nextSlide(); setIsAutoPlaying(false); }
+            const target = e.target as Element | null;
+            const tag = target?.tagName;
+            if (
+                tag === 'INPUT' ||
+                tag === 'TEXTAREA' ||
+                tag === 'SELECT' ||
+                (target as HTMLElement | null)?.isContentEditable
+            ) {
+                return;
+            }
+            if (e.key === 'ArrowLeft') prevSlide();
+            else if (e.key === 'ArrowRight') nextSlide();
         };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        section.addEventListener('keydown', handleKeyDown);
+        return () => section.removeEventListener('keydown', handleKeyDown);
     }, [nextSlide, prevSlide]);
 
     return (
         <section
+            ref={sectionRef}
             className="relative min-h-[600px] overflow-hidden"
             style={{ height: '100svh' }}
             aria-label="Hero slider"
+            aria-roledescription="carousel"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsHovered(true)}
+            onBlur={(e) => {
+                if (!sectionRef.current?.contains(e.relatedTarget as Node)) {
+                    setIsHovered(false);
+                }
+            }}
         >
             {/* Slides */}
             <div className="relative w-full h-full">
@@ -87,7 +123,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Academy eyebrow */}
                     <p
                         className="hero-tag mb-3 uppercase text-xs md:text-sm"
-                        style={{ color: 'var(--brand-gold)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
+                        style={{ color: 'var(--brand-silver)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
                     >
                         Akademia Zdrowych Włosów
                     </p>
@@ -103,7 +139,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Tangerine script accent */}
                     <p
                         className="hero-tag mb-6"
-                        style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-gold)', lineHeight: 1.2 }}
+                        style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-silver)', lineHeight: 1.2 }}
                     >
                         Black &amp; White
                     </p>
@@ -115,7 +151,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center">
                         <a
                             href={bookingUrl}
-                            className="btn-gold inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            className="btn-silver inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
                             style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(180,184,190,0.4)' }}
                         >
                             {T.nav.booking}
@@ -134,7 +170,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
             {/* Navigation Arrows */}
             <button
                 type="button"
-                onClick={() => { prevSlide(); setIsAutoPlaying(false); }}
+                onClick={() => prevSlide()}
                 className="btn-glass absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
                 aria-label="Previous slide"
             >
@@ -145,7 +181,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
 
             <button
                 type="button"
-                onClick={() => { nextSlide(); setIsAutoPlaying(false); }}
+                onClick={() => nextSlide()}
                 className="btn-glass absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
                 aria-label="Next slide"
             >
@@ -154,24 +190,40 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 </svg>
             </button>
 
-            {/* Dots */}
-            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-                {data.map((slide, index) => (
-                    <button
-                        key={slide.id}
-                        type="button"
-                        onClick={() => goToSlide(index)}
-                        className="transition-all duration-300 focus:outline-none"
-                        style={{
-                            width: index === currentSlide ? '28px' : '8px',
-                            height: '8px',
-                            borderRadius: '4px',
-                            background: index === currentSlide ? 'var(--brand-gold)' : 'rgba(255,255,255,0.45)',
-                        }}
-                        aria-label={`Go to slide ${index + 1}`}
-                        aria-current={index === currentSlide}
-                    />
-                ))}
+            {/* Dots + pause toggle */}
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-3">
+                <div className="flex space-x-2">
+                    {data.map((slide, index) => (
+                        <button
+                            key={slide.id}
+                            type="button"
+                            onClick={() => goToSlide(index)}
+                            className="transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be]"
+                            style={{
+                                width: index === currentSlide ? '28px' : '8px',
+                                height: '8px',
+                                borderRadius: '4px',
+                                background: index === currentSlide ? 'var(--brand-silver)' : 'rgba(255,255,255,0.45)',
+                            }}
+                            aria-label={`Slajd ${index + 1} z ${data.length}`}
+                            aria-current={index === currentSlide}
+                        />
+                    ))}
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setUserPaused((p) => !p)}
+                    className="text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be] rounded-full p-1.5"
+                    aria-label={userPaused ? 'Wznów slider' : 'Wstrzymaj slider'}
+                    aria-pressed={userPaused}
+                    title={userPaused ? 'Wznów slider' : 'Wstrzymaj slider'}
+                >
+                    {userPaused ? (
+                        <PlayIcon style={{ width: 14, height: 14 }} />
+                    ) : (
+                        <PauseIcon style={{ width: 14, height: 14 }} />
+                    )}
+                </button>
             </div>
 
             {/* Scroll indicator */}

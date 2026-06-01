@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
@@ -34,6 +34,8 @@ export default function BookingModal({
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [focusedField, setFocusedField] = useState<string | null>(null);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const previousActiveRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
         if (!open) {
@@ -42,6 +44,51 @@ export default function BookingModal({
             setFocusedField(null);
         }
     }, [open]);
+
+    // Focus management: remember opener, focus first field, restore on close
+    useEffect(() => {
+        if (!open) return;
+        previousActiveRef.current =
+            document.activeElement as HTMLElement | null;
+        const firstFocusable =
+            dialogRef.current?.querySelector<HTMLElement>(
+                'input, button, [href], select, textarea, [tabindex]:not([tabindex="-1"])',
+            );
+        firstFocusable?.focus();
+        return () => {
+            previousActiveRef.current?.focus?.();
+        };
+    }, [open]);
+
+    // ESC closes; Tab is trapped inside the dialog
+    useEffect(() => {
+        if (!open) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onClose();
+                return;
+            }
+            if (e.key !== 'Tab' || !dialogRef.current) return;
+            const focusables =
+                dialogRef.current.querySelectorAll<HTMLElement>(
+                    'input:not([disabled]), button:not([disabled]), [href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+                );
+            if (focusables.length === 0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            const active = document.activeElement;
+            if (e.shiftKey && active === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && active === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [open, onClose]);
 
     if (!open) return null;
 
@@ -121,6 +168,7 @@ export default function BookingModal({
             onClick={onClose}
         >
             <div
+                ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-label={m.bookingTitle}

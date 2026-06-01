@@ -118,8 +118,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     <p className="svcs-hero__desc">{s.pageDesc}</p>
                     <button
                         onClick={() => setGeneralBookingOpen(true)}
-                        className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
-                        style={{ color: '#fff', padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
+                        className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        style={{ padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         {T.nav.booking}
                     </button>
@@ -201,8 +201,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         </p>
                         <button
                             onClick={() => setGeneralBookingOpen(true)}
-                            className="btn-gold text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
-                            style={{ color: '#fff', padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
+                            className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                            style={{ padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
                         >
                             {T.nav.booking}
                         </button>

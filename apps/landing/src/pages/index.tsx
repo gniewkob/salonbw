@@ -132,7 +132,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-5xl mx-auto">
                             <div className="space-y-8">
                                 <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="block group">
-                                    <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>{c.phoneLabel}</span>
+                                    <span className="text-xs uppercase block mb-1" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em' }}>{c.phoneLabel}</span>
                                     <span
                                         className="block transition-opacity duration-200 group-hover:opacity-70"
                                         style={{ fontFamily: "var(--font-playfair), serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#ffffff', letterSpacing: '-0.01em' }}
@@ -142,7 +142,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </a>
 
                                 <div>
-                                    <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>{c.addressLabel}</span>
+                                    <span className="text-xs uppercase block mb-2" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em' }}>{c.addressLabel}</span>
                                     <address className="not-italic" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.8 }}>
                                         {BUSINESS_INFO.address.street}<br />
                                         {BUSINESS_INFO.address.postalCode} {BUSINESS_INFO.address.city}
@@ -150,7 +150,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </div>
 
                                 <div>
-                                    <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>{c.hoursTitle}</span>
+                                    <span className="text-xs uppercase block mb-3" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em' }}>{c.hoursTitle}</span>
                                     <div>
                                         {[
                                             { day: c.dayMonFri, hours: BUSINESS_INFO.hours.mondayFriday, closed: false },
@@ -159,7 +159,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         ].map(({ day, hours, closed }) => (
                                             <div key={day} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                                 <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{day}</span>
-                                                <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.25)' : 'var(--brand-silver)' }}>{hours}</span>
+                                                <span className="text-sm font-medium" style={{ color: closed ? 'rgba(255,255,255,0.55)' : 'var(--brand-silver)' }}>{hours}</span>
                                             </div>
                                         ))}
                                     </div>

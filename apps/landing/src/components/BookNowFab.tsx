@@ -20,11 +20,16 @@ export default function BookNowFab() {
 
     return (
         <>
-            <div className="fixed bottom-4 right-4 z-50 md:hidden">
+            <div
+                className="fixed right-4 z-50 md:hidden"
+                style={{
+                    bottom: 'max(1rem, env(safe-area-inset-bottom))',
+                }}
+            >
                 <button
                     onClick={() => { trackEvent('begin_checkout', { cta: 'fab' }); setModalOpen(true); }}
                     className="btn-silver px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
-                    style={{ color: '#fff', borderRadius: '2px', letterSpacing: '0.14em' }}
+                    style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
                     aria-label={T.nav.booking}
                 >
                     {T.nav.booking}

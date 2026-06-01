@@ -98,8 +98,8 @@ export default function ContactPage() {
                                 <button
                                     type="button"
                                     onClick={() => setBookingOpen(true)}
-                                    className="btn-gold"
-                                    style={{ padding: '0.85rem 2rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#fff', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
+                                    className="btn-silver"
+                                    style={{ padding: '0.85rem 2rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
                                 >
                                     {c.bookingBtn}
                                 </button>

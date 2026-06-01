@@ -301,7 +301,7 @@ export default function RegisterPage() {
                             <label htmlFor="phone" style={labelStyle}>
                                 Telefon{' '}
                                 <span
-                                    style={{ color: 'rgba(255,255,255,0.25)' }}
+                                    style={{ color: 'rgba(255,255,255,0.55)' }}
                                 >
                                     (opcjonalnie)
                                 </span>

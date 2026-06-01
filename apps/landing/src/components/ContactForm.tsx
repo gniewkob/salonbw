@@ -1,4 +1,8 @@
 import { FormEvent, useMemo, useState } from 'react';
+import {
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
+} from '@heroicons/react/20/solid';
 import { useToast } from '@/contexts/ToastContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -109,8 +113,22 @@ export default function ContactForm() {
                     placeholder={c.formEmailPlaceholder}
                     className="contact-form__input"
                     autoComplete="email"
+                    aria-invalid={!!emailError}
+                    aria-describedby={emailError ? 'cf-email-error' : undefined}
                 />
-                {emailError && <p role="alert" className="contact-form__error">{emailError}</p>}
+                {emailError && (
+                    <p
+                        id="cf-email-error"
+                        role="alert"
+                        className="contact-form__error"
+                    >
+                        <ExclamationTriangleIcon
+                            aria-hidden="true"
+                            style={{ width: 14, height: 14 }}
+                        />
+                        <span>{emailError}</span>
+                    </p>
+                )}
             </div>
 
             <div className="contact-form__field">
@@ -126,13 +144,41 @@ export default function ContactForm() {
                 />
             </div>
 
-            {error && <p role="alert" className="contact-form__error">{error}</p>}
+            {error && (
+                <p role="alert" className="contact-form__error">
+                    <ExclamationTriangleIcon
+                        aria-hidden="true"
+                        style={{ width: 14, height: 14 }}
+                    />
+                    <span>{error}</span>
+                </p>
+            )}
             {submitError && (
-                <p data-testid="form-error-alert" className="contact-form__error">{submitError}</p>
+                <p
+                    data-testid="form-error-alert"
+                    role="alert"
+                    aria-live="assertive"
+                    className="contact-form__error"
+                >
+                    <ExclamationTriangleIcon
+                        aria-hidden="true"
+                        style={{ width: 14, height: 14 }}
+                    />
+                    <span>{submitError}</span>
+                </p>
             )}
             {submitted && (
-                <p data-testid="form-success-message" className="contact-form__success">
-                    {c.formSuccess}
+                <p
+                    data-testid="form-success-message"
+                    role="status"
+                    aria-live="polite"
+                    className="contact-form__success"
+                >
+                    <CheckCircleIcon
+                        aria-hidden="true"
+                        style={{ width: 14, height: 14 }}
+                    />
+                    <span>{c.formSuccess}</span>
                 </p>
             )}
 
