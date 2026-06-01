@@ -98,7 +98,7 @@ export default function ColoringPage() {
                 >
                     <p
                         style={{
-                            color: '#c5a880',
+                            color: '#b4b8be',
                             fontSize: '0.7rem',
                             letterSpacing: '0.2em',
                             textTransform: 'uppercase',
@@ -175,7 +175,7 @@ export default function ColoringPage() {
                                 }}
                             >
                                 <span
-                                    style={{ color: '#c5a880', flexShrink: 0 }}
+                                    style={{ color: '#b4b8be', flexShrink: 0 }}
                                 >
                                     —
                                 </span>
@@ -188,7 +188,7 @@ export default function ColoringPage() {
                         <Link
                             href="/services"
                             style={{
-                                color: '#c5a880',
+                                color: '#b4b8be',
                                 fontSize: '0.8rem',
                                 letterSpacing: '0.12em',
                                 textTransform: 'uppercase',

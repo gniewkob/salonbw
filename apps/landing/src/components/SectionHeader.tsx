@@ -13,7 +13,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
         <div className={isLeft ? 'mb-14' : 'text-center mb-14'}>
             <p
                 className="text-xs uppercase mb-3"
-                style={{ color: '#c5a880', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                style={{ color: '#b4b8be', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
             >
                 {eyebrow}
             </p>
@@ -23,7 +23,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
             >
                 {title}
             </Tag>
-            <div className={isLeft ? 'mt-4' : 'mx-auto mt-4'} style={{ width: '40px', height: '2px', background: '#c5a880' }} />
+            <div className={isLeft ? 'mt-4' : 'mx-auto mt-4'} style={{ width: '40px', height: '2px', background: '#b4b8be' }} />
             {subtitle && (
                 <p
                     className={`text-sm mt-5 max-w-lg ${isLeft ? '' : 'mx-auto'}`}

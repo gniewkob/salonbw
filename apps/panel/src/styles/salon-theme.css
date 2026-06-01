@@ -5,9 +5,9 @@
 
 /* --- CSS Variables --- */
 :root {
-    --salon-accent: #c5a880;
-    --salon-brand: #c5a880;
-    --salon-brand-hover: #d4b896;
+    --salon-accent: #b4b8be;
+    --salon-brand: #b4b8be;
+    --salon-brand-hover: #c4c8cd;
     --salon-bg: #ffffff;
     --salon-fg: #1a1a1a;
 }
@@ -127,7 +127,7 @@ body {
 }
 .tree li a:hover {
     background: #1e1a14;
-    color: #c5a880;
+    color: #b4b8be;
 }
 
 /* --- Icon box --- */
@@ -147,7 +147,7 @@ body {
     font-size: 11px;
     font-weight: 600;
     background: #141414;
-    color: #c5a880;
+    color: #b4b8be;
 }
 .table-bordered td {
     font-size: 13px;
@@ -253,7 +253,7 @@ tr.even td {
 /* --- Form accent (focus ring) --- */
 .form-control:focus {
     border-color: var(--salon-brand);
-    box-shadow: 0 0 0 0.2rem rgba(197, 168, 128, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(180, 184, 190, 0.25);
 }
 
 /* --- Pjax link styling --- */

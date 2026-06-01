@@ -27,7 +27,7 @@ export default function Footer() {
             <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '4rem', paddingBottom: '2.5rem' }}>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 mb-14">
                     <div className="max-w-xs">
-                        <Link href={'/' as Route} className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[#c5a880]" aria-label="Black & White — strona główna">
+                        <Link href={'/' as Route} className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]" aria-label="Black & White — strona główna">
                             <Image
                                 src="/images/logo.svg"
                                 alt="Black & White"
@@ -44,7 +44,7 @@ export default function Footer() {
                         <button
                             onClick={() => setBookingOpen(true)}
                             type="button"
-                            className="mt-5 text-xs font-semibold uppercase footer-booking-btn focus:outline-none focus:ring-2 focus:ring-[#c5a880] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                            className="mt-5 text-xs font-semibold uppercase footer-booking-btn focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
                         >
                             {T.nav.booking}
                         </button>
@@ -58,7 +58,7 @@ export default function Footer() {
                                     <li key={link.href}>
                                         <Link
                                             href={link.href as Route}
-                                            className="text-sm footer-link focus:ring-2 focus:ring-[#c5a880]"
+                                            className="text-sm footer-link focus:ring-2 focus:ring-[#b4b8be]"
                                         >
                                             {link.label}
                                         </Link>
@@ -119,7 +119,7 @@ export default function Footer() {
                     <div className="flex gap-5">
                         {[{ href: '/privacy', label: T.footer.privacy }, { href: '/policy', label: T.footer.terms }].map(l => (
                             <Link key={l.href} href={l.href as Route}
-                                className="text-xs footer-link--dim focus:ring-2 focus:ring-[#c5a880]"
+                                className="text-xs footer-link--dim focus:ring-2 focus:ring-[#b4b8be]"
                             >
                                 {l.label}
                             </Link>
