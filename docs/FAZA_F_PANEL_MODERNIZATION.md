@@ -1,8 +1,32 @@
 # Faza F — Transformacja panelu z Versum-clone do premium narzędzia
 
-Data: 2026-06-01
-Status: roboczy plan strategiczny po krytycznym audycie panelu
+Data utworzenia: 2026-06-01
+Ostatnia aktualizacja: 2026-06-02
+Status: w trakcie realizacji (Tier 1-3 + dashboard + F5 mini ukończone)
 Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
+
+## Progres wdrożenia (2026-06-02)
+
+| Etap | Commit | Co zrobione |
+|---|---|---|
+| Tier 1 | `4ced8ff03` | snake/kebab settings duplicates — 5 par |
+| Tier 2 | `0ba90796e` | -14 plików routes (admin/branches, invoices, event-reminders, product-orders, /employees, /admin/* duplikaty); ukryte orders/deliveries/suppliers/manufacturers z nav. **-2370 linii kodu.** |
+| Tier 3 | `f70e8097f` | communication cleanup (-5 plików), settings semantic grouping (6 sekcji), admin po loginie → `/dashboard` |
+| CI fix | `bd22c4654` | warm-up + retry-restart po Passenger reload — eliminuje "deploy success ale 500" |
+| Dashboard | `da2267955` | low-stock alert section + "Nowa wizyta" primary CTA |
+| F5 mini | `658b8c7b5` | Versum #f4fbff stripes → neutral; .link_body i .btn-primary → brand silver |
+
+**Łącznie:** ~-2400 linii kodu mniej, 6 commitów do produkcji.
+
+Decyzje właściciela podjęte 2026-06-02:
+- Karty podarunkowe — KEEP (sprzeda)
+- Program lojalnościowy — KEEP (planuje wprowadzić)
+- 1 lokalizacja — KILL multi-location
+- Newsletter / email marketing — KEEP
+- Zamówienia od dostawców — POZA panelem (HIDE flow)
+- Faktury — zewnętrzne narzędzie (KILL /invoices)
+- /notifications, /messages, /emails → CONSOLIDATE do /communication z taby
+- Versum-compat zakończony — robimy własny system, bez 301 redirects do snake URL
 
 ## 1. Cel
 
