@@ -1206,12 +1206,69 @@ jobs:
           echo "Restarting $APP_NAME (Passenger)..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
+      - name: Warm up + verify (panel)
+        if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
+        run: |
+          # Passenger sometimes serves a stale/broken worker briefly after
+          # restart, even after `devil www restart` reports success. We
+          # ping the app until it returns a valid response, retrying with
+          # an extra restart if needed. This converts "deploy reports
+          # success but app is 500" into a real deploy failure.
+          APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          URL="https://$APP_NAME/"
+          MAX_ATTEMPTS=6
+          attempt=1
+          while [ $attempt -le $MAX_ATTEMPTS ]; do
+            sleep 5
+            code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || echo 000)
+            echo "Attempt $attempt/$MAX_ATTEMPTS: $URL -> HTTP $code"
+            # 2xx/3xx = healthy (3xx = expected auth redirect)
+            if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+              echo "✅ Panel is responding (HTTP $code)"
+              exit 0
+            fi
+            # 500 after 3 attempts: re-issue restart
+            if [ "$attempt" -eq 3 ] && [ "$code" -ge 500 ]; then
+              echo "Panel still 5xx after 3 attempts — re-issuing restart..."
+              ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
+            fi
+            attempt=$((attempt + 1))
+          done
+          echo "❌ Panel did not become healthy after $MAX_ATTEMPTS attempts" >&2
+          exit 1
+
       - name: Restart app (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           echo "Restarting $APP_NAME (Passenger)..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
+
+      - name: Warm up + verify (landing)
+        if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
+        run: |
+          # See "Warm up + verify (panel)" — same race condition can
+          # bite the landing Passenger worker.
+          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          URL="https://$APP_NAME/"
+          MAX_ATTEMPTS=6
+          attempt=1
+          while [ $attempt -le $MAX_ATTEMPTS ]; do
+            sleep 5
+            code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || echo 000)
+            echo "Attempt $attempt/$MAX_ATTEMPTS: $URL -> HTTP $code"
+            if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+              echo "✅ Landing is responding (HTTP $code)"
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ] && [ "$code" -ge 500 ]; then
+              echo "Landing still 5xx after 3 attempts — re-issuing restart..."
+              ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
+            fi
+            attempt=$((attempt + 1))
+          done
+          echo "❌ Landing did not become healthy after $MAX_ATTEMPTS attempts" >&2
+          exit 1
 
       - name: Debug - List Apps
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
