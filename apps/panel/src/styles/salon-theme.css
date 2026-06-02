@@ -36,6 +36,27 @@ body {
     cursor: not-allowed;
 }
 
+/* --- Bootstrap .btn-primary override — make it use brand silver
+   instead of Bootstrap default blue. This is a brand consistency
+   override applied site-wide; .btn-primary and .btn-salon now share
+   the same visual but the semantic remains distinct (.btn-primary =
+   page-level primary action, .btn-salon = explicit brand CTA). */
+.btn-primary {
+    --bs-btn-color: #0d0d0d;
+    --bs-btn-bg: var(--salon-brand);
+    --bs-btn-border-color: var(--salon-brand);
+    --bs-btn-hover-color: #0d0d0d;
+    --bs-btn-hover-bg: var(--salon-brand-hover);
+    --bs-btn-hover-border-color: var(--salon-brand-hover);
+    --bs-btn-focus-shadow-rgb: 180, 184, 190;
+    --bs-btn-active-color: #0d0d0d;
+    --bs-btn-active-bg: var(--salon-brand-hover);
+    --bs-btn-active-border-color: var(--salon-brand-hover);
+    --bs-btn-disabled-color: #0d0d0d;
+    --bs-btn-disabled-bg: var(--salon-brand);
+    --bs-btn-disabled-border-color: var(--salon-brand);
+}
+
 /* --- Sections (PanelSection wrapper) --- */
 .salon-section {
     padding: 15px 20px;

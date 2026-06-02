@@ -3143,7 +3143,7 @@ body.e2e-statistics .main-content .inner {
     background: #fff;
 }
 .data_table .table-bordered tr.even td {
-    background: #f4fbff;
+    background: #fafafa;
 }
 /* =============================================
    Stats-tabs (jQuery UI-like tab control)
@@ -3879,7 +3879,7 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     background: #fff;
 }
 .table-bordered tr.even td {
-    background: #f4fbff;
+    background: #fafafa;
 }
 /* Full-block link cell */
 .table-bordered td.link_body {
@@ -7566,13 +7566,14 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     color: #56aef0;
 }
 
-/* Link-body: subtle link style in table cells */
+/* Link-body: subtle link style in table cells (modernized — was Versum #56aef0) */
 .link_body {
-    color: #56aef0;
+    color: #4a4a4a;
     text-decoration: none;
     cursor: pointer;
 }
 .link_body:hover {
+    color: #0d0d0d;
     text-decoration: underline;
 }
 
