@@ -5,7 +5,13 @@ export function getPostLoginRoute(role: Role | null | undefined): string {
         return '/booking';
     }
 
-    if (role === 'admin' || role === 'receptionist' || role === 'employee') {
+    // Admin trafia na dashboard z KPI dnia / online_pending / alerty.
+    // Receptionist + employee idą bezpośrednio do kalendarza (ich główne narzędzie).
+    if (role === 'admin') {
+        return '/dashboard';
+    }
+
+    if (role === 'receptionist' || role === 'employee') {
         return '/calendar';
     }
 

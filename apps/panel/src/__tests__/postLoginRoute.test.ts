@@ -1,12 +1,12 @@
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 
 describe('getPostLoginRoute', () => {
-    it('routes admin and receptionist to calendar', () => {
-        expect(getPostLoginRoute('admin')).toBe('/calendar');
-        expect(getPostLoginRoute('receptionist')).toBe('/calendar');
+    it('routes admin to dashboard', () => {
+        expect(getPostLoginRoute('admin')).toBe('/dashboard');
     });
 
-    it('routes employee to calendar', () => {
+    it('routes receptionist and employee to calendar (their primary tool)', () => {
+        expect(getPostLoginRoute('receptionist')).toBe('/calendar');
         expect(getPostLoginRoute('employee')).toBe('/calendar');
     });
 

@@ -17,7 +17,7 @@ describe('Home redirect', () => {
         mockedUseAuth.mockReset();
     });
 
-    it('redirects to calendar for admin role', async () => {
+    it('redirects to dashboard for admin role', async () => {
         mockedUseAuth.mockReturnValue(
             createAuthValue({
                 initialized: true,
@@ -26,7 +26,7 @@ describe('Home redirect', () => {
             }),
         );
         render(<HomePage />);
-        await waitFor(() => expect(replace).toHaveBeenCalledWith('/calendar'));
+        await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
     });
 
     it('redirects to login when not authenticated', async () => {

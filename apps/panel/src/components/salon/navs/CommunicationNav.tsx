@@ -14,6 +14,11 @@ const COMMUNICATION_ITEMS: NavItem[] = [
         href: '/communication',
     },
     {
+        id: 'send',
+        label: 'Wyślij wiadomość',
+        href: '/messages',
+    },
+    {
         id: 'mass',
         label: 'Wiadomości masowe',
         href: '/communication/mass',

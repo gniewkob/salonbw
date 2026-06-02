@@ -90,12 +90,6 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-social_media',
     },
     {
-        href: '/invoices',
-        label: 'faktury i abonament',
-        boxClass: 'billing',
-        iconId: 'svg-billing',
-    },
-    {
         href: '/settings/payment-configuration',
         label: 'płatności',
         boxClass: 'prepayments',
