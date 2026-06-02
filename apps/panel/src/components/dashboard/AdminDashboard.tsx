@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
+import { useStockSummary } from '@/hooks/useStockAlerts';
 import { format, startOfMonth, subDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import Link from 'next/link';
@@ -79,6 +80,7 @@ function MiniChart({
 export default function AdminDashboard() {
     const { data: dashboardData, loading: dashboardLoading } = useDashboard();
     const { data: stats, isLoading: statsLoading } = useDashboardStats();
+    const { data: stockSummary } = useStockSummary();
 
     const today = useMemo(() => new Date(), []);
     const todayKey = format(today, 'yyyy-MM-dd');
@@ -157,10 +159,17 @@ export default function AdminDashboard() {
         <div className="salonbw-dashboard">
             <div className="salonbw-dashboard__header">
                 <h1 className="salonbw-dashboard__title">Pulpit</h1>
-                <Link href="/customers/new" className="btn btn-primary">
-                    <i className="salonbw-icon salonbw-icon--plus"></i>
-                    Dodaj klienta
-                </Link>
+                <div className="d-flex gap-2">
+                    <Link
+                        href="/customers/new"
+                        className="btn btn-outline-secondary"
+                    >
+                        Dodaj klienta
+                    </Link>
+                    <Link href="/calendar?new=1" className="btn btn-primary">
+                        Nowa wizyta
+                    </Link>
+                </div>
             </div>
 
             <div className="salonbw-dashboard__period">
@@ -238,6 +247,36 @@ export default function AdminDashboard() {
             </div>
 
             <div className="salonbw-dashboard__grid">
+                {/* Low stock alert — second most urgent (after online bookings) */}
+                {(stockSummary?.lowStockCount ?? 0) > 0 && (
+                    <div
+                        className="salonbw-dashboard__section"
+                        style={{
+                            gridColumn: '1 / -1',
+                            borderLeft: '4px solid #dc2626',
+                        }}
+                    >
+                        <div className="salonbw-dashboard__section-header">
+                            <h2>
+                                <span className="badge bg-danger me-2">
+                                    {stockSummary?.lowStockCount}
+                                </span>
+                                Produkty z niskim stanem magazynowym
+                            </h2>
+                            <Link
+                                href="/stock-alerts"
+                                className="btn btn-sm btn-danger"
+                            >
+                                Zobacz listę
+                            </Link>
+                        </div>
+                        <p className="small text-muted mb-0">
+                            Niektóre produkty są na wyczerpaniu. Sprawdź listę i
+                            zamów co potrzeba.
+                        </p>
+                    </div>
+                )}
+
                 {/* Pending online bookings — most urgent action */}
                 {(dashboardData?.onlinePendingCount ?? 0) > 0 && (
                     <div

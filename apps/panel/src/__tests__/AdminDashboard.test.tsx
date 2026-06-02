@@ -27,6 +27,12 @@ jest.mock('@/hooks/useDashboard', () => ({
     })),
 }));
 
+jest.mock('@/hooks/useStockAlerts', () => ({
+    useStockSummary: jest.fn(() => ({
+        data: { lowStockCount: 0, totalProducts: 0, outOfStockCount: 0 },
+    })),
+}));
+
 jest.mock('@/hooks/useStatistics', () => ({
     useDashboardStats: jest.fn(() => ({
         isLoading: false,
