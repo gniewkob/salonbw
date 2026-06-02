@@ -5,9 +5,7 @@ export default function EmployeesNav() {
     const router = useRouter();
 
     const isActive = (href: string) =>
-        router.pathname === href ||
-        router.pathname.startsWith(`${href}/`) ||
-        (href === '/settings/employees' && router.pathname === '/employees');
+        router.pathname === href || router.pathname.startsWith(`${href}/`);
 
     return (
         <div className="sidenav" id="sidenav">

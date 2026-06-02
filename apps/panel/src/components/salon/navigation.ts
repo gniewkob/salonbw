@@ -271,10 +271,7 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (
-        path.startsWith('/settings/employees') ||
-        path.startsWith('/employees')
-    ) {
+    if (path.startsWith('/settings/employees')) {
         return {
             bodyId: 'settings_employees',
         } satisfies Partial<SalonShellProfile>;
@@ -330,13 +327,6 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (path.startsWith('/event-reminders')) {
-        return {
-            bodyId: 'physical_marketing',
-            mainContentClass: 'settings',
-        } satisfies Partial<SalonShellProfile>;
-    }
-
     return null;
 }
 
@@ -367,16 +357,12 @@ export function resolveSalonModule(pathname: string): SalonModule {
         path.startsWith('/orders') ||
         path.startsWith('/stock-alerts') ||
         path.startsWith('/suppliers') ||
-        path.startsWith('/manufacturers') ||
-        path.startsWith('/admin/warehouse')
+        path.startsWith('/manufacturers')
     ) {
         return SALON_MODULES[2];
     }
 
-    if (
-        path.startsWith('/statistics') ||
-        path.startsWith('/admin/statistics')
-    ) {
+    if (path.startsWith('/statistics')) {
         return SALON_MODULES[3];
     }
 
@@ -384,8 +370,7 @@ export function resolveSalonModule(pathname: string): SalonModule {
         path.startsWith('/communication') ||
         path.startsWith('/newsletters') ||
         path.startsWith('/messages') ||
-        path.startsWith('/emails') ||
-        path.startsWith('/admin/communications')
+        path.startsWith('/emails')
     ) {
         if (path.startsWith('/messages')) {
             return withShellOverride(SALON_MODULES[4], {
@@ -395,19 +380,11 @@ export function resolveSalonModule(pathname: string): SalonModule {
         return SALON_MODULES[4];
     }
 
-    if (path.startsWith('/services') || path.startsWith('/admin/services')) {
+    if (path.startsWith('/services')) {
         return SALON_MODULES[5];
     }
 
-    if (
-        path.startsWith('/settings') ||
-        path.startsWith('/admin/settings') ||
-        path.startsWith('/admin/timetables') ||
-        path.startsWith('/event-reminders') ||
-        path.startsWith('/employees') ||
-        path.startsWith('/reviews') ||
-        path.startsWith('/invoices')
-    ) {
+    if (path.startsWith('/settings') || path.startsWith('/reviews')) {
         const settingsShellOverride = resolveSettingsShellOverride(path);
         if (settingsShellOverride) {
             return withShellOverride(SALON_MODULES[6], settingsShellOverride);

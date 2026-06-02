@@ -36,7 +36,7 @@ export default function WarehouseOrderDetailsPage() {
         <WarehouseLayout
             pageTitle="Magazyn / Szczegóły zamówienia | SalonBW"
             heading={`Magazyn / Historia zamówień / ${order?.orderNumber ?? ''}`}
-            activeTab="orders"
+            activeTab="products"
             actions={
                 <div className="btn-group">
                     <Link

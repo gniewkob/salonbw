@@ -43,7 +43,7 @@ export default function DeliveryDetailsPage() {
         <WarehouseLayout
             pageTitle="Magazyn / Szczegóły dostawy | SalonBW"
             heading={`Magazyn / Historia dostaw / ${delivery?.deliveryNumber ?? ''}`}
-            activeTab="deliveries"
+            activeTab="products"
             actions={
                 <div className="btn-group">
                     <Link

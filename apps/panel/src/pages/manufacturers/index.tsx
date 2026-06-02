@@ -70,7 +70,7 @@ export default function WarehouseManufacturersPage() {
         <WarehouseLayout
             pageTitle="Magazyn / Producenci | SalonBW"
             heading="Magazyn / Producenci"
-            activeTab="deliveries"
+            activeTab="products"
         >
             <div className="row mb-3">
                 <div className="col-sm-6">

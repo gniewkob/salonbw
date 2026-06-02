@@ -3,8 +3,6 @@ import { useProductCategories } from '@/hooks/useWarehouseViews';
 import ManageCategoriesModal from '../modals/ManageCategoriesModal';
 import { useState } from 'react';
 import type { ProductCategory } from '@/types';
-import { useDeliveries } from '@/hooks/useWarehouse';
-import { useWarehouseOrders } from '@/hooks/useWarehouseViews';
 import { useStockSummary } from '@/hooks/useStockAlerts';
 import { useStocktakings } from '@/hooks/useWarehouse';
 
@@ -37,24 +35,10 @@ export default function WarehouseNav() {
     const router = useRouter();
     const path = router.pathname;
     const inventoryNavActive = path.startsWith('/inventory');
-    const deliveriesNavActive =
-        path.startsWith('/deliveries') ||
-        path.startsWith('/suppliers') ||
-        path.startsWith('/stock-alerts') ||
-        path.startsWith('/manufacturers');
-    const ordersNavActive = path.startsWith('/orders');
+    const stockAlertsNavActive = path.startsWith('/stock-alerts');
     const usageNavActive = path.startsWith('/use') || path.startsWith('/usage');
     const { data: categories } = useProductCategories();
-    const { data: draftDeliveries = [] } = useDeliveries(
-        { status: 'draft' },
-        deliveriesNavActive,
-    );
-    const { data: pendingDeliveries = [] } = useDeliveries(
-        { status: 'pending' },
-        deliveriesNavActive,
-    );
-    const { data: orders = [] } = useWarehouseOrders(ordersNavActive);
-    const { data: stockSummary } = useStockSummary(deliveriesNavActive);
+    const { data: stockSummary } = useStockSummary(stockAlertsNavActive);
     const { data: draftStocktakings = [] } = useStocktakings(
         {
             status: 'draft',
@@ -74,9 +58,6 @@ export default function WarehouseNav() {
         inventoryNavActive,
     );
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
-    const draftOrdersCount = orders.filter(
-        (order) => order.status === 'draft',
-    ).length;
     const lowStockCount = stockSummary?.lowStockCount ?? 0;
 
     const currentCategoryId = router.query.categoryId
@@ -206,42 +187,13 @@ export default function WarehouseNav() {
         ]);
     }
 
-    if (
-        isSubmodulePath('/deliveries') ||
-        isSubmodulePath('/suppliers') ||
-        isSubmodulePath('/stock-alerts') ||
-        isSubmodulePath('/manufacturers')
-    ) {
-        return renderModuleNav('DOSTAWY', [
-            { label: 'dodaj dostawę', href: '/deliveries/new' },
-            { label: 'historia dostaw', href: '/deliveries/history' },
+    // Niski stan magazynowy — pozostaje dostępne jako narzędzie, mimo że
+    // dostawcy/zamówienia/dostawy są poza panelem (zamówienia telefoniczne).
+    if (isSubmodulePath('/stock-alerts')) {
+        return renderModuleNav('ALERTY MAGAZYNOWE', [
             {
-                label: `wersje robocze (${draftDeliveries.length})`,
-                href: '/deliveries/history',
-                query: { status: 'draft' },
-            },
-            {
-                label: `oczekujące (${pendingDeliveries.length})`,
-                href: '/deliveries/history',
-                query: { status: 'pending' },
-            },
-            {
-                label: `niski stan magazynowy (${lowStockCount})`,
+                label: `niski stan (${lowStockCount})`,
                 href: '/stock-alerts',
-            },
-            { label: 'dostawcy', href: '/suppliers' },
-            { label: 'producenci', href: '/manufacturers' },
-        ]);
-    }
-
-    if (isSubmodulePath('/orders')) {
-        return renderModuleNav('ZAMÓWIENIA', [
-            { label: 'dodaj zamówienie', href: '/orders/new' },
-            { label: 'historia zamówień', href: '/orders/history' },
-            {
-                label: `wersje robocze (${draftOrdersCount})`,
-                href: '/orders/history',
-                query: { status: 'draft' },
             },
         ]);
     }

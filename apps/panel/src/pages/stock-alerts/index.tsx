@@ -12,12 +12,7 @@ export default function WarehouseLowStockPage() {
         <WarehouseLayout
             pageTitle="Magazyn / Niski stan magazynowy | SalonBW"
             heading="Magazyn / Niski stan magazynowy"
-            activeTab="deliveries"
-            actions={
-                <Link href="/deliveries/new" className="btn btn-primary btn-sm">
-                    dodaj dostawę
-                </Link>
-            }
+            activeTab="products"
         >
             {summary ? (
                 <div className="products-pagination pt-0">

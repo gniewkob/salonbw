@@ -69,7 +69,7 @@ export default function WarehouseDeliveriesHistoryPage() {
         <WarehouseLayout
             pageTitle="Magazyn / Historia dostaw | SalonBW"
             heading="Magazyn / Historia dostaw"
-            activeTab="deliveries"
+            activeTab="products"
         >
             {isLoading ? (
                 <p className="text-muted">Ładowanie historii dostaw...</p>

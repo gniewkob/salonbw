@@ -82,7 +82,7 @@ export default function WarehouseOrderCreatePage() {
         <WarehouseLayout
             pageTitle="Magazyn / Dodaj zamówienie | SalonBW"
             heading="Magazyn / Dodaj zamówienie"
-            activeTab="orders"
+            activeTab="products"
             actions={
                 <Link
                     href="/orders/history"

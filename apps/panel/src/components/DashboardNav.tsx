@@ -54,7 +54,7 @@ const navItems: NavLink[] = [
         permission: 'nav:customers',
     },
     {
-        href: '/employees' as Route,
+        href: '/settings/employees' as Route,
         label: 'Employees',
         permission: 'nav:employees',
     },

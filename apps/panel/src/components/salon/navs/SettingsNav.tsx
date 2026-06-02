@@ -24,18 +24,12 @@ const SETTINGS_ITEMS: NavItem[] = [
         label: 'Grafiki pracy',
         href: '/settings/timetable/employees',
     },
-    { id: 'settings-employees', label: 'Pracownicy', href: '/employees' },
+    {
+        id: 'settings-employees',
+        label: 'Pracownicy',
+        href: '/settings/employees',
+    },
     { id: 'settings-reviews', label: 'Komentarze', href: '/reviews' },
-    {
-        id: 'settings-invoices',
-        label: 'Faktury i abonament',
-        href: '/invoices',
-    },
-    {
-        id: 'settings-reminders',
-        label: 'Komunikacja z klientem',
-        href: '/event-reminders',
-    },
 ];
 
 export default function SettingsNav() {

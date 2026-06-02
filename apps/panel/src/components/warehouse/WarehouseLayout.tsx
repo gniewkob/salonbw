@@ -8,13 +8,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
-type WarehouseMainTab =
-    | 'products'
-    | 'deliveries'
-    | 'orders'
-    | 'sales'
-    | 'use'
-    | 'inventory';
+type WarehouseMainTab = 'products' | 'sales' | 'use' | 'inventory';
 
 const tabConfig: Array<{
     id: WarehouseMainTab;
@@ -27,18 +21,6 @@ const tabConfig: Array<{
         label: 'PRODUKTY',
         href: '/products',
         icon: 'stock_products_on',
-    },
-    {
-        id: 'deliveries',
-        label: 'DOSTAWY',
-        href: '/deliveries/history',
-        icon: 'stock_delivery',
-    },
-    {
-        id: 'orders',
-        label: 'ZAMÓWIENIA',
-        href: '/orders/history',
-        icon: 'stock_new_order',
     },
     {
         id: 'sales',

@@ -115,7 +115,7 @@ export default function WarehouseDeliveryCreatePage() {
         <WarehouseLayout
             pageTitle="Magazyn / Dodaj dostawę | SalonBW"
             heading="Magazyn / Dodaj dostawę"
-            activeTab="deliveries"
+            activeTab="products"
             actions={
                 <Link
                     href="/deliveries/history"

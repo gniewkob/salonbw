@@ -8,7 +8,7 @@ export default function WarehouseSuppliersPage() {
         <WarehouseLayout
             pageTitle="Magazyn / Dostawcy | SalonBW"
             heading="Magazyn / Dostawcy"
-            activeTab="deliveries"
+            activeTab="products"
         >
             <SuppliersTab />
         </WarehouseLayout>
