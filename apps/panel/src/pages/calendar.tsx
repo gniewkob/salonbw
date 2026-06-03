@@ -30,10 +30,7 @@ import type {
     ReceptionAlertSeverity,
     ReceptionAlertSeverityByCustomerId,
 } from '@/types';
-import type {
-    CustomerStatisticsBatchResponse,
-    DrawerState,
-} from '@/types/calendar-page';
+import type { CustomerStatisticsBatchResponse } from '@/types/calendar-page';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
@@ -44,6 +41,7 @@ import { useReceptionFollowUp } from '@/hooks/calendar/useReceptionFollowUp';
 import { useFollowUpAudit } from '@/hooks/calendar/useFollowUpAudit';
 import { useCancellationRequests } from '@/hooks/calendar/useCancellationRequests';
 import { useActionsAccounting } from '@/hooks/calendar/useActionsAccounting';
+import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 
 function CalendarPageShell() {
     return (
@@ -176,15 +174,18 @@ export default function CalendarPage() {
         currentDate,
         apiFetch,
     });
-    const [drawer, setDrawer] = useState<DrawerState>({
-        open: false,
-        mode: 'create',
-        appointment: null,
+    const {
+        drawer,
+        quickModal,
+        openForCreate: openDrawerForCreate,
+        openForEdit: openDrawerForEdit,
+        close: closeDrawer,
+        openQuickModal,
+        closeQuickModal,
+        promoteQuickToEdit: openDrawerFromQuick,
+    } = useAppointmentDrawer({
+        onClose: () => clearAppointmentDeepLink(),
     });
-    const [quickModal, setQuickModal] = useState<{
-        event: CalendarEvent | null;
-        appointment: Appointment | null;
-    }>({ event: null, appointment: null });
 
     useEffect(
         () => () => {
@@ -281,18 +282,7 @@ export default function CalendarPage() {
             source: 'calendar',
         });
 
-        setQuickModal({ event, appointment: appointment ?? null });
-    };
-
-    const openDrawerFromQuick = () => {
-        if (!quickModal.event) return;
-        const appointment = quickModal.appointment;
-        setQuickModal({ event: null, appointment: null });
-        setDrawer({
-            open: true,
-            mode: 'edit',
-            appointment: appointment ?? null,
-        });
+        openQuickModal(event, appointment ?? null);
     };
 
     const receptionAppointments = useMemo(() => {
@@ -462,11 +452,7 @@ export default function CalendarPage() {
         const appointmentFromCalendar = appointmentsById.get(appointmentId);
         if (appointmentFromCalendar) {
             setDeepLinkError(null);
-            setDrawer({
-                open: true,
-                mode: 'edit',
-                appointment: appointmentFromCalendar,
-            });
+            openDrawerForEdit(appointmentFromCalendar);
             handledDeepLinkAppointmentIdRef.current = appointmentId;
             return;
         }
@@ -477,11 +463,7 @@ export default function CalendarPage() {
             .then((appointment) => {
                 if (cancelled) return;
                 setDeepLinkError(null);
-                setDrawer({
-                    open: true,
-                    mode: 'edit',
-                    appointment,
-                });
+                openDrawerForEdit(appointment);
                 handledDeepLinkAppointmentIdRef.current = appointmentId;
             })
             .catch(() => {
@@ -497,7 +479,12 @@ export default function CalendarPage() {
         return () => {
             cancelled = true;
         };
-    }, [router.query.appointmentId, appointmentsById, apiFetch]);
+    }, [
+        router.query.appointmentId,
+        appointmentsById,
+        apiFetch,
+        openDrawerForEdit,
+    ]);
 
     useEffect(() => {
         if (!isRouterReady) return;
@@ -507,17 +494,12 @@ export default function CalendarPage() {
         if (!param) return;
         const serviceId = Number(param);
         if (!Number.isFinite(serviceId) || serviceId <= 0) return;
-        setDrawer({
-            open: true,
-            mode: 'create',
-            appointment: null,
-            initialServiceId: serviceId,
-        });
+        openDrawerForCreate({ serviceId });
         const rest = Object.fromEntries(
             Object.entries(router.query).filter(([k]) => k !== 'newService'),
         );
         void router.replace({ query: rest }, undefined, { shallow: true });
-    }, [router.query.newService, isRouterReady, router]);
+    }, [router.query.newService, isRouterReady, router, openDrawerForCreate]);
 
     useEffect(() => {
         if (!isRouterReady) return;
@@ -530,20 +512,14 @@ export default function CalendarPage() {
         const clientName = Array.isArray(router.query.clientName)
             ? router.query.clientName[0]
             : (router.query.clientName ?? '');
-        setDrawer({
-            open: true,
-            mode: 'create',
-            appointment: null,
-            initialClientId: clientId,
-            initialClientName: clientName,
-        });
+        openDrawerForCreate({ clientId, clientName });
         const rest = Object.fromEntries(
             Object.entries(router.query).filter(
                 ([k]) => k !== 'newClient' && k !== 'clientName',
             ),
         );
         void router.replace({ query: rest }, undefined, { shallow: true });
-    }, [router.query.newClient, isRouterReady, router]);
+    }, [router.query.newClient, isRouterReady, router, openDrawerForCreate]);
 
     const visibleCustomerIds = useMemo(
         () =>
@@ -1423,13 +1399,10 @@ export default function CalendarPage() {
                                 onEventClick={handleEventClick}
                                 onEventDrop={handleEventDrop}
                                 onDateSelect={(start, end, employeeId) =>
-                                    setDrawer({
-                                        open: true,
-                                        mode: 'create',
-                                        appointment: null,
-                                        initialStartTime: start,
-                                        initialEndTime: end,
-                                        initialEmployeeId: employeeId,
+                                    openDrawerForCreate({
+                                        startTime: start,
+                                        endTime: end,
+                                        employeeId,
                                     })
                                 }
                                 onViewChange={(nextView) => {
@@ -1460,12 +1433,7 @@ export default function CalendarPage() {
                         type="button"
                         aria-label="Nowa wizyta"
                         onClick={() =>
-                            setDrawer({
-                                open: true,
-                                mode: 'create',
-                                appointment: null,
-                                initialStartTime: new Date(),
-                            })
+                            openDrawerForCreate({ startTime: new Date() })
                         }
                         style={{
                             position: 'fixed',
@@ -1495,9 +1463,7 @@ export default function CalendarPage() {
                     open={quickModal.event !== null}
                     event={quickModal.event}
                     appointment={quickModal.appointment}
-                    onClose={() =>
-                        setQuickModal({ event: null, appointment: null })
-                    }
+                    onClose={closeQuickModal}
                     onOpenFull={openDrawerFromQuick}
                     onChanged={() => void refetch()}
                 />
@@ -1512,13 +1478,7 @@ export default function CalendarPage() {
                     initialServiceId={drawer.initialServiceId}
                     initialClientId={drawer.initialClientId}
                     initialClientName={drawer.initialClientName}
-                    onClose={() => {
-                        clearAppointmentDeepLink();
-                        setDrawer((current) => ({
-                            ...current,
-                            open: false,
-                        }));
-                    }}
+                    onClose={closeDrawer}
                     onSaved={() => {
                         void refetch();
                     }}
