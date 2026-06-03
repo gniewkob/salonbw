@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -33,8 +34,20 @@ function formatRelative(minutes: number): string {
 
 export default function NextTwoHoursWidget({
     appointments,
-    now = new Date(),
+    now: nowProp,
 }: NextTwoHoursWidgetProps) {
+    // Re-render every minute so the "za X min" relative time + which
+    // appointments fall in the [now, now+2h] window stay accurate while the
+    // dashboard sits open. If a `now` prop is provided (tests), respect it
+    // and skip the ticker.
+    const [tick, setTick] = useState(() => Date.now());
+    useEffect(() => {
+        if (nowProp) return;
+        const id = window.setInterval(() => setTick(Date.now()), 60_000);
+        return () => window.clearInterval(id);
+    }, [nowProp]);
+    const now = nowProp ?? new Date(tick);
+
     const cutoff = now.getTime() + TWO_HOURS_MS;
     const upcoming = appointments
         .map((a) => ({ ...a, startDate: new Date(a.startTime) }))
