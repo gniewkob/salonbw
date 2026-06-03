@@ -39,22 +39,19 @@ import type {
     ReceptionFollowUpActionState,
     ReceptionFollowUpAuditResponse,
     ReceptionFollowUpCandidate,
-    ReceptionOperationalInsightsByActionItem,
-    ReceptionOperationalInsightsByDayItem,
-    ReceptionOperationalInsightsResponse,
     ReceptionOperationalSummaryResponse,
 } from '@/types/calendar-page';
 import {
     normalizeCancellationRequestsResponse,
     normalizeFollowUpAuditResponse,
     normalizeFollowUpCandidatesResponse,
-    normalizeOperationalInsightsResponse,
 } from '@/utils/calendarNormalize';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
 import { useReceptionFilters } from '@/hooks/calendar/useReceptionFilters';
 import { useCalendarUrlSync } from '@/hooks/calendar/useCalendarUrlSync';
+import { useReceptionInsights } from '@/hooks/calendar/useReceptionInsights';
 
 function CalendarPageShell() {
     return (
@@ -151,20 +148,17 @@ export default function CalendarPage() {
         useState<number | null>(null);
     const [persistedActionsTotalCount, setPersistedActionsTotalCount] =
         useState<number | null>(null);
-    const [receptionInsightsLoading, setReceptionInsightsLoading] =
-        useState(false);
-    const [receptionInsightsError, setReceptionInsightsError] = useState(false);
-    const [receptionInsightsSummary, setReceptionInsightsSummary] = useState<{
-        actionsTotal: number;
-        actionsOnAlerts: number;
-        alertActionRate: number;
-    } | null>(null);
-    const [receptionInsightsByAction, setReceptionInsightsByAction] = useState<
-        ReceptionOperationalInsightsByActionItem[]
-    >([]);
-    const [receptionInsightsByDay, setReceptionInsightsByDay] = useState<
-        ReceptionOperationalInsightsByDayItem[]
-    >([]);
+    const {
+        loading: receptionInsightsLoading,
+        error: receptionInsightsError,
+        summary: receptionInsightsSummary,
+        byAction: receptionInsightsByAction,
+        byDay: receptionInsightsByDay,
+    } = useReceptionInsights({
+        enabled: currentView === 'reception',
+        currentDate,
+        apiFetch,
+    });
     const [receptionFollowUpLoading, setReceptionFollowUpLoading] =
         useState(false);
     const [receptionFollowUpError, setReceptionFollowUpError] = useState(false);
@@ -675,54 +669,6 @@ export default function CalendarPage() {
                 }));
             });
     };
-
-    useEffect(() => {
-        if (currentView !== 'reception') {
-            setReceptionInsightsLoading(false);
-            setReceptionInsightsError(false);
-            setReceptionInsightsSummary(null);
-            setReceptionInsightsByAction([]);
-            setReceptionInsightsByDay([]);
-            return;
-        }
-
-        const rangeEnd = toDateParam(currentDate);
-        const rangeStartDate = new Date(currentDate);
-        rangeStartDate.setDate(rangeStartDate.getDate() - 6);
-        const rangeStart = toDateParam(rangeStartDate);
-        let cancelled = false;
-
-        setReceptionInsightsLoading(true);
-        setReceptionInsightsError(false);
-
-        void apiFetch<ReceptionOperationalInsightsResponse>(
-            `/reception/operational-insights?from=${encodeURIComponent(rangeStart)}&to=${encodeURIComponent(rangeEnd)}`,
-        )
-            .then((insights) => {
-                if (cancelled) return;
-                const normalized =
-                    normalizeOperationalInsightsResponse(insights);
-                setReceptionInsightsSummary(normalized.summary);
-                setReceptionInsightsByAction(normalized.byAction);
-                setReceptionInsightsByDay(normalized.byDay);
-                setReceptionInsightsError(false);
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setReceptionInsightsSummary(null);
-                setReceptionInsightsByAction([]);
-                setReceptionInsightsByDay([]);
-                setReceptionInsightsError(true);
-            })
-            .finally(() => {
-                if (cancelled) return;
-                setReceptionInsightsLoading(false);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [apiFetch, currentDate, currentView]);
 
     useEffect(() => {
         const appointmentIdParam = Array.isArray(router.query.appointmentId)
