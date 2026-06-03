@@ -22,12 +22,20 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 | Hotfix | `b26b02f64` | `CalendarView.tsx`: typeof guard zamiast `?.getApi()` (FullCalendar lazy ref race; intermittent prod crash). |
 | F3d 4-8 | `4c45cc44a` `fabbc71aa` `0850e8d78` `50de4f252` `bc3d89f4c` | `useReceptionFetch` framework + `useReceptionInsights`, `useReceptionFollowUp`, `useFollowUpAudit`, `useCancellationRequests`. calendar.tsx 1810 → 1559 (-251). |
 | F3d 9-11-10 (sesja A) | `1cbf5c680` `7c5867031` `e3e1e6fa0` | `useActionsAccounting`, `useAppointmentDrawer` (7 semantic ops, 9 callsites migrated), `useDeepLinkResolver` (z `clearLink` callback). calendar.tsx 1559 → 1436 (-123). |
+| F3d 12 (sesja B) | `94b11aded` | `useCustomerAlerts` (3 useRef + 3 useState + 2 useEffect + retry + batch fetch z fallback cap; atomic zamiast 4 sub-kroków bo state splątany). calendar.tsx 1436 → 1204 (-232). |
 
-**Łącznie:** ~-3300 linii kodu mniej, 18 commitów do produkcji w sesji 2026-06-01..03. calendar.tsx **2365 → 1436** (-39%).
+**Łącznie:** ~-3500 linii kodu mniej, 20 commitów do produkcji w sesji 2026-06-01..03. calendar.tsx **2365 → 1204** (-49%).
 
-## Następne kroki (osobna sesja B)
+## F3 status: ZAKOŃCZONE
 
-- **F3d 12** — `useCustomerAlerts` (HIGH risk, 4 sub-kroki). Plan: `docs/FAZA_F_F3D_PART2_PLAN.md` §6. Wymaga dedykowanej sesji ze względu na cache state + visibility race conditions.
+CalendarPage extraction complete. 13 hooks + 1 framework w `apps/panel/src/hooks/calendar/`. Strona to teraz ~1200 linii orkiestracji i JSX render — dalsze cięcia (np. wyciągnięcie JSX presenter components) mają niską wartość.
+
+## Następne fazy
+
+- **F4** Mobile mode (receptionist) — buduje na stable hook API z F3
+- **F5** Sprite icons → Heroicons (194 unikalne sprite'y)
+- **F2** Dashboard polish (widget "kto przychodzi w następne 2h")
+- **Infra** Warm-up gate refaktor (treat 403 jako transient) — eliminuje false-positive failures w CI po push deploy
 - **F3d 13** — `useMemo` views (optional, low value).
 - **F4 mobile mode** dla receptionistki — desktop-first → adaptive
 - **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
