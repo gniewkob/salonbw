@@ -57,6 +57,7 @@ import {
 } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
+import { useReceptionFilters } from '@/hooks/calendar/useReceptionFilters';
 
 function CalendarPageShell() {
     return (
@@ -134,11 +135,16 @@ export default function CalendarPage() {
     );
     const [customerAlertSeverityById, setCustomerAlertSeverityById] =
         useState<ReceptionAlertSeverityByCustomerId>({});
-    const [receptionStatusFilter, setReceptionStatusFilter] = useState('all');
-    const [receptionPaymentFilter, setReceptionPaymentFilter] = useState('all');
-    const [receptionAlertFilter, setReceptionAlertFilter] = useState(false);
-    const [receptionPriorityFilter, setReceptionPriorityFilter] =
-        useState(false);
+    const {
+        statusFilter: receptionStatusFilter,
+        paymentFilter: receptionPaymentFilter,
+        alertFilter: receptionAlertFilter,
+        priorityFilter: receptionPriorityFilter,
+        setStatusFilter: setReceptionStatusFilter,
+        setPaymentFilter: setReceptionPaymentFilter,
+        setAlertFilter: setReceptionAlertFilter,
+        setPriorityFilter: setReceptionPriorityFilter,
+    } = useReceptionFilters();
     const receptionNowTick = useReceptionNowTick(currentView === 'reception');
     const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
     const [customerAlertStatsError, setCustomerAlertStatsError] =
