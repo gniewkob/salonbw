@@ -1390,6 +1390,73 @@ export default function AppointmentDrawer({
                             </div>
                         </div>
                     </div>
+                    {isMobile ? (
+                        <div
+                            style={{
+                                flexShrink: 0,
+                                display: 'flex',
+                                gap: '0.5rem',
+                                padding: '0.75rem 0.875rem',
+                                paddingBottom:
+                                    'calc(0.75rem + env(safe-area-inset-bottom))',
+                                borderTop: '1px solid #e5e7eb',
+                                background: '#ffffff',
+                            }}
+                        >
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                disabled={saving}
+                                style={{
+                                    flex: 1,
+                                    minHeight: 48,
+                                    background: '#ffffff',
+                                    color: '#1a1a1a',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: 6,
+                                    fontSize: '0.95rem',
+                                    fontWeight: 600,
+                                    cursor: saving ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                Anuluj
+                            </button>
+                            <button
+                                type="button"
+                                disabled={
+                                    mode === 'create'
+                                        ? !canSaveCreate || saving
+                                        : saving || !startTime
+                                }
+                                onClick={() => {
+                                    if (mode === 'create') {
+                                        void handleCreate();
+                                    } else {
+                                        void handleUpdate();
+                                    }
+                                }}
+                                style={{
+                                    flex: 2,
+                                    minHeight: 48,
+                                    background: saving ? '#e5e7eb' : '#0d0d0d',
+                                    color: saving ? '#6c757d' : '#ffffff',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    fontSize: '0.95rem',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.04em',
+                                    textTransform: 'uppercase',
+                                    cursor: saving ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                {saving
+                                    ? 'Zapisywanie...'
+                                    : mode === 'create'
+                                      ? 'Utwórz'
+                                      : 'Zapisz'}
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </div>
 
