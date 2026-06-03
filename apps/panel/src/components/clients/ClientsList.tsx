@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { MagnifyingGlassIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import type { Customer } from '@/types';
 import { useCustomerGroups } from '@/hooks/useCustomers';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface ClientsListProps {
     customers: Customer[];
@@ -11,6 +12,7 @@ interface ClientsListProps {
 
 export default function ClientsList({ customers, loading }: ClientsListProps) {
     const router = useRouter();
+    const isMobile = useIsMobile();
     const [searchTerm, setSearchTerm] = useState('');
     const { data: groups } = useCustomerGroups();
 
@@ -109,6 +111,148 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
                     <div className="d-flex justify-content-center p-4">
                         <div className="spinner-border text-info"></div>
                     </div>
+                ) : isMobile ? (
+                    <ul
+                        style={{
+                            listStyle: 'none',
+                            margin: 0,
+                            padding: '0.5rem 0.75rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem',
+                        }}
+                    >
+                        {filteredCustomers.map((customer) => {
+                            const initials =
+                                (customer.firstName?.[0] ?? '') +
+                                (customer.lastName?.[0] ?? '');
+                            return (
+                                <li key={customer.id}>
+                                    <a
+                                        href={`/customers/${customer.id}`}
+                                        style={{
+                                            display: 'flex',
+                                            gap: '0.75rem',
+                                            alignItems: 'flex-start',
+                                            padding: '0.75rem 0.875rem',
+                                            background: '#ffffff',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: 8,
+                                            textDecoration: 'none',
+                                            color: 'inherit',
+                                            minHeight: 64,
+                                        }}
+                                    >
+                                        <span
+                                            aria-hidden
+                                            style={{
+                                                flexShrink: 0,
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                background: '#f1f3f5',
+                                                color: '#4a4a4a',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontWeight: 600,
+                                                fontSize: '0.95rem',
+                                            }}
+                                        >
+                                            {initials || '?'}
+                                        </span>
+                                        <span
+                                            style={{
+                                                flex: 1,
+                                                minWidth: 0,
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    display: 'block',
+                                                    fontSize: '0.95rem',
+                                                    fontWeight: 600,
+                                                    color: '#1a1a1a',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}
+                                            >
+                                                {customer.fullName || '—'}
+                                            </span>
+                                            {customer.phone ? (
+                                                <span
+                                                    style={{
+                                                        display: 'block',
+                                                        fontSize: '0.85rem',
+                                                        color: '#4a4a4a',
+                                                        marginTop: 2,
+                                                    }}
+                                                >
+                                                    {customer.phone}
+                                                </span>
+                                            ) : null}
+                                            {customer.email ? (
+                                                <span
+                                                    style={{
+                                                        display: 'block',
+                                                        fontSize: '0.8rem',
+                                                        color: '#6c757d',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow:
+                                                            'ellipsis',
+                                                    }}
+                                                >
+                                                    {customer.email}
+                                                </span>
+                                            ) : null}
+                                        </span>
+                                        {customer.phone ? (
+                                            <a
+                                                href={`tel:${customer.phone}`}
+                                                onClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
+                                                aria-label={`Zadzwoń do ${customer.fullName ?? 'klienta'}`}
+                                                style={{
+                                                    flexShrink: 0,
+                                                    width: 44,
+                                                    height: 44,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: '#ffffff',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: 6,
+                                                    color: '#1a1a1a',
+                                                }}
+                                            >
+                                                <PhoneIcon
+                                                    style={{
+                                                        width: 18,
+                                                        height: 18,
+                                                    }}
+                                                />
+                                            </a>
+                                        ) : null}
+                                    </a>
+                                </li>
+                            );
+                        })}
+                        {filteredCustomers.length === 0 ? (
+                            <li
+                                style={{
+                                    padding: '2rem 1rem',
+                                    textAlign: 'center',
+                                    color: '#6c757d',
+                                    fontSize: '0.9rem',
+                                }}
+                            >
+                                Brak klientów spełniających kryteria.
+                            </li>
+                        ) : null}
+                    </ul>
                 ) : (
                     <table className="w-100">
                         <thead className="bg-light">
