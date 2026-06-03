@@ -11,6 +11,7 @@ import type {
 } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import MobileBottomSheet from '@/components/salon/MobileBottomSheet';
+import Skeleton from '@/components/ui/Skeleton';
 import {
     getAppointmentPriority,
     hasCustomerAlert,
@@ -332,15 +333,53 @@ export default function MobileReceptionListView({
 
     if (loading) {
         return (
-            <div
+            <ul
+                role="status"
+                aria-live="polite"
+                aria-label="Ładowanie wizyt"
                 style={{
-                    padding: '1.5rem',
-                    textAlign: 'center',
-                    color: '#6c757d',
+                    listStyle: 'none',
+                    margin: 0,
+                    padding: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.625rem',
                 }}
             >
-                Ładowanie wizyt...
-            </div>
+                {[0, 1, 2, 3, 4].map((index) => (
+                    <li key={index}>
+                        <article
+                            style={{
+                                background: '#ffffff',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: 8,
+                                padding: '0.75rem 0.875rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem',
+                                borderLeftWidth: 4,
+                                borderLeftColor: '#e5e7eb',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: '0.5rem',
+                                }}
+                            >
+                                <Skeleton width={60} height={22} />
+                                <Skeleton width={88} height={18} radius={4} />
+                            </div>
+                            <Skeleton width="65%" height={18} />
+                            <Skeleton width="45%" height={14} />
+                            <Skeleton width="100%" height={44} radius={4} />
+                        </article>
+                    </li>
+                ))}
+                <span className="visually-hidden">Ładowanie wizyt...</span>
+            </ul>
         );
     }
 
