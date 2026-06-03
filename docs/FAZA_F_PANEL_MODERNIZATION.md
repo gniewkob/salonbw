@@ -1,11 +1,11 @@
 # Faza F — Transformacja panelu z Versum-clone do premium narzędzia
 
 Data utworzenia: 2026-06-01
-Ostatnia aktualizacja: 2026-06-02
-Status: w trakcie realizacji (Tier 1-3 + dashboard + F5 mini ukończone)
+Ostatnia aktualizacja: 2026-06-03
+Status: w trakcie realizacji (Tier 1-3 + dashboard + F5.1-F5.5 ukończone; F3 calendar split deferred na osobną sesję)
 Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 
-## Progres wdrożenia (2026-06-02)
+## Progres wdrożenia (2026-06-03)
 
 | Etap | Commit | Co zrobione |
 |---|---|---|
@@ -14,9 +14,18 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 | Tier 3 | `f70e8097f` | communication cleanup (-5 plików), settings semantic grouping (6 sekcji), admin po loginie → `/dashboard` |
 | CI fix | `bd22c4654` | warm-up + retry-restart po Passenger reload — eliminuje "deploy success ale 500" |
 | Dashboard | `da2267955` | low-stock alert section + "Nowa wizyta" primary CTA |
-| F5 mini | `658b8c7b5` | Versum #f4fbff stripes → neutral; .link_body i .btn-primary → brand silver |
+| F5.1-F5.3 | `658b8c7b5` | Versum #f4fbff stripes → neutral; .link_body i .btn-primary → brand silver |
+| F5.4 | `e29e2477f` | table padding 7/10/6 → 10/14 (3 sites); td.link_body a color → #4a4a4a |
+| F5.5 | `ee5aaf138` | .icon_link blue → neutral; nav-tabs hover → black; mini-chart bar → brand silver |
 
-**Łącznie:** ~-2400 linii kodu mniej, 6 commitów do produkcji.
+**Łącznie:** ~-2400 linii kodu mniej, 8 commitów do produkcji w sesji 2026-06-01..03.
+
+## Następne kroki (osobna sesja)
+
+- **F3 calendar.tsx split** (2365 linii → komponenty) — wymaga osobnej sesji z planem
+- **F4 mobile mode** dla receptionistki — desktop-first → adaptive
+- **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
+- **F2 dashboard polish** — widget "kto przychodzi w następne 2h"
 
 Decyzje właściciela podjęte 2026-06-02:
 - Karty podarunkowe — KEEP (sprzeda)
