@@ -35,16 +35,12 @@ import type {
     CancellationRequestQueueItem,
     CustomerStatisticsBatchResponse,
     DrawerState,
-    ReceptionFollowUpAction,
-    ReceptionFollowUpActionState,
     ReceptionFollowUpAuditResponse,
-    ReceptionFollowUpCandidate,
     ReceptionOperationalSummaryResponse,
 } from '@/types/calendar-page';
 import {
     normalizeCancellationRequestsResponse,
     normalizeFollowUpAuditResponse,
-    normalizeFollowUpCandidatesResponse,
 } from '@/utils/calendarNormalize';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
@@ -52,6 +48,7 @@ import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
 import { useReceptionFilters } from '@/hooks/calendar/useReceptionFilters';
 import { useCalendarUrlSync } from '@/hooks/calendar/useCalendarUrlSync';
 import { useReceptionInsights } from '@/hooks/calendar/useReceptionInsights';
+import { useReceptionFollowUp } from '@/hooks/calendar/useReceptionFollowUp';
 
 function CalendarPageShell() {
     return (
@@ -159,15 +156,17 @@ export default function CalendarPage() {
         currentDate,
         apiFetch,
     });
-    const [receptionFollowUpLoading, setReceptionFollowUpLoading] =
-        useState(false);
-    const [receptionFollowUpError, setReceptionFollowUpError] = useState(false);
-    const [receptionFollowUpCandidates, setReceptionFollowUpCandidates] =
-        useState<ReceptionFollowUpCandidate[]>([]);
-    const [
-        receptionFollowUpActionStateByKey,
-        setReceptionFollowUpActionStateByKey,
-    ] = useState<Record<string, ReceptionFollowUpActionState>>({});
+    const {
+        loading: receptionFollowUpLoading,
+        error: receptionFollowUpError,
+        candidates: receptionFollowUpCandidates,
+        actionStateByKey: receptionFollowUpActionStateByKey,
+        captureAction: handleCaptureFollowUpAction,
+    } = useReceptionFollowUp({
+        enabled: currentView === 'reception',
+        currentDate,
+        apiFetch,
+    });
     const [followUpAuditLoading, setFollowUpAuditLoading] = useState(false);
     const [followUpAuditError, setFollowUpAuditError] = useState(false);
     const [followUpAuditSummary, setFollowUpAuditSummary] =
@@ -473,46 +472,6 @@ export default function CalendarPage() {
 
     useEffect(() => {
         if (currentView !== 'reception') {
-            setReceptionFollowUpLoading(false);
-            setReceptionFollowUpError(false);
-            setReceptionFollowUpCandidates([]);
-            setReceptionFollowUpActionStateByKey({});
-            return;
-        }
-
-        const date = toDateParam(currentDate);
-        let cancelled = false;
-
-        setReceptionFollowUpLoading(true);
-        setReceptionFollowUpError(false);
-
-        void apiFetch<ReceptionFollowUpCandidate[]>(
-            `/crm/follow-up-candidates?date=${encodeURIComponent(date)}`,
-        )
-            .then((candidates) => {
-                if (cancelled) return;
-                const normalized =
-                    normalizeFollowUpCandidatesResponse(candidates);
-                setReceptionFollowUpCandidates(normalized);
-                setReceptionFollowUpError(false);
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setReceptionFollowUpCandidates([]);
-                setReceptionFollowUpError(true);
-            })
-            .finally(() => {
-                if (cancelled) return;
-                setReceptionFollowUpLoading(false);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [apiFetch, currentDate, currentView]);
-
-    useEffect(() => {
-        if (currentView !== 'reception') {
             setFollowUpAuditLoading(false);
             setFollowUpAuditError(false);
             setFollowUpAuditSummary(null);
@@ -552,49 +511,6 @@ export default function CalendarPage() {
             cancelled = true;
         };
     }, [apiFetch, currentDate, currentView]);
-
-    const handleCaptureFollowUpAction = (
-        candidate: ReceptionFollowUpCandidate,
-        action: ReceptionFollowUpAction,
-    ) => {
-        if (candidate.appointmentId === null) {
-            return;
-        }
-
-        const candidateKey = `${candidate.customerId}:${candidate.reason}`;
-        setReceptionFollowUpActionStateByKey((current) => ({
-            ...current,
-            [candidateKey]: { status: 'pending', action },
-        }));
-
-        void apiFetch('/crm/follow-up-actions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                customerId: candidate.customerId,
-                appointmentId: candidate.appointmentId,
-                candidateReason: candidate.reason,
-                action,
-                occurredAt: new Date().toISOString(),
-            }),
-        })
-            .then(() => {
-                setReceptionFollowUpActionStateByKey((current) => ({
-                    ...current,
-                    [candidateKey]: { status: 'success', action },
-                }));
-            })
-            .catch(() => {
-                setReceptionFollowUpActionStateByKey((current) => ({
-                    ...current,
-                    [candidateKey]: {
-                        status: 'error',
-                        action,
-                        message: 'Nie udało się zapisać akcji follow-up.',
-                    },
-                }));
-            });
-    };
 
     useEffect(() => {
         if (currentView !== 'reception') {
