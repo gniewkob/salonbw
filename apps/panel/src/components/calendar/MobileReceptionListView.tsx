@@ -10,6 +10,7 @@ import type {
     ReceptionAlertSeverityByCustomerId,
 } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
+import MobileBottomSheet from '@/components/salon/MobileBottomSheet';
 import {
     getAppointmentPriority,
     hasCustomerAlert,
@@ -38,10 +39,40 @@ interface MobileReceptionListViewProps {
     customerAlertSeverityByCustomerId?: ReceptionAlertSeverityByCustomerId;
 }
 
-interface PrimaryAction {
-    key: 'confirm' | 'start' | 'finalize';
+type ActionKey =
+    | 'confirm'
+    | 'start'
+    | 'finalize'
+    | 'cancel'
+    | 'no_show'
+    | 'reject';
+
+type ActionTone = 'primary' | 'default' | 'danger' | 'warning';
+
+interface ActionConfig {
     label: string;
+    tone: ActionTone;
 }
+
+const ACTION_CONFIG: Record<ActionKey, ActionConfig> = {
+    confirm: { label: 'Potwierdź', tone: 'primary' },
+    start: { label: 'Rozpocznij', tone: 'primary' },
+    finalize: { label: 'Finalizuj', tone: 'primary' },
+    cancel: { label: 'Anuluj wizytę', tone: 'danger' },
+    no_show: { label: 'Oznacz nieobecność', tone: 'warning' },
+    reject: { label: 'Odrzuć', tone: 'danger' },
+};
+
+const STATUS_ACTIONS: Record<AppointmentStatus | string, ActionKey[]> = {
+    online_pending: ['confirm', 'reject'],
+    rescheduled_pending: ['confirm', 'reject'],
+    scheduled: ['confirm', 'cancel', 'no_show'],
+    confirmed: ['start', 'cancel', 'no_show'],
+    in_progress: ['finalize', 'cancel'],
+    completed: [],
+    cancelled: [],
+    no_show: [],
+};
 
 const STATUS_LABELS: Record<AppointmentStatus | string, string> = {
     online_pending: 'Oczekuje',
@@ -54,20 +85,50 @@ const STATUS_LABELS: Record<AppointmentStatus | string, string> = {
     no_show: 'Nieobecność',
 };
 
-function getPrimaryAction(
+function getActionsForStatus(status: AppointmentStatus | string): ActionKey[] {
+    return STATUS_ACTIONS[status] ?? [];
+}
+
+function getPrimaryActionKey(
     status: AppointmentStatus | string,
-): PrimaryAction | null {
-    switch (status) {
-        case 'online_pending':
-        case 'rescheduled_pending':
-        case 'scheduled':
-            return { key: 'confirm', label: 'Potwierdź' };
-        case 'confirmed':
-            return { key: 'start', label: 'Rozpocznij' };
-        case 'in_progress':
-            return { key: 'finalize', label: 'Finalizuj' };
+): ActionKey | null {
+    const actions = getActionsForStatus(status);
+    return actions.find((key) => ACTION_CONFIG[key].tone === 'primary') ?? null;
+}
+
+function actionButtonStyle(tone: ActionTone, disabled: boolean) {
+    if (disabled) {
+        return {
+            background: '#e5e7eb',
+            color: '#6c757d',
+            border: 'none',
+        };
+    }
+    switch (tone) {
+        case 'primary':
+            return {
+                background: '#0d0d0d',
+                color: '#ffffff',
+                border: 'none',
+            };
+        case 'danger':
+            return {
+                background: '#ffffff',
+                color: '#842029',
+                border: '1px solid #dc3545',
+            };
+        case 'warning':
+            return {
+                background: '#ffffff',
+                color: '#664d03',
+                border: '1px solid #ffc107',
+            };
         default:
-            return null;
+            return {
+                background: '#ffffff',
+                color: '#1a1a1a',
+                border: '1px solid #d1d5db',
+            };
     }
 }
 
@@ -105,13 +166,21 @@ export default function MobileReceptionListView({
     onActionTracked,
     customerAlertSeverityByCustomerId = {},
 }: MobileReceptionListViewProps) {
-    const { cancelAppointment: _cancelMutation, updateAppointmentStatus } =
+    const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
     const [pendingActionId, setPendingActionId] = useState<number | null>(null);
     const [errorById, setErrorById] = useState<Record<number, string>>({});
+    const [sheetAppointmentId, setSheetAppointmentId] = useState<number | null>(
+        null,
+    );
     const [nowTick, setNowTick] = useState(() => Date.now());
     const now = new Date(nowTick);
-    void _cancelMutation;
+
+    const closeSheet = () => setSheetAppointmentId(null);
+    const sheetAppointment =
+        sheetAppointmentId !== null
+            ? (appointments.find((a) => a.id === sheetAppointmentId) ?? null)
+            : null;
 
     useEffect(() => {
         const id = window.setInterval(() => setNowTick(Date.now()), 60_000);
@@ -128,15 +197,18 @@ export default function MobileReceptionListView({
         );
     });
 
-    const runPrimary = async (
+    const runAction = async (
         appointment: Appointment,
-        action: PrimaryAction,
+        actionKey: ActionKey,
     ) => {
         const customerAlertSeverity = appointment.client?.id
             ? customerAlertSeverityByCustomerId[appointment.client.id]
             : undefined;
 
-        if (action.key === 'finalize') {
+        // Finalize delegates to the drawer flow — opens, then receptionist
+        // closes via the drawer's own save/cancel buttons. Sheet stays open
+        // so the user sees their tap was registered.
+        if (actionKey === 'finalize') {
             trackReceptionAction({
                 action: 'finalize_via_drawer',
                 appointmentId: appointment.id,
@@ -150,6 +222,7 @@ export default function MobileReceptionListView({
                 customerAlertSeverity,
             });
             onOpenFinalizeAppointment?.(appointment.id);
+            closeSheet();
             return;
         }
 
@@ -161,29 +234,70 @@ export default function MobileReceptionListView({
         });
 
         try {
-            const nextStatus =
-                action.key === 'confirm' ? 'confirmed' : 'in_progress';
-            await updateAppointmentStatus.mutateAsync({
-                id: appointment.id,
-                status: nextStatus,
-            });
-            const telemetryAction =
-                action.key === 'confirm'
-                    ? 'confirm_appointment'
-                    : 'start_appointment';
-            trackReceptionAction({
-                action: telemetryAction,
-                appointmentId: appointment.id,
-                customerId: appointment.client?.id,
-                customerAlertSeverity,
-                source: 'reception_view',
-            });
-            onActionTracked?.({
-                action: telemetryAction,
-                appointmentId: appointment.id,
-                customerAlertSeverity,
-            });
+            switch (actionKey) {
+                case 'confirm':
+                    await updateAppointmentStatus.mutateAsync({
+                        id: appointment.id,
+                        status: 'confirmed',
+                    });
+                    trackReceptionAction({
+                        action: 'confirm_appointment',
+                        appointmentId: appointment.id,
+                        customerId: appointment.client?.id,
+                        customerAlertSeverity,
+                        source: 'reception_view',
+                    });
+                    onActionTracked?.({
+                        action: 'confirm_appointment',
+                        appointmentId: appointment.id,
+                        customerAlertSeverity,
+                    });
+                    break;
+                case 'start':
+                    await updateAppointmentStatus.mutateAsync({
+                        id: appointment.id,
+                        status: 'in_progress',
+                    });
+                    trackReceptionAction({
+                        action: 'start_appointment',
+                        appointmentId: appointment.id,
+                        customerId: appointment.client?.id,
+                        customerAlertSeverity,
+                        source: 'reception_view',
+                    });
+                    onActionTracked?.({
+                        action: 'start_appointment',
+                        appointmentId: appointment.id,
+                        customerAlertSeverity,
+                    });
+                    break;
+                case 'no_show':
+                    await updateAppointmentStatus.mutateAsync({
+                        id: appointment.id,
+                        status: 'no_show',
+                    });
+                    trackReceptionAction({
+                        action: 'mark_no_show',
+                        appointmentId: appointment.id,
+                        customerId: appointment.client?.id,
+                        customerAlertSeverity,
+                        source: 'reception_view',
+                    });
+                    onActionTracked?.({
+                        action: 'mark_no_show',
+                        appointmentId: appointment.id,
+                        customerAlertSeverity,
+                    });
+                    break;
+                case 'cancel':
+                case 'reject':
+                    await cancelAppointment.mutateAsync(appointment.id);
+                    break;
+                default:
+                    return;
+            }
             onChanged?.();
+            closeSheet();
         } catch (error) {
             const message =
                 error instanceof Error
@@ -273,7 +387,13 @@ export default function MobileReceptionListView({
                     | string;
                 const statusLabel = STATUS_LABELS[status] ?? status;
                 const statusStyle = statusColor(status);
-                const primary = getPrimaryAction(status);
+                const primaryKey = getPrimaryActionKey(status);
+                const primaryLabel = primaryKey
+                    ? ACTION_CONFIG[primaryKey].label
+                    : null;
+                const availableActions = getActionsForStatus(status);
+                const hasMoreActions =
+                    availableActions.filter((k) => k !== primaryKey).length > 0;
                 const alert = hasCustomerAlert(
                     appointment,
                     customerAlertSeverityByCustomerId,
@@ -395,42 +515,167 @@ export default function MobileReceptionListView({
                                     {error}
                                 </div>
                             ) : null}
-                            {primary ? (
-                                <button
-                                    type="button"
-                                    disabled={isPending}
-                                    onClick={() => {
-                                        void runPrimary(appointment, primary);
-                                    }}
+                            {primaryKey || hasMoreActions ? (
+                                <div
                                     style={{
-                                        minHeight: 44,
-                                        padding: '0.625rem 1rem',
-                                        background: isPending
-                                            ? '#e5e7eb'
-                                            : '#0d0d0d',
-                                        color: isPending
-                                            ? '#6c757d'
-                                            : '#ffffff',
-                                        border: 'none',
-                                        borderRadius: 4,
-                                        fontSize: '0.875rem',
-                                        fontWeight: 600,
-                                        letterSpacing: '0.04em',
-                                        textTransform: 'uppercase',
-                                        cursor: isPending
-                                            ? 'not-allowed'
-                                            : 'pointer',
+                                        display: 'flex',
+                                        gap: '0.5rem',
+                                        alignItems: 'stretch',
                                     }}
                                 >
-                                    {isPending
-                                        ? 'Zapisywanie...'
-                                        : primary.label}
-                                </button>
+                                    {primaryKey && primaryLabel ? (
+                                        <button
+                                            type="button"
+                                            disabled={isPending}
+                                            onClick={() => {
+                                                void runAction(
+                                                    appointment,
+                                                    primaryKey,
+                                                );
+                                            }}
+                                            style={{
+                                                flex: 1,
+                                                minHeight: 44,
+                                                padding: '0.625rem 1rem',
+                                                background: isPending
+                                                    ? '#e5e7eb'
+                                                    : '#0d0d0d',
+                                                color: isPending
+                                                    ? '#6c757d'
+                                                    : '#ffffff',
+                                                border: 'none',
+                                                borderRadius: 4,
+                                                fontSize: '0.875rem',
+                                                fontWeight: 600,
+                                                letterSpacing: '0.04em',
+                                                textTransform: 'uppercase',
+                                                cursor: isPending
+                                                    ? 'not-allowed'
+                                                    : 'pointer',
+                                            }}
+                                        >
+                                            {isPending
+                                                ? 'Zapisywanie...'
+                                                : primaryLabel}
+                                        </button>
+                                    ) : null}
+                                    {hasMoreActions ? (
+                                        <button
+                                            type="button"
+                                            aria-label="Więcej akcji"
+                                            onClick={() =>
+                                                setSheetAppointmentId(
+                                                    appointment.id,
+                                                )
+                                            }
+                                            style={{
+                                                minWidth: 56,
+                                                minHeight: 44,
+                                                padding: '0.625rem 0.75rem',
+                                                background: '#ffffff',
+                                                color: '#1a1a1a',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: 4,
+                                                fontSize: '1.25rem',
+                                                lineHeight: 1,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            ⋯
+                                        </button>
+                                    ) : null}
+                                </div>
                             ) : null}
                         </article>
                     </li>
                 );
             })}
+            {sheetAppointment ? (
+                <SheetActionList
+                    appointment={sheetAppointment}
+                    availableActions={getActionsForStatus(
+                        (sheetAppointment.status ?? 'scheduled') as string,
+                    )}
+                    isPending={pendingActionId === sheetAppointment.id}
+                    onRun={(key) => {
+                        void runAction(sheetAppointment, key);
+                    }}
+                    onClose={closeSheet}
+                />
+            ) : null}
         </ul>
+    );
+}
+
+interface SheetActionListProps {
+    appointment: Appointment;
+    availableActions: ActionKey[];
+    isPending: boolean;
+    onRun: (key: ActionKey) => void;
+    onClose: () => void;
+}
+
+function SheetActionList({
+    appointment,
+    availableActions,
+    isPending,
+    onRun,
+    onClose,
+}: SheetActionListProps) {
+    const title =
+        appointment.client?.name ?? appointment.service?.name ?? 'Akcje wizyty';
+
+    return (
+        <MobileBottomSheet open onClose={onClose} title={title}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.625rem',
+                    paddingTop: '0.25rem',
+                }}
+            >
+                {availableActions.length === 0 ? (
+                    <p
+                        style={{
+                            margin: 0,
+                            padding: '1rem 0.25rem',
+                            fontSize: '0.875rem',
+                            color: '#6c757d',
+                            textAlign: 'center',
+                        }}
+                    >
+                        Brak dostępnych akcji dla tej wizyty.
+                    </p>
+                ) : (
+                    availableActions.map((key) => {
+                        const config = ACTION_CONFIG[key];
+                        const style = actionButtonStyle(config.tone, isPending);
+                        return (
+                            <button
+                                key={key}
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => onRun(key)}
+                                style={{
+                                    minHeight: 48,
+                                    padding: '0.75rem 1rem',
+                                    borderRadius: 6,
+                                    fontSize: '0.95rem',
+                                    fontWeight: 600,
+                                    letterSpacing: '0.02em',
+                                    cursor: isPending
+                                        ? 'not-allowed'
+                                        : 'pointer',
+                                    ...style,
+                                }}
+                            >
+                                {config.label}
+                            </button>
+                        );
+                    })
+                )}
+            </div>
+        </MobileBottomSheet>
     );
 }
