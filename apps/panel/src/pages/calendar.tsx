@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -26,11 +26,7 @@ import type {
     Appointment,
     CalendarEvent,
     CalendarView as CalendarViewType,
-    CustomerStatistics,
-    ReceptionAlertSeverity,
-    ReceptionAlertSeverityByCustomerId,
 } from '@/types';
-import type { CustomerStatisticsBatchResponse } from '@/types/calendar-page';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
@@ -43,6 +39,7 @@ import { useCancellationRequests } from '@/hooks/calendar/useCancellationRequest
 import { useActionsAccounting } from '@/hooks/calendar/useActionsAccounting';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import { useDeepLinkResolver } from '@/hooks/calendar/useDeepLinkResolver';
+import { useCustomerAlerts } from '@/hooks/calendar/useCustomerAlerts';
 
 function CalendarPageShell() {
     return (
@@ -78,19 +75,6 @@ function CalendarPageShell() {
     );
 }
 
-function areAlertMapsEqual(
-    left: ReceptionAlertSeverityByCustomerId,
-    right: ReceptionAlertSeverityByCustomerId,
-): boolean {
-    const leftKeys = Object.keys(left);
-    const rightKeys = Object.keys(right);
-    if (leftKeys.length !== rightKeys.length) return false;
-    for (const key of leftKeys) {
-        if (left[Number(key)] !== right[Number(key)]) return false;
-    }
-    return true;
-}
-
 export default function CalendarPage() {
     const router = useRouter();
     const isRouterReady = router.isReady ?? true;
@@ -108,14 +92,6 @@ export default function CalendarPage() {
         setEmployeeArchiveMode,
         setSelectedEmployeeIds,
     } = useCalendarUrlSync();
-    const isMountedRef = useRef(true);
-    const visibleCustomerIdsRef = useRef<number[]>([]);
-    const customerAlertCacheRef = useRef<
-        Record<number, Exclude<ReceptionAlertSeverity, 'info'> | null>
-    >({});
-    const pendingCustomerAlertFetchesRef = useRef<Set<number>>(new Set());
-    const [customerAlertSeverityById, setCustomerAlertSeverityById] =
-        useState<ReceptionAlertSeverityByCustomerId>({});
     const {
         statusFilter: receptionStatusFilter,
         paymentFilter: receptionPaymentFilter,
@@ -127,10 +103,6 @@ export default function CalendarPage() {
         setPriorityFilter: setReceptionPriorityFilter,
     } = useReceptionFilters();
     const receptionNowTick = useReceptionNowTick(currentView === 'reception');
-    const [customerAlertStatsError, setCustomerAlertStatsError] =
-        useState(false);
-    const [customerAlertStatsRetryToken, setCustomerAlertStatsRetryToken] =
-        useState(0);
     const {
         runtimeOnAlertsCount: receptionActionsOnAlertsCount,
         persistedOnAlertsCount: persistedActionsOnAlertsCount,
@@ -186,19 +158,36 @@ export default function CalendarPage() {
         onClose: () => clearAppointmentDeepLink(),
     });
 
-    useEffect(
-        () => () => {
-            isMountedRef.current = false;
-        },
-        [],
-    );
-
     const { data, loading, refetch } = useCalendar({
         date: toDateParam(currentDate),
         view: currentView,
         employeeIds:
             selectedEmployeeIds.length > 0 ? selectedEmployeeIds : undefined,
         enabled: queryStateReady,
+    });
+    const visibleCustomerIds = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    (data?.events ?? [])
+                        .filter(
+                            (event) =>
+                                event.type === 'appointment' &&
+                                Number(event.clientId) > 0,
+                        )
+                        .map((event) => Number(event.clientId)),
+                ),
+            ),
+        [data?.events],
+    );
+    const {
+        severityById: customerAlertSeverityById,
+        statsError: customerAlertStatsError,
+        retry: retryCustomerAlertStats,
+    } = useCustomerAlerts({
+        enabled: currentView === 'reception' && !clientMode,
+        visibleCustomerIds,
+        apiFetch,
     });
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
     const {
@@ -476,213 +465,6 @@ export default function CalendarPage() {
         void router.replace({ query: rest }, undefined, { shallow: true });
     }, [router.query.newClient, isRouterReady, router, openDrawerForCreate]);
 
-    const visibleCustomerIds = useMemo(
-        () =>
-            Array.from(
-                new Set(
-                    (data?.events ?? [])
-                        .filter(
-                            (event) =>
-                                event.type === 'appointment' &&
-                                Number(event.clientId) > 0,
-                        )
-                        .map((event) => Number(event.clientId)),
-                ),
-            ),
-        [data?.events],
-    );
-
-    useEffect(() => {
-        visibleCustomerIdsRef.current = visibleCustomerIds;
-    }, [visibleCustomerIds]);
-
-    const shouldFetchCustomerAlertStats =
-        currentView === 'reception' && !clientMode;
-
-    useEffect(() => {
-        if (!shouldFetchCustomerAlertStats) {
-            setCustomerAlertStatsError(false);
-            setCustomerAlertSeverityById((current) =>
-                Object.keys(current).length === 0 ? current : {},
-            );
-            return;
-        }
-        if (visibleCustomerIds.length === 0) {
-            setCustomerAlertStatsError(false);
-            setCustomerAlertSeverityById((current) =>
-                Object.keys(current).length === 0 ? current : {},
-            );
-            return;
-        }
-
-        const currentFromCache: ReceptionAlertSeverityByCustomerId = {};
-        const missingCustomerIds: number[] = [];
-
-        for (const customerId of visibleCustomerIds) {
-            if (customerId in customerAlertCacheRef.current) {
-                const cached = customerAlertCacheRef.current[customerId];
-                if (cached) currentFromCache[customerId] = cached;
-            } else {
-                if (!pendingCustomerAlertFetchesRef.current.has(customerId)) {
-                    missingCustomerIds.push(customerId);
-                }
-            }
-        }
-
-        setCustomerAlertSeverityById((current) =>
-            areAlertMapsEqual(current, currentFromCache)
-                ? current
-                : currentFromCache,
-        );
-        if (missingCustomerIds.length === 0) {
-            setCustomerAlertStatsError(false);
-            return;
-        }
-
-        for (const customerId of missingCustomerIds) {
-            pendingCustomerAlertFetchesRef.current.add(customerId);
-        }
-
-        // If the batch endpoint fails we fall back to per-customer GETs
-        // (one round-trip per missing customer). That's the original
-        // behaviour, but it turns one bad batch into N requests every
-        // re-render — for a daily reception view that's 30–50 calls each
-        // tick. Cap the fallback at a small N so the cost of a persistent
-        // batch failure stays bounded; above the cap, surface the failure
-        // via `customerAlertStatsError` and let the user hit the retry
-        // button (which bumps `customerAlertStatsRetryToken`) once the
-        // backend is healthy.
-        const FALLBACK_MAX_CUSTOMERS = 5;
-
-        const fetchPerCustomerFallback = async () =>
-            Promise.all(
-                missingCustomerIds.map(async (customerId) => {
-                    try {
-                        const stats = await apiFetch<CustomerStatistics>(
-                            `/customers/${customerId}/statistics`,
-                        );
-                        const severity =
-                            stats.noShowVisits >= 2
-                                ? ('danger' as const)
-                                : stats.noShowVisits > 0
-                                  ? ('warning' as const)
-                                  : null;
-                        return { customerId, severity, success: true as const };
-                    } catch {
-                        return {
-                            customerId,
-                            severity: null,
-                            success: false as const,
-                        };
-                    }
-                }),
-            );
-
-        const fetchMissingCustomerStats = async () => {
-            try {
-                const params = new URLSearchParams();
-                params.set('ids', missingCustomerIds.join(','));
-                params.set('scope', 'alerts');
-                const query = params.toString();
-                const response =
-                    await apiFetch<CustomerStatisticsBatchResponse>(
-                        `/customers/statistics/batch${query ? `?${query}` : ''}`,
-                    );
-
-                if (!response || !Array.isArray(response.items)) {
-                    throw new Error('Invalid batch response');
-                }
-
-                const itemsByCustomerId = new Map<
-                    number,
-                    CustomerStatistics | null
-                >();
-                for (const item of response.items) {
-                    if (
-                        item &&
-                        Number.isInteger(item.customerId) &&
-                        item.customerId > 0
-                    ) {
-                        itemsByCustomerId.set(item.customerId, item.statistics);
-                    }
-                }
-
-                return missingCustomerIds.map((customerId) => {
-                    const stats = itemsByCustomerId.get(customerId);
-                    if (!stats) {
-                        return {
-                            customerId,
-                            severity: null,
-                            success: false as const,
-                        };
-                    }
-
-                    const severity =
-                        stats.noShowVisits >= 2
-                            ? ('danger' as const)
-                            : stats.noShowVisits > 0
-                              ? ('warning' as const)
-                              : null;
-
-                    return { customerId, severity, success: true as const };
-                });
-            } catch {
-                if (missingCustomerIds.length > FALLBACK_MAX_CUSTOMERS) {
-                    // Too many missing customers — skip the fan-out and
-                    // mark them all failed so the UI shows the retry
-                    // banner instead of hammering the backend.
-                    return missingCustomerIds.map((customerId) => ({
-                        customerId,
-                        severity: null,
-                        success: false as const,
-                    }));
-                }
-                return await fetchPerCustomerFallback();
-            } finally {
-                for (const customerId of missingCustomerIds) {
-                    pendingCustomerAlertFetchesRef.current.delete(customerId);
-                }
-            }
-        };
-
-        void fetchMissingCustomerStats().then((entries) => {
-            let hasFailures = false;
-            const failedCustomerIds: number[] = [];
-            for (const entry of entries) {
-                if (entry.success) {
-                    customerAlertCacheRef.current[entry.customerId] =
-                        entry.severity;
-                } else {
-                    hasFailures = true;
-                    failedCustomerIds.push(entry.customerId);
-                }
-            }
-
-            if (hasFailures) {
-                console.warn('[calendar] customer alert stats fetch failed', {
-                    failedCustomerIds,
-                    failedCount: failedCustomerIds.length,
-                });
-            }
-
-            const nextVisible: ReceptionAlertSeverityByCustomerId = {};
-            for (const customerId of visibleCustomerIdsRef.current) {
-                const cached = customerAlertCacheRef.current[customerId];
-                if (cached) nextVisible[customerId] = cached;
-            }
-            if (!isMountedRef.current) return;
-            setCustomerAlertStatsError(hasFailures);
-            setCustomerAlertSeverityById((current) =>
-                areAlertMapsEqual(current, nextVisible) ? current : nextVisible,
-            );
-        });
-    }, [
-        shouldFetchCustomerAlertStats,
-        visibleCustomerIds,
-        apiFetch,
-        customerAlertStatsRetryToken,
-    ]);
-
     const updateCalendarQuery = (
         next: Partial<{
             date: string;
@@ -711,20 +493,6 @@ export default function CalendarPage() {
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,
         });
-    };
-
-    const retryCustomerAlertStats = () => {
-        const nextCache = { ...customerAlertCacheRef.current };
-        for (const customerId of visibleCustomerIdsRef.current) {
-            delete nextCache[customerId];
-        }
-        customerAlertCacheRef.current = nextCache;
-        pendingCustomerAlertFetchesRef.current.clear();
-        setCustomerAlertStatsError(false);
-        setCustomerAlertSeverityById((current) =>
-            Object.keys(current).length === 0 ? current : {},
-        );
-        setCustomerAlertStatsRetryToken((current) => current + 1);
     };
 
     const handleEventDrop = async (
