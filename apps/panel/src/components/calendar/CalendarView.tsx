@@ -204,13 +204,17 @@ export default function CalendarView({
     );
 
     useEffect(() => {
-        const api = calendarRef.current?.getApi();
+        const instance = calendarRef.current;
+        if (!instance || typeof instance.getApi !== 'function') return;
+        const api = instance.getApi();
         if (!api) return;
         api.gotoDate(currentDate);
     }, [currentDate]);
 
     useEffect(() => {
-        const api = calendarRef.current?.getApi();
+        const instance = calendarRef.current;
+        if (!instance || typeof instance.getApi !== 'function') return;
+        const api = instance.getApi();
         if (!api) return;
         const targetView = VIEW_MAP[currentView];
         if (api.view.type !== targetView) {
