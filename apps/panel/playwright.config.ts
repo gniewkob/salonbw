@@ -32,6 +32,15 @@ export default defineConfig({
                 viewport: { width: 1920, height: 1080 },
             },
         },
+        {
+            // iPhone 12 / 13 / 14 logical width. Matches the design
+            // breakpoint used by useIsMobile (≤767px) for F4 mobile mode.
+            name: 'mobile-390',
+            use: {
+                ...devices['iPhone 12'],
+                viewport: { width: 390, height: 844 },
+            },
+        },
     ],
     webServer: process.env.PLAYWRIGHT_BASE_URL
         ? undefined

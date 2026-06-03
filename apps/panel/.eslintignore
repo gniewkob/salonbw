@@ -1,7 +1,9 @@
 design/
 public/assets/js/
 cypress/
+tests/
 jest.config.js
 jest.setup.ts
 cypress.config.ts
 tailwind.config.ts
+playwright.config.ts
