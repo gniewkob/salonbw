@@ -21,12 +21,13 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 | F3d 1-3 | `1bc915a17` `ec69a1eb6` `cf3a3c5c0` | `useReceptionNowTick`, `useReceptionFilters`, `useCalendarUrlSync`. calendar.tsx -41 linii. |
 | Hotfix | `b26b02f64` | `CalendarView.tsx`: typeof guard zamiast `?.getApi()` (FullCalendar lazy ref race; intermittent prod crash). |
 | F3d 4-8 | `4c45cc44a` `fabbc71aa` `0850e8d78` `50de4f252` `bc3d89f4c` | `useReceptionFetch` framework + `useReceptionInsights`, `useReceptionFollowUp`, `useFollowUpAudit`, `useCancellationRequests`. calendar.tsx 1810 → 1559 (-251). |
+| F3d 9-11-10 (sesja A) | `1cbf5c680` `7c5867031` `e3e1e6fa0` | `useActionsAccounting`, `useAppointmentDrawer` (7 semantic ops, 9 callsites migrated), `useDeepLinkResolver` (z `clearLink` callback). calendar.tsx 1559 → 1436 (-123). |
 
-**Łącznie:** ~-3200 linii kodu mniej, 15 commitów do produkcji w sesji 2026-06-01..03.
+**Łącznie:** ~-3300 linii kodu mniej, 18 commitów do produkcji w sesji 2026-06-01..03. calendar.tsx **2365 → 1436** (-39%).
 
-## Następne kroki (osobna sesja)
+## Następne kroki (osobna sesja B)
 
-- **F3d 9-12** — `useActionsAccounting`, `useAppointmentDrawer`, `useDeepLinkResolver` (zmieniona kolejność: drawer przed deep link, bo deep link otwiera drawer), `useCustomerAlerts` (HIGH risk, 4 sub-kroki). **Detalowy plan: `docs/FAZA_F_F3D_PART2_PLAN.md`** — szacunek: 3-4h sesja A dla 9+11+10, osobna sesja B dla 12.
+- **F3d 12** — `useCustomerAlerts` (HIGH risk, 4 sub-kroki). Plan: `docs/FAZA_F_F3D_PART2_PLAN.md` §6. Wymaga dedykowanej sesji ze względu na cache state + visibility race conditions.
 - **F3d 13** — `useMemo` views (optional, low value).
 - **F4 mobile mode** dla receptionistki — desktop-first → adaptive
 - **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
