@@ -576,8 +576,30 @@ export default function CalendarPage() {
                                 {deepLinkError}
                             </div>
                         ) : null}
-                        {currentView === 'reception' && !employeeMode ? (
+                        {(currentView === 'reception' ||
+                            (isMobile && !clientMode)) &&
+                        !employeeMode ? (
                             <div className="d-flex flex-column gap-3">
+                                {isMobile && currentView !== 'reception' ? (
+                                    <div
+                                        role="note"
+                                        style={{
+                                            background: '#f8f9fa',
+                                            border: '1px solid #e5e7eb',
+                                            borderLeft: '3px solid #b4b8be',
+                                            borderRadius: 4,
+                                            padding: '0.625rem 0.875rem',
+                                            margin: '0.75rem 0.75rem 0',
+                                            fontSize: '0.8rem',
+                                            color: '#4a4a4a',
+                                            lineHeight: 1.4,
+                                        }}
+                                    >
+                                        Pokazujemy listę wizyt — pełny widok
+                                        siatki kalendarza jest dostępny na
+                                        większym ekranie.
+                                    </div>
+                                ) : null}
                                 {customerAlertStatsError ? (
                                     <div className="alert alert-warning py-2 mb-0">
                                         <div>
