@@ -35,13 +35,9 @@ import type {
     CancellationRequestQueueItem,
     CustomerStatisticsBatchResponse,
     DrawerState,
-    ReceptionFollowUpAuditResponse,
     ReceptionOperationalSummaryResponse,
 } from '@/types/calendar-page';
-import {
-    normalizeCancellationRequestsResponse,
-    normalizeFollowUpAuditResponse,
-} from '@/utils/calendarNormalize';
+import { normalizeCancellationRequestsResponse } from '@/utils/calendarNormalize';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
@@ -49,6 +45,7 @@ import { useReceptionFilters } from '@/hooks/calendar/useReceptionFilters';
 import { useCalendarUrlSync } from '@/hooks/calendar/useCalendarUrlSync';
 import { useReceptionInsights } from '@/hooks/calendar/useReceptionInsights';
 import { useReceptionFollowUp } from '@/hooks/calendar/useReceptionFollowUp';
+import { useFollowUpAudit } from '@/hooks/calendar/useFollowUpAudit';
 
 function CalendarPageShell() {
     return (
@@ -167,10 +164,15 @@ export default function CalendarPage() {
         currentDate,
         apiFetch,
     });
-    const [followUpAuditLoading, setFollowUpAuditLoading] = useState(false);
-    const [followUpAuditError, setFollowUpAuditError] = useState(false);
-    const [followUpAuditSummary, setFollowUpAuditSummary] =
-        useState<ReceptionFollowUpAuditResponse | null>(null);
+    const {
+        loading: followUpAuditLoading,
+        error: followUpAuditError,
+        summary: followUpAuditSummary,
+    } = useFollowUpAudit({
+        enabled: currentView === 'reception',
+        currentDate,
+        apiFetch,
+    });
     const [cancellationRequestsLoading, setCancellationRequestsLoading] =
         useState(false);
     const [cancellationRequestsError, setCancellationRequestsError] =
@@ -463,48 +465,6 @@ export default function CalendarPage() {
                 if (cancelled) return;
                 setPersistedActionsTotalCount(null);
                 setPersistedActionsOnAlertsCount(null);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [apiFetch, currentDate, currentView]);
-
-    useEffect(() => {
-        if (currentView !== 'reception') {
-            setFollowUpAuditLoading(false);
-            setFollowUpAuditError(false);
-            setFollowUpAuditSummary(null);
-            return;
-        }
-
-        const rangeEnd = toDateParam(currentDate);
-        const rangeStartDate = new Date(currentDate);
-        rangeStartDate.setDate(rangeStartDate.getDate() - 6);
-        const rangeStart = toDateParam(rangeStartDate);
-        let cancelled = false;
-
-        setFollowUpAuditLoading(true);
-        setFollowUpAuditError(false);
-
-        void apiFetch<ReceptionFollowUpAuditResponse>(
-            `/crm/follow-up-actions?from=${encodeURIComponent(rangeStart)}&to=${encodeURIComponent(rangeEnd)}`,
-        )
-            .then((summary) => {
-                if (cancelled) return;
-                setFollowUpAuditSummary(
-                    normalizeFollowUpAuditResponse(summary),
-                );
-                setFollowUpAuditError(false);
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setFollowUpAuditSummary(null);
-                setFollowUpAuditError(true);
-            })
-            .finally(() => {
-                if (cancelled) return;
-                setFollowUpAuditLoading(false);
             });
 
         return () => {
