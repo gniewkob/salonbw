@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import type { Customer } from '@/types';
 import { useCustomerGroups } from '@/hooks/useCustomers';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import Skeleton from '@/components/ui/Skeleton';
 
 interface ClientsListProps {
     customers: Customer[];
@@ -108,8 +109,48 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
             {/* List */}
             <div className="flex-fill overflow-auto">
                 {loading ? (
-                    <div className="d-flex justify-content-center p-4">
-                        <div className="spinner-border text-info"></div>
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        aria-label="Ładowanie listy klientów"
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem',
+                            padding: isMobile ? '0.5rem 0.75rem' : '0.75rem',
+                        }}
+                    >
+                        {[0, 1, 2, 3, 4].map((index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    display: 'flex',
+                                    gap: '0.75rem',
+                                    alignItems: 'center',
+                                    padding: '0.75rem 0.875rem',
+                                    background: '#ffffff',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: 8,
+                                    minHeight: 64,
+                                }}
+                            >
+                                <Skeleton width={40} height={40} radius="50%" />
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 6,
+                                    }}
+                                >
+                                    <Skeleton width="60%" height={14} />
+                                    <Skeleton width="40%" height={12} />
+                                </div>
+                            </div>
+                        ))}
+                        <span className="visually-hidden">
+                            Ładowanie listy klientów...
+                        </span>
                     </div>
                 ) : isMobile ? (
                     <ul
