@@ -5,10 +5,12 @@ import type { Role } from '@/types';
 import SalonMainNav from './SalonMainNav';
 import SalonSecondaryNav from './SalonSecondaryNav';
 import SalonTopbar from './SalonTopbar';
+import SalonShellMobile from './SalonShellMobile';
 import FloatingHelpButton from './FloatingHelpButton';
 import PajaxLoader from './PajaxLoader';
 import { resolveSalonModule, visibleSalonModules } from './navigation';
 import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface SalonShellProps {
     role: Role | null;
@@ -17,6 +19,7 @@ interface SalonShellProps {
 
 export default function SalonShell({ role, children }: SalonShellProps) {
     const router = useRouter();
+    const isMobile = useIsMobile();
     const secondaryNavContext = useSecondaryNavContext();
     const routeForModuleResolution = router.asPath || router.pathname;
     const activeModule = resolveSalonModule(routeForModuleResolution);
@@ -87,6 +90,10 @@ export default function SalonShell({ role, children }: SalonShellProps) {
             body.id = previousId;
         };
     }, [activeModule.key, shellProfile.bodyClasses, shellProfile.bodyId]);
+
+    if (isMobile) {
+        return <SalonShellMobile role={role}>{children}</SalonShellMobile>;
+    }
 
     return (
         <div id="salonbw-shell-root">
