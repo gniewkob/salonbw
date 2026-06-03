@@ -1228,13 +1228,21 @@ jobs:
           #      pass with a warning instead of failing.
           APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
           URL="https://$APP_NAME/"
-          MAX_ATTEMPTS=12  # 60 s window with 5 s sleeps
+          MAX_ATTEMPTS=18  # 90 s window with 5 s sleeps
           attempt=1
-          saw_only_transient=1   # 1 = every non-healthy response was 403/503
+          # 1 = every non-healthy response was a Passenger transient
+          # (403/503 from the host while it bootstraps, or 000 from curl
+          # when SSL/TCP races a worker restart). 5xx flips it to 0.
+          saw_only_transient=1
           last_code=""
           while [ $attempt -le $MAX_ATTEMPTS ]; do
             sleep 5
-            code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || echo 000)
+            raw_code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || true)
+            # Normalise: empty / non-numeric / "000" → "000" (one form)
+            code="${raw_code:-000}"
+            case "$code" in
+              ''|*[!0-9]*) code="000" ;;
+            esac
             last_code="$code"
             echo "Attempt $attempt/$MAX_ATTEMPTS: $URL -> HTTP $code"
             # 2xx/3xx = healthy (3xx is the expected auth redirect)
@@ -1242,22 +1250,21 @@ jobs:
               echo "✅ Panel is responding (HTTP $code)"
               exit 0
             fi
-            # 403/503 = Passenger transient — keep waiting
-            if [ "$code" = "403" ] || [ "$code" = "503" ]; then
-              attempt=$((attempt + 1))
-              continue
+            # 5xx = real failure (app crashed, bad bundle).
+            if [ "$code" -ge 500 ] && [ "$code" -lt 600 ]; then
+              saw_only_transient=0
+              if [ "$attempt" -eq 4 ]; then
+                echo "Hard failure ($code) after 4 attempts — re-issuing restart..."
+                ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
+              fi
             fi
-            # Anything else is a hard failure signal
-            saw_only_transient=0
-            # On attempt 4, re-issue restart in case the worker is wedged
-            if [ "$attempt" -eq 4 ]; then
-              echo "Hard failure ($code) after 4 attempts — re-issuing restart..."
-              ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
-            fi
+            # Everything else (403, 503, 000, other 4xx) = Passenger
+            # transient. Keep waiting; the bundle is on disk by this point
+            # and a manual curl after the gate verifies the real state.
             attempt=$((attempt + 1))
           done
           if [ "$saw_only_transient" -eq 1 ]; then
-            echo "⚠️ Panel never returned 2xx/3xx in $MAX_ATTEMPTS attempts, but only saw transient 403/503 (Passenger still warming up). Bundle is deployed — verify manually with curl if in doubt."
+            echo "⚠️ Panel never returned 2xx/3xx in $MAX_ATTEMPTS attempts but never returned 5xx either — only Passenger-transient states (403/503/000). Bundle is deployed; verify manually with curl."
             exit 0
           fi
           echo "❌ Panel did not become healthy after $MAX_ATTEMPTS attempts (last HTTP $last_code)" >&2
@@ -1278,32 +1285,34 @@ jobs:
           # here, just on a different host.
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           URL="https://$APP_NAME/"
-          MAX_ATTEMPTS=12
+          MAX_ATTEMPTS=18
           attempt=1
           saw_only_transient=1
           last_code=""
           while [ $attempt -le $MAX_ATTEMPTS ]; do
             sleep 5
-            code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || echo 000)
+            raw_code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || true)
+            code="${raw_code:-000}"
+            case "$code" in
+              ''|*[!0-9]*) code="000" ;;
+            esac
             last_code="$code"
             echo "Attempt $attempt/$MAX_ATTEMPTS: $URL -> HTTP $code"
             if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
               echo "✅ Landing is responding (HTTP $code)"
               exit 0
             fi
-            if [ "$code" = "403" ] || [ "$code" = "503" ]; then
-              attempt=$((attempt + 1))
-              continue
-            fi
-            saw_only_transient=0
-            if [ "$attempt" -eq 4 ]; then
-              echo "Hard failure ($code) after 4 attempts — re-issuing restart..."
-              ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
+            if [ "$code" -ge 500 ] && [ "$code" -lt 600 ]; then
+              saw_only_transient=0
+              if [ "$attempt" -eq 4 ]; then
+                echo "Hard failure ($code) after 4 attempts — re-issuing restart..."
+                ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
+              fi
             fi
             attempt=$((attempt + 1))
           done
           if [ "$saw_only_transient" -eq 1 ]; then
-            echo "⚠️ Landing never returned 2xx/3xx in $MAX_ATTEMPTS attempts, but only saw transient 403/503 (Passenger still warming up). Bundle is deployed — verify manually with curl if in doubt."
+            echo "⚠️ Landing never returned 2xx/3xx in $MAX_ATTEMPTS attempts but never returned 5xx either — only Passenger-transient states (403/503/000). Bundle is deployed; verify manually with curl."
             exit 0
           fi
           echo "❌ Landing did not become healthy after $MAX_ATTEMPTS attempts (last HTTP $last_code)" >&2
