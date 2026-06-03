@@ -42,6 +42,7 @@ import { useFollowUpAudit } from '@/hooks/calendar/useFollowUpAudit';
 import { useCancellationRequests } from '@/hooks/calendar/useCancellationRequests';
 import { useActionsAccounting } from '@/hooks/calendar/useActionsAccounting';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
+import { useDeepLinkResolver } from '@/hooks/calendar/useDeepLinkResolver';
 
 function CalendarPageShell() {
     return (
@@ -109,7 +110,6 @@ export default function CalendarPage() {
     } = useCalendarUrlSync();
     const isMountedRef = useRef(true);
     const visibleCustomerIdsRef = useRef<number[]>([]);
-    const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
     const customerAlertCacheRef = useRef<
         Record<number, Exclude<ReceptionAlertSeverity, 'info'> | null>
     >({});
@@ -127,7 +127,6 @@ export default function CalendarPage() {
         setPriorityFilter: setReceptionPriorityFilter,
     } = useReceptionFilters();
     const receptionNowTick = useReceptionNowTick(currentView === 'reception');
-    const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
     const [customerAlertStatsError, setCustomerAlertStatsError] =
         useState(false);
     const [customerAlertStatsRetryToken, setCustomerAlertStatsRetryToken] =
@@ -266,6 +265,13 @@ export default function CalendarPage() {
         }
         return map;
     }, [data?.events]);
+
+    const { error: deepLinkError, clearLink: clearAppointmentDeepLink } =
+        useDeepLinkResolver({
+            appointmentsById,
+            apiFetch,
+            onResolved: openDrawerForEdit,
+        });
 
     const handleEventClick = (event: CalendarEvent) => {
         if (event.type !== 'appointment') return;
@@ -433,57 +439,6 @@ export default function CalendarPage() {
         persistedActionsOnAlertsCount,
         persistedActionsTotalCount,
         receptionActionsOnAlertsCount,
-    ]);
-
-    useEffect(() => {
-        const appointmentIdParam = Array.isArray(router.query.appointmentId)
-            ? router.query.appointmentId[0]
-            : router.query.appointmentId;
-        if (!appointmentIdParam) {
-            handledDeepLinkAppointmentIdRef.current = null;
-            setDeepLinkError(null);
-            return;
-        }
-
-        const appointmentId = Number(appointmentIdParam);
-        if (!Number.isFinite(appointmentId) || appointmentId <= 0) return;
-        if (handledDeepLinkAppointmentIdRef.current === appointmentId) return;
-
-        const appointmentFromCalendar = appointmentsById.get(appointmentId);
-        if (appointmentFromCalendar) {
-            setDeepLinkError(null);
-            openDrawerForEdit(appointmentFromCalendar);
-            handledDeepLinkAppointmentIdRef.current = appointmentId;
-            return;
-        }
-
-        let cancelled = false;
-
-        void apiFetch<Appointment>(`/appointments/${appointmentId}`)
-            .then((appointment) => {
-                if (cancelled) return;
-                setDeepLinkError(null);
-                openDrawerForEdit(appointment);
-                handledDeepLinkAppointmentIdRef.current = appointmentId;
-            })
-            .catch(() => {
-                if (cancelled) return;
-                console.warn('[calendar] deep-link fetch failed', {
-                    appointmentId,
-                });
-                setDeepLinkError(
-                    'Nie udało się otworzyć wizyty z linku. Spróbuj ponownie.',
-                );
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [
-        router.query.appointmentId,
-        appointmentsById,
-        apiFetch,
-        openDrawerForEdit,
     ]);
 
     useEffect(() => {
@@ -753,14 +708,6 @@ export default function CalendarPage() {
     const openAppointmentDeepLink = (appointmentId: number) => {
         const query = { ...router.query } as Record<string, string>;
         query.appointmentId = String(appointmentId);
-        void router.push({ pathname: router.pathname, query }, undefined, {
-            shallow: true,
-        });
-    };
-
-    const clearAppointmentDeepLink = () => {
-        const query = { ...router.query } as Record<string, string>;
-        delete query.appointmentId;
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,
         });
