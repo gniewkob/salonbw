@@ -33,7 +33,6 @@ import type {
 import type {
     CustomerStatisticsBatchResponse,
     DrawerState,
-    ReceptionOperationalSummaryResponse,
 } from '@/types/calendar-page';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
@@ -44,6 +43,7 @@ import { useReceptionInsights } from '@/hooks/calendar/useReceptionInsights';
 import { useReceptionFollowUp } from '@/hooks/calendar/useReceptionFollowUp';
 import { useFollowUpAudit } from '@/hooks/calendar/useFollowUpAudit';
 import { useCancellationRequests } from '@/hooks/calendar/useCancellationRequests';
+import { useActionsAccounting } from '@/hooks/calendar/useActionsAccounting';
 
 function CalendarPageShell() {
     return (
@@ -134,12 +134,17 @@ export default function CalendarPage() {
         useState(false);
     const [customerAlertStatsRetryToken, setCustomerAlertStatsRetryToken] =
         useState(0);
-    const [receptionActionsOnAlertsCount, setReceptionActionsOnAlertsCount] =
-        useState(0);
-    const [persistedActionsOnAlertsCount, setPersistedActionsOnAlertsCount] =
-        useState<number | null>(null);
-    const [persistedActionsTotalCount, setPersistedActionsTotalCount] =
-        useState<number | null>(null);
+    const {
+        runtimeOnAlertsCount: receptionActionsOnAlertsCount,
+        persistedOnAlertsCount: persistedActionsOnAlertsCount,
+        persistedTotalCount: persistedActionsTotalCount,
+        incrementRuntime: incrementReceptionActionsOnAlerts,
+    } = useActionsAccounting({
+        enabled: currentView === 'reception',
+        currentDate,
+        selectedEmployeeIds,
+        apiFetch,
+    });
     const {
         loading: receptionInsightsLoading,
         error: receptionInsightsError,
@@ -439,39 +444,6 @@ export default function CalendarPage() {
         persistedActionsTotalCount,
         receptionActionsOnAlertsCount,
     ]);
-
-    useEffect(() => {
-        setReceptionActionsOnAlertsCount(0);
-    }, [currentDate, currentView, selectedEmployeeIds]);
-
-    useEffect(() => {
-        if (currentView !== 'reception') {
-            setPersistedActionsOnAlertsCount(null);
-            setPersistedActionsTotalCount(null);
-            return;
-        }
-
-        const date = toDateParam(currentDate);
-        let cancelled = false;
-
-        void apiFetch<ReceptionOperationalSummaryResponse>(
-            `/reception/operational-summary?date=${encodeURIComponent(date)}`,
-        )
-            .then((summary) => {
-                if (cancelled) return;
-                setPersistedActionsTotalCount(summary.actionsTotal ?? 0);
-                setPersistedActionsOnAlertsCount(summary.actionsOnAlerts ?? 0);
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setPersistedActionsTotalCount(null);
-                setPersistedActionsOnAlertsCount(null);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [apiFetch, currentDate, currentView]);
 
     useEffect(() => {
         const appointmentIdParam = Array.isArray(router.query.appointmentId)
@@ -1306,9 +1278,7 @@ export default function CalendarPage() {
                                     onActionTracked={(params) => {
                                         if (!params.customerAlertSeverity)
                                             return;
-                                        setReceptionActionsOnAlertsCount(
-                                            (current) => current + 1,
-                                        );
+                                        incrementReceptionActionsOnAlerts();
                                     }}
                                     onChanged={() => {
                                         void refetch();
