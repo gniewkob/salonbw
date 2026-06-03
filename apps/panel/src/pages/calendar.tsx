@@ -50,14 +50,11 @@ import {
     normalizeFollowUpCandidatesResponse,
     normalizeOperationalInsightsResponse,
 } from '@/utils/calendarNormalize';
-import {
-    areIdsEqual,
-    deriveCalendarQueryState,
-    toDateParam,
-} from '@/utils/calendarQueryState';
+import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
 import { useReceptionFilters } from '@/hooks/calendar/useReceptionFilters';
+import { useCalendarUrlSync } from '@/hooks/calendar/useCalendarUrlSync';
 
 function CalendarPageShell() {
     return (
@@ -109,8 +106,20 @@ function areAlertMapsEqual(
 export default function CalendarPage() {
     const router = useRouter();
     const isRouterReady = router.isReady ?? true;
-    const initialQueryState = deriveCalendarQueryState(router.query);
     const { role, user, apiFetch } = useAuth();
+    const {
+        currentDate,
+        currentView,
+        employeeMode,
+        clientMode,
+        employeeArchiveMode,
+        selectedEmployeeIds,
+        queryStateReady,
+        setCurrentDate,
+        setCurrentView,
+        setEmployeeArchiveMode,
+        setSelectedEmployeeIds,
+    } = useCalendarUrlSync();
     const isMountedRef = useRef(true);
     const visibleCustomerIdsRef = useRef<number[]>([]);
     const handledDeepLinkAppointmentIdRef = useRef<number | null>(null);
@@ -118,21 +127,6 @@ export default function CalendarPage() {
         Record<number, Exclude<ReceptionAlertSeverity, 'info'> | null>
     >({});
     const pendingCustomerAlertFetchesRef = useRef<Set<number>>(new Set());
-    const [currentDate, setCurrentDate] = useState(
-        initialQueryState.currentDate,
-    );
-    const [currentView, setCurrentView] = useState<CalendarViewType>(
-        initialQueryState.currentView,
-    );
-    const [employeeMode, setEmployeeMode] = useState(
-        initialQueryState.employeeMode,
-    );
-    const [clientMode, setClientMode] = useState(initialQueryState.clientMode);
-    const [queryStateReady, setQueryStateReady] = useState(isRouterReady);
-    const [employeeArchiveMode, setEmployeeArchiveMode] = useState(false);
-    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
-        initialQueryState.selectedEmployeeIds,
-    );
     const [customerAlertSeverityById, setCustomerAlertSeverityById] =
         useState<ReceptionAlertSeverityByCustomerId>({});
     const {
@@ -729,37 +723,6 @@ export default function CalendarPage() {
             cancelled = true;
         };
     }, [apiFetch, currentDate, currentView]);
-
-    useEffect(() => {
-        if (!isRouterReady) return;
-        const next = deriveCalendarQueryState(router.query);
-        setCurrentDate((current) =>
-            toDateParam(current) === toDateParam(next.currentDate)
-                ? current
-                : next.currentDate,
-        );
-        setCurrentView((current) =>
-            current === next.currentView ? current : next.currentView,
-        );
-        setEmployeeMode((current) =>
-            current === next.employeeMode ? current : next.employeeMode,
-        );
-        setClientMode((current) =>
-            current === next.clientMode ? current : next.clientMode,
-        );
-        setSelectedEmployeeIds((current) =>
-            areIdsEqual(current, next.selectedEmployeeIds)
-                ? current
-                : next.selectedEmployeeIds,
-        );
-        setQueryStateReady(true);
-    }, [
-        isRouterReady,
-        router.query,
-        router.query.date,
-        router.query.employeeIds,
-        router.query.view,
-    ]);
 
     useEffect(() => {
         const appointmentIdParam = Array.isArray(router.query.appointmentId)
