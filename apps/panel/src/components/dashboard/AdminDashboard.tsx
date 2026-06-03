@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import NextTwoHoursWidget from './NextTwoHoursWidget';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
 import { useStockSummary } from '@/hooks/useStockAlerts';
@@ -185,6 +186,10 @@ export default function AdminDashboard() {
                     - {format(today, 'd MMMM yyyy', { locale: pl })}
                 </span>
             </div>
+
+            <NextTwoHoursWidget
+                appointments={dashboardData?.upcomingAppointments ?? []}
+            />
 
             <div className="salonbw-dashboard__stats">
                 <div className="salonbw-stat-card">
