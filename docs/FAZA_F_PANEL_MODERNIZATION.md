@@ -18,12 +18,16 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 | F5.4 | `e29e2477f` | table padding 7/10/6 → 10/14 (3 sites); td.link_body a color → #4a4a4a |
 | F5.5 | `ee5aaf138` | .icon_link blue → neutral; nav-tabs hover → black; mini-chart bar → brand silver |
 | F3a-c | `6912ab124` | calendar.tsx 2365 → 1851 (-514). Wyciągnięte: 14 typów + 3 stałe do `types/calendar-page.ts`, 4 normalize funkcje + 2 helpery do `utils/calendarNormalize.ts`, 5 query helperów do `utils/calendarQueryState.ts`. Dodatkowo: ReceptionFollowUpPanel zdedup'owany. |
+| F3d 1-3 | `1bc915a17` `ec69a1eb6` `cf3a3c5c0` | `useReceptionNowTick`, `useReceptionFilters`, `useCalendarUrlSync`. calendar.tsx -41 linii. |
+| Hotfix | `b26b02f64` | `CalendarView.tsx`: typeof guard zamiast `?.getApi()` (FullCalendar lazy ref race; intermittent prod crash). |
+| F3d 4-8 | `4c45cc44a` `fabbc71aa` `0850e8d78` `50de4f252` `bc3d89f4c` | `useReceptionFetch` framework + `useReceptionInsights`, `useReceptionFollowUp`, `useFollowUpAudit`, `useCancellationRequests`. calendar.tsx 1810 → 1559 (-251). |
 
-**Łącznie:** ~-2900 linii kodu mniej, 9 commitów do produkcji w sesji 2026-06-01..03.
+**Łącznie:** ~-3200 linii kodu mniej, 15 commitów do produkcji w sesji 2026-06-01..03.
 
 ## Następne kroki (osobna sesja)
 
-- **F3d calendar custom hooks** — wyciągnięcie 65 hooków (37× useState, 15× useEffect, 8× useMemo, 5× useRef) z `CalendarPage` do 11-13 custom hooków pogrupowanych po domenie. **Plan w `docs/FAZA_F_F3D_CALENDAR_HOOKS_PLAN.md`** — 13 kroków uporządkowanych od LOW do HIGH risk; customer alerts (grupa I) wymaga własnej sub-sesji.
+- **F3d 9-12** — `useActionsAccounting`, `useDeepLinkResolver`, `useAppointmentDrawer`, `useCustomerAlerts` (HIGH risk, 4 sub-kroki). Plan: `docs/FAZA_F_F3D_CALENDAR_HOOKS_PLAN.md`.
+- **F3d 13** — `useMemo` views (optional, low value).
 - **F4 mobile mode** dla receptionistki — desktop-first → adaptive
 - **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
 - **F2 dashboard polish** — widget "kto przychodzi w następne 2h"
