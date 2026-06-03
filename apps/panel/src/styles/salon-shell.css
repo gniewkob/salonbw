@@ -8182,3 +8182,38 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
         padding-right: 1rem;
     }
 }
+
+/* ========================================
+   F4.4: Mobile touch + motion polish (global mobile shell)
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* Replace iOS default gray tap highlight with brand-silver subtle wash.
+       Inputs and links keep platform-default focus styles. */
+    button,
+    [role='button'],
+    a {
+        -webkit-tap-highlight-color: rgba(180, 184, 190, 0.18);
+    }
+
+    /* Most surface buttons on the panel should clear 44pt min-height on
+       mobile. We keep .btn-close + .form-check-input untouched because
+       they have dedicated sizing rules. */
+    .btn:not(.btn-close):not(.btn-link),
+    button.btn-link:not(.btn-close) {
+        min-height: 44px;
+    }
+}
+
+/* OS-level motion-reduce: belt + braces for any inline animation we may
+   have missed in component-side JS. */
+@media (prefers-reduced-motion: reduce) {
+    [data-salonbw-drawer-mobile='true'] *,
+    .salonbw-mobile-anim,
+    .salonbw-mobile-anim * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

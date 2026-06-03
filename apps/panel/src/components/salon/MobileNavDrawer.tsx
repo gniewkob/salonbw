@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import type { SalonModule } from './navigation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface MobileNavDrawerProps {
     open: boolean;
@@ -15,6 +16,14 @@ export default function MobileNavDrawer({
     activeKey,
     onClose,
 }: MobileNavDrawerProps) {
+    const reducedMotion = useReducedMotion();
+    const backdropTransition = reducedMotion
+        ? 'none'
+        : 'opacity 200ms ease-out';
+    const drawerTransition = reducedMotion
+        ? 'none'
+        : 'transform 240ms ease-out';
+
     useEffect(() => {
         if (!open) return;
         const previousOverflow = document.body.style.overflow;
@@ -45,7 +54,7 @@ export default function MobileNavDrawer({
                     background: 'rgba(0, 0, 0, 0.4)',
                     opacity: open ? 1 : 0,
                     pointerEvents: open ? 'auto' : 'none',
-                    transition: 'opacity 200ms ease-out',
+                    transition: backdropTransition,
                     zIndex: 1050,
                 }}
             />
@@ -61,7 +70,7 @@ export default function MobileNavDrawer({
                     background: '#0d0d0d',
                     color: '#ffffff',
                     transform: open ? 'translateX(0)' : 'translateX(-100%)',
-                    transition: 'transform 240ms ease-out',
+                    transition: drawerTransition,
                     zIndex: 1060,
                     display: 'flex',
                     flexDirection: 'column',

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface MobileBottomSheetProps {
     open: boolean;
@@ -27,6 +28,11 @@ export default function MobileBottomSheet({
         generatedIdRef.current = `mobile-bottom-sheet-${sheetIdCounter}`;
     }
     const labelledById = titleId ?? generatedIdRef.current ?? undefined;
+    const reducedMotion = useReducedMotion();
+    const backdropTransition = reducedMotion
+        ? 'none'
+        : 'opacity 200ms ease-out';
+    const sheetTransition = reducedMotion ? 'none' : 'transform 240ms ease-out';
 
     useEffect(() => {
         if (!open) return;
@@ -58,7 +64,7 @@ export default function MobileBottomSheet({
                     background: 'rgba(0, 0, 0, 0.45)',
                     opacity: open ? 1 : 0,
                     pointerEvents: open ? 'auto' : 'none',
-                    transition: 'opacity 200ms ease-out',
+                    transition: backdropTransition,
                     zIndex: 1070,
                 }}
             />
@@ -76,7 +82,7 @@ export default function MobileBottomSheet({
                     borderTopLeftRadius: 16,
                     borderTopRightRadius: 16,
                     transform: open ? 'translateY(0)' : 'translateY(100%)',
-                    transition: 'transform 240ms ease-out',
+                    transition: sheetTransition,
                     zIndex: 1080,
                     maxHeight: '85dvh',
                     display: 'flex',
