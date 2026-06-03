@@ -3400,7 +3400,7 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
 
 .icon_link {
     display: inline-block;
-    color: #337ab7;
+    color: #4a4a4a;
     text-decoration: none;
     width: 21px;
     height: 21px;
@@ -3550,7 +3550,7 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
 .nav-tabs > li > a:hover {
     border-color: #eee #eee #ddd;
     background-color: #eee;
-    color: #337ab7;
+    color: #0d0d0d;
 }
 .nav-tabs > li.active > a {
     color: #555;
@@ -7005,7 +7005,7 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     background: #dee2e6;
 }
 .salonbw-mini-chart__bar--blue {
-    background: #0d6efd;
+    background: var(--salon-brand);
 }
 .salonbw-mini-chart__bar--green {
     background: #198754;
