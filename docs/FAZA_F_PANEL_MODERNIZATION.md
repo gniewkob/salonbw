@@ -26,7 +26,7 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 
 ## Następne kroki (osobna sesja)
 
-- **F3d 9-12** — `useActionsAccounting`, `useDeepLinkResolver`, `useAppointmentDrawer`, `useCustomerAlerts` (HIGH risk, 4 sub-kroki). Plan: `docs/FAZA_F_F3D_CALENDAR_HOOKS_PLAN.md`.
+- **F3d 9-12** — `useActionsAccounting`, `useAppointmentDrawer`, `useDeepLinkResolver` (zmieniona kolejność: drawer przed deep link, bo deep link otwiera drawer), `useCustomerAlerts` (HIGH risk, 4 sub-kroki). **Detalowy plan: `docs/FAZA_F_F3D_PART2_PLAN.md`** — szacunek: 3-4h sesja A dla 9+11+10, osobna sesja B dla 12.
 - **F3d 13** — `useMemo` views (optional, low value).
 - **F4 mobile mode** dla receptionistki — desktop-first → adaptive
 - **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
