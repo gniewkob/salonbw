@@ -1,22 +1,8 @@
-interface ReceptionFollowUpCandidate {
-    customerId: number;
-    appointmentId: number | null;
-    reason: 'recent_no_show' | 'stale_in_progress' | 'high_risk_no_contact';
-    priority: 'critical' | 'high' | 'medium';
-    suggestedAction: string;
-}
-
-type ReceptionFollowUpAction =
-    | 'contacted'
-    | 'deferred'
-    | 'dismissed'
-    | 'escalated';
-
-type ReceptionFollowUpActionState = {
-    status: 'pending' | 'success' | 'error';
-    action: ReceptionFollowUpAction;
-    message?: string;
-};
+import type {
+    ReceptionFollowUpAction,
+    ReceptionFollowUpActionState,
+    ReceptionFollowUpCandidate,
+} from '@/types/calendar-page';
 
 interface ReceptionFollowUpPanelProps {
     loading: boolean;
