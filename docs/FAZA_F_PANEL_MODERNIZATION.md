@@ -23,7 +23,7 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 
 ## Następne kroki (osobna sesja)
 
-- **F3d calendar custom hooks** — wyciągnięcie 40+ `useState` z `CalendarPage` do `useReceptionInsights`, `useReceptionFollowUp`, `useFollowUpAudit`, `useCancellationRequests`, `useCustomerAlerts`. **Wysokie ryzyko** — interplay useEffect/useMemo łatwo złamać.
+- **F3d calendar custom hooks** — wyciągnięcie 65 hooków (37× useState, 15× useEffect, 8× useMemo, 5× useRef) z `CalendarPage` do 11-13 custom hooków pogrupowanych po domenie. **Plan w `docs/FAZA_F_F3D_CALENDAR_HOOKS_PLAN.md`** — 13 kroków uporządkowanych od LOW do HIGH risk; customer alerts (grupa I) wymaga własnej sub-sesji.
 - **F4 mobile mode** dla receptionistki — desktop-first → adaptive
 - **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
 - **F2 dashboard polish** — widget "kto przychodzi w następne 2h"
