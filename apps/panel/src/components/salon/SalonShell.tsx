@@ -97,6 +97,9 @@ export default function SalonShell({ role, children }: SalonShellProps) {
 
     return (
         <div id="salonbw-shell-root">
+            <a href="#main-content" className="salonbw-skip-link">
+                Przejdź do treści
+            </a>
             <PajaxLoader />
             <SalonTopbar />
             <div className="main-container" id="main-container">

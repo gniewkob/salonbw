@@ -32,6 +32,9 @@ export default function SalonShellMobile({
 
     return (
         <div id="salonbw-shell-root-mobile">
+            <a href="#main-content-mobile" className="salonbw-skip-link">
+                Przejdź do treści
+            </a>
             <header
                 style={{
                     position: 'fixed',
@@ -131,6 +134,7 @@ export default function SalonShellMobile({
             />
 
             <main
+                id="main-content-mobile"
                 role="main"
                 style={{
                     paddingTop: `calc(${TOPBAR_HEIGHT}px + env(safe-area-inset-top))`,

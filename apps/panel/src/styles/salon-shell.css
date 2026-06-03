@@ -8217,3 +8217,48 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
         scroll-behavior: auto !important;
     }
 }
+
+/* ========================================
+   A11y: global :focus-visible ring
+   ----------------------------------------
+   Mouse users don't see this (only :focus-visible matches keyboard /
+   programmatic focus). Form inputs keep their existing brand-silver
+   box-shadow rules (they're more specific so they win).
+   ======================================== */
+
+button:focus-visible,
+[role='button']:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible:not([tabindex='-1']),
+summary:focus-visible {
+    outline: 2px solid var(--salon-accent, #b4b8be);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Skip-to-content link — visible only when focused. Pattern: visually
+   hidden, becomes a brand-styled banner pinned to the top-left when a
+   keyboard user tabs into it. */
+
+.salonbw-skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    z-index: 2000;
+    background: #0d0d0d;
+    color: #ffffff;
+    padding: 0.625rem 1rem;
+    border-bottom-right-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: top 120ms ease-out;
+}
+
+.salonbw-skip-link:focus,
+.salonbw-skip-link:focus-visible {
+    top: 0;
+    outline: 2px solid var(--salon-accent, #b4b8be);
+    outline-offset: 2px;
+}
