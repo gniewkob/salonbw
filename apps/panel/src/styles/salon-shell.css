@@ -3135,7 +3135,7 @@ body.e2e-statistics .main-content .inner {
     background: #fff;
     border: 0;
     border-bottom: 1px solid #ddd;
-    padding: 7px 10px 6px;
+    padding: 10px 14px;
     text-align: left;
     line-height: 1.43;
 }
@@ -3871,7 +3871,7 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
 }
 .table-bordered td {
     font-size: 13px;
-    padding: 7px 10px 6px;
+    padding: 10px 14px;
     line-height: 20px;
     border-top: 1px solid #ddd;
 }
@@ -3887,8 +3887,8 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
 }
 .table-bordered td.link_body a {
     display: block;
-    padding: 7px 10px 6px;
-    color: #337ab7;
+    padding: 10px 14px;
+    color: #4a4a4a;
     text-decoration: none;
 }
 .table-bordered td.link_body a:hover {
