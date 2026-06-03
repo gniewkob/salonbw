@@ -30,9 +30,18 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 
 CalendarPage extraction complete. 13 hooks + 1 framework w `apps/panel/src/hooks/calendar/`. Strona to teraz ~1200 linii orkiestracji i JSX render — dalsze cięcia (np. wyciągnięcie JSX presenter components) mają niską wartość.
 
-## Następne fazy
+## F4: Mobile mode (receptionist) — ZAKOŃCZONE
 
-- **F4** Mobile mode (receptionist) — buduje na stable hook API z F3
+| Etap | Commits | Co zrobione |
+|---|---|---|
+| F4.1 (shell + nav) | `749541bab` `cab6499ca` | `useIsMobile`, `SalonShellMobile` (topbar + 100dvh), `MobileNavDrawer` (off-canvas), SalonShell delegacja |
+| F4.2 (reception list) | `9608c546e` `20a54d21c` `e23b77ffe` `0e10cc7ac` | `MobileReceptionListView` (karty), `MobileBottomSheet` reusable, ⋯ button + full action set per status, `MobileReceptionFiltersSheet` (radio + toggle + active count badge) |
+| F4.3 (drawer) | `d5fdbc8ab` | AppointmentDrawer full-screen 100dvh na mobile, 16px inputs (no iOS zoom) + 44pt buttons via scoped CSS |
+| F4.4 (polish) | `ce2ff96f3` | `useReducedMotion` wpięty w sheet+drawer, globalne mobile button min-height, brand-silver tap-highlight, prefers-reduced-motion safety net |
+
+**Łącznie F4:** ~1900 linii dodanych (5 hooków, 4 nowe komponenty mobile, 3 mniejsze refaktoryzacje istniejących, ~70 linii CSS). 266/266 testów PASS na każdym kroku. Plan w `docs/FAZA_F4_MOBILE_PLAN.md`.
+
+## Następne fazy
 - **F5** Sprite icons → Heroicons (194 unikalne sprite'y)
 - **F2** Dashboard polish (widget "kto przychodzi w następne 2h")
 - **Infra** Warm-up gate refaktor (treat 403 jako transient) — eliminuje false-positive failures w CI po push deploy
