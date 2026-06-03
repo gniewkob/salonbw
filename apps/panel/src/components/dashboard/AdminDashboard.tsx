@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import NextTwoHoursWidget from './NextTwoHoursWidget';
+import Skeleton from '@/components/ui/Skeleton';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
 import { useStockSummary } from '@/hooks/useStockAlerts';
@@ -140,10 +141,48 @@ export default function AdminDashboard() {
 
     if (dashboardLoading || statsLoading) {
         return (
-            <div className="salonbw-dashboard">
-                <div className="salonbw-dashboard__loading">
-                    Ładowanie pulpitu...
+            <div
+                className="salonbw-dashboard"
+                role="status"
+                aria-live="polite"
+                aria-label="Ładowanie pulpitu"
+            >
+                <div className="salonbw-dashboard__header">
+                    <Skeleton width={180} height={32} />
+                    <div className="d-flex gap-2">
+                        <Skeleton width={140} height={38} radius={6} />
+                        <Skeleton width={140} height={38} radius={6} />
+                    </div>
                 </div>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                            'repeat(auto-fit, minmax(220px, 1fr))',
+                        gap: '0.75rem',
+                        marginTop: '1rem',
+                    }}
+                >
+                    {[0, 1, 2, 3].map((index) => (
+                        <div
+                            key={index}
+                            style={{
+                                background: '#ffffff',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: 8,
+                                padding: '1rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.625rem',
+                            }}
+                        >
+                            <Skeleton width="60%" height={14} />
+                            <Skeleton width="40%" height={28} />
+                            <Skeleton width="100%" height={48} radius={6} />
+                        </div>
+                    ))}
+                </div>
+                <span className="visually-hidden">Ładowanie pulpitu...</span>
             </div>
         );
     }

@@ -8262,3 +8262,19 @@ summary:focus-visible {
     outline: 2px solid var(--salon-accent, #b4b8be);
     outline-offset: 2px;
 }
+
+/* ========================================
+   Skeleton shimmer (used by Skeleton component)
+   ======================================== */
+
+@keyframes salonbw-skeleton-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .salonbw-skeleton {
+        animation: none !important;
+        background: #f1f3f5 !important;
+    }
+}
