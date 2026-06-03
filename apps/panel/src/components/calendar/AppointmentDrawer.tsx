@@ -18,6 +18,7 @@ import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     getAppointmentCustomerId,
     trackReceptionAction,
@@ -95,6 +96,7 @@ export default function AppointmentDrawer({
     onSaved,
 }: AppointmentDrawerProps) {
     const { apiFetch } = useAuth();
+    const isMobile = useIsMobile();
     const servicesResult = useServices();
     const services = servicesResult.data ?? EMPTY_SERVICES;
     const employeesResult = useEmployees();
@@ -502,39 +504,81 @@ export default function AppointmentDrawer({
     return (
         <>
             <div
-                className="position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3"
-                style={{
-                    background: 'rgba(0,0,0,0.55)',
-                    backdropFilter: 'blur(4px)',
-                    zIndex: 1100,
-                }}
+                className={
+                    isMobile
+                        ? 'position-fixed top-0 start-0 bottom-0 end-0'
+                        : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3'
+                }
+                style={
+                    isMobile
+                        ? {
+                              background: 'rgba(0,0,0,0.4)',
+                              zIndex: 1100,
+                          }
+                        : {
+                              background: 'rgba(0,0,0,0.55)',
+                              backdropFilter: 'blur(4px)',
+                              zIndex: 1100,
+                          }
+                }
                 onClick={onClose}
             >
                 <div
                     role="dialog"
                     aria-modal="true"
                     aria-label="Appointment"
-                    className="bg-white rounded-4 d-flex flex-column overflow-hidden"
-                    style={{
-                        width: 'min(760px, 100%)',
-                        maxHeight: '90vh',
-                        boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
-                        border: '1px solid rgba(0,0,0,0.08)',
-                    }}
+                    data-salonbw-drawer-mobile={isMobile ? 'true' : undefined}
+                    className={
+                        isMobile
+                            ? 'bg-white d-flex flex-column position-absolute'
+                            : 'bg-white rounded-4 d-flex flex-column overflow-hidden'
+                    }
+                    style={
+                        isMobile
+                            ? {
+                                  top: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100dvh',
+                                  paddingTop: 'env(safe-area-inset-top)',
+                                  paddingBottom: 'env(safe-area-inset-bottom)',
+                              }
+                            : {
+                                  width: 'min(760px, 100%)',
+                                  maxHeight: '90vh',
+                                  boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+                                  border: '1px solid rgba(0,0,0,0.08)',
+                              }
+                    }
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="d-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0">
+                    <div
+                        className={
+                            isMobile
+                                ? 'd-flex align-items-center justify-content-between border-bottom px-3 py-2 flex-shrink-0'
+                                : 'd-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0'
+                        }
+                    >
                         <strong className="fs-6">{title}</strong>
                         <button
                             type="button"
                             className="btn-close"
                             onClick={onClose}
                             aria-label="Zamknij"
+                            style={
+                                isMobile ? { width: 28, height: 28 } : undefined
+                            }
                         />
                     </div>
 
                     <div
-                        className="p-4 d-flex flex-column gap-3 overflow-y-auto"
+                        className={
+                            isMobile
+                                ? 'p-3 d-flex flex-column gap-3 overflow-y-auto'
+                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto'
+                        }
                         style={{ flex: 1 }}
                     >
                         <div className="rounded border p-2">

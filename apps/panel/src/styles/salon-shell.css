@@ -8149,3 +8149,36 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 .salonbw-datepicker .react-datepicker__day:hover {
     background-color: #e6f7f8;
 }
+
+/* ========================================
+   F4.3: Mobile drawer inputs — avoid iOS auto-zoom (16px min) and
+   meet 44pt touch-target guidance. Scoped to drawer via data attr
+   so desktop forms stay compact.
+   ======================================== */
+
+@media (max-width: 767px) {
+    [data-salonbw-drawer-mobile='true'] .form-control,
+    [data-salonbw-drawer-mobile='true'] .form-select,
+    [data-salonbw-drawer-mobile='true'] input[type='text'],
+    [data-salonbw-drawer-mobile='true'] input[type='number'],
+    [data-salonbw-drawer-mobile='true'] input[type='email'],
+    [data-salonbw-drawer-mobile='true'] input[type='tel'],
+    [data-salonbw-drawer-mobile='true'] input[type='datetime-local'],
+    [data-salonbw-drawer-mobile='true'] input[type='time'],
+    [data-salonbw-drawer-mobile='true'] input[type='date'],
+    [data-salonbw-drawer-mobile='true'] select,
+    [data-salonbw-drawer-mobile='true'] textarea {
+        font-size: 16px;
+        min-height: 44px;
+    }
+
+    [data-salonbw-drawer-mobile='true'] textarea {
+        min-height: 88px;
+    }
+
+    [data-salonbw-drawer-mobile='true'] .btn {
+        min-height: 44px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
