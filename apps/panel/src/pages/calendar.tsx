@@ -56,6 +56,7 @@ import {
     toDateParam,
 } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
+import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
 
 function CalendarPageShell() {
     return (
@@ -138,7 +139,7 @@ export default function CalendarPage() {
     const [receptionAlertFilter, setReceptionAlertFilter] = useState(false);
     const [receptionPriorityFilter, setReceptionPriorityFilter] =
         useState(false);
-    const [receptionNowTick, setReceptionNowTick] = useState(() => Date.now());
+    const receptionNowTick = useReceptionNowTick(currentView === 'reception');
     const [deepLinkError, setDeepLinkError] = useState<string | null>(null);
     const [customerAlertStatsError, setCustomerAlertStatsError] =
         useState(false);
@@ -442,18 +443,6 @@ export default function CalendarPage() {
         persistedActionsTotalCount,
         receptionActionsOnAlertsCount,
     ]);
-
-    useEffect(() => {
-        if (currentView !== 'reception') return;
-
-        const timerId = window.setInterval(() => {
-            setReceptionNowTick(Date.now());
-        }, 60_000);
-
-        return () => {
-            window.clearInterval(timerId);
-        };
-    }, [currentView]);
 
     useEffect(() => {
         setReceptionActionsOnAlertsCount(0);
