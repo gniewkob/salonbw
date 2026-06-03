@@ -2,7 +2,7 @@
 
 Data utworzenia: 2026-06-01
 Ostatnia aktualizacja: 2026-06-03
-Status: w trakcie realizacji (Tier 1-3 + dashboard + F5.1-F5.5 ukończone; F3 calendar split deferred na osobną sesję)
+Status: w trakcie realizacji (Tier 1-3 + dashboard + F5.1-F5.5 + F3a-c ukończone; F3d custom hooks deferred)
 Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 
 ## Progres wdrożenia (2026-06-03)
@@ -17,12 +17,13 @@ Następna faza po: `Faza E — Versum visual parity sprint` (zakończona)
 | F5.1-F5.3 | `658b8c7b5` | Versum #f4fbff stripes → neutral; .link_body i .btn-primary → brand silver |
 | F5.4 | `e29e2477f` | table padding 7/10/6 → 10/14 (3 sites); td.link_body a color → #4a4a4a |
 | F5.5 | `ee5aaf138` | .icon_link blue → neutral; nav-tabs hover → black; mini-chart bar → brand silver |
+| F3a-c | `6912ab124` | calendar.tsx 2365 → 1851 (-514). Wyciągnięte: 14 typów + 3 stałe do `types/calendar-page.ts`, 4 normalize funkcje + 2 helpery do `utils/calendarNormalize.ts`, 5 query helperów do `utils/calendarQueryState.ts`. Dodatkowo: ReceptionFollowUpPanel zdedup'owany. |
 
-**Łącznie:** ~-2400 linii kodu mniej, 8 commitów do produkcji w sesji 2026-06-01..03.
+**Łącznie:** ~-2900 linii kodu mniej, 9 commitów do produkcji w sesji 2026-06-01..03.
 
 ## Następne kroki (osobna sesja)
 
-- **F3 calendar.tsx split** (2365 linii → komponenty) — wymaga osobnej sesji z planem
+- **F3d calendar custom hooks** — wyciągnięcie 40+ `useState` z `CalendarPage` do `useReceptionInsights`, `useReceptionFollowUp`, `useFollowUpAudit`, `useCancellationRequests`, `useCustomerAlerts`. **Wysokie ryzyko** — interplay useEffect/useMemo łatwo złamać.
 - **F4 mobile mode** dla receptionistki — desktop-first → adaptive
 - **F5 sprite icons → Heroicons** (194 unikalne sprite'y do migracji)
 - **F2 dashboard polish** — widget "kto przychodzi w następne 2h"
