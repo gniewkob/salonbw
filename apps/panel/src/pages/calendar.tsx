@@ -8,6 +8,7 @@ import CalendarHeader from '@/components/calendar/CalendarHeader';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import ReceptionView from '@/components/calendar/ReceptionView';
+import MobileReceptionListView from '@/components/calendar/MobileReceptionListView';
 import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
 import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
@@ -40,6 +41,7 @@ import { useActionsAccounting } from '@/hooks/calendar/useActionsAccounting';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import { useDeepLinkResolver } from '@/hooks/calendar/useDeepLinkResolver';
 import { useCustomerAlerts } from '@/hooks/calendar/useCustomerAlerts';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 function CalendarPageShell() {
     return (
@@ -79,6 +81,7 @@ export default function CalendarPage() {
     const router = useRouter();
     const isRouterReady = router.isReady ?? true;
     const { role, user, apiFetch } = useAuth();
+    const isMobile = useIsMobile();
     const {
         currentDate,
         currentView,
@@ -960,27 +963,51 @@ export default function CalendarPage() {
                                         </label>
                                     </div>
                                 </div>
-                                <ReceptionView
-                                    appointments={receptionAppointments}
-                                    loading={loading}
-                                    customerAlertSeverityByCustomerId={
-                                        customerAlertSeverityById
-                                    }
-                                    onActionTracked={(params) => {
-                                        if (!params.customerAlertSeverity)
-                                            return;
-                                        incrementReceptionActionsOnAlerts();
-                                    }}
-                                    onChanged={() => {
-                                        void refetch();
-                                    }}
-                                    onOpenFinalizeAppointment={(id) => {
-                                        openAppointmentDeepLink(id);
-                                    }}
-                                    onOpenAppointment={(id) => {
-                                        openAppointmentDeepLink(id);
-                                    }}
-                                />
+                                {isMobile ? (
+                                    <MobileReceptionListView
+                                        appointments={receptionAppointments}
+                                        loading={loading}
+                                        customerAlertSeverityByCustomerId={
+                                            customerAlertSeverityById
+                                        }
+                                        onActionTracked={(params) => {
+                                            if (!params.customerAlertSeverity)
+                                                return;
+                                            incrementReceptionActionsOnAlerts();
+                                        }}
+                                        onChanged={() => {
+                                            void refetch();
+                                        }}
+                                        onOpenFinalizeAppointment={(id) => {
+                                            openAppointmentDeepLink(id);
+                                        }}
+                                        onOpenAppointment={(id) => {
+                                            openAppointmentDeepLink(id);
+                                        }}
+                                    />
+                                ) : (
+                                    <ReceptionView
+                                        appointments={receptionAppointments}
+                                        loading={loading}
+                                        customerAlertSeverityByCustomerId={
+                                            customerAlertSeverityById
+                                        }
+                                        onActionTracked={(params) => {
+                                            if (!params.customerAlertSeverity)
+                                                return;
+                                            incrementReceptionActionsOnAlerts();
+                                        }}
+                                        onChanged={() => {
+                                            void refetch();
+                                        }}
+                                        onOpenFinalizeAppointment={(id) => {
+                                            openAppointmentDeepLink(id);
+                                        }}
+                                        onOpenAppointment={(id) => {
+                                            openAppointmentDeepLink(id);
+                                        }}
+                                    />
+                                )}
                             </div>
                         ) : employeeMode ? (
                             <div className="d-flex flex-column gap-3">
