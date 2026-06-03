@@ -9,6 +9,7 @@ import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import ReceptionView from '@/components/calendar/ReceptionView';
 import MobileReceptionListView from '@/components/calendar/MobileReceptionListView';
+import MobileReceptionFiltersSheet from '@/components/calendar/MobileReceptionFiltersSheet';
 import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
 import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
@@ -104,6 +105,7 @@ export default function CalendarPage() {
         setPaymentFilter: setReceptionPaymentFilter,
         setAlertFilter: setReceptionAlertFilter,
         setPriorityFilter: setReceptionPriorityFilter,
+        resetAll: resetReceptionFilters,
     } = useReceptionFilters();
     const receptionNowTick = useReceptionNowTick(currentView === 'reception');
     const {
@@ -855,114 +857,137 @@ export default function CalendarPage() {
                                         </div>
                                     ) : null}
                                 </section>
-                                <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
-                                    <div>
-                                        <label
-                                            className="form-label form-label-sm mb-1"
-                                            htmlFor="reception-status-filter"
-                                        >
-                                            Status
-                                        </label>
-                                        <select
-                                            id="reception-status-filter"
-                                            className="form-select form-select-sm"
-                                            value={receptionStatusFilter}
-                                            onChange={(event) =>
-                                                setReceptionStatusFilter(
-                                                    event.target.value,
-                                                )
-                                            }
-                                        >
-                                            <option value="all">
-                                                Wszystkie
-                                            </option>
-                                            <option value="scheduled">
-                                                Zaplanowane
-                                            </option>
-                                            <option value="confirmed">
-                                                Potwierdzone
-                                            </option>
-                                            <option value="in_progress">
-                                                W trakcie
-                                            </option>
-                                            <option value="completed">
-                                                Zakończone
-                                            </option>
-                                            <option value="cancelled">
-                                                Anulowane
-                                            </option>
-                                            <option value="no_show">
-                                                No-show
-                                            </option>
-                                        </select>
+                                {isMobile ? (
+                                    <MobileReceptionFiltersSheet
+                                        statusFilter={receptionStatusFilter}
+                                        paymentFilter={receptionPaymentFilter}
+                                        alertFilter={receptionAlertFilter}
+                                        priorityFilter={receptionPriorityFilter}
+                                        setStatusFilter={
+                                            setReceptionStatusFilter
+                                        }
+                                        setPaymentFilter={
+                                            setReceptionPaymentFilter
+                                        }
+                                        setAlertFilter={setReceptionAlertFilter}
+                                        setPriorityFilter={
+                                            setReceptionPriorityFilter
+                                        }
+                                        resetAll={resetReceptionFilters}
+                                    />
+                                ) : null}
+                                {!isMobile ? (
+                                    <div className="d-flex flex-wrap align-items-end gap-2 rounded border bg-white p-2">
+                                        <div>
+                                            <label
+                                                className="form-label form-label-sm mb-1"
+                                                htmlFor="reception-status-filter"
+                                            >
+                                                Status
+                                            </label>
+                                            <select
+                                                id="reception-status-filter"
+                                                className="form-select form-select-sm"
+                                                value={receptionStatusFilter}
+                                                onChange={(event) =>
+                                                    setReceptionStatusFilter(
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            >
+                                                <option value="all">
+                                                    Wszystkie
+                                                </option>
+                                                <option value="scheduled">
+                                                    Zaplanowane
+                                                </option>
+                                                <option value="confirmed">
+                                                    Potwierdzone
+                                                </option>
+                                                <option value="in_progress">
+                                                    W trakcie
+                                                </option>
+                                                <option value="completed">
+                                                    Zakończone
+                                                </option>
+                                                <option value="cancelled">
+                                                    Anulowane
+                                                </option>
+                                                <option value="no_show">
+                                                    No-show
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label
+                                                className="form-label form-label-sm mb-1"
+                                                htmlFor="reception-payment-filter"
+                                            >
+                                                Płatność
+                                            </label>
+                                            <select
+                                                id="reception-payment-filter"
+                                                className="form-select form-select-sm"
+                                                value={receptionPaymentFilter}
+                                                onChange={(event) =>
+                                                    setReceptionPaymentFilter(
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            >
+                                                <option value="all">
+                                                    Wszystkie
+                                                </option>
+                                                <option value="unpaid">
+                                                    Nieopłacone
+                                                </option>
+                                                <option value="to_finalize">
+                                                    Do finalizacji
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div className="form-check pb-2">
+                                            <input
+                                                id="reception-alert-filter"
+                                                type="checkbox"
+                                                className="form-check-input"
+                                                checked={receptionAlertFilter}
+                                                onChange={(event) =>
+                                                    setReceptionAlertFilter(
+                                                        event.target.checked,
+                                                    )
+                                                }
+                                            />
+                                            <label
+                                                className="form-check-label small"
+                                                htmlFor="reception-alert-filter"
+                                            >
+                                                Tylko z alertem CRM
+                                            </label>
+                                        </div>
+                                        <div className="form-check pb-2">
+                                            <input
+                                                id="reception-priority-filter"
+                                                type="checkbox"
+                                                className="form-check-input"
+                                                checked={
+                                                    receptionPriorityFilter
+                                                }
+                                                onChange={(event) =>
+                                                    setReceptionPriorityFilter(
+                                                        event.target.checked,
+                                                    )
+                                                }
+                                            />
+                                            <label
+                                                className="form-check-label small"
+                                                htmlFor="reception-priority-filter"
+                                            >
+                                                Tylko priorytetowe
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label
-                                            className="form-label form-label-sm mb-1"
-                                            htmlFor="reception-payment-filter"
-                                        >
-                                            Płatność
-                                        </label>
-                                        <select
-                                            id="reception-payment-filter"
-                                            className="form-select form-select-sm"
-                                            value={receptionPaymentFilter}
-                                            onChange={(event) =>
-                                                setReceptionPaymentFilter(
-                                                    event.target.value,
-                                                )
-                                            }
-                                        >
-                                            <option value="all">
-                                                Wszystkie
-                                            </option>
-                                            <option value="unpaid">
-                                                Nieopłacone
-                                            </option>
-                                            <option value="to_finalize">
-                                                Do finalizacji
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div className="form-check pb-2">
-                                        <input
-                                            id="reception-alert-filter"
-                                            type="checkbox"
-                                            className="form-check-input"
-                                            checked={receptionAlertFilter}
-                                            onChange={(event) =>
-                                                setReceptionAlertFilter(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                        />
-                                        <label
-                                            className="form-check-label small"
-                                            htmlFor="reception-alert-filter"
-                                        >
-                                            Tylko z alertem CRM
-                                        </label>
-                                    </div>
-                                    <div className="form-check pb-2">
-                                        <input
-                                            id="reception-priority-filter"
-                                            type="checkbox"
-                                            className="form-check-input"
-                                            checked={receptionPriorityFilter}
-                                            onChange={(event) =>
-                                                setReceptionPriorityFilter(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                        />
-                                        <label
-                                            className="form-check-label small"
-                                            htmlFor="reception-priority-filter"
-                                        >
-                                            Tylko priorytetowe
-                                        </label>
-                                    </div>
-                                </div>
+                                ) : null}
                                 {isMobile ? (
                                     <MobileReceptionListView
                                         appointments={receptionAppointments}
