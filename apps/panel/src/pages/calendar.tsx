@@ -31,13 +31,10 @@ import type {
     ReceptionAlertSeverityByCustomerId,
 } from '@/types';
 import type {
-    CancellationRequestActionState,
-    CancellationRequestQueueItem,
     CustomerStatisticsBatchResponse,
     DrawerState,
     ReceptionOperationalSummaryResponse,
 } from '@/types/calendar-page';
-import { normalizeCancellationRequestsResponse } from '@/utils/calendarNormalize';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
@@ -46,6 +43,7 @@ import { useCalendarUrlSync } from '@/hooks/calendar/useCalendarUrlSync';
 import { useReceptionInsights } from '@/hooks/calendar/useReceptionInsights';
 import { useReceptionFollowUp } from '@/hooks/calendar/useReceptionFollowUp';
 import { useFollowUpAudit } from '@/hooks/calendar/useFollowUpAudit';
+import { useCancellationRequests } from '@/hooks/calendar/useCancellationRequests';
 
 function CalendarPageShell() {
     return (
@@ -173,17 +171,6 @@ export default function CalendarPage() {
         currentDate,
         apiFetch,
     });
-    const [cancellationRequestsLoading, setCancellationRequestsLoading] =
-        useState(false);
-    const [cancellationRequestsError, setCancellationRequestsError] =
-        useState(false);
-    const [cancellationRequests, setCancellationRequests] = useState<
-        CancellationRequestQueueItem[]
-    >([]);
-    const [
-        cancellationRequestActionStateByAppointmentId,
-        setCancellationRequestActionStateByAppointmentId,
-    ] = useState<Record<number, CancellationRequestActionState>>({});
     const [drawer, setDrawer] = useState<DrawerState>({
         open: false,
         mode: 'create',
@@ -209,6 +196,20 @@ export default function CalendarPage() {
         enabled: queryStateReady,
     });
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
+    const {
+        loading: cancellationRequestsLoading,
+        error: cancellationRequestsError,
+        requests: cancellationRequests,
+        actionStateByAppointmentId:
+            cancellationRequestActionStateByAppointmentId,
+        cancelRequest: handleCancelFromRequestQueue,
+    } = useCancellationRequests({
+        enabled: currentView === 'reception',
+        apiFetch,
+        onAfterCancel: () => {
+            void refetch();
+        },
+    });
 
     useEffect(() => {
         configureReceptionTelemetryTransport((payload) =>
@@ -471,80 +472,6 @@ export default function CalendarPage() {
             cancelled = true;
         };
     }, [apiFetch, currentDate, currentView]);
-
-    useEffect(() => {
-        if (currentView !== 'reception') {
-            setCancellationRequestsLoading(false);
-            setCancellationRequestsError(false);
-            setCancellationRequests([]);
-            setCancellationRequestActionStateByAppointmentId({});
-            return;
-        }
-
-        let cancelled = false;
-        setCancellationRequestsLoading(true);
-        setCancellationRequestsError(false);
-
-        void apiFetch<CancellationRequestQueueItem[]>(
-            '/appointments/cancellation-requests?limit=50',
-        )
-            .then((response) => {
-                if (cancelled) return;
-                setCancellationRequests(
-                    normalizeCancellationRequestsResponse(response),
-                );
-                setCancellationRequestsError(false);
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setCancellationRequests([]);
-                setCancellationRequestsError(true);
-            })
-            .finally(() => {
-                if (cancelled) return;
-                setCancellationRequestsLoading(false);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [apiFetch, currentView]);
-
-    const handleCancelFromRequestQueue = (appointmentId: number) => {
-        setCancellationRequestActionStateByAppointmentId((current) => ({
-            ...current,
-            [appointmentId]: { status: 'pending' },
-        }));
-
-        void apiFetch(`/appointments/${appointmentId}/cancel`, {
-            method: 'PATCH',
-        })
-            .then(() => {
-                setCancellationRequests((current) =>
-                    current.filter(
-                        (request) => request.appointmentId !== appointmentId,
-                    ),
-                );
-                setCancellationRequestActionStateByAppointmentId((current) => ({
-                    ...current,
-                    [appointmentId]: {
-                        status: 'success',
-                        message: 'Wizyta została anulowana.',
-                    },
-                }));
-                void refetch();
-            })
-            .catch(() => {
-                setCancellationRequestActionStateByAppointmentId((current) => ({
-                    ...current,
-                    [appointmentId]: {
-                        status: 'error',
-                        message:
-                            'Nie udało się anulować wizyty. Spróbuj ponownie.',
-                    },
-                }));
-            });
-    };
 
     useEffect(() => {
         const appointmentIdParam = Array.isArray(router.query.appointmentId)
