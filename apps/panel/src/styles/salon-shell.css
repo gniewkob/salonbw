@@ -8310,3 +8310,22 @@ summary:focus-visible {
 .salonbw-mobile-tabs-nav::-webkit-scrollbar {
     display: none;
 }
+
+/* ========================================
+   Unwrapped .salonbw-table mobile scroll
+   ----------------------------------------
+   ~14 of 24 salonbw-table instances aren't wrapped in
+   .salonbw-table-wrap. Without an override they overflow the
+   390px viewport horizontally and push the page sideways. Giving
+   the bare table itself overflow-x:auto + display:block lets it
+   scroll inside its column instead of breaking the layout.
+   ======================================== */
+
+@media (max-width: 767px) {
+    .salonbw-table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
