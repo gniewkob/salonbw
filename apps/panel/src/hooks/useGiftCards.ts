@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMutationToast } from '@/hooks/useMutationToast';
 import type {
     GiftCard,
     GiftCardStats,
@@ -118,9 +119,17 @@ export function useValidateGiftCard(
     });
 }
 
+function useInvalidateGiftCards() {
+    const queryClient = useQueryClient();
+    return () => {
+        void queryClient.invalidateQueries({ queryKey: GIFT_CARDS_QUERY_KEY });
+    };
+}
+
 export function useCreateGiftCard() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateGiftCards();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: CreateGiftCardRequest) => {
@@ -129,17 +138,18 @@ export function useCreateGiftCard() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: GIFT_CARDS_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Karta podarunkowa wystawiona',
+            'Nie udało się wystawić karty podarunkowej',
+            invalidate,
+        ),
     });
 }
 
 export function useUpdateGiftCard() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateGiftCards();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async ({
@@ -154,17 +164,18 @@ export function useUpdateGiftCard() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: GIFT_CARDS_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Karta podarunkowa zapisana',
+            'Nie udało się zapisać karty podarunkowej',
+            invalidate,
+        ),
     });
 }
 
 export function useRedeemGiftCard() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateGiftCards();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: RedeemGiftCardRequest) => {
@@ -173,17 +184,18 @@ export function useRedeemGiftCard() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: GIFT_CARDS_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Karta podarunkowa zrealizowana',
+            'Nie udało się zrealizować karty podarunkowej',
+            invalidate,
+        ),
     });
 }
 
 export function useAdjustGiftCardBalance() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateGiftCards();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async ({
@@ -198,17 +210,18 @@ export function useAdjustGiftCardBalance() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: GIFT_CARDS_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Saldo karty podarunkowej zaktualizowane',
+            'Nie udało się zaktualizować salda',
+            invalidate,
+        ),
     });
 }
 
 export function useCancelGiftCard() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateGiftCards();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async ({ id, reason }: { id: number; reason?: string }) => {
@@ -217,10 +230,10 @@ export function useCancelGiftCard() {
                 body: JSON.stringify({ reason }),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: GIFT_CARDS_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Karta podarunkowa anulowana',
+            'Nie udało się anulować karty podarunkowej',
+            invalidate,
+        ),
     });
 }
