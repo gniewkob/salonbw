@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMutationToast } from '@/hooks/useMutationToast';
 
 export type CustomerFileCategory =
     | 'consent'
@@ -52,6 +53,7 @@ export function useCustomerFiles(customerId: number | null) {
 export function useUploadCustomerFile(customerId: number) {
     const { apiFetch } = useAuth();
     const qc = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (payload: {
@@ -72,17 +74,18 @@ export function useUploadCustomerFile(customerId: number) {
                 },
             );
         },
-        onSuccess: async () => {
-            await qc.invalidateQueries({
+        ...toast.feedback('Plik dodany', 'Nie udało się dodać pliku', () => {
+            void qc.invalidateQueries({
                 queryKey: ['customers', customerId, 'files'],
             });
-        },
+        }),
     });
 }
 
 export function useDeleteCustomerFile(customerId: number) {
     const { apiFetch } = useAuth();
     const qc = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (fileId: number) => {
@@ -91,11 +94,11 @@ export function useDeleteCustomerFile(customerId: number) {
                 { method: 'DELETE' },
             );
         },
-        onSuccess: async () => {
-            await qc.invalidateQueries({
+        ...toast.feedback('Plik usunięty', 'Nie udało się usunąć pliku', () => {
+            void qc.invalidateQueries({
                 queryKey: ['customers', customerId, 'files'],
             });
-        },
+        }),
     });
 }
 
@@ -112,6 +115,7 @@ export function useCustomerGallery(customerId: number | null) {
 export function useUploadCustomerGalleryImage(customerId: number) {
     const { apiFetch } = useAuth();
     const qc = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (payload: {
@@ -133,17 +137,22 @@ export function useUploadCustomerGalleryImage(customerId: number) {
                 },
             );
         },
-        onSuccess: async () => {
-            await qc.invalidateQueries({
-                queryKey: ['customers', customerId, 'gallery'],
-            });
-        },
+        ...toast.feedback(
+            'Zdjęcie dodane do galerii',
+            'Nie udało się dodać zdjęcia',
+            () => {
+                void qc.invalidateQueries({
+                    queryKey: ['customers', customerId, 'gallery'],
+                });
+            },
+        ),
     });
 }
 
 export function useDeleteCustomerGalleryImage(customerId: number) {
     const { apiFetch } = useAuth();
     const qc = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (imageId: number) => {
@@ -152,10 +161,14 @@ export function useDeleteCustomerGalleryImage(customerId: number) {
                 { method: 'DELETE' },
             );
         },
-        onSuccess: async () => {
-            await qc.invalidateQueries({
-                queryKey: ['customers', customerId, 'gallery'],
-            });
-        },
+        ...toast.feedback(
+            'Zdjęcie usunięte z galerii',
+            'Nie udało się usunąć zdjęcia',
+            () => {
+                void qc.invalidateQueries({
+                    queryKey: ['customers', customerId, 'gallery'],
+                });
+            },
+        ),
     });
 }
