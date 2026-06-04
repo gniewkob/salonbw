@@ -8278,3 +8278,30 @@ summary:focus-visible {
         background: #f1f3f5 !important;
     }
 }
+
+/* ========================================
+   Micro-interactions: tactile press feedback
+   ----------------------------------------
+   100 ms transform on press for buttons + interactive cards/links.
+   Scoped so it activates only on devices with coarse pointer +
+   reduce-motion off — desktop mouse and motion-sensitive users
+   keep the static UI.
+   ======================================== */
+
+@media (max-width: 767px) and (pointer: coarse) and
+    (prefers-reduced-motion: no-preference) {
+    button:not(.btn-close):not([disabled]),
+    [role='button']:not([disabled]),
+    .booking-service-card,
+    .salonbw-touch-card {
+        transition: transform 90ms ease-out, opacity 90ms ease-out;
+    }
+
+    button:not(.btn-close):not([disabled]):active,
+    [role='button']:not([disabled]):active,
+    .booking-service-card:active,
+    .salonbw-touch-card:active {
+        transform: scale(0.97);
+        opacity: 0.92;
+    }
+}
