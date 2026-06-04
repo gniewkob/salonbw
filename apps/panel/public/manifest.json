@@ -1,0 +1,27 @@
+{
+    "name": "Salon Black & White — Panel",
+    "short_name": "Salon B&W",
+    "description": "Panel CRM Salonu Black & White: kalendarz, klienci, akcje recepcji.",
+    "lang": "pl-PL",
+    "start_url": "/calendar",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#080808",
+    "theme_color": "#0d0d0d",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "type": "image/svg+xml",
+            "sizes": "any",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon.ico",
+            "type": "image/x-icon",
+            "sizes": "48x48"
+        }
+    ],
+    "categories": ["business", "productivity"],
+    "prefer_related_applications": false
+}

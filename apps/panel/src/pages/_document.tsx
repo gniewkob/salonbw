@@ -15,6 +15,20 @@ export default function Document(props: CustomDocumentProps) {
                     name="viewport"
                     content="width=device-width, initial-scale=1"
                 />
+                <link rel="manifest" href="/manifest.json" />
+                <meta name="theme-color" content="#0d0d0d" />
+                <meta name="application-name" content="Salon B&amp;W" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta
+                    name="apple-mobile-web-app-status-bar-style"
+                    content="black-translucent"
+                />
+                <meta
+                    name="apple-mobile-web-app-title"
+                    content="Salon B&amp;W"
+                />
+                <link rel="apple-touch-icon" href="/icon.svg" />
+                <link rel="icon" type="image/svg+xml" href="/icon.svg" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
                     rel="preconnect"
