@@ -7,6 +7,7 @@ import {
     keepPreviousData,
 } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     Customer,
     CustomerGroup,
@@ -56,6 +57,7 @@ export function useCustomer(id: number | null) {
 export function useCreateCustomer() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: (data: Partial<Customer>) =>
@@ -66,6 +68,10 @@ export function useCreateCustomer() {
             }),
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['customers'] });
+            toast.success('Klient dodany');
+        },
+        onError: () => {
+            toast.error('Nie udało się dodać klienta');
         },
     });
 }
@@ -73,6 +79,7 @@ export function useCreateCustomer() {
 export function useUpdateCustomer() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: ({ id, data }: { id: number; data: Partial<Customer> }) =>
@@ -86,6 +93,10 @@ export function useUpdateCustomer() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer', variables.id],
             });
+            toast.success('Dane klienta zapisane');
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać klienta');
         },
     });
 }
@@ -93,6 +104,7 @@ export function useUpdateCustomer() {
 export function useDeleteCustomer() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: (id: number) =>
@@ -102,6 +114,10 @@ export function useDeleteCustomer() {
         onSuccess: (_result, id) => {
             void queryClient.invalidateQueries({ queryKey: ['customers'] });
             void queryClient.removeQueries({ queryKey: ['customer', id] });
+            toast.success('Klient usunięty');
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć klienta');
         },
     });
 }
