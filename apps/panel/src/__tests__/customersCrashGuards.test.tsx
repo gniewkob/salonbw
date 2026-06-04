@@ -131,7 +131,7 @@ describe('customers crash guards', () => {
 
         render(<CustomerFilesTab customerId={1} />);
         expect(
-            screen.getByText('Brak dokumentów klienta.'),
+            screen.getByText('Brak dokumentów klienta'),
         ).toBeInTheDocument();
     });
 

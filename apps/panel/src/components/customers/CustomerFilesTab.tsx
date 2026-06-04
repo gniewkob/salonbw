@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import {
     getBrowserApiBase,
     useCustomerFiles,
@@ -8,6 +9,7 @@ import {
     useUploadCustomerFile,
     type CustomerFileCategory,
 } from '@/hooks/useCustomerMedia';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Props {
     customerId: number;
@@ -167,11 +169,24 @@ export default function CustomerFilesTab({ customerId }: Props) {
                         </div>
 
                         {filteredFiles.length === 0 ? (
-                            <div className="customer-empty-state">
-                                {filterCategory === 'all'
-                                    ? 'Brak dokumentów klienta.'
-                                    : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as CustomerFileCategory].label}".`}
-                            </div>
+                            <EmptyState
+                                icon={
+                                    <DocumentTextIcon
+                                        style={{ width: 44, height: 44 }}
+                                    />
+                                }
+                                title={
+                                    filterCategory === 'all'
+                                        ? 'Brak dokumentów klienta'
+                                        : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as CustomerFileCategory].label}"`
+                                }
+                                description={
+                                    filterCategory === 'all'
+                                        ? 'Załączenie umowy, zgody RODO czy faktury pojawi się tutaj.'
+                                        : 'Wybierz inną kategorię lub załącz nowy dokument.'
+                                }
+                                compact
+                            />
                         ) : (
                             <div className="salonbw-table-wrap">
                                 <table className="salonbw-table fz-13">
