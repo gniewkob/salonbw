@@ -127,9 +127,7 @@ describe('customers crash guards', () => {
 
     it('renders gallery and files empty states for malformed media payload', () => {
         render(<CustomerGalleryTab customerId={1} />);
-        expect(
-            screen.getByText('Brak zdjęć w galerii klienta.'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Galeria jest pusta')).toBeInTheDocument();
 
         render(<CustomerFilesTab customerId={1} />);
         expect(

@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
+import { PhotoIcon } from '@heroicons/react/24/outline';
 import {
     getBrowserApiBase,
     useCustomerGallery,
     useDeleteCustomerGalleryImage,
     useUploadCustomerGalleryImage,
 } from '@/hooks/useCustomerMedia';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Props {
     customerId: number;
@@ -57,9 +59,16 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                 <p>Nie udało się załadować galerii</p>
                             </div>
                         ) : images.length === 0 ? (
-                            <div className="customer-empty-state">
-                                Brak zdjęć w galerii klienta.
-                            </div>
+                            <EmptyState
+                                icon={
+                                    <PhotoIcon
+                                        style={{ width: 44, height: 44 }}
+                                    />
+                                }
+                                title="Galeria jest pusta"
+                                description="Dodaj pierwsze zdjęcie aby śledzić efekty pracy nad tym klientem."
+                                compact
+                            />
                         ) : (
                             <div className="row">
                                 {images.map((image) => (
