@@ -12,6 +12,7 @@ import '@/styles/salon-shell.css';
 import '@/styles/globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import RouteProgress from '@/components/RouteProgress';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { initSentry } from '@/sentry.client';
 import {
     isAnalyticsEnabled,
@@ -138,6 +139,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                             </>
                         )}
                         <RouteProgress />
+                        <PWAInstallPrompt />
                         <Component {...pageProps} />
                     </SecondaryNavProvider>
                 </ToastProvider>
