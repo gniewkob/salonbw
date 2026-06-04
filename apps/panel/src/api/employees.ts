@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { Employee } from '@/types';
+import { Employee, StaffRole } from '@/types';
 
 export function useEmployeeApi() {
     const { apiFetch } = useAuth();
@@ -10,6 +10,7 @@ export function useEmployeeApi() {
         firstName: string;
         lastName: string;
         email?: string;
+        role?: StaffRole;
     }) => {
         try {
             const res = await apiFetch<Employee>('/employees', {
@@ -43,6 +44,21 @@ export function useEmployeeApi() {
         }
     };
 
+    const updateRole = async (id: number, role: StaffRole) => {
+        try {
+            const res = await apiFetch<Employee>(`/employees/${id}/role`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role }),
+            });
+            toast.success('Rola zaktualizowana');
+            return res;
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
+            throw err;
+        }
+    };
+
     const remove = async (id: number) => {
         try {
             await apiFetch(`/employees/${id}`, { method: 'DELETE' });
@@ -53,5 +69,5 @@ export function useEmployeeApi() {
         }
     };
 
-    return { create, update, remove };
+    return { create, update, updateRole, remove };
 }

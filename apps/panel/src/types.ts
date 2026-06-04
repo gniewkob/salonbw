@@ -6,6 +6,7 @@ export interface Client {
 }
 
 export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
+export type StaffRole = 'employee' | 'receptionist' | 'admin';
 
 export interface User {
     id: number;

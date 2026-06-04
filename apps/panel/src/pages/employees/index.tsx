@@ -10,7 +10,7 @@ import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeApi } from '@/api/employees';
-import { Employee } from '@/types';
+import { Employee, StaffRole } from '@/types';
 
 import type EmployeeFormComponent from '@/components/EmployeeForm';
 
@@ -25,6 +25,20 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
         ),
     },
 );
+
+const ROLE_LABELS: Record<string, string> = {
+    admin: 'Administrator',
+    employee: 'Pracownik',
+    receptionist: 'Recepcja',
+    client: 'Klient',
+};
+
+const ROLE_BADGE: Record<string, string> = {
+    admin: 'badge bg-danger',
+    employee: 'badge bg-primary',
+    receptionist: 'badge bg-info text-dark',
+    client: 'badge bg-secondary',
+};
 
 export default function EmployeesPage() {
     const { role } = useAuth();
@@ -46,12 +60,21 @@ export default function EmployeesPage() {
         { header: 'ID', accessor: 'id' },
         { header: 'Pracownik', accessor: 'fullName' },
         { header: 'Email', accessor: 'email' },
+        {
+            header: 'Rola',
+            accessor: (r) => (
+                <span className={ROLE_BADGE[r.role ?? 'employee'] ?? 'badge bg-secondary'}>
+                    {ROLE_LABELS[r.role ?? 'employee'] ?? r.role}
+                </span>
+            ),
+        },
     ];
 
     const handleCreate = async (values: {
         firstName: string;
         lastName: string;
         email?: string;
+        role?: StaffRole;
     }) => {
         const created = await api.create(values);
         setRows((c) => [...c, created]);
@@ -62,10 +85,22 @@ export default function EmployeesPage() {
         firstName: string;
         lastName: string;
         email?: string;
+        role?: StaffRole;
     }) => {
         if (!editing) return;
         const updated = await api.update(editing.id, values);
-        setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
+        if (values.role && values.role !== editing.role) {
+            await api.updateRole(editing.id, values.role);
+            setRows((c) =>
+                c.map((cl) =>
+                    cl.id === editing.id
+                        ? { ...updated, role: values.role! }
+                        : cl,
+                ),
+            );
+        } else {
+            setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
+        }
         setEditing(null);
         setOpenForm(false);
     };

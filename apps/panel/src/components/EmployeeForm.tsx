@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Employee } from '@/types';
+import { Employee, StaffRole } from '@/types';
 
 interface Props {
     initial?: Partial<Employee>;
@@ -7,15 +7,25 @@ interface Props {
         firstName: string;
         lastName: string;
         email?: string;
+        role?: StaffRole;
     }) => Promise<void>;
     onCancel: () => void;
 }
+
+const ROLE_OPTIONS: { value: StaffRole; label: string }[] = [
+    { value: 'employee', label: 'Pracownik' },
+    { value: 'receptionist', label: 'Recepcja' },
+    { value: 'admin', label: 'Administrator' },
+];
 
 export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
     const isEditing = Boolean(initial?.id);
     const [firstName, setFirstName] = useState(initial?.firstName ?? '');
     const [lastName, setLastName] = useState(initial?.lastName ?? '');
     const [email, setEmail] = useState('');
+    const [role, setRole] = useState<StaffRole>(
+        (initial?.role as StaffRole) ?? 'employee',
+    );
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -38,6 +48,7 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
             await onSubmit({
                 firstName: trimmedFirst,
                 lastName: trimmedLast,
+                role,
                 ...(!isEditing && email.trim() ? { email: email.trim() } : {}),
             });
         } catch (err) {
@@ -102,6 +113,24 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
                     </div>
                 </div>
             )}
+            <div className="mb-3">
+                <label htmlFor="ef-role" className="form-label fw-medium">
+                    Rola
+                </label>
+                <select
+                    id="ef-role"
+                    className="form-select"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as StaffRole)}
+                    disabled={submitting}
+                >
+                    {ROLE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
             {error && (
                 <div
                     role="alert"

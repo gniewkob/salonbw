@@ -3,8 +3,10 @@ import {
     Controller,
     Delete,
     Get,
+    NotFoundException,
     Param,
     ParseIntPipe,
+    Patch,
     Post,
     Put,
     UseGuards,
@@ -17,7 +19,13 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
-import { IsString, MinLength, IsOptional, IsEmail } from 'class-validator';
+import {
+    IsString,
+    MinLength,
+    IsOptional,
+    IsEmail,
+    IsEnum,
+} from 'class-validator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -29,6 +37,8 @@ import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from './user.entity';
+
+const STAFF_ROLES: Role[] = [Role.Admin, Role.Employee, Role.Receptionist];
 
 class CreateEmployeeDto {
     @IsString()
@@ -44,6 +54,14 @@ class CreateEmployeeDto {
     @MinLength(6)
     @IsOptional()
     password?: string;
+    @IsEnum(Role)
+    @IsOptional()
+    role?: Role;
+}
+
+class UpdateRoleDto {
+    @IsEnum(Role)
+    role!: Role;
 }
 
 @ApiTags('employees')
@@ -60,15 +78,17 @@ export class EmployeesController {
     @Roles(Role.Admin)
     @Get()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'List employees (adds fullName field)' })
+    @ApiOperation({ summary: 'List all staff users (employee, receptionist, admin)' })
     async list() {
-        const users = await this.usersService.findAllByRole(Role.Employee);
-        return users.map((u) => ({
-            ...u,
-            fullName: u.name,
-            firstName: u.name.split(' ')[0] ?? '',
-            lastName: u.name.split(' ').slice(1).join(' ') ?? '',
-        }));
+        const users = await this.usersService.findAll();
+        return users
+            .filter((u) => STAFF_ROLES.includes(u.role))
+            .map((u) => ({
+                ...u,
+                fullName: u.name,
+                firstName: u.name.split(' ')[0] ?? '',
+                lastName: u.name.split(' ').slice(1).join(' ') ?? '',
+            }));
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -91,10 +111,10 @@ export class EmployeesController {
     @Roles(Role.Admin)
     @Get(':id')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get single employee by id' })
+    @ApiOperation({ summary: 'Get single staff user by id' })
     async getOne(@Param('id', ParseIntPipe) id: number) {
         const user = await this.usersService.findById(id);
-        if (!user || user.role !== Role.Employee) {
+        if (!user || !STAFF_ROLES.includes(user.role)) {
             return null;
         }
         return {
@@ -115,9 +135,13 @@ export class EmployeesController {
         const name = `${dto.firstName} ${dto.lastName}`.trim();
         const email = dto.email || this.genEmail(name, 'employee');
         const password = dto.password || this.genPassword();
+        const assignedRole =
+            dto.role && STAFF_ROLES.includes(dto.role)
+                ? dto.role
+                : Role.Employee;
         const created = await this.usersService.createUserWithRole(
             { email, password, name },
-            Role.Employee,
+            assignedRole,
         );
         await this.logService.logAction(
             actor ?? null,
@@ -153,6 +177,33 @@ export class EmployeesController {
             );
             return updated;
         });
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Patch(':id/role')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Change role for a staff user' })
+    async changeRole(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateRoleDto,
+        @CurrentUser() actor?: User,
+    ) {
+        if (!STAFF_ROLES.includes(dto.role)) {
+            throw new BadRequestException(
+                'Role must be admin, employee, or receptionist',
+            );
+        }
+        const user = await this.usersService.findById(id);
+        if (!user) throw new NotFoundException('User not found');
+        const prevRole = user.role;
+        const updated = await this.usersService.updateRole(id, dto.role);
+        await this.logService.logAction(
+            actor ?? null,
+            LogAction.EMPLOYEE_ROLE_CHANGED,
+            { employeeId: id, employeeName: user.name, prevRole, newRole: dto.role },
+        );
+        return updated;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

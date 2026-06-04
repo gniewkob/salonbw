@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 
 export interface Column<T> {
     header: string;
-    accessor: keyof T;
+    accessor: keyof T | ((row: T) => React.ReactNode);
+    sortKey?: keyof T;
 }
 
 interface Props<T> {
@@ -11,6 +12,11 @@ interface Props<T> {
     initialSort?: keyof T;
     renderActions?: (row: T) => React.ReactNode;
     pageSize?: number;
+}
+
+function getCellValue<T>(row: T, accessor: Column<T>['accessor']): React.ReactNode {
+    if (typeof accessor === 'function') return accessor(row);
+    return String(row[accessor] ?? '');
 }
 
 export default function DataTable<T>({
@@ -26,11 +32,10 @@ export default function DataTable<T>({
     const [page, setPage] = useState(0);
 
     const filtered = data.filter((item) =>
-        columns.some((c) =>
-            String(item[c.accessor])
-                .toLowerCase()
-                .includes(search.toLowerCase()),
-        ),
+        columns.some((c) => {
+            const val = getCellValue(item, c.accessor);
+            return String(val ?? '').toLowerCase().includes(search.toLowerCase());
+        }),
     );
 
     const sorted = sortKey
@@ -46,7 +51,9 @@ export default function DataTable<T>({
     const paginated = sorted.slice(page * pageSize, (page + 1) * pageSize);
     const totalPages = Math.ceil(sorted.length / pageSize);
 
-    const toggleSort = (key: keyof T) => {
+    const toggleSort = (col: Column<T>) => {
+        const key = col.sortKey ?? (typeof col.accessor !== 'function' ? col.accessor : undefined);
+        if (!key) return;
         if (sortKey === key) {
             setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
         } else {
@@ -54,6 +61,13 @@ export default function DataTable<T>({
             setSortDir('asc');
         }
     };
+
+    const colKey = (col: Column<T>) =>
+        col.sortKey
+            ? String(col.sortKey)
+            : typeof col.accessor === 'function'
+              ? col.header
+              : String(col.accessor);
 
     return (
         <div>
@@ -66,17 +80,33 @@ export default function DataTable<T>({
             <table className="w-100 border">
                 <thead>
                     <tr className="bg-light">
-                        {columns.map((col) => (
-                            <th
-                                key={String(col.accessor)}
-                                className="p-2 text-start"
-                                onClick={() => toggleSort(col.accessor)}
-                            >
-                                {col.header}
-                                {sortKey === col.accessor &&
-                                    (sortDir === 'asc' ? ' ▲' : ' ▼')}
-                            </th>
-                        ))}
+                        {columns.map((col) => {
+                            const sortable =
+                                col.sortKey ||
+                                typeof col.accessor !== 'function';
+                            const activeKey =
+                                col.sortKey ??
+                                (typeof col.accessor !== 'function'
+                                    ? col.accessor
+                                    : undefined);
+                            return (
+                                <th
+                                    key={colKey(col)}
+                                    className="p-2 text-start"
+                                    style={sortable ? { cursor: 'pointer' } : undefined}
+                                    onClick={
+                                        sortable
+                                            ? () => toggleSort(col)
+                                            : undefined
+                                    }
+                                >
+                                    {col.header}
+                                    {activeKey &&
+                                        sortKey === activeKey &&
+                                        (sortDir === 'asc' ? ' ▲' : ' ▼')}
+                                </th>
+                            );
+                        })}
                         <th className="p-2" />
                     </tr>
                 </thead>
@@ -84,8 +114,8 @@ export default function DataTable<T>({
                     {paginated.map((row, i) => (
                         <tr key={i} className="border-top">
                             {columns.map((col) => (
-                                <td key={String(col.accessor)} className="p-2">
-                                    {String(row[col.accessor])}
+                                <td key={colKey(col)} className="p-2">
+                                    {getCellValue(row, col.accessor)}
                                 </td>
                             ))}
                             <td className="p-2">

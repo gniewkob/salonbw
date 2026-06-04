@@ -134,6 +134,11 @@ export class UsersService {
         return this.findById(id);
     }
 
+    async updateRole(id: number, role: Role): Promise<User | null> {
+        await this.usersRepository.update(id, { role });
+        return this.findById(id);
+    }
+
     async remove(id: number): Promise<void> {
         await this.usersRepository.delete(id);
     }
