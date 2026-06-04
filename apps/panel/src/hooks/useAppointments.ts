@@ -3,6 +3,7 @@ import type { Appointment as LocalAppointment, CalendarEvent } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 
 type AppointmentsResponse =
     paths['/appointments']['get']['responses']['200']['content']['application/json'];
@@ -83,9 +84,21 @@ export function useMyAppointments(options: UseAppointmentsOptions = {}) {
     };
 }
 
+const STATUS_TOAST_LABELS: Record<string, string> = {
+    confirmed: 'Wizyta potwierdzona',
+    in_progress: 'Wizyta rozpoczęta',
+    completed: 'Wizyta zakończona',
+    no_show: 'Oznaczono jako nieobecność',
+    cancelled: 'Wizyta anulowana',
+    online_pending: 'Wizyta oczekuje',
+    rescheduled_pending: 'Termin oczekuje na akceptację',
+    scheduled: 'Wizyta zaplanowana',
+};
+
 export function useAppointmentMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     const invalidateAppointments = () => {
         void queryClient.invalidateQueries({
@@ -105,7 +118,13 @@ export function useAppointmentMutations() {
                 method: 'PATCH',
             });
         },
-        onSuccess: invalidateAppointments,
+        onSuccess: () => {
+            invalidateAppointments();
+            toast.success('Wizyta anulowana');
+        },
+        onError: () => {
+            toast.error('Nie udało się anulować wizyty');
+        },
     });
 
     const completeAppointment = useMutation({
@@ -114,7 +133,13 @@ export function useAppointmentMutations() {
                 method: 'PATCH',
             });
         },
-        onSuccess: invalidateAppointments,
+        onSuccess: () => {
+            invalidateAppointments();
+            toast.success('Wizyta zakończona');
+        },
+        onError: () => {
+            toast.error('Nie udało się zakończyć wizyty');
+        },
     });
 
     const updateAppointmentStatus = useMutation({
@@ -125,7 +150,16 @@ export function useAppointmentMutations() {
                 body: JSON.stringify({ status }),
             });
         },
-        onSuccess: invalidateAppointments,
+        onSuccess: (_data, variables) => {
+            invalidateAppointments();
+            const label =
+                STATUS_TOAST_LABELS[variables.status] ??
+                'Status wizyty zaktualizowany';
+            toast.success(label);
+        },
+        onError: () => {
+            toast.error('Nie udało się zaktualizować wizyty');
+        },
     });
 
     return {
