@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMutationToast } from '@/hooks/useMutationToast';
 import type {
     LoyaltyProgram,
     LoyaltyBalance,
@@ -32,9 +33,17 @@ export function useLoyaltyProgram() {
     });
 }
 
+function useInvalidateLoyalty() {
+    const queryClient = useQueryClient();
+    return () => {
+        void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
+    };
+}
+
 export function useUpdateLoyaltyProgram() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: UpdateLoyaltyProgramRequest) => {
@@ -43,9 +52,11 @@ export function useUpdateLoyaltyProgram() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Program lojalnościowy zapisany',
+            'Nie udało się zapisać programu',
+            invalidate,
+        ),
     });
 }
 
@@ -124,7 +135,8 @@ export function useLoyaltyTransactions(params?: LoyaltyTransactionQueryParams) {
 // Points Operations
 export function useAwardPoints() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: AwardPointsRequest) => {
@@ -133,15 +145,18 @@ export function useAwardPoints() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Punkty przyznane',
+            'Nie udało się przyznać punktów',
+            invalidate,
+        ),
     });
 }
 
 export function useAdjustPoints() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async ({
@@ -159,9 +174,11 @@ export function useAdjustPoints() {
                 },
             );
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Saldo punktów zaktualizowane',
+            'Nie udało się zaktualizować salda',
+            invalidate,
+        ),
     });
 }
 
@@ -212,7 +229,8 @@ export function useLoyaltyReward(id: number | null) {
 
 export function useCreateReward() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: CreateRewardRequest) => {
@@ -221,15 +239,18 @@ export function useCreateReward() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Nagroda dodana',
+            'Nie udało się dodać nagrody',
+            invalidate,
+        ),
     });
 }
 
 export function useUpdateReward() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async ({
@@ -244,15 +265,18 @@ export function useUpdateReward() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Nagroda zapisana',
+            'Nie udało się zapisać nagrody',
+            invalidate,
+        ),
     });
 }
 
 export function useDeleteReward() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (id: number) => {
@@ -260,16 +284,19 @@ export function useDeleteReward() {
                 method: 'DELETE',
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Nagroda usunięta',
+            'Nie udało się usunąć nagrody',
+            invalidate,
+        ),
     });
 }
 
 // Redemption
 export function useRedeemReward() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: RedeemRewardRequest) => {
@@ -278,15 +305,18 @@ export function useRedeemReward() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Nagroda zrealizowana',
+            'Nie udało się zrealizować nagrody',
+            invalidate,
+        ),
     });
 }
 
 export function useRedeemRewardForUser() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async ({
@@ -304,15 +334,18 @@ export function useRedeemRewardForUser() {
                 },
             );
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Nagroda zrealizowana dla klienta',
+            'Nie udało się zrealizować nagrody',
+            invalidate,
+        ),
     });
 }
 
 export function useUseCoupon() {
     const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
+    const invalidate = useInvalidateLoyalty();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: async (data: UseCouponRequest) => {
@@ -321,9 +354,11 @@ export function useUseCoupon() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: LOYALTY_QUERY_KEY });
-        },
+        ...toast.feedback(
+            'Kupon zrealizowany',
+            'Nie udało się zrealizować kuponu',
+            invalidate,
+        ),
     });
 }
 
