@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMutationToast } from '@/hooks/useMutationToast';
 import type {
     AutomaticMessageRule,
     CreateAutomaticMessageRuleRequest,
@@ -15,6 +16,12 @@ export const AUTOMATIC_MESSAGES_QUERY_KEY = [
 export function useAutomaticMessages() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
+    const invalidate = () => {
+        void queryClient.invalidateQueries({
+            queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
+        });
+    };
 
     // Fetch all rules
     const rulesQuery = useQuery({
@@ -32,11 +39,11 @@ export function useAutomaticMessages() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Reguła dodana',
+            'Nie udało się dodać reguły',
+            invalidate,
+        ),
     });
 
     // Update rule
@@ -53,11 +60,11 @@ export function useAutomaticMessages() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Reguła zapisana',
+            'Nie udało się zapisać reguły',
+            invalidate,
+        ),
     });
 
     // Toggle rule active status
@@ -70,11 +77,11 @@ export function useAutomaticMessages() {
                 },
             );
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Reguła zaktualizowana',
+            'Nie udało się zmienić stanu reguły',
+            invalidate,
+        ),
     });
 
     // Delete rule
@@ -84,11 +91,11 @@ export function useAutomaticMessages() {
                 method: 'DELETE',
             });
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Reguła usunięta',
+            'Nie udało się usunąć reguły',
+            invalidate,
+        ),
     });
 
     // Process all rules manually
@@ -101,11 +108,11 @@ export function useAutomaticMessages() {
                 },
             );
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Reguły przetworzone',
+            'Nie udało się przetworzyć reguł',
+            invalidate,
+        ),
     });
 
     // Process single rule
@@ -118,11 +125,11 @@ export function useAutomaticMessages() {
                 },
             );
         },
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: AUTOMATIC_MESSAGES_QUERY_KEY,
-            });
-        },
+        ...toast.feedback(
+            'Reguła przetworzona',
+            'Nie udało się przetworzyć reguły',
+            invalidate,
+        ),
     });
 
     return {
