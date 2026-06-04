@@ -3,6 +3,8 @@
 import { useMemo } from 'react';
 import NextTwoHoursWidget from './NextTwoHoursWidget';
 import Skeleton from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import { ChartBarIcon } from '@heroicons/react/24/outline';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
 import { useStockSummary } from '@/hooks/useStockAlerts';
@@ -190,7 +192,11 @@ export default function AdminDashboard() {
     if (!stats) {
         return (
             <div className="salonbw-dashboard">
-                <div className="salonbw-dashboard__empty">Brak danych</div>
+                <EmptyState
+                    icon={<ChartBarIcon style={{ width: 48, height: 48 }} />}
+                    title="Brak danych do wyświetlenia"
+                    description="Statystyki pojawią się tutaj gdy w salonie odbędą się pierwsze wizyty."
+                />
             </div>
         );
     }

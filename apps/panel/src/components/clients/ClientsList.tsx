@@ -5,6 +5,8 @@ import type { Customer } from '@/types';
 import { useCustomerGroups } from '@/hooks/useCustomers';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import Skeleton from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import { UsersIcon } from '@heroicons/react/24/outline';
 
 interface ClientsListProps {
     customers: Customer[];
@@ -282,15 +284,21 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
                             );
                         })}
                         {filteredCustomers.length === 0 ? (
-                            <li
-                                style={{
-                                    padding: '2rem 1rem',
-                                    textAlign: 'center',
-                                    color: '#6c757d',
-                                    fontSize: '0.9rem',
-                                }}
-                            >
-                                Brak klientów spełniających kryteria.
+                            <li>
+                                <EmptyState
+                                    icon={
+                                        <UsersIcon
+                                            style={{ width: 44, height: 44 }}
+                                        />
+                                    }
+                                    title="Brak klientów"
+                                    description={
+                                        searchTerm
+                                            ? 'Spróbuj zmienić kryteria wyszukiwania.'
+                                            : 'Lista klientów jest pusta. Dodaj nowego klienta z menu.'
+                                    }
+                                    compact
+                                />
                             </li>
                         ) : null}
                     </ul>
