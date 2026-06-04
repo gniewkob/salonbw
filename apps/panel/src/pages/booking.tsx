@@ -8,6 +8,7 @@ import {
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
+import Skeleton from '@/components/ui/Skeleton';
 
 interface OnlineService {
     id: number;
@@ -360,9 +361,28 @@ function ServiceStep({
 }) {
     if (loading) {
         return (
-            <p className="text-muted" role="status" aria-live="polite">
-                Ładowanie usług...
-            </p>
+            <div
+                role="status"
+                aria-live="polite"
+                aria-label="Ładowanie listy usług"
+                className="d-flex flex-column gap-2"
+            >
+                {[0, 1, 2, 3, 4].map((index) => (
+                    <div
+                        key={index}
+                        className="booking-service-card"
+                        style={{ pointerEvents: 'none' }}
+                    >
+                        <div className="d-flex flex-column gap-2 w-100">
+                            <Skeleton width="55%" height={18} />
+                            <Skeleton width="80%" height={14} />
+                            <Skeleton width={70} height={14} />
+                        </div>
+                        <Skeleton width={70} height={20} />
+                    </div>
+                ))}
+                <span className="visually-hidden">Ładowanie usług...</span>
+            </div>
         );
     }
     if (error) {
