@@ -296,6 +296,7 @@ export function useCustomerNotes(customerId: number | null) {
 export function useCreateCustomerNote() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: ({
@@ -318,6 +319,10 @@ export function useCreateCustomerNote() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-notes', variables.customerId],
             });
+            toast.success('Notatka dodana');
+        },
+        onError: () => {
+            toast.error('Nie udało się dodać notatki');
         },
     });
 }
@@ -325,6 +330,7 @@ export function useCreateCustomerNote() {
 export function useUpdateCustomerNote() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: ({
@@ -344,6 +350,10 @@ export function useUpdateCustomerNote() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-notes', variables.customerId],
             });
+            toast.success('Notatka zapisana');
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać notatki');
         },
     });
 }
@@ -351,6 +361,7 @@ export function useUpdateCustomerNote() {
 export function useDeleteCustomerNote() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: ({ noteId }: { noteId: number; customerId: number }) =>
@@ -361,6 +372,10 @@ export function useDeleteCustomerNote() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-notes', variables.customerId],
             });
+            toast.success('Notatka usunięta');
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć notatki');
         },
     });
 }
