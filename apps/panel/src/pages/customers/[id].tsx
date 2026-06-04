@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ClientDetailNav from '@/components/salon/navs/ClientDetailNav';
+import MobileCustomerTabsNav from '@/components/customers/MobileCustomerTabsNav';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -103,6 +105,7 @@ export default function CustomerDetailPage() {
     const activeTab = tabIdFromTabName(
         parseTabNameParam(router.query.tab_name),
     );
+    const isMobile = useIsMobile();
 
     const {
         data: customer,
@@ -276,6 +279,13 @@ export default function CustomerDetailPage() {
                                         </details>
                                     </div>
                                 </div>
+
+                                {isMobile ? (
+                                    <MobileCustomerTabsNav
+                                        customerId={customer.id}
+                                        activeTab={activeTab}
+                                    />
+                                ) : null}
 
                                 {/* Content */}
                                 <div

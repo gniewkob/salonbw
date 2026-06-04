@@ -8305,3 +8305,8 @@ summary:focus-visible {
         opacity: 0.92;
     }
 }
+
+/* Hide WebKit horizontal scrollbar on mobile customer tabs nav */
+.salonbw-mobile-tabs-nav::-webkit-scrollbar {
+    display: none;
+}
