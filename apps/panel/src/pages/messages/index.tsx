@@ -1,7 +1,6 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -143,6 +142,7 @@ export default function MessagesPage() {
     };
 
     return (
+        <RouteGuard roles={['admin']} permission="nav:communication">
         <SalonShell role={role}>
             <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_communication"
@@ -359,5 +359,6 @@ export default function MessagesPage() {
                 onSave={handleSave}
             />
         </SalonShell>
+        </RouteGuard>
     );
 }

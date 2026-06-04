@@ -400,11 +400,17 @@ export function resolveSalonModule(pathname: string): SalonModule {
         path.startsWith('/newsletters') ||
         path.startsWith('/messages') ||
         path.startsWith('/emails') ||
+        path.startsWith('/notifications') ||
         path.startsWith('/admin/communications')
     ) {
         if (path.startsWith('/messages')) {
             return withShellOverride(SALON_MODULES[4], {
                 bodyId: 'communication',
+            });
+        }
+        if (path.startsWith('/notifications')) {
+            return withShellOverride(SALON_MODULES[4], {
+                bodyId: 'communication_notifications',
             });
         }
         return SALON_MODULES[4];
