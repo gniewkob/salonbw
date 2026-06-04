@@ -91,7 +91,44 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         <ToastContext.Provider value={value}>
             {children}
             {ToasterComponent ? (
-                <ToasterComponent position="top-right" />
+                <ToasterComponent
+                    position="top-right"
+                    toastOptions={{
+                        duration: 3500,
+                        style: {
+                            background: '#0d0d0d',
+                            color: '#ffffff',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: 6,
+                            padding: '0.625rem 0.875rem',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            letterSpacing: '0.01em',
+                            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.18)',
+                            maxWidth: 360,
+                        },
+                        success: {
+                            iconTheme: {
+                                primary: '#b4b8be',
+                                secondary: '#0d0d0d',
+                            },
+                        },
+                        error: {
+                            style: {
+                                background: '#842029',
+                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                            },
+                            iconTheme: {
+                                primary: '#ffffff',
+                                secondary: '#842029',
+                            },
+                        },
+                    }}
+                    containerStyle={{
+                        top: 'calc(env(safe-area-inset-top) + 4rem)',
+                        right: '1rem',
+                    }}
+                />
             ) : null}
         </ToastContext.Provider>
     );
