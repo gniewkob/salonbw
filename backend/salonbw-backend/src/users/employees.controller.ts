@@ -64,6 +64,12 @@ class UpdateRoleDto {
     role!: Role;
 }
 
+class ResetPasswordDto {
+    @IsString()
+    @MinLength(6)
+    newPassword!: string;
+}
+
 @ApiTags('employees')
 @Controller('employees')
 export class EmployeesController {
@@ -204,6 +210,27 @@ export class EmployeesController {
             { employeeId: id, employeeName: user.name, prevRole, newRole: dto.role },
         );
         return updated;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Patch(':id/password')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Admin reset password for a staff user' })
+    async resetPassword(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: ResetPasswordDto,
+        @CurrentUser() actor?: User,
+    ) {
+        const user = await this.usersService.findById(id);
+        if (!user) throw new NotFoundException('User not found');
+        await this.usersService.adminResetPassword(id, dto.newPassword);
+        await this.logService.logAction(
+            actor ?? null,
+            LogAction.PASSWORD_RESET_BY_ADMIN,
+            { employeeId: id, employeeName: user.name },
+        );
+        return { success: true };
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

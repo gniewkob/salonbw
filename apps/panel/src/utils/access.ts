@@ -37,6 +37,7 @@ const rolePermissions: Record<Role, Set<Permission>> = {
         'dashboard:receptionist',
         'nav:appointments',
         'nav:calendar',
+        'nav:customers',
     ]),
     admin: new Set([
         'dashboard:admin',

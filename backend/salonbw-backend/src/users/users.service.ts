@@ -139,6 +139,29 @@ export class UsersService {
         return this.findById(id);
     }
 
+    async changePassword(
+        userId: number,
+        currentPassword: string,
+        newPassword: string,
+    ): Promise<void> {
+        const user = await this.usersRepository
+            .createQueryBuilder('user')
+            .addSelect('user.password')
+            .where('user.id = :id', { id: userId })
+            .getOne();
+        if (!user) throw new BadRequestException('User not found');
+        const valid = await bcrypt.compare(currentPassword, user.password ?? '');
+        if (!valid)
+            throw new BadRequestException('Nieprawidłowe aktualne hasło');
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await this.usersRepository.update(userId, { password: hashed });
+    }
+
+    async adminResetPassword(userId: number, newPassword: string): Promise<void> {
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await this.usersRepository.update(userId, { password: hashed });
+    }
+
     async remove(id: number): Promise<void> {
         await this.usersRepository.delete(id);
     }

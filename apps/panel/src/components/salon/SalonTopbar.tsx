@@ -314,6 +314,10 @@ export default function SalonTopbar() {
                             </li>
                             <li className="divider"></li>
                             <li className="main-menu-li">
+                                <Link href="/account">Zmień hasło</Link>
+                            </li>
+                            <li className="divider"></li>
+                            <li className="main-menu-li">
                                 <a
                                     className="e2e-user-logout"
                                     href={topbar.user.logoutHref || '#'}

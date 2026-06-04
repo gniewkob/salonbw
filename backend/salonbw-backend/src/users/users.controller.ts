@@ -6,6 +6,8 @@ import {
     Post,
     UseGuards,
     Query,
+    HttpCode,
+    HttpStatus,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -23,7 +25,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateConsentDto } from './dto/update-consent.dto';
 import { UserDto } from './dto/user.dto';
 import { Role } from './role.enum';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+
+class ChangePasswordDto {
+    @IsString()
+    currentPassword!: string;
+    @IsString()
+    @MinLength(6)
+    newPassword!: string;
+}
 
 class ListUsersQuery {
     @IsOptional()
@@ -66,6 +76,24 @@ export class UsersController {
         @Body() dto: UpdateConsentDto,
     ) {
         return this.usersService.updateConsent(user.userId, dto);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
+    @SkipThrottle()
+    @Patch('profile/password')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Change own password' })
+    async changePassword(
+        @CurrentUser() user: { userId: number },
+        @Body() dto: ChangePasswordDto,
+    ) {
+        await this.usersService.changePassword(
+            user.userId,
+            dto.currentPassword,
+            dto.newPassword,
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
