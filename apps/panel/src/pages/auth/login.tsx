@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import type { User } from '@/types';
@@ -59,6 +60,7 @@ export default function LoginPage() {
     const [status, setStatus] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [focusedField, setFocusedField] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const trimmedEmail = useMemo(() => form.email.trim(), [form.email]);
 
@@ -300,35 +302,83 @@ export default function LoginPage() {
                             >
                                 Hasło
                             </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                                style={inputStyle('password')}
-                                placeholder="••••••••"
-                                value={form.password}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setForm((prev) => ({
-                                        ...prev,
-                                        password: value,
-                                    }));
-                                    if (touched.password) {
-                                        const fieldErrors = validateLoginForm({
-                                            email: form.email,
-                                            password: value,
-                                        });
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            password: fieldErrors.password,
-                                        }));
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="current-password"
+                                    required
+                                    style={{
+                                        ...inputStyle('password'),
+                                        paddingRight: '3rem',
+                                    }}
+                                    placeholder={
+                                        showPassword
+                                            ? 'Twoje hasło'
+                                            : '••••••••'
                                     }
-                                }}
-                                onFocus={() => setFocusedField('password')}
-                                onBlur={() => handleBlur('password')}
-                            />
+                                    value={form.password}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            password: value,
+                                        }));
+                                        if (touched.password) {
+                                            const fieldErrors =
+                                                validateLoginForm({
+                                                    email: form.email,
+                                                    password: value,
+                                                });
+                                            setErrors((prev) => ({
+                                                ...prev,
+                                                password: fieldErrors.password,
+                                            }));
+                                        }
+                                    }}
+                                    onFocus={() => setFocusedField('password')}
+                                    onBlur={() => handleBlur('password')}
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={
+                                        showPassword
+                                            ? 'Ukryj wpisane znaki'
+                                            : 'Pokaż wpisane znaki'
+                                    }
+                                    aria-controls="password"
+                                    aria-pressed={showPassword}
+                                    onClick={() =>
+                                        setShowPassword((prev) => !prev)
+                                    }
+                                    style={{
+                                        position: 'absolute',
+                                        right: 0,
+                                        top: 0,
+                                        bottom: 0,
+                                        width: 44,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: 'rgba(255, 255, 255, 0.55)',
+                                        cursor: 'pointer',
+                                        padding: 0,
+                                    }}
+                                >
+                                    {showPassword ? (
+                                        <EyeSlashIcon
+                                            style={{ width: 18, height: 18 }}
+                                        />
+                                    ) : (
+                                        <EyeIcon
+                                            style={{ width: 18, height: 18 }}
+                                        />
+                                    )}
+                                </button>
+                            </div>
                             {touched.password && errors.password && (
                                 <p
                                     role="alert"
