@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useMutationToast } from '@/hooks/useMutationToast';
 import {
     Customer,
     CustomerGroup,
@@ -402,6 +403,7 @@ export function useTagsForCustomer(customerId: number | null) {
 export function useCreateCustomerTag() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: (data: { name: string; color?: string }) =>
@@ -410,15 +412,16 @@ export function useCreateCustomerTag() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             }),
-        onSuccess: () => {
+        ...toast.feedback('Tag dodany', 'Nie udało się dodać tagu', () => {
             void queryClient.invalidateQueries({ queryKey: ['customer-tags'] });
-        },
+        }),
     });
 }
 
 export function useAssignTags() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: ({
@@ -437,6 +440,14 @@ export function useAssignTags() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-tags', variables.customerId],
             });
+            toast
+                .feedback('Tagi przypisane', 'Nie udało się przypisać tagów')
+                .onSuccess();
+        },
+        onError: () => {
+            toast
+                .feedback('Tagi przypisane', 'Nie udało się przypisać tagów')
+                .onError();
         },
     });
 }
@@ -444,6 +455,7 @@ export function useAssignTags() {
 export function useRemoveTag() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: ({
@@ -460,6 +472,14 @@ export function useRemoveTag() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-tags', variables.customerId],
             });
+            toast
+                .feedback('Tag usunięty', 'Nie udało się usunąć tagu')
+                .onSuccess();
+        },
+        onError: () => {
+            toast
+                .feedback('Tag usunięty', 'Nie udało się usunąć tagu')
+                .onError();
         },
     });
 }
@@ -486,6 +506,7 @@ export function useCustomerGroup(id: number | null) {
 export function useCreateCustomerGroup() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: (data: {
@@ -500,17 +521,18 @@ export function useCreateCustomerGroup() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             }),
-        onSuccess: () => {
+        ...toast.feedback('Grupa dodana', 'Nie udało się dodać grupy', () => {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-groups'],
             });
-        },
+        }),
     });
 }
 
 export function useUpdateCustomerGroup() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: ({
@@ -537,6 +559,14 @@ export function useUpdateCustomerGroup() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-group', variables.id],
             });
+            toast
+                .feedback('Grupa zapisana', 'Nie udało się zapisać grupy')
+                .onSuccess();
+        },
+        onError: () => {
+            toast
+                .feedback('Grupa zapisana', 'Nie udało się zapisać grupy')
+                .onError();
         },
     });
 }
@@ -544,15 +574,20 @@ export function useUpdateCustomerGroup() {
 export function useDeleteCustomerGroup() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch<void>(`/customer-groups/${id}`, { method: 'DELETE' }),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: ['customer-groups'],
-            });
-        },
+        ...toast.feedback(
+            'Grupa usunięta',
+            'Nie udało się usunąć grupy',
+            () => {
+                void queryClient.invalidateQueries({
+                    queryKey: ['customer-groups'],
+                });
+            },
+        ),
     });
 }
 
@@ -584,6 +619,7 @@ export function useSortCustomerGroups() {
 export function useAddGroupMembers() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: ({
@@ -605,6 +641,20 @@ export function useAddGroupMembers() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-group', variables.groupId],
             });
+            toast
+                .feedback(
+                    'Klienci dodani do grupy',
+                    'Nie udało się dodać klientów do grupy',
+                )
+                .onSuccess();
+        },
+        onError: () => {
+            toast
+                .feedback(
+                    'Klienci dodani do grupy',
+                    'Nie udało się dodać klientów do grupy',
+                )
+                .onError();
         },
     });
 }
@@ -612,6 +662,7 @@ export function useAddGroupMembers() {
 export function useRemoveGroupMember() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useMutationToast();
 
     return useMutation({
         mutationFn: ({
@@ -634,6 +685,20 @@ export function useRemoveGroupMember() {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-group', variables.groupId],
             });
+            toast
+                .feedback(
+                    'Klient usunięty z grupy',
+                    'Nie udało się usunąć klienta z grupy',
+                )
+                .onSuccess();
+        },
+        onError: () => {
+            toast
+                .feedback(
+                    'Klient usunięty z grupy',
+                    'Nie udało się usunąć klienta z grupy',
+                )
+                .onError();
         },
     });
 }
