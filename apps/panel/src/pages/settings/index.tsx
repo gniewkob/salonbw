@@ -109,7 +109,7 @@ const mainTiles: SettingsTile[] = [
     },
     {
         href: '/settings/categories',
-        label: 'inne ustawienia',
+        label: 'kategorie usług',
         boxClass: 'extra_settings',
         iconId: 'svg-extra_settings',
     },

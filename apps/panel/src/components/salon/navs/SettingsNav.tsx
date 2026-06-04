@@ -1,56 +1,118 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import SalonListNav from './SalonListNav';
 
 type NavItem = {
-    id: string;
-    label: string;
     href: string;
+    label: string;
+    matchPrefix?: string;
 };
 
-const SETTINGS_ITEMS: NavItem[] = [
-    { id: 'settings-main', label: 'Ustawienia', href: '/settings' },
+type NavGroup = {
+    heading: string;
+    items: NavItem[];
+};
+
+const GROUPS: NavGroup[] = [
     {
-        id: 'settings-company',
-        label: 'Dane salonu',
-        href: '/settings/branch',
+        heading: 'Salon',
+        items: [
+            { href: '/settings/branch', label: 'Dane salonu' },
+            {
+                href: '/settings/timetable/branch',
+                label: 'Godziny otwarcia',
+            },
+        ],
     },
     {
-        id: 'settings-calendar',
-        label: 'Kalendarz',
-        href: '/settings/calendar',
+        heading: 'Pracownicy',
+        items: [
+            {
+                href: '/employees',
+                label: 'Pracownicy',
+                matchPrefix: '/employees',
+            },
+            {
+                href: '/settings/timetable/employees',
+                label: 'Grafiki pracy',
+                matchPrefix: '/settings/timetable',
+            },
+        ],
     },
     {
-        id: 'settings-timetables',
-        label: 'Grafiki pracy',
-        href: '/settings/timetable/employees',
-    },
-    { id: 'settings-employees', label: 'Pracownicy', href: '/employees' },
-    { id: 'settings-reviews', label: 'Komentarze', href: '/reviews' },
-    {
-        id: 'settings-invoices',
-        label: 'Faktury i abonament',
-        href: '/invoices',
+        heading: 'Wizyty',
+        items: [{ href: '/settings/calendar', label: 'Kalendarz' }],
     },
     {
-        id: 'settings-reminders',
-        label: 'Komunikacja z klientem',
-        href: '/event-reminders',
+        heading: 'Komunikacja',
+        items: [
+            {
+                href: '/event-reminders',
+                label: 'Komunikacja z klientem',
+                matchPrefix: '/event-reminders',
+            },
+            { href: '/settings/sms', label: 'SMS i łączność' },
+        ],
+    },
+    {
+        heading: 'Finanse',
+        items: [
+            {
+                href: '/settings/payment-configuration',
+                label: 'Płatności',
+            },
+        ],
     },
 ];
 
 export default function SettingsNav() {
     const router = useRouter();
 
-    const isActive = (href: string) =>
-        router.pathname === href || router.pathname.startsWith(`${href}/`);
+    const isActive = (href: string, matchPrefix?: string) => {
+        const prefix = matchPrefix ?? href;
+        return (
+            router.pathname === href ||
+            router.pathname.startsWith(`${prefix}/`)
+        );
+    };
 
     return (
-        <SalonListNav
-            heading="USTAWIENIA"
-            items={SETTINGS_ITEMS.map((item) => ({
-                ...item,
-                active: isActive(item.href),
-            }))}
-        />
+        <div className="column_row">
+            <div className="nav-header">USTAWIENIA</div>
+            <ul className="nav nav-list">
+                <li>
+                    <Link
+                        href="/settings"
+                        className={
+                            router.pathname === '/settings' ? 'active' : ''
+                        }
+                        title="Wszystkie ustawienia"
+                    >
+                        Wszystkie ustawienia
+                    </Link>
+                </li>
+            </ul>
+            {GROUPS.map((group) => (
+                <div key={group.heading}>
+                    <div className="nav-header">{group.heading}</div>
+                    <ul className="nav nav-list">
+                        {group.items.map((item) => (
+                            <li key={item.href}>
+                                <Link
+                                    href={item.href}
+                                    className={
+                                        isActive(item.href, item.matchPrefix)
+                                            ? 'active'
+                                            : ''
+                                    }
+                                    title={item.label}
+                                >
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+        </div>
     );
 }
