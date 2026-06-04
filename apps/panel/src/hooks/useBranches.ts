@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type {
     Branch,
     BranchMember,
@@ -99,10 +100,20 @@ export function useCrossBranchStats() {
 export function useBranchesMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     const invalidate = () => {
         void queryClient.invalidateQueries({ queryKey: BRANCHES_QUERY_KEY });
     };
+    const withFeedback = (label: string, errorLabel: string) => ({
+        onSuccess: () => {
+            invalidate();
+            toast.success(label);
+        },
+        onError: () => {
+            toast.error(errorLabel);
+        },
+    });
 
     const createBranch = useMutation({
         mutationFn: async (data: CreateBranchRequest) => {
@@ -111,7 +122,7 @@ export function useBranchesMutations() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: invalidate,
+        ...withFeedback('Salon dodany', 'Nie udało się dodać salonu'),
     });
 
     const updateBranch = useMutation({
@@ -124,7 +135,7 @@ export function useBranchesMutations() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: invalidate,
+        ...withFeedback('Salon zapisany', 'Nie udało się zapisać salonu'),
     });
 
     const deleteBranch = useMutation({
@@ -133,7 +144,7 @@ export function useBranchesMutations() {
                 method: 'DELETE',
             });
         },
-        onSuccess: invalidate,
+        ...withFeedback('Salon usunięty', 'Nie udało się usunąć salonu'),
     });
 
     const addMember = useMutation({
@@ -146,7 +157,10 @@ export function useBranchesMutations() {
                 body: JSON.stringify(data),
             });
         },
-        onSuccess: invalidate,
+        ...withFeedback(
+            'Dodano członka zespołu',
+            'Nie udało się dodać członka zespołu',
+        ),
     });
 
     const updateMember = useMutation({
@@ -170,7 +184,7 @@ export function useBranchesMutations() {
                 },
             );
         },
-        onSuccess: invalidate,
+        ...withFeedback('Zmiany zapisane', 'Nie udało się zapisać zmian'),
     });
 
     const removeMember = useMutation({
@@ -185,7 +199,10 @@ export function useBranchesMutations() {
                 method: 'DELETE',
             });
         },
-        onSuccess: invalidate,
+        ...withFeedback(
+            'Członek zespołu usunięty',
+            'Nie udało się usunąć członka zespołu',
+        ),
     });
 
     return {

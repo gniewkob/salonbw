@@ -2,6 +2,7 @@ import { useList } from './useList';
 import { Employee, StaffOption } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 
 export function useEmployees() {
     return useList<Employee>('/employees');
@@ -20,6 +21,7 @@ export function useEmployee(id: number | null) {
 export function useUpdateEmployee() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: ({
@@ -38,6 +40,10 @@ export function useUpdateEmployee() {
         onSuccess: (_data, { id }) => {
             void queryClient.invalidateQueries({ queryKey: ['employees'] });
             void queryClient.invalidateQueries({ queryKey: ['employees', id] });
+            toast.success('Dane pracownika zapisane');
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać danych pracownika');
         },
     });
 }
