@@ -8063,3 +8063,145 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 .salonbw-datepicker .react-datepicker__day:hover {
     background-color: #e6f7f8;
 }
+
+/* ========================================
+   Online Booking Settings Page
+   ======================================== */
+.online-booking-settings {
+    max-width: 680px;
+    padding: 24px 24px 40px;
+}
+
+.online-booking-settings__section {
+    border-bottom: 1px solid #ebebeb;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+}
+
+.online-booking-settings__section:last-of-type {
+    border-bottom: none;
+}
+
+.online-booking-settings__section-title {
+    color: #3a3f45;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0 0 14px;
+    text-transform: uppercase;
+}
+
+.online-booking-settings__toggle {
+    align-items: flex-start;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #3a3f45;
+}
+
+.online-booking-settings__toggle input[type='checkbox'] {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.online-booking-settings__toggle input:disabled + span {
+    opacity: 0.45;
+}
+
+.online-booking-settings__badge {
+    background: #f0f3f6;
+    border-radius: 2px;
+    color: #606870;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+    padding: 1px 6px;
+    text-transform: uppercase;
+}
+
+.online-booking-settings__hint {
+    color: #8a8e93;
+    font-size: 12px;
+    margin: -4px 0 12px 0;
+}
+
+.online-booking-settings__hint-inline {
+    color: #9b9fa4;
+    font-size: 11px;
+    font-style: italic;
+    margin-left: 4px;
+}
+
+.online-booking-settings__subgroup {
+    border-left: 2px solid #e6eaee;
+    margin-top: 8px;
+    padding-left: 14px;
+}
+
+.online-booking-settings__subgroup-label {
+    color: #8a8e93;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.online-booking-settings__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+}
+
+.online-booking-settings__field label {
+    color: #606870;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.online-booking-settings__field input[type='number'],
+.online-booking-settings__field select {
+    border: 1px solid #c6ccd2;
+    border-radius: 2px;
+    font-size: 13px;
+    height: 30px;
+    padding: 0 8px;
+    width: 120px;
+}
+
+.online-booking-settings__field textarea {
+    border: 1px solid #c6ccd2;
+    border-radius: 2px;
+    font-size: 13px;
+    padding: 6px 8px;
+    resize: vertical;
+    width: 100%;
+}
+
+.online-booking-settings__field input:focus,
+.online-booking-settings__field select:focus,
+.online-booking-settings__field textarea:focus {
+    border-color: var(--salon-brand);
+    outline: none;
+}
+
+.online-booking-settings__actions {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    padding-top: 8px;
+}
+
+.online-booking-settings__notice {
+    font-size: 13px;
+}
+
+.online-booking-settings__notice--ok {
+    color: #2d8a4e;
+}
+
+.online-booking-settings__notice--err {
+    color: #c0392b;
+}

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 type NavItem = {
     href: string;
     label: string;
+    iconClass: string;
     matchPrefix?: string;
 };
 
@@ -16,10 +17,16 @@ const GROUPS: NavGroup[] = [
     {
         heading: 'Salon',
         items: [
-            { href: '/settings/branch', label: 'Dane salonu' },
+            {
+                href: '/settings/branch',
+                label: 'Dane salonu',
+                iconClass: 'sprite-settings_branch',
+            },
             {
                 href: '/settings/timetable/branch',
                 label: 'Godziny otwarcia',
+                iconClass: 'sprite-schedule_template',
+                matchPrefix: '/settings/timetable/branch',
             },
         ],
     },
@@ -29,18 +36,32 @@ const GROUPS: NavGroup[] = [
             {
                 href: '/employees',
                 label: 'Pracownicy',
+                iconClass: 'sprite-settings_employees',
                 matchPrefix: '/employees',
             },
             {
                 href: '/settings/timetable/employees',
                 label: 'Grafiki pracy',
+                iconClass: 'sprite-schedule_employees',
                 matchPrefix: '/settings/timetable',
             },
         ],
     },
     {
         heading: 'Wizyty',
-        items: [{ href: '/settings/calendar', label: 'Kalendarz' }],
+        items: [
+            {
+                href: '/settings/calendar',
+                label: 'Kalendarz',
+                iconClass: 'sprite-settings_calendar',
+            },
+            {
+                href: '/settings/online-booking',
+                label: 'Rezerwacja online',
+                iconClass: 'sprite-settings_label_visits',
+                matchPrefix: '/settings/online-booking',
+            },
+        ],
     },
     {
         heading: 'Komunikacja',
@@ -48,9 +69,14 @@ const GROUPS: NavGroup[] = [
             {
                 href: '/event-reminders',
                 label: 'Komunikacja z klientem',
+                iconClass: 'sprite-settings_notifications_nav',
                 matchPrefix: '/event-reminders',
             },
-            { href: '/settings/sms', label: 'SMS i łączność' },
+            {
+                href: '/settings/sms',
+                label: 'SMS i łączność',
+                iconClass: 'sprite-settings_sms_nav',
+            },
         ],
     },
     {
@@ -59,6 +85,7 @@ const GROUPS: NavGroup[] = [
             {
                 href: '/settings/payment-configuration',
                 label: 'Płatności',
+                iconClass: 'sprite-settings_payment_methods',
             },
         ],
     },
@@ -76,25 +103,30 @@ export default function SettingsNav() {
     };
 
     return (
-        <div className="column_row">
-            <div className="nav-header">USTAWIENIA</div>
-            <ul className="nav nav-list">
+        <div className="column_row tree other_settings">
+            <h4>Ustawienia</h4>
+            <ul>
                 <li>
                     <Link
                         href="/settings"
                         className={
                             router.pathname === '/settings' ? 'active' : ''
                         }
-                        title="Wszystkie ustawienia"
                     >
+                        <div className="icon_box">
+                            <span
+                                className="icon sprite-settings_blue"
+                                aria-hidden="true"
+                            />
+                        </div>
                         Wszystkie ustawienia
                     </Link>
                 </li>
             </ul>
             {GROUPS.map((group) => (
                 <div key={group.heading}>
-                    <div className="nav-header">{group.heading}</div>
-                    <ul className="nav nav-list">
+                    <h4>{group.heading}</h4>
+                    <ul>
                         {group.items.map((item) => (
                             <li key={item.href}>
                                 <Link
@@ -104,8 +136,13 @@ export default function SettingsNav() {
                                             ? 'active'
                                             : ''
                                     }
-                                    title={item.label}
                                 >
+                                    <div className="icon_box">
+                                        <span
+                                            className={`icon ${item.iconClass}`}
+                                            aria-hidden="true"
+                                        />
+                                    </div>
                                     {item.label}
                                 </Link>
                             </li>

@@ -119,7 +119,8 @@ body {
     margin: 0;
 }
 .tree li a {
-    display: block;
+    display: flex;
+    align-items: center;
     padding: 4px 10px;
     color: #74788a;
     text-decoration: none;
@@ -128,6 +129,22 @@ body {
 .tree li a:hover {
     background: #1c1e24;
     color: #b8bcc8;
+}
+.tree li a.active {
+    color: #b8bcc8;
+    font-weight: 600;
+}
+/* Group headings inside sidenav tree */
+.tree h4 {
+    color: #555c68;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin: 12px 0 4px 10px;
+    text-transform: uppercase;
+}
+.tree > h4:first-child {
+    margin-top: 2px;
 }
 
 /* --- Icon box --- */

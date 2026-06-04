@@ -60,7 +60,7 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-customers',
     },
     {
-        href: '/settings/customer-panel',
+        href: '/settings/online-booking',
         label: 'rezerwacja online',
         boxClass: 'booking',
         iconId: 'svg-booking',
