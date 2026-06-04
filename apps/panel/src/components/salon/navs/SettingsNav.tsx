@@ -1,56 +1,172 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import SalonListNav from './SalonListNav';
 
 type NavItem = {
-    id: string;
-    label: string;
     href: string;
+    label: string;
+    iconClass: string;
+    matchPrefix?: string;
 };
 
-const SETTINGS_ITEMS: NavItem[] = [
-    { id: 'settings-main', label: 'Ustawienia', href: '/settings' },
+type NavGroup = {
+    heading: string;
+    items: NavItem[];
+};
+
+const GROUPS: NavGroup[] = [
     {
-        id: 'settings-company',
-        label: 'Dane salonu',
-        href: '/settings/branch',
+        heading: 'Salon',
+        items: [
+            {
+                href: '/settings/branch',
+                label: 'Dane salonu',
+                iconClass: 'sprite-settings_branch',
+            },
+            {
+                href: '/settings/timetable/branch',
+                label: 'Godziny otwarcia',
+                iconClass: 'sprite-schedule_template',
+                matchPrefix: '/settings/timetable/branch',
+            },
+        ],
     },
     {
-        id: 'settings-calendar',
-        label: 'Kalendarz',
-        href: '/settings/calendar',
+        heading: 'Pracownicy',
+        items: [
+            {
+                href: '/employees',
+                label: 'Pracownicy',
+                iconClass: 'sprite-settings_employees',
+                matchPrefix: '/employees',
+            },
+            {
+                href: '/settings/timetable/employees',
+                label: 'Grafiki pracy',
+                iconClass: 'sprite-schedule_employees',
+                matchPrefix: '/settings/timetable',
+            },
+        ],
     },
     {
-        id: 'settings-timetables',
-        label: 'Grafiki pracy',
-        href: '/settings/timetable/employees',
+        heading: 'Wizyty',
+        items: [
+            {
+                href: '/settings/calendar',
+                label: 'Kalendarz',
+                iconClass: 'sprite-settings_calendar',
+            },
+            {
+                href: '/settings/online-booking',
+                label: 'Rezerwacja online',
+                iconClass: 'sprite-settings_label_visits',
+                matchPrefix: '/settings/online-booking',
+            },
+        ],
     },
-    { id: 'settings-employees', label: 'Pracownicy', href: '/employees' },
-    { id: 'settings-reviews', label: 'Komentarze', href: '/reviews' },
     {
-        id: 'settings-invoices',
-        label: 'Faktury i abonament',
-        href: '/invoices',
+        heading: 'Komunikacja',
+        items: [
+            {
+                href: '/event-reminders',
+                label: 'Komunikacja z klientem',
+                iconClass: 'sprite-settings_notifications_nav',
+                matchPrefix: '/event-reminders',
+            },
+            {
+                href: '/settings/sms',
+                label: 'SMS i łączność',
+                iconClass: 'sprite-settings_sms_nav',
+            },
+        ],
     },
     {
-        id: 'settings-reminders',
-        label: 'Komunikacja z klientem',
-        href: '/event-reminders',
+        heading: 'Finanse',
+        items: [
+            {
+                href: '/settings/payment-configuration',
+                label: 'Płatności',
+                iconClass: 'sprite-settings_payment_methods',
+            },
+            {
+                href: '/invoices',
+                label: 'Faktury i abonament',
+                iconClass: 'sprite-settings_billing',
+                matchPrefix: '/invoices',
+            },
+        ],
+    },
+    {
+        heading: 'Prywatność',
+        items: [
+            {
+                href: '/settings/privacy',
+                label: 'Prywatność i zgody',
+                iconClass: 'sprite-settings_data_protection',
+                matchPrefix: '/settings/privacy',
+            },
+        ],
     },
 ];
 
 export default function SettingsNav() {
     const router = useRouter();
 
-    const isActive = (href: string) =>
-        router.pathname === href || router.pathname.startsWith(`${href}/`);
+    const isActive = (href: string, matchPrefix?: string) => {
+        const prefix = matchPrefix ?? href;
+        return (
+            router.pathname === href ||
+            router.pathname.startsWith(`${prefix}/`)
+        );
+    };
 
     return (
-        <SalonListNav
-            heading="USTAWIENIA"
-            items={SETTINGS_ITEMS.map((item) => ({
-                ...item,
-                active: isActive(item.href),
-            }))}
-        />
+        <div className="column_row tree other_settings">
+            <h4>Ustawienia</h4>
+            <ul>
+                <li>
+                    <Link
+                        href="/settings"
+                        className={
+                            router.pathname === '/settings' ? 'active' : ''
+                        }
+                    >
+                        <div className="icon_box">
+                            <span
+                                className="icon sprite-settings_blue"
+                                aria-hidden="true"
+                            />
+                        </div>
+                        Wszystkie ustawienia
+                    </Link>
+                </li>
+            </ul>
+            {GROUPS.map((group) => (
+                <div key={group.heading}>
+                    <h4>{group.heading}</h4>
+                    <ul>
+                        {group.items.map((item) => (
+                            <li key={item.href}>
+                                <Link
+                                    href={item.href}
+                                    className={
+                                        isActive(item.href, item.matchPrefix)
+                                            ? 'active'
+                                            : ''
+                                    }
+                                >
+                                    <div className="icon_box">
+                                        <span
+                                            className={`icon ${item.iconClass}`}
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+        </div>
     );
 }

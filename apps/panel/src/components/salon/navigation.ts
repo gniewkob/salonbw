@@ -277,6 +277,12 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
+    if (path.startsWith('/settings/privacy')) {
+        return {
+            bodyId: 'settings_privacy',
+        } satisfies Partial<SalonShellProfile>;
+    }
+
     if (
         path.startsWith('/settings/employees') ||
         path.startsWith('/employees')
