@@ -8329,3 +8329,17 @@ summary:focus-visible {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* Route progress bar sweep animation */
+@keyframes salonbw-route-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(140%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* Reduce-motion users see a static silver bar instead of the sweep */
+    [data-salonbw-route-progress],
+    [data-salonbw-route-progress] * {
+        animation: none !important;
+    }
+}
