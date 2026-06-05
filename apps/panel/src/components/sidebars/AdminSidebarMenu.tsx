@@ -25,8 +25,7 @@ const links: { href: Route; label: string; testId: string }[] = [
         href: '/settings/employees',
         label: 'Pracownicy',
         testId: 'nav-employees',
-    },
-    { href: '/services', label: 'Usługi', testId: 'nav-services' },
+    },    { href: '/services', label: 'Usługi', testId: 'nav-services' },
     { href: '/products', label: 'Produkty', testId: 'nav-products' },
     {
         href: '/settings/timetable/employees',

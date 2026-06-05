@@ -53,6 +53,8 @@ const rolePermissions: Record<Role, Set<Permission>> = {
         'nav:communication',
         'nav:settings',
         'nav:extension',
+        'nav:invoices',
+        'nav:reviews',
     ]),
 };
 

@@ -50,11 +50,11 @@ export default function ReviewsPage() {
 
     const columns: Column<Row>[] = [
         { header: 'ID', accessor: 'id' },
-        { header: 'Appointment', accessor: 'appointmentDisplay' },
-        { header: 'Employee', accessor: 'employeeName' },
-        { header: 'Author', accessor: 'authorName' },
-        { header: 'Rating', accessor: 'rating' },
-        { header: 'Comment', accessor: 'comment' },
+        { header: 'Wizyta', accessor: 'appointmentDisplay' },
+        { header: 'Pracownik', accessor: 'employeeName' },
+        { header: 'Autor', accessor: 'authorName' },
+        { header: 'Ocena', accessor: 'rating' },
+        { header: 'Komentarz', accessor: 'comment' },
     ];
 
     const handleCreate = async (values: {
@@ -113,7 +113,7 @@ export default function ReviewsPage() {
     };
 
     const handleDelete = async (row: Row) => {
-        if (!confirm(`Delete review ${row.id}?`)) return;
+        if (!confirm(`Usunąć opinię ${row.id}?`)) return;
         await api.remove(row.id);
         setRows((c) => c.filter((cl) => cl.id !== row.id));
     };
@@ -132,7 +132,7 @@ export default function ReviewsPage() {
                     <div className="salonbw-page__toolbar">
                         {isAdmin && (
                             <label className="form-label">
-                                Employee
+                                Pracownik (ID)
                                 <input
                                     type="number"
                                     className="form-control form-control-sm"
