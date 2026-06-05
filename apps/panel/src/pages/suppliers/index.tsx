@@ -1,4 +1,3 @@
-'use client';
 
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import SuppliersTab from '@/components/warehouse/SuppliersTab';
