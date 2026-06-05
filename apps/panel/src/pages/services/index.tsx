@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
+import { useServicesWithFilters, useDeleteService } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type { Role, Service, ServiceVariant } from '@/types';
 
 // Extended service type with computed fields for display
@@ -30,8 +31,11 @@ export default function ServicesPage() {
 
 function ServicesPageContent({ role }: { role: Role | null }) {
     const router = useRouter();
+    const toast = useToast();
     const [search, setSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [bulkDeletePending, setBulkDeletePending] = useState(false);
+    const deleteService = useDeleteService();
 
     const categoryId = router.query.categoryId
         ? Number(router.query.categoryId)
@@ -150,6 +154,31 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         );
     };
 
+    const handleBulkDelete = async () => {
+        if (
+            !window.confirm(
+                `Czy na pewno chcesz usunąć ${selectedIds.length} usług(i)? Operacja jest nieodwracalna.`,
+            )
+        )
+            return;
+        setBulkDeletePending(true);
+        let failed = 0;
+        for (const id of selectedIds) {
+            try {
+                await deleteService.mutateAsync(id);
+            } catch {
+                failed++;
+            }
+        }
+        setBulkDeletePending(false);
+        setSelectedIds([]);
+        if (failed === 0) {
+            toast.success('Usługi zostały usunięte');
+        } else {
+            toast.error(`Nie udało się usunąć ${failed} usług(i)`);
+        }
+    };
+
     const formatPopularity = (count?: number): string => {
         if (count === undefined || count === null) return '0 razy';
         if (count === 1) return 'raz';
@@ -233,6 +262,29 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                     </Link>
                 </div>
             </div>
+
+            {selectedIds.length > 0 && (
+                <div className="d-flex align-items-center gap-2 mb-3 p-2 bg-light border rounded">
+                    <span className="text-muted small">
+                        Zaznaczono: <strong>{selectedIds.length}</strong>
+                    </span>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-danger ms-2"
+                        disabled={bulkDeletePending}
+                        onClick={() => void handleBulkDelete()}
+                    >
+                        {bulkDeletePending ? 'Usuwanie...' : 'Usuń zaznaczone'}
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setSelectedIds([])}
+                    >
+                        Odznacz wszystkie
+                    </button>
+                </div>
+            )}
 
             {isLoading ? (
                 <div className="text-muted">Ładowanie usług...</div>
