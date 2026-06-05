@@ -9,6 +9,7 @@ import MobileCustomerTabsNav from '@/components/customers/MobileCustomerTabsNav'
 import { useIsMobile } from '@/hooks/useIsMobile';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
     useCustomer,
@@ -94,6 +95,7 @@ function tabIdFromTabName(tabName: string | null): TabId {
 export default function CustomerDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
+    const toast = useToast();
     const { id } = router.query;
     const parsedCustomerId = parseCustomerIdFromRoute(id, router.asPath);
     const customerId =
@@ -265,7 +267,7 @@ export default function CustomerDetailPage() {
                                                                             Error
                                                                                 ? err.message
                                                                                 : 'Nie udało się usunąć klienta';
-                                                                        alert(
+                                                                        toast.error(
                                                                             message,
                                                                         );
                                                                     },

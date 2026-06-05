@@ -6,6 +6,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CommunicationNav from '@/components/salon/navs/CommunicationNav';
 import { useSmsHistory, useSmsMutations } from '@/hooks/useSms';
@@ -29,6 +30,7 @@ function formatDateTime(value?: string) {
 
 export default function CommunicationPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const [kind, setKind] = useState<'sms' | 'email'>('sms');
     const [status, setStatus] = useState('');
     const [page, setPage] = useState(1);
@@ -89,7 +91,7 @@ export default function CommunicationPage() {
             resetCompose();
         } catch (error) {
             console.error('Failed to send message:', error);
-            alert('Wystąpił błąd podczas wysyłania wiadomości');
+            toast.error('Wystąpił błąd podczas wysyłania wiadomości');
         }
         setIsSending(false);
     };

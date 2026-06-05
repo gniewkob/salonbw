@@ -7,6 +7,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import ManageCategoriesModal from '@/components/services/ManageCategoriesModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     useCreateService,
     useServiceCategories,
@@ -85,6 +86,7 @@ export default function NewServicePage() {
 
 function NewServicePageContent() {
     const router = useRouter();
+    const toast = useToast();
     const { data: categories = [] } = useServiceCategories();
     const createService = useCreateService();
     const uploadServicePhoto = useUploadServicePhoto();
@@ -469,8 +471,8 @@ function NewServicePageContent() {
                     recipeSaveFailed ? 'receptura' : null,
                     photoUploadFailed ? 'zdjęcia' : null,
                 ].filter(Boolean);
-                window.alert(
-                    `Usługa została zapisana, ale create-flow nie domknął jeszcze: ${warnings.join(', ')}.`,
+                toast.error(
+                    `Usługa została zapisana, ale wystąpiły błędy: ${warnings.join(', ')}.`,
                 );
             }
 

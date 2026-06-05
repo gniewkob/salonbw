@@ -7,6 +7,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import NewCustomerNav from '@/components/salon/navs/NewCustomerNav';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import CustomerFormFields, {
@@ -20,6 +21,7 @@ type Draft = CustomerFormDraft;
 export default function NewCustomerPage() {
     const router = useRouter();
     const { role } = useAuth();
+    const toast = useToast();
     const create = useCreateCustomer();
     const [activeTab, setActiveTab] = useState<
         'basic' | 'extended' | 'advanced'
@@ -169,7 +171,7 @@ export default function NewCustomerPage() {
                 smsConsent: form.smsConsent,
             });
         } catch (err) {
-            alert(
+            toast.error(
                 err instanceof Error
                     ? err.message
                     : 'Nie udało się zapisać klienta',

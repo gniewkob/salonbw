@@ -4,6 +4,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
 import { useEmailMutations } from '@/hooks/useEmails';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
@@ -11,6 +12,7 @@ import type { MessageChannel } from '@/types';
 
 export default function MassCommunicationPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data: groups = [] } = useCustomerGroups();
     const { data: customersData } = useCustomers({ limit: 1000 });
     const { data: templates = [] } = useMessageTemplates();
@@ -110,7 +112,7 @@ export default function MassCommunicationPage() {
             setStep('preview');
         } catch (error) {
             console.error('Failed to send:', error);
-            alert('Wystąpił błąd podczas wysyłania');
+            toast.error('Wystąpił błąd podczas wysyłania');
         }
         setIsSending(false);
     };

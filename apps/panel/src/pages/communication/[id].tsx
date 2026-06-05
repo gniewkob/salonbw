@@ -7,6 +7,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     useMessageTemplates,
     useSmsHistory,
@@ -56,6 +57,7 @@ function getCommunicationHref(id: number, kind: 'sms' | 'email') {
 
 export default function CommunicationDetailPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const router = useRouter();
     const rawId = Array.isArray(router.query.id)
         ? router.query.id[0]
@@ -256,7 +258,7 @@ export default function CommunicationDetailPage() {
             setReplyVisible(false);
         } catch (error) {
             console.error('Failed to send reply:', error);
-            alert('Wystąpił błąd podczas wysyłania wiadomości');
+            toast.error('Wystąpił błąd podczas wysyłania wiadomości');
         } finally {
             setIsSending(false);
         }

@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
@@ -55,6 +56,7 @@ const SOURCE_LABELS: Record<string, string> = {
 
 export default function LoyaltyManagementPage() {
     const { user } = useAuth();
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [modalType, setModalType] = useState<ModalType>(null);
     const [selectedReward, setSelectedReward] = useState<LoyaltyReward | null>(
@@ -159,7 +161,7 @@ export default function LoyaltyManagementPage() {
             await useCoupon.mutateAsync({ redemptionCode: couponCode });
             setModalType(null);
             setCouponCode('');
-            alert('Kupon został zrealizowany!');
+            toast.success('Kupon został zrealizowany!');
         } catch (error) {
             console.error('Failed to use coupon:', error);
         }
@@ -169,7 +171,7 @@ export default function LoyaltyManagementPage() {
         e.preventDefault();
         try {
             await updateProgram.mutateAsync(programForm);
-            alert('Ustawienia zapisane!');
+            toast.success('Ustawienia zapisane!');
         } catch (error) {
             console.error('Failed to update settings:', error);
         }

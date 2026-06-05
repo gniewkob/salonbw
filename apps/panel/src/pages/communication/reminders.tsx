@@ -5,10 +5,12 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useReminderStats, useSmsMutations } from '@/hooks/useSms';
 
 export default function RemindersPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data: stats, refetch } = useReminderStats(7);
     const { triggerAutomaticReminders } = useSmsMutations();
 
@@ -35,7 +37,7 @@ export default function RemindersPage() {
             void refetch();
         } catch (error) {
             console.error('Failed to trigger reminders:', error);
-            alert('Wystąpił błąd podczas wyzwalania przypomnień');
+            toast.error('Wystąpił błąd podczas wyzwalania przypomnień');
         }
         setIsTriggering(false);
     };

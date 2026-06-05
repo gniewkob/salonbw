@@ -3,7 +3,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
-
+import { useToast } from '@/contexts/ToastContext';
+import type { Formula } from '@/types';
 const STATUS_LABELS: Record<string, string> = {
     scheduled: 'Zaplanowana',
     confirmed: 'Potwierdzona',
@@ -44,6 +45,7 @@ const CANCELLABLE = new Set([
 export default function ClientDashboard() {
     const { data, loading, error, refetch } = useClientDashboard();
     const { apiFetch } = useAuth();
+    const toast = useToast();
     const [cancelling, setCancelling] = useState<Set<number>>(new Set());
     const [accepting, setAccepting] = useState<Set<number>>(new Set());
 
@@ -56,7 +58,7 @@ export default function ClientDashboard() {
             });
             refetch();
         } catch {
-            alert('Nie udało się anulować wizyty. Spróbuj ponownie.');
+            toast.error('Nie udało się anulować wizyty. Spróbuj ponownie.');
         } finally {
             setCancelling((prev) => {
                 const next = new Set(prev);
@@ -74,7 +76,7 @@ export default function ClientDashboard() {
             });
             refetch();
         } catch {
-            alert(
+            toast.error(
                 'Nie udało się zaakceptować zmiany terminu. Spróbuj ponownie.',
             );
         } finally {

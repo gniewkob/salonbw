@@ -5,6 +5,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useAutomaticMessages } from '@/hooks/useAutomaticMessages';
 import { useMessageTemplates } from '@/hooks/useSms';
 import type {
@@ -52,6 +53,7 @@ const DEFAULT_FORM: CreateAutomaticMessageRuleRequest = {
 
 export default function AutomaticMessagesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { rules, loading, createRule, updateRule, toggleRule, deleteRule } =
         useAutomaticMessages();
     const { data: templates } = useMessageTemplates();
@@ -101,7 +103,7 @@ export default function AutomaticMessagesPage() {
             }
             setIsModalOpen(false);
         } catch {
-            alert('Nie udało się zapisać reguły. Spróbuj ponownie.');
+            toast.error('Nie udało się zapisać reguły. Spróbuj ponownie.');
         } finally {
             setIsSaving(false);
         }
@@ -111,7 +113,7 @@ export default function AutomaticMessagesPage() {
         try {
             await toggleRule(id);
         } catch {
-            alert('Nie udało się zmienić statusu reguły.');
+            toast.error('Nie udało się zmienić statusu reguły.');
         }
     };
 
@@ -120,7 +122,7 @@ export default function AutomaticMessagesPage() {
             await deleteRule(id);
             setConfirmDeleteId(null);
         } catch {
-            alert('Nie udało się usunąć reguły.');
+            toast.error('Nie udało się usunąć reguły.');
         }
     };
 

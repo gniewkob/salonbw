@@ -4,6 +4,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
 import type { TemplateType, MessageChannel } from '@/types';
 
@@ -45,6 +46,7 @@ const DEFAULT_FORM_DATA: TemplateFormData = {
 
 export default function TemplatesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data: templates, loading, refetch } = useMessageTemplates();
     const { createTemplate, updateTemplate, deleteTemplate } =
         useSmsMutations();
@@ -102,7 +104,7 @@ export default function TemplatesPage() {
             void refetch();
         } catch (error) {
             console.error('Failed to save template:', error);
-            alert('Wystąpił błąd podczas zapisywania szablonu');
+            toast.error('Wystąpił błąd podczas zapisywania szablonu');
         }
 
         setIsSubmitting(false);
@@ -116,7 +118,7 @@ export default function TemplatesPage() {
             void refetch();
         } catch (error) {
             console.error('Failed to delete template:', error);
-            alert('Wystąpił błąd podczas usuwania szablonu');
+            toast.error('Wystąpił błąd podczas usuwania szablonu');
         }
     };
 
