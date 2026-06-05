@@ -116,13 +116,6 @@ const SETTINGS_GROUPS: NavGroup[] = [
         heading: 'Komunikacja',
         items: [
             {
-                id: 'settings-event-reminders',
-                href: '/event-reminders',
-                label: 'Komunikacja z klientem',
-                iconClass: 'sprite-settings_notifications_nav',
-                matchPrefix: '/event-reminders',
-            },
-            {
                 id: 'settings-sms',
                 href: '/settings/sms',
                 label: 'SMS i łączność',
@@ -149,6 +142,19 @@ const SETTINGS_GROUPS: NavGroup[] = [
         ],
     },
     {
+        id: 'privacy',
+        heading: 'Prywatność',
+        items: [
+            {
+                id: 'settings-privacy',
+                href: '/settings/privacy',
+                label: 'Prywatność i zgody',
+                iconClass: 'sprite-settings_data_protection',
+                matchPrefix: '/settings/privacy',
+            },
+        ],
+    },
+    {
         id: 'rodo',
         heading: 'RODO i prywatność',
         items: [
@@ -162,12 +168,6 @@ const SETTINGS_GROUPS: NavGroup[] = [
                 id: 'settings-data-logs',
                 href: '/settings/data-protection/logs',
                 label: 'Logi RODO',
-                iconClass: 'sprite-settings_blue',
-            },
-            {
-                id: 'settings-privacy',
-                href: '/settings/privacy',
-                label: 'Polityka prywatności',
                 iconClass: 'sprite-settings_blue',
             },
         ],

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +23,8 @@ export default function ClientsStatisticsPage() {
     };
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:statistics">
         <SalonShell role={role}>
             <div className="salonbw-page" data-testid="clients-statistics-page">
                 <SalonBreadcrumbs
@@ -187,5 +190,6 @@ export default function ClientsStatisticsPage() {
                 )}
             </div>
         </SalonShell>
+        </RouteGuard>
     );
 }

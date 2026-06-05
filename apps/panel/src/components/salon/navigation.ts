@@ -280,7 +280,16 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (path.startsWith('/settings/employees')) {
+    if (path.startsWith('/settings/privacy')) {
+        return {
+            bodyId: 'settings_privacy',
+        } satisfies Partial<SalonShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/employees') ||
+        path.startsWith('/employees')
+    ) {
         return {
             bodyId: 'settings_employees',
         } satisfies Partial<SalonShellProfile>;
@@ -379,11 +388,18 @@ export function resolveSalonModule(pathname: string): SalonModule {
         path.startsWith('/communication') ||
         path.startsWith('/newsletters') ||
         path.startsWith('/messages') ||
-        path.startsWith('/emails')
+        path.startsWith('/emails') ||
+        path.startsWith('/notifications') ||
+        path.startsWith('/admin/communications')
     ) {
         if (path.startsWith('/messages')) {
             return withShellOverride(SALON_MODULES[4], {
                 bodyId: 'communication',
+            });
+        }
+        if (path.startsWith('/notifications')) {
+            return withShellOverride(SALON_MODULES[4], {
+                bodyId: 'communication_notifications',
             });
         }
         return SALON_MODULES[4];

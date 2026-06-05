@@ -4179,8 +4179,17 @@ body.settings-dashboard-landing .main-content > .inner {
     text-decoration: none;
 }
 
+.settings-dashboard-section__title {
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 14px 20px 0;
+    text-transform: uppercase;
+}
+
 .settings-dashboard-inner {
-    padding: 20px;
+    padding: 10px 20px 4px;
 }
 
 .settings-dashboard-inner--addons {

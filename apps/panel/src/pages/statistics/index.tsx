@@ -18,6 +18,7 @@ import {
 } from '@/hooks/useStatistics';
 import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -79,9 +80,12 @@ export default function StatisticsPage() {
     const { role } = useAuth();
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:statistics">
         <SalonShell role={role}>
             <StatisticsPageContent />
         </SalonShell>
+        </RouteGuard>
     );
 }
 

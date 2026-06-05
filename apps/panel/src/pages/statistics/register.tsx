@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,6 +54,8 @@ export default function CashRegisterPage() {
     const summary = data ? calculateSummary(data.entries) : null;
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:statistics">
         <SalonShell role={role}>
             <div className="salonbw-page" data-testid="cash-register-page">
                 <SalonBreadcrumbs
@@ -327,5 +330,6 @@ export default function CashRegisterPage() {
                 )}
             </div>
         </SalonShell>
+        </RouteGuard>
     );
 }

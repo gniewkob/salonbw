@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -110,6 +111,8 @@ export default function EmployeeActivityPage() {
     const totalAppointments = toNumber(totals.appointmentsCount);
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:statistics">
         <SalonShell role={role}>
             <div
                 className="salonbw-page statistics-module"
@@ -215,5 +218,6 @@ export default function EmployeeActivityPage() {
                 )}
             </div>
         </SalonShell>
+        </RouteGuard>
     );
 }

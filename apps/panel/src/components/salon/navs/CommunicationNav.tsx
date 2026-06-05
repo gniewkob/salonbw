@@ -19,6 +19,11 @@ const COMMUNICATION_ITEMS: NavItem[] = [
         href: '/messages',
     },
     {
+        id: 'newsletters',
+        label: 'Newslettery',
+        href: '/messages',
+    },
+    {
         id: 'mass',
         label: 'Wiadomości masowe',
         href: '/communication/mass',
@@ -37,6 +42,11 @@ const COMMUNICATION_ITEMS: NavItem[] = [
         id: 'automatic',
         label: 'Automatyczne wiadomości',
         href: '/communication/automatic',
+    },
+    {
+        id: 'notifications',
+        label: 'Powiadomienia systemowe',
+        href: '/notifications',
     },
 ];
 

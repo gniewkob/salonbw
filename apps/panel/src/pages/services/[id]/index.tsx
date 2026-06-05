@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { RevenueChart } from '@/components/statistics';
@@ -208,6 +209,8 @@ export default function ServiceDetailsPage() {
     };
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:services">
         <SalonShell role={role || 'admin'}>
             <div
                 className="salonbw-page service-details-page"
@@ -814,5 +817,6 @@ export default function ServiceDetailsPage() {
                 )}
             </div>
         </SalonShell>
+        </RouteGuard>
     );
 }

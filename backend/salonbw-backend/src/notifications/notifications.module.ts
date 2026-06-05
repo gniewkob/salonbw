@@ -12,6 +12,7 @@ import { EmailsModule } from '../emails/emails.module';
 import { PushService } from './push.service';
 import { PushController } from './push.controller';
 import { PushSubscription } from './push-subscription.entity';
+import { NotificationsController } from './notifications.controller';
 
 @Module({
     imports: [
@@ -24,7 +25,7 @@ import { PushSubscription } from './push-subscription.entity';
         forwardRef(() => SmsModule),
         EmailsModule,
     ],
-    controllers: [PushController],
+    controllers: [PushController, NotificationsController],
     providers: [
         process.env.NODE_ENV === 'test'
             ? { provide: WhatsappService, useClass: WhatsappServiceMock }

@@ -128,10 +128,9 @@ export default function SalonTopbar() {
                             className="notification_center"
                             id="notification_center_navbar"
                         >
-                            <a
+                            <Link
                                 className="link e2e-notification-center-navbar"
-                                href="#"
-                                onClick={(event) => event.preventDefault()}
+                                href="/notifications"
                             >
                                 <div
                                     className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}
@@ -145,7 +144,7 @@ export default function SalonTopbar() {
                                         className="svg-notifications"
                                     />
                                 </div>
-                            </a>
+                            </Link>
                         </li>
                     ) : null}
                     {topbar.tasks.enabled ? (
@@ -311,6 +310,10 @@ export default function SalonTopbar() {
                                     <strong>{topbar.user.fullName}</strong>
                                     {topbar.user.roleLabel}
                                 </a>
+                            </li>
+                            <li className="divider"></li>
+                            <li className="main-menu-li">
+                                <Link href="/account">Zmień hasło</Link>
                             </li>
                             <li className="divider"></li>
                             <li className="main-menu-li">
