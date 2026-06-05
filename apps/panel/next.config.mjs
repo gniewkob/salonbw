@@ -377,6 +377,11 @@ const nextConfig = {
                 destination: '/settings/customer-groups/new',
                 permanent: false,
             },
+            {
+                source: '/notifications',
+                destination: '/communication',
+                permanent: false,
+            },
         ];
     },
     async headers() {

@@ -1,68 +1,44 @@
 import { useRouter } from 'next/router';
-import SalonListNav from './SalonListNav';
-
-type NavItem = {
-    id: string;
-    label: string;
-    href: string;
-};
-
-const COMMUNICATION_ITEMS: NavItem[] = [
-    {
-        id: 'inbox',
-        label: 'Nieprzeczytane wiadomości',
-        href: '/communication',
-    },
-    {
-        id: 'send',
-        label: 'Wyślij wiadomość',
-        href: '/messages',
-    },
-    {
-        id: 'newsletters',
-        label: 'Newslettery',
-        href: '/messages',
-    },
-    {
-        id: 'mass',
-        label: 'Wiadomości masowe',
-        href: '/communication/mass',
-    },
-    {
-        id: 'templates',
-        label: 'Szablony wiadomości',
-        href: '/communication/templates',
-    },
-    {
-        id: 'reminders',
-        label: 'Przypomnienia',
-        href: '/communication/reminders',
-    },
-    {
-        id: 'automatic',
-        label: 'Automatyczne wiadomości',
-        href: '/communication/automatic',
-    },
-    {
-        id: 'notifications',
-        label: 'Powiadomienia systemowe',
-        href: '/notifications',
-    },
-];
 
 export default function CommunicationNav() {
     const router = useRouter();
+    const path = router.pathname;
 
     const isActive = (href: string) =>
-        router.pathname === href || router.pathname.startsWith(`${href}/`);
+        path === href || path.startsWith(`${href}/`);
+
+    const renderGroup = (
+        heading: string,
+        items: Array<{ label: string; href: string }>,
+    ) => (
+        <div className="column_row">
+            <div className="nav-header">{heading}</div>
+            <ul className="nav nav-list">
+                {items.map((item) => (
+                    <li key={item.href} className={isActive(item.href) ? 'active' : undefined}>
+                        <a href={item.href}>{item.label}</a>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
 
     return (
-        <SalonListNav
-            heading="ŁĄCZNOŚĆ"
-            items={COMMUNICATION_ITEMS.map((item) => ({
-                ...item,
-                active: isActive(item.href),
-            }))}
-        />
+        <>
+            {renderGroup('AUTOMATYCZNE', [
+                { label: 'Reguły automatyczne', href: '/communication/automatic' },
+                { label: 'Przypomnienia', href: '/communication/reminders' },
+            ])}
+            {renderGroup('KAMPANIE', [
+                { label: 'Wiadomości masowe', href: '/communication/mass' },
+                { label: 'Newslettery', href: '/messages' },
+            ])}
+            {renderGroup('SZABLONY', [
+                { label: 'Szablony wiadomości', href: '/communication/templates' },
+            ])}
+            {renderGroup('HISTORIA', [
+                { label: 'Historia wiadomości', href: '/communication' },
+            ])}
+        </>
     );
 }
