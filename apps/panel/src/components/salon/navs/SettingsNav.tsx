@@ -1,10 +1,12 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import SalonGroupedNav from './SalonGroupedNav';
 
 type NavItem = {
     id: string;
-    label: string;
     href: string;
+    label: string;
+    iconClass: string;
+    matchPrefix?: string;
 };
 
 type NavGroup = {
@@ -20,23 +22,28 @@ const SETTINGS_GROUPS: NavGroup[] = [
         items: [
             {
                 id: 'settings-branch',
-                label: 'Dane salonu',
                 href: '/settings/branch',
+                label: 'Dane salonu',
+                iconClass: 'sprite-settings_branch',
             },
             {
                 id: 'settings-hours',
-                label: 'Godziny otwarcia',
                 href: '/settings/timetable/branch',
+                label: 'Godziny otwarcia',
+                iconClass: 'sprite-schedule_template',
+                matchPrefix: '/settings/timetable/branch',
             },
             {
                 id: 'settings-calendar',
-                label: 'Kalendarz',
                 href: '/settings/calendar',
+                label: 'Kalendarz',
+                iconClass: 'sprite-settings_calendar',
             },
             {
-                id: 'settings-payments',
-                label: 'Płatności',
-                href: '/settings/payment-configuration',
+                id: 'settings-categories',
+                href: '/settings/categories',
+                label: 'Kategorie',
+                iconClass: 'sprite-settings_blue',
             },
         ],
     },
@@ -46,18 +53,24 @@ const SETTINGS_GROUPS: NavGroup[] = [
         items: [
             {
                 id: 'settings-employees',
-                label: 'Lista pracowników',
                 href: '/settings/employees',
+                label: 'Lista pracowników',
+                iconClass: 'sprite-settings_employees',
+                matchPrefix: '/settings/employees',
             },
             {
                 id: 'settings-schedules',
-                label: 'Grafiki pracy',
                 href: '/settings/timetable/employees',
+                label: 'Grafiki pracy',
+                iconClass: 'sprite-schedule_employees',
+                matchPrefix: '/settings/timetable/employees',
             },
             {
                 id: 'settings-schedule-templates',
-                label: 'Szablony grafików',
                 href: '/settings/timetable/templates',
+                label: 'Szablony grafików',
+                iconClass: 'sprite-schedule_template',
+                matchPrefix: '/settings/timetable/templates',
             },
         ],
     },
@@ -67,23 +80,34 @@ const SETTINGS_GROUPS: NavGroup[] = [
         items: [
             {
                 id: 'settings-extra-fields',
-                label: 'Pola dodatkowe',
                 href: '/settings/extra-fields',
+                label: 'Pola dodatkowe',
+                iconClass: 'sprite-settings_blue',
             },
             {
                 id: 'settings-customer-groups',
-                label: 'Grupy klientów',
                 href: '/settings/customer_groups',
+                label: 'Grupy klientów',
+                iconClass: 'sprite-settings_blue',
             },
             {
                 id: 'settings-customer-origins',
-                label: 'Pochodzenie klientów',
                 href: '/settings/customer-origins',
+                label: 'Pochodzenie klientów',
+                iconClass: 'sprite-settings_blue',
             },
             {
                 id: 'settings-customer-panel',
-                label: 'Rezerwacja online',
                 href: '/settings/customer-panel',
+                label: 'Panel klienta',
+                iconClass: 'sprite-settings_label_visits',
+            },
+            {
+                id: 'settings-online-booking',
+                href: '/settings/online-booking',
+                label: 'Rezerwacja online',
+                iconClass: 'sprite-settings_label_visits',
+                matchPrefix: '/settings/online-booking',
             },
         ],
     },
@@ -91,11 +115,36 @@ const SETTINGS_GROUPS: NavGroup[] = [
         id: 'communication',
         heading: 'Komunikacja',
         items: [
-            { id: 'settings-sms', label: 'SMS', href: '/settings/sms' },
+            {
+                id: 'settings-event-reminders',
+                href: '/event-reminders',
+                label: 'Komunikacja z klientem',
+                iconClass: 'sprite-settings_notifications_nav',
+                matchPrefix: '/event-reminders',
+            },
+            {
+                id: 'settings-sms',
+                href: '/settings/sms',
+                label: 'SMS i łączność',
+                iconClass: 'sprite-settings_sms_nav',
+            },
             {
                 id: 'settings-reminders',
-                label: 'Przypomnienia',
                 href: '/settings/reminders',
+                label: 'Przypomnienia',
+                iconClass: 'sprite-settings_notifications_nav',
+            },
+        ],
+    },
+    {
+        id: 'finance',
+        heading: 'Finanse',
+        items: [
+            {
+                id: 'settings-payments',
+                href: '/settings/payment-configuration',
+                label: 'Płatności',
+                iconClass: 'sprite-settings_payment_methods',
             },
         ],
     },
@@ -105,18 +154,21 @@ const SETTINGS_GROUPS: NavGroup[] = [
         items: [
             {
                 id: 'settings-data-protection',
-                label: 'Ochrona danych',
                 href: '/settings/data-protection',
+                label: 'Ochrona danych',
+                iconClass: 'sprite-settings_blue',
             },
             {
                 id: 'settings-data-logs',
-                label: 'Logi RODO',
                 href: '/settings/data-protection/logs',
+                label: 'Logi RODO',
+                iconClass: 'sprite-settings_blue',
             },
             {
                 id: 'settings-privacy',
-                label: 'Polityka prywatności',
                 href: '/settings/privacy',
+                label: 'Polityka prywatności',
+                iconClass: 'sprite-settings_blue',
             },
         ],
     },
@@ -125,14 +177,10 @@ const SETTINGS_GROUPS: NavGroup[] = [
         heading: 'Inne',
         items: [
             {
-                id: 'settings-categories',
-                label: 'Kategorie',
-                href: '/settings/categories',
-            },
-            {
                 id: 'settings-reviews',
-                label: 'Komentarze klientów',
                 href: '/reviews',
+                label: 'Komentarze klientów',
+                iconClass: 'sprite-settings_blue',
             },
         ],
     },
@@ -141,19 +189,62 @@ const SETTINGS_GROUPS: NavGroup[] = [
 export default function SettingsNav() {
     const router = useRouter();
 
-    const isActive = (href: string) =>
-        router.pathname === href || router.pathname.startsWith(`${href}/`);
+    const isActive = (href: string, matchPrefix?: string) => {
+        const prefix = matchPrefix ?? href;
+        return (
+            router.pathname === href ||
+            router.pathname.startsWith(`${prefix}/`)
+        );
+    };
 
     return (
-        <SalonGroupedNav
-            heading="USTAWIENIA"
-            groups={SETTINGS_GROUPS.map((group) => ({
-                ...group,
-                items: group.items.map((item) => ({
-                    ...item,
-                    active: isActive(item.href),
-                })),
-            }))}
-        />
+        <div className="column_row tree other_settings">
+            <h4>Ustawienia</h4>
+            <ul>
+                <li>
+                    <Link
+                        href="/settings"
+                        className={
+                            router.pathname === '/settings' ? 'active' : ''
+                        }
+                    >
+                        <div className="icon_box">
+                            <span
+                                className="icon sprite-settings_blue"
+                                aria-hidden="true"
+                            />
+                        </div>
+                        Wszystkie ustawienia
+                    </Link>
+                </li>
+            </ul>
+            {SETTINGS_GROUPS.map((group) => (
+                <div key={group.id}>
+                    <h4>{group.heading}</h4>
+                    <ul>
+                        {group.items.map((item) => (
+                            <li key={item.id}>
+                                <Link
+                                    href={item.href}
+                                    className={
+                                        isActive(item.href, item.matchPrefix)
+                                            ? 'active'
+                                            : ''
+                                    }
+                                >
+                                    <div className="icon_box">
+                                        <span
+                                            className={`icon ${item.iconClass}`}
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+        </div>
     );
 }

@@ -265,7 +265,16 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (path.startsWith('/settings/data-protection')) {
+    if (path.startsWith('/settings/online-booking')) {
+        return {
+            bodyId: 'settings_online_booking',
+        } satisfies Partial<SalonShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/data_protection') ||
+        path.startsWith('/settings/data-protection')
+    ) {
         return {
             bodyId: 'settings_data_protection',
         } satisfies Partial<SalonShellProfile>;

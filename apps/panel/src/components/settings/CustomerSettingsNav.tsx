@@ -22,11 +22,6 @@ const ITEMS = [
         label: 'Tryb ochrony danych',
         iconClass: 'sprite-settings_data_protection',
     },
-    {
-        href: '/settings/card_numbering',
-        label: 'Numeracja kart',
-        iconClass: 'sprite-customer_card',
-    },
 ] as const;
 
 export default function CustomerSettingsNav() {

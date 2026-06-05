@@ -1,0 +1,16 @@
+import RouteGuard from '@/components/RouteGuard';
+import OnlineBookingSettingsPage from '@/components/settings/OnlineBookingSettingsPage';
+import SalonShell from '@/components/salon/SalonShell';
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function OnlineBookingSettingsRoute() {
+    const { role } = useAuth();
+
+    return (
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonShell role={role}>
+                <OnlineBookingSettingsPage />
+            </SalonShell>
+        </RouteGuard>
+    );
+}
