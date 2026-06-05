@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import NewProductModal from '@/components/warehouse/NewProductModal';
 import EditProductModal from '@/components/warehouse/EditProductModal';
@@ -10,6 +11,8 @@ import {
     useProductCategories,
 } from '@/hooks/useWarehouseViews';
 import { getProductTypeLabel } from '@/lib/warehouse/productTypeLabel';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { ProductCategory } from '@/types';
 
 function flattenCategoryIds(
@@ -48,6 +51,9 @@ const productTypeOptions: { value: ProductTypeFilter; label: string }[] = [
 
 export default function WarehouseProductsPage() {
     const router = useRouter();
+    const { apiFetch } = useAuth();
+    const toast = useToast();
+    const queryClient = useQueryClient();
 
     const [search, setSearch] = useState('');
     const [productTypeFilter, setProductTypeFilter] =
@@ -57,6 +63,8 @@ export default function WarehouseProductsPage() {
     const [isMobile, setIsMobile] = useState(false);
     const [mobileCount, setMobileCount] = useState(20);
     const sentinelRef = useRef<HTMLDivElement>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [bulkDeletePending, setBulkDeletePending] = useState(false);
 
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 575px)');
@@ -147,6 +155,52 @@ export default function WarehouseProductsPage() {
         observer.observe(sentinel);
         return () => observer.disconnect();
     }, [isMobile, mobileCount, filteredProducts.length]);
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === displayedProducts.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(displayedProducts.map((p) => p.id)));
+        }
+    };
+
+    const toggleSelect = (id: number) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    const handleBulkDelete = async () => {
+        if (
+            !window.confirm(
+                `Czy na pewno chcesz usunąć ${selectedIds.size} produkt(ów)? Operacja jest nieodwracalna.`,
+            )
+        )
+            return;
+        setBulkDeletePending(true);
+        let failed = 0;
+        for (const id of Array.from(selectedIds)) {
+            try {
+                await apiFetch(`/products/${id}`, { method: 'DELETE' });
+            } catch {
+                failed++;
+            }
+        }
+        void queryClient.invalidateQueries({ queryKey: ['warehouse-products'] });
+        setBulkDeletePending(false);
+        setSelectedIds(new Set());
+        if (failed === 0) {
+            toast.success('Produkty zostały usunięte');
+        } else {
+            toast.error(`Nie udało się usunąć ${failed} produkt(ów)`);
+        }
+    };
 
     const exportProductsCsv = () => {
         const formatCsvNumber = (value: number) =>
@@ -245,6 +299,29 @@ export default function WarehouseProductsPage() {
                 </div>
             </div>
 
+            {selectedIds.size > 0 && (
+                <div className="d-flex align-items-center gap-2 mb-3 p-2 bg-light border rounded">
+                    <span className="text-muted small">
+                        Zaznaczono: <strong>{selectedIds.size}</strong>
+                    </span>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-danger ms-2"
+                        disabled={bulkDeletePending}
+                        onClick={() => void handleBulkDelete()}
+                    >
+                        {bulkDeletePending ? 'Usuwanie...' : 'Usuń zaznaczone'}
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setSelectedIds(new Set())}
+                    >
+                        Odznacz wszystkie
+                    </button>
+                </div>
+            )}
+
             <div className="table-responsive">
                 <table className="table table-bordered">
                     <thead>
@@ -253,6 +330,12 @@ export default function WarehouseProductsPage() {
                                 <input
                                     type="checkbox"
                                     aria-label="zaznacz wszystkie"
+                                    checked={
+                                        displayedProducts.length > 0 &&
+                                        selectedIds.size ===
+                                            displayedProducts.length
+                                    }
+                                    onChange={toggleSelectAll}
                                 />
                             </th>
                             <th>
@@ -302,6 +385,12 @@ export default function WarehouseProductsPage() {
                                             <input
                                                 type="checkbox"
                                                 aria-label={`zaznacz ${product.name}`}
+                                                checked={selectedIds.has(
+                                                    product.id,
+                                                )}
+                                                onChange={() =>
+                                                    toggleSelect(product.id)
+                                                }
                                             />
                                         </td>
                                         <td className="wrap blue_text pointer link_body">
