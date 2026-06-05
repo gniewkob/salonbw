@@ -1,4 +1,3 @@
-'use client';
 
 const WORDS = ['PASJA', 'PROFESJONALIZM', 'PIELĘGNACJA', 'PIĘKNO', 'BYTOM', 'BLACK & WHITE', 'AKADEMIA', 'ZDROWE WŁOSY', 'OD 2011'];
 

@@ -1,4 +1,3 @@
-'use client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
@@ -93,6 +92,7 @@ export default function Navbar() {
                         <ul className="flex items-center gap-7">
                             {[
                                 { label: T.nav.home, href: '/' },
+                                { label: T.nav.about, href: '/about' },
                                 { label: T.nav.services, href: '/services' },
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },
@@ -196,6 +196,7 @@ export default function Navbar() {
                         <ul className="space-y-1">
                             {[
                                 { label: T.nav.home, href: '/' },
+                                { label: T.nav.about, href: '/about' },
                                 { label: T.nav.services, href: '/services' },
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },

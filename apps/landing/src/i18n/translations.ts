@@ -10,6 +10,7 @@ const t = {
     pl: {
         nav: {
             home: 'Start',
+            about: 'O nas',
             services: 'Usługi',
             gallery: 'Galeria',
             contact: 'Kontakt',
@@ -242,6 +243,7 @@ const t = {
     en: {
         nav: {
             home: 'Home',
+            about: 'About us',
             services: 'Services',
             gallery: 'Gallery',
             contact: 'Contact',
@@ -474,6 +476,7 @@ const t = {
     de: {
         nav: {
             home: 'Start',
+            about: 'Über uns',
             services: 'Leistungen',
             gallery: 'Galerie',
             contact: 'Kontakt',

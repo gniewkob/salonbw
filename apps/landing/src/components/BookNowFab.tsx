@@ -1,4 +1,3 @@
-'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';

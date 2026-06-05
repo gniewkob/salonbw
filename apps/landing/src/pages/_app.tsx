@@ -1,4 +1,3 @@
-'use client';
 import type { AppProps, NextWebVitalsMetric } from 'next/app';
 import { useEffect, useState } from 'react';
 import Script from 'next/script';

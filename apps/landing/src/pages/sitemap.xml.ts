@@ -2,6 +2,7 @@ import type { GetServerSideProps } from 'next';
 
 const staticPaths: Array<{ path: string; priority: string; changefreq: string }> = [
     { path: '/',                      priority: '1.0', changefreq: 'weekly'  },
+    { path: '/about',                 priority: '0.8', changefreq: 'monthly' },
     { path: '/services',              priority: '0.9', changefreq: 'weekly'  },
     { path: '/services/coloring',     priority: '0.8', changefreq: 'monthly' },
     { path: '/services/balayage',     priority: '0.8', changefreq: 'monthly' },
