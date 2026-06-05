@@ -110,8 +110,7 @@ export default function MassCommunicationPage() {
                 setSendResult(result);
             }
             setStep('preview');
-        } catch (error) {
-            console.error('Failed to send:', error);
+        } catch {
             toast.error('Wystąpił błąd podczas wysyłania');
         }
         setIsSending(false);

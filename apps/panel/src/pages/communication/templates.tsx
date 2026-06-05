@@ -102,8 +102,7 @@ export default function TemplatesPage() {
             }
             setIsModalOpen(false);
             void refetch();
-        } catch (error) {
-            console.error('Failed to save template:', error);
+        } catch {
             toast.error('Wystąpił błąd podczas zapisywania szablonu');
         }
 
@@ -116,8 +115,7 @@ export default function TemplatesPage() {
         try {
             await deleteTemplate.mutateAsync(id);
             void refetch();
-        } catch (error) {
-            console.error('Failed to delete template:', error);
+        } catch {
             toast.error('Wystąpił błąd podczas usuwania szablonu');
         }
     };

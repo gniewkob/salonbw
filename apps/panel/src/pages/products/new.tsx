@@ -78,7 +78,6 @@ export default function NewProductPage() {
             });
             await router.push('/products');
         } catch (error) {
-            console.error('Błąd zapisu produktu:', error);
             setApiError(
                 error instanceof Error
                     ? error.message

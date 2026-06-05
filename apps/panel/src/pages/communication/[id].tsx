@@ -256,8 +256,7 @@ export default function CommunicationDetailPage() {
             setSelectedTemplateId('');
             setReplyMode('new');
             setReplyVisible(false);
-        } catch (error) {
-            console.error('Failed to send reply:', error);
+        } catch {
             toast.error('Wystąpił błąd podczas wysyłania wiadomości');
         } finally {
             setIsSending(false);

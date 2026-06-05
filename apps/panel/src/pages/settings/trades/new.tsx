@@ -97,8 +97,7 @@ export default function SettingsTradesNewPage() {
             });
 
             await router.push(`/services?categoryId=${created.id}`);
-        } catch (err) {
-            console.error('Error creating service category:', err);
+        } catch {
             setError(
                 'Nie udało się zapisać branży. Sprawdź dane i spróbuj ponownie.',
             );

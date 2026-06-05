@@ -35,8 +35,7 @@ export default function RemindersPage() {
             setResults(response.results);
             setShowResults(true);
             void refetch();
-        } catch (error) {
-            console.error('Failed to trigger reminders:', error);
+        } catch {
             toast.error('Wystąpił błąd podczas wyzwalania przypomnień');
         }
         setIsTriggering(false);

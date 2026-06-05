@@ -89,8 +89,7 @@ export default function CommunicationPage() {
             }
             setIsModalOpen(false);
             resetCompose();
-        } catch (error) {
-            console.error('Failed to send message:', error);
+        } catch {
             toast.error('Wystąpił błąd podczas wysyłania wiadomości');
         }
         setIsSending(false);

@@ -421,12 +421,8 @@ function NewServicePageContent() {
                         serviceId: createdService.id,
                         items: recipeItemsForSave,
                     });
-                } catch (recipeError) {
+                } catch {
                     recipeSaveFailed = true;
-                    console.error(
-                        'Failed to save service recipe:',
-                        recipeError,
-                    );
                 }
             }
 
@@ -440,12 +436,8 @@ function NewServicePageContent() {
                             sortOrder: index,
                             isPublic: true,
                         });
-                    } catch (photoError) {
+                    } catch {
                         photoUploadFailed = true;
-                        console.error(
-                            'Failed to upload service photo:',
-                            photoError,
-                        );
                     }
                 }
             }
@@ -477,8 +469,7 @@ function NewServicePageContent() {
             }
 
             await router.push(`/services/${createdService.id}`);
-        } catch (submitError) {
-            console.error('Failed to create service:', submitError);
+        } catch {
             setError(
                 'Nie udało się zapisać usługi. Sprawdź dane i spróbuj ponownie.',
             );

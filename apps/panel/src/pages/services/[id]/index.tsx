@@ -204,8 +204,8 @@ export default function ServiceDetailsPage() {
 
         try {
             await updateCommissions.mutateAsync({ serviceId, rules });
-        } catch (error) {
-            console.error('Failed to save commissions:', error);
+        } catch {
+            toast.error('Nie udało się zapisać prowizji');
         }
     };
 
