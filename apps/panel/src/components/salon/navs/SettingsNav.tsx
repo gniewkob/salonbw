@@ -97,12 +97,6 @@ const SETTINGS_GROUPS: NavGroup[] = [
                 iconClass: 'sprite-settings_blue',
             },
             {
-                id: 'settings-customer-panel',
-                href: '/settings/customer-panel',
-                label: 'Panel klienta',
-                iconClass: 'sprite-settings_label_visits',
-            },
-            {
                 id: 'settings-online-booking',
                 href: '/settings/online-booking',
                 label: 'Rezerwacja online',
@@ -120,12 +114,6 @@ const SETTINGS_GROUPS: NavGroup[] = [
                 href: '/settings/sms',
                 label: 'SMS i łączność',
                 iconClass: 'sprite-settings_sms_nav',
-            },
-            {
-                id: 'settings-reminders',
-                href: '/settings/reminders',
-                label: 'Przypomnienia',
-                iconClass: 'sprite-settings_notifications_nav',
             },
         ],
     },

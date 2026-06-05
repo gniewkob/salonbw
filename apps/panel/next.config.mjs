@@ -382,6 +382,16 @@ const nextConfig = {
                 destination: '/communication',
                 permanent: false,
             },
+            {
+                source: '/settings/customer-panel',
+                destination: '/settings/online-booking',
+                permanent: false,
+            },
+            {
+                source: '/settings/reminders',
+                destination: '/event-reminders',
+                permanent: false,
+            },
         ];
     },
     async headers() {
