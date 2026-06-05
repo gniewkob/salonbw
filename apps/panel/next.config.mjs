@@ -422,6 +422,37 @@ const nextConfig = {
                 destination: '/settings/employees/:id?tab=history',
                 permanent: false,
             },
+            // F1.3 — Communication consolidation
+            {
+                source: '/messages',
+                destination: '/communication/campaigns',
+                permanent: false,
+            },
+            {
+                source: '/messages/:path*',
+                destination: '/communication/campaigns',
+                permanent: false,
+            },
+            {
+                source: '/communication/reminders',
+                destination: '/communication/automatic',
+                permanent: false,
+            },
+            {
+                source: '/event-reminders',
+                destination: '/communication/automatic',
+                permanent: false,
+            },
+            {
+                source: '/emails',
+                destination: '/communication',
+                permanent: false,
+            },
+            {
+                source: '/newsletters',
+                destination: '/communication/campaigns',
+                permanent: false,
+            },
         ];
     },
     async headers() {

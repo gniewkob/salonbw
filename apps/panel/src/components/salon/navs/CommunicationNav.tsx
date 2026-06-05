@@ -27,11 +27,10 @@ export default function CommunicationNav() {
         <>
             {renderGroup('AUTOMATYCZNE', [
                 { label: 'Reguły automatyczne', href: '/communication/automatic' },
-                { label: 'Przypomnienia', href: '/communication/reminders' },
             ])}
             {renderGroup('KAMPANIE', [
                 { label: 'Wiadomości masowe', href: '/communication/mass' },
-                { label: 'Newslettery', href: '/messages' },
+                { label: 'Newslettery', href: '/communication/campaigns' },
             ])}
             {renderGroup('SZABLONY', [
                 { label: 'Szablony wiadomości', href: '/communication/templates' },

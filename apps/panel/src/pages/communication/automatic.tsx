@@ -587,6 +587,11 @@ export default function AutomaticMessagesPage() {
                         </div>
                     </div>
                 )}
+                <div className="mt-3 pt-3 border-top">
+                    <Link href="/communication/reminders" className="btn btn-sm btn-outline-secondary">
+                        Wyzwól przypomnienia ręcznie →
+                    </Link>
+                </div>
             </SalonShell>
         </RouteGuard>
     );
