@@ -393,6 +393,21 @@ const nextConfig = {
                 permanent: false,
             },
             {
+                source: '/settings/extra-fields',
+                destination: '/settings/customers?tab=extra-fields',
+                permanent: false,
+            },
+            {
+                source: '/settings/customer-groups',
+                destination: '/settings/customers',
+                permanent: false,
+            },
+            {
+                source: '/settings/customer-origins',
+                destination: '/settings/customers?tab=origins',
+                permanent: false,
+            },
+            {
                 source: '/settings/employees/:id/edit',
                 destination: '/settings/employees/:id?tab=edit',
                 permanent: false,

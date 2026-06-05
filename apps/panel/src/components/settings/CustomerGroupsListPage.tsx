@@ -6,14 +6,9 @@ import {
     useSortCustomerGroups,
     useUpdateCustomerGroup,
 } from '@/hooks/useCustomers';
-import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
-import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
-import CustomerSettingsNav from './CustomerSettingsNav';
 import type { CustomerGroup } from '@/types';
 
 type GroupNode = CustomerGroup & { children: GroupNode[] };
-
-const EMPTY_NAV = <CustomerSettingsNav />;
 
 function buildTree(groups: CustomerGroup[]) {
     const map = new Map<number, GroupNode>();
@@ -73,8 +68,6 @@ export default function CustomerGroupsListPage() {
     );
     const [editName, setEditName] = useState('');
     const [editParentId, setEditParentId] = useState<string>('');
-
-    useSetSecondaryNav(EMPTY_NAV);
 
     const tree = useMemo(() => buildTree(groups), [groups]);
     const draftTree = useMemo(() => buildTree(draftGroups), [draftGroups]);

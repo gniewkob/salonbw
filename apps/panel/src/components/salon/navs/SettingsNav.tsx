@@ -79,22 +79,11 @@ const SETTINGS_GROUPS: NavGroup[] = [
         heading: 'Klienci',
         items: [
             {
-                id: 'settings-extra-fields',
-                href: '/settings/extra-fields',
-                label: 'Pola dodatkowe',
+                id: 'settings-customers',
+                href: '/settings/customers',
+                label: 'Klienci',
                 iconClass: 'sprite-settings_blue',
-            },
-            {
-                id: 'settings-customer-groups',
-                href: '/settings/customer-groups',
-                label: 'Grupy klientów',
-                iconClass: 'sprite-settings_blue',
-            },
-            {
-                id: 'settings-customer-origins',
-                href: '/settings/customer-origins',
-                label: 'Pochodzenie klientów',
-                iconClass: 'sprite-settings_blue',
+                matchPrefix: '/settings/customers',
             },
             {
                 id: 'settings-online-booking',
