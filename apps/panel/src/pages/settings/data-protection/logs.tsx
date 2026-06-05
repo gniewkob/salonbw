@@ -1,10 +1,9 @@
 import ActivityLogRoute from '@/components/settings/ActivityLogRoute';
-import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
 
 export default function DataProtectionLogsPage() {
     return (
         <ActivityLogRoute
-            secondaryNav={<CustomerSettingsNav />}
+            secondaryNav={null}
             clearHref="/settings/data-protection/logs"
             summaryFallback="Rejestr aktywności pracowników"
             emptyLabel="Brak aktywności pracowników dla wybranych filtrów."
@@ -15,11 +14,8 @@ export default function DataProtectionLogsPage() {
                     iconClass: 'sprite-breadcrumbs_settings',
                 },
                 {
-                    label: 'Klienci',
-                },
-                {
-                    href: '/settings/data-protection',
-                    label: 'Tryb ochrony danych',
+                    href: '/settings/privacy?tab=protection',
+                    label: 'Ochrona danych',
                 },
                 {
                     label: 'Rejestr aktywności pracowników',

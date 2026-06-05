@@ -120,32 +120,21 @@ const SETTINGS_GROUPS: NavGroup[] = [
     },
     {
         id: 'privacy',
-        heading: 'Prywatność',
+        heading: 'Prywatność i RODO',
         items: [
             {
                 id: 'settings-privacy',
                 href: '/settings/privacy',
-                label: 'Prywatność i zgody',
+                label: 'Zgody i prywatność',
                 iconClass: 'sprite-settings_data_protection',
                 matchPrefix: '/settings/privacy',
-            },
-        ],
-    },
-    {
-        id: 'rodo',
-        heading: 'RODO i prywatność',
-        items: [
-            {
-                id: 'settings-data-protection',
-                href: '/settings/data-protection',
-                label: 'Ochrona danych',
-                iconClass: 'sprite-settings_blue',
             },
             {
                 id: 'settings-data-logs',
                 href: '/settings/data-protection/logs',
                 label: 'Logi RODO',
                 iconClass: 'sprite-settings_blue',
+                matchPrefix: '/settings/data-protection/logs',
             },
         ],
     },

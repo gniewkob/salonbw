@@ -393,6 +393,11 @@ const nextConfig = {
                 permanent: false,
             },
             {
+                source: '/settings/data-protection',
+                destination: '/settings/privacy?tab=protection',
+                permanent: false,
+            },
+            {
                 source: '/settings/extra-fields',
                 destination: '/settings/customers?tab=extra-fields',
                 permanent: false,
