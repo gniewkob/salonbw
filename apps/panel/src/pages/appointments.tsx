@@ -190,10 +190,6 @@ export default function AppointmentsPage() {
         [apiFetch, toast, queryClient],
     );
 
-    if (role !== 'admin' && role !== 'receptionist') {
-        return null;
-    }
-
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
