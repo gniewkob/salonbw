@@ -166,7 +166,7 @@ export default function CustomerGroupsListPage() {
                                 </li>
                                 <li>
                                     <Link
-                                        href={`/settings/customer_groups/new?parent_id=${node.id}`}
+                                        href={`/settings/customer-groups/new?parent_id=${node.id}`}
                                     >
                                         Nowa grupa
                                     </Link>
@@ -256,7 +256,7 @@ export default function CustomerGroupsListPage() {
                     </Link>
                     <Link
                         className="btn btn-primary"
-                        href="/settings/customer_groups/new"
+                        href="/settings/customer-groups/new"
                     >
                         dodaj grupę
                     </Link>

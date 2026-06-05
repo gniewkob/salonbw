@@ -367,6 +367,16 @@ const nextConfig = {
                 destination: '/settings/employees/activity-logs',
                 permanent: false,
             },
+            {
+                source: '/settings/customer_groups',
+                destination: '/settings/customer-groups',
+                permanent: false,
+            },
+            {
+                source: '/settings/customer_groups/new',
+                destination: '/settings/customer-groups/new',
+                permanent: false,
+            },
         ];
     },
     async headers() {

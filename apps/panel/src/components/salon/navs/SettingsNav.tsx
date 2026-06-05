@@ -86,7 +86,7 @@ const SETTINGS_GROUPS: NavGroup[] = [
             },
             {
                 id: 'settings-customer-groups',
-                href: '/settings/customer_groups',
+                href: '/settings/customer-groups',
                 label: 'Grupy klientów',
                 iconClass: 'sprite-settings_blue',
             },

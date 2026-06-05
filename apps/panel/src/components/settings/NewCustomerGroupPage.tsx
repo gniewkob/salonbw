@@ -38,7 +38,7 @@ export default function NewCustomerGroupPage() {
                     { label: 'Ustawienia', href: '/settings' },
                     {
                         label: 'Grupy klientów',
-                        href: '/settings/customer_groups',
+                        href: '/settings/customer-groups',
                     },
                     { label: 'Dodaj' },
                 ]}
@@ -54,7 +54,7 @@ export default function NewCustomerGroupPage() {
                             name: name.trim(),
                             parentId: parentId ? Number(parentId) : null,
                         })
-                        .then(() => router.push('/settings/customer_groups'))
+                        .then(() => router.push('/settings/customer-groups'))
                         .catch(() =>
                             setSubmitError(
                                 'Nie udało się utworzyć grupy klientów.',

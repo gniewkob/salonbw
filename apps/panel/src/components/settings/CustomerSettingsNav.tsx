@@ -8,7 +8,7 @@ const ITEMS = [
         iconClass: 'sprite-settings_extra_fields',
     },
     {
-        href: '/settings/customer_groups',
+        href: '/settings/customer-groups',
         label: 'Grupy klientów',
         iconClass: 'sprite-settings_customer_groups',
     },
