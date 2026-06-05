@@ -15,6 +15,7 @@ import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmen
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
+import TimeBlockModal from '@/components/calendar/TimeBlockModal';
 import {
     hasCustomerAlert,
     isPriorityAppointment,
@@ -268,6 +269,20 @@ export default function CalendarPage() {
         });
 
     const handleEventClick = (event: CalendarEvent) => {
+        if (event.type === 'time_block') {
+            const block: TimeBlock = {
+                id: event.id,
+                employeeId: event.employeeId ?? 0,
+                employeeName: event.employeeName ?? '',
+                startTime: event.startTime,
+                endTime: event.endTime,
+                type: event.blockType ?? 'other',
+                title: event.title,
+                allDay: event.allDay ?? false,
+            };
+            setTimeBlockModal({ open: true, existingBlock: block });
+            return;
+        }
         if (event.type !== 'appointment') return;
         const appointment = appointmentsById.get(event.id);
         trackReceptionAction({
@@ -1245,8 +1260,7 @@ export default function CalendarPage() {
                         }}
                     >
                         +
-                    </button>
-                )}
+                    </button>                )}
 
                 <AppointmentQuickModal
                     open={quickModal.event !== null}
@@ -1268,6 +1282,21 @@ export default function CalendarPage() {
                     initialClientId={drawer.initialClientId}
                     initialClientName={drawer.initialClientName}
                     onClose={closeDrawer}
+                    onSaved={() => {
+                        void refetch();
+                    }}
+                />
+
+                <TimeBlockModal
+                    open={timeBlockModal.open}
+                    employees={data?.employees ?? []}
+                    existingBlock={timeBlockModal.existingBlock}
+                    initialStartTime={timeBlockModal.initialStartTime}
+                    initialEndTime={timeBlockModal.initialEndTime}
+                    initialEmployeeId={timeBlockModal.initialEmployeeId}
+                    onClose={() =>
+                        setTimeBlockModal((s) => ({ ...s, open: false }))
+                    }
                     onSaved={() => {
                         void refetch();
                     }}
