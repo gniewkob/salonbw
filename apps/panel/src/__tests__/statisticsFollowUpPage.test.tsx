@@ -7,6 +7,8 @@ const apiFetchProxy = (...args: unknown[]) => apiFetchMock(...args);
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
         role: 'admin',
+        isAuthenticated: true,
+        initialized: true,
         apiFetch: apiFetchProxy,
     }),
 }));
