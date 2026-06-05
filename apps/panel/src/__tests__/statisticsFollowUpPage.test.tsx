@@ -13,6 +13,11 @@ jest.mock('@/contexts/AuthContext', () => ({
     }),
 }));
 
+jest.mock('@/components/RouteGuard', () => ({
+    __esModule: true,
+    default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 jest.mock('@/components/salon/SalonShell', () => ({
     __esModule: true,
     default: ({ children }: { children: React.ReactNode }) => <>{children}</>,

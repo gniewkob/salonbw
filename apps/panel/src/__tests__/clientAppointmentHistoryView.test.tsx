@@ -2,6 +2,16 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
 import type { Appointment } from '@/types';
 
+jest.mock('@/contexts/AuthContext', () => ({
+    useAuth: () => ({
+        apiFetch: jest.fn().mockResolvedValue([]),
+    }),
+}));
+
+jest.mock('next/router', () => ({
+    useRouter: () => ({ push: jest.fn() }),
+}));
+
 function createAppointment(
     id: number,
     overrides: Partial<Appointment> = {},
