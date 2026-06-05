@@ -341,7 +341,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         </table>
                     </div>
 
-                    <div className="pagination_container">
+                    {filtered.length > 0 && <div className="pagination_container">
                         <div className="column_row">
                             <div className="row">
                                 <div className="infocol-7">
@@ -408,7 +408,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>}
 
                     <div className="products-export">
                         {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}

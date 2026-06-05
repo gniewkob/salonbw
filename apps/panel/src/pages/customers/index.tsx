@@ -3,6 +3,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
+import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -186,6 +187,7 @@ function DraggableCustomerRow({
 export default function ClientsPage() {
     const { role } = useAuth();
     const router = useRouter();
+    const toast = useToast();
 
     const currentGroupId = router.query.groupId
         ? Number(router.query.groupId)
@@ -379,6 +381,9 @@ export default function ClientsPage() {
             });
             setSelectedIds(new Set());
             setBulkGroupId('');
+            toast.success('Klienci dodani do grupy');
+        } catch {
+            toast.error('Nie udało się dodać klientów do grupy');
         } finally {
             setBulkGroupPending(false);
         }

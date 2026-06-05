@@ -518,7 +518,10 @@ function StatisticsPageContent() {
             />
 
             {reportLoading ? (
-                <div className="text-muted">Ładowanie raportu...</div>
+                <div className="d-flex align-items-center gap-2 py-4 text-muted">
+                    <div className="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true" />
+                    Ładowanie raportu...
+                </div>
             ) : reportError ? (
                 <div className="text-muted">
                     Nie udało się pobrać raportu finansowego.
