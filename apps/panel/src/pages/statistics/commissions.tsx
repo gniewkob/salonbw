@@ -292,316 +292,327 @@ export default function CommissionsPage() {
     };
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:statistics">
-        <SalonShell role={role}>
-            <div
-                className="salonbw-page statistics-module"
-                data-testid="commissions-page"
-            >
-                <SalonBreadcrumbs
-                    iconClass="sprite-breadcrumbs_statistics"
-                    items={[
-                        { label: 'Statystyki', href: '/statistics' },
-                        { label: 'Prowizje pracowników' },
-                    ]}
-                />
+            <SalonShell role={role}>
+                <div
+                    className="salonbw-page statistics-module"
+                    data-testid="commissions-page"
+                >
+                    <SalonBreadcrumbs
+                        iconClass="sprite-breadcrumbs_statistics"
+                        items={[
+                            { label: 'Statystyki', href: '/statistics' },
+                            { label: 'Prowizje pracowników' },
+                        ]}
+                    />
 
-                <div className="actions">
-                    <div className="float-start statistics_date">
-                        <button
-                            type="button"
-                            className="btn btn-link button_prev mr-s"
-                            onClick={() => navigateDate('prev')}
-                            aria-label="Poprzedni dzień"
-                        >
-                            <span
-                                className="fc-icon fc-icon-left-single-arrow"
-                                aria-hidden="true"
-                            />
-                        </button>
-                        <div id="choose_date">
-                            <form
-                                data-push="true"
-                                className="date_range_box"
-                                onSubmit={(event) => event.preventDefault()}
+                    <div className="actions">
+                        <div className="float-start statistics_date">
+                            <button
+                                type="button"
+                                className="btn btn-link button_prev mr-s"
+                                onClick={() => navigateDate('prev')}
+                                aria-label="Poprzedni dzień"
                             >
-                                <input
-                                    id="date_range"
-                                    name="date_range"
-                                    type="text"
-                                    readOnly
-                                    value={selectedDate}
-                                    aria-label="Data"
+                                <span
+                                    className="fc-icon fc-icon-left-single-arrow"
+                                    aria-hidden="true"
                                 />
-                                <input
-                                    type="date"
-                                    className="statistics-date-picker-hidden"
-                                    value={selectedDate}
-                                    aria-label="Data"
-                                    onChange={(event) =>
-                                        setSelectedDate(event.target.value)
-                                    }
+                            </button>
+                            <div id="choose_date">
+                                <form
+                                    data-push="true"
+                                    className="date_range_box"
+                                    onSubmit={(event) => event.preventDefault()}
+                                >
+                                    <input
+                                        id="date_range"
+                                        name="date_range"
+                                        type="text"
+                                        readOnly
+                                        value={selectedDate}
+                                        aria-label="Data"
+                                    />
+                                    <input
+                                        type="date"
+                                        className="statistics-date-picker-hidden"
+                                        value={selectedDate}
+                                        aria-label="Data"
+                                        onChange={(event) =>
+                                            setSelectedDate(event.target.value)
+                                        }
+                                    />
+                                </form>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-link button_next ml-s"
+                                onClick={() => navigateDate('next')}
+                                aria-label="Następny dzień"
+                            >
+                                <span
+                                    className="fc-icon fc-icon-right-single-arrow"
+                                    aria-hidden="true"
                                 />
-                            </form>
+                            </button>
                         </div>
                         <button
                             type="button"
-                            className="btn btn-link button_next ml-s"
-                            onClick={() => navigateDate('next')}
-                            aria-label="Następny dzień"
+                            className="btn btn-outline-secondary"
+                            onClick={downloadCommissionCsv}
                         >
-                            <span
-                                className="fc-icon fc-icon-right-single-arrow"
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz raport Excel
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-link statistics-print-button"
+                            onClick={() => window.print()}
+                            aria-label="Drukuj"
+                        >
+                            <div
+                                className="icon sprite-print_blue"
                                 aria-hidden="true"
                             />
                         </button>
                     </div>
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={downloadCommissionCsv}
-                    >
-                        <div
-                            className="icon sprite-exel_blue mr-xs"
-                            aria-hidden="true"
-                        />
-                        pobierz raport Excel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-link statistics-print-button"
-                        onClick={() => window.print()}
-                        aria-label="Drukuj"
-                    >
-                        <div
-                            className="icon sprite-print_blue"
-                            aria-hidden="true"
-                        />
-                    </button>
-                </div>
 
-                {loading ? (
-                    <div className="text-muted">Ładowanie...</div>
-                ) : error ? (
-                    <div className="text-muted">
-                        Nie udało się pobrać raportu prowizji.
-                    </div>
-                ) : (
-                    <div className="overflow_hidden">
-                        <div className="description">
-                            <br className="c" />
-                            <br />
-                            <div className="data_table">
-                                <table
-                                    className="table table-bordered"
-                                    data-selectable=""
-                                >
-                                    <tbody>
-                                        <tr>
-                                            <th>Pracownik</th>
-                                            <th>Obroty na usługach</th>
-                                            <th>Prowizja od usług</th>
-                                            <th>Obroty na produktach</th>
-                                            <th>Prowizja z produktów</th>
-                                            <th>
-                                                Łącznie obroty{' '}
-                                                <small
-                                                    style={{
-                                                        fontWeight: 'normal',
-                                                    }}
-                                                >
-                                                    brutto
-                                                </small>
-                                            </th>
-                                            <th>Łącznie prowizja</th>
-                                        </tr>
-                                        {commissionRows.map((employee, i) => (
-                                            <tr
-                                                key={employee.employeeId}
-                                                className={
-                                                    i % 2 === 0 ? 'even' : 'odd'
-                                                }
-                                            >
-                                                <td>
-                                                    <Link
-                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                    {loading ? (
+                        <div className="text-muted">Ładowanie...</div>
+                    ) : error ? (
+                        <div className="text-muted">
+                            Nie udało się pobrać raportu prowizji.
+                        </div>
+                    ) : (
+                        <div className="overflow_hidden">
+                            <div className="description">
+                                <br className="c" />
+                                <br />
+                                <div className="data_table">
+                                    <table
+                                        className="table table-bordered"
+                                        data-selectable=""
+                                    >
+                                        <tbody>
+                                            <tr>
+                                                <th>Pracownik</th>
+                                                <th>Obroty na usługach</th>
+                                                <th>Prowizja od usług</th>
+                                                <th>Obroty na produktach</th>
+                                                <th>Prowizja z produktów</th>
+                                                <th>
+                                                    Łącznie obroty{' '}
+                                                    <small
+                                                        style={{
+                                                            fontWeight:
+                                                                'normal',
+                                                        }}
                                                     >
-                                                        {employee.employeeName}
-                                                    </Link>
+                                                        brutto
+                                                    </small>
+                                                </th>
+                                                <th>Łącznie prowizja</th>
+                                            </tr>
+                                            {commissionRows.map(
+                                                (employee, i) => (
+                                                    <tr
+                                                        key={
+                                                            employee.employeeId
+                                                        }
+                                                        className={
+                                                            i % 2 === 0
+                                                                ? 'even'
+                                                                : 'odd'
+                                                        }
+                                                    >
+                                                        <td>
+                                                            <Link
+                                                                href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                            >
+                                                                {
+                                                                    employee.employeeName
+                                                                }
+                                                            </Link>
+                                                            <br />
+                                                            <Link
+                                                                href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                                className="btn btn-outline-secondary btn-sm mt-1"
+                                                                prefetch={false}
+                                                            >
+                                                                <div
+                                                                    className="icon sprite-settings_product_purchase_prices mr-xs"
+                                                                    aria-hidden="true"
+                                                                />
+                                                                szczegóły
+                                                            </Link>
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.serviceRevenue
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.serviceCommission
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.productRevenue
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.productCommission
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <Money
+                                                                value={
+                                                                    employee.totalRevenue
+                                                                }
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <MoneyWithSuffix
+                                                                value={
+                                                                    employee.totalCommission
+                                                                }
+                                                                suffix="brutto"
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
+                                            <tr>
+                                                <td colSpan={7}>
+                                                    <strong>
+                                                        Podsumowanie
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th />
+                                                <th>Obroty na usługach</th>
+                                                <th>Prowizja od usług</th>
+                                                <th>Obroty na produktach</th>
+                                                <th>Prowizja z produktów</th>
+                                                <th>
+                                                    Łącznie obroty{' '}
+                                                    <small
+                                                        style={{
+                                                            fontWeight:
+                                                                'normal',
+                                                        }}
+                                                    >
+                                                        brutto
+                                                    </small>
+                                                </th>
+                                                <th>Łącznie prowizja</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>Łącznie</strong>
+                                                </td>
+                                                <td>
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.serviceRevenue
+                                                        }
+                                                        suffix="brutto"
+                                                    />
                                                     <br />
-                                                    <Link
-                                                        href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                        className="btn btn-outline-secondary btn-sm mt-1"
-                                                        prefetch={false}
-                                                    >
-                                                        <div
-                                                            className="icon sprite-settings_product_purchase_prices mr-xs"
-                                                            aria-hidden="true"
-                                                        />
-                                                        szczegóły
-                                                    </Link>
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.serviceRevenue /
+                                                            1.23
+                                                        }
+                                                        suffix="netto"
+                                                    />
                                                 </td>
                                                 <td>
-                                                    <Money
+                                                    <MoneyWithSuffix
                                                         value={
-                                                            employee.serviceRevenue
+                                                            safeTotals.serviceCommission
                                                         }
+                                                        suffix="brutto"
+                                                    />
+                                                    <br />
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.serviceCommission /
+                                                            1.23
+                                                        }
+                                                        suffix="netto"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.productRevenue
+                                                        }
+                                                        suffix="brutto"
+                                                    />
+                                                    <br />
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.productRevenue /
+                                                            1.23
+                                                        }
+                                                        suffix="netto"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.productCommission
+                                                        }
+                                                        suffix="brutto"
+                                                    />
+                                                    <br />
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            safeTotals.productCommission /
+                                                            1.23
+                                                        }
+                                                        suffix="netto"
                                                     />
                                                 </td>
                                                 <td>
                                                     <Money
                                                         value={
-                                                            employee.serviceCommission
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.productRevenue
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.productCommission
-                                                        }
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Money
-                                                        value={
-                                                            employee.totalRevenue
+                                                            safeTotals.totalRevenue
                                                         }
                                                     />
                                                 </td>
                                                 <td>
                                                     <MoneyWithSuffix
                                                         value={
-                                                            employee.totalCommission
+                                                            safeTotals.totalCommission
                                                         }
                                                         suffix="brutto"
                                                     />
                                                 </td>
                                             </tr>
-                                        ))}
-                                        <tr>
-                                            <td colSpan={7}>
-                                                <strong>Podsumowanie</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th />
-                                            <th>Obroty na usługach</th>
-                                            <th>Prowizja od usług</th>
-                                            <th>Obroty na produktach</th>
-                                            <th>Prowizja z produktów</th>
-                                            <th>
-                                                Łącznie obroty{' '}
-                                                <small
-                                                    style={{
-                                                        fontWeight: 'normal',
-                                                    }}
-                                                >
-                                                    brutto
-                                                </small>
-                                            </th>
-                                            <th>Łącznie prowizja</th>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Łącznie</strong>
-                                            </td>
-                                            <td>
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.serviceRevenue
-                                                    }
-                                                    suffix="brutto"
-                                                />
-                                                <br />
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.serviceRevenue /
-                                                        1.23
-                                                    }
-                                                    suffix="netto"
-                                                />
-                                            </td>
-                                            <td>
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.serviceCommission
-                                                    }
-                                                    suffix="brutto"
-                                                />
-                                                <br />
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.serviceCommission /
-                                                        1.23
-                                                    }
-                                                    suffix="netto"
-                                                />
-                                            </td>
-                                            <td>
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.productRevenue
-                                                    }
-                                                    suffix="brutto"
-                                                />
-                                                <br />
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.productRevenue /
-                                                        1.23
-                                                    }
-                                                    suffix="netto"
-                                                />
-                                            </td>
-                                            <td>
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.productCommission
-                                                    }
-                                                    suffix="brutto"
-                                                />
-                                                <br />
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.productCommission /
-                                                        1.23
-                                                    }
-                                                    suffix="netto"
-                                                />
-                                            </td>
-                                            <td>
-                                                <Money
-                                                    value={
-                                                        safeTotals.totalRevenue
-                                                    }
-                                                />
-                                            </td>
-                                            <td>
-                                                <MoneyWithSuffix
-                                                    value={
-                                                        safeTotals.totalCommission
-                                                    }
-                                                    suffix="brutto"
-                                                />
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        </SalonShell>
+                    )}
+                </div>
+            </SalonShell>
         </RouteGuard>
     );
 }

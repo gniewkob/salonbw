@@ -31,7 +31,10 @@ export default function AccountPage() {
             await apiFetch('/users/profile/password', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currentPassword: current, newPassword: next }),
+                body: JSON.stringify({
+                    currentPassword: current,
+                    newPassword: next,
+                }),
             });
             setSuccess(true);
             setCurrent('');
@@ -80,10 +83,7 @@ export default function AccountPage() {
                                 />
                             </div>
                             <div className="mb-3">
-                                <label
-                                    htmlFor="acc-new"
-                                    className="form-label"
-                                >
+                                <label htmlFor="acc-new" className="form-label">
                                     Nowe hasło
                                 </label>
                                 <input
@@ -97,7 +97,9 @@ export default function AccountPage() {
                                     required
                                     minLength={6}
                                 />
-                                <div className="form-text">Minimum 6 znaków</div>
+                                <div className="form-text">
+                                    Minimum 6 znaków
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label
@@ -136,7 +138,9 @@ export default function AccountPage() {
                             <button
                                 type="submit"
                                 className="btn btn-primary"
-                                disabled={submitting || !current || !next || !confirm}
+                                disabled={
+                                    submitting || !current || !next || !confirm
+                                }
                             >
                                 {submitting ? 'Zapisywanie…' : 'Zmień hasło'}
                             </button>

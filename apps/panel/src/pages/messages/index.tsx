@@ -143,222 +143,234 @@ export default function MessagesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-        <SalonShell role={role}>
-            <SalonBreadcrumbs
-                iconClass="sprite-breadcrumbs_communication"
-                items={[
-                    { label: 'Komunikacja', href: '/communication' },
-                    { label: 'Wiadomości' },
-                ]}
-            />
-            <div>
-                <div className="actions">
-                    <button
-                        type="button"
-                        className="btn btn-primary float-end"
-                        onClick={handleNewNewsletter}
-                    >
-                        + nowy newsletter
-                    </button>
-                </div>
-                <h2>Wiadomości</h2>
-
-                {actionError && (
-                    <div className="alert alert-danger mt-2">{actionError}</div>
-                )}
-
-                {isLoading ? (
-                    <p className="text-muted">Ładowanie...</p>
-                ) : error ? (
-                    <div className="alert alert-danger">
-                        Błąd ładowania wiadomości
+            <SalonShell role={role}>
+                <SalonBreadcrumbs
+                    iconClass="sprite-breadcrumbs_communication"
+                    items={[
+                        { label: 'Komunikacja', href: '/communication' },
+                        { label: 'Wiadomości' },
+                    ]}
+                />
+                <div>
+                    <div className="actions">
+                        <button
+                            type="button"
+                            className="btn btn-primary float-end"
+                            onClick={handleNewNewsletter}
+                        >
+                            + nowy newsletter
+                        </button>
                     </div>
-                ) : (
-                    <div className="table-responsive">
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div>Nazwa</div>
-                                    </th>
-                                    <th>
-                                        <div>Kanał</div>
-                                    </th>
-                                    <th>
-                                        <div>Data wysyłki</div>
-                                    </th>
-                                    <th>
-                                        <div>Odbiorcy</div>
-                                    </th>
-                                    <th>
-                                        <div>Status</div>
-                                    </th>
-                                    <th>
-                                        <div>Akcje</div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {!newsletters || newsletters.length === 0 ? (
+                    <h2>Wiadomości</h2>
+
+                    {actionError && (
+                        <div className="alert alert-danger mt-2">
+                            {actionError}
+                        </div>
+                    )}
+
+                    {isLoading ? (
+                        <p className="text-muted">Ładowanie...</p>
+                    ) : error ? (
+                        <div className="alert alert-danger">
+                            Błąd ładowania wiadomości
+                        </div>
+                    ) : (
+                        <div className="table-responsive">
+                            <table className="table table-bordered">
+                                <thead>
                                     <tr>
-                                        <td
-                                            colSpan={6}
-                                            style={{ textAlign: 'center' }}
-                                        >
-                                            Brak newsletterów
-                                        </td>
+                                        <th>
+                                            <div>Nazwa</div>
+                                        </th>
+                                        <th>
+                                            <div>Kanał</div>
+                                        </th>
+                                        <th>
+                                            <div>Data wysyłki</div>
+                                        </th>
+                                        <th>
+                                            <div>Odbiorcy</div>
+                                        </th>
+                                        <th>
+                                            <div>Status</div>
+                                        </th>
+                                        <th>
+                                            <div>Akcje</div>
+                                        </th>
                                     </tr>
-                                ) : (
-                                    newsletters.map((nl) => (
-                                        <tr key={nl.id}>
-                                            <td>
-                                                <strong>{nl.name}</strong>
-                                                <div>{nl.subject}</div>
+                                </thead>
+                                <tbody>
+                                    {!newsletters ||
+                                    newsletters.length === 0 ? (
+                                        <tr>
+                                            <td
+                                                colSpan={6}
+                                                style={{ textAlign: 'center' }}
+                                            >
+                                                Brak newsletterów
                                             </td>
-                                            <td>
-                                                {CHANNEL_LABELS[nl.channel] ??
-                                                    nl.channel}
-                                            </td>
-                                            <td>
-                                                {nl.sentAt
-                                                    ? formatDate(nl.sentAt)
-                                                    : nl.scheduledAt
-                                                      ? `plan: ${formatDate(nl.scheduledAt)}`
-                                                      : '—'}
-                                            </td>
-                                            <td>
-                                                {nl.totalRecipients > 0 ? (
-                                                    <span>
-                                                        {nl.sentCount}/
-                                                        {nl.totalRecipients}
+                                        </tr>
+                                    ) : (
+                                        newsletters.map((nl) => (
+                                            <tr key={nl.id}>
+                                                <td>
+                                                    <strong>{nl.name}</strong>
+                                                    <div>{nl.subject}</div>
+                                                </td>
+                                                <td>
+                                                    {CHANNEL_LABELS[
+                                                        nl.channel
+                                                    ] ?? nl.channel}
+                                                </td>
+                                                <td>
+                                                    {nl.sentAt
+                                                        ? formatDate(nl.sentAt)
+                                                        : nl.scheduledAt
+                                                          ? `plan: ${formatDate(nl.scheduledAt)}`
+                                                          : '—'}
+                                                </td>
+                                                <td>
+                                                    {nl.totalRecipients > 0 ? (
+                                                        <span>
+                                                            {nl.sentCount}/
+                                                            {nl.totalRecipients}
+                                                        </span>
+                                                    ) : (
+                                                        '—'
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        className={
+                                                            STATUS_CLASS[
+                                                                nl.status
+                                                            ]
+                                                        }
+                                                    >
+                                                        {
+                                                            STATUS_LABELS[
+                                                                nl.status
+                                                            ]
+                                                        }
                                                     </span>
-                                                ) : (
-                                                    '—'
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span
-                                                    className={
-                                                        STATUS_CLASS[nl.status]
-                                                    }
-                                                >
-                                                    {STATUS_LABELS[nl.status]}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div>
-                                                    {nl.status === 'draft' && (
-                                                        <>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        {nl.status ===
+                                                            'draft' && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-link"
+                                                                    onClick={() =>
+                                                                        handleEdit(
+                                                                            nl,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Edytuj
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-primary"
+                                                                    onClick={() => {
+                                                                        void handleSend(
+                                                                            nl.id,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Wyślij
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {nl.status ===
+                                                            'scheduled' && (
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-link"
-                                                                onClick={() =>
-                                                                    handleEdit(
-                                                                        nl,
-                                                                    )
-                                                                }
-                                                            >
-                                                                Edytuj
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-primary"
                                                                 onClick={() => {
-                                                                    void handleSend(
+                                                                    void handleCancel(
                                                                         nl.id,
                                                                     );
                                                                 }}
                                                             >
-                                                                Wyślij
+                                                                Anuluj
                                                             </button>
-                                                        </>
-                                                    )}
-                                                    {nl.status ===
-                                                        'scheduled' && (
+                                                        )}
                                                         <button
                                                             type="button"
                                                             className="btn btn-link"
                                                             onClick={() => {
-                                                                void handleCancel(
+                                                                void handleDuplicate(
                                                                     nl.id,
                                                                 );
                                                             }}
                                                         >
-                                                            Anuluj
+                                                            Duplikuj
                                                         </button>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-link"
-                                                        onClick={() => {
-                                                            void handleDuplicate(
-                                                                nl.id,
-                                                            );
-                                                        }}
-                                                    >
-                                                        Duplikuj
-                                                    </button>
-                                                    {nl.status === 'draft' && (
-                                                        <>
-                                                            {confirmDeleteId ===
-                                                            nl.id ? (
-                                                                <>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-link"
-                                                                        onClick={() => {
-                                                                            void handleDelete(
-                                                                                nl.id,
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        Potwierdź
-                                                                    </button>
+                                                        {nl.status ===
+                                                            'draft' && (
+                                                            <>
+                                                                {confirmDeleteId ===
+                                                                nl.id ? (
+                                                                    <>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-link"
+                                                                            onClick={() => {
+                                                                                void handleDelete(
+                                                                                    nl.id,
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            Potwierdź
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-link"
+                                                                            onClick={() =>
+                                                                                setConfirmDeleteId(
+                                                                                    null,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Anuluj
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
                                                                     <button
                                                                         type="button"
                                                                         className="btn btn-link"
                                                                         onClick={() =>
                                                                             setConfirmDeleteId(
-                                                                                null,
+                                                                                nl.id,
                                                                             )
                                                                         }
                                                                     >
-                                                                        Anuluj
+                                                                        Usuń
                                                                     </button>
-                                                                </>
-                                                            ) : (
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-link"
-                                                                    onClick={() =>
-                                                                        setConfirmDeleteId(
-                                                                            nl.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Usuń
-                                                                </button>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
 
-            <NewsletterEditorModal
-                isOpen={modalOpen}
-                newsletter={editingNewsletter}
-                onClose={() => setModalOpen(false)}
-                onSave={handleSave}
-            />
-        </SalonShell>
+                <NewsletterEditorModal
+                    isOpen={modalOpen}
+                    newsletter={editingNewsletter}
+                    onClose={() => setModalOpen(false)}
+                    onSave={handleSave}
+                />
+            </SalonShell>
         </RouteGuard>
     );
 }

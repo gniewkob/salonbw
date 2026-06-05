@@ -111,113 +111,120 @@ export default function EmployeeActivityPage() {
     const totalAppointments = toNumber(totals.appointmentsCount);
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:statistics">
-        <SalonShell role={role}>
-            <div
-                className="salonbw-page statistics-module"
-                data-testid="employee-activity-page"
-            >
-                <SalonBreadcrumbs
-                    iconClass="sprite-breadcrumbs_statistics"
-                    items={[
-                        { label: 'Statystyki', href: '/statistics' },
-                        { label: 'Aktywność pracowników' },
-                    ]}
-                />
+            <SalonShell role={role}>
+                <div
+                    className="salonbw-page statistics-module"
+                    data-testid="employee-activity-page"
+                >
+                    <SalonBreadcrumbs
+                        iconClass="sprite-breadcrumbs_statistics"
+                        items={[
+                            { label: 'Statystyki', href: '/statistics' },
+                            { label: 'Aktywność pracowników' },
+                        ]}
+                    />
 
-                <StatisticsToolbar
-                    date={selectedDate}
-                    onPrev={() => navigateDate('prev')}
-                    onNext={() => navigateDate('next')}
-                    onDateChange={setSelectedDate}
-                    onPrint={() => window.print()}
-                />
+                    <StatisticsToolbar
+                        date={selectedDate}
+                        onPrev={() => navigateDate('prev')}
+                        onNext={() => navigateDate('next')}
+                        onDateChange={setSelectedDate}
+                        onPrint={() => window.print()}
+                    />
 
-                {loading ? (
-                    <div className="text-muted">Ładowanie...</div>
-                ) : error ? (
-                    <div className="alert alert-warning">
-                        Raport aktywności chwilowo niedostępny.
-                    </div>
-                ) : (
-                    <div className="stats-tabs">
-                        <ul>
-                            <li className="ui-state-default active">
-                                <a className="stats-tab-link" href="#">
-                                    Tabela
-                                </a>
-                            </li>
-                            <li className="ui-state-default">
-                                <a className="stats-tab-link" href="#">
-                                    Wykres
-                                </a>
-                            </li>
-                        </ul>
-                        <div className="data_table">
-                            <table className="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <th>Pracownik</th>
-                                        <th>Przepracowany czas</th>
-                                        <th>Liczba wizyt</th>
-                                    </tr>
-                                    {rows.map((employee, i) => {
-                                        const empMinutes = toNumber(
-                                            employee.workTimeMinutes,
-                                        );
-                                        return (
-                                            <tr
-                                                key={employee.employeeId}
-                                                className={
-                                                    i % 2 === 0 ? 'even' : 'odd'
-                                                }
-                                            >
-                                                <td>
-                                                    <Link
-                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                        className="btn btn-link"
-                                                    >
-                                                        {employee.employeeName}
-                                                    </Link>
-                                                </td>
-                                                <td>
-                                                    {formatWorkTime(empMinutes)}
-                                                </td>
-                                                <td>
-                                                    {toNumber(
-                                                        employee.appointmentsCount,
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                    <tr>
-                                        <td colSpan={4}>
-                                            <strong>Podsumowanie</strong>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th aria-label="Pracownik" />
-                                        <th>Przepracowany czas</th>
-                                        <th>Liczba wizyt</th>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <strong>Łącznie</strong>
-                                        </td>
-                                        <td>
-                                            {formatWorkTime(totalWorkMinutes)}
-                                        </td>
-                                        <td>{totalAppointments}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    {loading ? (
+                        <div className="text-muted">Ładowanie...</div>
+                    ) : error ? (
+                        <div className="alert alert-warning">
+                            Raport aktywności chwilowo niedostępny.
                         </div>
-                    </div>
-                )}
-            </div>
-        </SalonShell>
+                    ) : (
+                        <div className="stats-tabs">
+                            <ul>
+                                <li className="ui-state-default active">
+                                    <a className="stats-tab-link" href="#">
+                                        Tabela
+                                    </a>
+                                </li>
+                                <li className="ui-state-default">
+                                    <a className="stats-tab-link" href="#">
+                                        Wykres
+                                    </a>
+                                </li>
+                            </ul>
+                            <div className="data_table">
+                                <table className="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>Pracownik</th>
+                                            <th>Przepracowany czas</th>
+                                            <th>Liczba wizyt</th>
+                                        </tr>
+                                        {rows.map((employee, i) => {
+                                            const empMinutes = toNumber(
+                                                employee.workTimeMinutes,
+                                            );
+                                            return (
+                                                <tr
+                                                    key={employee.employeeId}
+                                                    className={
+                                                        i % 2 === 0
+                                                            ? 'even'
+                                                            : 'odd'
+                                                    }
+                                                >
+                                                    <td>
+                                                        <Link
+                                                            href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                            className="btn btn-link"
+                                                        >
+                                                            {
+                                                                employee.employeeName
+                                                            }
+                                                        </Link>
+                                                    </td>
+                                                    <td>
+                                                        {formatWorkTime(
+                                                            empMinutes,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {toNumber(
+                                                            employee.appointmentsCount,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        <tr>
+                                            <td colSpan={4}>
+                                                <strong>Podsumowanie</strong>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th aria-label="Pracownik" />
+                                            <th>Przepracowany czas</th>
+                                            <th>Liczba wizyt</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Łącznie</strong>
+                                            </td>
+                                            <td>
+                                                {formatWorkTime(
+                                                    totalWorkMinutes,
+                                                )}
+                                            </td>
+                                            <td>{totalAppointments}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </SalonShell>
         </RouteGuard>
     );
 }

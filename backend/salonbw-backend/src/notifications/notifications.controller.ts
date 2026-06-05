@@ -7,7 +7,10 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Role } from '../users/role.enum';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 
 @ApiTags('Notifications')
 @Controller('notifications')
@@ -23,7 +26,7 @@ export class NotificationsController {
     @Roles(Role.Admin, Role.Employee, Role.Receptionist, Role.Client)
     @ApiOperation({ summary: 'Get in-app notification feed for current user' })
     async getNotifications(
-        @CurrentUser() user: { userId: number; role: string },
+        @CurrentUser() user: { userId: number; role: Role },
     ) {
         const isClient = user.role === Role.Client;
         const now = new Date();

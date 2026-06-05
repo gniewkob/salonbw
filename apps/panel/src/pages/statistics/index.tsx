@@ -80,11 +80,10 @@ export default function StatisticsPage() {
     const { role } = useAuth();
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:statistics">
-        <SalonShell role={role}>
-            <StatisticsPageContent />
-        </SalonShell>
+            <SalonShell role={role}>
+                <StatisticsPageContent />
+            </SalonShell>
         </RouteGuard>
     );
 }

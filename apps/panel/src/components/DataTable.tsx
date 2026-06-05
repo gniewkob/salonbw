@@ -14,7 +14,10 @@ interface Props<T> {
     pageSize?: number;
 }
 
-function getCellValue<T>(row: T, accessor: Column<T>['accessor']): React.ReactNode {
+function getCellValue<T>(
+    row: T,
+    accessor: Column<T>['accessor'],
+): React.ReactNode {
     if (typeof accessor === 'function') return accessor(row);
     return String(row[accessor] ?? '');
 }
@@ -34,7 +37,9 @@ export default function DataTable<T>({
     const filtered = data.filter((item) =>
         columns.some((c) => {
             const val = getCellValue(item, c.accessor);
-            return String(val ?? '').toLowerCase().includes(search.toLowerCase());
+            return String(val ?? '')
+                .toLowerCase()
+                .includes(search.toLowerCase());
         }),
     );
 
@@ -52,7 +57,9 @@ export default function DataTable<T>({
     const totalPages = Math.ceil(sorted.length / pageSize);
 
     const toggleSort = (col: Column<T>) => {
-        const key = col.sortKey ?? (typeof col.accessor !== 'function' ? col.accessor : undefined);
+        const key =
+            col.sortKey ??
+            (typeof col.accessor !== 'function' ? col.accessor : undefined);
         if (!key) return;
         if (sortKey === key) {
             setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -93,7 +100,11 @@ export default function DataTable<T>({
                                 <th
                                     key={colKey(col)}
                                     className="p-2 text-start"
-                                    style={sortable ? { cursor: 'pointer' } : undefined}
+                                    style={
+                                        sortable
+                                            ? { cursor: 'pointer' }
+                                            : undefined
+                                    }
                                     onClick={
                                         sortable
                                             ? () => toggleSort(col)

@@ -130,9 +130,7 @@ describe('customers crash guards', () => {
         expect(screen.getByText('Galeria jest pusta')).toBeInTheDocument();
 
         render(<CustomerFilesTab customerId={1} />);
-        expect(
-            screen.getByText('Brak dokumentów klienta'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Brak dokumentów klienta')).toBeInTheDocument();
     });
 
     it('shows fallback when child throws inside customer error boundary', () => {

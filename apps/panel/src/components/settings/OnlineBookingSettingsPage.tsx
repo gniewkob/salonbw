@@ -417,18 +417,14 @@ export default function OnlineBookingSettingsPage() {
                         Wiadomości dla klientów
                     </h3>
                     <div className="online-booking-settings__field">
-                        <label htmlFor="welcome-msg">
-                            Wiadomość powitalna
-                        </label>
+                        <label htmlFor="welcome-msg">Wiadomość powitalna</label>
                         <textarea
                             id="welcome-msg"
                             rows={3}
                             placeholder="np. Witamy w salonie SalonBW! Wybierz usługę..."
                             value={welcomeMessage}
                             disabled={!isEnabled}
-                            onChange={(e) =>
-                                setWelcomeMessage(e.target.value)
-                            }
+                            onChange={(e) => setWelcomeMessage(e.target.value)}
                         />
                     </div>
                     <div className="online-booking-settings__field">

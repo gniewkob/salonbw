@@ -38,175 +38,177 @@ export default function TipsPage() {
     const avgTip = totalCount > 0 ? totalTips / totalCount : 0;
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:statistics">
-        <SalonShell role={role}>
-            <div className="salonbw-page" data-testid="tips-page">
-                <SalonBreadcrumbs
-                    iconClass="sprite-breadcrumbs_statistics"
-                    items={[
-                        { label: 'Statystyki', href: '/statistics' },
-                        { label: 'Napiwki' },
-                    ]}
-                />
+            <SalonShell role={role}>
+                <div className="salonbw-page" data-testid="tips-page">
+                    <SalonBreadcrumbs
+                        iconClass="sprite-breadcrumbs_statistics"
+                        items={[
+                            { label: 'Statystyki', href: '/statistics' },
+                            { label: 'Napiwki' },
+                        ]}
+                    />
 
-                <div className="salonbw-page__toolbar">
-                    <div className="d-flex align-items-center gap-2">
-                        <select
-                            className="form-control salonbw-select"
-                            aria-label="Zakres czasu"
-                            value={range}
-                            onChange={(e) => {
-                                const next = e.target.value;
-                                if (
-                                    next === 'today' ||
-                                    next === 'this_week' ||
-                                    next === 'this_month'
-                                ) {
-                                    setRange(next);
-                                }
-                            }}
-                        >
-                            <option value="today">dzisiaj</option>
-                            <option value="this_week">ten tydzień</option>
-                            <option value="this_month">ten miesiąc</option>
-                        </select>
-                    </div>
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => window.print()}
-                    >
-                        🖨️
-                    </button>
-                </div>
-
-                {isLoading ? (
-                    <div className="text-muted p-3">Ładowanie...</div>
-                ) : (
-                    <>
-                        {/* Summary cards */}
-                        <div className="row g-4 mb-5">
-                            <div className="col-4">
-                                <div className="border rounded p-4 text-center bg-warning bg-opacity-10">
-                                    <div className="small text-muted mb-2">
-                                        Łącznie napiwków
-                                    </div>
-                                    <div className="fs-3 fw-bold text-warning">
-                                        {formatMoney(totalTips)}
-                                    </div>
-                                    <div className="small text-muted mt-1">
-                                        za {getRangeLabel()}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-4">
-                                <div className="border rounded p-4 text-center">
-                                    <div className="small text-muted mb-2">
-                                        Liczba napiwków
-                                    </div>
-                                    <div className="fs-3 fw-bold">
-                                        {totalCount}
-                                    </div>
-                                    <div className="small text-muted mt-1">
-                                        transakcje
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="col-4">
-                                <div className="border rounded p-4 text-center">
-                                    <div className="small text-muted mb-2">
-                                        Średni napiwek
-                                    </div>
-                                    <div className="fs-3 fw-bold">
-                                        {formatMoney(avgTip)}
-                                    </div>
-                                    <div className="small text-muted mt-1">
-                                        na transakcję
-                                    </div>
-                                </div>
-                            </div>
+                    <div className="salonbw-page__toolbar">
+                        <div className="d-flex align-items-center gap-2">
+                            <select
+                                className="form-control salonbw-select"
+                                aria-label="Zakres czasu"
+                                value={range}
+                                onChange={(e) => {
+                                    const next = e.target.value;
+                                    if (
+                                        next === 'today' ||
+                                        next === 'this_week' ||
+                                        next === 'this_month'
+                                    ) {
+                                        setRange(next);
+                                    }
+                                }}
+                            >
+                                <option value="today">dzisiaj</option>
+                                <option value="this_week">ten tydzień</option>
+                                <option value="this_month">ten miesiąc</option>
+                            </select>
                         </div>
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => window.print()}
+                        >
+                            🖨️
+                        </button>
+                    </div>
 
-                        {/* Table */}
-                        <div className="salonbw-table-wrap">
-                            <table className="salonbw-table">
-                                <thead>
-                                    <tr>
-                                        <th>Pracownik</th>
-                                        <th className="text-end">
+                    {isLoading ? (
+                        <div className="text-muted p-3">Ładowanie...</div>
+                    ) : (
+                        <>
+                            {/* Summary cards */}
+                            <div className="row g-4 mb-5">
+                                <div className="col-4">
+                                    <div className="border rounded p-4 text-center bg-warning bg-opacity-10">
+                                        <div className="small text-muted mb-2">
+                                            Łącznie napiwków
+                                        </div>
+                                        <div className="fs-3 fw-bold text-warning">
+                                            {formatMoney(totalTips)}
+                                        </div>
+                                        <div className="small text-muted mt-1">
+                                            za {getRangeLabel()}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-4">
+                                    <div className="border rounded p-4 text-center">
+                                        <div className="small text-muted mb-2">
                                             Liczba napiwków
-                                        </th>
-                                        <th className="text-end">
-                                            Suma napiwków
-                                        </th>
-                                        <th className="text-end">
+                                        </div>
+                                        <div className="fs-3 fw-bold">
+                                            {totalCount}
+                                        </div>
+                                        <div className="small text-muted mt-1">
+                                            transakcje
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-4">
+                                    <div className="border rounded p-4 text-center">
+                                        <div className="small text-muted mb-2">
                                             Średni napiwek
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data && data.length > 0 ? (
-                                        data.map((employee) => (
-                                            <tr key={employee.employeeId}>
-                                                <td>
-                                                    <Link
-                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                        className="btn btn-link"
-                                                    >
-                                                        {employee.employeeName}
-                                                    </Link>
-                                                </td>
-                                                <td className="text-end">
-                                                    {employee.tipsCount}
-                                                </td>
-                                                <td className="text-end fw-semibold">
-                                                    {formatMoney(
-                                                        employee.tipsTotal,
-                                                    )}
-                                                </td>
-                                                <td className="text-end">
-                                                    {formatMoney(
-                                                        employee.averageTip,
-                                                    )}
+                                        </div>
+                                        <div className="fs-3 fw-bold">
+                                            {formatMoney(avgTip)}
+                                        </div>
+                                        <div className="small text-muted mt-1">
+                                            na transakcję
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Table */}
+                            <div className="salonbw-table-wrap">
+                                <table className="salonbw-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pracownik</th>
+                                            <th className="text-end">
+                                                Liczba napiwków
+                                            </th>
+                                            <th className="text-end">
+                                                Suma napiwków
+                                            </th>
+                                            <th className="text-end">
+                                                Średni napiwek
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data && data.length > 0 ? (
+                                            data.map((employee) => (
+                                                <tr key={employee.employeeId}>
+                                                    <td>
+                                                        <Link
+                                                            href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                            className="btn btn-link"
+                                                        >
+                                                            {
+                                                                employee.employeeName
+                                                            }
+                                                        </Link>
+                                                    </td>
+                                                    <td className="text-end">
+                                                        {employee.tipsCount}
+                                                    </td>
+                                                    <td className="text-end fw-semibold">
+                                                        {formatMoney(
+                                                            employee.tipsTotal,
+                                                        )}
+                                                    </td>
+                                                    <td className="text-end">
+                                                        {formatMoney(
+                                                            employee.averageTip,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan={4}
+                                                    className="text-center text-muted py-4"
+                                                >
+                                                    Brak napiwków w wybranym
+                                                    okresie
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td
-                                                colSpan={4}
-                                                className="text-center text-muted py-4"
-                                            >
-                                                Brak napiwków w wybranym okresie
-                                            </td>
-                                        </tr>
+                                        )}
+                                    </tbody>
+                                    {data && data.length > 0 && (
+                                        <tfoot>
+                                            <tr className="bg-light fw-bold">
+                                                <td>Łącznie</td>
+                                                <td className="text-end">
+                                                    {totalCount}
+                                                </td>
+                                                <td className="text-end">
+                                                    {formatMoney(totalTips)}
+                                                </td>
+                                                <td className="text-end">
+                                                    {formatMoney(avgTip)}
+                                                </td>
+                                            </tr>
+                                        </tfoot>
                                     )}
-                                </tbody>
-                                {data && data.length > 0 && (
-                                    <tfoot>
-                                        <tr className="bg-light fw-bold">
-                                            <td>Łącznie</td>
-                                            <td className="text-end">
-                                                {totalCount}
-                                            </td>
-                                            <td className="text-end">
-                                                {formatMoney(totalTips)}
-                                            </td>
-                                            <td className="text-end">
-                                                {formatMoney(avgTip)}
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                )}
-                            </table>
-                        </div>
-                    </>
-                )}
-            </div>
-        </SalonShell>
+                                </table>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </SalonShell>
         </RouteGuard>
     );
 }

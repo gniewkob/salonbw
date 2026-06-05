@@ -63,7 +63,11 @@ export default function EmployeesPage() {
         {
             header: 'Rola',
             accessor: (r) => (
-                <span className={ROLE_BADGE[r.role ?? 'employee'] ?? 'badge bg-secondary'}>
+                <span
+                    className={
+                        ROLE_BADGE[r.role ?? 'employee'] ?? 'badge bg-secondary'
+                    }
+                >
                     {ROLE_LABELS[r.role ?? 'employee'] ?? r.role}
                 </span>
             ),
@@ -99,7 +103,9 @@ export default function EmployeesPage() {
                 ),
             );
         } else {
-            setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
+            setRows((c) =>
+                c.map((cl) => (cl.id === editing.id ? updated : cl)),
+            );
         }
         setEditing(null);
         setOpenForm(false);

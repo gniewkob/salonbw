@@ -209,188 +209,199 @@ export default function FollowUpStatisticsPage() {
     const hasData = summary !== null && !error;
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:statistics">
-        <SalonShell role={role}>
-            <div className="container py-4" data-testid="follow-up-audit-page">
-                <SalonBreadcrumbs
-                    iconClass="i i-statistics"
-                    items={[
-                        { label: 'Statystyki', href: '/statistics' },
-                        {
-                            label: 'Audyt follow-up',
-                            href: '/statistics/follow-up',
-                        },
-                    ]}
-                />
+            <SalonShell role={role}>
+                <div
+                    className="container py-4"
+                    data-testid="follow-up-audit-page"
+                >
+                    <SalonBreadcrumbs
+                        iconClass="i i-statistics"
+                        items={[
+                            { label: 'Statystyki', href: '/statistics' },
+                            {
+                                label: 'Audyt follow-up',
+                                href: '/statistics/follow-up',
+                            },
+                        ]}
+                    />
 
-                <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-                    <div>
-                        <h1 className="h4 mb-1">Audyt follow-up CRM</h1>
-                        <p className="text-muted mb-0">
-                            Widok managerski aktywności follow-up.
-                        </p>
-                    </div>
-                    <div className="d-flex flex-wrap gap-2">
+                    <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
                         <div>
-                            <label
-                                className="form-label form-label-sm mb-1"
-                                htmlFor="follow-up-from"
-                            >
-                                Od
-                            </label>
-                            <input
-                                id="follow-up-from"
-                                className="form-control form-control-sm"
-                                type="date"
-                                value={from}
-                                onChange={(event) =>
-                                    setFrom(event.target.value)
+                            <h1 className="h4 mb-1">Audyt follow-up CRM</h1>
+                            <p className="text-muted mb-0">
+                                Widok managerski aktywności follow-up.
+                            </p>
+                        </div>
+                        <div className="d-flex flex-wrap gap-2">
+                            <div>
+                                <label
+                                    className="form-label form-label-sm mb-1"
+                                    htmlFor="follow-up-from"
+                                >
+                                    Od
+                                </label>
+                                <input
+                                    id="follow-up-from"
+                                    className="form-control form-control-sm"
+                                    type="date"
+                                    value={from}
+                                    onChange={(event) =>
+                                        setFrom(event.target.value)
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    className="form-label form-label-sm mb-1"
+                                    htmlFor="follow-up-to"
+                                >
+                                    Do
+                                </label>
+                                <input
+                                    id="follow-up-to"
+                                    className="form-control form-control-sm"
+                                    type="date"
+                                    value={to}
+                                    onChange={(event) =>
+                                        setTo(event.target.value)
+                                    }
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm align-self-end"
+                                onClick={() =>
+                                    setRefreshToken((value) => value + 1)
                                 }
-                            />
-                        </div>
-                        <div>
-                            <label
-                                className="form-label form-label-sm mb-1"
-                                htmlFor="follow-up-to"
                             >
-                                Do
-                            </label>
-                            <input
-                                id="follow-up-to"
-                                className="form-control form-control-sm"
-                                type="date"
-                                value={to}
-                                onChange={(event) => setTo(event.target.value)}
-                            />
+                                Odśwież
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            className="btn btn-outline-secondary btn-sm align-self-end"
-                            onClick={() =>
-                                setRefreshToken((value) => value + 1)
-                            }
-                        >
-                            Odśwież
-                        </button>
                     </div>
+
+                    {loading ? (
+                        <div className="alert alert-light border">
+                            Ładowanie audytu follow-up...
+                        </div>
+                    ) : null}
+                    {!loading && rangeError ? (
+                        <div className="alert alert-warning">{rangeError}</div>
+                    ) : null}
+                    {!loading && error ? (
+                        <div className="alert alert-warning">
+                            Audyt follow-up chwilowo niedostępny.
+                        </div>
+                    ) : null}
+                    {!loading && !error && !rangeError && !hasData ? (
+                        <div className="alert alert-light border">
+                            Brak danych dla wybranego zakresu.
+                        </div>
+                    ) : null}
+
+                    {hasData && !rangeError ? (
+                        <div className="d-flex flex-column gap-3">
+                            <div className="row g-2">
+                                <div className="col-12 col-md-4">
+                                    <div className="border rounded bg-white p-3 h-100">
+                                        <div className="small text-muted">
+                                            Akcje follow-up łącznie
+                                        </div>
+                                        <div className="h4 mb-0">
+                                            {summary.actionsTotal}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="row g-2">
+                                <div className="col-12 col-lg-4">
+                                    <div className="border rounded bg-white p-3 h-100">
+                                        <div className="fw-semibold mb-2">
+                                            Podział wg akcji
+                                        </div>
+                                        {summary.byAction.length === 0 ? (
+                                            <div className="small text-muted">
+                                                Brak danych
+                                            </div>
+                                        ) : (
+                                            <ul className="mb-0 ps-3">
+                                                {summary.byAction.map(
+                                                    (item) => (
+                                                        <li
+                                                            key={item.action}
+                                                            className="small"
+                                                        >
+                                                            {ACTION_LABELS[
+                                                                item.action
+                                                            ] ??
+                                                                'Inna akcja'}{' '}
+                                                            ({item.count})
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-12 col-lg-4">
+                                    <div className="border rounded bg-white p-3 h-100">
+                                        <div className="fw-semibold mb-2">
+                                            Podział wg powodu
+                                        </div>
+                                        {summary.byReason.length === 0 ? (
+                                            <div className="small text-muted">
+                                                Brak danych
+                                            </div>
+                                        ) : (
+                                            <ul className="mb-0 ps-3">
+                                                {summary.byReason.map(
+                                                    (item) => (
+                                                        <li
+                                                            key={item.reason}
+                                                            className="small"
+                                                        >
+                                                            {REASON_LABELS[
+                                                                item.reason
+                                                            ] ??
+                                                                'Inny powód'}{' '}
+                                                            ({item.count})
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-12 col-lg-4">
+                                    <div className="border rounded bg-white p-3 h-100">
+                                        <div className="fw-semibold mb-2">
+                                            Trend dzienny
+                                        </div>
+                                        {summary.byDay.length === 0 ? (
+                                            <div className="small text-muted">
+                                                Brak danych
+                                            </div>
+                                        ) : (
+                                            <ul className="mb-0 ps-3">
+                                                {summary.byDay.map((item) => (
+                                                    <li
+                                                        key={item.day}
+                                                        className="small"
+                                                    >
+                                                        {item.day} ({item.count}
+                                                        )
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
-
-                {loading ? (
-                    <div className="alert alert-light border">
-                        Ładowanie audytu follow-up...
-                    </div>
-                ) : null}
-                {!loading && rangeError ? (
-                    <div className="alert alert-warning">{rangeError}</div>
-                ) : null}
-                {!loading && error ? (
-                    <div className="alert alert-warning">
-                        Audyt follow-up chwilowo niedostępny.
-                    </div>
-                ) : null}
-                {!loading && !error && !rangeError && !hasData ? (
-                    <div className="alert alert-light border">
-                        Brak danych dla wybranego zakresu.
-                    </div>
-                ) : null}
-
-                {hasData && !rangeError ? (
-                    <div className="d-flex flex-column gap-3">
-                        <div className="row g-2">
-                            <div className="col-12 col-md-4">
-                                <div className="border rounded bg-white p-3 h-100">
-                                    <div className="small text-muted">
-                                        Akcje follow-up łącznie
-                                    </div>
-                                    <div className="h4 mb-0">
-                                        {summary.actionsTotal}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="row g-2">
-                            <div className="col-12 col-lg-4">
-                                <div className="border rounded bg-white p-3 h-100">
-                                    <div className="fw-semibold mb-2">
-                                        Podział wg akcji
-                                    </div>
-                                    {summary.byAction.length === 0 ? (
-                                        <div className="small text-muted">
-                                            Brak danych
-                                        </div>
-                                    ) : (
-                                        <ul className="mb-0 ps-3">
-                                            {summary.byAction.map((item) => (
-                                                <li
-                                                    key={item.action}
-                                                    className="small"
-                                                >
-                                                    {ACTION_LABELS[
-                                                        item.action
-                                                    ] ?? 'Inna akcja'}{' '}
-                                                    ({item.count})
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-12 col-lg-4">
-                                <div className="border rounded bg-white p-3 h-100">
-                                    <div className="fw-semibold mb-2">
-                                        Podział wg powodu
-                                    </div>
-                                    {summary.byReason.length === 0 ? (
-                                        <div className="small text-muted">
-                                            Brak danych
-                                        </div>
-                                    ) : (
-                                        <ul className="mb-0 ps-3">
-                                            {summary.byReason.map((item) => (
-                                                <li
-                                                    key={item.reason}
-                                                    className="small"
-                                                >
-                                                    {REASON_LABELS[
-                                                        item.reason
-                                                    ] ?? 'Inny powód'}{' '}
-                                                    ({item.count})
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-12 col-lg-4">
-                                <div className="border rounded bg-white p-3 h-100">
-                                    <div className="fw-semibold mb-2">
-                                        Trend dzienny
-                                    </div>
-                                    {summary.byDay.length === 0 ? (
-                                        <div className="small text-muted">
-                                            Brak danych
-                                        </div>
-                                    ) : (
-                                        <ul className="mb-0 ps-3">
-                                            {summary.byDay.map((item) => (
-                                                <li
-                                                    key={item.day}
-                                                    className="small"
-                                                >
-                                                    {item.day} ({item.count})
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : null}
-            </div>
-        </SalonShell>
+            </SalonShell>
         </RouteGuard>
     );
 }

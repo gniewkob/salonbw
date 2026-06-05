@@ -195,345 +195,358 @@ export default function AppointmentsPage() {
     }
 
     return (
-        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:appointments">
-        <SalonShell role={role}>
-            <div className="inner">
-                <SalonBreadcrumbs
-                    iconClass="sprite-breadcrumbs_calendar"
-                    items={[{ label: 'Wizyty', href: '/appointments' }]}
-                />
+        <RouteGuard
+            roles={['admin', 'employee', 'receptionist']}
+            permission="nav:appointments"
+        >
+            <SalonShell role={role}>
+                <div className="inner">
+                    <SalonBreadcrumbs
+                        iconClass="sprite-breadcrumbs_calendar"
+                        items={[{ label: 'Wizyty', href: '/appointments' }]}
+                    />
 
-                <div className="column_row mb-3">
-                    <div className="d-flex flex-wrap gap-2 align-items-end">
-                        <div>
-                            <label className="form-label mb-1 small">Od</label>
-                            <input
-                                type="date"
-                                className="form-control form-control-sm"
-                                value={from}
-                                onChange={(e) => {
-                                    setFrom(e.target.value);
-                                    handleFilterChange();
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label className="form-label mb-1 small">Do</label>
-                            <input
-                                type="date"
-                                className="form-control form-control-sm"
-                                value={to}
-                                onChange={(e) => {
-                                    setTo(e.target.value);
-                                    handleFilterChange();
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label className="form-label mb-1 small">
-                                Status
-                            </label>
-                            <select
-                                className="form-select form-select-sm"
-                                value={status}
-                                onChange={(e) => {
-                                    setStatus(
-                                        e.target.value as
-                                            | AppointmentStatus
-                                            | '',
-                                    );
-                                    handleFilterChange();
-                                }}
-                            >
-                                <option value="">Wszystkie statusy</option>
-                                {ALL_STATUSES.map((s) => (
-                                    <option key={s} value={s}>
-                                        {STATUS_LABELS[s]}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="flex-grow-1">
-                            <label className="form-label mb-1 small">
-                                Klient / telefon
-                            </label>
-                            <div className="input-group input-group-sm">
+                    <div className="column_row mb-3">
+                        <div className="d-flex flex-wrap gap-2 align-items-end">
+                            <div>
+                                <label className="form-label mb-1 small">
+                                    Od
+                                </label>
                                 <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Szukaj..."
-                                    value={searchInput}
-                                    onChange={(e) =>
-                                        setSearchInput(e.target.value)
-                                    }
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleSearch()
-                                    }
+                                    type="date"
+                                    className="form-control form-control-sm"
+                                    value={from}
+                                    onChange={(e) => {
+                                        setFrom(e.target.value);
+                                        handleFilterChange();
+                                    }}
                                 />
-                                <button
-                                    className="btn btn-outline-secondary"
-                                    onClick={handleSearch}
-                                >
-                                    Szukaj
-                                </button>
                             </div>
-                        </div>
-                        <div>
-                            <Link
-                                href="/calendar"
-                                className="btn btn-sm btn-dark"
-                            >
-                                + Nowa wizyta
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="column_row results_info mb-2">
-                    <span className="results_title">
-                        {isLoading ? 'Ładowanie...' : `${totalResults} wizyt`}
-                    </span>
-                </div>
-
-                {error && (
-                    <div className="alert alert-danger">
-                        Błąd ładowania danych.
-                    </div>
-                )}
-
-                <div className="data_table salonbw-table-wrap">
-                    <table className="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Klient</th>
-                                <th>Usługa</th>
-                                <th>Pracownik</th>
-                                <th>Status</th>
-                                <th>Płatność</th>
-                                <th className="text-end">Kwota</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading && (
-                                <tr>
-                                    <td
-                                        colSpan={8}
-                                        className="text-center py-4"
-                                    >
-                                        <div
-                                            className="spinner-border spinner-border-sm"
-                                            role="status"
-                                        />{' '}
-                                        Ładowanie...
-                                    </td>
-                                </tr>
-                            )}
-                            {!isLoading && pageItems.length === 0 && (
-                                <tr>
-                                    <td
-                                        colSpan={8}
-                                        className="text-center py-4 text-muted"
-                                    >
-                                        Brak wizyt dla wybranych filtrów.
-                                    </td>
-                                </tr>
-                            )}
-                            {pageItems.map((appt) => (
-                                <tr
-                                    key={appt.id}
-                                    className=""
-                                    onClick={() => openInCalendar(appt)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <td style={{ whiteSpace: 'nowrap' }}>
-                                        {formatDateTime(appt.startTime)}
-                                    </td>
-                                    <td>
-                                        {appt.client ? (
-                                            <Link
-                                                href={`/customers/${appt.client.id}`}
-                                                onClick={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                            >
-                                                {appt.client.name}
-                                            </Link>
-                                        ) : (
-                                            <span className="text-muted">
-                                                —
-                                            </span>
-                                        )}
-                                        {appt.client?.phone && (
-                                            <div className="small text-muted">
-                                                {appt.client.phone}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td>
-                                        {appt.service?.name ?? '—'}
-                                        {appt.serviceVariant?.name && (
-                                            <span className="text-muted small ms-1">
-                                                ({appt.serviceVariant.name})
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td>{appt.employee?.name ?? '—'}</td>
-                                    <td>
-                                        {appt.status && (
-                                            <span
-                                                className={`badge ${STATUS_BADGE[appt.status] ?? 'bg-secondary'}`}
-                                            >
-                                                {STATUS_LABELS[appt.status] ??
-                                                    appt.status}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        {appt.paymentMethod ? (
-                                            <span className="small">
-                                                {appt.paymentMethod === 'cash'
-                                                    ? 'Gotówka'
-                                                    : appt.paymentMethod ===
-                                                        'card'
-                                                      ? 'Karta'
-                                                      : appt.paymentMethod ===
-                                                          'transfer'
-                                                        ? 'Przelew'
-                                                        : appt.paymentMethod}
-                                            </span>
-                                        ) : (
-                                            '—'
-                                        )}
-                                    </td>
-                                    <td className="text-end">
-                                        {appt.paidAmount != null
-                                            ? `${Number(appt.paidAmount).toFixed(2)} zł`
-                                            : appt.service?.price != null
-                                              ? `${Number(appt.service.price).toFixed(2)} zł`
-                                              : '—'}
-                                    </td>
-                                    <td
-                                        className="text-end"
-                                        style={{ whiteSpace: 'nowrap' }}
-                                    >
-                                        <div className="d-flex gap-1 justify-content-end">
-                                            {appt.status ===
-                                                'online_pending' && (
-                                                <>
-                                                    <button
-                                                        className="btn btn-sm btn-success"
-                                                        disabled={
-                                                            actionLoading ===
-                                                            appt.id
-                                                        }
-                                                        onClick={(e) =>
-                                                            void handleConfirm(
-                                                                e,
-                                                                appt,
-                                                            )
-                                                        }
-                                                        title="Potwierdź rezerwację — klient otrzyma WhatsApp"
-                                                    >
-                                                        {actionLoading ===
-                                                        appt.id
-                                                            ? '...'
-                                                            : '✓ Potwierdź'}
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-sm btn-outline-danger"
-                                                        disabled={
-                                                            actionLoading ===
-                                                            appt.id
-                                                        }
-                                                        onClick={(e) =>
-                                                            void handleReject(
-                                                                e,
-                                                                appt,
-                                                            )
-                                                        }
-                                                        title="Odrzuć rezerwację"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </>
-                                            )}
-                                            <button
-                                                className="btn btn-sm btn-outline-secondary"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openInCalendar(appt);
-                                                }}
-                                            >
-                                                Otwórz
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {totalPages > 1 && (
-                    <div className="pagination_container mt-3">
-                        <div className="row">
-                            <div className="infocol-7">
-                                <span>
-                                    Strona {page} z {totalPages} ({totalResults}{' '}
-                                    wyników)
-                                </span>
+                            <div>
+                                <label className="form-label mb-1 small">
+                                    Do
+                                </label>
+                                <input
+                                    type="date"
+                                    className="form-control form-control-sm"
+                                    value={to}
+                                    onChange={(e) => {
+                                        setTo(e.target.value);
+                                        handleFilterChange();
+                                    }}
+                                />
                             </div>
-                            <div className="form_paginationcol-5 d-flex gap-1 justify-content-end">
-                                <button
-                                    className="btn btn-sm btn-outline-secondary"
-                                    disabled={page <= 1}
-                                    onClick={() =>
-                                        setPage((p) => Math.max(1, p - 1))
-                                    }
-                                >
-                                    &laquo; Poprzednia
-                                </button>
-                                {Array.from(
-                                    { length: Math.min(totalPages, 7) },
-                                    (_, i) => {
-                                        const pageNum =
-                                            totalPages <= 7
-                                                ? i + 1
-                                                : page <= 4
-                                                  ? i + 1
-                                                  : page >= totalPages - 3
-                                                    ? totalPages - 6 + i
-                                                    : page - 3 + i;
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
-                                                onClick={() => setPage(pageNum)}
-                                            >
-                                                {pageNum}
-                                            </button>
+                            <div>
+                                <label className="form-label mb-1 small">
+                                    Status
+                                </label>
+                                <select
+                                    className="form-select form-select-sm"
+                                    value={status}
+                                    onChange={(e) => {
+                                        setStatus(
+                                            e.target.value as
+                                                | AppointmentStatus
+                                                | '',
                                         );
-                                    },
-                                )}
-                                <button
-                                    className="btn btn-sm btn-outline-secondary"
-                                    disabled={page >= totalPages}
-                                    onClick={() =>
-                                        setPage((p) =>
-                                            Math.min(totalPages, p + 1),
-                                        )
-                                    }
+                                        handleFilterChange();
+                                    }}
                                 >
-                                    Następna &raquo;
-                                </button>
+                                    <option value="">Wszystkie statusy</option>
+                                    {ALL_STATUSES.map((s) => (
+                                        <option key={s} value={s}>
+                                            {STATUS_LABELS[s]}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex-grow-1">
+                                <label className="form-label mb-1 small">
+                                    Klient / telefon
+                                </label>
+                                <div className="input-group input-group-sm">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Szukaj..."
+                                        value={searchInput}
+                                        onChange={(e) =>
+                                            setSearchInput(e.target.value)
+                                        }
+                                        onKeyDown={(e) =>
+                                            e.key === 'Enter' && handleSearch()
+                                        }
+                                    />
+                                    <button
+                                        className="btn btn-outline-secondary"
+                                        onClick={handleSearch}
+                                    >
+                                        Szukaj
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <Link
+                                    href="/calendar"
+                                    className="btn btn-sm btn-dark"
+                                >
+                                    + Nowa wizyta
+                                </Link>
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
-        </SalonShell>
+
+                    <div className="column_row results_info mb-2">
+                        <span className="results_title">
+                            {isLoading
+                                ? 'Ładowanie...'
+                                : `${totalResults} wizyt`}
+                        </span>
+                    </div>
+
+                    {error && (
+                        <div className="alert alert-danger">
+                            Błąd ładowania danych.
+                        </div>
+                    )}
+
+                    <div className="data_table salonbw-table-wrap">
+                        <table className="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Klient</th>
+                                    <th>Usługa</th>
+                                    <th>Pracownik</th>
+                                    <th>Status</th>
+                                    <th>Płatność</th>
+                                    <th className="text-end">Kwota</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {isLoading && (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="text-center py-4"
+                                        >
+                                            <div
+                                                className="spinner-border spinner-border-sm"
+                                                role="status"
+                                            />{' '}
+                                            Ładowanie...
+                                        </td>
+                                    </tr>
+                                )}
+                                {!isLoading && pageItems.length === 0 && (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="text-center py-4 text-muted"
+                                        >
+                                            Brak wizyt dla wybranych filtrów.
+                                        </td>
+                                    </tr>
+                                )}
+                                {pageItems.map((appt) => (
+                                    <tr
+                                        key={appt.id}
+                                        className=""
+                                        onClick={() => openInCalendar(appt)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <td style={{ whiteSpace: 'nowrap' }}>
+                                            {formatDateTime(appt.startTime)}
+                                        </td>
+                                        <td>
+                                            {appt.client ? (
+                                                <Link
+                                                    href={`/customers/${appt.client.id}`}
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                >
+                                                    {appt.client.name}
+                                                </Link>
+                                            ) : (
+                                                <span className="text-muted">
+                                                    —
+                                                </span>
+                                            )}
+                                            {appt.client?.phone && (
+                                                <div className="small text-muted">
+                                                    {appt.client.phone}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td>
+                                            {appt.service?.name ?? '—'}
+                                            {appt.serviceVariant?.name && (
+                                                <span className="text-muted small ms-1">
+                                                    ({appt.serviceVariant.name})
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td>{appt.employee?.name ?? '—'}</td>
+                                        <td>
+                                            {appt.status && (
+                                                <span
+                                                    className={`badge ${STATUS_BADGE[appt.status] ?? 'bg-secondary'}`}
+                                                >
+                                                    {STATUS_LABELS[
+                                                        appt.status
+                                                    ] ?? appt.status}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            {appt.paymentMethod ? (
+                                                <span className="small">
+                                                    {appt.paymentMethod ===
+                                                    'cash'
+                                                        ? 'Gotówka'
+                                                        : appt.paymentMethod ===
+                                                            'card'
+                                                          ? 'Karta'
+                                                          : appt.paymentMethod ===
+                                                              'transfer'
+                                                            ? 'Przelew'
+                                                            : appt.paymentMethod}
+                                                </span>
+                                            ) : (
+                                                '—'
+                                            )}
+                                        </td>
+                                        <td className="text-end">
+                                            {appt.paidAmount != null
+                                                ? `${Number(appt.paidAmount).toFixed(2)} zł`
+                                                : appt.service?.price != null
+                                                  ? `${Number(appt.service.price).toFixed(2)} zł`
+                                                  : '—'}
+                                        </td>
+                                        <td
+                                            className="text-end"
+                                            style={{ whiteSpace: 'nowrap' }}
+                                        >
+                                            <div className="d-flex gap-1 justify-content-end">
+                                                {appt.status ===
+                                                    'online_pending' && (
+                                                    <>
+                                                        <button
+                                                            className="btn btn-sm btn-success"
+                                                            disabled={
+                                                                actionLoading ===
+                                                                appt.id
+                                                            }
+                                                            onClick={(e) =>
+                                                                void handleConfirm(
+                                                                    e,
+                                                                    appt,
+                                                                )
+                                                            }
+                                                            title="Potwierdź rezerwację — klient otrzyma WhatsApp"
+                                                        >
+                                                            {actionLoading ===
+                                                            appt.id
+                                                                ? '...'
+                                                                : '✓ Potwierdź'}
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-sm btn-outline-danger"
+                                                            disabled={
+                                                                actionLoading ===
+                                                                appt.id
+                                                            }
+                                                            onClick={(e) =>
+                                                                void handleReject(
+                                                                    e,
+                                                                    appt,
+                                                                )
+                                                            }
+                                                            title="Odrzuć rezerwację"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </>
+                                                )}
+                                                <button
+                                                    className="btn btn-sm btn-outline-secondary"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openInCalendar(appt);
+                                                    }}
+                                                >
+                                                    Otwórz
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {totalPages > 1 && (
+                        <div className="pagination_container mt-3">
+                            <div className="row">
+                                <div className="infocol-7">
+                                    <span>
+                                        Strona {page} z {totalPages} (
+                                        {totalResults} wyników)
+                                    </span>
+                                </div>
+                                <div className="form_paginationcol-5 d-flex gap-1 justify-content-end">
+                                    <button
+                                        className="btn btn-sm btn-outline-secondary"
+                                        disabled={page <= 1}
+                                        onClick={() =>
+                                            setPage((p) => Math.max(1, p - 1))
+                                        }
+                                    >
+                                        &laquo; Poprzednia
+                                    </button>
+                                    {Array.from(
+                                        { length: Math.min(totalPages, 7) },
+                                        (_, i) => {
+                                            const pageNum =
+                                                totalPages <= 7
+                                                    ? i + 1
+                                                    : page <= 4
+                                                      ? i + 1
+                                                      : page >= totalPages - 3
+                                                        ? totalPages - 6 + i
+                                                        : page - 3 + i;
+                                            return (
+                                                <button
+                                                    key={pageNum}
+                                                    className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                    onClick={() =>
+                                                        setPage(pageNum)
+                                                    }
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            );
+                                        },
+                                    )}
+                                    <button
+                                        className="btn btn-sm btn-outline-secondary"
+                                        disabled={page >= totalPages}
+                                        onClick={() =>
+                                            setPage((p) =>
+                                                Math.min(totalPages, p + 1),
+                                            )
+                                        }
+                                    >
+                                        Następna &raquo;
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </SalonShell>
         </RouteGuard>
     );
 }

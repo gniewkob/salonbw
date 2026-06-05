@@ -22,7 +22,11 @@ export function useFollowUpAudit(params: {
 
     const dateKey = useMemo(() => toDateParam(currentDate), [currentDate]);
 
-    const { loading, error, data: summary } = useReceptionFetch<
+    const {
+        loading,
+        error,
+        data: summary,
+    } = useReceptionFetch<
         ReceptionFollowUpAuditResponse,
         ReceptionFollowUpAuditResponse | null
     >({

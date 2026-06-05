@@ -192,8 +192,7 @@ export default function SettingsNav() {
     const isActive = (href: string, matchPrefix?: string) => {
         const prefix = matchPrefix ?? href;
         return (
-            router.pathname === href ||
-            router.pathname.startsWith(`${prefix}/`)
+            router.pathname === href || router.pathname.startsWith(`${prefix}/`)
         );
     };
 

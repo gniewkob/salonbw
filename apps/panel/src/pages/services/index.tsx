@@ -20,11 +20,10 @@ export default function ServicesPage() {
     const { role } = useAuth();
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:services">
-        <SalonShell role={role}>
-            <ServicesPageContent role={role} />
-        </SalonShell>
+            <SalonShell role={role}>
+                <ServicesPageContent role={role} />
+            </SalonShell>
         </RouteGuard>
     );
 }

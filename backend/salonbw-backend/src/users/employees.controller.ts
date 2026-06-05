@@ -84,7 +84,9 @@ export class EmployeesController {
     @Roles(Role.Admin)
     @Get()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'List all staff users (employee, receptionist, admin)' })
+    @ApiOperation({
+        summary: 'List all staff users (employee, receptionist, admin)',
+    })
     async list() {
         const users = await this.usersService.findAll();
         return users
@@ -207,7 +209,12 @@ export class EmployeesController {
         await this.logService.logAction(
             actor ?? null,
             LogAction.EMPLOYEE_ROLE_CHANGED,
-            { employeeId: id, employeeName: user.name, prevRole, newRole: dto.role },
+            {
+                employeeId: id,
+                employeeName: user.name,
+                prevRole,
+                newRole: dto.role,
+            },
         );
         return updated;
     }

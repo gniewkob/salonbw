@@ -209,138 +209,150 @@ export default function ServiceDetailsPage() {
     };
 
     return (
-        
         <RouteGuard roles={['admin']} permission="nav:services">
-        <SalonShell role={role || 'admin'}>
-            <div
-                className="salonbw-page service-details-page"
-                data-testid="service-details-page"
-            >
-                <SalonBreadcrumbs
-                    iconClass="sprite-breadcrumbs_services"
-                    items={[
-                        { label: 'Usługi', href: '/services' },
-                        { label: summaryData?.name ?? 'Usługa' },
-                    ]}
-                />
+            <SalonShell role={role || 'admin'}>
+                <div
+                    className="salonbw-page service-details-page"
+                    data-testid="service-details-page"
+                >
+                    <SalonBreadcrumbs
+                        iconClass="sprite-breadcrumbs_services"
+                        items={[
+                            { label: 'Usługi', href: '/services' },
+                            { label: summaryData?.name ?? 'Usługa' },
+                        ]}
+                    />
 
-                <div className="column_row row buttons-row">
-                    <div className="col-sm-6" />
-                    <div className="right-buttons col-sm-6">
-                        <button
-                            type="button"
-                            onClick={() => setIsEditModalOpen(true)}
-                            className="btn btn-outline-secondary"
-                            disabled={!summaryData || user?.role !== 'admin'}
-                        >
-                            edytuj
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIsVariantsModalOpen(true)}
-                            className="btn btn-primary ml-s"
-                            disabled={!summaryData || user?.role !== 'admin'}
-                        >
-                            zarządzaj wariantami
-                        </button>
+                    <div className="column_row row buttons-row">
+                        <div className="col-sm-6" />
+                        <div className="right-buttons col-sm-6">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditModalOpen(true)}
+                                className="btn btn-outline-secondary"
+                                disabled={
+                                    !summaryData || user?.role !== 'admin'
+                                }
+                            >
+                                edytuj
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsVariantsModalOpen(true)}
+                                className="btn btn-primary ml-s"
+                                disabled={
+                                    !summaryData || user?.role !== 'admin'
+                                }
+                            >
+                                zarządzaj wariantami
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                {!summaryData && summary.isLoading ? (
-                    <div className="service-empty mt-15">
-                        Ładowanie danych usługi...
-                    </div>
-                ) : !summaryData ? (
-                    <div className="service-empty mt-15">
-                        Nie udało się załadować danych usługi
-                    </div>
-                ) : (
-                    <div className="service-details-content mt-15">
-                        <section className="service-details-card">
-                            {activeTab === 'summary' && (
-                                <div>
-                                    <h2 className="column_row">
-                                        {summaryData.name}
-                                        {variantsData.length > 0 && (
-                                            <small>
-                                                {variantsData.length}{' '}
-                                                {variantsData.length === 1
-                                                    ? 'wariant'
-                                                    : 'warianty'}
-                                            </small>
+                    {!summaryData && summary.isLoading ? (
+                        <div className="service-empty mt-15">
+                            Ładowanie danych usługi...
+                        </div>
+                    ) : !summaryData ? (
+                        <div className="service-empty mt-15">
+                            Nie udało się załadować danych usługi
+                        </div>
+                    ) : (
+                        <div className="service-details-content mt-15">
+                            <section className="service-details-card">
+                                {activeTab === 'summary' && (
+                                    <div>
+                                        <h2 className="column_row">
+                                            {summaryData.name}
+                                            {variantsData.length > 0 && (
+                                                <small>
+                                                    {variantsData.length}{' '}
+                                                    {variantsData.length === 1
+                                                        ? 'wariant'
+                                                        : 'warianty'}
+                                                </small>
+                                            )}
+                                        </h2>
+
+                                        {variantsData.length > 0 ? (
+                                            <ul className="list-group no-radius no-hover">
+                                                {variantsData.map((variant) => (
+                                                    <li
+                                                        key={variant.id}
+                                                        className="list-group-item"
+                                                    >
+                                                        <div className="row">
+                                                            <div className="col-6">
+                                                                <span className="h4">
+                                                                    {
+                                                                        variant.name
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                            <div className="col-3">
+                                                                {formatDuration(
+                                                                    variant.duration,
+                                                                )}
+                                                            </div>
+                                                            <div className="col-3 text-end">
+                                                                {formatCurrency(
+                                                                    variant.price,
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="service-empty">
+                                                Brak wariantów
+                                            </p>
                                         )}
-                                    </h2>
 
-                                    {variantsData.length > 0 ? (
-                                        <ul className="list-group no-radius no-hover">
-                                            {variantsData.map((variant) => (
-                                                <li
-                                                    key={variant.id}
-                                                    className="list-group-item"
-                                                >
-                                                    <div className="row">
-                                                        <div className="col-6">
-                                                            <span className="h4">
-                                                                {variant.name}
-                                                            </span>
-                                                        </div>
-                                                        <div className="col-3">
-                                                            {formatDuration(
-                                                                variant.duration,
-                                                            )}
-                                                        </div>
-                                                        <div className="col-3 text-end">
-                                                            {formatCurrency(
-                                                                variant.price,
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="service-empty">
-                                            Brak wariantów
-                                        </p>
-                                    )}
-
-                                    <dl className="dl-horizontal">
-                                        <dt className="lbl">Kategoria</dt>
-                                        <dd>
-                                            {summaryData.categoryRelation
-                                                ?.name ??
-                                                summaryData.category ??
-                                                'Bez kategorii'}
-                                        </dd>
-                                        <dt className="lbl">VAT</dt>
-                                        <dd>{summaryData.vatRate ?? 23}%</dd>
-                                        <dt className="lbl">
-                                            Rezerwacja online
-                                        </dt>
-                                        <dd>
-                                            {summaryData.onlineBooking
-                                                ? 'Usługę można rezerwować online'
-                                                : 'Usługa niedostępna online'}
-                                        </dd>
-                                        <dt className="lbl">Opis publiczny</dt>
-                                        <dd>
-                                            {summaryData.publicDescription ??
-                                                'Brak opisu'}
-                                        </dd>
-                                        <dt className="lbl">Opis prywatny</dt>
-                                        <dd>
-                                            {summaryData.privateDescription ??
-                                                'Brak opisu'}
-                                        </dd>
-                                        <dt className="lbl">Zdjęcia</dt>
-                                        <dd>
-                                            {(photos.data ?? []).length ===
-                                            0 ? (
-                                                'Brak zdjęć'
-                                            ) : (
-                                                <div className="service-photo-grid">
-                                                    {(photos.data ?? []).map(
-                                                        (photo) => (
+                                        <dl className="dl-horizontal">
+                                            <dt className="lbl">Kategoria</dt>
+                                            <dd>
+                                                {summaryData.categoryRelation
+                                                    ?.name ??
+                                                    summaryData.category ??
+                                                    'Bez kategorii'}
+                                            </dd>
+                                            <dt className="lbl">VAT</dt>
+                                            <dd>
+                                                {summaryData.vatRate ?? 23}%
+                                            </dd>
+                                            <dt className="lbl">
+                                                Rezerwacja online
+                                            </dt>
+                                            <dd>
+                                                {summaryData.onlineBooking
+                                                    ? 'Usługę można rezerwować online'
+                                                    : 'Usługa niedostępna online'}
+                                            </dd>
+                                            <dt className="lbl">
+                                                Opis publiczny
+                                            </dt>
+                                            <dd>
+                                                {summaryData.publicDescription ??
+                                                    'Brak opisu'}
+                                            </dd>
+                                            <dt className="lbl">
+                                                Opis prywatny
+                                            </dt>
+                                            <dd>
+                                                {summaryData.privateDescription ??
+                                                    'Brak opisu'}
+                                            </dd>
+                                            <dt className="lbl">Zdjęcia</dt>
+                                            <dd>
+                                                {(photos.data ?? []).length ===
+                                                0 ? (
+                                                    'Brak zdjęć'
+                                                ) : (
+                                                    <div className="service-photo-grid">
+                                                        {(
+                                                            photos.data ?? []
+                                                        ).map((photo) => (
                                                             <a
                                                                 key={photo.id}
                                                                 href={`${apiBase}${photo.url}`}
@@ -361,337 +373,123 @@ export default function ServiceDetailsPage() {
                                                                     }
                                                                 />
                                                             </a>
-                                                        ),
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                )}
+
+                                {activeTab === 'stats' && (
+                                    <div>
+                                        <div className="service-stats-cards">
+                                            <div className="service-stats-card">
+                                                <div className="service-stats-card__label">
+                                                    Łączne obroty na usłudze
+                                                </div>
+                                                <div className="service-stats-card__value">
+                                                    {formatCurrency(
+                                                        stats.data
+                                                            ?.totalRevenue ?? 0,
                                                     )}
                                                 </div>
-                                            )}
-                                        </dd>
-                                    </dl>
-                                </div>
-                            )}
-
-                            {activeTab === 'stats' && (
-                                <div>
-                                    <div className="service-stats-cards">
-                                        <div className="service-stats-card">
-                                            <div className="service-stats-card__label">
-                                                Łączne obroty na usłudze
                                             </div>
-                                            <div className="service-stats-card__value">
-                                                {formatCurrency(
-                                                    stats.data?.totalRevenue ??
-                                                        0,
-                                                )}
+                                            <div className="service-stats-card">
+                                                <div className="service-stats-card__label">
+                                                    Usługa sprzedana
+                                                </div>
+                                                <div className="service-stats-card__value">
+                                                    {stats.data?.totalCount ??
+                                                        0}{' '}
+                                                    razy
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="service-stats-card">
-                                            <div className="service-stats-card__label">
-                                                Usługa sprzedana
-                                            </div>
-                                            <div className="service-stats-card__value">
-                                                {stats.data?.totalCount ?? 0}{' '}
-                                                razy
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="service-chart-wrap">
-                                        <RevenueChart
-                                            data={chartData}
-                                            loading={stats.isLoading}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeTab === 'history' && (
-                                <div className="salonbw-table-wrap">
-                                    <table className="salonbw-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Data</th>
-                                                <th>Wariant</th>
-                                                <th>Klient</th>
-                                                <th>Pracownik</th>
-                                                <th>Czas trwania</th>
-                                                <th>Cena</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {history.data?.items?.length ===
-                                                0 && (
-                                                <tr>
-                                                    <td
-                                                        colSpan={6}
-                                                        className="service-empty-cell"
-                                                    >
-                                                        Brak historii wizyt dla
-                                                        tej usługi
-                                                    </td>
-                                                </tr>
-                                            )}
-                                            {history.data?.items?.map(
-                                                (item) => (
-                                                    <tr key={item.id}>
-                                                        <td>
-                                                            {new Date(
-                                                                item.startTime,
-                                                            ).toLocaleString(
-                                                                'pl-PL',
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            {item.serviceVariant
-                                                                ?.name ?? '—'}
-                                                        </td>
-                                                        <td>
-                                                            {item.client
-                                                                ?.name ?? '—'}
-                                                        </td>
-                                                        <td>
-                                                            {item.employee
-                                                                ?.name ?? '—'}
-                                                        </td>
-                                                        <td>
-                                                            {item.endTime
-                                                                ? formatDuration(
-                                                                      Math.round(
-                                                                          (new Date(
-                                                                              item.endTime,
-                                                                          ).getTime() -
-                                                                              new Date(
-                                                                                  item.startTime,
-                                                                              ).getTime()) /
-                                                                              60000,
-                                                                      ),
-                                                                  )
-                                                                : '—'}
-                                                        </td>
-                                                        <td>
-                                                            {formatCurrency(
-                                                                item.paidAmount ??
-                                                                    item
-                                                                        .serviceVariant
-                                                                        ?.price ??
-                                                                    0,
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {activeTab === 'employees' && (
-                                <div className="salonbw-table-wrap">
-                                    <table className="salonbw-table">
-                                        <thead>
-                                            <tr>
-                                                <th className="service-employees-variant-col">
-                                                    Nazwa wariantu
-                                                </th>
-                                                <th>
-                                                    Pracownicy i czas
-                                                    wykonywania
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {variantsData.map((variant) => {
-                                                const assigned =
-                                                    groupedAssignments.get(
-                                                        variant.id,
-                                                    ) ?? [];
-
-                                                return (
-                                                    <tr key={variant.id}>
-                                                        <td className="align-top">
-                                                            <div className="service-variant-name">
-                                                                {variant.name}
-                                                            </div>
-                                                            <div className="text-muted fz-11">
-                                                                {formatDuration(
-                                                                    variant.duration,
-                                                                )}
-                                                                ,{' '}
-                                                                {formatCurrency(
-                                                                    variant.price,
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td className="align-top">
-                                                            {assigned.length ===
-                                                            0 ? (
-                                                                <div className="text-muted">
-                                                                    Brak
-                                                                    przypisań
-                                                                </div>
-                                                            ) : (
-                                                                <ul className="simple-list">
-                                                                    {assigned.map(
-                                                                        (
-                                                                            assignment,
-                                                                        ) => (
-                                                                            <li
-                                                                                key={
-                                                                                    assignment.id
-                                                                                }
-                                                                                className="service-assignment-row"
-                                                                            >
-                                                                                <span>
-                                                                                    {
-                                                                                        assignment
-                                                                                            .employee
-                                                                                            ?.name
-                                                                                    }
-                                                                                </span>
-                                                                                <span className="text-muted">
-                                                                                    {formatDuration(
-                                                                                        assignment.customDuration ??
-                                                                                            variant.duration,
-                                                                                    )}
-                                                                                </span>
-                                                                            </li>
-                                                                        ),
-                                                                    )}
-                                                                </ul>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {activeTab === 'comments' && (
-                                <div>
-                                    <div className="service-comments-form">
-                                        <h3 className="service-comments-form__title">
-                                            Dodaj komentarz
-                                        </h3>
-                                        <div className="service-comments-form__row">
-                                            <input
-                                                className="form-control"
-                                                placeholder="Autor (opcjonalnie)"
-                                                value={commentAuthor}
-                                                onChange={(e) =>
-                                                    setCommentAuthor(
-                                                        e.target.value,
-                                                    )
-                                                }
+                                        <div className="service-chart-wrap">
+                                            <RevenueChart
+                                                data={chartData}
+                                                loading={stats.isLoading}
                                             />
-                                            <select
-                                                title="Ocena"
-                                                aria-label="Wybierz ocenę"
-                                                className="form-control"
-                                                value={commentRating}
-                                                onChange={(e) =>
-                                                    setCommentRating(
-                                                        Number(e.target.value),
-                                                    )
-                                                }
-                                            >
-                                                <option value={5}>5 / 5</option>
-                                                <option value={4}>4 / 5</option>
-                                                <option value={3}>3 / 5</option>
-                                                <option value={2}>2 / 5</option>
-                                                <option value={1}>1 / 5</option>
-                                            </select>
-                                            <button
-                                                type="button"
-                                                className="btn btn-primary"
-                                                disabled={
-                                                    addComment.isPending ||
-                                                    !commentText.trim()
-                                                }
-                                                onClick={() => {
-                                                    void handleAddComment();
-                                                }}
-                                            >
-                                                dodaj komentarz
-                                            </button>
                                         </div>
-                                        <textarea
-                                            className="form-control"
-                                            rows={4}
-                                            placeholder="Treść komentarza"
-                                            value={commentText}
-                                            onChange={(e) =>
-                                                setCommentText(e.target.value)
-                                            }
-                                        />
                                     </div>
+                                )}
 
+                                {activeTab === 'history' && (
                                     <div className="salonbw-table-wrap">
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
                                                     <th>Data</th>
-                                                    <th>Źródło</th>
-                                                    <th>Autor</th>
-                                                    <th>Ocena</th>
-                                                    <th>Komentarz</th>
-                                                    <th>Akcje</th>
+                                                    <th>Wariant</th>
+                                                    <th>Klient</th>
+                                                    <th>Pracownik</th>
+                                                    <th>Czas trwania</th>
+                                                    <th>Cena</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {(comments.data ?? [])
-                                                    .length === 0 && (
+                                                {history.data?.items?.length ===
+                                                    0 && (
                                                     <tr>
                                                         <td
                                                             colSpan={6}
                                                             className="service-empty-cell"
                                                         >
-                                                            Brak komentarzy dla
-                                                            tej usługi
+                                                            Brak historii wizyt
+                                                            dla tej usługi
                                                         </td>
                                                     </tr>
                                                 )}
-                                                {(comments.data ?? []).map(
-                                                    (comment) => (
-                                                        <tr key={comment.id}>
+                                                {history.data?.items?.map(
+                                                    (item) => (
+                                                        <tr key={item.id}>
                                                             <td>
-                                                                {comment.createdAt
-                                                                    ? new Date(
-                                                                          comment.createdAt,
-                                                                      ).toLocaleString(
-                                                                          'pl-PL',
+                                                                {new Date(
+                                                                    item.startTime,
+                                                                ).toLocaleString(
+                                                                    'pl-PL',
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {item
+                                                                    .serviceVariant
+                                                                    ?.name ??
+                                                                    '—'}
+                                                            </td>
+                                                            <td>
+                                                                {item.client
+                                                                    ?.name ??
+                                                                    '—'}
+                                                            </td>
+                                                            <td>
+                                                                {item.employee
+                                                                    ?.name ??
+                                                                    '—'}
+                                                            </td>
+                                                            <td>
+                                                                {item.endTime
+                                                                    ? formatDuration(
+                                                                          Math.round(
+                                                                              (new Date(
+                                                                                  item.endTime,
+                                                                              ).getTime() -
+                                                                                  new Date(
+                                                                                      item.startTime,
+                                                                                  ).getTime()) /
+                                                                                  60000,
+                                                                          ),
                                                                       )
                                                                     : '—'}
                                                             </td>
                                                             <td>
-                                                                {comment.source}
-                                                            </td>
-                                                            <td>
-                                                                {comment.authorName ||
-                                                                    '—'}
-                                                            </td>
-                                                            <td>
-                                                                {comment.rating}
-                                                                /5
-                                                            </td>
-                                                            <td>
-                                                                {comment.comment ||
-                                                                    '—'}
-                                                            </td>
-                                                            <td>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-outline-secondary btn-sm"
-                                                                    disabled={
-                                                                        deleteComment.isPending
-                                                                    }
-                                                                    onClick={() => {
-                                                                        void handleDeleteComment(
-                                                                            comment.id,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    usuń
-                                                                </button>
+                                                                {formatCurrency(
+                                                                    item.paidAmount ??
+                                                                        item
+                                                                            .serviceVariant
+                                                                            ?.price ??
+                                                                        0,
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     ),
@@ -699,124 +497,377 @@ export default function ServiceDetailsPage() {
                                             </tbody>
                                         </table>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {activeTab === 'commissions' && (
-                                <div>
-                                    <div className="service-commissions-intro">
-                                        Ustaw procent prowizji przypisany do
-                                        pracownika dla tej usługi.
-                                    </div>
+                                {activeTab === 'employees' && (
                                     <div className="salonbw-table-wrap">
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Pracownik</th>
-                                                    <th>Prowizja (%)</th>
+                                                    <th className="service-employees-variant-col">
+                                                        Nazwa wariantu
+                                                    </th>
+                                                    <th>
+                                                        Pracownicy i czas
+                                                        wykonywania
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {commissionRows.length ===
-                                                    0 && (
-                                                    <tr>
-                                                        <td
-                                                            colSpan={2}
-                                                            className="service-empty-cell"
-                                                        >
-                                                            Brak reguł prowizji
-                                                            dla tej usługi
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                                {commissionRows.map((row) => (
-                                                    <tr key={row.employeeId}>
-                                                        <td>
-                                                            {row.employeeName}
-                                                        </td>
-                                                        <td>
-                                                            <input
-                                                                type="number"
-                                                                title="Wartość prowizji"
-                                                                placeholder="Wartość prowizji"
-                                                                className="form-control"
-                                                                min={0}
-                                                                max={100}
-                                                                step={0.1}
-                                                                value={
-                                                                    row.value
-                                                                }
-                                                                onChange={(
-                                                                    e,
-                                                                ) => {
-                                                                    const value =
-                                                                        Number(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        );
-                                                                    setCommissionDraft(
-                                                                        (
-                                                                            prev,
-                                                                        ) => ({
-                                                                            ...prev,
-                                                                            [row.employeeId]:
-                                                                                Number.isFinite(
-                                                                                    value,
-                                                                                )
-                                                                                    ? value
-                                                                                    : 0,
-                                                                        }),
-                                                                    );
-                                                                }}
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                {variantsData.map((variant) => {
+                                                    const assigned =
+                                                        groupedAssignments.get(
+                                                            variant.id,
+                                                        ) ?? [];
+
+                                                    return (
+                                                        <tr key={variant.id}>
+                                                            <td className="align-top">
+                                                                <div className="service-variant-name">
+                                                                    {
+                                                                        variant.name
+                                                                    }
+                                                                </div>
+                                                                <div className="text-muted fz-11">
+                                                                    {formatDuration(
+                                                                        variant.duration,
+                                                                    )}
+                                                                    ,{' '}
+                                                                    {formatCurrency(
+                                                                        variant.price,
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="align-top">
+                                                                {assigned.length ===
+                                                                0 ? (
+                                                                    <div className="text-muted">
+                                                                        Brak
+                                                                        przypisań
+                                                                    </div>
+                                                                ) : (
+                                                                    <ul className="simple-list">
+                                                                        {assigned.map(
+                                                                            (
+                                                                                assignment,
+                                                                            ) => (
+                                                                                <li
+                                                                                    key={
+                                                                                        assignment.id
+                                                                                    }
+                                                                                    className="service-assignment-row"
+                                                                                >
+                                                                                    <span>
+                                                                                        {
+                                                                                            assignment
+                                                                                                .employee
+                                                                                                ?.name
+                                                                                        }
+                                                                                    </span>
+                                                                                    <span className="text-muted">
+                                                                                        {formatDuration(
+                                                                                            assignment.customDuration ??
+                                                                                                variant.duration,
+                                                                                        )}
+                                                                                    </span>
+                                                                                </li>
+                                                                            ),
+                                                                        )}
+                                                                    </ul>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>
+                                )}
 
-                                    <div className="service-commissions-actions">
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary"
-                                            disabled={
-                                                updateCommissions.isPending ||
-                                                commissionRows.length === 0
-                                            }
-                                            onClick={() => {
-                                                void handleSaveCommissions();
-                                            }}
-                                        >
-                                            zapisz prowizje
-                                        </button>
+                                {activeTab === 'comments' && (
+                                    <div>
+                                        <div className="service-comments-form">
+                                            <h3 className="service-comments-form__title">
+                                                Dodaj komentarz
+                                            </h3>
+                                            <div className="service-comments-form__row">
+                                                <input
+                                                    className="form-control"
+                                                    placeholder="Autor (opcjonalnie)"
+                                                    value={commentAuthor}
+                                                    onChange={(e) =>
+                                                        setCommentAuthor(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <select
+                                                    title="Ocena"
+                                                    aria-label="Wybierz ocenę"
+                                                    className="form-control"
+                                                    value={commentRating}
+                                                    onChange={(e) =>
+                                                        setCommentRating(
+                                                            Number(
+                                                                e.target.value,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    <option value={5}>
+                                                        5 / 5
+                                                    </option>
+                                                    <option value={4}>
+                                                        4 / 5
+                                                    </option>
+                                                    <option value={3}>
+                                                        3 / 5
+                                                    </option>
+                                                    <option value={2}>
+                                                        2 / 5
+                                                    </option>
+                                                    <option value={1}>
+                                                        1 / 5
+                                                    </option>
+                                                </select>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary"
+                                                    disabled={
+                                                        addComment.isPending ||
+                                                        !commentText.trim()
+                                                    }
+                                                    onClick={() => {
+                                                        void handleAddComment();
+                                                    }}
+                                                >
+                                                    dodaj komentarz
+                                                </button>
+                                            </div>
+                                            <textarea
+                                                className="form-control"
+                                                rows={4}
+                                                placeholder="Treść komentarza"
+                                                value={commentText}
+                                                onChange={(e) =>
+                                                    setCommentText(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="salonbw-table-wrap">
+                                            <table className="salonbw-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Data</th>
+                                                        <th>Źródło</th>
+                                                        <th>Autor</th>
+                                                        <th>Ocena</th>
+                                                        <th>Komentarz</th>
+                                                        <th>Akcje</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {(comments.data ?? [])
+                                                        .length === 0 && (
+                                                        <tr>
+                                                            <td
+                                                                colSpan={6}
+                                                                className="service-empty-cell"
+                                                            >
+                                                                Brak komentarzy
+                                                                dla tej usługi
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    {(comments.data ?? []).map(
+                                                        (comment) => (
+                                                            <tr
+                                                                key={comment.id}
+                                                            >
+                                                                <td>
+                                                                    {comment.createdAt
+                                                                        ? new Date(
+                                                                              comment.createdAt,
+                                                                          ).toLocaleString(
+                                                                              'pl-PL',
+                                                                          )
+                                                                        : '—'}
+                                                                </td>
+                                                                <td>
+                                                                    {
+                                                                        comment.source
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    {comment.authorName ||
+                                                                        '—'}
+                                                                </td>
+                                                                <td>
+                                                                    {
+                                                                        comment.rating
+                                                                    }
+                                                                    /5
+                                                                </td>
+                                                                <td>
+                                                                    {comment.comment ||
+                                                                        '—'}
+                                                                </td>
+                                                                <td>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-outline-secondary btn-sm"
+                                                                        disabled={
+                                                                            deleteComment.isPending
+                                                                        }
+                                                                        onClick={() => {
+                                                                            void handleDeleteComment(
+                                                                                comment.id,
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        usuń
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ),
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </section>
-                    </div>
-                )}
+                                )}
 
-                {summaryData && (
-                    <ServiceFormModal
-                        isOpen={isEditModalOpen}
-                        service={summaryData}
-                        categories={categories}
-                        onClose={() => setIsEditModalOpen(false)}
-                        onSave={handleUpdateService}
-                    />
-                )}
+                                {activeTab === 'commissions' && (
+                                    <div>
+                                        <div className="service-commissions-intro">
+                                            Ustaw procent prowizji przypisany do
+                                            pracownika dla tej usługi.
+                                        </div>
+                                        <div className="salonbw-table-wrap">
+                                            <table className="salonbw-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Pracownik</th>
+                                                        <th>Prowizja (%)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {commissionRows.length ===
+                                                        0 && (
+                                                        <tr>
+                                                            <td
+                                                                colSpan={2}
+                                                                className="service-empty-cell"
+                                                            >
+                                                                Brak reguł
+                                                                prowizji dla tej
+                                                                usługi
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    {commissionRows.map(
+                                                        (row) => (
+                                                            <tr
+                                                                key={
+                                                                    row.employeeId
+                                                                }
+                                                            >
+                                                                <td>
+                                                                    {
+                                                                        row.employeeName
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    <input
+                                                                        type="number"
+                                                                        title="Wartość prowizji"
+                                                                        placeholder="Wartość prowizji"
+                                                                        className="form-control"
+                                                                        min={0}
+                                                                        max={
+                                                                            100
+                                                                        }
+                                                                        step={
+                                                                            0.1
+                                                                        }
+                                                                        value={
+                                                                            row.value
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            const value =
+                                                                                Number(
+                                                                                    e
+                                                                                        .target
+                                                                                        .value,
+                                                                                );
+                                                                            setCommissionDraft(
+                                                                                (
+                                                                                    prev,
+                                                                                ) => ({
+                                                                                    ...prev,
+                                                                                    [row.employeeId]:
+                                                                                        Number.isFinite(
+                                                                                            value,
+                                                                                        )
+                                                                                            ? value
+                                                                                            : 0,
+                                                                                }),
+                                                                            );
+                                                                        }}
+                                                                    />
+                                                                </td>
+                                                            </tr>
+                                                        ),
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                {summaryData && (
-                    <ServiceVariantsModal
-                        isOpen={isVariantsModalOpen}
-                        service={summaryData}
-                        onClose={() => setIsVariantsModalOpen(false)}
-                    />
-                )}
-            </div>
-        </SalonShell>
+                                        <div className="service-commissions-actions">
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                disabled={
+                                                    updateCommissions.isPending ||
+                                                    commissionRows.length === 0
+                                                }
+                                                onClick={() => {
+                                                    void handleSaveCommissions();
+                                                }}
+                                            >
+                                                zapisz prowizje
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+                        </div>
+                    )}
+
+                    {summaryData && (
+                        <ServiceFormModal
+                            isOpen={isEditModalOpen}
+                            service={summaryData}
+                            categories={categories}
+                            onClose={() => setIsEditModalOpen(false)}
+                            onSave={handleUpdateService}
+                        />
+                    )}
+
+                    {summaryData && (
+                        <ServiceVariantsModal
+                            isOpen={isVariantsModalOpen}
+                            service={summaryData}
+                            onClose={() => setIsVariantsModalOpen(false)}
+                        />
+                    )}
+                </div>
+            </SalonShell>
         </RouteGuard>
     );
 }

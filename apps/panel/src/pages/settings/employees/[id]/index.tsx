@@ -223,7 +223,9 @@ export default function SettingsEmployeeDetailPage() {
                                     minLength={6}
                                     required
                                 />
-                                <div className="form-text">Minimum 6 znaków</div>
+                                <div className="form-text">
+                                    Minimum 6 znaków
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label

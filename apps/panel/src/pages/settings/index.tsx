@@ -171,16 +171,10 @@ function TileGrid({ tiles }: { tiles: SettingsTile[] }) {
     return (
         <>
             {tiles.map((tile) => (
-                <div
-                    key={tile.href}
-                    className={`setting-box ${tile.boxClass}`}
-                >
+                <div key={tile.href} className={`setting-box ${tile.boxClass}`}>
                     <Link href={tile.href}>
                         <div className="ico-container">
-                            <svg
-                                className={tile.iconId}
-                                aria-hidden="true"
-                            >
+                            <svg className={tile.iconId} aria-hidden="true">
                                 <use
                                     xlinkHref={`${SETTINGS_ICON_SPRITE}#${tile.iconId}`}
                                 />
