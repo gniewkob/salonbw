@@ -1,12 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import type {
-    Appointment,
-    Customer,
-    Employee,
-    Formula,
-    Service,
-} from '@/types';
+import type { Appointment, Employee, Service } from '@/types';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
 import {
@@ -24,6 +18,9 @@ import {
     trackReceptionAction,
 } from './receptionTelemetry';
 import FinalizationModal from './FinalizationModal';
+import ClientSection from './appointment-drawer/ClientSection';
+import FormulaSection from './appointment-drawer/FormulaSection';
+import ActionsSection from './appointment-drawer/ActionsSection';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -55,16 +52,6 @@ function fromLocalDateTimeInput(value: string): string {
     return new Date(value).toISOString();
 }
 
-function formatDateTime(value: string | null | undefined): string {
-    if (!value) return 'brak';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'brak';
-    return date.toLocaleString('pl-PL', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
-}
-
 function formatCurrency(value: number | null | undefined): string {
     const normalized = Number(value ?? 0);
     return `${new Intl.NumberFormat('pl-PL', {
@@ -73,12 +60,19 @@ function formatCurrency(value: number | null | undefined): string {
     }).format(normalized)} PLN`;
 }
 
+function formatDateTime(value: string | null | undefined): string {
+    if (!value) return 'brak';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'brak';
+    return date.toLocaleString('pl-PL', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 function getHighestAlertSeverity(
     alerts: Array<{ severity: 'info' | 'warning' | 'danger' }>,
 ): 'info' | 'warning' | 'danger' | undefined {
-    if (alerts.some((alert) => alert.severity === 'danger')) return 'danger';
-    if (alerts.some((alert) => alert.severity === 'warning')) return 'warning';
-    if (alerts.some((alert) => alert.severity === 'info')) return 'info';
+    if (alerts.some((a) => a.severity === 'danger')) return 'danger';
+    if (alerts.some((a) => a.severity === 'warning')) return 'warning';
+    if (alerts.some((a) => a.severity === 'info')) return 'info';
     return undefined;
 }
 
@@ -97,18 +91,17 @@ export default function AppointmentDrawer({
 }: AppointmentDrawerProps) {
     const { apiFetch } = useAuth();
     const isMobile = useIsMobile();
-    const servicesResult = useServices();
-    const services = servicesResult.data ?? EMPTY_SERVICES;
-    const employeesResult = useEmployees();
-    const employees = employeesResult.data ?? EMPTY_EMPLOYEES;
+    const services = useServices().data ?? EMPTY_SERVICES;
+    const employees = useEmployees().data ?? EMPTY_EMPLOYEES;
+
     const [customerSearch, setCustomerSearch] = useState('');
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
-    const [showQuickCreateCustomer, setShowQuickCreateCustomer] =
-        useState(false);
+    const [showQuickCreateCustomer, setShowQuickCreateCustomer] = useState(false);
     const [newCustomerFirstName, setNewCustomerFirstName] = useState('');
     const [newCustomerLastName, setNewCustomerLastName] = useState('');
     const [newCustomerPhone, setNewCustomerPhone] = useState('');
     const [newCustomerEmail, setNewCustomerEmail] = useState('');
+
     const { data: customersResponse } = useCustomers({
         limit: 20,
         page: 1,
@@ -116,8 +109,7 @@ export default function AppointmentDrawer({
     });
     const customers = customersResponse?.items ?? [];
     const createCustomer = useCreateCustomer();
-    const { cancelAppointment, updateAppointmentStatus } =
-        useAppointmentMutations();
+    const { cancelAppointment, updateAppointmentStatus } = useAppointmentMutations();
 
     const [startTime, setStartTime] = useState('');
     const [employeeId, setEmployeeId] = useState<number | ''>('');
@@ -127,58 +119,32 @@ export default function AppointmentDrawer({
     const [error, setError] = useState<string | null>(null);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
-    const [internalNote, setInternalNote] = useState('');
-    const [noteSaving, setNoteSaving] = useState(false);
-    const [noteSaved, setNoteSaved] = useState(false);
-    const noteSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const [formulaText, setFormulaText] = useState('');
-    const [formulaSaving, setFormulaSaving] = useState(false);
-    const [formulaError, setFormulaError] = useState<string | null>(null);
-    const [formulas, setFormulas] = useState<Formula[]>([]);
-    const [formulasLoaded, setFormulasLoaded] = useState(false);
-
-    interface UsageHistoryEntry {
-        id: number;
-        usedAt: string;
-        appointmentId: number | null;
-        items: { productName: string; quantity: number; unit: string }[];
-    }
-    const [usageHistory, setUsageHistory] = useState<UsageHistoryEntry[]>([]);
-    const [historyLoaded, setHistoryLoaded] = useState(false);
-
-    const title =
-        mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
+    const title = mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
 
     const selectedService = useMemo<Service | undefined>(
-        () => services.find((service) => service.id === Number(serviceId)),
+        () => services.find((s) => s.id === Number(serviceId)),
         [serviceId, services],
     );
     const canCreateInlineCustomer =
-        newCustomerFirstName.trim().length > 0 ||
-        newCustomerLastName.trim().length > 0;
-    const customerIdForInsights =
-        mode === 'edit' ? (appointment?.client?.id ?? null) : null;
-    const { data: customerStats, isLoading: customerStatsLoading } =
-        useCustomerStatistics(customerIdForInsights);
-    const { alerts: customerAlerts, isLoading: customerAlertsLoading } =
-        useCustomerAlerts(customerIdForInsights);
+        newCustomerFirstName.trim().length > 0 || newCustomerLastName.trim().length > 0;
+
+    const customerIdForInsights = mode === 'edit' ? (appointment?.client?.id ?? null) : null;
+    const { data: customerStats, isLoading: customerStatsLoading } = useCustomerStatistics(customerIdForInsights);
+    const { alerts: customerAlerts, isLoading: customerAlertsLoading } = useCustomerAlerts(customerIdForInsights);
     const customerAlertSeverity = useMemo(
         () => getHighestAlertSeverity(customerAlerts),
         [customerAlerts],
     );
-    const appointmentIdForSales =
-        mode === 'edit' ? (appointment?.id ?? null) : null;
+
+    const appointmentIdForSales = mode === 'edit' ? (appointment?.id ?? null) : null;
     const { data: appointmentSalesResponse } = useWarehouseSales({
         page: 1,
         pageSize: 1,
         enabled: appointmentIdForSales !== null,
-        appointmentId:
-            appointmentIdForSales !== null ? appointmentIdForSales : undefined,
+        appointmentId: appointmentIdForSales !== null ? appointmentIdForSales : undefined,
     });
     const linkedSaleId =
-        appointmentSalesResponse?.items?.[0] &&
-        Number(appointmentSalesResponse.items[0].id) > 0
+        appointmentSalesResponse?.items?.[0] && Number(appointmentSalesResponse.items[0].id) > 0
             ? Number(appointmentSalesResponse.items[0].id)
             : null;
 
@@ -191,56 +157,14 @@ export default function AppointmentDrawer({
 
     useEffect(() => {
         if (!open) return;
-        let alive = true;
-
-        setInternalNote('');
-        setNoteSaved(false);
-        setFormulaText('');
-        setFormulaError(null);
-        setFormulas([]);
-        setFormulasLoaded(false);
-        setUsageHistory([]);
-        setHistoryLoaded(false);
 
         if (mode === 'edit' && appointment) {
             setStartTime(toLocalDateTimeInput(new Date(appointment.startTime)));
             setEmployeeId(appointment.employee?.id ?? '');
             setServiceId(appointment.service?.id ?? '');
             setClientId(appointment.client?.id ?? '');
-            setInternalNote(appointment.internalNote ?? '');
             setError(null);
-
-            const clientId = appointment.client?.id;
-            if (clientId) {
-                // Load formulas for all statuses so employee can check history before starting
-                apiFetch<Formula[]>(`/customers/${clientId}/formulas`)
-                    .then((data) => {
-                        if (!alive) return;
-                        setFormulas(data.slice(0, 5));
-                        setFormulasLoaded(true);
-                    })
-                    .catch(() => {
-                        if (!alive) return;
-                        setFormulasLoaded(true);
-                    });
-
-                // Load material usage history
-                apiFetch<UsageHistoryEntry[]>(
-                    `/customers/${clientId}/usage-history`,
-                )
-                    .then((data) => {
-                        if (!alive) return;
-                        setUsageHistory(data.slice(0, 5));
-                        setHistoryLoaded(true);
-                    })
-                    .catch(() => {
-                        if (!alive) return;
-                        setHistoryLoaded(true);
-                    });
-            }
-            return () => {
-                alive = false;
-            };
+            return;
         }
 
         const start = initialStartTime ?? new Date();
@@ -256,9 +180,6 @@ export default function AppointmentDrawer({
         setNewCustomerPhone('');
         setNewCustomerEmail('');
         setError(null);
-        return () => {
-            alive = false;
-        };
     }, [
         open,
         mode,
@@ -269,7 +190,6 @@ export default function AppointmentDrawer({
         initialServiceId,
         initialClientId,
         initialClientName,
-        apiFetch,
     ]);
 
     if (!open) return null;
@@ -280,34 +200,29 @@ export default function AppointmentDrawer({
         Number(employeeId) > 0 &&
         Number(serviceId) > 0 &&
         Number(clientId) > 0;
+
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
     const isOnlinePending = currentStatus === 'online_pending';
     const isRescheduledPending = currentStatus === 'rescheduled_pending';
-    const canConfirm =
-        currentStatus === 'scheduled' ||
-        isOnlinePending ||
-        isRescheduledPending;
+    const canConfirm = currentStatus === 'scheduled' || isOnlinePending || isRescheduledPending;
     const canStart =
-        !isOnlinePending &&
-        !isRescheduledPending &&
+        !isOnlinePending && !isRescheduledPending &&
         (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canNoShow =
-        !isOnlinePending &&
-        !isRescheduledPending &&
+        !isOnlinePending && !isRescheduledPending &&
         (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canCancel =
-        currentStatus === 'scheduled' ||
-        currentStatus === 'confirmed' ||
-        isRescheduledPending;
+        currentStatus === 'scheduled' || currentStatus === 'confirmed' || isRescheduledPending;
     const canComplete = currentStatus === 'in_progress';
+    const canShowFormulaSection =
+        isEditMode &&
+        (currentStatus === 'confirmed' || currentStatus === 'in_progress' || currentStatus === 'completed');
 
     const handleCreate = async () => {
         if (!canSaveCreate) return;
-
         setSaving(true);
         setError(null);
-
         try {
             await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
@@ -322,11 +237,7 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się utworzyć wizyty';
-            setError(message);
+            setError(err instanceof Error ? err.message : 'Nie udało się utworzyć wizyty');
         } finally {
             setSaving(false);
         }
@@ -334,7 +245,6 @@ export default function AppointmentDrawer({
 
     const handleQuickCreateCustomer = async () => {
         if (!canCreateInlineCustomer) return;
-
         setSaving(true);
         setError(null);
         try {
@@ -352,11 +262,7 @@ export default function AppointmentDrawer({
             setNewCustomerPhone('');
             setNewCustomerEmail('');
         } catch (err) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się utworzyć klienta';
-            setError(message);
+            setError(err instanceof Error ? err.message : 'Nie udało się utworzyć klienta');
         } finally {
             setSaving(false);
         }
@@ -364,29 +270,18 @@ export default function AppointmentDrawer({
 
     const handleUpdate = async () => {
         if (!appointment?.id || !startTime) return;
-
         setSaving(true);
         setError(null);
-
         try {
-            await apiFetch<Appointment>(
-                `/appointments/${appointment.id}/reschedule`,
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        startTime: fromLocalDateTimeInput(startTime),
-                    }),
-                },
-            );
+            await apiFetch<Appointment>(`/appointments/${appointment.id}/reschedule`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ startTime: fromLocalDateTimeInput(startTime) }),
+            });
             onSaved();
             onClose();
         } catch (err) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się zapisać zmian';
-            setError(message);
+            setError(err instanceof Error ? err.message : 'Nie udało się zapisać zmian');
         } finally {
             setSaving(false);
         }
@@ -401,27 +296,18 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się anulować wizyty';
-            setError(message);
+            setError(err instanceof Error ? err.message : 'Nie udało się anulować wizyty');
         } finally {
             setSaving(false);
         }
     };
 
-    const handleStatusChange = async (
-        status: 'confirmed' | 'in_progress' | 'no_show',
-    ) => {
+    const handleStatusChange = async (status: 'confirmed' | 'in_progress' | 'no_show') => {
         if (!appointment?.id) return;
         setSaving(true);
         setError(null);
         try {
-            await updateAppointmentStatus.mutateAsync({
-                id: appointment.id,
-                status,
-            });
+            await updateAppointmentStatus.mutateAsync({ id: appointment.id, status });
             const action =
                 status === 'confirmed'
                     ? 'confirm_appointment'
@@ -438,68 +324,11 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się zmienić statusu wizyty';
-            setError(message);
+            setError(err instanceof Error ? err.message : 'Nie udało się zmienić statusu wizyty');
         } finally {
             setSaving(false);
         }
     };
-
-    const handleSaveNote = async () => {
-        if (!appointment?.id) return;
-        setNoteSaving(true);
-        try {
-            await apiFetch(`/appointments/${appointment.id}/notes`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ internalNote: internalNote || null }),
-            });
-            if (noteSavedTimer.current) clearTimeout(noteSavedTimer.current);
-            setNoteSaved(true);
-            noteSavedTimer.current = setTimeout(
-                () => setNoteSaved(false),
-                2000,
-            );
-        } finally {
-            setNoteSaving(false);
-        }
-    };
-
-    const handleSaveFormula = async () => {
-        if (!appointment?.id || !formulaText.trim()) return;
-        setFormulaSaving(true);
-        setFormulaError(null);
-        try {
-            await apiFetch(`/appointments/${appointment.id}/formulas`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    description: formulaText.trim(),
-                    date: new Date().toISOString(),
-                }),
-            });
-            setFormulaText('');
-            if (appointment.client?.id) {
-                const data = await apiFetch<Formula[]>(
-                    `/customers/${appointment.client.id}/formulas`,
-                );
-                setFormulas(data.slice(0, 3));
-            }
-        } catch {
-            setFormulaError('Nie udało się zapisać formularza.');
-        } finally {
-            setFormulaSaving(false);
-        }
-    };
-
-    const canShowFormulaSection =
-        isEditMode &&
-        (currentStatus === 'confirmed' ||
-            currentStatus === 'in_progress' ||
-            currentStatus === 'completed');
 
     return (
         <>
@@ -511,15 +340,8 @@ export default function AppointmentDrawer({
                 }
                 style={
                     isMobile
-                        ? {
-                              background: 'rgba(0,0,0,0.4)',
-                              zIndex: 1100,
-                          }
-                        : {
-                              background: 'rgba(0,0,0,0.55)',
-                              backdropFilter: 'blur(4px)',
-                              zIndex: 1100,
-                          }
+                        ? { background: 'rgba(0,0,0,0.4)', zIndex: 1100 }
+                        : { background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', zIndex: 1100 }
                 }
                 onClick={onClose}
             >
@@ -536,12 +358,8 @@ export default function AppointmentDrawer({
                     style={
                         isMobile
                             ? {
-                                  top: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  left: 0,
-                                  width: '100%',
-                                  height: '100dvh',
+                                  top: 0, right: 0, bottom: 0, left: 0,
+                                  width: '100%', height: '100dvh',
                                   paddingTop: 'env(safe-area-inset-top)',
                                   paddingBottom: 'env(safe-area-inset-bottom)',
                               }
@@ -554,6 +372,7 @@ export default function AppointmentDrawer({
                     }
                     onClick={(e) => e.stopPropagation()}
                 >
+                    {/* Header */}
                     <div
                         className={
                             isMobile
@@ -567,606 +386,151 @@ export default function AppointmentDrawer({
                             className="btn-close"
                             onClick={onClose}
                             aria-label="Zamknij"
-                            style={
-                                isMobile ? { width: 28, height: 28 } : undefined
-                            }
+                            style={isMobile ? { width: 28, height: 28 } : undefined}
                         />
                     </div>
 
+                    {/* Body */}
                     <div
-                        className={
-                            isMobile
-                                ? 'p-3 d-flex flex-column gap-3 overflow-y-auto'
-                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto'
-                        }
+                        className={isMobile ? 'p-3 d-flex flex-column gap-3 overflow-y-auto' : 'p-4 d-flex flex-column gap-3 overflow-y-auto'}
                         style={{ flex: 1 }}
                     >
+                        {/* Appointment fields */}
                         <div className="rounded border p-2">
                             <strong className="d-block mb-2">Wizyta</strong>
                             <div>
-                                <label
-                                    className="form-label"
-                                    htmlFor="appointment-start-time"
-                                >
-                                    Start wizyty
-                                </label>
+                                <label className="form-label" htmlFor="appointment-start-time">Start wizyty</label>
                                 <input
                                     id="appointment-start-time"
                                     type="datetime-local"
                                     className="form-control"
                                     value={startTime}
-                                    onChange={(event) =>
-                                        setStartTime(event.target.value)
-                                    }
+                                    onChange={(e) => setStartTime(e.target.value)}
                                 />
                             </div>
                             <div className="mt-2">
-                                <label
-                                    className="form-label"
-                                    htmlFor="appointment-employee"
-                                >
-                                    Pracownik
-                                </label>
+                                <label className="form-label" htmlFor="appointment-employee">Pracownik</label>
                                 <select
                                     id="appointment-employee"
                                     className="form-select"
                                     value={employeeId}
-                                    onChange={(event) =>
-                                        setEmployeeId(
-                                            Number(event.target.value),
-                                        )
-                                    }
+                                    onChange={(e) => setEmployeeId(Number(e.target.value))}
                                     disabled={isEditMode}
                                 >
                                     <option value="">Wybierz pracownika</option>
-                                    {employees.map((employee: Employee) => (
-                                        <option
-                                            key={employee.id}
-                                            value={employee.id}
-                                        >
-                                            {employee.name}
-                                        </option>
+                                    {employees.map((emp: Employee) => (
+                                        <option key={emp.id} value={emp.id}>{emp.name}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="mt-2">
-                                <label
-                                    className="form-label"
-                                    htmlFor="appointment-service"
-                                >
-                                    Usługa
-                                </label>
+                                <label className="form-label" htmlFor="appointment-service">Usługa</label>
                                 <select
                                     id="appointment-service"
                                     className="form-select"
                                     value={serviceId}
-                                    onChange={(event) =>
-                                        setServiceId(Number(event.target.value))
-                                    }
+                                    onChange={(e) => setServiceId(Number(e.target.value))}
                                     disabled={isEditMode}
                                 >
                                     <option value="">Wybierz usługę</option>
-                                    {services.map((service: Service) => (
-                                        <option
-                                            key={service.id}
-                                            value={service.id}
-                                        >
-                                            {service.name}
-                                        </option>
+                                    {services.map((svc: Service) => (
+                                        <option key={svc.id} value={svc.id}>{svc.name}</option>
                                     ))}
                                 </select>
                                 {selectedService && (
                                     <div className="form-text">
-                                        Czas: {selectedService.duration} min,
-                                        cena: {selectedService.price.toFixed(2)}{' '}
-                                        PLN
+                                        Czas: {selectedService.duration} min, cena: {selectedService.price.toFixed(2)} PLN
                                     </div>
                                 )}
                             </div>
-                            {appointment ? (
+                            {appointment && (
                                 <div className="mt-2 pt-2 border-top small">
                                     <div className="d-flex align-items-center gap-2 mb-1">
                                         <span>Status:</span>
                                         <span
                                             className={`badge ${
-                                                currentStatus ===
-                                                'online_pending'
+                                                currentStatus === 'online_pending' || currentStatus === 'rescheduled_pending'
                                                     ? 'text-bg-warning'
-                                                    : currentStatus ===
-                                                        'rescheduled_pending'
-                                                      ? 'text-bg-warning'
-                                                      : currentStatus ===
-                                                          'confirmed'
-                                                        ? 'text-bg-success'
-                                                        : currentStatus ===
-                                                            'in_progress'
-                                                          ? 'text-bg-primary'
-                                                          : currentStatus ===
-                                                              'cancelled'
-                                                            ? 'text-bg-danger'
-                                                            : 'text-bg-secondary'
+                                                    : currentStatus === 'confirmed'
+                                                      ? 'text-bg-success'
+                                                      : currentStatus === 'in_progress'
+                                                        ? 'text-bg-primary'
+                                                        : currentStatus === 'cancelled'
+                                                          ? 'text-bg-danger'
+                                                          : 'text-bg-secondary'
                                             }`}
                                         >
                                             {currentStatus === 'online_pending'
                                                 ? 'Oczekuje na potwierdzenie'
-                                                : currentStatus ===
-                                                    'rescheduled_pending'
+                                                : currentStatus === 'rescheduled_pending'
                                                   ? 'Przeniesiona — wymaga akceptacji'
-                                                  : currentStatus ===
-                                                      'confirmed'
+                                                  : currentStatus === 'confirmed'
                                                     ? 'Potwierdzona'
-                                                    : currentStatus ===
-                                                        'in_progress'
+                                                    : currentStatus === 'in_progress'
                                                       ? 'W trakcie'
-                                                      : currentStatus ===
-                                                          'completed'
+                                                      : currentStatus === 'completed'
                                                         ? 'Zakończona'
-                                                        : currentStatus ===
-                                                            'cancelled'
+                                                        : currentStatus === 'cancelled'
                                                           ? 'Anulowana'
-                                                          : currentStatus ===
-                                                              'no_show'
+                                                          : currentStatus === 'no_show'
                                                             ? 'No-show'
                                                             : 'Zaplanowana'}
                                         </span>
                                     </div>
                                     {isOnlinePending && (
                                         <p className="text-warning-emphasis small mb-1">
-                                            Klient zarezerwował online —
-                                            potwierdź lub odrzuć rezerwację.
+                                            Klient zarezerwował online — potwierdź lub odrzuć rezerwację.
                                         </p>
                                     )}
                                     {isRescheduledPending && (
                                         <p className="text-warning-emphasis small mb-1">
-                                            Wizyta przeniesiona — oczekuje na
-                                            akceptację klienta.
+                                            Wizyta przeniesiona — oczekuje na akceptację klienta.
                                         </p>
                                     )}
-                                    <div>
-                                        Płatność:{' '}
-                                        {appointment.paymentStatus ??
-                                            'nieopłacona'}
-                                    </div>
+                                    <div>Płatność: {appointment.paymentStatus ?? 'nieopłacona'}</div>
                                 </div>
-                            ) : null}
+                            )}
                         </div>
 
-                        <div className="rounded border p-2">
-                            <strong className="d-block mb-2">Klient</strong>
-                            <label
-                                className="form-label"
-                                htmlFor="appointment-client"
-                            >
-                                Klient
-                            </label>
-                            {mode === 'create' && (
-                                <input
-                                    id="appointment-client-search"
-                                    type="search"
-                                    className="form-control mb-2"
-                                    placeholder="Szukaj po imieniu, nazwisku, telefonie..."
-                                    value={customerSearch}
-                                    onChange={(event) =>
-                                        setCustomerSearch(event.target.value)
-                                    }
-                                />
-                            )}
-                            <select
-                                id="appointment-client"
-                                className="form-select"
-                                value={clientId}
-                                onChange={(event) =>
-                                    setClientId(Number(event.target.value))
-                                }
-                                disabled={isEditMode}
-                            >
-                                <option value="">Wybierz klienta</option>
-                                {customers.map((customer: Customer) => (
-                                    <option
-                                        key={customer.id}
-                                        value={customer.id}
-                                    >
-                                        {customer.fullName ?? customer.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {mode === 'create' && (
-                                <div className="mt-2">
-                                    <button
-                                        type="button"
-                                        className="btn btn-link btn-sm p-0"
-                                        onClick={() =>
-                                            setShowQuickCreateCustomer(
-                                                (prev) => !prev,
-                                            )
-                                        }
-                                    >
-                                        {showQuickCreateCustomer
-                                            ? 'Ukryj szybkie dodawanie klienta'
-                                            : 'Dodaj nowego klienta'}
-                                    </button>
-                                </div>
-                            )}
-                            {mode === 'create' && showQuickCreateCustomer && (
-                                <div className="mt-2 rounded border p-2">
-                                    <div className="row g-2">
-                                        <div className="col-6">
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm"
-                                                placeholder="Imię"
-                                                value={newCustomerFirstName}
-                                                onChange={(event) =>
-                                                    setNewCustomerFirstName(
-                                                        event.target.value,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="col-6">
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm"
-                                                placeholder="Nazwisko"
-                                                value={newCustomerLastName}
-                                                onChange={(event) =>
-                                                    setNewCustomerLastName(
-                                                        event.target.value,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="col-6">
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm"
-                                                placeholder="Telefon"
-                                                value={newCustomerPhone}
-                                                onChange={(event) =>
-                                                    setNewCustomerPhone(
-                                                        event.target.value,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="col-6">
-                                            <input
-                                                type="email"
-                                                className="form-control form-control-sm"
-                                                placeholder="E-mail (opcjonalnie)"
-                                                value={newCustomerEmail}
-                                                onChange={(event) =>
-                                                    setNewCustomerEmail(
-                                                        event.target.value,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="col-12">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-primary btn-sm"
-                                                onClick={() =>
-                                                    void handleQuickCreateCustomer()
-                                                }
-                                                disabled={
-                                                    saving ||
-                                                    createCustomer.isPending ||
-                                                    !canCreateInlineCustomer
-                                                }
-                                            >
-                                                Utwórz klienta i wybierz
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            {appointment?.client?.phone ||
-                            appointment?.client?.email ? (
-                                <div className="mt-2 pt-2 border-top small">
-                                    {appointment.client.phone && (
-                                        <div>
-                                            Tel:{' '}
-                                            <a
-                                                href={`tel:${appointment.client.phone}`}
-                                            >
-                                                {appointment.client.phone}
-                                            </a>
-                                        </div>
-                                    )}
-                                    {appointment.client.email && (
-                                        <div>
-                                            E-mail:{' '}
-                                            <a
-                                                href={`mailto:${appointment.client.email}`}
-                                            >
-                                                {appointment.client.email}
-                                            </a>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : null}
-                            {appointment ? (
-                                <div className="mt-2 pt-2 border-top small">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                        <strong>Podgląd klienta</strong>
-                                        {appointment.client?.id ? (
-                                            <Link
-                                                href={`/customers/${appointment.client.id}`}
-                                                className="btn btn-sm btn-outline-primary"
-                                                onClick={() =>
-                                                    trackReceptionAction({
-                                                        action: 'open_customer_profile',
-                                                        appointmentId:
-                                                            appointment.id,
-                                                        customerId:
-                                                            appointment.client
-                                                                ?.id,
-                                                        customerAlertSeverity,
-                                                        source: 'appointment_drawer',
-                                                    })
-                                                }
-                                            >
-                                                Otwórz kartę klienta
-                                            </Link>
-                                        ) : null}
-                                    </div>
-                                    {customerStatsLoading ? (
-                                        <div className="text-muted mt-1">
-                                            Ładowanie statystyk klienta...
-                                        </div>
-                                    ) : customerStats ? (
-                                        <div className="mt-1">
-                                            <div>
-                                                Wizyty:{' '}
-                                                {customerStats.totalVisits}
-                                                {' · '}
-                                                No-show:{' '}
-                                                {customerStats.noShowVisits}
-                                            </div>
-                                            <div>
-                                                Łączne wydatki:{' '}
-                                                {customerStats.totalSpent.toFixed(
-                                                    2,
-                                                )}{' '}
-                                                PLN
-                                            </div>
-                                            <div>
-                                                Ostatnia wizyta:{' '}
-                                                {formatDateTime(
-                                                    customerStats.lastVisitDate,
-                                                )}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="text-muted mt-1">
-                                            Brak statystyk klienta.
-                                        </div>
-                                    )}
-                                </div>
-                            ) : null}
-                        </div>
+                        {/* Client + alerts */}
+                        <ClientSection
+                            mode={mode}
+                            isEditMode={isEditMode}
+                            customers={customers}
+                            customerSearch={customerSearch}
+                            setCustomerSearch={setCustomerSearch}
+                            clientId={clientId}
+                            setClientId={setClientId}
+                            showQuickCreateCustomer={showQuickCreateCustomer}
+                            setShowQuickCreateCustomer={setShowQuickCreateCustomer}
+                            newCustomerFirstName={newCustomerFirstName}
+                            setNewCustomerFirstName={setNewCustomerFirstName}
+                            newCustomerLastName={newCustomerLastName}
+                            setNewCustomerLastName={setNewCustomerLastName}
+                            newCustomerPhone={newCustomerPhone}
+                            setNewCustomerPhone={setNewCustomerPhone}
+                            newCustomerEmail={newCustomerEmail}
+                            setNewCustomerEmail={setNewCustomerEmail}
+                            handleQuickCreateCustomer={() => void handleQuickCreateCustomer()}
+                            appointment={appointment}
+                            customerStats={customerStats}
+                            customerStatsLoading={customerStatsLoading}
+                            customerAlerts={customerAlerts}
+                            customerAlertsLoading={customerAlertsLoading}
+                            customerAlertSeverity={customerAlertSeverity}
+                            saving={saving}
+                            createCustomerPending={createCustomer.isPending}
+                            canCreateInlineCustomer={canCreateInlineCustomer}
+                        />
 
-                        {appointment &&
-                        !customerAlertsLoading &&
-                        customerAlerts.length > 0 ? (
-                            <div className="rounded border p-2">
-                                <strong className="d-block mb-2">Alerty</strong>
-                                <div className="d-flex flex-column gap-1">
-                                    {customerAlerts.map((alert) => (
-                                        <div
-                                            key={alert.id}
-                                            className={`small rounded px-2 py-1 ${
-                                                alert.severity === 'danger'
-                                                    ? 'bg-danger-subtle text-danger-emphasis'
-                                                    : alert.severity ===
-                                                        'warning'
-                                                      ? 'bg-warning-subtle text-warning-emphasis'
-                                                      : 'bg-info-subtle text-info-emphasis'
-                                            }`}
-                                        >
-                                            <strong>{alert.label}</strong>
-                                            {alert.detail ? (
-                                                <span>
-                                                    {': '}
-                                                    {alert.detail}
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : null}
+                        {/* Formula + history (edit mode, confirmed+ only) */}
+                        {canShowFormulaSection && <FormulaSection appointment={appointment} />}
 
-                        {/* ── Client history: formulas + materials ────────── */}
-                        {isEditMode &&
-                            (formulasLoaded || historyLoaded) &&
-                            (formulas.length > 0 ||
-                                usageHistory.length > 0) && (
-                                <div className="rounded border p-2">
-                                    <strong className="d-block mb-2">
-                                        Historia klienta
-                                    </strong>
-
-                                    {formulas.length > 0 && (
-                                        <div className="mb-3">
-                                            <div className="small fw-medium text-muted mb-1">
-                                                Poprzednie receptury
-                                            </div>
-                                            <div className="d-flex flex-column gap-1">
-                                                {formulas.map((f) => (
-                                                    <div
-                                                        key={f.id}
-                                                        className="small bg-light rounded px-2 py-1"
-                                                    >
-                                                        <div
-                                                            className="text-muted mb-0"
-                                                            style={{
-                                                                fontSize:
-                                                                    '0.7rem',
-                                                            }}
-                                                        >
-                                                            {new Date(
-                                                                f.date,
-                                                            ).toLocaleDateString(
-                                                                'pl-PL',
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            {f.description}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {usageHistory.length > 0 && (
-                                        <div>
-                                            <div className="small fw-medium text-muted mb-1">
-                                                Użyte materiały (poprzednie
-                                                wizyty)
-                                            </div>
-                                            <div className="d-flex flex-column gap-1">
-                                                {usageHistory.map((entry) => (
-                                                    <div
-                                                        key={entry.id}
-                                                        className="small bg-light rounded px-2 py-1"
-                                                    >
-                                                        <div
-                                                            className="text-muted mb-1"
-                                                            style={{
-                                                                fontSize:
-                                                                    '0.7rem',
-                                                            }}
-                                                        >
-                                                            {new Date(
-                                                                entry.usedAt,
-                                                            ).toLocaleDateString(
-                                                                'pl-PL',
-                                                            )}
-                                                        </div>
-                                                        {entry.items.map(
-                                                            (item, i) => (
-                                                                <div
-                                                                    key={i}
-                                                                    className="d-flex justify-content-between"
-                                                                >
-                                                                    <span>
-                                                                        {
-                                                                            item.productName
-                                                                        }
-                                                                    </span>
-                                                                    <span className="text-muted">
-                                                                        {
-                                                                            item.quantity
-                                                                        }{' '}
-                                                                        {
-                                                                            item.unit
-                                                                        }
-                                                                    </span>
-                                                                </div>
-                                                            ),
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                        {canShowFormulaSection ? (
-                            <div className="rounded border p-2">
-                                <strong className="d-block mb-2">
-                                    Formularz zabiegu
-                                </strong>
-
-                                <div className="mb-2">
-                                    <label
-                                        className="form-label form-label-sm mb-1"
-                                        htmlFor="appointment-internal-note"
-                                    >
-                                        Notatka wewnętrzna
-                                    </label>
-                                    <textarea
-                                        id="appointment-internal-note"
-                                        className="form-control form-control-sm"
-                                        rows={2}
-                                        value={internalNote}
-                                        onChange={(e) =>
-                                            setInternalNote(e.target.value)
-                                        }
-                                        placeholder="Uwagi widoczne tylko dla personelu..."
-                                    />
-                                    <div className="d-flex align-items-center gap-2 mt-1">
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() =>
-                                                void handleSaveNote()
-                                            }
-                                            disabled={noteSaving}
-                                        >
-                                            {noteSaving
-                                                ? 'Zapisywanie…'
-                                                : 'Zapisz notatkę'}
-                                        </button>
-                                        {noteSaved && (
-                                            <span className="small text-success">
-                                                Zapisano
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="mb-2">
-                                    <label
-                                        className="form-label form-label-sm mb-1"
-                                        htmlFor="appointment-formula"
-                                    >
-                                        Receptura / formularz zabiegu
-                                    </label>
-                                    <textarea
-                                        id="appointment-formula"
-                                        className="form-control form-control-sm"
-                                        rows={3}
-                                        value={formulaText}
-                                        onChange={(e) =>
-                                            setFormulaText(e.target.value)
-                                        }
-                                        placeholder="Np. kolor: 7.1 + 8 vol, 40 min..."
-                                    />
-                                    {formulaError && (
-                                        <div className="small text-danger mt-1">
-                                            {formulaError}
-                                        </div>
-                                    )}
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-primary btn-sm mt-1"
-                                        onClick={() => void handleSaveFormula()}
-                                        disabled={
-                                            formulaSaving || !formulaText.trim()
-                                        }
-                                    >
-                                        {formulaSaving
-                                            ? 'Zapisywanie…'
-                                            : 'Zapisz formularz'}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : null}
-
-                        {appointment &&
-                        (appointment.finalizedAt ||
-                            appointment.paymentMethod ||
-                            appointment.paidAmount !== undefined) ? (
+                        {/* Payment summary */}
+                        {appointment && (appointment.finalizedAt || appointment.paymentMethod || appointment.paidAmount !== undefined) && (
                             <div className="rounded border p-2 small">
                                 <div className="d-flex align-items-center justify-content-between">
-                                    <strong className="d-block mb-2">
-                                        Sprzedaż
-                                    </strong>
+                                    <strong className="d-block mb-2">Sprzedaż</strong>
                                     <Link
                                         href={
                                             linkedSaleId
@@ -1176,287 +540,59 @@ export default function AppointmentDrawer({
                                                   : '/sales/history'
                                         }
                                         className="btn btn-sm btn-outline-secondary"
-                                        onClick={() =>
-                                            trackReceptionAction({
-                                                action: 'open_sale_detail',
-                                                appointmentId: appointment.id,
-                                                customerId:
-                                                    getAppointmentCustomerId(
-                                                        appointment,
-                                                    ),
-                                                customerAlertSeverity,
-                                                source: 'appointment_drawer',
-                                            })
-                                        }
+                                        onClick={() => trackReceptionAction({
+                                            action: 'open_sale_detail',
+                                            appointmentId: appointment.id,
+                                            customerId: getAppointmentCustomerId(appointment),
+                                            customerAlertSeverity,
+                                            source: 'appointment_drawer',
+                                        })}
                                     >
-                                        {linkedSaleId
-                                            ? 'Szczegóły sprzedaży'
-                                            : 'Historia sprzedaży'}
+                                        {linkedSaleId ? 'Szczegóły sprzedaży' : 'Historia sprzedaży'}
                                     </Link>
                                 </div>
                                 <div className="mt-1">
-                                    <div>
-                                        Metoda:{' '}
-                                        {appointment.paymentMethod ??
-                                            'brak danych'}
-                                    </div>
-                                    <div>
-                                        Zapłacono:{' '}
-                                        {formatCurrency(appointment.paidAmount)}
-                                    </div>
+                                    <div>Metoda: {appointment.paymentMethod ?? 'brak danych'}</div>
+                                    <div>Zapłacono: {formatCurrency(appointment.paidAmount)}</div>
                                     {appointment.discount !== undefined && (
-                                        <div>
-                                            Rabat:{' '}
-                                            {formatCurrency(
-                                                appointment.discount,
-                                            )}
-                                        </div>
+                                        <div>Rabat: {formatCurrency(appointment.discount)}</div>
                                     )}
                                     {appointment.tipAmount !== undefined && (
-                                        <div>
-                                            Napiwek:{' '}
-                                            {formatCurrency(
-                                                appointment.tipAmount,
-                                            )}
-                                        </div>
+                                        <div>Napiwek: {formatCurrency(appointment.tipAmount)}</div>
                                     )}
-                                    <div>
-                                        Finalizacja:{' '}
-                                        {formatDateTime(
-                                            appointment.finalizedAt,
-                                        )}
-                                    </div>
+                                    <div>Finalizacja: {formatDateTime(appointment.finalizedAt)}</div>
                                 </div>
-                            </div>
-                        ) : null}
-
-                        {error && (
-                            <div className="alert alert-danger py-2 mb-0">
-                                {error}
                             </div>
                         )}
 
-                        <div className="rounded border p-2">
-                            <strong className="d-block mb-2">Akcje</strong>
-                            <div className="d-flex flex-wrap gap-2">
-                                {mode === 'create' ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        onClick={() => void handleCreate()}
-                                        disabled={!canSaveCreate || saving}
-                                    >
-                                        {saving
-                                            ? 'Zapisywanie…'
-                                            : 'Utwórz wizytę'}
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        onClick={() => void handleUpdate()}
-                                        disabled={saving || !startTime}
-                                    >
-                                        {saving
-                                            ? 'Zapisywanie…'
-                                            : 'Zapisz zmiany'}
-                                    </button>
-                                )}
+                        {error && <div className="alert alert-danger py-2 mb-0">{error}</div>}
 
-                                {mode === 'edit' && appointment?.id ? (
-                                    <>
-                                        {isOnlinePending ? (
-                                            <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
-                                                <strong>
-                                                    Rezerwacja online
-                                                </strong>{' '}
-                                                — czeka na potwierdzenie przez
-                                                salon
-                                            </div>
-                                        ) : null}
-                                        {isRescheduledPending ? (
-                                            <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
-                                                <strong>Zmiana terminu</strong>{' '}
-                                                — czeka na akceptację klienta
-                                            </div>
-                                        ) : null}
-                                        {canConfirm ? (
-                                            <button
-                                                type="button"
-                                                className={`btn ${isOnlinePending ? 'btn-success' : 'btn-outline-primary'}`}
-                                                onClick={() =>
-                                                    void handleStatusChange(
-                                                        'confirmed',
-                                                    )
-                                                }
-                                                disabled={saving}
-                                            >
-                                                {isOnlinePending
-                                                    ? 'Potwierdź rezerwację'
-                                                    : isRescheduledPending
-                                                      ? 'Zaakceptuj nowy termin'
-                                                      : 'Potwierdź'}
-                                            </button>
-                                        ) : null}
-                                        {isOnlinePending ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-danger"
-                                                onClick={() =>
-                                                    void handleCancel()
-                                                }
-                                                disabled={saving}
-                                            >
-                                                Odrzuć rezerwację
-                                            </button>
-                                        ) : null}
-                                        {isRescheduledPending ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-danger"
-                                                onClick={() =>
-                                                    void handleCancel()
-                                                }
-                                                disabled={saving}
-                                            >
-                                                Anuluj wizytę
-                                            </button>
-                                        ) : null}
-                                        {canStart ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary"
-                                                onClick={() =>
-                                                    void handleStatusChange(
-                                                        'in_progress',
-                                                    )
-                                                }
-                                                disabled={saving}
-                                            >
-                                                Rozpocznij
-                                            </button>
-                                        ) : null}
-                                        {canNoShow ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-warning"
-                                                onClick={() =>
-                                                    void handleStatusChange(
-                                                        'no_show',
-                                                    )
-                                                }
-                                                disabled={saving}
-                                            >
-                                                No-show
-                                            </button>
-                                        ) : null}
-                                        {canComplete ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-success"
-                                                onClick={() => {
-                                                    trackReceptionAction({
-                                                        action: 'finalize_via_drawer',
-                                                        appointmentId:
-                                                            appointment.id,
-                                                        customerId:
-                                                            getAppointmentCustomerId(
-                                                                appointment,
-                                                            ),
-                                                        customerAlertSeverity,
-                                                        source: 'appointment_drawer',
-                                                    });
-                                                    setFinalizationOpen(true);
-                                                }}
-                                                disabled={saving}
-                                            >
-                                                Finalizuj wizytę
-                                            </button>
-                                        ) : null}
-                                        {canCancel ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-danger"
-                                                onClick={() =>
-                                                    void handleCancel()
-                                                }
-                                                disabled={saving}
-                                            >
-                                                Anuluj wizytę
-                                            </button>
-                                        ) : null}
-                                    </>
-                                ) : null}
-                            </div>
-                        </div>
+                        {/* Actions */}
+                        <ActionsSection
+                            mode={mode}
+                            saving={saving}
+                            canSaveCreate={canSaveCreate}
+                            startTime={startTime}
+                            appointment={appointment}
+                            isOnlinePending={isOnlinePending}
+                            isRescheduledPending={isRescheduledPending}
+                            canConfirm={canConfirm}
+                            canStart={canStart}
+                            canNoShow={canNoShow}
+                            canCancel={canCancel}
+                            canComplete={canComplete}
+                            customerAlertSeverity={customerAlertSeverity}
+                            onClose={onClose}
+                            handleCreate={() => void handleCreate()}
+                            handleUpdate={() => void handleUpdate()}
+                            handleCancel={() => void handleCancel()}
+                            handleStatusChange={(s) => void handleStatusChange(s)}
+                            setFinalizationOpen={setFinalizationOpen}
+                            isMobile={isMobile}
+                        />
                     </div>
-                    {isMobile ? (
-                        <div
-                            style={{
-                                flexShrink: 0,
-                                display: 'flex',
-                                gap: '0.5rem',
-                                padding: '0.75rem 0.875rem',
-                                paddingBottom:
-                                    'calc(0.75rem + env(safe-area-inset-bottom))',
-                                borderTop: '1px solid #e5e7eb',
-                                background: '#ffffff',
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                disabled={saving}
-                                style={{
-                                    flex: 1,
-                                    minHeight: 48,
-                                    background: '#ffffff',
-                                    color: '#1a1a1a',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: 6,
-                                    fontSize: '0.95rem',
-                                    fontWeight: 600,
-                                    cursor: saving ? 'not-allowed' : 'pointer',
-                                }}
-                            >
-                                Anuluj
-                            </button>
-                            <button
-                                type="button"
-                                disabled={
-                                    mode === 'create'
-                                        ? !canSaveCreate || saving
-                                        : saving || !startTime
-                                }
-                                onClick={() => {
-                                    if (mode === 'create') {
-                                        void handleCreate();
-                                    } else {
-                                        void handleUpdate();
-                                    }
-                                }}
-                                style={{
-                                    flex: 2,
-                                    minHeight: 48,
-                                    background: saving ? '#e5e7eb' : '#0d0d0d',
-                                    color: saving ? '#6c757d' : '#ffffff',
-                                    border: 'none',
-                                    borderRadius: 6,
-                                    fontSize: '0.95rem',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.04em',
-                                    textTransform: 'uppercase',
-                                    cursor: saving ? 'not-allowed' : 'pointer',
-                                }}
-                            >
-                                {saving
-                                    ? 'Zapisywanie...'
-                                    : mode === 'create'
-                                      ? 'Utwórz'
-                                      : 'Zapisz'}
-                            </button>
-                        </div>
-                    ) : null}
+
+                    {/* Mobile footer is rendered inside ActionsSection */}
                 </div>
             </div>
 
@@ -1464,9 +600,7 @@ export default function AppointmentDrawer({
                 appointment={appointment ?? null}
                 open={finalizationOpen}
                 onClose={() => setFinalizationOpen(false)}
-                onSuccess={() => {
-                    onSaved();
-                }}
+                onSuccess={() => { onSaved(); }}
             />
         </>
     );
