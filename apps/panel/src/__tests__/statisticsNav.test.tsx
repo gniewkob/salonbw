@@ -11,7 +11,7 @@ describe('StatisticsNav', () => {
     it('shows link to CRM follow-up audit view', () => {
         render(<StatisticsNav />);
 
-        const link = screen.getByRole('link', { name: 'Audyt follow-up CRM' });
+        const link = screen.getByRole('link', { name: 'Audyt follow-up' });
         expect(link).toBeInTheDocument();
         expect(link).toHaveAttribute('href', '/statistics/follow-up');
     });

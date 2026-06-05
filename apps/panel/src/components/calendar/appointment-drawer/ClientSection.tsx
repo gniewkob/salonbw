@@ -20,7 +20,7 @@ interface CustomerStats {
 }
 
 interface CustomerAlert {
-    id: number;
+    id: string;
     label: string;
     detail?: string;
     severity: 'info' | 'warning' | 'danger';

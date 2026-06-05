@@ -7,6 +7,7 @@ import {
     useUpdateCustomerGroup,
 } from '@/hooks/useCustomers';
 import type { CustomerGroup } from '@/types';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 
 type GroupNode = CustomerGroup & { children: GroupNode[] };
 

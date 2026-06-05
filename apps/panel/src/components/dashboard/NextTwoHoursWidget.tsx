@@ -7,6 +7,7 @@ interface UpcomingAppointment {
     id: number;
     startTime: string;
     clientName: string;
+    clientPhone?: string;
     serviceName: string;
     employeeName?: string | null;
     status?: string;
@@ -32,14 +33,22 @@ function formatRelative(minutes: number): string {
     return `za ${hours} h ${remaining} min`;
 }
 
+function urgencyColor(minutes: number): string {
+    if (minutes <= 10) return '#dc3545';
+    if (minutes <= 30) return '#f59e0b';
+    return '#6c757d';
+}
+
+function appointmentCountLabel(n: number): string {
+    if (n === 1) return '1 wizyta';
+    if (n < 5) return `${n} wizyty`;
+    return `${n} wizyt`;
+}
+
 export default function NextTwoHoursWidget({
     appointments,
     now: nowProp,
 }: NextTwoHoursWidgetProps) {
-    // Re-render every minute so the "za X min" relative time + which
-    // appointments fall in the [now, now+2h] window stay accurate while the
-    // dashboard sits open. If a `now` prop is provided (tests), respect it
-    // and skip the ticker.
     const [tick, setTick] = useState(() => Date.now());
     useEffect(() => {
         if (nowProp) return;
@@ -97,13 +106,21 @@ export default function NextTwoHoursWidget({
                         godzinach.
                     </div>
                 </div>
+                <Link
+                    href="/calendar"
+                    style={{
+                        fontSize: '0.8rem',
+                        color: '#4a4a4a',
+                        textDecoration: 'none',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    Otwórz kalendarz →
+                </Link>
             </section>
         );
     }
-
-    const next = upcoming[0];
-    const minutesToNext = minutesUntil(next.startDate, now);
-    const restCount = upcoming.length - 1;
 
     return (
         <section
@@ -112,34 +129,41 @@ export default function NextTwoHoursWidget({
                 background: '#ffffff',
                 border: '1px solid #e5e7eb',
                 borderRadius: 8,
-                padding: '0.875rem 1rem',
                 marginBottom: '1rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-                borderLeftWidth: 4,
-                borderLeftColor: minutesToNext <= 15 ? '#dc3545' : '#b4b8be',
+                overflow: 'hidden',
             }}
         >
+            {/* Header */}
             <div
                 style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '0.75rem',
-                    flexWrap: 'wrap',
+                    padding: '0.75rem 1rem 0.5rem',
+                    borderBottom: '1px solid #f3f4f6',
                 }}
             >
-                <div
-                    style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.14em',
-                        textTransform: 'uppercase',
-                        color: '#6c757d',
-                    }}
-                >
-                    Najbliższe 2h
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.625rem' }}>
+                    <span
+                        style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.14em',
+                            textTransform: 'uppercase',
+                            color: '#6c757d',
+                        }}
+                    >
+                        Najbliższe 2h
+                    </span>
+                    <span
+                        style={{
+                            fontSize: '0.8rem',
+                            color: '#4a4a4a',
+                            fontWeight: 500,
+                        }}
+                    >
+                        {appointmentCountLabel(upcoming.length)}
+                    </span>
                 </div>
                 <Link
                     href="/calendar"
@@ -153,63 +177,113 @@ export default function NextTwoHoursWidget({
                     Otwórz kalendarz →
                 </Link>
             </div>
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    gap: '0.75rem',
-                    flexWrap: 'wrap',
-                }}
-            >
-                <span
-                    style={{
-                        fontSize: '1.25rem',
-                        fontWeight: 700,
-                        color: '#0d0d0d',
-                        fontVariantNumeric: 'tabular-nums',
-                    }}
-                >
-                    {format(next.startDate, 'HH:mm', { locale: pl })}
-                </span>
-                <span
-                    style={{
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        color: minutesToNext <= 15 ? '#dc3545' : '#4a4a4a',
-                        textTransform: 'lowercase',
-                    }}
-                >
-                    {formatRelative(minutesToNext)}
-                </span>
-                <span style={{ fontSize: '1rem', color: '#1a1a1a' }}>
-                    {next.clientName || '—'}
-                </span>
-                <span
-                    style={{
-                        fontSize: '0.875rem',
-                        color: '#6c757d',
-                    }}
-                >
-                    · {next.serviceName}
-                    {next.employeeName ? ` · ${next.employeeName}` : ''}
-                </span>
+
+            {/* Appointment rows */}
+            <div>
+                {upcoming.map((apt, idx) => {
+                    const minutes = minutesUntil(apt.startDate, now);
+                    const color = urgencyColor(minutes);
+                    const isLast = idx === upcoming.length - 1;
+
+                    return (
+                        <div
+                            key={apt.id}
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'auto 1fr auto',
+                                gap: '0 0.75rem',
+                                alignItems: 'center',
+                                padding: '0.625rem 1rem',
+                                borderBottom: isLast ? 'none' : '1px solid #f3f4f6',
+                            }}
+                        >
+                            {/* Time column */}
+                            <div style={{ textAlign: 'right', minWidth: 44 }}>
+                                <div
+                                    style={{
+                                        fontSize: '1.05rem',
+                                        fontWeight: 700,
+                                        color: '#0d0d0d',
+                                        fontVariantNumeric: 'tabular-nums',
+                                        lineHeight: 1.2,
+                                    }}
+                                >
+                                    {format(apt.startDate, 'HH:mm', { locale: pl })}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.72rem',
+                                        fontWeight: 600,
+                                        color,
+                                        lineHeight: 1.2,
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {formatRelative(minutes)}
+                                </div>
+                            </div>
+
+                            {/* Details column */}
+                            <div style={{ minWidth: 0 }}>
+                                <div
+                                    style={{
+                                        fontSize: '0.9rem',
+                                        fontWeight: 600,
+                                        color: '#0d0d0d',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
+                                    <span>{apt.clientName || '—'}</span>
+                                    {apt.clientPhone && (
+                                        <a
+                                            href={`tel:${apt.clientPhone}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            style={{
+                                                fontSize: '0.78rem',
+                                                color: '#6c757d',
+                                                textDecoration: 'none',
+                                                fontWeight: 400,
+                                            }}
+                                        >
+                                            {apt.clientPhone}
+                                        </a>
+                                    )}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        color: '#6c757d',
+                                        marginTop: '0.1rem',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {apt.serviceName}
+                                    {apt.employeeName ? ` · ${apt.employeeName}` : ''}
+                                </div>
+                            </div>
+
+                            {/* Badge column */}
+                            <div>
+                                {apt.status === 'online_pending' && (
+                                    <span className="badge bg-warning text-dark">
+                                        Oczekuje
+                                    </span>
+                                )}
+                                {apt.status === 'in_progress' && (
+                                    <span className="badge bg-primary">
+                                        W trakcie
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-            {restCount > 0 ? (
-                <div
-                    style={{
-                        fontSize: '0.8rem',
-                        color: '#6c757d',
-                    }}
-                >
-                    + {restCount}{' '}
-                    {restCount === 1
-                        ? 'kolejna wizyta'
-                        : restCount < 5
-                          ? 'kolejne wizyty'
-                          : 'kolejnych wizyt'}{' '}
-                    w tym oknie
-                </div>
-            ) : null}
         </section>
     );
 }

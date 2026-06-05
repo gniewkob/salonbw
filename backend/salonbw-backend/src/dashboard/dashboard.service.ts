@@ -45,6 +45,7 @@ export class DashboardService {
             todayActive,
             onlinePending,
             upcomingAppointments,
+            inProgressAppointments,
             completedToday,
             completedThisMonth,
         ] = await Promise.all([
@@ -71,6 +72,11 @@ export class DashboardService {
                 take: 8,
             }),
             this.appointmentsRepository.find({
+                where: { status: AppointmentStatus.InProgress },
+                relations: ['client', 'service', 'employee'],
+                order: { startTime: 'ASC' },
+            }),
+            this.appointmentsRepository.find({
                 where: {
                     startTime: Between(startOfDay, endOfDay),
                     status: AppointmentStatus.Completed,
@@ -95,6 +101,17 @@ export class DashboardService {
             0,
         );
 
+        const mapAppointment = (a: Appointment) => ({
+            id: a.id,
+            startTime: a.startTime,
+            endTime: a.endTime,
+            status: a.status,
+            clientName: a.client?.name ?? '',
+            clientPhone: (a.client as any)?.phone ?? '',
+            serviceName: a.service?.name ?? '',
+            employeeName: a.employee?.name ?? '',
+        });
+
         return {
             clientCount,
             employeeCount,
@@ -103,16 +120,8 @@ export class DashboardService {
             revenueToday,
             revenueThisMonth,
             completedThisMonth: completedThisMonth.length,
-            upcomingAppointments: upcomingAppointments.map((a) => ({
-                id: a.id,
-                startTime: a.startTime,
-                endTime: a.endTime,
-                status: a.status,
-                clientName: a.client?.name ?? '',
-                clientPhone: (a.client as any)?.phone ?? '',
-                serviceName: a.service?.name ?? '',
-                employeeName: a.employee?.name ?? '',
-            })),
+            upcomingAppointments: upcomingAppointments.map(mapAppointment),
+            inProgressAppointments: inProgressAppointments.map(mapAppointment),
         };
     }
 

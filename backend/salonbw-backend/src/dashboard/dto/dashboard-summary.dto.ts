@@ -52,4 +52,9 @@ export class DashboardSummaryDto {
     @IsNotEmpty()
     @ApiProperty({})
     upcomingAppointments: any[];
+
+    @IsArray()
+    @IsOptional()
+    @ApiProperty({ description: 'Appointments currently in progress' })
+    inProgressAppointments: any[];
 }

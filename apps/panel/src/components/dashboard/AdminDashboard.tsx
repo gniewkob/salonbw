@@ -232,6 +232,122 @@ export default function AdminDashboard() {
                 </span>
             </div>
 
+            {/* In-progress appointments — who's in the salon right now */}
+            {(dashboardData?.inProgressAppointments ?? []).length > 0 && (
+                <div
+                    style={{
+                        background: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderLeft: '4px solid #0d6efd',
+                        borderRadius: 8,
+                        marginBottom: '1rem',
+                        overflow: 'hidden',
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '0.75rem 1rem 0.5rem',
+                            borderBottom: '1px solid #f3f4f6',
+                        }}
+                    >
+                        <span
+                            style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                letterSpacing: '0.14em',
+                                textTransform: 'uppercase',
+                                color: '#0d6efd',
+                            }}
+                        >
+                            W salonie teraz
+                        </span>
+                        <span
+                            style={{
+                                fontSize: '0.8rem',
+                                color: '#4a4a4a',
+                                fontWeight: 500,
+                            }}
+                        >
+                            {(dashboardData?.inProgressAppointments ?? []).length === 1
+                                ? '1 wizyta w trakcie'
+                                : `${(dashboardData?.inProgressAppointments ?? []).length} wizyty w trakcie`}
+                        </span>
+                    </div>
+                    {(dashboardData?.inProgressAppointments ?? []).map((apt, idx, arr) => (
+                        <div
+                            key={apt.id}
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'auto 1fr',
+                                gap: '0 0.75rem',
+                                alignItems: 'center',
+                                padding: '0.625rem 1rem',
+                                borderBottom: idx < arr.length - 1 ? '1px solid #f3f4f6' : 'none',
+                            }}
+                        >
+                            <div style={{ textAlign: 'right', minWidth: 44 }}>
+                                <div
+                                    style={{
+                                        fontSize: '1.05rem',
+                                        fontWeight: 700,
+                                        color: '#0d0d0d',
+                                        fontVariantNumeric: 'tabular-nums',
+                                    }}
+                                >
+                                    {format(new Date(apt.startTime), 'HH:mm', { locale: pl })}
+                                </div>
+                                <span className="badge bg-primary" style={{ fontSize: '0.68rem' }}>
+                                    W trakcie
+                                </span>
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                                <div
+                                    style={{
+                                        fontSize: '0.9rem',
+                                        fontWeight: 600,
+                                        color: '#0d0d0d',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
+                                    <span>{apt.clientName || '—'}</span>
+                                    {apt.clientPhone && (
+                                        <a
+                                            href={`tel:${apt.clientPhone}`}
+                                            style={{
+                                                fontSize: '0.78rem',
+                                                color: '#6c757d',
+                                                textDecoration: 'none',
+                                                fontWeight: 400,
+                                            }}
+                                        >
+                                            {apt.clientPhone}
+                                        </a>
+                                    )}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        color: '#6c757d',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {apt.serviceName}
+                                    {apt.employeeName ? ` · ${apt.employeeName}` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             <NextTwoHoursWidget
                 appointments={dashboardData?.upcomingAppointments ?? []}
             />

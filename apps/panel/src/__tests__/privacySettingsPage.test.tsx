@@ -4,6 +4,10 @@ import PrivacySettingsPage from '@/pages/settings/privacy';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
+jest.mock('next/router', () => ({
+    useRouter: () => ({ push: jest.fn(), replace: jest.fn(), query: {}, pathname: '/settings/privacy' }),
+}));
+
 jest.mock('@/contexts/AuthContext');
 
 jest.mock('@/components/RouteGuard', () => ({

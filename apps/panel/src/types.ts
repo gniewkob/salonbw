@@ -312,6 +312,7 @@ export interface DashboardResponse {
     revenueThisMonth: number;
     completedThisMonth: number;
     upcomingAppointments: UpcomingAppointmentItem[];
+    inProgressAppointments?: UpcomingAppointmentItem[];
 }
 
 export interface ClientDashboardResponse {
