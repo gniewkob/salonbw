@@ -8,83 +8,64 @@ interface NavItem {
     children?: NavItem[];
 }
 
-const REPORTS: NavItem[] = [
+const GROUPS: Array<{ heading: string; items: NavItem[] }> = [
     {
-        id: 'financial',
-        label: 'Raport finansowy',
-        href: '/statistics',
+        heading: 'FINANSE',
+        items: [
+            { id: 'financial', label: 'Raport finansowy', href: '/statistics' },
+            { id: 'register', label: 'Stan kasy', href: '/statistics/register' },
+            { id: 'commissions', label: 'Prowizje', href: '/statistics/commissions' },
+            { id: 'tips', label: 'Napiwki', href: '/statistics/tips' },
+        ],
     },
     {
-        id: 'employees',
-        label: 'Pracownicy',
-        href: '/statistics/employees',
+        heading: 'PRACOWNICY',
+        items: [
+            { id: 'employees', label: 'Pracownicy', href: '/statistics/employees' },
+            { id: 'worktime', label: 'Czas pracy', href: '/statistics/worktime' },
+        ],
     },
     {
-        id: 'commissions',
-        label: 'Prowizje pracowników',
-        href: '/statistics/commissions',
-    },
-    { id: 'register', label: 'Stan kasy', href: '/statistics/register' },
-    { id: 'tips', label: 'Napiwki', href: '/statistics/tips' },
-    { id: 'services', label: 'Usługi', href: '/statistics/services' },
-    {
-        id: 'customers',
-        label: 'Klienci',
-        href: '/statistics/customers',
-        children: [
+        heading: 'USŁUGI I KLIENCI',
+        items: [
+            { id: 'services', label: 'Usługi', href: '/statistics/services' },
             {
-                id: 'returning',
-                label: 'Powracalność klientów',
-                href: '/statistics/customers/returning',
-            },
-            {
-                id: 'origins',
-                label: 'Pochodzenie klientów',
-                href: '/statistics/customers/origins',
+                id: 'customers',
+                label: 'Klienci',
+                href: '/statistics/customers',
+                children: [
+                    { id: 'returning', label: 'Powracalność', href: '/statistics/customers/returning' },
+                    { id: 'origins', label: 'Pochodzenie', href: '/statistics/customers/origins' },
+                ],
             },
         ],
     },
     {
-        id: 'warehouse',
-        label: 'Magazyn',
-        href: '/statistics/warehouse',
-        children: [
+        heading: 'MAGAZYN',
+        items: [
             {
-                id: 'changes',
-                label: 'Raport zmian magazynowych',
-                href: '/statistics/warehouse/changes',
-            },
-            {
-                id: 'value',
-                label: 'Raport wartości produktów',
-                href: '/statistics/warehouse/value',
+                id: 'warehouse',
+                label: 'Magazyn',
+                href: '/statistics/warehouse',
+                children: [
+                    { id: 'changes', label: 'Zmiany magazynowe', href: '/statistics/warehouse/changes' },
+                    { id: 'wartość', label: 'Wartość produktów', href: '/statistics/warehouse/value' },
+                ],
             },
         ],
     },
     {
-        id: 'worktime',
-        label: 'Raport czasu pracy',
-        href: '/statistics/worktime',
-    },
-    {
-        id: 'follow-up-audit',
-        label: 'Audyt follow-up CRM',
-        href: '/statistics/follow-up',
-    },
-    {
-        id: 'comments',
-        label: 'Komentarze',
-        href: '/statistics/comments',
-        children: [
+        heading: 'CRM I OPINIE',
+        items: [
+            { id: 'follow-up', label: 'Audyt follow-up', href: '/statistics/follow-up' },
             {
-                id: 'booksy',
-                label: 'Booksy',
-                href: '/statistics/comments/booksy',
-            },
-            {
-                id: 'moment',
-                label: 'Moment',
-                href: '/statistics/comments/moment',
+                id: 'comments',
+                label: 'Komentarze',
+                href: '/statistics/comments',
+                children: [
+                    { id: 'booksy', label: 'Booksy', href: '/statistics/comments/booksy' },
+                    { id: 'moment', label: 'Moment', href: '/statistics/comments/moment' },
+                ],
             },
         ],
     },
@@ -96,39 +77,35 @@ export default function StatisticsNav() {
     const isActive = (href: string) =>
         router.pathname === href || router.pathname.startsWith(`${href}/`);
 
+    const renderItem = (item: NavItem) => (
+        <li key={item.id} className={isActive(item.href) ? 'active' : undefined}>
+            <Link href={item.href} title={item.label}>
+                {item.label}
+            </Link>
+            {item.children ? (
+                <ul>
+                    {item.children.map((child) => (
+                        <li key={child.id} className={isActive(child.href) ? 'active' : undefined}>
+                            <Link href={child.href} title={child.label}>
+                                {child.label}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
+        </li>
+    );
+
     return (
-        <div className="column_row tree">
-            <ul id="statistics_menu_list">
-                {REPORTS.map((item) => (
-                    <li
-                        key={item.id}
-                        className={isActive(item.href) ? 'active' : ''}
-                    >
-                        <Link href={item.href} title={item.label}>
-                            {item.label}
-                        </Link>
-                        {item.children ? (
-                            <ul>
-                                {item.children.map((child) => (
-                                    <li
-                                        key={child.id}
-                                        className={
-                                            isActive(child.href) ? 'active' : ''
-                                        }
-                                    >
-                                        <Link
-                                            href={child.href}
-                                            title={child.label}
-                                        >
-                                            {child.label}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : null}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <>
+            {GROUPS.map((group) => (
+                <div key={group.heading} className="column_row">
+                    <div className="nav-header">{group.heading}</div>
+                    <ul className="nav nav-list">
+                        {group.items.map(renderItem)}
+                    </ul>
+                </div>
+            ))}
+        </>
     );
 }
