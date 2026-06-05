@@ -29,44 +29,20 @@ const GROUPS: Array<{ heading: string; items: NavItem[] }> = [
         heading: 'USŁUGI I KLIENCI',
         items: [
             { id: 'services', label: 'Usługi', href: '/statistics/services' },
-            {
-                id: 'customers',
-                label: 'Klienci',
-                href: '/statistics/customers',
-                children: [
-                    { id: 'returning', label: 'Powracalność', href: '/statistics/customers/returning' },
-                    { id: 'origins', label: 'Pochodzenie', href: '/statistics/customers/origins' },
-                ],
-            },
+            { id: 'customers', label: 'Klienci', href: '/statistics/customers' },
         ],
     },
     {
         heading: 'MAGAZYN',
         items: [
-            {
-                id: 'warehouse',
-                label: 'Magazyn',
-                href: '/statistics/warehouse',
-                children: [
-                    { id: 'changes', label: 'Zmiany magazynowe', href: '/statistics/warehouse/changes' },
-                    { id: 'wartość', label: 'Wartość produktów', href: '/statistics/warehouse/value' },
-                ],
-            },
+            { id: 'warehouse', label: 'Magazyn', href: '/statistics/warehouse' },
         ],
     },
     {
         heading: 'CRM I OPINIE',
         items: [
             { id: 'follow-up', label: 'Audyt follow-up', href: '/statistics/follow-up' },
-            {
-                id: 'comments',
-                label: 'Komentarze',
-                href: '/statistics/comments',
-                children: [
-                    { id: 'booksy', label: 'Booksy', href: '/statistics/comments/booksy' },
-                    { id: 'moment', label: 'Moment', href: '/statistics/comments/moment' },
-                ],
-            },
+            { id: 'comments', label: 'Komentarze', href: '/statistics/comments' },
         ],
     },
 ];

@@ -453,6 +453,37 @@ const nextConfig = {
                 destination: '/communication/campaigns',
                 permanent: false,
             },
+            // F1.2 — Statistics consolidation (sub-pages → tabbed parent)
+            {
+                source: '/statistics/customers/returning',
+                destination: '/statistics/customers?tab=returning',
+                permanent: false,
+            },
+            {
+                source: '/statistics/customers/origins',
+                destination: '/statistics/customers?tab=origins',
+                permanent: false,
+            },
+            {
+                source: '/statistics/warehouse/changes',
+                destination: '/statistics/warehouse?tab=changes',
+                permanent: false,
+            },
+            {
+                source: '/statistics/warehouse/value',
+                destination: '/statistics/warehouse?tab=value',
+                permanent: false,
+            },
+            {
+                source: '/statistics/comments/booksy',
+                destination: '/statistics/comments?tab=booksy',
+                permanent: false,
+            },
+            {
+                source: '/statistics/comments/moment',
+                destination: '/statistics/comments?tab=moment',
+                permanent: false,
+            },
         ];
     },
     async headers() {
