@@ -8,6 +8,7 @@ import Modal from '@/components/Modal';
 import { useReviews } from '@/hooks/useReviews';
 import { useReviewApi } from '@/api/reviews';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEmployees } from '@/hooks/useEmployees';
 import { Review } from '@/types';
 
 import type ReviewFormComponent from '@/components/ReviewForm';
@@ -25,8 +26,12 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
 export default function ReviewsPage() {
     const { role } = useAuth();
     const isAdmin = role === 'admin';
-    const [employeeId, setEmployeeId] = useState(1);
-    const { data } = useReviews(isAdmin ? { employeeId } : { mine: true });
+    const [employeeId, setEmployeeId] = useState<number | undefined>(undefined);
+    const { data: employeesData } = useEmployees();
+    const employees = employeesData ?? [];
+    const { data } = useReviews(
+        isAdmin ? (employeeId ? { employeeId } : {}) : { mine: true },
+    );
     const api = useReviewApi();
     type Row = Review & {
         appointmentDisplay?: number | string;
@@ -132,17 +137,25 @@ export default function ReviewsPage() {
                     <div className="salonbw-page__toolbar">
                         {isAdmin && (
                             <label className="form-label">
-                                Pracownik (ID)
-                                <input
-                                    type="number"
-                                    className="form-control form-control-sm"
-                                    value={employeeId}
-                                    onChange={(e) => {
-                                        const n = Number(e.target.value);
-                                        if (Number.isInteger(n) && n > 0)
-                                            setEmployeeId(n);
-                                    }}
-                                />
+                                Pracownik
+                                <select
+                                    className="form-select form-select-sm"
+                                    value={employeeId ?? ''}
+                                    onChange={(e) =>
+                                        setEmployeeId(
+                                            e.target.value
+                                                ? Number(e.target.value)
+                                                : undefined,
+                                        )
+                                    }
+                                >
+                                    <option value="">— wszyscy —</option>
+                                    {employees.map((emp) => (
+                                        <option key={emp.id} value={emp.id}>
+                                            {emp.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </label>
                         )}
                         <button
