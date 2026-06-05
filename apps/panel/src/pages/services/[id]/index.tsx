@@ -6,6 +6,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     useServiceSummary,
     useServiceStats,
@@ -52,6 +53,7 @@ const formatDuration = (minutes: number) => {
 
 export default function ServiceDetailsPage() {
     const { user, role } = useAuth();
+    const toast = useToast();
     const router = useRouter();
     const serviceId = Number(router.query.id);
     const tabParam = Array.isArray(router.query.tab)
@@ -154,8 +156,8 @@ export default function ServiceDetailsPage() {
             await updateService.mutateAsync({ id: serviceId, data });
             setIsEditModalOpen(false);
             void summary.refetch();
-        } catch (error) {
-            console.error('Failed to update service:', error);
+        } catch {
+            toast.error('Nie udało się zaktualizować usługi');
         }
     };
 
@@ -174,8 +176,8 @@ export default function ServiceDetailsPage() {
             setCommentText('');
             setCommentAuthor('');
             setCommentRating(5);
-        } catch (error) {
-            console.error('Failed to add service comment:', error);
+        } catch {
+            toast.error('Nie udało się dodać komentarza');
         }
     };
 
@@ -187,8 +189,8 @@ export default function ServiceDetailsPage() {
 
         try {
             await deleteComment.mutateAsync({ serviceId, commentId });
-        } catch (error) {
-            console.error('Failed to delete service comment:', error);
+        } catch {
+            toast.error('Nie udało się usunąć komentarza');
         }
     };
 

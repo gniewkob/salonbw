@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -26,6 +27,7 @@ type ModalType = 'create' | 'edit' | 'redeem' | 'adjust' | 'details' | null;
 
 export default function GiftCardsManagementPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const [modalType, setModalType] = useState<ModalType>(null);
     const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
     const [statusFilter, setStatusFilter] = useState<GiftCardStatus | ''>('');
@@ -112,8 +114,9 @@ export default function GiftCardsManagementPage() {
         try {
             await createGiftCard.mutateAsync(createForm);
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to create gift card:', error);
+            toast.success('Karta podarunkowa została utworzona');
+        } catch {
+            toast.error('Nie udało się utworzyć karty podarunkowej');
         }
     };
 
@@ -126,8 +129,9 @@ export default function GiftCardsManagementPage() {
                 data: editForm,
             });
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to update gift card:', error);
+            toast.success('Karta podarunkowa zaktualizowana');
+        } catch {
+            toast.error('Nie udało się zaktualizować karty');
         }
     };
 
@@ -136,8 +140,9 @@ export default function GiftCardsManagementPage() {
         try {
             await redeemGiftCard.mutateAsync(redeemForm);
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to redeem gift card:', error);
+            toast.success('Karta zrealizowana');
+        } catch {
+            toast.error('Nie udało się zrealizować karty');
         }
     };
 
@@ -150,8 +155,9 @@ export default function GiftCardsManagementPage() {
                 data: adjustForm,
             });
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to adjust balance:', error);
+            toast.success('Saldo zostało skorygowane');
+        } catch {
+            toast.error('Nie udało się skorygować salda');
         }
     };
 
@@ -162,8 +168,9 @@ export default function GiftCardsManagementPage() {
         if (reason === null) return;
         try {
             await cancelGiftCard.mutateAsync({ id: card.id, reason });
-        } catch (error) {
-            console.error('Failed to cancel gift card:', error);
+            toast.success('Karta anulowana');
+        } catch {
+            toast.error('Nie udało się anulować karty');
         }
     };
 

@@ -132,8 +132,8 @@ export default function LoyaltyManagementPage() {
                 await createReward.mutateAsync(rewardForm);
             }
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to save reward:', error);
+        } catch {
+            toast.error('Nie udało się zapisać nagrody.');
         }
     };
 
@@ -145,8 +145,8 @@ export default function LoyaltyManagementPage() {
         ) {
             try {
                 await deleteReward.mutateAsync(reward.id);
-            } catch (error) {
-                console.error('Failed to delete reward:', error);
+            } catch {
+                toast.error('Nie udało się usunąć nagrody.');
             }
         }
     };
@@ -158,8 +158,8 @@ export default function LoyaltyManagementPage() {
             setModalType(null);
             setCouponCode('');
             toast.success('Kupon został zrealizowany!');
-        } catch (error) {
-            console.error('Failed to use coupon:', error);
+        } catch {
+            toast.error('Nie udało się zrealizować kuponu.');
         }
     };
 
@@ -168,8 +168,8 @@ export default function LoyaltyManagementPage() {
         try {
             await updateProgram.mutateAsync(programForm);
             toast.success('Ustawienia zapisane!');
-        } catch (error) {
-            console.error('Failed to update settings:', error);
+        } catch {
+            toast.error('Nie udało się zapisać ustawień programu lojalnościowego.');
         }
     };
 
