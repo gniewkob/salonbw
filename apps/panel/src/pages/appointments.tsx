@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -190,16 +191,11 @@ export default function AppointmentsPage() {
     );
 
     if (role !== 'admin' && role !== 'receptionist') {
-        return (
-            <SalonShell role={role}>
-                <div className="inner">
-                    <p>Brak dostępu do listy wizyt.</p>
-                </div>
-            </SalonShell>
-        );
+        return null;
     }
 
     return (
+        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:appointments">
         <SalonShell role={role}>
             <div className="inner">
                 <SalonBreadcrumbs
@@ -538,5 +534,6 @@ export default function AppointmentsPage() {
                 )}
             </div>
         </SalonShell>
+        </RouteGuard>
     );
 }

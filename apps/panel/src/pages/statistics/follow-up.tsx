@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -208,6 +209,8 @@ export default function FollowUpStatisticsPage() {
     const hasData = summary !== null && !error;
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:statistics">
         <SalonShell role={role}>
             <div className="container py-4" data-testid="follow-up-audit-page">
                 <SalonBreadcrumbs
@@ -388,5 +391,6 @@ export default function FollowUpStatisticsPage() {
                 ) : null}
             </div>
         </SalonShell>
+        </RouteGuard>
     );
 }

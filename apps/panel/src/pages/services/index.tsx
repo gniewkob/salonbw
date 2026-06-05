@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
+import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,9 +20,12 @@ export default function ServicesPage() {
     const { role } = useAuth();
 
     return (
+        
+        <RouteGuard roles={['admin']} permission="nav:services">
         <SalonShell role={role}>
             <ServicesPageContent role={role} />
         </SalonShell>
+        </RouteGuard>
     );
 }
 
