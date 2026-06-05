@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import RouteGuard from '@/components/RouteGuard';
+import SalonShell from '@/components/salon/SalonShell';
+import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
@@ -55,7 +58,7 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export default function LoyaltyManagementPage() {
-    const { user } = useAuth();
+    const { user, role } = useAuth();
     const toast = useToast();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [modalType, setModalType] = useState<ModalType>(null);
@@ -90,13 +93,6 @@ export default function LoyaltyManagementPage() {
         {},
     );
 
-    if (!user || user.role !== 'admin') {
-        return (
-            <div className="d-flex align-items-center justify-content-center">
-                <p className="text-muted">Brak dostępu</p>
-            </div>
-        );
-    }
 
     const handleOpenCreateReward = () => {
         setSelectedReward(null);
@@ -193,13 +189,21 @@ export default function LoyaltyManagementPage() {
     ];
 
     return (
-        <div className="bg-light">
-            <div className="max-w-7xl mx-auto py-4 px-3">
-                <div className="d-flex align-items-center justify-content-between mb-4">
+        <RouteGuard roles={['admin']} permission="nav:extension">
+        <SalonShell role={role}>
+            <SalonBreadcrumbs
+                iconClass="sprite-breadcrumbs_extensions"
+                items={[
+                    { label: 'Dodatki', href: '/extension' },
+                    { label: 'Program lojalnościowy' },
+                ]}
+            />
+            <div className="mb-4">
+                <div className="d-flex align-items-center justify-content-between">
                     <div>
-                        <h1 className="fs-3 fw-bold text-dark">
-                            Program Lojalnościowy
-                        </h1>
+                        <h2 className="fs-3 fw-bold">
+                            Program lojalnościowy
+                        </h2>
                         <p className="mt-1 small text-muted">
                             Zarządzaj punktami i nagrodami dla klientów
                         </p>
@@ -1116,6 +1120,7 @@ export default function LoyaltyManagementPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </SalonShell>
+        </RouteGuard>
     );
 }
