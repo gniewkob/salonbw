@@ -1,4 +1,3 @@
-'use client';
 
 import { useState, useMemo } from 'react';
 import { useStockAlerts, useStockSummary } from '@/hooks/useStockAlerts';

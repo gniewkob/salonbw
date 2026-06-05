@@ -1,4 +1,3 @@
-'use client';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import SidebarMenu from '../SidebarMenu';

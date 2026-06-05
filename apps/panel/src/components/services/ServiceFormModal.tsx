@@ -1,4 +1,3 @@
-'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import type { Service, ServiceCategory, PriceType } from '@/types';

@@ -1,4 +1,3 @@
-'use client';
 
 import type { MessageTemplate, TemplateType } from '@/types';
 

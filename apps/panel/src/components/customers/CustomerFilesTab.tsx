@@ -1,4 +1,3 @@
-'use client';
 
 import { useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';

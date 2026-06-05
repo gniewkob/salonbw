@@ -1,4 +1,3 @@
-'use client';
 
 import { usePajaxLoading } from '@/hooks/usePajaxLoading';
 

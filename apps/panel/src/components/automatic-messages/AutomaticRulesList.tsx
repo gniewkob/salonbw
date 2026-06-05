@@ -1,4 +1,3 @@
-'use client';
 
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
