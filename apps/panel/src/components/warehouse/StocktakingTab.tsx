@@ -65,8 +65,7 @@ export default function StocktakingTab() {
                 notes: formData.notes || undefined,
             });
             handleCloseModal();
-        } catch (err) {
-            console.error('Error creating stocktaking:', err);
+        } catch {
             setError('Wystąpił błąd podczas tworzenia inwentaryzacji.');
         }
     };
@@ -80,8 +79,7 @@ export default function StocktakingTab() {
             setError(null);
             try {
                 await startStocktaking.mutateAsync(id);
-            } catch (err) {
-                console.error('Error starting stocktaking:', err);
+            } catch {
                 setError(
                     'Nie udało się rozpocząć inwentaryzacji. Spróbuj ponownie.',
                 );
@@ -101,8 +99,7 @@ export default function StocktakingTab() {
                     id,
                     applyDifferences: true,
                 });
-            } catch (err) {
-                console.error('Error completing stocktaking:', err);
+            } catch {
                 setError(
                     'Nie udało się zakończyć inwentaryzacji. Spróbuj ponownie.',
                 );

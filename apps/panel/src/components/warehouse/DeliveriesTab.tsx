@@ -73,8 +73,7 @@ export default function DeliveriesTab() {
                 notes: formData.notes || undefined,
             });
             handleCloseModal();
-        } catch (err) {
-            console.error('Error creating delivery:', err);
+        } catch {
             setError('Wystąpił błąd podczas tworzenia dostawy.');
         }
     };
@@ -88,8 +87,7 @@ export default function DeliveriesTab() {
             setError(null);
             try {
                 await receiveDelivery.mutateAsync({ id });
-            } catch (err) {
-                console.error('Error receiving delivery:', err);
+            } catch {
                 setError('Nie udało się przyjąć dostawy. Spróbuj ponownie.');
             }
         }
@@ -100,8 +98,7 @@ export default function DeliveriesTab() {
             setError(null);
             try {
                 await cancelDelivery.mutateAsync(id);
-            } catch (err) {
-                console.error('Error cancelling delivery:', err);
+            } catch {
                 setError('Nie udało się anulować dostawy. Spróbuj ponownie.');
             }
         }

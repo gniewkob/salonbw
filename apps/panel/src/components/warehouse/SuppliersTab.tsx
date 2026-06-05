@@ -86,8 +86,7 @@ export default function SuppliersTab() {
                 await createSupplier.mutateAsync(formData);
             }
             handleCloseModal();
-        } catch (err) {
-            console.error('Error saving supplier:', err);
+        } catch {
             setError(
                 'Wystąpił błąd podczas zapisywania dostawcy. Spróbuj ponownie.',
             );
@@ -99,8 +98,7 @@ export default function SuppliersTab() {
             setError(null);
             try {
                 await deleteSupplier.mutateAsync(id);
-            } catch (err) {
-                console.error('Error deleting supplier:', err);
+            } catch {
                 setError(
                     'Nie udało się usunąć dostawcy. Upewnij się, że nie ma przypisanych dostaw.',
                 );

@@ -248,7 +248,6 @@ export default function ReceptionView({
             }
             onChanged?.();
         } catch (error) {
-            console.error('Action failed:', error);
             const message =
                 error instanceof Error
                     ? error.message

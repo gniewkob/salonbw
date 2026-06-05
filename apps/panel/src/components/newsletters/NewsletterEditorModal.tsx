@@ -8,6 +8,7 @@ import type {
     NewsletterChannel,
 } from '@/types';
 import { useNewsletterMutations } from '@/hooks/useNewsletters';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Props {
     isOpen: boolean;
@@ -42,6 +43,7 @@ export default function NewsletterEditorModal({
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const { previewRecipients } = useNewsletterMutations();
+    const toast = useToast();
 
     useEffect(() => {
         if (newsletter) {
@@ -77,8 +79,8 @@ export default function NewsletterEditorModal({
                     filterMode === 'manual' ? recipientIds : undefined,
             });
             setPreviewCount(result.totalCount);
-        } catch (error) {
-            console.error('Failed to preview recipients:', error);
+        } catch {
+            toast.error('Nie udało się załadować podglądu odbiorców.');
         }
     };
 
@@ -117,8 +119,8 @@ export default function NewsletterEditorModal({
                     filterMode === 'manual' ? recipientIds : undefined,
             });
             onClose();
-        } catch (error) {
-            console.error('Failed to save newsletter:', error);
+        } catch {
+            toast.error('Nie udało się zapisać newslettera. Spróbuj ponownie.');
         } finally {
             setSaving(false);
         }
