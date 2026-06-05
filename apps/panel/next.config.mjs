@@ -392,6 +392,16 @@ const nextConfig = {
                 destination: '/event-reminders',
                 permanent: false,
             },
+            {
+                source: '/settings/employees/:id/edit',
+                destination: '/settings/employees/:id?tab=edit',
+                permanent: false,
+            },
+            {
+                source: '/settings/employees/:id/events-history',
+                destination: '/settings/employees/:id?tab=history',
+                permanent: false,
+            },
         ];
     },
     async headers() {

@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEmployee } from '@/hooks/useEmployees';
+import { useEmployee, useUpdateEmployee } from '@/hooks/useEmployees';
+import { useActivityLogs } from '@/hooks/useActivityLogs';
 import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 import Modal from '@/components/Modal';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -50,19 +52,50 @@ const NAV = (
     </div>
 );
 
+type Tab = 'details' | 'edit' | 'history';
+
 export default function SettingsEmployeeDetailPage() {
     const router = useRouter();
     const { role, apiFetch } = useAuth();
     const id = router.query.id ? Number(router.query.id) : null;
+    const tab: Tab = (router.query.tab as Tab) ?? 'details';
     useSetSecondaryNav(NAV);
 
     const { data: employee, isLoading } = useEmployee(id);
+    const updateEmployee = useUpdateEmployee();
+
+    // Edit tab state
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+
+    useEffect(() => {
+        if (employee) {
+            const parts = employee.name.split(' ');
+            setFirstName(parts[0] ?? '');
+            setLastName(parts.slice(1).join(' ') ?? '');
+        }
+    }, [employee]);
+
+    // Password reset state
     const [resetOpen, setResetOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [resetError, setResetError] = useState('');
     const [resetSuccess, setResetSuccess] = useState(false);
     const [resetting, setResetting] = useState(false);
+
+    // History tab
+    const { data: logs, isLoading: logsLoading } = useActivityLogs({
+        userId: tab === 'history' && id ? id : undefined,
+        limit: 50,
+    });
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!id) return;
+        await updateEmployee.mutateAsync({ id, firstName, lastName });
+        void router.push(`/settings/employees/${id}`);
+    };
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -86,128 +119,182 @@ export default function SettingsEmployeeDetailPage() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (err) {
-            setResetError(
-                err instanceof Error ? err.message : 'Błąd resetu hasła',
-            );
+            setResetError(err instanceof Error ? err.message : 'Błąd resetu hasła');
         } finally {
             setResetting(false);
         }
     };
 
+    const tabHref = (t: Tab) =>
+        id ? `/settings/employees/${id}${t !== 'details' ? `?tab=${t}` : ''}` : '#';
+
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>
-                <div
-                    className="settings-detail-layout"
-                    data-testid="settings-detail"
-                >
-                    <aside className="settings-detail-layout__sidebar">
-                        {NAV}
-                    </aside>
+                <div className="settings-detail-layout" data-testid="settings-detail">
+                    <aside className="settings-detail-layout__sidebar">{NAV}</aside>
                     <div className="settings-detail-layout__main">
                         <SalonBreadcrumbs
                             iconClass="sprite-breadcrumbs_settings"
                             items={[
                                 { label: 'Ustawienia', href: '/settings' },
-                                {
-                                    label: 'Pracownicy',
-                                    href: '/settings/employees',
-                                },
+                                { label: 'Pracownicy', href: '/settings/employees' },
                                 { label: employee?.name ?? '...' },
                             ]}
                         />
-                        <PanelSection
-                            action={
-                                <Link
-                                    href={
-                                        id
-                                            ? `/settings/employees/${id}/edit`
-                                            : '#'
-                                    }
-                                    className="btn btn-primary float-end"
-                                >
+
+                        <ul className="nav nav-tabs mb-3">
+                            <li className="nav-item">
+                                <Link href={tabHref('details')} className={`nav-link${tab === 'details' ? ' active' : ''}`}>
+                                    Szczegóły
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link href={tabHref('edit')} className={`nav-link${tab === 'edit' ? ' active' : ''}`}>
                                     Edytuj
                                 </Link>
-                            }
-                        >
-                            {isLoading ? (
-                                <p>Ładowanie...</p>
-                            ) : employee ? (
-                                <>
-                                    <h2>{employee.name}</h2>
-                                    <dl className="dl-horizontal">
-                                        <dt>Imię i nazwisko</dt>
-                                        <dd>{employee.name}</dd>
-                                        <dt>Email</dt>
-                                        <dd>{employee.email ?? '—'}</dd>
-                                        <dt>Rola</dt>
-                                        <dd>
-                                            {ROLE_LABELS[employee.role ?? ''] ??
-                                                employee.role ??
-                                                '—'}
-                                        </dd>
-                                    </dl>
-                                    <div
-                                        className="d-flex gap-2"
-                                        style={{ marginTop: 16 }}
+                            </li>
+                            <li className="nav-item">
+                                <Link href={tabHref('history')} className={`nav-link${tab === 'history' ? ' active' : ''}`}>
+                                    Historia wydarzeń
+                                </Link>
+                            </li>
+                        </ul>
+
+                        {tab === 'details' && (
+                            <PanelSection>
+                                {isLoading ? (
+                                    <p>Ładowanie...</p>
+                                ) : employee ? (
+                                    <>
+                                        <h2>{employee.name}</h2>
+                                        <dl className="dl-horizontal">
+                                            <dt>Imię i nazwisko</dt>
+                                            <dd>{employee.name}</dd>
+                                            <dt>Email</dt>
+                                            <dd>{employee.email ?? '—'}</dd>
+                                            <dt>Rola</dt>
+                                            <dd>
+                                                {ROLE_LABELS[employee.role ?? ''] ?? employee.role ?? '—'}
+                                            </dd>
+                                        </dl>
+                                        <div className="d-flex gap-2 mt-3">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-warning"
+                                                onClick={() => {
+                                                    setResetSuccess(false);
+                                                    setResetError('');
+                                                    setNewPassword('');
+                                                    setConfirmPassword('');
+                                                    setResetOpen(true);
+                                                }}
+                                            >
+                                                Resetuj hasło
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p>Nie znaleziono pracownika.</p>
+                                )}
+                            </PanelSection>
+                        )}
+
+                        {tab === 'edit' && (
+                            <PanelSection>
+                                {isLoading ? (
+                                    <p>Ładowanie...</p>
+                                ) : (
+                                    <form onSubmit={(e) => void handleEditSubmit(e)}>
+                                        <h2>Edytuj pracownika</h2>
+                                        <div className="mb-3">
+                                            <label htmlFor="firstName" className="form-label">
+                                                Imię
+                                            </label>
+                                            <input
+                                                id="firstName"
+                                                type="text"
+                                                className="form-control"
+                                                value={firstName}
+                                                onChange={(e) => setFirstName(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label htmlFor="lastName" className="form-label">
+                                                Nazwisko
+                                            </label>
+                                            <input
+                                                id="lastName"
+                                                type="text"
+                                                className="form-control"
+                                                value={lastName}
+                                                onChange={(e) => setLastName(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3 d-flex gap-2">
+                                            <button
+                                                type="submit"
+                                                className="btn btn-primary"
+                                                disabled={updateEmployee.isPending}
+                                            >
+                                                {updateEmployee.isPending ? 'Zapisywanie...' : 'Zapisz'}
+                                            </button>
+                                            <Link
+                                                href={id ? `/settings/employees/${id}` : '/settings/employees'}
+                                                className="btn btn-outline-secondary"
+                                            >
+                                                Anuluj
+                                            </Link>
+                                        </div>
+                                    </form>
+                                )}
+                            </PanelSection>
+                        )}
+
+                        {tab === 'history' && (
+                            <PanelSection title={`Historia wydarzeń — ${employee?.name ?? '...'}`}>
+                                {logsLoading ? (
+                                    <p>Ładowanie...</p>
+                                ) : (
+                                    <PanelTable
+                                        columns={[
+                                            { label: 'Data' },
+                                            { label: 'Akcja' },
+                                            { label: 'Szczegóły' },
+                                        ]}
+                                        isEmpty={!logs?.items?.length}
+                                        emptyMessage="Brak historii wydarzeń"
                                     >
-                                        <Link
-                                            href={
-                                                id
-                                                    ? `/settings/employees/${id}/events-history`
-                                                    : '#'
-                                            }
-                                            className="btn btn-outline-secondary"
-                                        >
-                                            Historia wizyt
-                                        </Link>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-warning"
-                                            onClick={() => {
-                                                setResetSuccess(false);
-                                                setResetError('');
-                                                setNewPassword('');
-                                                setConfirmPassword('');
-                                                setResetOpen(true);
-                                            }}
-                                        >
-                                            Resetuj hasło
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <p>Nie znaleziono pracownika.</p>
-                            )}
-                        </PanelSection>
+                                        {(logs?.items ?? []).map((log, i) => (
+                                            <tr key={log.id} className={i % 2 === 0 ? 'even' : 'odd'}>
+                                                <td>
+                                                    {new Date(log.timestamp).toLocaleString('pl-PL')}
+                                                </td>
+                                                <td>{log.actionLabel}</td>
+                                                <td>
+                                                    {log.details ? JSON.stringify(log.details) : '—'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </PanelTable>
+                                )}
+                            </PanelSection>
+                        )}
                     </div>
                 </div>
 
-                <Modal
-                    open={resetOpen}
-                    onClose={() => setResetOpen(false)}
-                    size="sm"
-                >
-                    <h5 className="fw-bold mb-4">
-                        Resetuj hasło — {employee?.name}
-                    </h5>
+                <Modal open={resetOpen} onClose={() => setResetOpen(false)} size="sm">
+                    <h5 className="fw-bold mb-4">Resetuj hasło — {employee?.name}</h5>
                     {resetSuccess ? (
-                        <div
-                            role="status"
-                            className="alert alert-success py-2 small"
-                        >
+                        <div role="status" className="alert alert-success py-2 small">
                             Hasło zostało zmienione.
                         </div>
                     ) : (
-                        <form
-                            onSubmit={(e) => void handleResetPassword(e)}
-                            noValidate
-                        >
+                        <form onSubmit={(e) => void handleResetPassword(e)} noValidate>
                             <div className="mb-3">
-                                <label
-                                    htmlFor="rp-new"
-                                    className="form-label fw-medium"
-                                >
+                                <label htmlFor="rp-new" className="form-label fw-medium">
                                     Nowe hasło
                                 </label>
                                 <input
@@ -215,23 +302,16 @@ export default function SettingsEmployeeDetailPage() {
                                     type="password"
                                     className="form-control"
                                     value={newPassword}
-                                    onChange={(e) =>
-                                        setNewPassword(e.target.value)
-                                    }
+                                    onChange={(e) => setNewPassword(e.target.value)}
                                     autoComplete="new-password"
                                     disabled={resetting}
                                     minLength={6}
                                     required
                                 />
-                                <div className="form-text">
-                                    Minimum 6 znaków
-                                </div>
+                                <div className="form-text">Minimum 6 znaków</div>
                             </div>
                             <div className="mb-3">
-                                <label
-                                    htmlFor="rp-confirm"
-                                    className="form-label fw-medium"
-                                >
+                                <label htmlFor="rp-confirm" className="form-label fw-medium">
                                     Potwierdź hasło
                                 </label>
                                 <input
@@ -239,19 +319,14 @@ export default function SettingsEmployeeDetailPage() {
                                     type="password"
                                     className="form-control"
                                     value={confirmPassword}
-                                    onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
-                                    }
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                     autoComplete="new-password"
                                     disabled={resetting}
                                     required
                                 />
                             </div>
                             {resetError && (
-                                <div
-                                    role="alert"
-                                    className="alert alert-danger py-2 small mb-3"
-                                >
+                                <div role="alert" className="alert alert-danger py-2 small mb-3">
                                     {resetError}
                                 </div>
                             )}
@@ -267,11 +342,7 @@ export default function SettingsEmployeeDetailPage() {
                                 <button
                                     type="submit"
                                     className="btn btn-warning"
-                                    disabled={
-                                        resetting ||
-                                        !newPassword ||
-                                        !confirmPassword
-                                    }
+                                    disabled={resetting || !newPassword || !confirmPassword}
                                 >
                                     {resetting ? 'Zapisywanie…' : 'Ustaw hasło'}
                                 </button>
