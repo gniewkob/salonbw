@@ -22,4 +22,41 @@ describe('SalonBreadcrumbs', () => {
         ).toHaveAttribute('href', '/statistics');
         expect(screen.getByText('Raport finansowy')).toBeInTheDocument();
     });
+
+    it('wraps in nav landmark with aria-label', () => {
+        render(
+            <SalonBreadcrumbs
+                iconClass="sprite-breadcrumbs_statistics"
+                items={[
+                    { label: 'Statystyki', href: '/statistics' },
+                    { label: 'Raport finansowy' },
+                ]}
+            />,
+        );
+
+        const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
+        expect(nav).toBeInTheDocument();
+    });
+
+    it('marks last item with aria-current="page"', () => {
+        render(
+            <SalonBreadcrumbs
+                iconClass="sprite-breadcrumbs_statistics"
+                items={[
+                    { label: 'Statystyki', href: '/statistics' },
+                    { label: 'Raport finansowy' },
+                ]}
+            />,
+        );
+
+        const lastItem = screen.getByText('Raport finansowy');
+        expect(lastItem).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('renders nothing when items is empty', () => {
+        const { container } = render(
+            <SalonBreadcrumbs iconClass="sprite-breadcrumbs_statistics" items={[]} />,
+        );
+        expect(container.firstChild).toBeNull();
+    });
 });
