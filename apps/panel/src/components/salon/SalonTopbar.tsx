@@ -131,6 +131,7 @@ export default function SalonTopbar() {
                             <Link
                                 className="link e2e-notification-center-navbar"
                                 href="/notifications"
+                                aria-label="Powiadomienia"
                             >
                                 <div
                                     className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}

@@ -169,13 +169,18 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="modal-footer">
                         <button
+                            type="button"
                             className="btn btn-outline-secondary float-start"
                             onClick={() => handleAdd(null)}
                         >
                             <i className="fa fa-plus me-2"></i>
                             Dodaj kategorię główną
                         </button>
-                        <button className="btn btn-primary" onClick={onClose}>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={onClose}
+                        >
                             Gotowe
                         </button>
                     </div>
