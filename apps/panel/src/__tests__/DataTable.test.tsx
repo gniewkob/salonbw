@@ -30,19 +30,21 @@ describe('DataTable', () => {
         expect(cells[0][0]).toHaveTextContent('1');
         expect(cells[1][0]).toHaveTextContent('2');
 
-        fireEvent.click(screen.getByText('Next'));
+        fireEvent.click(screen.getByRole('button', { name: /następna strona/i }));
         cells = getBodyCells();
         expect(cells).toHaveLength(1);
         expect(cells[0][0]).toHaveTextContent('3');
 
-        fireEvent.click(screen.getByText('Prev'));
+        fireEvent.click(
+            screen.getByRole('button', { name: /poprzednia strona/i }),
+        );
         cells = getBodyCells();
         expect(cells[0][0]).toHaveTextContent('1');
     });
 
     it('filters by search input', () => {
         render(<DataTable data={data} columns={columns} pageSize={10} />);
-        fireEvent.change(screen.getByPlaceholderText('Search'), {
+        fireEvent.change(screen.getByPlaceholderText('Szukaj'), {
             target: { value: 'brav' },
         });
         const cells = getBodyCells();

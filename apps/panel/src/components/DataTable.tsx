@@ -78,8 +78,13 @@ export default function DataTable<T>({
 
     return (
         <div>
+            <label htmlFor="datatable-search" className="visually-hidden">
+                Szukaj w tabeli
+            </label>
             <input
-                placeholder="Search"
+                id="datatable-search"
+                placeholder="Szukaj"
+                aria-label="Szukaj w tabeli"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="border p-1 mb-2"
@@ -96,6 +101,7 @@ export default function DataTable<T>({
                                 (typeof col.accessor !== 'function'
                                     ? col.accessor
                                     : undefined);
+                            const isActive = activeKey && sortKey === activeKey;
                             return (
                                 <th
                                     key={colKey(col)}
@@ -110,15 +116,22 @@ export default function DataTable<T>({
                                             ? () => toggleSort(col)
                                             : undefined
                                     }
+                                    aria-sort={
+                                        isActive
+                                            ? sortDir === 'asc'
+                                                ? 'ascending'
+                                                : 'descending'
+                                            : undefined
+                                    }
+                                    scope="col"
                                 >
                                     {col.header}
-                                    {activeKey &&
-                                        sortKey === activeKey &&
+                                    {isActive &&
                                         (sortDir === 'asc' ? ' ▲' : ' ▼')}
                                 </th>
                             );
                         })}
-                        <th className="p-2" />
+                        <th className="p-2" scope="col" />
                     </tr>
                 </thead>
                 <tbody>
@@ -141,8 +154,9 @@ export default function DataTable<T>({
                     disabled={page === 0}
                     onClick={() => setPage((p) => Math.max(p - 1, 0))}
                     className="border px-2 py-1"
+                    aria-label="Poprzednia strona"
                 >
-                    Prev
+                    ‹
                 </button>
                 <span>
                     {page + 1} / {totalPages || 1}
@@ -153,8 +167,9 @@ export default function DataTable<T>({
                         setPage((p) => Math.min(p + 1, totalPages - 1))
                     }
                     className="border px-2 py-1"
+                    aria-label="Następna strona"
                 >
-                    Next
+                    ›
                 </button>
             </div>
         </div>
