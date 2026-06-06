@@ -147,6 +147,7 @@ export function useDeleteProduct() {
 export function useDeleteProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch(`/product-categories/${id}`, { method: 'DELETE' }),
@@ -157,6 +158,9 @@ export function useDeleteProductCategory() {
             void queryClient.invalidateQueries({
                 queryKey: ['warehouse-products'],
             });
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć kategorii');
         },
     });
 }

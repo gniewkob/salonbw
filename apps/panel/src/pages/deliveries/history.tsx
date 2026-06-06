@@ -207,7 +207,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                                                 receiveMutation.isPending
                                                             }
                                                             onClick={() =>
-                                                                void receiveMutation.mutateAsync(
+                                                                receiveMutation.mutate(
                                                                     {
                                                                         id: delivery.id,
                                                                     },
@@ -223,7 +223,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                                                 cancelMutation.isPending
                                                             }
                                                             onClick={() =>
-                                                                void cancelMutation.mutateAsync(
+                                                                cancelMutation.mutate(
                                                                     delivery.id,
                                                                 )
                                                             }

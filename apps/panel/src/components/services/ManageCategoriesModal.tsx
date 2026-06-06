@@ -41,20 +41,28 @@ export default function ManageCategoriesModal({
     };
 
     const handleSave = async (data: CreateServiceCategoryDto) => {
-        if (editingCategory) {
-            await updateCategory.mutateAsync({
-                id: editingCategory.id,
-                data,
-            });
-        } else {
-            await createCategory.mutateAsync(data);
+        try {
+            if (editingCategory) {
+                await updateCategory.mutateAsync({
+                    id: editingCategory.id,
+                    data,
+                });
+            } else {
+                await createCategory.mutateAsync(data);
+            }
+            setIsFormOpen(false);
+        } catch {
+            // error handled by hook
         }
-        setIsFormOpen(false);
     };
 
     const handleDelete = async (id: number, name: string) => {
         if (confirm(`Czy na pewno chcesz usunąć kategorię "${name}"?`)) {
-            await deleteCategory.mutateAsync(id);
+            try {
+                await deleteCategory.mutateAsync(id);
+            } catch {
+                // error handled by hook
+            }
         }
     };
 

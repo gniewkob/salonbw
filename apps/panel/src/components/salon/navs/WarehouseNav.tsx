@@ -220,6 +220,32 @@ export default function WarehouseNav() {
         ]);
     }
 
+    if (isSubmodulePath('/suppliers')) {
+        return renderModuleNav('DOSTAWCY', [
+            { label: 'lista dostawców', href: '/suppliers' },
+        ]);
+    }
+
+    if (isSubmodulePath('/deliveries')) {
+        return renderModuleNav('DOSTAWY', [
+            { label: 'nowa dostawa', href: '/deliveries/new' },
+            { label: 'historia dostaw', href: '/deliveries/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/orders')) {
+        return renderModuleNav('ZAMÓWIENIA', [
+            { label: 'nowe zamówienie', href: '/orders/new' },
+            { label: 'historia zamówień', href: '/orders/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/manufacturers')) {
+        return renderModuleNav('PRODUCENCI', [
+            { label: 'lista producentów', href: '/manufacturers' },
+        ]);
+    }
+
     return (
         <div className="column_row">
             <div data-product-categories-menu="">

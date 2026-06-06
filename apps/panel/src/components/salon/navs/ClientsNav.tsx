@@ -417,8 +417,12 @@ export default function ClientsNav() {
                 <CreateCustomerGroupModal
                     onClose={() => setShowCreateGroupModal(false)}
                     onCreate={async (data) => {
-                        await createGroup.mutateAsync(data);
-                        setShowCreateGroupModal(false);
+                        try {
+                            await createGroup.mutateAsync(data);
+                            setShowCreateGroupModal(false);
+                        } catch {
+                            // error handled by hook
+                        }
                     }}
                     submitting={createGroup.isPending}
                 />

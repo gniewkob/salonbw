@@ -146,7 +146,7 @@ export default function InventoryDetailsPage() {
                                                         ''
                                                     }
                                                     onChange={(event) =>
-                                                        void updateItemMutation.mutateAsync(
+                                                        updateItemMutation.mutate(
                                                             {
                                                                 stocktakingId:
                                                                     data.id,

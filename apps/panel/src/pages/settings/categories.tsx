@@ -194,7 +194,7 @@ export default function SettingsCategoriesPage() {
             return;
         }
 
-        void deleteCategory.mutateAsync(category.id);
+        deleteCategory.mutate(category.id);
     };
 
     const handleMove = (categoryId: number, direction: 'up' | 'down') => {

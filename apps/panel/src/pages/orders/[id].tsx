@@ -50,7 +50,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-primary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void sendMutation.mutateAsync(orderId)
+                                        ? sendMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -61,9 +61,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-outline-secondary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void cancelMutation.mutateAsync(
-                                              orderId,
-                                          )
+                                        ? cancelMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -78,9 +76,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-primary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void receiveMutation.mutateAsync(
-                                              orderId,
-                                          )
+                                        ? receiveMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -91,9 +87,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-outline-secondary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void cancelMutation.mutateAsync(
-                                              orderId,
-                                          )
+                                        ? cancelMutation.mutate(orderId)
                                         : undefined
                                 }
                             >

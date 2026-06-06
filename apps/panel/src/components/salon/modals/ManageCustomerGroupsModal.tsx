@@ -79,21 +79,29 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
             color: newGroup.color,
         };
         if (!payload.name) return;
-        await create.mutateAsync(payload);
-        setNewGroup({ name: '', description: '', color: '#06b6d4' });
+        try {
+            await create.mutateAsync(payload);
+            setNewGroup({ name: '', description: '', color: '#06b6d4' });
+        } catch {
+            // error handled by hook
+        }
     };
 
     const handleSave = async (groupId: number) => {
         const d = drafts[groupId];
         if (!d) return;
-        await update.mutateAsync({
-            id: groupId,
-            data: {
-                name: d.name.trim(),
-                description: d.description.trim() || undefined,
-                color: d.color,
-            },
-        });
+        try {
+            await update.mutateAsync({
+                id: groupId,
+                data: {
+                    name: d.name.trim(),
+                    description: d.description.trim() || undefined,
+                    color: d.color,
+                },
+            });
+        } catch {
+            // error handled by hook
+        }
     };
 
     const handleDelete = async (groupId: number) => {
@@ -104,7 +112,11 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
         ) {
             return;
         }
-        await del.mutateAsync(groupId);
+        try {
+            await del.mutateAsync(groupId);
+        } catch {
+            // error handled by hook
+        }
     };
 
     return (

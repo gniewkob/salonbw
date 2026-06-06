@@ -550,12 +550,16 @@ export default function CalendarPage() {
             return;
         }
 
-        await rescheduleAppointment.mutateAsync({
-            id: eventId,
-            startTime: newStart.toISOString(),
-            endTime: newEnd.toISOString(),
-            employeeId: targetEmployeeId,
-        });
+        try {
+            await rescheduleAppointment.mutateAsync({
+                id: eventId,
+                startTime: newStart.toISOString(),
+                endTime: newEnd.toISOString(),
+                employeeId: targetEmployeeId,
+            });
+        } catch {
+            revert?.();
+        }
     };
 
     return (
