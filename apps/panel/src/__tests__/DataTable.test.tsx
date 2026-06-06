@@ -30,7 +30,9 @@ describe('DataTable', () => {
         expect(cells[0][0]).toHaveTextContent('1');
         expect(cells[1][0]).toHaveTextContent('2');
 
-        fireEvent.click(screen.getByRole('button', { name: /następna strona/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /następna strona/i }),
+        );
         cells = getBodyCells();
         expect(cells).toHaveLength(1);
         expect(cells[0][0]).toHaveTextContent('3');

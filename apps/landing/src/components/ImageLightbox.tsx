@@ -148,7 +148,7 @@ export default function ImageLightbox(props: Props) {
             >
                 <Image
                     src={currentSrc}
-                    alt={alt || 'Image preview'}
+                    alt={alt || g.imageAlt}
                     fill
                     style={{ objectFit: 'contain' }}
                     sizes="90vw"
