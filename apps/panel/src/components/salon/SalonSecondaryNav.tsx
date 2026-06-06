@@ -111,6 +111,7 @@ export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
                                 | 'employees'
                                 | 'comments'
                                 | 'commissions'
+                                | 'recipe'
                         }
                     />
                 ) : (

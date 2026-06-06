@@ -7,7 +7,8 @@ type TabId =
     | 'history'
     | 'employees'
     | 'comments'
-    | 'commissions';
+    | 'commissions'
+    | 'recipe';
 
 interface Tab {
     id: TabId;
@@ -51,6 +52,12 @@ const tabs: Tab[] = [
         label: 'prowizje',
         iconClass: 'sprite-stock_value_report',
         tabName: 'commissions',
+    },
+    {
+        id: 'recipe',
+        label: 'receptura',
+        iconClass: 'sprite-stock_products',
+        tabName: 'recipe',
     },
 ];
 
