@@ -93,7 +93,11 @@ export default function SettingsEmployeeCommissionsPage() {
                                             }
                                         >
                                             <td>{emp.name}</td>
-                                            <td>—</td>
+                                            <td>
+                                                {emp.commissionBase != null
+                                                    ? `${Number(emp.commissionBase).toFixed(1)}%`
+                                                    : '—'}
+                                            </td>
                                             <td>—</td>
                                             <td style={{ textAlign: 'right' }}>
                                                 <Link

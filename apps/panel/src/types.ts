@@ -187,6 +187,7 @@ export interface Employee {
     role?: 'admin' | 'employee' | 'receptionist' | 'client';
     email?: string;
     phone?: string | null;
+    commissionBase?: number;
 }
 
 export interface StaffOption {
