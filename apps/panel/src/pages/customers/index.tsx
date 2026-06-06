@@ -682,16 +682,14 @@ export default function ClientsPage() {
 
                         {activeGroup && (
                             <div className="column_row results_info">
-                                <a
+                                <button
+                                    type="button"
                                     className="close close_all"
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        clearGroupFilter();
-                                    }}
+                                    aria-label="Wyczyść filtr"
+                                    onClick={clearGroupFilter}
                                 >
                                     ×
-                                </a>
+                                </button>
                                 <div className="results_title">
                                     wybrane kryteria wyszukiwania:
                                 </div>
@@ -701,11 +699,10 @@ export default function ClientsPage() {
                                 <div className="results_size_info">
                                     Klientów spełniających kryteria:{' '}
                                     <strong>{displayedCustomers.length}</strong>
-                                    <a
-                                        href="#"
+                                    <button
+                                        type="button"
                                         id="create_group_button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
+                                        onClick={() => {
                                             void router.push(
                                                 {
                                                     pathname: router.pathname,
@@ -720,7 +717,7 @@ export default function ClientsPage() {
                                         }}
                                     >
                                         utwórz grupę
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         )}
