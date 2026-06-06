@@ -5,7 +5,7 @@ describe('ProductForm', () => {
     it('validates fields', async () => {
         const onSubmit = jest.fn();
         render(<ProductForm onSubmit={onSubmit} onCancel={() => {}} />);
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
         expect(await screen.findByRole('alert')).toBeInTheDocument();
         expect(onSubmit).not.toHaveBeenCalled();
     });
@@ -13,17 +13,17 @@ describe('ProductForm', () => {
     it('submits valid data', async () => {
         const onSubmit = jest.fn().mockResolvedValue(undefined);
         render(<ProductForm onSubmit={onSubmit} onCancel={() => {}} />);
-        fireEvent.change(screen.getByPlaceholderText('Name'), {
+        fireEvent.change(screen.getByPlaceholderText('Nazwa'), {
             target: { value: 'P' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Price'), {
+        fireEvent.change(screen.getByPlaceholderText('Cena'), {
             target: { value: '1' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Stock'), {
+        fireEvent.change(screen.getByPlaceholderText('Stan magazynowy'), {
             target: { value: '2' },
         });
         // lowStockThreshold left as default (5)
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
         await waitFor(() =>
             expect(onSubmit).toHaveBeenCalledWith({
                 name: 'P',
