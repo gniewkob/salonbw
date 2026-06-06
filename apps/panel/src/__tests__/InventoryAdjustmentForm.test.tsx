@@ -23,10 +23,10 @@ describe('InventoryAdjustmentForm', () => {
             />,
         );
 
-        fireEvent.change(screen.getByPlaceholderText('Delta'), {
+        fireEvent.change(screen.getByPlaceholderText('Zmiana stanu'), {
             target: { value: '' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         expect(await screen.findByRole('alert')).toBeInTheDocument();
         expect(onSubmit).not.toHaveBeenCalled();
@@ -42,13 +42,13 @@ describe('InventoryAdjustmentForm', () => {
             />,
         );
 
-        fireEvent.change(screen.getByPlaceholderText('Delta'), {
+        fireEvent.change(screen.getByPlaceholderText('Zmiana stanu'), {
             target: { value: '5' },
         });
         fireEvent.change(screen.getByTestId('reason-select'), {
             target: { value: 'delivery' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         await waitFor(() =>
             expect(onSubmit).toHaveBeenCalledWith({
@@ -70,13 +70,13 @@ describe('InventoryAdjustmentForm', () => {
             />,
         );
 
-        fireEvent.change(screen.getByPlaceholderText('Delta'), {
+        fireEvent.change(screen.getByPlaceholderText('Zmiana stanu'), {
             target: { value: '-3' },
         });
         fireEvent.change(screen.getByTestId('reason-select'), {
             target: { value: 'sale' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         await waitFor(() =>
             expect(onSubmit).toHaveBeenCalledWith({
@@ -98,16 +98,16 @@ describe('InventoryAdjustmentForm', () => {
             />,
         );
 
-        fireEvent.change(screen.getByPlaceholderText('Delta'), {
+        fireEvent.change(screen.getByPlaceholderText('Zmiana stanu'), {
             target: { value: '7' },
         });
         fireEvent.change(screen.getByTestId('reason-select'), {
             target: { value: 'correction' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Note (optional)'), {
+        fireEvent.change(screen.getByPlaceholderText('Notatka (opcjonalnie)'), {
             target: { value: 'Batch received' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         await waitFor(() =>
             expect(onSubmit).toHaveBeenCalledWith({
@@ -131,13 +131,13 @@ describe('InventoryAdjustmentForm', () => {
             />,
         );
 
-        fireEvent.change(screen.getByPlaceholderText('Delta'), {
+        fireEvent.change(screen.getByPlaceholderText('Zmiana stanu'), {
             target: { value: '2' },
         });
         fireEvent.change(screen.getByTestId('reason-select'), {
             target: { value: 'damage' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
             'Failed to adjust inventory',
@@ -154,13 +154,13 @@ describe('InventoryAdjustmentForm', () => {
             />,
         );
 
-        fireEvent.change(screen.getByPlaceholderText('Delta'), {
+        fireEvent.change(screen.getByPlaceholderText('Zmiana stanu'), {
             target: { value: '4' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
-            'Reason is required',
+            'Powód jest wymagany',
         );
         expect(onSubmit).not.toHaveBeenCalled();
     });

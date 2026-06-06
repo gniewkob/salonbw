@@ -51,7 +51,7 @@ export default function AdminAppointmentForm({
             await onSubmit({ clientId, employeeId, serviceId, startTime });
         } catch (err: unknown) {
             if (err instanceof Error) setError(err.message);
-            else setError('Error');
+            else setError('Wystąpił błąd');
         } finally {
             setSubmitting(false);
         }
@@ -109,14 +109,14 @@ export default function AdminAppointmentForm({
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>

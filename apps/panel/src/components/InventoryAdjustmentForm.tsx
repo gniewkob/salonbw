@@ -11,6 +11,15 @@ const reasons = [
     'transfer',
 ] as const;
 
+const REASON_LABELS: Record<(typeof reasons)[number], string> = {
+    delivery: 'dostawa',
+    sale: 'sprzedaż',
+    correction: 'korekta',
+    damage: 'uszkodzenie',
+    return: 'zwrot',
+    transfer: 'transfer',
+};
+
 interface Props {
     products: Product[];
     onSubmit: (data: AdjustInventoryData) => Promise<void>;
@@ -54,12 +63,12 @@ export default function InventoryAdjustmentForm({
             !Number.isFinite(parsedData.productId) ||
             parsedData.productId < 1
         ) {
-            setError('Product is required');
+            setError('Produkt jest wymagany');
             return;
         }
 
         if (!Number.isFinite(parsedData.delta)) {
-            setError('Delta is required');
+            setError('Zmiana stanu jest wymagana');
             return;
         }
 
@@ -67,12 +76,12 @@ export default function InventoryAdjustmentForm({
             !parsedData.reason ||
             !reasons.includes(parsedData.reason as (typeof reasons)[number])
         ) {
-            setError('Reason is required');
+            setError('Powód jest wymagany');
             return;
         }
 
         if (parsedData.note && parsedData.note.length > 500) {
-            setError('Note must be <= 500 characters');
+            setError('Notatka może mieć maksymalnie 500 znaków');
             return;
         }
 
@@ -86,7 +95,11 @@ export default function InventoryAdjustmentForm({
                 note: parsedData.note,
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message || 'Error' : 'Error');
+            setError(
+                err instanceof Error
+                    ? err.message || 'Wystąpił błąd'
+                    : 'Wystąpił błąd',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -130,10 +143,10 @@ export default function InventoryAdjustmentForm({
                 value={delta}
                 onChange={(e) => setDelta(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Delta"
+                placeholder="Zmiana stanu"
             />
             <p className="small text-muted">
-                Positive for stock in, negative for stock out
+                Wartość dodatnia = przyjęcie, ujemna = wydanie
             </p>
             <select
                 data-testid="reason-select"
@@ -142,14 +155,14 @@ export default function InventoryAdjustmentForm({
                 onChange={(e) => setReason(e.target.value)}
                 onClick={handleReasonSelectClick}
             >
-                <option value="">Select reason</option>
+                <option value="">— wybierz powód —</option>
                 {reasons.map((option) => (
                     <option
                         key={option}
                         value={option}
                         data-testid={`reason-option-${option}`}
                     >
-                        {option}
+                        {REASON_LABELS[option]}
                     </option>
                 ))}
             </select>
@@ -157,7 +170,7 @@ export default function InventoryAdjustmentForm({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="border p-1 w-100"
-                placeholder="Note (optional)"
+                placeholder="Notatka (opcjonalnie)"
                 maxLength={500}
                 rows={3}
             />
@@ -173,14 +186,14 @@ export default function InventoryAdjustmentForm({
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>
