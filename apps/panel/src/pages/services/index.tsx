@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import {
     useServicesWithFilters,
     useDeleteService,
+    useServiceCategories,
 } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
 import RouteGuard from '@/components/RouteGuard';
@@ -49,6 +50,8 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         includeCategory: true,
         includeVariants: true,
     });
+
+    const { data: categories = [] } = useServiceCategories();
 
     const { data: ranking = [] } = useServiceRanking({
         range: 'this_month',
@@ -248,7 +251,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
             />
 
             <div className="row mb-xl">
-                <div className="col-sm-6">
+                <div className="col-sm-4">
                     <input
                         className="services-search-input"
                         placeholder="wyszukaj usługę"
@@ -259,7 +262,32 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         }}
                     />
                 </div>
-                <div className="col-sm-6 text-end mt-1">
+                <div className="col-sm-4">
+                    <select
+                        className="form-select"
+                        value={categoryId ?? ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            void router.push(
+                                {
+                                    pathname: router.pathname,
+                                    query: val ? { categoryId: val } : {},
+                                },
+                                undefined,
+                                { shallow: true },
+                            );
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <option value="">wszystkie kategorie</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-sm-4 text-end mt-1">
                     <Link href="/services/new" className="btn btn-primary">
                         dodaj usługę
                     </Link>

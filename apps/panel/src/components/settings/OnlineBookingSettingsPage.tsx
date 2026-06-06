@@ -484,7 +484,7 @@ export default function OnlineBookingSettingsPage() {
                     <button
                         type="button"
                         className="btn btn-primary"
-                        disabled={saving || !isEnabled}
+                        disabled={saving}
                         onClick={() => void save()}
                     >
                         {saving ? 'zapisywanie...' : 'zapisz ustawienia'}
