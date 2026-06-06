@@ -204,15 +204,21 @@ export default function SettingsCategoriesPage() {
     };
 
     const handleSaveOrder = async () => {
-        await reorderCategories.mutateAsync(flattenTree(draftTree));
-        setReorderMode(false);
-        setDraftTree([]);
-        await Promise.all([
-            queryClient.invalidateQueries({ queryKey: ['product-categories'] }),
-            queryClient.invalidateQueries({
-                queryKey: ['product-categories-tree'],
-            }),
-        ]);
+        try {
+            await reorderCategories.mutateAsync(flattenTree(draftTree));
+            setReorderMode(false);
+            setDraftTree([]);
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories'],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories-tree'],
+                }),
+            ]);
+        } catch {
+            // error shown via reorderCategories.isError
+        }
     };
 
     return (
@@ -285,6 +291,18 @@ export default function SettingsCategoriesPage() {
                                     </button>
                                 )}
                             </div>
+                            {deleteCategory.isError && (
+                                <div className="alert alert-danger mb-2">
+                                    Nie udało się usunąć kategorii. Spróbuj
+                                    ponownie.
+                                </div>
+                            )}
+                            {reorderCategories.isError && (
+                                <div className="alert alert-danger mb-2">
+                                    Nie udało się zapisać nowego układu. Spróbuj
+                                    ponownie.
+                                </div>
+                            )}
                             {isLoading ? (
                                 <p>Ładowanie...</p>
                             ) : (

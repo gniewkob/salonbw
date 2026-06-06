@@ -166,9 +166,16 @@ export default function CustomerOriginsPage() {
                                                                             `Usunąć źródło "${origin.name}"?`,
                                                                         )
                                                                     ) {
-                                                                        void del.mutateAsync(
-                                                                            origin.id,
-                                                                        );
+                                                                        void del
+                                                                            .mutateAsync(
+                                                                                origin.id,
+                                                                            )
+                                                                            .catch(
+                                                                                () =>
+                                                                                    setSubmitError(
+                                                                                        'Nie udało się usunąć źródła.',
+                                                                                    ),
+                                                                            );
                                                                     }
                                                                 }}
                                                             >
