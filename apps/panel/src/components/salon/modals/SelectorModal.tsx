@@ -54,12 +54,12 @@ export default function SelectorModal({
                             <ul className="nav nav-list">
                                 {filteredItems.map((item) => (
                                     <li key={item.id}>
-                                        <a
-                                            href="javascript:;"
+                                        <button
+                                            type="button"
                                             onClick={() => onSelect(item.id)}
                                         >
                                             {item.name}
-                                        </a>
+                                        </button>
                                     </li>
                                 ))}
                             </ul>

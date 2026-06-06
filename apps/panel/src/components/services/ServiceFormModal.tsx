@@ -577,18 +577,21 @@ export default function ServiceFormModal({
 
                     <form className="form-horizontal" onSubmit={handleSubmit}>
                         <div className="modal-body px-15">
-                            <ul className="nav nav-tabs mt-15">
+                            <ul className="nav nav-tabs mt-15" role="tablist">
                                 <li
                                     className={
                                         activeTab === 'basic' ? 'active' : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeTab === 'basic'}
                                         onClick={() => setActiveTab('basic')}
                                     >
                                         Podstawowe dane
-                                    </a>
+                                    </button>
                                 </li>
                                 <li
                                     className={
@@ -596,15 +599,20 @@ export default function ServiceFormModal({
                                             ? 'active'
                                             : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={
+                                            activeTab === 'resources'
+                                        }
                                         onClick={() =>
                                             setActiveTab('resources')
                                         }
                                     >
                                         Zasoby
-                                    </a>
+                                    </button>
                                 </li>
                                 <li
                                     className={
@@ -612,15 +620,20 @@ export default function ServiceFormModal({
                                             ? 'active'
                                             : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={
+                                            activeTab === 'employees'
+                                        }
                                         onClick={() =>
                                             setActiveTab('employees')
                                         }
                                     >
                                         Pracownicy
-                                    </a>
+                                    </button>
                                 </li>
                                 <li
                                     className={
@@ -628,15 +641,20 @@ export default function ServiceFormModal({
                                             ? 'active'
                                             : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={
+                                            activeTab === 'description'
+                                        }
                                         onClick={() =>
                                             setActiveTab('description')
                                         }
                                     >
                                         Opis
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
 
