@@ -77,23 +77,35 @@ export default function WarehouseDeliveryCreatePage() {
             return null;
         }
 
-        const created = await createDelivery.mutateAsync({
-            supplierId: supplierId ? Number(supplierId) : undefined,
-            deliveryDate,
-            invoiceNumber: invoiceNumber || undefined,
-            notes: notes || undefined,
-            items,
-        });
-
-        return created;
+        try {
+            const created = await createDelivery.mutateAsync({
+                supplierId: supplierId ? Number(supplierId) : undefined,
+                deliveryDate,
+                invoiceNumber: invoiceNumber || undefined,
+                notes: notes || undefined,
+                items,
+            });
+            return created;
+        } catch {
+            setFormError(
+                'Nie udało się zapisać dostawy. Sprawdź dane i spróbuj ponownie.',
+            );
+            return null;
+        }
     };
 
     const submit = async () => {
         setFormError(null);
         const created = await createDraft();
         if (!created) return;
-        await receiveDelivery.mutateAsync({ id: created.id });
-        await router.push('/deliveries/history');
+        try {
+            await receiveDelivery.mutateAsync({ id: created.id });
+            await router.push('/deliveries/history');
+        } catch {
+            setFormError(
+                'Dostawa zapisana, ale nie udało się jej przyjąć. Spróbuj ponownie.',
+            );
+        }
     };
 
     const saveDraftAndExit = async () => {

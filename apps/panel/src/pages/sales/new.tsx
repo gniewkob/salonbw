@@ -135,18 +135,23 @@ export default function WarehouseSaleCreatePage() {
             return;
         }
 
-        const created = await createMutation.mutateAsync({
-            soldAt: soldAt
-                ? new Date(`${soldAt}T12:00:00`).toISOString()
-                : undefined,
-            clientName: clientName || undefined,
-            employeeId: employeeId ? Number(employeeId) : undefined,
-            paymentMethod,
-            note: note || undefined,
-            items: payloadItems,
-        });
-
-        await router.push(`/sales/history/${created.id}`);
+        try {
+            const created = await createMutation.mutateAsync({
+                soldAt: soldAt
+                    ? new Date(`${soldAt}T12:00:00`).toISOString()
+                    : undefined,
+                clientName: clientName || undefined,
+                employeeId: employeeId ? Number(employeeId) : undefined,
+                paymentMethod,
+                note: note || undefined,
+                items: payloadItems,
+            });
+            await router.push(`/sales/history/${created.id}`);
+        } catch {
+            setFormError(
+                'Nie udało się zapisać sprzedaży. Sprawdź dane i spróbuj ponownie.',
+            );
+        }
     };
 
     return (

@@ -67,13 +67,18 @@ export default function WarehouseOrderCreatePage() {
             return;
         }
 
-        await createMutation.mutateAsync({
-            supplierId: supplierId ? Number(supplierId) : undefined,
-            notes: notes || undefined,
-            items,
-        });
-
-        await router.push('/orders/history?status=draft');
+        try {
+            await createMutation.mutateAsync({
+                supplierId: supplierId ? Number(supplierId) : undefined,
+                notes: notes || undefined,
+                items,
+            });
+            await router.push('/orders/history?status=draft');
+        } catch {
+            setFormError(
+                'Nie udało się zapisać zamówienia. Sprawdź dane i spróbuj ponownie.',
+            );
+        }
     };
 
     return (

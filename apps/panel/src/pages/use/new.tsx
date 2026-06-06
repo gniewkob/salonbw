@@ -73,17 +73,22 @@ export default function WarehouseUsageCreatePage() {
             return;
         }
 
-        await createMutation.mutateAsync({
-            clientName: clientName || undefined,
-            employeeId: employeeId ? Number(employeeId) : undefined,
-            scope: usageScope,
-            plannedFor: isPlanned
-                ? new Date(plannedFor).toISOString()
-                : undefined,
-            items,
-        });
-
-        await router.push(isPlanned ? '/use/planned' : '/use/history');
+        try {
+            await createMutation.mutateAsync({
+                clientName: clientName || undefined,
+                employeeId: employeeId ? Number(employeeId) : undefined,
+                scope: usageScope,
+                plannedFor: isPlanned
+                    ? new Date(plannedFor).toISOString()
+                    : undefined,
+                items,
+            });
+            await router.push(isPlanned ? '/use/planned' : '/use/history');
+        } catch {
+            setFormError(
+                'Nie udało się zapisać zużycia. Sprawdź dane i spróbuj ponownie.',
+            );
+        }
     };
 
     return (
