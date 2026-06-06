@@ -99,15 +99,12 @@ export default function WarehouseNav() {
                     currentCategoryId === category.id ? 'active' : undefined
                 }
             >
-                <a
-                    href="#"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        updateFilters(category.id, false);
-                    }}
+                <button
+                    type="button"
+                    onClick={() => updateFilters(category.id, false)}
                 >
                     {category.name}
-                </a>
+                </button>
                 {category.children?.length &&
                 depth < 1 &&
                 expandedCategoryPath.has(category.id) ? (
@@ -250,7 +247,8 @@ export default function WarehouseNav() {
         <div className="column_row">
             <div data-product-categories-menu="">
                 <div className="tree">
-                    <a
+                    <button
+                        type="button"
                         className={
                             !currentCategoryId &&
                             router.query.uncategorized !== 'true'
@@ -258,17 +256,13 @@ export default function WarehouseNav() {
                                 : 'root'
                         }
                         data-menu-item-name="root"
-                        href="#"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            updateFilters(undefined);
-                        }}
+                        onClick={() => updateFilters(undefined)}
                     >
                         <div className="icon_box">
                             <i className="icon sprite-stock_products" />
                         </div>
                         Wszystkie produkty
-                    </a>
+                    </button>
 
                     <ul>
                         {categories?.length
@@ -282,29 +276,23 @@ export default function WarehouseNav() {
                                     : undefined
                             }
                         >
-                            <a
-                                href="#"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    updateFilters(undefined, true);
-                                }}
+                            <button
+                                type="button"
+                                onClick={() => updateFilters(undefined, true)}
                             >
                                 produkty bez kategorii
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </div>
 
                 <div className="tree_options">
-                    <a
-                        href="#"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            setIsManageModalOpen(true);
-                        }}
+                    <button
+                        type="button"
+                        onClick={() => setIsManageModalOpen(true)}
                     >
                         dodaj/edytuj/usuń
-                    </a>
+                    </button>
                 </div>
             </div>
 
