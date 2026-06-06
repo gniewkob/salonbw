@@ -74,9 +74,7 @@ export default function AccountPage() {
                                 <dt>Adres email</dt>
                                 <dd>{user.email}</dd>
                                 <dt>Rola</dt>
-                                <dd>
-                                    {ROLE_LABELS[user.role] ?? user.role}
-                                </dd>
+                                <dd>{ROLE_LABELS[user.role] ?? user.role}</dd>
                             </dl>
                         ) : (
                             <p className="text-muted">Ładowanie...</p>

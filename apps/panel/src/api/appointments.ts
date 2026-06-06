@@ -19,9 +19,7 @@ export function useAppointmentsApi() {
 
     const handleError = useCallback(
         (err: unknown) => {
-            toast.error(
-                err instanceof Error ? err.message : 'Wystąpił błąd',
-            );
+            toast.error(err instanceof Error ? err.message : 'Wystąpił błąd');
         },
         [toast],
     );
