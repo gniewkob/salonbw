@@ -11,6 +11,10 @@ export default function Document(props: CustomDocumentProps) {
     return (
         <Html lang="pl">
             <Head nonce={props.nonce}>
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1"
+                />
                 <meta name="color-scheme" content="light" />
                 <meta name="theme-color" content="#0d0d0d" />
                 <meta name="twitter:card" content="summary_large_image" />
