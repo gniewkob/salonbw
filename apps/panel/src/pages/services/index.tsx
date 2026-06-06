@@ -506,13 +506,9 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                     )}
 
                     <div className="products-export">
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                downloadCsvPriceList();
-                            }}
+                        <button
+                            type="button"
+                            onClick={downloadCsvPriceList}
                             className="btn btn-outline-secondary"
                         >
                             <div
@@ -520,7 +516,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                 aria-hidden="true"
                             />
                             pobierz cennik w pliku Excel
-                        </a>
+                        </button>
                     </div>
                 </>
             )}
