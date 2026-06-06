@@ -301,6 +301,7 @@ export default function AppointmentsPage() {
                                         }
                                     />
                                     <button
+                                        type="button"
                                         className="btn btn-outline-secondary"
                                         onClick={handleSearch}
                                     >

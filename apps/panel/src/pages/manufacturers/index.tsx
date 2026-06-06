@@ -76,6 +76,7 @@ export default function WarehouseManufacturersPage() {
                         type="text"
                         className="form-control form-control-sm"
                         placeholder="wyszukaj producenta"
+                        aria-label="Wyszukaj producenta"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />

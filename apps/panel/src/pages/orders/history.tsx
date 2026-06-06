@@ -71,6 +71,7 @@ export default function WarehouseOrdersHistoryPage() {
                             <input
                                 type="text"
                                 placeholder="wyszukaj w historii zamówień..."
+                                aria-label="Wyszukaj w historii zamówień"
                                 value={search}
                                 onChange={(e) => {
                                     setSearch(e.target.value);

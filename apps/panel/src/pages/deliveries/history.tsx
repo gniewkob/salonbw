@@ -84,6 +84,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                             <input
                                 type="text"
                                 placeholder="wyszukaj w historii dostaw..."
+                                aria-label="Wyszukaj w historii dostaw"
                                 value={search}
                                 onChange={(e) => {
                                     setSearch(e.target.value);
