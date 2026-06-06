@@ -1,5 +1,6 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
+import Script from 'next/script';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
@@ -7,6 +8,8 @@ import ImageLightbox from '@/components/ImageLightbox';
 import SectionHeader from '@/components/SectionHeader';
 import { trackEvent } from '@/utils/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { BUSINESS_INFO } from '@/config/content';
+import { jsonLd, absUrl } from '@/utils/seo';
 import {
     cacheKey,
     readCache,
@@ -136,7 +139,13 @@ export default function GalleryPage({
         try {
             trackEvent('select_item', {
                 item_list_name: 'gallery',
-                items: [{ item_id: item.id, item_name: item.caption || `Gallery ${i + 1}`, item_category: 'Gallery' }],
+                items: [
+                    {
+                        item_id: item.id,
+                        item_name: item.caption || `Gallery ${i + 1}`,
+                        item_category: 'Gallery',
+                    },
+                ],
                 cta: 'gallery_grid',
             });
         } catch {}
@@ -146,14 +155,54 @@ export default function GalleryPage({
         <PublicLayout>
             <Head>
                 <title>Galeria | Salon Black &amp; White</title>
-                <meta name="description" content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia." />
-                <meta property="og:title" content="Galeria realizacji — Salon Black & White" />
-                <meta property="og:description" content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia." />
-                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`} />
+                <meta
+                    name="description"
+                    content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia."
+                />
+                <meta
+                    property="og:title"
+                    content="Galeria realizacji — Salon Black & White"
+                />
+                <meta
+                    property="og:description"
+                    content="Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia."
+                />
+                <meta
+                    property="og:image"
+                    content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`}
+                />
                 <meta property="og:type" content="website" />
-                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/gallery`} />
+                <link
+                    rel="canonical"
+                    href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/gallery`}
+                />
                 <meta name="robots" content="index, follow" />
             </Head>
+            <Script
+                id="ld-gallery"
+                type="application/ld+json"
+                strategy="afterInteractive"
+            >
+                {jsonLd({
+                    '@context': 'https://schema.org',
+                    '@type': 'WebPage',
+                    name: 'Galeria realizacji — Salon Black & White',
+                    description:
+                        'Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia.',
+                    url: absUrl('/gallery'),
+                    isPartOf: {
+                        '@type': 'HairSalon',
+                        name: BUSINESS_INFO.name,
+                        address: {
+                            '@type': 'PostalAddress',
+                            streetAddress: BUSINESS_INFO.address.street,
+                            addressLocality: BUSINESS_INFO.address.city,
+                            postalCode: BUSINESS_INFO.address.postalCode,
+                            addressCountry: 'PL',
+                        },
+                    },
+                })}
+            </Script>
 
             <div className="ig-page">
                 <div className="ig-hero container mx-auto px-4 md:px-8">
@@ -173,7 +222,9 @@ export default function GalleryPage({
                             <button
                                 type="button"
                                 className="ig-fallback__btn"
-                                onClick={() => { void handleRetry(); }}
+                                onClick={() => {
+                                    void handleRetry();
+                                }}
                                 disabled={retrying}
                             >
                                 {retrying ? g.loading : g.refresh}
@@ -193,7 +244,16 @@ export default function GalleryPage({
                                         try {
                                             trackEvent('select_item', {
                                                 item_list_name: 'gallery',
-                                                items: [{ item_id: item.id, item_name: item.caption || `Gallery ${i + 1}`, item_category: 'Gallery' }],
+                                                items: [
+                                                    {
+                                                        item_id: item.id,
+                                                        item_name:
+                                                            item.caption ||
+                                                            `Gallery ${i + 1}`,
+                                                        item_category:
+                                                            'Gallery',
+                                                    },
+                                                ],
                                                 cta: 'gallery_video_play',
                                             });
                                         } catch {}
@@ -204,14 +264,26 @@ export default function GalleryPage({
                                         controls
                                         preload="metadata"
                                         poster={item.posterUrl}
-                                        style={{ display: 'block', width: '100%', height: 'auto' }}
+                                        style={{
+                                            display: 'block',
+                                            width: '100%',
+                                            height: 'auto',
+                                        }}
                                     >
                                         <source src={item.videoUrl} />
                                     </video>
                                     {item.caption && (
-                                        <div className="gallery-caption" style={{ opacity: 1, transform: 'none' }}>
+                                        <div
+                                            className="gallery-caption"
+                                            style={{
+                                                opacity: 1,
+                                                transform: 'none',
+                                            }}
+                                        >
                                             <span className="gallery-caption__accent" />
-                                            <span className="gallery-caption__text">{item.caption.split('\n')[0]}</span>
+                                            <span className="gallery-caption__text">
+                                                {item.caption.split('\n')[0]}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -224,20 +296,32 @@ export default function GalleryPage({
                                 type="button"
                                 className="ig-item"
                                 onClick={() => openLightbox(item, i)}
-                                aria-label={item.caption ? `${g.open}: ${item.caption.split('\n')[0]}` : `${g.openPhoto} ${i + 1}`}
+                                aria-label={
+                                    item.caption
+                                        ? `${g.open}: ${item.caption.split('\n')[0]}`
+                                        : `${g.openPhoto} ${i + 1}`
+                                }
                             >
                                 <Image
                                     src={item.imageUrl!}
                                     alt={item.caption ?? g.imageAlt}
                                     width={600}
                                     height={600}
-                                    style={{ display: 'block', width: '100%', height: 'auto' }}
+                                    style={{
+                                        display: 'block',
+                                        width: '100%',
+                                        height: 'auto',
+                                    }}
                                     sizes="(min-width: 1200px) 25vw, (min-width: 768px) 33vw, 50vw"
                                 />
                                 {item.caption && (
                                     <div className="gallery-caption">
                                         <span className="gallery-caption__accent" />
-                                        <span className="gallery-caption__text">{item.caption.split('\n')[0]?.slice(0, 60)}</span>
+                                        <span className="gallery-caption__text">
+                                            {item.caption
+                                                .split('\n')[0]
+                                                ?.slice(0, 60)}
+                                        </span>
                                     </div>
                                 )}
                             </button>
@@ -276,7 +360,10 @@ export default function GalleryPage({
                     alt={imageItems[lightboxIndex]?.caption || g.preview}
                     onPrev={() =>
                         setLightboxIndex((idx) =>
-                            idx === null ? null : (idx + imageItems.length - 1) % imageItems.length,
+                            idx === null
+                                ? null
+                                : (idx + imageItems.length - 1) %
+                                  imageItems.length,
                         )
                     }
                     onNext={() =>
@@ -291,10 +378,14 @@ export default function GalleryPage({
     );
 }
 
-export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<
+    GalleryPageProps
+> = async () => {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
-        return { props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true } };
+        return {
+            props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true },
+        };
     }
     const key = cacheKey(null, '12|ssr');
     const cached = readCache(key);
@@ -317,9 +408,20 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
         const items: GalleryItem[] = (json.data ?? []).map(
             ({ id, media_url, media_type, caption, thumbnail_url }) => {
                 if (media_type === 'VIDEO') {
-                    return { id, type: 'VIDEO', videoUrl: media_url, posterUrl: thumbnail_url, caption } satisfies GalleryItem;
+                    return {
+                        id,
+                        type: 'VIDEO',
+                        videoUrl: media_url,
+                        posterUrl: thumbnail_url,
+                        caption,
+                    } satisfies GalleryItem;
                 }
-                return { id, type: 'IMAGE', imageUrl: media_url, caption } satisfies GalleryItem;
+                return {
+                    id,
+                    type: 'IMAGE',
+                    imageUrl: media_url,
+                    caption,
+                } satisfies GalleryItem;
             },
         );
         const nextCursor = json?.paging?.cursors?.after ?? null;
@@ -327,6 +429,8 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
         writeCache(key, { items, nextCursor, fallback: false });
         return { props: { items, nextCursor, fallback: false } };
     } catch {
-        return { props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true } };
+        return {
+            props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true },
+        };
     }
 };

@@ -1,6 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import Script from 'next/script';
 import type { Route } from 'next';
 import { useEffect, useMemo, useState } from 'react';
 import { Service } from '@/types';
@@ -9,6 +10,7 @@ import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
+import { jsonLd, absUrl } from '@/utils/seo';
 
 interface ServiceCategory {
     id: number | null;
@@ -134,6 +136,31 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                 />
                 <meta name="robots" content="index, follow" />
             </Head>
+            <Script
+                id="ld-services"
+                type="application/ld+json"
+                strategy="afterInteractive"
+            >
+                {jsonLd({
+                    '@context': 'https://schema.org',
+                    '@type': 'ItemList',
+                    name: 'Usługi fryzjerskie — Black & White',
+                    description: `Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}.`,
+                    url: absUrl('/services'),
+                    provider: {
+                        '@type': 'HairSalon',
+                        name: BUSINESS_INFO.name,
+                        address: {
+                            '@type': 'PostalAddress',
+                            streetAddress: BUSINESS_INFO.address.street,
+                            addressLocality: BUSINESS_INFO.address.city,
+                            postalCode: BUSINESS_INFO.address.postalCode,
+                            addressCountry: 'PL',
+                        },
+                        telephone: BUSINESS_INFO.contact.phone,
+                    },
+                })}
+            </Script>
 
             <div className="svcs-page">
                 {/* Hero */}
