@@ -5,8 +5,15 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import PanelSection from '@/components/ui/PanelSection';
 import { useAuth } from '@/contexts/AuthContext';
 
+const ROLE_LABELS: Record<string, string> = {
+    admin: 'Administrator',
+    employee: 'Pracownik',
+    receptionist: 'Recepcja',
+    client: 'Klient',
+};
+
 export default function AccountPage() {
-    const { role, apiFetch } = useAuth();
+    const { role, user, apiFetch } = useAuth();
     const [current, setCurrent] = useState('');
     const [next, setNext] = useState('');
     const [confirm, setConfirm] = useState('');
@@ -58,6 +65,24 @@ export default function AccountPage() {
                         iconClass="sprite-breadcrumbs_settings"
                         items={[{ label: 'Moje konto' }]}
                     />
+
+                    <PanelSection title="Informacje o koncie">
+                        {user ? (
+                            <dl className="dl-horizontal">
+                                <dt>Imię i nazwisko</dt>
+                                <dd>{user.name}</dd>
+                                <dt>Adres email</dt>
+                                <dd>{user.email}</dd>
+                                <dt>Rola</dt>
+                                <dd>
+                                    {ROLE_LABELS[user.role] ?? user.role}
+                                </dd>
+                            </dl>
+                        ) : (
+                            <p className="text-muted">Ładowanie...</p>
+                        )}
+                    </PanelSection>
+
                     <PanelSection title="Zmień hasło">
                         <form
                             onSubmit={(e) => void handleSubmit(e)}

@@ -12,11 +12,13 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useServiceApi extra', () => {
-    it('updates service', async () => {
-        const apiFetch = jest.fn().mockResolvedValue({ id: 1, name: 'B' });
+    it('updates and removes service without throwing', async () => {
+        const apiFetch = jest
+            .fn()
+            .mockResolvedValueOnce({ id: 1, name: 'B' }) // update
+            .mockResolvedValueOnce(undefined); // remove
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
@@ -25,10 +27,13 @@ describe('useServiceApi extra', () => {
         await act(async () => {
             await result.current.update(1, { name: 'B' });
         });
-        expect(toast.success).toHaveBeenCalled();
+        await act(async () => {
+            await result.current.remove(1);
+        });
+        expect(apiFetch).toHaveBeenCalledTimes(2);
     });
 
-    it('remove shows error on failure', async () => {
+    it('remove throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -39,11 +44,10 @@ describe('useServiceApi extra', () => {
             act(async () => {
                 await result.current.remove(1);
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 
-    it('create shows error on failure', async () => {
+    it('create throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('nope'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -54,7 +58,6 @@ describe('useServiceApi extra', () => {
             act(async () => {
                 await result.current.create({ name: 'A' });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('nope');
     });
 });

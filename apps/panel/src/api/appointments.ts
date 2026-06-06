@@ -19,7 +19,9 @@ export function useAppointmentsApi() {
 
     const handleError = useCallback(
         (err: unknown) => {
-            toast.error(err instanceof Error ? err.message : 'Error');
+            toast.error(
+                err instanceof Error ? err.message : 'Wystąpił błąd',
+            );
         },
         [toast],
     );
@@ -37,7 +39,7 @@ export function useAppointmentsApi() {
                 body: JSON.stringify(data),
             }),
         onSuccess: (appt: Appointment) => {
-            toast.success('Appointment created');
+            toast.success('Wizyta została utworzona');
             invalidateAppointments();
             try {
                 if (appt?.service) {
@@ -72,7 +74,7 @@ export function useAppointmentsApi() {
                 body: JSON.stringify(payload.data),
             }),
         onSuccess: () => {
-            toast.success('Appointment updated');
+            toast.success('Wizyta została zaktualizowana');
             invalidateAppointments();
         },
         onError: handleError,
@@ -84,7 +86,7 @@ export function useAppointmentsApi() {
                 method: 'PATCH',
             }),
         onSuccess: () => {
-            toast.success('Appointment cancelled');
+            toast.success('Wizyta została anulowana');
             invalidateAppointments();
         },
         onError: handleError,
@@ -96,7 +98,7 @@ export function useAppointmentsApi() {
                 method: 'PATCH',
             }),
         onSuccess: (appt: Appointment) => {
-            toast.success('Appointment completed');
+            toast.success('Wizyta została zakończona');
             invalidateAppointments();
             try {
                 if (appt?.service) {
