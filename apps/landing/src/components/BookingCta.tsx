@@ -24,16 +24,22 @@ export default function BookingCta() {
             <div className="booking-cta-section__overlay" aria-hidden="true" />
 
             <div className="booking-cta-section__content">
-                <span className="booking-cta-section__eyebrow">{b.eyebrow}</span>
+                <span className="booking-cta-section__eyebrow">
+                    {b.eyebrow}
+                </span>
                 <h2 className="booking-cta-section__heading">
-                    {b.headingLine1}<br />
-                    {b.headingLine2}<br />
+                    {b.headingLine1}
+                    <br />
+                    {b.headingLine2}
+                    <br />
                     <em>{b.headingLine3}</em>
                 </h2>
                 <p className="booking-cta-section__sub">
-                    {BUSINESS_INFO.address.city} · {BUSINESS_INFO.address.street} · {b.since}
+                    {BUSINESS_INFO.address.city} ·{' '}
+                    {BUSINESS_INFO.address.street} · {b.since}
                 </p>
                 <button
+                    type="button"
                     onClick={() => setOpen(true)}
                     className="split-hero__cta-primary"
                     aria-label={T.nav.booking}
