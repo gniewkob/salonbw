@@ -310,6 +310,7 @@ export function useCreateStocktaking() {
 export function useStartStocktaking() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch<Stocktaking>(`/stocktaking/${id}/start`, {
@@ -320,6 +321,9 @@ export function useStartStocktaking() {
             void queryClient.invalidateQueries({
                 queryKey: ['stocktaking', id],
             });
+        },
+        onError: () => {
+            toast.error('Nie udało się rozpocząć inwentaryzacji.');
         },
     });
 }
@@ -385,6 +389,7 @@ export function useUpdateStocktakingItem() {
 export function useCompleteStocktaking() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             id,
@@ -406,6 +411,10 @@ export function useCompleteStocktaking() {
                 queryKey: ['stocktaking', id],
             });
             void queryClient.invalidateQueries({ queryKey: ['products'] });
+            toast.success('Inwentaryzacja zakończona');
+        },
+        onError: () => {
+            toast.error('Nie udało się zakończyć inwentaryzacji.');
         },
     });
 }

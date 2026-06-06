@@ -34,15 +34,23 @@ export default function InventoryDetailsPage() {
 
     const start = async () => {
         if (!stocktakingId) return;
-        await startMutation.mutateAsync(stocktakingId);
+        try {
+            await startMutation.mutateAsync(stocktakingId);
+        } catch {
+            // error handled by hook
+        }
     };
 
     const complete = async () => {
         if (!stocktakingId) return;
-        await completeMutation.mutateAsync({
-            id: stocktakingId,
-            applyDifferences: true,
-        });
+        try {
+            await completeMutation.mutateAsync({
+                id: stocktakingId,
+                applyDifferences: true,
+            });
+        } catch {
+            // error handled by hook
+        }
     };
 
     return (
