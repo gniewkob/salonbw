@@ -92,7 +92,16 @@ export default function AutomaticMessagesPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.name.trim()) return;
+        if (!form.name.trim()) {
+            toast.error('Nazwa reguły jest wymagana.');
+            return;
+        }
+        if (!form.templateId && !form.content?.trim()) {
+            toast.error(
+                'Treść wiadomości jest wymagana (lub wybierz szablon).',
+            );
+            return;
+        }
         setIsSaving(true);
         try {
             if (editingRule) {
@@ -527,13 +536,17 @@ export default function AutomaticMessagesPage() {
                                     {!form.templateId && (
                                         <div className="mb-3">
                                             <label htmlFor="rule-content">
-                                                Treść wiadomości
+                                                Treść wiadomości{' '}
+                                                <span className="text-danger">
+                                                    *
+                                                </span>
                                             </label>
                                             <textarea
                                                 id="rule-content"
                                                 className="form-control"
                                                 rows={4}
                                                 value={form.content ?? ''}
+                                                required
                                                 onChange={(e) =>
                                                     setForm((f) => ({
                                                         ...f,

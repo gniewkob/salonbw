@@ -351,7 +351,12 @@ export default function MassCommunicationPage() {
 
                                 {channel === 'email' && (
                                     <div className="mb-3">
-                                        <label>Temat</label>
+                                        <label>
+                                            Temat{' '}
+                                            <span className="text-danger">
+                                                *
+                                            </span>
+                                        </label>
                                         <input
                                             type="text"
                                             className="form-control"
@@ -360,6 +365,7 @@ export default function MassCommunicationPage() {
                                                 setSubject(e.target.value)
                                             }
                                             placeholder="Wpisz temat wiadomości"
+                                            required
                                         />
                                     </div>
                                 )}
