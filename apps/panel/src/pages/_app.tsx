@@ -1,5 +1,6 @@
 import type { AppProps, NextWebVitalsMetric } from 'next/app';
 import { useEffect, useState } from 'react';
+import Head from 'next/head';
 import Script from 'next/script';
 import { useRouter } from 'next/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -103,6 +104,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     return (
         <QueryClientProvider client={queryClient}>
+            <Head>
+                <title>Panel — Salon Black &amp; White</title>
+            </Head>
             <AuthProvider>
                 <ToastProvider>
                     <SecondaryNavProvider>
