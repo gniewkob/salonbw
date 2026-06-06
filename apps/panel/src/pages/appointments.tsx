@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -222,6 +223,9 @@ export default function AppointmentsPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:appointments"
         >
+            <Head>
+                <title>Wizyty — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="inner">
                     <SalonBreadcrumbs

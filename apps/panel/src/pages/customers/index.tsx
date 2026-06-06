@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -541,6 +542,9 @@ export default function ClientsPage() {
             roles={['employee', 'receptionist', 'admin']}
             permission="nav:customers"
         >
+            <Head>
+                <title>Klienci — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <DndContext
                     sensors={sensors}

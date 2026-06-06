@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import {
     CheckIcon,
     ChevronLeftIcon,
@@ -190,6 +191,9 @@ export default function BookingPage() {
 
     return (
         <RouteGuard roles={['client']}>
+            <Head>
+                <title>Zarezerwuj wizytę — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salon-section">
                     <div className="salon-column-row">
