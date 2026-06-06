@@ -27,7 +27,7 @@ export default function RouteProgress() {
             className={`fixed top-0 left-0 right-0 h-1 z-50 ${reduce ? '' : 'animate-pulse'}`}
             style={{ background: 'var(--brand-silver)' }}
             role="progressbar"
-            aria-label="Page loading"
+            aria-label="Ładowanie strony"
         />
     );
 }

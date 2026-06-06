@@ -92,7 +92,7 @@ export default function Navbar() {
                         <ul className="flex items-center gap-7">
                             {[
                                 { label: T.nav.home, href: '/' },
-                                { label: T.nav.about, href: '/about' },
+                                { label: T.nav.about, href: '/#about' },
                                 { label: T.nav.services, href: '/services' },
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },
@@ -167,7 +167,7 @@ export default function Navbar() {
                     <button
                         className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        aria-label="Toggle menu"
+                        aria-label="Otwórz menu"
                         aria-expanded={mobileMenuOpen}
                         aria-controls="mobile-menu"
                     >
@@ -196,7 +196,7 @@ export default function Navbar() {
                         <ul className="space-y-1">
                             {[
                                 { label: T.nav.home, href: '/' },
-                                { label: T.nav.about, href: '/about' },
+                                { label: T.nav.about, href: '/#about' },
                                 { label: T.nav.services, href: '/services' },
                                 { label: T.nav.gallery, href: '/gallery' },
                                 { label: T.nav.contact, href: '/contact' },

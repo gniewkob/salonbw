@@ -111,9 +111,11 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 <GoldTickerStrip />
 
                 {/* 6. About — founder + 3 principles */}
-                <ScrollReveal direction="up">
-                    <AboutSpread founder={founder} />
-                </ScrollReveal>
+                <div id="about">
+                    <ScrollReveal direction="up">
+                        <AboutSpread founder={founder} />
+                    </ScrollReveal>
+                </div>
 
                 {/* 7. Gallery */}
                 <SalonGallery images={galleryImages} />

@@ -81,7 +81,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
             ref={sectionRef}
             className="relative min-h-[600px] overflow-hidden"
             style={{ height: '100svh' }}
-            aria-label="Hero slider"
+            aria-label="Slider główny"
             aria-roledescription="carousel"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -172,7 +172,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 type="button"
                 onClick={() => prevSlide()}
                 className="btn-glass absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
-                aria-label="Previous slide"
+                aria-label="Poprzedni slajd"
             >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -183,7 +183,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 type="button"
                 onClick={() => nextSlide()}
                 className="btn-glass absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
-                aria-label="Next slide"
+                aria-label="Następny slajd"
             >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

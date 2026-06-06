@@ -17,6 +17,7 @@ export default function ContactForm() {
     const [emailError, setEmailError] = useState('');
     const [submitError, setSubmitError] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -58,32 +59,47 @@ export default function ContactForm() {
         setError('');
         setEmailError('');
         setSubmitError('');
+        setSubmitting(true);
         const retries = 3;
-        for (let attempt = 0; attempt < retries; attempt++) {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, replyTo: email, message }),
-                    },
-                );
-                if (!res.ok) throw new Error('Failed');
-                toast.success(c.formSuccess);
-                setSubmitted(true);
-                setForm({ name: '', email: '', message: '' });
-                return;
-            } catch (err: unknown) {
-                const e = err as { response?: { data?: unknown }; message?: string };
-                console.error('Failed to submit contact form', e.response?.data || e.message);
-                if (attempt === retries - 1) {
-                    setSubmitError(c.formErrorSend);
-                    toast.error(c.formErrorSend);
-                } else {
-                    await new Promise((res) => setTimeout(res, 1000));
+        try {
+            for (let attempt = 0; attempt < retries; attempt++) {
+                try {
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name,
+                                replyTo: email,
+                                message,
+                            }),
+                        },
+                    );
+                    if (!res.ok) throw new Error('Failed');
+                    toast.success(c.formSuccess);
+                    setSubmitted(true);
+                    setForm({ name: '', email: '', message: '' });
+                    return;
+                } catch (err: unknown) {
+                    const e = err as {
+                        response?: { data?: unknown };
+                        message?: string;
+                    };
+                    console.error(
+                        'Failed to submit contact form',
+                        e.response?.data || e.message,
+                    );
+                    if (attempt === retries - 1) {
+                        setSubmitError(c.formErrorSend);
+                        toast.error(c.formErrorSend);
+                    } else {
+                        await new Promise((res) => setTimeout(res, 1000));
+                    }
                 }
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -184,10 +200,10 @@ export default function ContactForm() {
 
             <button
                 type="submit"
-                disabled={!isValid}
+                disabled={!isValid || submitting}
                 className="btn-silver contact-form__submit"
             >
-                {c.formSubmit}
+                {submitting ? 'Wysyłanie…' : c.formSubmit}
             </button>
         </form>
     );
