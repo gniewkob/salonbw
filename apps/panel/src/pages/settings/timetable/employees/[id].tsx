@@ -272,6 +272,8 @@ export default function SettingsTimetableEmployeeDetailPage() {
     const [exceptionModalOpen, setExceptionModalOpen] = useState(false);
     const [editingException, setEditingException] =
         useState<TimetableException | null>(null);
+    const [scheduleError, setScheduleError] = useState<string | null>(null);
+    const [exceptionError, setExceptionError] = useState<string | null>(null);
 
     const previousMonth = addMonths(date, -1);
     const nextMonth = addMonths(date, 1);
@@ -403,43 +405,61 @@ export default function SettingsTimetableEmployeeDetailPage() {
 
     const handleSaveSchedule = async (slots: SlotData[]) => {
         if (!id) return;
+        setScheduleError(null);
+        try {
+            if (activeTimetable) {
+                await updateTimetable.mutateAsync({
+                    id: activeTimetable.id,
+                    slots,
+                });
+                return;
+            }
 
-        if (activeTimetable) {
-            await updateTimetable.mutateAsync({
-                id: activeTimetable.id,
+            await createTimetable.mutateAsync({
+                employeeId: id,
+                name: `Grafik - ${employee?.name ?? 'pracownik'}`,
+                validFrom: toIsoDate(date),
                 slots,
             });
-            return;
+        } catch {
+            setScheduleError(
+                'Nie udało się zapisać grafiku. Spróbuj ponownie.',
+            );
         }
-
-        await createTimetable.mutateAsync({
-            employeeId: id,
-            name: `Grafik - ${employee?.name ?? 'pracownik'}`,
-            validFrom: toIsoDate(date),
-            slots,
-        });
     };
 
     const handleSaveException = async (data: ExceptionFormData) => {
         if (!activeTimetable) return;
+        setExceptionError(null);
+        try {
+            if (editingException) {
+                await updateException.mutateAsync({
+                    id: editingException.id,
+                    ...data,
+                });
+                return;
+            }
 
-        if (editingException) {
-            await updateException.mutateAsync({
-                id: editingException.id,
+            await createException.mutateAsync({
+                timetableId: activeTimetable.id,
                 ...data,
             });
-            return;
+        } catch {
+            setExceptionError(
+                'Nie udało się zapisać wyjątku. Spróbuj ponownie.',
+            );
         }
-
-        await createException.mutateAsync({
-            timetableId: activeTimetable.id,
-            ...data,
-        });
     };
 
     const handleDeleteException = async (exceptionId: number) => {
         if (window.confirm('Czy na pewno chcesz usunąć ten wyjątek?')) {
-            await deleteException.mutateAsync(exceptionId);
+            try {
+                await deleteException.mutateAsync(exceptionId);
+            } catch {
+                setExceptionError(
+                    'Nie udało się usunąć wyjątku. Spróbuj ponownie.',
+                );
+            }
         }
     };
 
@@ -759,6 +779,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                             </button>
                                         </div>
 
+                                        {scheduleError && (
+                                            <div className="alert alert-danger mt-2">
+                                                {scheduleError}
+                                            </div>
+                                        )}
                                         {editorOpen ? (
                                             <TimetableEditor
                                                 timetable={activeTimetable}
@@ -802,6 +827,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                             </button>
                                         </div>
 
+                                        {exceptionError && (
+                                            <div className="alert alert-danger mb-2">
+                                                {exceptionError}
+                                            </div>
+                                        )}
                                         {!activeTimetable ? (
                                             <div className="timetable-employee-detail__card-placeholder">
                                                 Zapisz najpierw grafik
@@ -818,9 +848,15 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                                 }}
                                                 onDelete={handleDeleteException}
                                                 onApprove={(exceptionId) => {
-                                                    void approveException.mutateAsync(
-                                                        exceptionId,
-                                                    );
+                                                    void approveException
+                                                        .mutateAsync(
+                                                            exceptionId,
+                                                        )
+                                                        .catch(() =>
+                                                            setExceptionError(
+                                                                'Nie udało się zatwierdzić wyjątku.',
+                                                            ),
+                                                        );
                                                 }}
                                                 canApprove
                                             />

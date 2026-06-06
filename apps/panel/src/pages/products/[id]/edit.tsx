@@ -21,6 +21,7 @@ export default function EditProductPage() {
         return Number.isFinite(parsed) ? parsed : undefined;
     }, [router.query.id]);
     const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     const { data: product, isLoading } = useQuery<ProductExtended>({
         queryKey: ['product-edit', productId],
@@ -65,6 +66,7 @@ export default function EditProductPage() {
     const handleSubmit = async () => {
         if (!productId || !form.name.trim()) return;
         setIsSaving(true);
+        setSaveError(null);
         try {
             await productApi.update(productId, {
                 name: form.name.trim(),
@@ -88,6 +90,10 @@ export default function EditProductPage() {
                 }),
             });
             await router.push(`/products/${productId}`);
+        } catch {
+            setSaveError(
+                'Nie udało się zapisać produktu. Sprawdź dane i spróbuj ponownie.',
+            );
         } finally {
             setIsSaving(false);
         }
@@ -326,6 +332,11 @@ export default function EditProductPage() {
                                 </div>
                             </div>
 
+                            {saveError && (
+                                <div className="alert alert-danger mb-3">
+                                    {saveError}
+                                </div>
+                            )}
                             <div className="product-form__actions">
                                 <button
                                     type="submit"
