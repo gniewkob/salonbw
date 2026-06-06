@@ -123,14 +123,18 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
         event.preventDefault();
         const name = newName.trim();
         if (!name) return;
-        await createCategory.mutateAsync({
-            name,
-            parentId: newParentId,
-            sortOrder: 0,
-            isActive: true,
-        });
-        setNewName('');
-        setNewParentId(undefined);
+        try {
+            await createCategory.mutateAsync({
+                name,
+                parentId: newParentId,
+                sortOrder: 0,
+                isActive: true,
+            });
+            setNewName('');
+            setNewParentId(undefined);
+        } catch {
+            // error handled by hook
+        }
     };
 
     const handleUpdate = async (draft: CategoryDraft) => {
@@ -147,15 +151,23 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
         if (draft.parentId && draft.parentId > 0) {
             payload.parentId = draft.parentId;
         }
-        await updateCategory.mutateAsync({
-            id: draft.id,
-            payload,
-        });
+        try {
+            await updateCategory.mutateAsync({
+                id: draft.id,
+                payload,
+            });
+        } catch {
+            // error handled by hook
+        }
     };
 
     const handleDelete = async (id: number, name: string) => {
         if (!confirm(`Usunąć kategorię "${name}"?`)) return;
-        await deleteCategory.mutateAsync(id);
+        try {
+            await deleteCategory.mutateAsync(id);
+        } catch {
+            // error handled by hook
+        }
     };
 
     return (

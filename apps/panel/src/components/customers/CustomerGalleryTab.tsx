@@ -41,7 +41,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                 onChange={(e) => {
                                     const image = e.target.files?.[0];
                                     if (!image) return;
-                                    void upload.mutateAsync({ image });
+                                    upload.mutate({ image });
                                     e.currentTarget.value = '';
                                 }}
                                 disabled={upload.isPending}
@@ -168,11 +168,10 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                         ) {
                                             return;
                                         }
-                                        void del
-                                            .mutateAsync(selectedImage.id)
-                                            .then(() =>
+                                        del.mutate(selectedImage.id, {
+                                            onSuccess: () =>
                                                 setSelectedImageId(null),
-                                            );
+                                        });
                                     }}
                                 >
                                     usuń

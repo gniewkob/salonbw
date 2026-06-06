@@ -300,6 +300,7 @@ export interface CreateServiceVariantDto {
 export function useCreateServiceVariant() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             serviceId,
@@ -319,12 +320,16 @@ export function useCreateServiceVariant() {
             });
             void queryClient.invalidateQueries({ queryKey: ['services'] });
         },
+        onError: () => {
+            toast.error('Nie udało się dodać wariantu');
+        },
     });
 }
 
 export function useUpdateServiceVariant() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             serviceId,
@@ -349,12 +354,16 @@ export function useUpdateServiceVariant() {
             });
             void queryClient.invalidateQueries({ queryKey: ['services'] });
         },
+        onError: () => {
+            toast.error('Nie udało się zapisać wariantu');
+        },
     });
 }
 
 export function useDeleteServiceVariant() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             serviceId,
@@ -371,6 +380,9 @@ export function useDeleteServiceVariant() {
                 queryKey: ['service-variants', serviceId],
             });
             void queryClient.invalidateQueries({ queryKey: ['services'] });
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć wariantu');
         },
     });
 }

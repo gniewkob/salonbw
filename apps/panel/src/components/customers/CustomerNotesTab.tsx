@@ -144,15 +144,15 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     <NoteRow
                         key={note.id}
                         note={note}
-                        onTogglePin={async () => {
-                            await update.mutateAsync({
+                        onTogglePin={() => {
+                            update.mutate({
                                 noteId: note.id,
                                 customerId,
                                 data: { isPinned: false },
                             });
                         }}
-                        onDelete={async () => {
-                            await remove.mutateAsync({
+                        onDelete={() => {
+                            remove.mutate({
                                 noteId: note.id,
                                 customerId,
                             });
@@ -163,15 +163,15 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     <NoteRow
                         key={note.id}
                         note={note}
-                        onTogglePin={async () => {
-                            await update.mutateAsync({
+                        onTogglePin={() => {
+                            update.mutate({
                                 noteId: note.id,
                                 customerId,
                                 data: { isPinned: true },
                             });
                         }}
-                        onDelete={async () => {
-                            await remove.mutateAsync({
+                        onDelete={() => {
+                            remove.mutate({
                                 noteId: note.id,
                                 customerId,
                             });

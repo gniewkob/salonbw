@@ -70,6 +70,7 @@ export function useProductCategories(enabled = true) {
 export function useCreateProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (payload: {
             name: string;
@@ -90,12 +91,16 @@ export function useCreateProductCategory() {
                 queryKey: ['warehouse-products'],
             });
         },
+        onError: () => {
+            toast.error('Nie udało się dodać kategorii');
+        },
     });
 }
 
 export function useUpdateProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             id,
@@ -121,6 +126,9 @@ export function useUpdateProductCategory() {
             void queryClient.invalidateQueries({
                 queryKey: ['warehouse-products'],
             });
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać kategorii');
         },
     });
 }

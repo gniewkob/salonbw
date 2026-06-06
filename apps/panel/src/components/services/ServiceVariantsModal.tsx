@@ -80,29 +80,36 @@ export default function ServiceVariantsModal({
 
     const handleSaveVariant = async () => {
         if (!service) return;
-
-        if (editingVariant) {
-            await updateVariant.mutateAsync({
-                serviceId: service.id,
-                variantId: editingVariant.id,
-                data: formData,
-            });
-        } else {
-            await createVariant.mutateAsync({
-                serviceId: service.id,
-                data: formData,
-            });
+        try {
+            if (editingVariant) {
+                await updateVariant.mutateAsync({
+                    serviceId: service.id,
+                    variantId: editingVariant.id,
+                    data: formData,
+                });
+            } else {
+                await createVariant.mutateAsync({
+                    serviceId: service.id,
+                    data: formData,
+                });
+            }
+            handleCancelForm();
+        } catch {
+            // error handled by hook
         }
-        handleCancelForm();
     };
 
     const handleDeleteVariant = async (variantId: number) => {
         if (!service) return;
         if (window.confirm('Czy na pewno chcesz usunąć ten wariant?')) {
-            await deleteVariant.mutateAsync({
-                serviceId: service.id,
-                variantId,
-            });
+            try {
+                await deleteVariant.mutateAsync({
+                    serviceId: service.id,
+                    variantId,
+                });
+            } catch {
+                // error handled by hook
+            }
         }
     };
 

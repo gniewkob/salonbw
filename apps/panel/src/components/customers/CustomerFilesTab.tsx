@@ -76,7 +76,11 @@ export default function CustomerFilesTab({ customerId }: Props) {
 
     const handleDelete = async (fileId: number) => {
         if (!confirm('Czy na pewno chcesz usunąć ten plik?')) return;
-        await del.mutateAsync(fileId);
+        try {
+            await del.mutateAsync(fileId);
+        } catch {
+            // error handled by hook
+        }
     };
 
     if (isLoading) {
@@ -125,7 +129,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
-                                        void upload.mutateAsync({
+                                        upload.mutate({
                                             file,
                                             category: uploadCategory,
                                         });

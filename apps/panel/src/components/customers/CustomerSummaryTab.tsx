@@ -76,31 +76,37 @@ export default function CustomerSummaryTab({
         ) ?? [];
 
     const handleAddToGroup = async (groupId: number) => {
-        await addToGroup.mutateAsync({
-            groupId,
-            customerIds: [customer.id],
-        });
-        // Aktualizuj lokalny stan
-        const group = allGroups?.find((g) => g.id === groupId);
-        if (group) {
-            setCustomer((prev) => ({
-                ...prev,
-                groups: [...(prev.groups ?? []), group],
-            }));
+        try {
+            await addToGroup.mutateAsync({
+                groupId,
+                customerIds: [customer.id],
+            });
+            const group = allGroups?.find((g) => g.id === groupId);
+            if (group) {
+                setCustomer((prev) => ({
+                    ...prev,
+                    groups: [...(prev.groups ?? []), group],
+                }));
+            }
+            setShowAddToGroupModal(false);
+        } catch {
+            // error handled by hook
         }
-        setShowAddToGroupModal(false);
     };
 
     const handleRemoveFromGroup = async (groupId: number) => {
-        await removeFromGroup.mutateAsync({
-            groupId,
-            customerId: customer.id,
-        });
-        // Aktualizuj lokalny stan
-        setCustomer((prev) => ({
-            ...prev,
-            groups: prev.groups?.filter((g) => g.id !== groupId) ?? [],
-        }));
+        try {
+            await removeFromGroup.mutateAsync({
+                groupId,
+                customerId: customer.id,
+            });
+            setCustomer((prev) => ({
+                ...prev,
+                groups: prev.groups?.filter((g) => g.id !== groupId) ?? [],
+            }));
+        } catch {
+            // error handled by hook
+        }
     };
 
     return (
