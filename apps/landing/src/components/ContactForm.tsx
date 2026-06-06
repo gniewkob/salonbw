@@ -52,9 +52,18 @@ export default function ContactForm() {
         e.preventDefault();
         const { name, email, message } = trimmedForm;
 
-        if (!name) { setError(c.formErrorName); return; }
-        if (!emailPattern.test(email)) { setEmailError(c.formErrorEmail); return; }
-        if (!message) { setError(c.formErrorMessage); return; }
+        if (!name) {
+            setError(c.formErrorName);
+            return;
+        }
+        if (!emailPattern.test(email)) {
+            setEmailError(c.formErrorEmail);
+            return;
+        }
+        if (!message) {
+            setError(c.formErrorMessage);
+            return;
+        }
 
         setError('');
         setEmailError('');
@@ -106,7 +115,9 @@ export default function ContactForm() {
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="contact-form">
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-name">{c.formName}</label>
+                <label className="contact-form__label" htmlFor="cf-name">
+                    {c.formName}
+                </label>
                 <input
                     id="cf-name"
                     name="name"
@@ -115,11 +126,14 @@ export default function ContactForm() {
                     placeholder={c.formNamePlaceholder}
                     className="contact-form__input"
                     autoComplete="name"
+                    required
                 />
             </div>
 
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-email">{c.formEmail}</label>
+                <label className="contact-form__label" htmlFor="cf-email">
+                    {c.formEmail}
+                </label>
                 <input
                     id="cf-email"
                     name="email"
@@ -129,6 +143,7 @@ export default function ContactForm() {
                     placeholder={c.formEmailPlaceholder}
                     className="contact-form__input"
                     autoComplete="email"
+                    required
                     aria-invalid={!!emailError}
                     aria-describedby={emailError ? 'cf-email-error' : undefined}
                 />
@@ -148,7 +163,9 @@ export default function ContactForm() {
             </div>
 
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-message">{c.formMessage}</label>
+                <label className="contact-form__label" htmlFor="cf-message">
+                    {c.formMessage}
+                </label>
                 <textarea
                     id="cf-message"
                     name="message"
@@ -157,6 +174,7 @@ export default function ContactForm() {
                     placeholder={c.formMessagePlaceholder}
                     className="contact-form__input contact-form__textarea"
                     rows={5}
+                    required
                 />
             </div>
 

@@ -7,7 +7,13 @@ import { HERO_SLIDES, BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-type HeroSlide = { id: number; title: string; description: string; image: string; alt: string };
+type HeroSlide = {
+    id: number;
+    title: string;
+    description: string;
+    image: string;
+    alt: string;
+};
 
 interface HeroSliderProps {
     slides?: HeroSlide[];
@@ -23,7 +29,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
     const bookingUrl = getPanelUrl(
-        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
+        `/auth/login?redirect=${encodeURIComponent('/appointments')}`,
     );
 
     useEffect(() => {
@@ -98,7 +104,9 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     <div
                         key={slide.id}
                         className={`absolute inset-0 transition-opacity duration-700 ${
-                            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                            index === currentSlide
+                                ? 'opacity-100 z-10'
+                                : 'opacity-0 z-0'
                         }`}
                         aria-hidden={index !== currentSlide}
                     >
@@ -106,13 +114,20 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                             src={slide.image}
                             alt={slide.alt}
                             fill
-                            style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+                            style={{
+                                objectFit: 'cover',
+                                objectPosition: 'center 30%',
+                            }}
                             priority={index === 0}
                             sizes="100vw"
                         />
-                        <div className="absolute inset-0" style={{
-                            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.72) 100%)'
-                        }} />
+                        <div
+                            className="absolute inset-0"
+                            style={{
+                                background:
+                                    'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.72) 100%)',
+                            }}
+                        />
                     </div>
                 ))}
             </div>
@@ -123,7 +138,11 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Academy eyebrow */}
                     <p
                         className="hero-tag mb-3 uppercase text-xs md:text-sm"
-                        style={{ color: 'var(--brand-silver)', fontFamily: "'Open Sans', sans-serif", letterSpacing: '0.25em' }}
+                        style={{
+                            color: 'var(--brand-silver)',
+                            fontFamily: "'Open Sans', sans-serif",
+                            letterSpacing: '0.25em',
+                        }}
                     >
                         Akademia Zdrowych Włosów
                     </p>
@@ -131,7 +150,10 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Main heading */}
                     <h1
                         className="hero-title text-4xl md:text-6xl font-bold leading-tight mb-2"
-                        style={{ fontFamily: "'Playfair Display', serif", textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
+                        style={{
+                            fontFamily: "'Playfair Display', serif",
+                            textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                        }}
                     >
                         {data[currentSlide]?.title ?? BUSINESS_INFO.name}
                     </h1>
@@ -139,12 +161,20 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     {/* Tangerine script accent */}
                     <p
                         className="hero-tag mb-6"
-                        style={{ fontFamily: "'Tangerine', cursive", fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: 'var(--brand-silver)', lineHeight: 1.2 }}
+                        style={{
+                            fontFamily: "'Tangerine', cursive",
+                            fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+                            color: 'var(--brand-silver)',
+                            lineHeight: 1.2,
+                        }}
                     >
                         Black &amp; White
                     </p>
 
-                    <p className="hero-desc text-base md:text-lg mb-10 max-w-xl mx-auto" style={{ opacity: 0.9 }}>
+                    <p
+                        className="hero-desc text-base md:text-lg mb-10 max-w-xl mx-auto"
+                        style={{ opacity: 0.9 }}
+                    >
                         {data[currentSlide]?.description ?? ''}
                     </p>
 
@@ -152,14 +182,21 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                         <a
                             href={bookingUrl}
                             className="btn-silver inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
-                            style={{ letterSpacing: '0.12em', borderRadius: '2px', boxShadow: '0 4px 24px rgba(180,184,190,0.4)' }}
+                            style={{
+                                letterSpacing: '0.12em',
+                                borderRadius: '2px',
+                                boxShadow: '0 4px 24px rgba(180,184,190,0.4)',
+                            }}
                         >
                             {T.nav.booking}
                         </a>
                         <Link
                             href="/services"
                             className="btn-outline-white inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
-                            style={{ letterSpacing: '0.12em', borderRadius: '2px' }}
+                            style={{
+                                letterSpacing: '0.12em',
+                                borderRadius: '2px',
+                            }}
                         >
                             Nasze usługi
                         </Link>
@@ -174,8 +211,18 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 className="btn-glass absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
                 aria-label="Poprzedni slajd"
             >
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                    />
                 </svg>
             </button>
 
@@ -185,8 +232,18 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 className="btn-glass absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
                 aria-label="Następny slajd"
             >
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                    />
                 </svg>
             </button>
 
@@ -203,7 +260,10 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                                 width: index === currentSlide ? '28px' : '8px',
                                 height: '8px',
                                 borderRadius: '4px',
-                                background: index === currentSlide ? 'var(--brand-silver)' : 'rgba(255,255,255,0.45)',
+                                background:
+                                    index === currentSlide
+                                        ? 'var(--brand-silver)'
+                                        : 'rgba(255,255,255,0.45)',
                             }}
                             aria-label={`Slajd ${index + 1} z ${data.length}`}
                             aria-current={index === currentSlide}
@@ -214,7 +274,9 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     type="button"
                     onClick={() => setUserPaused((p) => !p)}
                     className="text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be] rounded-full p-1.5"
-                    aria-label={userPaused ? 'Wznów slider' : 'Wstrzymaj slider'}
+                    aria-label={
+                        userPaused ? 'Wznów slider' : 'Wstrzymaj slider'
+                    }
                     aria-pressed={userPaused}
                     title={userPaused ? 'Wznów slider' : 'Wstrzymaj slider'}
                 >
@@ -228,9 +290,24 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
 
             {/* Scroll indicator */}
             <div className="hero-scroll absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
-                <span className="text-white/60 uppercase" style={{ fontSize: '10px', letterSpacing: '0.2em' }}>Scroll</span>
-                <svg className="scroll-arrow w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                <span
+                    className="text-white/60 uppercase"
+                    style={{ fontSize: '10px', letterSpacing: '0.2em' }}
+                >
+                    {T.hero.scroll}
+                </span>
+                <svg
+                    className="scroll-arrow w-5 h-5 text-white/50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M19 9l-7 7-7-7"
+                    />
                 </svg>
             </div>
         </section>
