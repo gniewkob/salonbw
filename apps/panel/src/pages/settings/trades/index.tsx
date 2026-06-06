@@ -103,7 +103,9 @@ export default function SettingsTradesPage() {
 
     const handleDelete = (id: number, name: string) => {
         if (window.confirm(`Usunąć branżę "${name}"?`)) {
-            void del.mutateAsync(id);
+            void del.mutateAsync(id).catch(() => {
+                window.alert('Nie udało się usunąć branży. Spróbuj ponownie.');
+            });
         }
     };
 
