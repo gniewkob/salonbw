@@ -879,17 +879,15 @@ export default function SettingsTimetableEmployeeDetailPage() {
                     message="Czy na pewno chcesz usunąć ten wyjątek? Operacja jest nieodwracalna."
                     confirmLabel="Usuń"
                     confirmVariant="danger"
-                    onConfirm={async () => {
+                    onConfirm={() => {
                         if (confirmDeleteExceptionId === null) return;
                         const id = confirmDeleteExceptionId;
                         setConfirmDeleteExceptionId(null);
-                        try {
-                            await deleteException.mutateAsync(id);
-                        } catch {
+                        void deleteException.mutateAsync(id).catch(() => {
                             setExceptionError(
                                 'Nie udało się usunąć wyjątku. Spróbuj ponownie.',
                             );
-                        }
+                        });
                     }}
                     onCancel={() => setConfirmDeleteExceptionId(null)}
                 />
