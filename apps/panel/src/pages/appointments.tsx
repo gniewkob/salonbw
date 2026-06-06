@@ -66,9 +66,12 @@ export default function AppointmentsPage() {
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
+    const defaultFrom = isoDate(thirtyDaysAgo);
+    const defaultTo = isoDate(today);
+
     const initialStatus = (router.query.status as AppointmentStatus) || '';
-    const [from, setFrom] = useState(isoDate(thirtyDaysAgo));
-    const [to, setTo] = useState(isoDate(today));
+    const [from, setFrom] = useState(defaultFrom);
+    const [to, setTo] = useState(defaultTo);
     const [status, setStatus] = useState<AppointmentStatus | ''>(initialStatus);
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
@@ -97,6 +100,21 @@ export default function AppointmentsPage() {
     const handleFilterChange = useCallback(() => {
         setPage(1);
     }, []);
+
+    const hasActiveFilters =
+        from !== defaultFrom ||
+        to !== defaultTo ||
+        status !== '' ||
+        search !== '';
+
+    const resetFilters = useCallback(() => {
+        setFrom(defaultFrom);
+        setTo(defaultTo);
+        setStatus('');
+        setSearch('');
+        setSearchInput('');
+        setPage(1);
+    }, [defaultFrom, defaultTo]);
 
     useEffect(() => {
         setPage(1);
@@ -281,7 +299,16 @@ export default function AppointmentsPage() {
                                     </button>
                                 </div>
                             </div>
-                            <div>
+                            <div className="d-flex align-items-end gap-2">
+                                {hasActiveFilters && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={resetFilters}
+                                    >
+                                        Wyczyść filtry
+                                    </button>
+                                )}
                                 <Link
                                     href="/calendar"
                                     className="btn btn-sm btn-dark"
