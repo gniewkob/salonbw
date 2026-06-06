@@ -59,10 +59,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
         );
         if (unitPrice === null) return;
 
-        const stock = parseNumberField(
-            form.stock,
-            'Stok musi być liczbą ≥ 0',
-        );
+        const stock = parseNumberField(form.stock, 'Stok musi być liczbą ≥ 0');
         if (stock === null) return;
 
         const lowStockThreshold = parseNumberField(

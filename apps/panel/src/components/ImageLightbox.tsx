@@ -157,7 +157,8 @@ export default function ImageLightbox(props: Props) {
                     aria-live="polite"
                     onAnimationEnd={() => setShowHint(false)}
                 >
-                    Wskazówka: przesuń lub użyj strzałek; ⤴ udostępnij, ⤓ pobierz
+                    Wskazówka: przesuń lub użyj strzałek; ⤴ udostępnij, ⤓
+                    pobierz
                 </div>
             )}
             {hasCarousel && (

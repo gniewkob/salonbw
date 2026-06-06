@@ -26,7 +26,9 @@ export default function ServiceForm({ initial, onSubmit, onCancel }: Props) {
             await onSubmit({ name: trimmed });
         } catch (err) {
             setError(
-                err instanceof Error ? err.message || 'Wystąpił błąd' : 'Wystąpił błąd',
+                err instanceof Error
+                    ? err.message || 'Wystąpił błąd'
+                    : 'Wystąpił błąd',
             );
         } finally {
             setSubmitting(false);
