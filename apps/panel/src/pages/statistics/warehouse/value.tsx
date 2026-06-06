@@ -100,6 +100,7 @@ export default function WarehouseValuePage() {
                             Raport wartości produktów
                         </h1>
                         <button
+                            type="button"
                             onClick={() =>
                                 setRefreshToken((value) => value + 1)
                             }

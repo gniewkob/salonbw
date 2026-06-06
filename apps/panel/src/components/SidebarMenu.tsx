@@ -36,6 +36,7 @@ export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
                     </Link>
                 ))}
                 <button
+                    type="button"
                     className="d-block w-100 text-start rounded px-2 py-1"
                     onClick={() => {
                         void onLogout();

@@ -106,6 +106,7 @@ export default function DashboardNav() {
                     );
                 })}
                 <button
+                    type="button"
                     className="d-block text-start px-2 py-1"
                     onClick={() => {
                         void logout();

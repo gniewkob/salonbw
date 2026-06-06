@@ -175,6 +175,7 @@ export default function EmployeesPage() {
                             renderActions={(r) => (
                                 <span className="space-x-2">
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         onClick={() => {
                                             setEditing(r);
@@ -184,6 +185,7 @@ export default function EmployeesPage() {
                                         Edytuj
                                     </button>
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-danger"
                                         onClick={() => void handleDelete(r)}
                                     >

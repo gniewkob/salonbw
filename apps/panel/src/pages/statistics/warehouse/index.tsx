@@ -354,6 +354,7 @@ function ValueTab() {
                     Raport wartości produktów
                 </h2>
                 <button
+                    type="button"
                     onClick={() => setRefreshToken((v) => v + 1)}
                     className="btn btn-outline-secondary"
                     disabled={isLoading}

@@ -53,6 +53,7 @@ export default function CustomerSidebar({
                         <span>GRUPY</span>
                         {onCreateGroup && (
                             <button
+                                type="button"
                                 onClick={onCreateGroup}
                                 className="btn btn-link btn-sm p-0 text-salonbw-blue"
                             >
@@ -120,6 +121,7 @@ export default function CustomerSidebar({
                             return (
                                 // eslint-disable-next-line
                                 <button
+                                    type="button"
                                     key={tag.id}
                                     onClick={() =>
                                         handleTagSelect(
@@ -321,6 +323,7 @@ export default function CustomerSidebar({
                             </div>
 
                             <button
+                                type="button"
                                 onClick={() =>
                                     onFilterChange({
                                         page: 1,

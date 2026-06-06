@@ -119,6 +119,7 @@ export default function SuppliersTab() {
                     </label>
                 </div>
                 <button
+                    type="button"
                     onClick={() => handleOpenModal()}
                     className="px-3 py-2 btn-salon rounded-3"
                 >
@@ -195,6 +196,7 @@ export default function SuppliersTab() {
                                     </td>
                                     <td className="px-4 py-3 text-nowrap text-end small">
                                         <button
+                                            type="button"
                                             onClick={() =>
                                                 handleOpenModal(supplier)
                                             }
@@ -203,6 +205,7 @@ export default function SuppliersTab() {
                                             Edytuj
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 void handleDelete(supplier.id);
                                             }}

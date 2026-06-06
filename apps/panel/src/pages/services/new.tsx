@@ -1080,10 +1080,10 @@ function NewServicePageContent() {
                                                                                         product,
                                                                                     ) => (
                                                                                         <button
+                                                                                            type="button"
                                                                                             key={
                                                                                                 product.id
                                                                                             }
-                                                                                            type="button"
                                                                                             className="services-create-recipe-option"
                                                                                             onClick={() => {
                                                                                                 updateRecipeItem(

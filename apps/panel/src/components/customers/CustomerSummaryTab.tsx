@@ -524,6 +524,7 @@ export default function CustomerSummaryTab({
                                                                 />
                                                                 {group.name}
                                                                 <button
+                                                                    type="button"
                                                                     onClick={() => {
                                                                         void handleRemoveFromGroup(
                                                                             group.id,
@@ -551,6 +552,7 @@ export default function CustomerSummaryTab({
                                         {/* Przycisk dodawania do grupy */}
                                         {availableGroups.length > 0 && (
                                             <button
+                                                type="button"
                                                 onClick={() =>
                                                     setShowAddToGroupModal(true)
                                                 }

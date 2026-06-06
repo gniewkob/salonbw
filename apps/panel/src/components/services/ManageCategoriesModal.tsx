@@ -94,6 +94,7 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="btn-group">
                         <button
+                            type="button"
                             className="btn btn-outline-secondary btn-sm"
                             onClick={() => handleEdit(category)}
                             title="Edytuj kategorię"
@@ -102,6 +103,7 @@ export default function ManageCategoriesModal({
                             <i className="fa fa-pencil"></i>
                         </button>
                         <button
+                            type="button"
                             className="btn btn-outline-secondary btn-sm"
                             onClick={() => handleAdd(category.id)}
                             title="Dodaj podkategorię"
@@ -110,6 +112,7 @@ export default function ManageCategoriesModal({
                             <i className="fa fa-plus"></i>
                         </button>
                         <button
+                            type="button"
                             className="btn btn-outline-secondary btn-sm"
                             onClick={() => {
                                 void handleDelete(category.id, category.name);

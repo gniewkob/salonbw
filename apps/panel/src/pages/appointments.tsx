@@ -471,6 +471,7 @@ export default function AppointmentsPage() {
                                                     'online_pending' && (
                                                     <>
                                                         <button
+                                                            type="button"
                                                             className="btn btn-sm btn-success"
                                                             disabled={
                                                                 actionLoading ===
@@ -490,6 +491,7 @@ export default function AppointmentsPage() {
                                                                 : '✓ Potwierdź'}
                                                         </button>
                                                         <button
+                                                            type="button"
                                                             className="btn btn-sm btn-outline-danger"
                                                             disabled={
                                                                 actionLoading ===
@@ -508,6 +510,7 @@ export default function AppointmentsPage() {
                                                     </>
                                                 )}
                                                 <button
+                                                    type="button"
                                                     className="btn btn-sm btn-outline-secondary"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -535,6 +538,7 @@ export default function AppointmentsPage() {
                                 </div>
                                 <div className="form_paginationcol-5 d-flex gap-1 justify-content-end">
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         disabled={page <= 1}
                                         onClick={() =>
@@ -556,6 +560,7 @@ export default function AppointmentsPage() {
                                                         : page - 3 + i;
                                             return (
                                                 <button
+                                                    type="button"
                                                     key={pageNum}
                                                     className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
                                                     onClick={() =>
@@ -568,6 +573,7 @@ export default function AppointmentsPage() {
                                         },
                                     )}
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         disabled={page >= totalPages}
                                         onClick={() =>

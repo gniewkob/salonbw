@@ -107,6 +107,7 @@ export default function CalendarHeader({
                 {/* Left: nav arrows + date label */}
                 <div className="d-flex align-items-center gap-1 min-w-0">
                     <button
+                        type="button"
                         onClick={handlePrev}
                         className="btn btn-sm btn-light border-0 text-secondary p-2 flex-shrink-0"
                         aria-label="Poprzedni"
@@ -129,6 +130,7 @@ export default function CalendarHeader({
                     </button>
 
                     <button
+                        type="button"
                         onClick={onTodayClick}
                         className="btn btn-sm border-0 px-2 py-1 text-start flex-shrink-0"
                         style={{ background: 'none', lineHeight: 1.2 }}
@@ -165,6 +167,7 @@ export default function CalendarHeader({
                     </button>
 
                     <button
+                        type="button"
                         onClick={handleNext}
                         className="btn btn-sm btn-light border-0 text-secondary p-2 flex-shrink-0"
                         aria-label="Następny"

@@ -517,11 +517,11 @@ function ProtectionTab() {
                                                                         }
                                                                     />
                                                                     <button
+                                                                        type="button"
                                                                         className="btn btn-primary btn-sm"
                                                                         disabled={
                                                                             isSavingThisRow
                                                                         }
-                                                                        type="button"
                                                                         onClick={() =>
                                                                             saveEmployeeLimit(
                                                                                 employee.id,
@@ -531,11 +531,11 @@ function ProtectionTab() {
                                                                         zapisz
                                                                     </button>
                                                                     <button
+                                                                        type="button"
                                                                         className="btn btn-link p-0"
                                                                         disabled={
                                                                             isSavingThisRow
                                                                         }
-                                                                        type="button"
                                                                         onClick={
                                                                             cancelEmployeeLimitEdit
                                                                         }
@@ -570,11 +570,11 @@ function ProtectionTab() {
                                                                     {employee.paranoiaLimitOverride !==
                                                                         null && (
                                                                         <button
+                                                                            type="button"
                                                                             className="btn btn-link p-0"
                                                                             disabled={
                                                                                 isSavingThisRow
                                                                             }
-                                                                            type="button"
                                                                             onClick={() =>
                                                                                 clearEmployeeLimit(
                                                                                     employee.id,

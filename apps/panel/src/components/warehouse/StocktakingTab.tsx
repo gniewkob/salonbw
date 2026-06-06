@@ -133,6 +133,7 @@ export default function StocktakingTab() {
                     </select>
                 </div>
                 <button
+                    type="button"
                     onClick={handleOpenModal}
                     className="px-3 py-2 btn-salon rounded-3"
                 >
@@ -248,6 +249,7 @@ export default function StocktakingTab() {
                                         <td className="px-4 py-3 text-nowrap text-end small">
                                             {stocktaking.status === 'draft' && (
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleStart(
                                                             stocktaking.id,
@@ -261,6 +263,7 @@ export default function StocktakingTab() {
                                             {stocktaking.status ===
                                                 'in_progress' && (
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleComplete(
                                                             stocktaking.id,

@@ -132,6 +132,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                             <div className="mb-5 border-bottom-eee pb-10">
                                 <div className="btn-">
                                     <button
+                                        type="button"
                                         onClick={() => setFilterSource('all')}
                                         className={`btn btn-sm ${filterSource === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
                                     >
@@ -145,6 +146,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                             if (count === 0) return null;
                                             return (
                                                 <button
+                                                    type="button"
                                                     key={key}
                                                     onClick={() =>
                                                         setFilterSource(

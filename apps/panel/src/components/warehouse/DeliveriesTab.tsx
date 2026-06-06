@@ -138,6 +138,7 @@ export default function DeliveriesTab() {
                     </select>
                 </div>
                 <button
+                    type="button"
                     onClick={handleOpenModal}
                     className="px-3 py-2 btn-salon rounded-3"
                 >
@@ -217,6 +218,7 @@ export default function DeliveriesTab() {
                                         {delivery.status === 'draft' && (
                                             <>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleReceive(
                                                             delivery.id,
@@ -227,6 +229,7 @@ export default function DeliveriesTab() {
                                                     Przyjmij
                                                 </button>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleCancel(
                                                             delivery.id,
@@ -241,6 +244,7 @@ export default function DeliveriesTab() {
                                         {delivery.status === 'pending' && (
                                             <>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleReceive(
                                                             delivery.id,
@@ -251,6 +255,7 @@ export default function DeliveriesTab() {
                                                     Przyjmij
                                                 </button>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleCancel(
                                                             delivery.id,

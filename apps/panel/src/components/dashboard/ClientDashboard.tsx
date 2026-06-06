@@ -179,6 +179,7 @@ export default function ClientDashboard() {
                                     {data.upcomingAppointment.status ===
                                         'rescheduled_pending' && (
                                         <button
+                                            type="button"
                                             className="btn btn-sm btn-success"
                                             disabled={accepting.has(
                                                 data.upcomingAppointment.id,
@@ -198,6 +199,7 @@ export default function ClientDashboard() {
                                             data.upcomingAppointment.status,
                                         ) && (
                                             <button
+                                                type="button"
                                                 className="btn btn-sm btn-outline-danger"
                                                 disabled={cancelling.has(
                                                     data.upcomingAppointment.id,
@@ -329,6 +331,7 @@ export default function ClientDashboard() {
                                         new Date(apt.startTime) >
                                             new Date() && (
                                             <button
+                                                type="button"
                                                 className="btn btn-sm btn-success"
                                                 disabled={accepting.has(apt.id)}
                                                 onClick={() => {
@@ -344,6 +347,7 @@ export default function ClientDashboard() {
                                         new Date(apt.startTime) >
                                             new Date() && (
                                             <button
+                                                type="button"
                                                 className="btn btn-sm btn-outline-danger"
                                                 disabled={cancelling.has(
                                                     apt.id,

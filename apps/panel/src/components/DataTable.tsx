@@ -151,6 +151,7 @@ export default function DataTable<T>({
             </table>
             <div className="mt-2 d-flex align-items-center gap-2">
                 <button
+                    type="button"
                     disabled={page === 0}
                     onClick={() => setPage((p) => Math.max(p - 1, 0))}
                     className="border px-2 py-1"
@@ -162,6 +163,7 @@ export default function DataTable<T>({
                     {page + 1} / {totalPages || 1}
                 </span>
                 <button
+                    type="button"
                     disabled={page + 1 >= totalPages}
                     onClick={() =>
                         setPage((p) => Math.min(p + 1, totalPages - 1))
