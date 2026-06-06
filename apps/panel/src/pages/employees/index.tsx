@@ -9,6 +9,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeApi } from '@/api/employees';
 import { Employee, StaffRole } from '@/types';
@@ -49,6 +50,7 @@ export default function EmployeesPage() {
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<Employee | null>(null);
     const secondaryNav = useMemo(() => <EmployeesNav />, []);
 
     useEffect(() => {
@@ -124,7 +126,13 @@ export default function EmployeesPage() {
     };
 
     const handleDelete = async (row: Employee) => {
-        if (!confirm(`Usunąć pracownika ${row.fullName ?? row.name}?`)) return;
+        setConfirmDelete(row);
+    };
+
+    const doDelete = async () => {
+        if (!confirmDelete) return;
+        const row = confirmDelete;
+        setConfirmDelete(null);
         try {
             await api.remove(row.id);
             setRows((c) => c.filter((cl) => cl.id !== row.id));
@@ -201,6 +209,15 @@ export default function EmployeesPage() {
                             onSubmit={editing ? handleUpdate : handleCreate}
                         />
                     </Modal>
+                    <ConfirmModal
+                        open={!!confirmDelete}
+                        title="Usuń pracownika"
+                        message={`Czy na pewno chcesz usunąć pracownika ${confirmDelete?.fullName ?? confirmDelete?.name}? Operacja jest nieodwracalna.`}
+                        confirmLabel="Usuń"
+                        confirmVariant="danger"
+                        onConfirm={() => void doDelete()}
+                        onCancel={() => setConfirmDelete(null)}
+                    />
                 </div>
             </SalonShell>
         </RouteGuard>

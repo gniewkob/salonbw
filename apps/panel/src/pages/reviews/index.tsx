@@ -5,6 +5,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useReviews } from '@/hooks/useReviews';
 import { useReviewApi } from '@/api/reviews';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,6 +45,7 @@ export default function ReviewsPage() {
     const [minRating, setMinRating] = useState<number | undefined>(undefined);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Row | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<Row | null>(null);
 
     useEffect(() => {
         setRows(
@@ -130,8 +132,14 @@ export default function ReviewsPage() {
         }
     };
 
-    const handleDelete = async (row: Row) => {
-        if (!confirm(`Usunąć opinię ${row.id}?`)) return;
+    const handleDelete = (row: Row) => {
+        setConfirmDelete(row);
+    };
+
+    const doDelete = async () => {
+        if (!confirmDelete) return;
+        const row = confirmDelete;
+        setConfirmDelete(null);
         try {
             await api.remove(row.id);
             setRows((c) => c.filter((cl) => cl.id !== row.id));
@@ -228,7 +236,7 @@ export default function ReviewsPage() {
                                 </button>
                                 <button
                                     className="btn btn-sm btn-danger"
-                                    onClick={() => void handleDelete(r)}
+                                    onClick={() => handleDelete(r)}
                                 >
                                     Usuń
                                 </button>
@@ -252,6 +260,15 @@ export default function ReviewsPage() {
                             onSubmit={editing ? handleUpdate : handleCreate}
                         />
                     </Modal>
+                    <ConfirmModal
+                        open={!!confirmDelete}
+                        title="Usuń opinię"
+                        message={`Czy na pewno chcesz usunąć opinię #${confirmDelete?.id}?`}
+                        confirmLabel="Usuń"
+                        confirmVariant="danger"
+                        onConfirm={() => void doDelete()}
+                        onCancel={() => setConfirmDelete(null)}
+                    />
                 </div>
             </SalonShell>
         </RouteGuard>

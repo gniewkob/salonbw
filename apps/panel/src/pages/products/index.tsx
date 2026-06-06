@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import NewProductModal from '@/components/warehouse/NewProductModal';
 import EditProductModal from '@/components/warehouse/EditProductModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     useWarehouseProducts,
     useProductCategories,
@@ -64,6 +65,7 @@ export default function WarehouseProductsPage() {
     const sentinelRef = useRef<HTMLDivElement>(null);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [bulkDeletePending, setBulkDeletePending] = useState(false);
+    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 575px)');
@@ -175,13 +177,8 @@ export default function WarehouseProductsPage() {
         });
     };
 
-    const handleBulkDelete = async () => {
-        if (
-            !window.confirm(
-                `Czy na pewno chcesz usunąć ${selectedIds.size} produkt(ów)? Operacja jest nieodwracalna.`,
-            )
-        )
-            return;
+    const doBulkDelete = async () => {
+        setConfirmBulkDelete(false);
         setBulkDeletePending(true);
         let failed = 0;
         for (const id of Array.from(selectedIds)) {
@@ -309,7 +306,7 @@ export default function WarehouseProductsPage() {
                         type="button"
                         className="btn btn-sm btn-danger ms-2"
                         disabled={bulkDeletePending}
-                        onClick={() => void handleBulkDelete()}
+                        onClick={() => setConfirmBulkDelete(true)}
                     >
                         {bulkDeletePending ? 'Usuwanie...' : 'Usuń zaznaczone'}
                     </button>
@@ -506,6 +503,15 @@ export default function WarehouseProductsPage() {
                 onClose={() => setEditProductId(null)}
                 onSuccess={() => setEditProductId(null)}
                 onDeleted={() => setEditProductId(null)}
+            />
+            <ConfirmModal
+                open={confirmBulkDelete}
+                title="Usuń zaznaczone produkty"
+                message={`Czy na pewno chcesz usunąć ${selectedIds.size} produkt(ów)? Operacja jest nieodwracalna.`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => void doBulkDelete()}
+                onCancel={() => setConfirmBulkDelete(false)}
             />
         </WarehouseLayout>
     );

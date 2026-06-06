@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ClientDetailNav from '@/components/salon/navs/ClientDetailNav';
@@ -11,6 +11,7 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     useCustomer,
     useDeleteCustomer,
@@ -115,6 +116,7 @@ export default function CustomerDetailPage() {
         error,
     } = useCustomer(customerId);
     const deleteCustomer = useDeleteCustomer();
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const { data: customerTags } = useTagsForCustomer(customerId);
     const { data: stats } = useCustomerStatistics(customerId);
     const { data: history } = useCustomerEventHistory(customerId, {
@@ -243,35 +245,11 @@ export default function CustomerDetailPage() {
                                                                 : undefined
                                                         }
                                                         onClick={() => {
-                                                            if (
-                                                                !customer ||
-                                                                !confirm(
-                                                                    'Czy na pewno chcesz usunąć klienta?',
-                                                                )
-                                                            ) {
+                                                            if (!customer)
                                                                 return;
-                                                            }
-                                                            void deleteCustomer
-                                                                .mutateAsync(
-                                                                    customer.id,
-                                                                )
-                                                                .then(() =>
-                                                                    router.push(
-                                                                        '/customers',
-                                                                    ),
-                                                                )
-                                                                .catch(
-                                                                    (err) => {
-                                                                        const message =
-                                                                            err instanceof
-                                                                            Error
-                                                                                ? err.message
-                                                                                : 'Nie udało się usunąć klienta';
-                                                                        toast.error(
-                                                                            message,
-                                                                        );
-                                                                    },
-                                                                );
+                                                            setConfirmDelete(
+                                                                true,
+                                                            );
                                                         }}
                                                     >
                                                         usuń klienta
@@ -352,6 +330,28 @@ export default function CustomerDetailPage() {
                         )}
                     </div>
                 </CustomerErrorBoundary>
+                <ConfirmModal
+                    open={confirmDelete}
+                    title="Usuń klienta"
+                    message="Czy na pewno chcesz usunąć klienta? Operacja jest nieodwracalna."
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        setConfirmDelete(false);
+                        if (!customer) return;
+                        void deleteCustomer
+                            .mutateAsync(customer.id)
+                            .then(() => router.push('/customers'))
+                            .catch((err) => {
+                                const message =
+                                    err instanceof Error
+                                        ? err.message
+                                        : 'Nie udało się usunąć klienta';
+                                toast.error(message);
+                            });
+                    }}
+                    onCancel={() => setConfirmDelete(false)}
+                />
             </SalonShell>
         </RouteGuard>
     );
