@@ -139,7 +139,7 @@ export default function ImageLightbox(props: Props) {
             >
                 <Image
                     src={currentSrc}
-                    alt={alt || 'Image preview'}
+                    alt={alt || 'Podgląd zdjęcia'}
                     fill
                     style={{ objectFit: 'contain' }}
                     sizes="90vw"
@@ -157,14 +157,14 @@ export default function ImageLightbox(props: Props) {
                     aria-live="polite"
                     onAnimationEnd={() => setShowHint(false)}
                 >
-                    Tip: swipe or use arrows; tap ⤴ to share, ⤓ to download
+                    Wskazówka: przesuń lub użyj strzałek; ⤴ udostępnij, ⤓ pobierz
                 </div>
             )}
             {hasCarousel && (
                 <>
                     <button
                         type="button"
-                        aria-label="Previous image"
+                        aria-label="Poprzednie zdjęcie"
                         className="position-absolute text-white fs-3"
                         style={{
                             left: '0.75rem',
@@ -177,7 +177,7 @@ export default function ImageLightbox(props: Props) {
                     </button>
                     <button
                         type="button"
-                        aria-label="Next image"
+                        aria-label="Następne zdjęcie"
                         className="position-absolute text-white fs-3"
                         style={{
                             right: '0.75rem',
@@ -192,7 +192,7 @@ export default function ImageLightbox(props: Props) {
             )}
             <button
                 type="button"
-                aria-label="Close"
+                aria-label="Zamknij"
                 className="position-absolute text-white fs-3"
                 style={{ top: '0.75rem', right: '0.75rem' }}
                 onClick={handleClose}
@@ -202,8 +202,8 @@ export default function ImageLightbox(props: Props) {
             </button>
             <button
                 type="button"
-                aria-label="Share image"
-                title="Share image"
+                aria-label="Udostępnij zdjęcie"
+                title="Udostępnij"
                 className="position-absolute text-white fs-5"
                 style={{ top: '0.75rem', right: '3rem' }}
                 onClick={(e) => {
@@ -215,8 +215,8 @@ export default function ImageLightbox(props: Props) {
             </button>
             <button
                 type="button"
-                aria-label="Download image"
-                title="Download image"
+                aria-label="Pobierz zdjęcie"
+                title="Pobierz"
                 className="position-absolute text-white fs-5"
                 style={{ top: '0.75rem', right: '6rem' }}
                 onClick={(e) => {
@@ -271,7 +271,7 @@ async function shareImage(url: string, alt?: string) {
 
     const nav: Navigator = window.navigator;
     if (typeof nav.share === 'function') {
-        await nav.share({ url, title: alt || 'Image' });
+        await nav.share({ url, title: alt || 'Zdjęcie' });
         return;
     }
     if (nav.clipboard?.writeText) {
