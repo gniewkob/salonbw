@@ -125,6 +125,25 @@ export function useUpdateProductCategory() {
     });
 }
 
+export function useDeleteProduct() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    const toast = useToast();
+    return useMutation({
+        mutationFn: (id: number) =>
+            apiFetch(`/products/${id}`, { method: 'DELETE' }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+            toast.success('Produkt został usunięty');
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć produktu');
+        },
+    });
+}
+
 export function useDeleteProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
