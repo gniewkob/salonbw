@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
@@ -205,6 +206,13 @@ function ExtensionToolContent() {
 
     return (
         <div className="salonbw-page" data-testid="extension-tool-page">
+            <Head>
+                <title>
+                    {tool?.title
+                        ? `${tool.title} — Dodatki — Salon Black & White`
+                        : 'Dodatek — Salon Black & White'}
+                </title>
+            </Head>
             <SalonBreadcrumbs
                 iconClass="sprite-breadcrumbs_extensions"
                 items={[

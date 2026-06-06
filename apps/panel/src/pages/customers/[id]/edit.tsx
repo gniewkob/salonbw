@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -132,6 +133,13 @@ export default function CustomerEditPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
+            <Head>
+                <title>
+                    {customer?.name
+                        ? `Edytuj: ${customer.name} — Salon Black & White`
+                        : 'Edycja klienta — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <CustomerErrorBoundary
                     fallback={

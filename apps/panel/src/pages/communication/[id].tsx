@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -305,6 +306,13 @@ export default function CommunicationDetailPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>
+                    {activeKind === 'sms'
+                        ? 'Wiadomość SMS — Łączność — Salon Black & White'
+                        : 'Wiadomość email — Łączność — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page communication-detail-page">
                     <SalonBreadcrumbs

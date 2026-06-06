@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -309,6 +310,13 @@ export default function ServiceDetailsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
+            <Head>
+                <title>
+                    {summaryData?.name
+                        ? `${summaryData.name} — Salon Black & White`
+                        : 'Usługa — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role || 'admin'}>
                 <div
                     className="salonbw-page service-details-page"

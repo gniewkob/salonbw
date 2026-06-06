@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -158,6 +159,13 @@ export default function SettingsCategoriesEditPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>
+                    {category?.name
+                        ? `Edytuj: ${category.name} — Ustawienia — Salon Black & White`
+                        : 'Edycja kategorii — Ustawienia — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

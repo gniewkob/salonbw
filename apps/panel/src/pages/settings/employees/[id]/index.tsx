@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
@@ -141,6 +142,13 @@ export default function SettingsEmployeeDetailPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>
+                    {employee?.name
+                        ? `${employee.name} — Ustawienia — Salon Black & White`
+                        : 'Pracownik — Ustawienia — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

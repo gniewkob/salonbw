@@ -155,6 +155,7 @@ function RescheduleModal({
             className="modal fade show d-block"
             tabIndex={-1}
             role="dialog"
+            aria-modal="true"
             style={{ background: 'rgba(0,0,0,0.5)' }}
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();

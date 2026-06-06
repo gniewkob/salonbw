@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
@@ -514,6 +515,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>
+                    {`Grafik: ${employee.name} — Ustawienia — Salon Black & White`}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -101,6 +102,13 @@ export default function EditProductPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
+            <Head>
+                <title>
+                    {product?.name
+                        ? `Edytuj: ${product.name} — Magazyn — Salon Black & White`
+                        : 'Edycja produktu — Magazyn — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="products_index" id="products_main">
                     <SalonBreadcrumbs
