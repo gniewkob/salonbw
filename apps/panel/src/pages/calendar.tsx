@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -29,6 +29,7 @@ import type {
     Appointment,
     CalendarEvent,
     CalendarView as CalendarViewType,
+    TimeBlock,
 } from '@/types';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
@@ -163,6 +164,14 @@ export default function CalendarPage() {
     } = useAppointmentDrawer({
         onClose: () => clearAppointmentDeepLink(),
     });
+
+    const [timeBlockModal, setTimeBlockModal] = useState<{
+        open: boolean;
+        existingBlock: TimeBlock | null;
+        initialStartTime?: Date;
+        initialEndTime?: Date;
+        initialEmployeeId?: number;
+    }>({ open: false, existingBlock: null });
 
     const { data, loading, refetch } = useCalendar({
         date: toDateParam(currentDate),

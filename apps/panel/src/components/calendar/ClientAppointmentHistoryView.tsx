@@ -7,7 +7,8 @@ import {
     ExclamationTriangleIcon,
     PlusIcon,
 } from '@heroicons/react/20/solid';
-import type { Appointment } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Appointment, Formula } from '@/types';
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     scheduled: {
