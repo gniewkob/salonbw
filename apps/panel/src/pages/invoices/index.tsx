@@ -62,6 +62,8 @@ export default function InvoicesPage() {
                                     <tr>
                                         <th>Numer faktury</th>
                                         <th>Data wystawienia</th>
+                                        <th>Termin płatności</th>
+                                        <th>Kwota</th>
                                         <th>Status</th>
                                         <th>Akcje</th>
                                     </tr>
@@ -71,8 +73,23 @@ export default function InvoicesPage() {
                                         <tr key={inv.id}>
                                             <td className="fw-medium">
                                                 {inv.number}
+                                                {inv.description ? (
+                                                    <div className="text-muted small">
+                                                        {inv.description}
+                                                    </div>
+                                                ) : null}
                                             </td>
                                             <td>{formatDate(inv.createdAt)}</td>
+                                            <td>
+                                                {inv.dueDate
+                                                    ? formatDate(inv.dueDate)
+                                                    : '—'}
+                                            </td>
+                                            <td>
+                                                {inv.amount != null
+                                                    ? `${inv.amount.toFixed(2)} ${inv.currency ?? 'PLN'}`
+                                                    : '—'}
+                                            </td>
                                             <td>
                                                 <span
                                                     className={`badge ${inv.status === 'paid' ? 'badge-salon-success' : inv.status === 'overdue' ? 'badge-salon-danger' : 'badge-salon'}`}

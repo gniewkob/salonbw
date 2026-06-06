@@ -362,6 +362,10 @@ export interface Invoice {
     pdfUrl: string;
     createdAt: string;
     status: string;
+    amount?: number;
+    currency?: string;
+    dueDate?: string;
+    description?: string;
 }
 
 export type TimeBlockType =

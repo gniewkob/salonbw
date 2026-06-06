@@ -8,6 +8,7 @@ import Modal from '@/components/Modal';
 import { useReviews } from '@/hooks/useReviews';
 import { useReviewApi } from '@/api/reviews';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { Review } from '@/types';
 
@@ -33,6 +34,7 @@ export default function ReviewsPage() {
         isAdmin ? (employeeId ? { employeeId } : {}) : { mine: true },
     );
     const api = useReviewApi();
+    const toast = useToast();
     type Row = Review & {
         appointmentDisplay?: number | string;
         employeeName?: string;
@@ -67,22 +69,27 @@ export default function ReviewsPage() {
         rating: number;
         comment?: string;
     }) => {
-        const created = await api.create(values.appointmentId, {
-            rating: values.rating,
-            comment: values.comment,
-        });
-        setRows((c) => [
-            ...c,
-            {
-                ...created,
-                appointmentDisplay:
-                    created.appointmentId ?? created.appointment?.id ?? '',
-                employeeName:
-                    created.employee?.fullName ?? created.employee?.name,
-                authorName: created.author?.name ?? created.client?.name,
-            },
-        ]);
-        setOpenForm(false);
+        try {
+            const created = await api.create(values.appointmentId, {
+                rating: values.rating,
+                comment: values.comment,
+            });
+            setRows((c) => [
+                ...c,
+                {
+                    ...created,
+                    appointmentDisplay:
+                        created.appointmentId ?? created.appointment?.id ?? '',
+                    employeeName:
+                        created.employee?.fullName ?? created.employee?.name,
+                    authorName: created.author?.name ?? created.client?.name,
+                },
+            ]);
+            setOpenForm(false);
+            toast.success('Opinia została dodana');
+        } catch {
+            toast.error('Nie udało się dodać opinii');
+        }
     };
 
     const handleUpdate = async (values: {
@@ -91,36 +98,46 @@ export default function ReviewsPage() {
         comment?: string;
     }) => {
         if (!editing) return;
-        const updated = await api.update(editing.id, {
-            rating: values.rating,
-            comment: values.comment,
-        });
-        setRows((c) =>
-            c.map((cl) =>
-                cl.id === editing.id
-                    ? {
-                          ...updated,
-                          appointmentDisplay:
-                              updated.appointmentId ??
-                              updated.appointment?.id ??
-                              '',
-                          employeeName:
-                              updated.employee?.fullName ??
-                              updated.employee?.name,
-                          authorName:
-                              updated.author?.name ?? updated.client?.name,
-                      }
-                    : cl,
-            ),
-        );
-        setEditing(null);
-        setOpenForm(false);
+        try {
+            const updated = await api.update(editing.id, {
+                rating: values.rating,
+                comment: values.comment,
+            });
+            setRows((c) =>
+                c.map((cl) =>
+                    cl.id === editing.id
+                        ? {
+                              ...updated,
+                              appointmentDisplay:
+                                  updated.appointmentId ??
+                                  updated.appointment?.id ??
+                                  '',
+                              employeeName:
+                                  updated.employee?.fullName ??
+                                  updated.employee?.name,
+                              authorName:
+                                  updated.author?.name ?? updated.client?.name,
+                          }
+                        : cl,
+                ),
+            );
+            setEditing(null);
+            setOpenForm(false);
+            toast.success('Opinia została zaktualizowana');
+        } catch {
+            toast.error('Nie udało się zaktualizować opinii');
+        }
     };
 
     const handleDelete = async (row: Row) => {
         if (!confirm(`Usunąć opinię ${row.id}?`)) return;
-        await api.remove(row.id);
-        setRows((c) => c.filter((cl) => cl.id !== row.id));
+        try {
+            await api.remove(row.id);
+            setRows((c) => c.filter((cl) => cl.id !== row.id));
+            toast.success('Opinia została usunięta');
+        } catch {
+            toast.error('Nie udało się usunąć opinii');
+        }
     };
 
     return (

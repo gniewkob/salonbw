@@ -49,7 +49,11 @@ export default function CustomerEditPage() {
 
     const handleUpdate = async (data: Partial<Customer>) => {
         if (!customerId) return;
-        await updateCustomer.mutateAsync({ id: customerId, data });
+        try {
+            await updateCustomer.mutateAsync({ id: customerId, data });
+        } catch {
+            // onError in useUpdateCustomer already shows the toast
+        }
     };
 
     const handleSelectTab = (tab: EditTab) => {
