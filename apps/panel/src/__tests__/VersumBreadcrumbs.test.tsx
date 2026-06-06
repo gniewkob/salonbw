@@ -55,7 +55,10 @@ describe('SalonBreadcrumbs', () => {
 
     it('renders nothing when items is empty', () => {
         const { container } = render(
-            <SalonBreadcrumbs iconClass="sprite-breadcrumbs_statistics" items={[]} />,
+            <SalonBreadcrumbs
+                iconClass="sprite-breadcrumbs_statistics"
+                items={[]}
+            />,
         );
         expect(container.firstChild).toBeNull();
     });
