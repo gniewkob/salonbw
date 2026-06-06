@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface Props {
     open: boolean;
@@ -25,6 +25,12 @@ export default function ConfirmModal({
     onConfirm,
     onCancel,
 }: Props) {
+    const cancelRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (open) cancelRef.current?.focus();
+    }, [open]);
+
     useEffect(() => {
         if (typeof document === 'undefined') return;
         const onKey = (e: KeyboardEvent) => {
@@ -55,6 +61,7 @@ export default function ConfirmModal({
             <div
                 role="dialog"
                 aria-modal="true"
+                aria-labelledby="confirm-modal-title"
                 className="bg-white rounded-4 overflow-hidden"
                 style={{
                     width: 'min(400px, 100%)',
@@ -64,13 +71,16 @@ export default function ConfirmModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="px-4 pt-4 pb-3">
-                    <h6 className="fw-semibold mb-2">{title}</h6>
+                    <h6 id="confirm-modal-title" className="fw-semibold mb-2">
+                        {title}
+                    </h6>
                     {message && (
                         <p className="text-muted small mb-0">{message}</p>
                     )}
                 </div>
                 <div className="px-4 pb-4 d-flex justify-content-end gap-2">
                     <button
+                        ref={cancelRef}
                         type="button"
                         className="btn btn-outline-secondary btn-sm"
                         onClick={onCancel}
