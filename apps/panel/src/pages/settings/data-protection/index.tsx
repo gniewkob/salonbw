@@ -22,6 +22,7 @@ export default function DataProtectionPage() {
     const [paranoiaLimit, setParanoiaLimit] = useState(30);
     const [paranoiaEmail, setParanoiaEmail] = useState('');
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     useLayoutEffect(() => {
         if (settings) {
@@ -36,13 +37,19 @@ export default function DataProtectionPage() {
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         setSaved(false);
+        setSaveError(null);
         void updateDataProtection
             .mutateAsync({
                 paranoiaMode,
                 paranoiaLimit,
                 paranoiaEmail: paranoiaEmail || undefined,
             })
-            .then(() => setSaved(true));
+            .then(() => setSaved(true))
+            .catch(() =>
+                setSaveError(
+                    'Nie udało się zapisać ustawień. Spróbuj ponownie.',
+                ),
+            );
     };
 
     return (
@@ -148,6 +155,11 @@ export default function DataProtectionPage() {
                             {saved && (
                                 <div className="alert alert-success mb-3">
                                     Ustawienia zostały zapisane.
+                                </div>
+                            )}
+                            {saveError && (
+                                <div className="alert alert-danger mb-3">
+                                    {saveError}
                                 </div>
                             )}
 
