@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type {
     Supplier,
     Delivery,
@@ -219,6 +220,7 @@ export function useRemoveDeliveryItem() {
 export function useReceiveDelivery() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({ id, notes }: { id: number; notes?: string }) =>
             apiFetch<Delivery>(`/deliveries/${id}/receive`, {
@@ -231,18 +233,25 @@ export function useReceiveDelivery() {
             void queryClient.invalidateQueries({ queryKey: ['delivery', id] });
             void queryClient.invalidateQueries({ queryKey: ['products'] });
         },
+        onError: () => {
+            toast.error('Nie udało się przyjąć dostawy. Spróbuj ponownie.');
+        },
     });
 }
 
 export function useCancelDelivery() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch<Delivery>(`/deliveries/${id}/cancel`, { method: 'POST' }),
         onSuccess: (_, id) => {
             void queryClient.invalidateQueries({ queryKey: ['deliveries'] });
             void queryClient.invalidateQueries({ queryKey: ['delivery', id] });
+        },
+        onError: () => {
+            toast.error('Nie udało się anulować dostawy. Spróbuj ponownie.');
         },
     });
 }

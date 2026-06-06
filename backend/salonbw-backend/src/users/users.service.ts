@@ -134,6 +134,14 @@ export class UsersService {
         return this.findById(id);
     }
 
+    async updateCommissionBase(
+        id: number,
+        commissionBase: number,
+    ): Promise<User | null> {
+        await this.usersRepository.update(id, { commissionBase });
+        return this.findById(id);
+    }
+
     async updateRole(id: number, role: Role): Promise<User | null> {
         await this.usersRepository.update(id, { role });
         return this.findById(id);

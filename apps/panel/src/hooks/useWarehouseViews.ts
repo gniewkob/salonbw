@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type {
     ProductCardView,
     ProductCategory,
@@ -501,12 +502,19 @@ export function useCreateWarehouseOrder() {
     });
 }
 
+const ORDER_ACTION_LABELS: Record<string, string> = {
+    send: 'wysłać zamówienie',
+    cancel: 'anulować zamówienie',
+    receive: 'przyjąć zamówienie',
+};
+
 function useOrderAction(
     action: 'send' | 'cancel' | 'receive',
     payload?: Record<string, unknown>,
 ) {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: (orderId: number) =>
@@ -525,6 +533,11 @@ function useOrderAction(
             void queryClient.invalidateQueries({
                 queryKey: ['warehouse-products'],
             });
+        },
+        onError: () => {
+            toast.error(
+                `Nie udało się ${ORDER_ACTION_LABELS[action] ?? 'wykonać akcji'}. Spróbuj ponownie.`,
+            );
         },
     });
 }
