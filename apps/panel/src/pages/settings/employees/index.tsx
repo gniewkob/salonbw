@@ -5,6 +5,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import EmployeesNav from '@/components/salon/navs/EmployeesNav';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
@@ -28,6 +29,7 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
 
 export default function EmployeesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data } = useEmployees();
     const api = useEmployeeApi();
     const [rows, setRows] = useState<Employee[]>([]);
@@ -53,9 +55,14 @@ export default function EmployeesPage() {
         lastName: string;
         email?: string;
     }) => {
-        const created = await api.create(values);
-        setRows((c) => [...c, created]);
-        setOpenForm(false);
+        try {
+            const created = await api.create(values);
+            setRows((c) => [...c, created]);
+            setOpenForm(false);
+            toast.success('Pracownik został dodany');
+        } catch {
+            toast.error('Nie udało się dodać pracownika');
+        }
     };
 
     const handleUpdate = async (values: {
@@ -64,16 +71,28 @@ export default function EmployeesPage() {
         email?: string;
     }) => {
         if (!editing) return;
-        const updated = await api.update(editing.id, values);
-        setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
-        setEditing(null);
-        setOpenForm(false);
+        try {
+            const updated = await api.update(editing.id, values);
+            setRows((c) =>
+                c.map((cl) => (cl.id === editing.id ? updated : cl)),
+            );
+            setEditing(null);
+            setOpenForm(false);
+            toast.success('Dane pracownika zostały zapisane');
+        } catch {
+            toast.error('Nie udało się zapisać danych pracownika');
+        }
     };
 
     const handleDelete = async (row: Employee) => {
         if (!confirm(`Usunąć pracownika ${row.fullName ?? row.name}?`)) return;
-        await api.remove(row.id);
-        setRows((c) => c.filter((cl) => cl.id !== row.id));
+        try {
+            await api.remove(row.id);
+            setRows((c) => c.filter((cl) => cl.id !== row.id));
+            toast.success('Pracownik został usunięty');
+        } catch {
+            toast.error('Nie udało się usunąć pracownika');
+        }
     };
 
     return (
