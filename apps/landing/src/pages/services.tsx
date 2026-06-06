@@ -40,7 +40,9 @@ function getServicePrice(service: Service, fromLabel: string): string {
         style: 'currency',
         currency: 'PLN',
     }).format(service.price);
-    return service.priceType === 'from' ? `${fromLabel} ${formatted}` : formatted;
+    return service.priceType === 'from'
+        ? `${fromLabel} ${formatted}`
+        : formatted;
 }
 
 function getServiceDuration(service: Service): string {
@@ -93,20 +95,43 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
         } catch {}
     }, [items]);
 
-    const [bookingService, setBookingService] = useState<BookingService | null>(null);
+    const [bookingService, setBookingService] = useState<BookingService | null>(
+        null,
+    );
     const [generalBookingOpen, setGeneralBookingOpen] = useState(false);
 
     return (
         <PublicLayout>
             <Head>
-                <title>Usługi fryzjerskie, barber i pielęgnacja — {BUSINESS_INFO.name}</title>
-                <meta name="description" content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, koloryzacja Wella (Air Touch, Koleston Perfect), pielęgnacja (Botox, Złote proteiny, Olaplex), przedłużanie włosów HairTalk.`} />
-                <meta name="keywords" content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom" />
-                <meta property="og:title" content={`Usługi fryzjerskie — ${BUSINESS_INFO.name}`} />
-                <meta property="og:description" content={`Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów w ${BUSINESS_INFO.address.city}. Koloryzacja, balayage, botox, HairTalk.`} />
-                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`} />
+                <title>
+                    Usługi fryzjerskie, barber i pielęgnacja —{' '}
+                    {BUSINESS_INFO.name}
+                </title>
+                <meta
+                    name="description"
+                    content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, koloryzacja Wella (Air Touch, Koleston Perfect), pielęgnacja (Botox, Złote proteiny, Olaplex), przedłużanie włosów HairTalk.`}
+                />
+                <meta
+                    name="keywords"
+                    content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom"
+                />
+                <meta
+                    property="og:title"
+                    content={`Usługi fryzjerskie — ${BUSINESS_INFO.name}`}
+                />
+                <meta
+                    property="og:description"
+                    content={`Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów w ${BUSINESS_INFO.address.city}. Koloryzacja, balayage, botox, HairTalk.`}
+                />
+                <meta
+                    property="og:image"
+                    content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`}
+                />
                 <meta property="og:type" content="website" />
-                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/services`} />
+                <link
+                    rel="canonical"
+                    href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/services`}
+                />
                 <meta name="robots" content="index, follow" />
             </Head>
 
@@ -117,9 +142,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     <h1 className="svcs-hero__heading">{s.pageHeading}</h1>
                     <p className="svcs-hero__desc">{s.pageDesc}</p>
                     <button
+                        type="button"
                         onClick={() => setGeneralBookingOpen(true)}
                         className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
-                        style={{ padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
+                        style={{
+                            padding: '0.85rem 2.5rem',
+                            borderRadius: '2px',
+                            letterSpacing: '0.16em',
+                        }}
                     >
                         {T.nav.booking}
                     </button>
@@ -130,10 +160,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     {categories.map((cat) => (
                         <div key={cat.id ?? cat.name} className="svcs-category">
                             <div className="svcs-category__header">
-                                <h2 className="svcs-category__title">{cat.name}</h2>
+                                <h2 className="svcs-category__title">
+                                    {cat.name}
+                                </h2>
                                 <span className="svcs-category__count">
                                     {cat.services.length}{' '}
-                                    {cat.services.length === 1 ? s.serviceCount1 : s.serviceCountMany}
+                                    {cat.services.length === 1
+                                        ? s.serviceCount1
+                                        : s.serviceCountMany}
                                 </span>
                             </div>
 
@@ -150,10 +184,23 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                         <Link
                                                             href={href}
                                                             onClick={() =>
-                                                                trackEvent('select_item', {
-                                                                    item_list_name: 'services',
-                                                                    items: [{ item_id: svc.id, item_name: svc.name, item_category: cat.name }],
-                                                                })
+                                                                trackEvent(
+                                                                    'select_item',
+                                                                    {
+                                                                        item_list_name:
+                                                                            'services',
+                                                                        items: [
+                                                                            {
+                                                                                item_id:
+                                                                                    svc.id,
+                                                                                item_name:
+                                                                                    svc.name,
+                                                                                item_category:
+                                                                                    cat.name,
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                )
                                                             }
                                                         >
                                                             {svc.name}
@@ -163,13 +210,20 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                     )}
                                                 </div>
                                                 {svc.description && (
-                                                    <p className="svcs-row__desc">{svc.description}</p>
+                                                    <p className="svcs-row__desc">
+                                                        {svc.description}
+                                                    </p>
                                                 )}
                                             </div>
                                             <div className="svcs-row__meta">
-                                                <span className="svcs-row__price">{price}</span>
-                                                <span className="svcs-row__duration">{duration}</span>
+                                                <span className="svcs-row__price">
+                                                    {price}
+                                                </span>
+                                                <span className="svcs-row__duration">
+                                                    {duration}
+                                                </span>
                                                 <button
+                                                    type="button"
                                                     className="svcs-row__book"
                                                     onClick={() =>
                                                         setBookingService({
@@ -197,16 +251,30 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             {s.ctaHeading}
                         </h2>
                         <p className="svcs-bottom-cta__sub">
-                            {s.ctaSub.replace('{hours}', BUSINESS_INFO.hours.mondayFriday)}
+                            {s.ctaSub.replace(
+                                '{hours}',
+                                BUSINESS_INFO.hours.mondayFriday,
+                            )}
                         </p>
                         <button
+                            type="button"
                             onClick={() => setGeneralBookingOpen(true)}
                             className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
-                            style={{ padding: '0.85rem 2.5rem', borderRadius: '2px', letterSpacing: '0.16em' }}
+                            style={{
+                                padding: '0.85rem 2.5rem',
+                                borderRadius: '2px',
+                                letterSpacing: '0.16em',
+                            }}
                         >
                             {T.nav.booking}
                         </button>
-                        <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                        <p
+                            style={{
+                                marginTop: '1.5rem',
+                                fontSize: '0.8rem',
+                                color: 'rgba(255,255,255,0.6)',
+                            }}
+                        >
                             <a
                                 href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
                                 className="footer-link"
@@ -231,7 +299,9 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
     );
 }
 
-export const getServerSideProps: GetServerSideProps<ServicesPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<
+    ServicesPageProps
+> = async () => {
     const rawBase =
         process.env.API_BASE_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
@@ -244,22 +314,78 @@ export const getServerSideProps: GetServerSideProps<ServicesPageProps> = async (
             id: null,
             name: 'Usługi dla kobiet',
             services: [
-                { id: 1, name: 'Strzyżenie damskie', duration: 45, price: 150, priceType: 'from' } as Service,
-                { id: 2, name: 'Koloryzacja Air Touch', duration: 180, price: 600, priceType: 'from' } as Service,
-                { id: 3, name: 'Farbowanie Koleston Perfect', duration: 90, price: 320, priceType: 'from' } as Service,
-                { id: 4, name: 'Fryzura ślubna', duration: 150, price: 280 } as Service,
-                { id: 5, name: 'Botox na włosy', duration: 60, price: 300, priceType: 'from' } as Service,
-                { id: 6, name: 'Złote proteiny', duration: 90, price: 350, priceType: 'from' } as Service,
+                {
+                    id: 1,
+                    name: 'Strzyżenie damskie',
+                    duration: 45,
+                    price: 150,
+                    priceType: 'from',
+                } as Service,
+                {
+                    id: 2,
+                    name: 'Koloryzacja Air Touch',
+                    duration: 180,
+                    price: 600,
+                    priceType: 'from',
+                } as Service,
+                {
+                    id: 3,
+                    name: 'Farbowanie Koleston Perfect',
+                    duration: 90,
+                    price: 320,
+                    priceType: 'from',
+                } as Service,
+                {
+                    id: 4,
+                    name: 'Fryzura ślubna',
+                    duration: 150,
+                    price: 280,
+                } as Service,
+                {
+                    id: 5,
+                    name: 'Botox na włosy',
+                    duration: 60,
+                    price: 300,
+                    priceType: 'from',
+                } as Service,
+                {
+                    id: 6,
+                    name: 'Złote proteiny',
+                    duration: 90,
+                    price: 350,
+                    priceType: 'from',
+                } as Service,
             ],
         },
         {
             id: null,
             name: 'Usługi dla mężczyzn',
             services: [
-                { id: 7, name: 'Strzyżenie męskie', duration: 30, price: 80, priceType: 'from' } as Service,
-                { id: 8, name: 'Strzyżenie brody', duration: 20, price: 60 } as Service,
-                { id: 9, name: 'Combo włosy + broda + kompres', duration: 60, price: 130 } as Service,
-                { id: 10, name: 'Golenie twarzy', duration: 25, price: 70 } as Service,
+                {
+                    id: 7,
+                    name: 'Strzyżenie męskie',
+                    duration: 30,
+                    price: 80,
+                    priceType: 'from',
+                } as Service,
+                {
+                    id: 8,
+                    name: 'Strzyżenie brody',
+                    duration: 20,
+                    price: 60,
+                } as Service,
+                {
+                    id: 9,
+                    name: 'Combo włosy + broda + kompres',
+                    duration: 60,
+                    price: 130,
+                } as Service,
+                {
+                    id: 10,
+                    name: 'Golenie twarzy',
+                    duration: 25,
+                    price: 70,
+                } as Service,
             ],
         },
     ];
@@ -277,12 +403,20 @@ export const getServerSideProps: GetServerSideProps<ServicesPageProps> = async (
         for (const svc of data) {
             const categoryName = resolveCategoryName(svc);
             if (!map.has(categoryName)) {
-                map.set(categoryName, { id: null, name: categoryName, services: [] });
+                map.set(categoryName, {
+                    id: null,
+                    name: categoryName,
+                    services: [],
+                });
             }
             map.get(categoryName)!.services.push(svc);
         }
         const categories = Array.from(map.values());
-        return { props: { categories: categories.length ? categories : fallbackCategories } };
+        return {
+            props: {
+                categories: categories.length ? categories : fallbackCategories,
+            },
+        };
     } catch {
         return { props: { categories: fallbackCategories } };
     }
