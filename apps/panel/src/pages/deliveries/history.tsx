@@ -2,7 +2,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
-import { useDeliveries } from '@/hooks/useWarehouse';
+import {
+    useCancelDelivery,
+    useDeliveries,
+    useReceiveDelivery,
+} from '@/hooks/useWarehouse';
 
 const formatCurrency = (value: number) =>
     `${new Intl.NumberFormat('pl-PL', {
@@ -16,6 +20,8 @@ export default function WarehouseDeliveriesHistoryPage() {
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
     const { data: deliveries = [], isLoading } = useDeliveries();
+    const receiveMutation = useReceiveDelivery();
+    const cancelMutation = useCancelDelivery();
     const statusFilter = Array.isArray(router.query.status)
         ? router.query.status[0]
         : router.query.status;
@@ -125,6 +131,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                     <th>dostawca</th>
                                     <th>rodzaj</th>
                                     <th>wprowadzone</th>
+                                    <th />
                                 </tr>
                             </thead>
                             <tbody>
@@ -186,6 +193,44 @@ export default function WarehouseDeliveriesHistoryPage() {
                                                         hour: '2-digit',
                                                         minute: '2-digit',
                                                     },
+                                                )}
+                                            </td>
+                                            <td className="text-end text-nowrap">
+                                                {(delivery.status === 'draft' ||
+                                                    delivery.status ===
+                                                        'pending') && (
+                                                    <span className="btn-group btn-group-sm">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline-primary"
+                                                            disabled={
+                                                                receiveMutation.isPending
+                                                            }
+                                                            onClick={() =>
+                                                                void receiveMutation.mutateAsync(
+                                                                    {
+                                                                        id: delivery.id,
+                                                                    },
+                                                                )
+                                                            }
+                                                        >
+                                                            przyjmij
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline-secondary"
+                                                            disabled={
+                                                                cancelMutation.isPending
+                                                            }
+                                                            onClick={() =>
+                                                                void cancelMutation.mutateAsync(
+                                                                    delivery.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            anuluj
+                                                        </button>
+                                                    </span>
                                                 )}
                                             </td>
                                         </tr>
