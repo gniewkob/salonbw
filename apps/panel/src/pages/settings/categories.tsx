@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -167,6 +168,8 @@ export default function SettingsCategoriesPage() {
     const reorderCategories = useReorderProductCategories();
     const [reorderMode, setReorderMode] = useState(false);
     const [draftTree, setDraftTree] = useState<CategoryNode[]>([]);
+    const [confirmDeleteCategory, setConfirmDeleteCategory] =
+        useState<ProductCategory | null>(null);
 
     const tree = useMemo<CategoryNode[]>(
         () => toCategoryNodes(categories),
@@ -186,15 +189,7 @@ export default function SettingsCategoriesPage() {
     };
 
     const handleDelete = (category: ProductCategory) => {
-        if (
-            !window.confirm(
-                `Operacji nie można cofnąć. Czy na pewno chcesz usunąć kategorię "${category.name}"?`,
-            )
-        ) {
-            return;
-        }
-
-        deleteCategory.mutate(category.id);
+        setConfirmDeleteCategory(category);
     };
 
     const handleMove = (categoryId: number, direction: 'up' | 'down') => {
@@ -340,6 +335,19 @@ export default function SettingsCategoriesPage() {
                         </PanelSection>
                     </div>
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteCategory}
+                    title="Usuń kategorię"
+                    message={`Operacji nie można cofnąć. Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteCategory) return;
+                        deleteCategory.mutate(confirmDeleteCategory.id);
+                        setConfirmDeleteCategory(null);
+                    }}
+                    onCancel={() => setConfirmDeleteCategory(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

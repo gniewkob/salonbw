@@ -37,6 +37,14 @@ export default function WarehouseLowStockPage() {
                             </tr>
                         </thead>
                         <tbody>
+                            {rows.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="products-empty">
+                                        Brak produktów z niskim stanem
+                                        magazynowym
+                                    </td>
+                                </tr>
+                            ) : null}
                             {rows.map((row) => (
                                 <tr key={row.id}>
                                     <td>

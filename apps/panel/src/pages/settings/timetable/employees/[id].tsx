@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployee, useStaffOptions } from '@/hooks/useEmployees';
@@ -274,6 +275,9 @@ export default function SettingsTimetableEmployeeDetailPage() {
         useState<TimetableException | null>(null);
     const [scheduleError, setScheduleError] = useState<string | null>(null);
     const [exceptionError, setExceptionError] = useState<string | null>(null);
+    const [confirmDeleteExceptionId, setConfirmDeleteExceptionId] = useState<
+        number | null
+    >(null);
 
     const previousMonth = addMonths(date, -1);
     const nextMonth = addMonths(date, 1);
@@ -451,16 +455,8 @@ export default function SettingsTimetableEmployeeDetailPage() {
         }
     };
 
-    const handleDeleteException = async (exceptionId: number) => {
-        if (window.confirm('Czy na pewno chcesz usunąć ten wyjątek?')) {
-            try {
-                await deleteException.mutateAsync(exceptionId);
-            } catch {
-                setExceptionError(
-                    'Nie udało się usunąć wyjątku. Spróbuj ponownie.',
-                );
-            }
-        }
+    const handleDeleteException = (exceptionId: number) => {
+        setConfirmDeleteExceptionId(exceptionId);
     };
 
     if (employeeLoading || timetablesLoading) {
@@ -877,6 +873,26 @@ export default function SettingsTimetableEmployeeDetailPage() {
                         onSave={handleSaveException}
                     />
                 </div>
+                <ConfirmModal
+                    open={confirmDeleteExceptionId !== null}
+                    title="Usuń wyjątek"
+                    message="Czy na pewno chcesz usunąć ten wyjątek? Operacja jest nieodwracalna."
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={async () => {
+                        if (confirmDeleteExceptionId === null) return;
+                        const id = confirmDeleteExceptionId;
+                        setConfirmDeleteExceptionId(null);
+                        try {
+                            await deleteException.mutateAsync(id);
+                        } catch {
+                            setExceptionError(
+                                'Nie udało się usunąć wyjątku. Spróbuj ponownie.',
+                            );
+                        }
+                    }}
+                    onCancel={() => setConfirmDeleteExceptionId(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

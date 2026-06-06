@@ -2,6 +2,7 @@ import { useLayoutEffect, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
@@ -65,6 +66,8 @@ export default function ExtraFieldsPage() {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [updateError, setUpdateError] = useState<string | null>(null);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [confirmDeleteField, setConfirmDeleteField] =
+        useState<CustomerExtraField | null>(null);
 
     useLayoutEffect(() => {
         // no-op — secondary nav set before any early return
@@ -234,26 +237,11 @@ export default function ExtraFieldsPage() {
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm btn-outline-danger"
-                                                        onClick={() => {
-                                                            if (
-                                                                window.confirm(
-                                                                    `Usunąć pole "${field.label}"?`,
-                                                                )
-                                                            ) {
-                                                                setDeleteError(
-                                                                    null,
-                                                                );
-                                                                void del
-                                                                    .mutateAsync(
-                                                                        field.id,
-                                                                    )
-                                                                    .catch(() =>
-                                                                        setDeleteError(
-                                                                            'Nie udało się usunąć pola.',
-                                                                        ),
-                                                                    );
-                                                            }
-                                                        }}
+                                                        onClick={() =>
+                                                            setConfirmDeleteField(
+                                                                field,
+                                                            )
+                                                        }
                                                     >
                                                         Usuń
                                                     </button>
@@ -386,6 +374,25 @@ export default function ExtraFieldsPage() {
                         </div>
                     )}
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteField}
+                    title="Usuń pole"
+                    message={`Czy na pewno chcesz usunąć pole "${confirmDeleteField?.label}"?`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteField) return;
+                        const id = confirmDeleteField.id;
+                        setConfirmDeleteField(null);
+                        setDeleteError(null);
+                        void del
+                            .mutateAsync(id)
+                            .catch(() =>
+                                setDeleteError('Nie udało się usunąć pola.'),
+                            );
+                    }}
+                    onCancel={() => setConfirmDeleteField(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

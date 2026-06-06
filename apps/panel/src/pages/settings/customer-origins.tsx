@@ -2,6 +2,7 @@ import { useLayoutEffect, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
@@ -34,6 +35,8 @@ export default function CustomerOriginsPage() {
     );
     const [editName, setEditName] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [confirmDeleteOrigin, setConfirmDeleteOrigin] =
+        useState<CustomerOrigin | null>(null);
 
     useLayoutEffect(() => {}, []);
     useSetSecondaryNav(CUSTOMER_SETTINGS_NAV);
@@ -161,24 +164,11 @@ export default function CustomerOriginsPage() {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-sm btn-outline-danger"
-                                                                onClick={() => {
-                                                                    if (
-                                                                        window.confirm(
-                                                                            `Usunąć źródło "${origin.name}"?`,
-                                                                        )
-                                                                    ) {
-                                                                        void del
-                                                                            .mutateAsync(
-                                                                                origin.id,
-                                                                            )
-                                                                            .catch(
-                                                                                () =>
-                                                                                    setSubmitError(
-                                                                                        'Nie udało się usunąć źródła.',
-                                                                                    ),
-                                                                            );
-                                                                    }
-                                                                }}
+                                                                onClick={() =>
+                                                                    setConfirmDeleteOrigin(
+                                                                        origin,
+                                                                    )
+                                                                }
                                                             >
                                                                 Usuń
                                                             </button>
@@ -336,6 +326,24 @@ export default function CustomerOriginsPage() {
                         </div>
                     )}
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteOrigin}
+                    title="Usuń źródło"
+                    message={`Czy na pewno chcesz usunąć źródło "${confirmDeleteOrigin?.name}"?`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteOrigin) return;
+                        const id = confirmDeleteOrigin.id;
+                        setConfirmDeleteOrigin(null);
+                        void del
+                            .mutateAsync(id)
+                            .catch(() =>
+                                setSubmitError('Nie udało się usunąć źródła.'),
+                            );
+                    }}
+                    onCancel={() => setConfirmDeleteOrigin(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );
