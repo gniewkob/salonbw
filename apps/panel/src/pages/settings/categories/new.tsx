@@ -81,7 +81,9 @@ export default function SettingsCategoriesNewPage() {
             });
             void router.push('/settings/categories');
         } catch {
-            setSubmitError('Nie udało się zapisać kategorii. Spróbuj ponownie.');
+            setSubmitError(
+                'Nie udało się zapisać kategorii. Spróbuj ponownie.',
+            );
         }
     };
 

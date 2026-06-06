@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import type { CalendarEvent, Employee, TimeBlock, TimeBlockType } from '@/types';
+import type { Employee, TimeBlock, TimeBlockType } from '@/types';
 import { useCalendarMutations } from '@/hooks/useCalendar';
 import { useToast } from '@/contexts/ToastContext';
 
@@ -80,9 +80,7 @@ export default function TimeBlockModal({
             setAllDay(existingBlock.allDay);
         } else {
             setEmployeeId(initialEmployeeId ?? employees[0]?.id ?? 0);
-            setStartTime(
-                toDatetimeLocal(initialStartTime ?? new Date()),
-            );
+            setStartTime(toDatetimeLocal(initialStartTime ?? new Date()));
             setEndTime(
                 toDatetimeLocal(
                     initialEndTime ??
@@ -197,7 +195,9 @@ export default function TimeBlockModal({
                                         className="form-select"
                                         value={employeeId}
                                         onChange={(e) =>
-                                            setEmployeeId(Number(e.target.value))
+                                            setEmployeeId(
+                                                Number(e.target.value),
+                                            )
                                         }
                                         required
                                     >
@@ -211,10 +211,7 @@ export default function TimeBlockModal({
                             )}
 
                             <div className="mb-3">
-                                <label
-                                    htmlFor="tb-type"
-                                    className="form-label"
-                                >
+                                <label htmlFor="tb-type" className="form-label">
                                     Rodzaj blokady
                                 </label>
                                 <select
@@ -228,9 +225,10 @@ export default function TimeBlockModal({
                                     }
                                 >
                                     {(
-                                        Object.entries(
-                                            BLOCK_TYPE_LABELS,
-                                        ) as [TimeBlockType, string][]
+                                        Object.entries(BLOCK_TYPE_LABELS) as [
+                                            TimeBlockType,
+                                            string,
+                                        ][]
                                     ).map(([value, label]) => (
                                         <option key={value} value={value}>
                                             {label}
@@ -252,9 +250,7 @@ export default function TimeBlockModal({
                                     className="form-control"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder={
-                                        BLOCK_TYPE_LABELS[blockType]
-                                    }
+                                    placeholder={BLOCK_TYPE_LABELS[blockType]}
                                 />
                             </div>
 
@@ -370,7 +366,9 @@ export default function TimeBlockModal({
                                             disabled={deleting}
                                             onClick={() => void handleDelete()}
                                         >
-                                            {deleting ? 'Usuwanie...' : 'Tak, usuń'}
+                                            {deleting
+                                                ? 'Usuwanie...'
+                                                : 'Tak, usuń'}
                                         </button>
                                         <button
                                             type="button"

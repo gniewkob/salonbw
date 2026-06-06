@@ -48,7 +48,10 @@ export default function DataProtectionPage() {
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonShell role={role}>
-                <div className="salonbw-page" data-testid="data-protection-page">
+                <div
+                    className="salonbw-page"
+                    data-testid="data-protection-page"
+                >
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_settings"
                         items={[
@@ -86,8 +89,9 @@ export default function DataProtectionPage() {
                                         Włącz tryb ochrony danych
                                     </label>
                                     <div className="form-text text-muted">
-                                        Ogranicza dostęp do danych osobowych klientów dla
-                                        pracowników na podstawie ostatniej wizyty.
+                                        Ogranicza dostęp do danych osobowych
+                                        klientów dla pracowników na podstawie
+                                        ostatniej wizyty.
                                     </div>
                                 </div>
 
@@ -107,13 +111,15 @@ export default function DataProtectionPage() {
                                         min={1}
                                         max={3650}
                                         onChange={(e) =>
-                                            setParanoiaLimit(Number(e.target.value))
+                                            setParanoiaLimit(
+                                                Number(e.target.value),
+                                            )
                                         }
                                         disabled={!paranoiaMode}
                                     />
                                     <div className="form-text text-muted">
-                                        Po ilu dniach bez wizyty dane klienta stają się
-                                        niedostępne.
+                                        Po ilu dniach bez wizyty dane klienta
+                                        stają się niedostępne.
                                     </div>
                                 </div>
 
@@ -162,7 +168,8 @@ export default function DataProtectionPage() {
                     <div className="border-top pt-4 mt-2">
                         <h3 className="fs-5 fw-semibold mb-3">Logi i audyt</h3>
                         <p className="text-muted mb-3">
-                            Historia dostępów i operacji na danych osobowych klientów.
+                            Historia dostępów i operacji na danych osobowych
+                            klientów.
                         </p>
                         <Link
                             href="/settings/data-protection/logs"

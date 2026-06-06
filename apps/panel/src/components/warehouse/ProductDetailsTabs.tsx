@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 
 type ProductDetailsTab = 'card' | 'history' | 'formulas' | 'commissions';

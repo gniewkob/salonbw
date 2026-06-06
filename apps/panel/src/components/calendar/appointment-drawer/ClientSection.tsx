@@ -1,15 +1,15 @@
 import Link from 'next/link';
 import type { Appointment, Customer } from '@/types';
-import {
-    getAppointmentCustomerId,
-    trackReceptionAction,
-} from '../receptionTelemetry';
+import { trackReceptionAction } from '../receptionTelemetry';
 
 function formatDateTime(value: string | null | undefined): string {
     if (!value) return 'brak';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'brak';
-    return date.toLocaleString('pl-PL', { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString('pl-PL', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    });
 }
 
 interface CustomerStats {
@@ -89,7 +89,9 @@ export default function ClientSection({
         <>
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Klient</strong>
-                <label className="form-label" htmlFor="appointment-client">Klient</label>
+                <label className="form-label" htmlFor="appointment-client">
+                    Klient
+                </label>
 
                 {mode === 'create' && (
                     <input
@@ -122,9 +124,13 @@ export default function ClientSection({
                         <button
                             type="button"
                             className="btn btn-link btn-sm p-0"
-                            onClick={() => setShowQuickCreateCustomer((prev) => !prev)}
+                            onClick={() =>
+                                setShowQuickCreateCustomer((prev) => !prev)
+                            }
                         >
-                            {showQuickCreateCustomer ? 'Ukryj szybkie dodawanie klienta' : 'Dodaj nowego klienta'}
+                            {showQuickCreateCustomer
+                                ? 'Ukryj szybkie dodawanie klienta'
+                                : 'Dodaj nowego klienta'}
                         </button>
                     </div>
                 )}
@@ -138,7 +144,9 @@ export default function ClientSection({
                                     className="form-control form-control-sm"
                                     placeholder="Imię"
                                     value={newCustomerFirstName}
-                                    onChange={(e) => setNewCustomerFirstName(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewCustomerFirstName(e.target.value)
+                                    }
                                 />
                             </div>
                             <div className="col-6">
@@ -147,7 +155,9 @@ export default function ClientSection({
                                     className="form-control form-control-sm"
                                     placeholder="Nazwisko"
                                     value={newCustomerLastName}
-                                    onChange={(e) => setNewCustomerLastName(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewCustomerLastName(e.target.value)
+                                    }
                                 />
                             </div>
                             <div className="col-6">
@@ -156,7 +166,9 @@ export default function ClientSection({
                                     className="form-control form-control-sm"
                                     placeholder="Telefon"
                                     value={newCustomerPhone}
-                                    onChange={(e) => setNewCustomerPhone(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewCustomerPhone(e.target.value)
+                                    }
                                 />
                             </div>
                             <div className="col-6">
@@ -165,7 +177,9 @@ export default function ClientSection({
                                     className="form-control form-control-sm"
                                     placeholder="E-mail (opcjonalnie)"
                                     value={newCustomerEmail}
-                                    onChange={(e) => setNewCustomerEmail(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewCustomerEmail(e.target.value)
+                                    }
                                 />
                             </div>
                             <div className="col-12">
@@ -173,7 +187,11 @@ export default function ClientSection({
                                     type="button"
                                     className="btn btn-outline-primary btn-sm"
                                     onClick={handleQuickCreateCustomer}
-                                    disabled={saving || createCustomerPending || !canCreateInlineCustomer}
+                                    disabled={
+                                        saving ||
+                                        createCustomerPending ||
+                                        !canCreateInlineCustomer
+                                    }
                                 >
                                     Utwórz klienta i wybierz
                                 </button>
@@ -185,10 +203,20 @@ export default function ClientSection({
                 {(appointment?.client?.phone || appointment?.client?.email) && (
                     <div className="mt-2 pt-2 border-top small">
                         {appointment.client.phone && (
-                            <div>Tel: <a href={`tel:${appointment.client.phone}`}>{appointment.client.phone}</a></div>
+                            <div>
+                                Tel:{' '}
+                                <a href={`tel:${appointment.client.phone}`}>
+                                    {appointment.client.phone}
+                                </a>
+                            </div>
                         )}
                         {appointment.client.email && (
-                            <div>E-mail: <a href={`mailto:${appointment.client.email}`}>{appointment.client.email}</a></div>
+                            <div>
+                                E-mail:{' '}
+                                <a href={`mailto:${appointment.client.email}`}>
+                                    {appointment.client.email}
+                                </a>
+                            </div>
                         )}
                     </div>
                 )}
@@ -201,55 +229,79 @@ export default function ClientSection({
                                 <Link
                                     href={`/customers/${appointment.client.id}`}
                                     className="btn btn-sm btn-outline-primary"
-                                    onClick={() => trackReceptionAction({
-                                        action: 'open_customer_profile',
-                                        appointmentId: appointment.id,
-                                        customerId: appointment.client?.id,
-                                        customerAlertSeverity,
-                                        source: 'appointment_drawer',
-                                    })}
+                                    onClick={() =>
+                                        trackReceptionAction({
+                                            action: 'open_customer_profile',
+                                            appointmentId: appointment.id,
+                                            customerId: appointment.client?.id,
+                                            customerAlertSeverity,
+                                            source: 'appointment_drawer',
+                                        })
+                                    }
                                 >
                                     Otwórz kartę klienta
                                 </Link>
                             )}
                         </div>
                         {customerStatsLoading ? (
-                            <div className="text-muted mt-1">Ładowanie statystyk klienta...</div>
+                            <div className="text-muted mt-1">
+                                Ładowanie statystyk klienta...
+                            </div>
                         ) : customerStats ? (
                             <div className="mt-1">
-                                <div>Wizyty: {customerStats.totalVisits}{' · '}No-show: {customerStats.noShowVisits}</div>
-                                <div>Łączne wydatki: {customerStats.totalSpent.toFixed(2)} PLN</div>
-                                <div>Ostatnia wizyta: {formatDateTime(customerStats.lastVisitDate)}</div>
+                                <div>
+                                    Wizyty: {customerStats.totalVisits}
+                                    {' · '}No-show: {customerStats.noShowVisits}
+                                </div>
+                                <div>
+                                    Łączne wydatki:{' '}
+                                    {customerStats.totalSpent.toFixed(2)} PLN
+                                </div>
+                                <div>
+                                    Ostatnia wizyta:{' '}
+                                    {formatDateTime(
+                                        customerStats.lastVisitDate,
+                                    )}
+                                </div>
                             </div>
                         ) : (
-                            <div className="text-muted mt-1">Brak statystyk klienta.</div>
+                            <div className="text-muted mt-1">
+                                Brak statystyk klienta.
+                            </div>
                         )}
                     </div>
                 )}
             </div>
 
-            {appointment && !customerAlertsLoading && customerAlerts.length > 0 && (
-                <div className="rounded border p-2">
-                    <strong className="d-block mb-2">Alerty</strong>
-                    <div className="d-flex flex-column gap-1">
-                        {customerAlerts.map((alert) => (
-                            <div
-                                key={alert.id}
-                                className={`small rounded px-2 py-1 ${
-                                    alert.severity === 'danger'
-                                        ? 'bg-danger-subtle text-danger-emphasis'
-                                        : alert.severity === 'warning'
-                                          ? 'bg-warning-subtle text-warning-emphasis'
-                                          : 'bg-info-subtle text-info-emphasis'
-                                }`}
-                            >
-                                <strong>{alert.label}</strong>
-                                {alert.detail && <span>{': '}{alert.detail}</span>}
-                            </div>
-                        ))}
+            {appointment &&
+                !customerAlertsLoading &&
+                customerAlerts.length > 0 && (
+                    <div className="rounded border p-2">
+                        <strong className="d-block mb-2">Alerty</strong>
+                        <div className="d-flex flex-column gap-1">
+                            {customerAlerts.map((alert) => (
+                                <div
+                                    key={alert.id}
+                                    className={`small rounded px-2 py-1 ${
+                                        alert.severity === 'danger'
+                                            ? 'bg-danger-subtle text-danger-emphasis'
+                                            : alert.severity === 'warning'
+                                              ? 'bg-warning-subtle text-warning-emphasis'
+                                              : 'bg-info-subtle text-info-emphasis'
+                                    }`}
+                                >
+                                    <strong>{alert.label}</strong>
+                                    {alert.detail && (
+                                        <span>
+                                            {': '}
+                                            {alert.detail}
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
         </>
     );
 }

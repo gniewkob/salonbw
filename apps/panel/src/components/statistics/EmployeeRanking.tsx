@@ -1,4 +1,3 @@
-
 import type { EmployeeStats } from '@/types';
 
 interface Props {

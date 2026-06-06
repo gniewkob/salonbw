@@ -519,7 +519,11 @@ function StatisticsPageContent() {
 
             {reportLoading ? (
                 <div className="d-flex align-items-center gap-2 py-4 text-muted">
-                    <div className="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true" />
+                    <div
+                        className="spinner-border spinner-border-sm text-primary"
+                        role="status"
+                        aria-hidden="true"
+                    />
                     Ładowanie raportu...
                 </div>
             ) : reportError ? (

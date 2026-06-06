@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
@@ -589,7 +588,10 @@ export default function AutomaticMessagesPage() {
                     </div>
                 )}
                 <div className="mt-3 pt-3 border-top">
-                    <Link href="/communication/reminders" className="btn btn-sm btn-outline-secondary">
+                    <Link
+                        href="/communication/reminders"
+                        className="btn btn-sm btn-outline-secondary"
+                    >
                         Wyzwól przypomnienia ręcznie →
                     </Link>
                 </div>

@@ -1,4 +1,3 @@
-
 import type { CashRegisterSummary } from '@/types';
 
 interface Props {

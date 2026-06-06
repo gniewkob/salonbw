@@ -5,7 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push: jest.fn(), replace: jest.fn(), query: {}, pathname: '/settings/privacy' }),
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        query: {},
+        pathname: '/settings/privacy',
+    }),
 }));
 
 jest.mock('@/contexts/AuthContext');

@@ -60,8 +60,12 @@ function formatMeta(isoDate: string): string {
     return format(parseISO(isoDate), 'd MMM yyyy, HH:mm', { locale: pl });
 }
 
-const TERMINAL_STATUSES = new Set(['cancelled', 'completed', 'no_show']);
-const CANCELLABLE_STATUSES = new Set(['scheduled', 'confirmed', 'online_pending', 'rescheduled_pending']);
+const CANCELLABLE_STATUSES = new Set([
+    'scheduled',
+    'confirmed',
+    'online_pending',
+    'rescheduled_pending',
+]);
 
 function AppointmentFormulas({ appointmentId }: { appointmentId: number }) {
     const { apiFetch } = useAuth();
@@ -88,7 +92,8 @@ function AppointmentFormulas({ appointmentId }: { appointmentId: number }) {
         };
     }, [apiFetch, appointmentId]);
 
-    if (loading) return <p className="text-muted small mb-0">Ładowanie notatek…</p>;
+    if (loading)
+        return <p className="text-muted small mb-0">Ładowanie notatek…</p>;
     if (formulas.length === 0) return null;
 
     return (
@@ -99,7 +104,11 @@ function AppointmentFormulas({ appointmentId }: { appointmentId: number }) {
                     <div
                         key={f.id}
                         className="p-2 mb-1 rounded"
-                        style={{ background: '#f8f9fa', fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}
+                        style={{
+                            background: '#f8f9fa',
+                            fontSize: '0.85rem',
+                            whiteSpace: 'pre-wrap',
+                        }}
                     >
                         {f.description}
                     </div>
@@ -115,7 +124,11 @@ interface RescheduleModalProps {
     onConfirm: (appointmentId: number) => Promise<void>;
 }
 
-function RescheduleModal({ appointment, onClose, onConfirm }: RescheduleModalProps) {
+function RescheduleModal({
+    appointment,
+    onClose,
+    onConfirm,
+}: RescheduleModalProps) {
     const router = useRouter();
     const [pending, setPending] = useState(false);
     const [done, setDone] = useState(false);
@@ -132,7 +145,9 @@ function RescheduleModal({ appointment, onClose, onConfirm }: RescheduleModalPro
 
     const handleGoToBooking = () => {
         const serviceId = appointment.service?.id;
-        void router.push(serviceId ? `/booking?serviceId=${serviceId}` : '/booking');
+        void router.push(
+            serviceId ? `/booking?serviceId=${serviceId}` : '/booking',
+        );
     };
 
     return (
@@ -141,22 +156,31 @@ function RescheduleModal({ appointment, onClose, onConfirm }: RescheduleModalPro
             tabIndex={-1}
             role="dialog"
             style={{ background: 'rgba(0,0,0,0.5)' }}
-            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
         >
             <div className="modal-dialog modal-dialog-centered" role="document">
                 <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Zmiana terminu wizyty</h5>
-                        <button type="button" className="btn-close" onClick={onClose} />
+                        <button
+                            type="button"
+                            className="btn-close"
+                            onClick={onClose}
+                        />
                     </div>
                     <div className="modal-body">
                         {done ? (
                             <div>
                                 <p className="text-success mb-3">
-                                    Prośba o zmianę terminu została wysłana. Recepcja skontaktuje się z Tobą w celu ustalenia nowego terminu.
+                                    Prośba o zmianę terminu została wysłana.
+                                    Recepcja skontaktuje się z Tobą w celu
+                                    ustalenia nowego terminu.
                                 </p>
                                 <p className="text-muted small">
-                                    Możesz też od razu zarezerwować nowy termin dla tej samej usługi:
+                                    Możesz też od razu zarezerwować nowy termin
+                                    dla tej samej usługi:
                                 </p>
                                 <button
                                     type="button"
@@ -170,11 +194,15 @@ function RescheduleModal({ appointment, onClose, onConfirm }: RescheduleModalPro
                             <div>
                                 <p>
                                     Chcesz zmienić termin wizyty{' '}
-                                    <strong>{appointment.service?.name ?? 'Wizyta'}</strong>{' '}
+                                    <strong>
+                                        {appointment.service?.name ?? 'Wizyta'}
+                                    </strong>{' '}
                                     ({formatMeta(appointment.startTime)})?
                                 </p>
                                 <p className="text-muted small mb-0">
-                                    Wyślemy prośbę o zmianę terminu do recepcji. Możesz też od razu anulować tę wizytę i zarezerwować nowy termin.
+                                    Wyślemy prośbę o zmianę terminu do recepcji.
+                                    Możesz też od razu anulować tę wizytę i
+                                    zarezerwować nowy termin.
                                 </p>
                             </div>
                         )}
@@ -201,7 +229,9 @@ function RescheduleModal({ appointment, onClose, onConfirm }: RescheduleModalPro
                                 disabled={pending}
                                 onClick={() => void handleConfirm()}
                             >
-                                {pending ? 'Wysyłanie…' : 'Wyślij prośbę o zmianę'}
+                                {pending
+                                    ? 'Wysyłanie…'
+                                    : 'Wyślij prośbę o zmianę'}
                             </button>
                         </div>
                     )}
@@ -230,9 +260,13 @@ export default function ClientAppointmentHistoryView({
     onAcceptReschedule,
 }: ClientAppointmentHistoryViewProps) {
     const router = useRouter();
+    const { apiFetch } = useAuth();
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<
         number | null
     >(null);
+    const [rescheduleAppt, setRescheduleAppt] = useState<Appointment | null>(
+        null,
+    );
     const [pendingRequestId, setPendingRequestId] = useState<number | null>(
         null,
     );
@@ -277,6 +311,12 @@ export default function ClientAppointmentHistoryView({
         }
     };
 
+    const handleRescheduleRequest = async (appointmentId: number) => {
+        await apiFetch(`/appointments/${appointmentId}/reschedule-request`, {
+            method: 'POST',
+        });
+    };
+
     const handleRequestCancellation = async (appointmentId: number) => {
         if (!onRequestCancellation) return;
         setPendingRequestId(appointmentId);
@@ -308,7 +348,7 @@ export default function ClientAppointmentHistoryView({
         const canCancel =
             allowCancel &&
             !!onRequestCancellation &&
-            !TERMINAL_STATUSES.has(status);
+            CANCELLABLE_STATUSES.has(status);
 
         const isError = requestState?.kind === 'error';
         const FeedbackIcon = isError
@@ -368,6 +408,15 @@ export default function ClientAppointmentHistoryView({
                             {pendingAcceptId === appointment.id
                                 ? 'Akceptowanie...'
                                 : 'Zaakceptuj nowy termin'}
+                        </button>
+                    ) : null}
+                    {allowCancel && CANCELLABLE_STATUSES.has(status) ? (
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => setRescheduleAppt(appointment)}
+                        >
+                            Zmień termin
                         </button>
                     ) : null}
                     {canCancel ? (
@@ -486,37 +535,49 @@ export default function ClientAppointmentHistoryView({
             >
                 <h3 className="h6 mb-2">Szczegóły wizyty (tylko odczyt)</h3>
                 {selectedAppointment ? (
-                    <dl className="row mb-0 small">
-                        <dt className="col-sm-3">Usługa</dt>
-                        <dd className="col-sm-9">
-                            {selectedAppointment.service?.name ?? '-'}
-                        </dd>
-                        <dt className="col-sm-3">Status</dt>
-                        <dd className="col-sm-9">
-                            {
-                                (
-                                    STATUS_CONFIG[
-                                        selectedAppointment.status ??
-                                            'scheduled'
-                                    ] ?? DEFAULT_STATUS
-                                ).label
-                            }
-                        </dd>
-                        <dt className="col-sm-3">Termin</dt>
-                        <dd className="col-sm-9">
-                            {formatMeta(selectedAppointment.startTime)}
-                        </dd>
-                        <dt className="col-sm-3">Pracownik</dt>
-                        <dd className="col-sm-9">
-                            {selectedAppointment.employee?.name ?? '-'}
-                        </dd>
-                    </dl>
+                    <>
+                        <dl className="row mb-0 small">
+                            <dt className="col-sm-3">Usługa</dt>
+                            <dd className="col-sm-9">
+                                {selectedAppointment.service?.name ?? '-'}
+                            </dd>
+                            <dt className="col-sm-3">Status</dt>
+                            <dd className="col-sm-9">
+                                {
+                                    (
+                                        STATUS_CONFIG[
+                                            selectedAppointment.status ??
+                                                'scheduled'
+                                        ] ?? DEFAULT_STATUS
+                                    ).label
+                                }
+                            </dd>
+                            <dt className="col-sm-3">Termin</dt>
+                            <dd className="col-sm-9">
+                                {formatMeta(selectedAppointment.startTime)}
+                            </dd>
+                            <dt className="col-sm-3">Pracownik</dt>
+                            <dd className="col-sm-9">
+                                {selectedAppointment.employee?.name ?? '-'}
+                            </dd>
+                        </dl>
+                        <AppointmentFormulas
+                            appointmentId={selectedAppointment.id}
+                        />
+                    </>
                 ) : (
                     <p className="text-muted small mb-0">
                         Wybierz wizytę z listy, aby zobaczyć szczegóły.
                     </p>
                 )}
             </section>
+            {rescheduleAppt && (
+                <RescheduleModal
+                    appointment={rescheduleAppt}
+                    onClose={() => setRescheduleAppt(null)}
+                    onConfirm={handleRescheduleRequest}
+                />
+            )}
         </div>
     );
 }

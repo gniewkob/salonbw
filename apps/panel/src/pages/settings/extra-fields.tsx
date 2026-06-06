@@ -46,14 +46,21 @@ function parseOptions(raw: string): string[] {
 
 export default function ExtraFieldsPage() {
     const { role } = useAuth();
-    const { data: fields = [], isLoading, error, refetch } = useCustomerExtraFields();
+    const {
+        data: fields = [],
+        isLoading,
+        error,
+        refetch,
+    } = useCustomerExtraFields();
     const create = useCreateCustomerExtraField();
     const update = useUpdateCustomerExtraField();
     const del = useDeleteCustomerExtraField();
 
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState<FieldFormState>(EMPTY_FORM);
-    const [editingField, setEditingField] = useState<CustomerExtraField | null>(null);
+    const [editingField, setEditingField] = useState<CustomerExtraField | null>(
+        null,
+    );
     const [editForm, setEditForm] = useState<FieldFormState>(EMPTY_FORM);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -69,7 +76,9 @@ export default function ExtraFieldsPage() {
             label: form.label.trim(),
             type: form.type,
             required: form.required,
-            ...(form.type === 'select' ? { options: parseOptions(form.options) } : {}),
+            ...(form.type === 'select'
+                ? { options: parseOptions(form.options) }
+                : {}),
         };
         void create
             .mutateAsync(payload)
@@ -97,7 +106,9 @@ export default function ExtraFieldsPage() {
             label: editForm.label.trim(),
             type: editForm.type,
             required: editForm.required,
-            ...(editForm.type === 'select' ? { options: parseOptions(editForm.options) } : {}),
+            ...(editForm.type === 'select'
+                ? { options: parseOptions(editForm.options) }
+                : {}),
         };
         void update
             .mutateAsync({ id: editingField.id, data: payload })
@@ -134,7 +145,9 @@ export default function ExtraFieldsPage() {
                         <div className="text-muted p-3">Ładowanie...</div>
                     ) : error ? (
                         <div className="d-flex flex-column gap-2 p-3">
-                            <div className="text-danger">Nie udało się pobrać pól klientów.</div>
+                            <div className="text-danger">
+                                Nie udało się pobrać pól klientów.
+                            </div>
                             <button
                                 type="button"
                                 className="btn btn-outline-secondary"
@@ -158,33 +171,54 @@ export default function ExtraFieldsPage() {
                                 <tbody>
                                     {fields.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="text-muted text-center py-4">
-                                                Brak dodatkowych pól klientów. Kliknij
-                                                &ldquo;+ Dodaj pole&rdquo; aby dodać pierwsze.
+                                            <td
+                                                colSpan={5}
+                                                className="text-muted text-center py-4"
+                                            >
+                                                Brak dodatkowych pól klientów.
+                                                Kliknij &ldquo;+ Dodaj
+                                                pole&rdquo; aby dodać pierwsze.
                                             </td>
                                         </tr>
                                     ) : (
                                         fields.map((field) => (
                                             <tr key={field.id}>
-                                                <td className="fw-medium">{field.label}</td>
-                                                <td>{FIELD_TYPE_LABELS[field.type]}</td>
+                                                <td className="fw-medium">
+                                                    {field.label}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        FIELD_TYPE_LABELS[
+                                                            field.type
+                                                        ]
+                                                    }
+                                                </td>
                                                 <td>
                                                     {field.required ? (
-                                                        <span className="badge bg-primary">Tak</span>
+                                                        <span className="badge bg-primary">
+                                                            Tak
+                                                        </span>
                                                     ) : (
-                                                        <span className="badge bg-secondary">Nie</span>
+                                                        <span className="badge bg-secondary">
+                                                            Nie
+                                                        </span>
                                                     )}
                                                 </td>
                                                 <td>
-                                                    {field.type === 'select' && field.options
-                                                        ? field.options.join(', ')
+                                                    {field.type === 'select' &&
+                                                    field.options
+                                                        ? field.options.join(
+                                                              ', ',
+                                                          )
                                                         : '—'}
                                                 </td>
                                                 <td className="text-end">
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm btn-outline-secondary me-1"
-                                                        onClick={() => beginEdit(field)}
+                                                        onClick={() =>
+                                                            beginEdit(field)
+                                                        }
                                                     >
                                                         Edytuj
                                                     </button>
@@ -197,7 +231,9 @@ export default function ExtraFieldsPage() {
                                                                     `Usunąć pole "${field.label}"?`,
                                                                 )
                                                             ) {
-                                                                void del.mutateAsync(field.id);
+                                                                void del.mutateAsync(
+                                                                    field.id,
+                                                                );
                                                             }
                                                         }}
                                                     >
@@ -219,9 +255,14 @@ export default function ExtraFieldsPage() {
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
                             <div className="modal-dialog">
-                                <form className="modal-content" onSubmit={handleCreate}>
+                                <form
+                                    className="modal-content"
+                                    onSubmit={handleCreate}
+                                >
                                     <div className="modal-header">
-                                        <h5 className="modal-title">Dodaj pole klienta</h5>
+                                        <h5 className="modal-title">
+                                            Dodaj pole klienta
+                                        </h5>
                                         <button
                                             type="button"
                                             className="btn-close"
@@ -250,9 +291,14 @@ export default function ExtraFieldsPage() {
                                         <button
                                             type="submit"
                                             className="btn btn-primary"
-                                            disabled={create.isPending || !form.label.trim()}
+                                            disabled={
+                                                create.isPending ||
+                                                !form.label.trim()
+                                            }
                                         >
-                                            {create.isPending ? 'Dodawanie...' : 'Dodaj pole'}
+                                            {create.isPending
+                                                ? 'Dodawanie...'
+                                                : 'Dodaj pole'}
                                         </button>
                                     </div>
                                 </form>
@@ -267,13 +313,20 @@ export default function ExtraFieldsPage() {
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
                             <div className="modal-dialog">
-                                <form className="modal-content" onSubmit={handleUpdate}>
+                                <form
+                                    className="modal-content"
+                                    onSubmit={handleUpdate}
+                                >
                                     <div className="modal-header">
-                                        <h5 className="modal-title">Edytuj pole klienta</h5>
+                                        <h5 className="modal-title">
+                                            Edytuj pole klienta
+                                        </h5>
                                         <button
                                             type="button"
                                             className="btn-close"
-                                            onClick={() => setEditingField(null)}
+                                            onClick={() =>
+                                                setEditingField(null)
+                                            }
                                         />
                                     </div>
                                     <div className="modal-body">
@@ -286,16 +339,23 @@ export default function ExtraFieldsPage() {
                                         <button
                                             type="button"
                                             className="btn btn-outline-secondary"
-                                            onClick={() => setEditingField(null)}
+                                            onClick={() =>
+                                                setEditingField(null)
+                                            }
                                         >
                                             Anuluj
                                         </button>
                                         <button
                                             type="submit"
                                             className="btn btn-primary"
-                                            disabled={update.isPending || !editForm.label.trim()}
+                                            disabled={
+                                                update.isPending ||
+                                                !editForm.label.trim()
+                                            }
                                         >
-                                            {update.isPending ? 'Zapisywanie...' : 'Zapisz'}
+                                            {update.isPending
+                                                ? 'Zapisywanie...'
+                                                : 'Zapisz'}
                                         </button>
                                     </div>
                                 </form>
@@ -325,7 +385,9 @@ function FieldFormFields({
                     id="extra-field-label"
                     className="form-control"
                     value={form.label}
-                    onChange={(e) => onChange({ ...form, label: e.target.value })}
+                    onChange={(e) =>
+                        onChange({ ...form, label: e.target.value })
+                    }
                     required
                 />
             </div>
@@ -338,14 +400,19 @@ function FieldFormFields({
                     className="form-control"
                     value={form.type}
                     onChange={(e) =>
-                        onChange({ ...form, type: e.target.value as ExtraFieldType })
+                        onChange({
+                            ...form,
+                            type: e.target.value as ExtraFieldType,
+                        })
                     }
                 >
-                    {(Object.keys(FIELD_TYPE_LABELS) as ExtraFieldType[]).map((t) => (
-                        <option key={t} value={t}>
-                            {FIELD_TYPE_LABELS[t]}
-                        </option>
-                    ))}
+                    {(Object.keys(FIELD_TYPE_LABELS) as ExtraFieldType[]).map(
+                        (t) => (
+                            <option key={t} value={t}>
+                                {FIELD_TYPE_LABELS[t]}
+                            </option>
+                        ),
+                    )}
                 </select>
             </div>
             {form.type === 'select' && (
@@ -358,7 +425,9 @@ function FieldFormFields({
                         className="form-control"
                         rows={4}
                         value={form.options}
-                        onChange={(e) => onChange({ ...form, options: e.target.value })}
+                        onChange={(e) =>
+                            onChange({ ...form, options: e.target.value })
+                        }
                         placeholder="Opcja 1&#10;Opcja 2&#10;Opcja 3"
                     />
                 </div>
@@ -369,9 +438,14 @@ function FieldFormFields({
                     className="form-check-input"
                     type="checkbox"
                     checked={form.required}
-                    onChange={(e) => onChange({ ...form, required: e.target.checked })}
+                    onChange={(e) =>
+                        onChange({ ...form, required: e.target.checked })
+                    }
                 />
-                <label className="form-check-label" htmlFor="extra-field-required">
+                <label
+                    className="form-check-label"
+                    htmlFor="extra-field-required"
+                >
                     Pole wymagane
                 </label>
             </div>

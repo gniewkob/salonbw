@@ -1,4 +1,3 @@
-
 import type { MessageTemplate, TemplateType } from '@/types';
 
 interface Props {

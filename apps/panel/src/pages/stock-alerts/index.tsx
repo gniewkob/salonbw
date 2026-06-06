@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useLowStockProducts, useStockSummary } from '@/hooks/useStockAlerts';

@@ -1,4 +1,3 @@
-
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -78,8 +77,9 @@ export default function InvoicesPage() {
                                                 <span
                                                     className={`badge ${inv.status === 'paid' ? 'badge-salon-success' : inv.status === 'overdue' ? 'badge-salon-danger' : 'badge-salon'}`}
                                                 >
-                                                    {STATUS_LABELS[inv.status] ??
-                                                        inv.status}
+                                                    {STATUS_LABELS[
+                                                        inv.status
+                                                    ] ?? inv.status}
                                                 </span>
                                             </td>
                                             <td>

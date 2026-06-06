@@ -55,7 +55,13 @@ const DATE_RANGES = [
 const RETURNING_COLORS = { new: '#008bb4', returning: '#11ce44' };
 
 const ORIGINS_COLORS = [
-    '#008bb4', '#5cb85c', '#f0ad4e', '#d9534f', '#6f42c1', '#20c997', '#f3c200',
+    '#008bb4',
+    '#5cb85c',
+    '#f0ad4e',
+    '#d9534f',
+    '#6f42c1',
+    '#20c997',
+    '#f3c200',
 ];
 
 // ─── Tab: Przegląd ────────────────────────────────────────────────────────────
@@ -79,7 +85,11 @@ function OverviewTab() {
                         value={range}
                         onChange={(e) => {
                             const next = e.target.value;
-                            if (next === 'month' || next === 'quarter' || next === 'year') {
+                            if (
+                                next === 'month' ||
+                                next === 'quarter' ||
+                                next === 'year'
+                            ) {
                                 setRange(next);
                             }
                         }}
@@ -106,25 +116,39 @@ function OverviewTab() {
                         <div className="row g-4 mb-5">
                             <div className="col-3">
                                 <div className="border rounded p-4 text-center bg-primary bg-opacity-10">
-                                    <div className="small text-muted mb-2">Nowi klienci</div>
-                                    <div className="fs-3 fw-bold text-primary">{data.newClients}</div>
+                                    <div className="small text-muted mb-2">
+                                        Nowi klienci
+                                    </div>
+                                    <div className="fs-3 fw-bold text-primary">
+                                        {data.newClients}
+                                    </div>
                                 </div>
                             </div>
                             <div className="col-3">
                                 <div className="border rounded p-4 text-center bg-success bg-opacity-10">
-                                    <div className="small text-muted mb-2">Powracający</div>
-                                    <div className="fs-3 fw-bold text-success">{data.returningClients}</div>
+                                    <div className="small text-muted mb-2">
+                                        Powracający
+                                    </div>
+                                    <div className="fs-3 fw-bold text-success">
+                                        {data.returningClients}
+                                    </div>
                                 </div>
                             </div>
                             <div className="col-3">
                                 <div className="border rounded p-4 text-center">
-                                    <div className="small text-muted mb-2">Łącznie wizyt</div>
-                                    <div className="fs-3 fw-bold">{data.totalVisits}</div>
+                                    <div className="small text-muted mb-2">
+                                        Łącznie wizyt
+                                    </div>
+                                    <div className="fs-3 fw-bold">
+                                        {data.totalVisits}
+                                    </div>
                                 </div>
                             </div>
                             <div className="col-3">
                                 <div className="border rounded p-4 text-center">
-                                    <div className="small text-muted mb-2">Średnio wizyt/klient</div>
+                                    <div className="small text-muted mb-2">
+                                        Średnio wizyt/klient
+                                    </div>
                                     <div className="fs-3 fw-bold">
                                         {data.averageVisitsPerClient.toFixed(1)}
                                     </div>
@@ -135,14 +159,20 @@ function OverviewTab() {
 
                     {data && data.topClients && data.topClients.length > 0 && (
                         <div className="mb-5">
-                            <h3 className="fs-5 fw-semibold mb-3">Najlepsi klienci</h3>
+                            <h3 className="fs-5 fw-semibold mb-3">
+                                Najlepsi klienci
+                            </h3>
                             <div className="salonbw-table-wrap">
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
                                             <th>Klient</th>
-                                            <th className="text-end">Liczba wizyt</th>
-                                            <th className="text-end">Łącznie wydane</th>
+                                            <th className="text-end">
+                                                Liczba wizyt
+                                            </th>
+                                            <th className="text-end">
+                                                Łącznie wydane
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -156,9 +186,13 @@ function OverviewTab() {
                                                         {client.clientName}
                                                     </Link>
                                                 </td>
-                                                <td className="text-end">{client.visits}</td>
+                                                <td className="text-end">
+                                                    {client.visits}
+                                                </td>
                                                 <td className="text-end fw-semibold">
-                                                    {formatMoney(client.totalSpent)}
+                                                    {formatMoney(
+                                                        client.totalSpent,
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -209,8 +243,16 @@ function ReturningTab() {
 
     const pieData = stats
         ? [
-              { name: 'Nowi', value: stats.newClients, color: RETURNING_COLORS.new },
-              { name: 'Powracający', value: stats.returningClients, color: RETURNING_COLORS.returning },
+              {
+                  name: 'Nowi',
+                  value: stats.newClients,
+                  color: RETURNING_COLORS.new,
+              },
+              {
+                  name: 'Powracający',
+                  value: stats.returningClients,
+                  color: RETURNING_COLORS.returning,
+              },
           ]
         : [];
 
@@ -227,7 +269,9 @@ function ReturningTab() {
                     style={{ width: 'auto' }}
                 >
                     {DATE_RANGES.map((r) => (
-                        <option key={r.id} value={r.id}>{r.label}</option>
+                        <option key={r.id} value={r.id}>
+                            {r.label}
+                        </option>
                     ))}
                 </select>
             </div>
@@ -243,31 +287,48 @@ function ReturningTab() {
                     <div className="row mb-5">
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Wszyscy klienci</div>
-                                <div className="salonbw-tile__value">{stats.totalClients}</div>
+                                <div className="salonbw-tile__label">
+                                    Wszyscy klienci
+                                </div>
+                                <div className="salonbw-tile__value">
+                                    {stats.totalClients}
+                                </div>
                             </div>
                         </div>
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Nowi klienci</div>
+                                <div className="salonbw-tile__label">
+                                    Nowi klienci
+                                </div>
                                 <div className="salonbw-tile__value text-accent">
                                     {stats.newClients}
-                                    <span className="small ms-2">({stats.newPercentage}%)</span>
+                                    <span className="small ms-2">
+                                        ({stats.newPercentage}%)
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Powracający</div>
-                                <div className="salonbw-tile__value" style={{ color: '#11ce44' }}>
+                                <div className="salonbw-tile__label">
+                                    Powracający
+                                </div>
+                                <div
+                                    className="salonbw-tile__value"
+                                    style={{ color: '#11ce44' }}
+                                >
                                     {stats.returningClients}
-                                    <span className="small ms-2">({stats.returningPercentage}%)</span>
+                                    <span className="small ms-2">
+                                        ({stats.returningPercentage}%)
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Współczynnik retencji</div>
+                                <div className="salonbw-tile__label">
+                                    Współczynnik retencji
+                                </div>
                                 <div className="salonbw-tile__value text-success">
                                     {stats.returningPercentage}%
                                 </div>
@@ -281,24 +342,43 @@ function ReturningTab() {
                                 <div className="salonbw-widget__header">
                                     Nowi vs powracający (miesięcznie)
                                 </div>
-                                <div className="salonbw-widget__content" style={{ height: 300 }}>
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 300 }}
+                                >
                                     <ResponsiveContainer>
                                         <BarChart
                                             data={stats.byMonth}
-                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                            margin={{
+                                                top: 20,
+                                                right: 30,
+                                                left: 20,
+                                                bottom: 5,
+                                            }}
                                         >
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis
                                                 dataKey="month"
                                                 tickFormatter={(value) => {
-                                                    const [year, month] = value.split('-');
+                                                    const [year, month] =
+                                                        value.split('-');
                                                     return `${month}.${year}`;
                                                 }}
                                             />
                                             <YAxis />
                                             <Tooltip />
-                                            <Bar dataKey="newClients" name="Nowi" fill={RETURNING_COLORS.new} />
-                                            <Bar dataKey="returningClients" name="Powracający" fill={RETURNING_COLORS.returning} />
+                                            <Bar
+                                                dataKey="newClients"
+                                                name="Nowi"
+                                                fill={RETURNING_COLORS.new}
+                                            />
+                                            <Bar
+                                                dataKey="returningClients"
+                                                name="Powracający"
+                                                fill={
+                                                    RETURNING_COLORS.returning
+                                                }
+                                            />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -306,8 +386,13 @@ function ReturningTab() {
                         </div>
                         <div className="col-sm-4">
                             <div className="salonbw-widget">
-                                <div className="salonbw-widget__header">Podział klientów</div>
-                                <div className="salonbw-widget__content" style={{ height: 300 }}>
+                                <div className="salonbw-widget__header">
+                                    Podział klientów
+                                </div>
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 300 }}
+                                >
                                     <ResponsiveContainer>
                                         <PieChart>
                                             <Pie
@@ -322,7 +407,10 @@ function ReturningTab() {
                                                 }
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={entry.color}
+                                                    />
                                                 ))}
                                             </Pie>
                                             <Tooltip />
@@ -381,7 +469,8 @@ function OriginsTab() {
 
     const tooltipFormatter = (value: unknown) => {
         const first = Array.isArray(value) ? value[0] : value;
-        const amount = typeof first === 'number' ? first : Number(first ?? 0) || 0;
+        const amount =
+            typeof first === 'number' ? first : Number(first ?? 0) || 0;
         return `${amount} klientów`;
     };
 
@@ -398,7 +487,9 @@ function OriginsTab() {
                     style={{ width: 'auto' }}
                 >
                     {DATE_RANGES.map((r) => (
-                        <option key={r.id} value={r.id}>{r.label}</option>
+                        <option key={r.id} value={r.id}>
+                            {r.label}
+                        </option>
                     ))}
                 </select>
             </div>
@@ -414,13 +505,19 @@ function OriginsTab() {
                     <div className="row mb-5">
                         <div className="col-sm-4">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Nowi klienci</div>
-                                <div className="salonbw-tile__value">{stats.totalClients}</div>
+                                <div className="salonbw-tile__label">
+                                    Nowi klienci
+                                </div>
+                                <div className="salonbw-tile__value">
+                                    {stats.totalClients}
+                                </div>
                             </div>
                         </div>
                         <div className="col-sm-4">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Źródeł</div>
+                                <div className="salonbw-tile__label">
+                                    Źródeł
+                                </div>
                                 <div className="salonbw-tile__value text-accent">
                                     {stats.origins.length}
                                 </div>
@@ -428,7 +525,9 @@ function OriginsTab() {
                         </div>
                         <div className="col-sm-4">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Najpopularniejsze</div>
+                                <div className="salonbw-tile__label">
+                                    Najpopularniejsze
+                                </div>
                                 <div className="salonbw-tile__value text-success">
                                     {stats.origins[0]?.origin || '-'}
                                 </div>
@@ -439,8 +538,13 @@ function OriginsTab() {
                     <div className="row mb-5">
                         <div className="col-sm-6">
                             <div className="salonbw-widget">
-                                <div className="salonbw-widget__header">Podział według źródła</div>
-                                <div className="salonbw-widget__content" style={{ height: 350 }}>
+                                <div className="salonbw-widget__header">
+                                    Podział według źródła
+                                </div>
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 350 }}
+                                >
                                     <ResponsiveContainer>
                                         <PieChart>
                                             <Pie
@@ -452,10 +556,15 @@ function OriginsTab() {
                                                 label={({ name }) => name}
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={entry.color}
+                                                    />
                                                 ))}
                                             </Pie>
-                                            <Tooltip formatter={tooltipFormatter} />
+                                            <Tooltip
+                                                formatter={tooltipFormatter}
+                                            />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -463,19 +572,39 @@ function OriginsTab() {
                         </div>
                         <div className="col-sm-6">
                             <div className="salonbw-widget">
-                                <div className="salonbw-widget__header">Szczegóły</div>
-                                <div className="salonbw-widget__content" style={{ height: 350 }}>
+                                <div className="salonbw-widget__header">
+                                    Szczegóły
+                                </div>
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 350 }}
+                                >
                                     <ResponsiveContainer>
                                         <BarChart
                                             data={stats.origins}
                                             layout="vertical"
-                                            margin={{ top: 20, right: 30, left: 80, bottom: 5 }}
+                                            margin={{
+                                                top: 20,
+                                                right: 30,
+                                                left: 80,
+                                                bottom: 5,
+                                            }}
                                         >
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis type="number" />
-                                            <YAxis dataKey="origin" type="category" width={70} />
-                                            <Tooltip formatter={tooltipFormatter} />
-                                            <Bar dataKey="count" name="Liczba" fill="#008bb4" />
+                                            <YAxis
+                                                dataKey="origin"
+                                                type="category"
+                                                width={70}
+                                            />
+                                            <Tooltip
+                                                formatter={tooltipFormatter}
+                                            />
+                                            <Bar
+                                                dataKey="count"
+                                                name="Liczba"
+                                                fill="#008bb4"
+                                            />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -484,13 +613,17 @@ function OriginsTab() {
                     </div>
 
                     <div className="salonbw-widget">
-                        <div className="salonbw-widget__header">Szczegółowy podział</div>
+                        <div className="salonbw-widget__header">
+                            Szczegółowy podział
+                        </div>
                         <div className="salonbw-widget__content">
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
                                         <th>Źródło</th>
-                                        <th className="text-end">Liczba klientów</th>
+                                        <th className="text-end">
+                                            Liczba klientów
+                                        </th>
                                         <th className="text-end">Udział</th>
                                     </tr>
                                 </thead>
@@ -498,8 +631,12 @@ function OriginsTab() {
                                     {stats.origins.map((origin) => (
                                         <tr key={origin.origin}>
                                             <td>{origin.origin}</td>
-                                            <td className="text-end">{origin.count}</td>
-                                            <td className="text-end">{origin.percentage}%</td>
+                                            <td className="text-end">
+                                                {origin.count}
+                                            </td>
+                                            <td className="text-end">
+                                                {origin.percentage}%
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -520,12 +657,17 @@ export default function ClientsStatisticsPage() {
     const activeTab = (router.query.tab as string) || 'overview';
 
     const setTab = (tab: string) =>
-        router.push(`/statistics/customers?tab=${tab}`, undefined, { shallow: true });
+        router.push(`/statistics/customers?tab=${tab}`, undefined, {
+            shallow: true,
+        });
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
             <SalonShell role={role}>
-                <div className="salonbw-page" data-testid="clients-statistics-page">
+                <div
+                    className="salonbw-page"
+                    data-testid="clients-statistics-page"
+                >
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_statistics"
                         items={[
@@ -539,7 +681,7 @@ export default function ClientsStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'overview' ? ' active' : ''}`}
-                                onClick={() => setTab('overview')}
+                                onClick={() => void setTab('overview')}
                             >
                                 Przegląd
                             </button>
@@ -548,7 +690,7 @@ export default function ClientsStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'returning' ? ' active' : ''}`}
-                                onClick={() => setTab('returning')}
+                                onClick={() => void setTab('returning')}
                             >
                                 Powracalność
                             </button>
@@ -557,7 +699,7 @@ export default function ClientsStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'origins' ? ' active' : ''}`}
-                                onClick={() => setTab('origins')}
+                                onClick={() => void setTab('origins')}
                             >
                                 Pochodzenie
                             </button>

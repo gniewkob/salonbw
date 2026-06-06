@@ -86,7 +86,14 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const VALUE_COLORS = [
-    '#008bb4', '#5cb85c', '#f0ad4e', '#d9534f', '#6f42c1', '#20c997', '#fd7e14', '#6c757d',
+    '#008bb4',
+    '#5cb85c',
+    '#f0ad4e',
+    '#d9534f',
+    '#6f42c1',
+    '#20c997',
+    '#fd7e14',
+    '#6c757d',
 ];
 
 const formatCurrency = (amount: number) =>
@@ -141,7 +148,9 @@ function ChangesTab() {
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fs-4 fw-semibold mb-0">Raport zmian magazynowych</h2>
+                <h2 className="fs-4 fw-semibold mb-0">
+                    Raport zmian magazynowych
+                </h2>
                 <select
                     title="Zakres dat"
                     aria-label="Wybierz zakres dat"
@@ -151,7 +160,9 @@ function ChangesTab() {
                     style={{ width: 'auto' }}
                 >
                     {CHANGES_DATE_RANGES.map((r) => (
-                        <option key={r.id} value={r.id}>{r.label}</option>
+                        <option key={r.id} value={r.id}>
+                            {r.label}
+                        </option>
                     ))}
                 </select>
             </div>
@@ -167,13 +178,19 @@ function ChangesTab() {
                     <div className="row mb-5">
                         <div className="col-sm-4">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Wszystkie ruchy</div>
-                                <div className="salonbw-tile__value">{stats.totalMovements}</div>
+                                <div className="salonbw-tile__label">
+                                    Wszystkie ruchy
+                                </div>
+                                <div className="salonbw-tile__value">
+                                    {stats.totalMovements}
+                                </div>
                             </div>
                         </div>
                         <div className="col-sm-4">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Typów operacji</div>
+                                <div className="salonbw-tile__label">
+                                    Typów operacji
+                                </div>
                                 <div className="salonbw-tile__value text-accent">
                                     {stats.byType.length}
                                 </div>
@@ -181,10 +198,13 @@ function ChangesTab() {
                         </div>
                         <div className="col-sm-4">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Najczęstszy typ</div>
+                                <div className="salonbw-tile__label">
+                                    Najczęstszy typ
+                                </div>
                                 <div className="salonbw-tile__value text-success">
                                     {stats.byType[0]
-                                        ? TYPE_LABELS[stats.byType[0].type] || stats.byType[0].type
+                                        ? TYPE_LABELS[stats.byType[0].type] ||
+                                          stats.byType[0].type
                                         : '-'}
                                 </div>
                             </div>
@@ -192,22 +212,33 @@ function ChangesTab() {
                     </div>
 
                     <div className="salonbw-widget mb-5">
-                        <div className="salonbw-widget__header">Ruchy magazynowe wg typu</div>
-                        <div className="salonbw-widget__content" style={{ height: 300 }}>
+                        <div className="salonbw-widget__header">
+                            Ruchy magazynowe wg typu
+                        </div>
+                        <div
+                            className="salonbw-widget__content"
+                            style={{ height: 300 }}
+                        >
                             <ResponsiveContainer>
                                 <BarChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" />
                                     <YAxis />
                                     <Tooltip />
-                                    <Bar dataKey="count" name="Liczba operacji" fill="#008bb4" />
+                                    <Bar
+                                        dataKey="count"
+                                        name="Liczba operacji"
+                                        fill="#008bb4"
+                                    />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
                     <div className="salonbw-widget">
-                        <div className="salonbw-widget__header">Ostatnie ruchy (50 najnowszych)</div>
+                        <div className="salonbw-widget__header">
+                            Ostatnie ruchy (50 najnowszych)
+                        </div>
                         <div className="salonbw-widget__content">
                             <table className="salonbw-table">
                                 <thead>
@@ -225,26 +256,38 @@ function ChangesTab() {
                                     {stats.recentMovements.map((m) => (
                                         <tr key={m.id}>
                                             <td>
-                                                {new Date(m.createdAt).toLocaleDateString('pl-PL')}
+                                                {new Date(
+                                                    m.createdAt,
+                                                ).toLocaleDateString('pl-PL')}
                                             </td>
                                             <td>{m.productName}</td>
                                             <td>
                                                 <span
                                                     className="badge"
                                                     style={{
-                                                        backgroundColor: TYPE_COLORS[m.type] || '#999',
+                                                        backgroundColor:
+                                                            TYPE_COLORS[
+                                                                m.type
+                                                            ] || '#999',
                                                     }}
                                                 >
-                                                    {TYPE_LABELS[m.type] || m.type}
+                                                    {TYPE_LABELS[m.type] ||
+                                                        m.type}
                                                 </span>
                                             </td>
                                             <td
                                                 className={`text-end ${m.quantity > 0 ? 'text-success' : 'text-danger'}`}
                                             >
-                                                {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
+                                                {m.quantity > 0
+                                                    ? `+${m.quantity}`
+                                                    : m.quantity}
                                             </td>
-                                            <td className="text-end">{m.quantityBefore}</td>
-                                            <td className="text-end">{m.quantityAfter}</td>
+                                            <td className="text-end">
+                                                {m.quantityBefore}
+                                            </td>
+                                            <td className="text-end">
+                                                {m.quantityAfter}
+                                            </td>
                                             <td>{m.createdByName || '-'}</td>
                                         </tr>
                                     ))}
@@ -299,14 +342,17 @@ function ValueTab() {
 
     const tooltipFormatter = (value: unknown) => {
         const first = Array.isArray(value) ? value[0] : value;
-        const amount = typeof first === 'number' ? first : Number(first ?? 0) || 0;
+        const amount =
+            typeof first === 'number' ? first : Number(first ?? 0) || 0;
         return formatCurrency(amount);
     };
 
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fs-4 fw-semibold mb-0">Raport wartości produktów</h2>
+                <h2 className="fs-4 fw-semibold mb-0">
+                    Raport wartości produktów
+                </h2>
                 <button
                     onClick={() => setRefreshToken((v) => v + 1)}
                     className="btn btn-outline-secondary"
@@ -327,13 +373,19 @@ function ValueTab() {
                     <div className="row mb-5">
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Produkty</div>
-                                <div className="salonbw-tile__value">{stats.totalProducts}</div>
+                                <div className="salonbw-tile__label">
+                                    Produkty
+                                </div>
+                                <div className="salonbw-tile__value">
+                                    {stats.totalProducts}
+                                </div>
                             </div>
                         </div>
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Wartość magazynu</div>
+                                <div className="salonbw-tile__label">
+                                    Wartość magazynu
+                                </div>
                                 <div className="salonbw-tile__value text-accent">
                                     {formatCurrency(stats.totalValue)}
                                 </div>
@@ -341,7 +393,9 @@ function ValueTab() {
                         </div>
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Sztuk w magazynie</div>
+                                <div className="salonbw-tile__label">
+                                    Sztuk w magazynie
+                                </div>
                                 <div className="salonbw-tile__value text-success">
                                     {stats.totalQuantity}
                                 </div>
@@ -349,7 +403,9 @@ function ValueTab() {
                         </div>
                         <div className="col-sm-3">
                             <div className="salonbw-tile">
-                                <div className="salonbw-tile__label">Niski stan</div>
+                                <div className="salonbw-tile__label">
+                                    Niski stan
+                                </div>
                                 <div
                                     className={`salonbw-tile__value ${stats.lowStockProducts.length > 0 ? 'text-danger' : ''}`}
                                 >
@@ -362,8 +418,13 @@ function ValueTab() {
                     <div className="row mb-5">
                         <div className="col-sm-6">
                             <div className="salonbw-widget">
-                                <div className="salonbw-widget__header">Wartość wg kategorii</div>
-                                <div className="salonbw-widget__content" style={{ height: 300 }}>
+                                <div className="salonbw-widget__header">
+                                    Wartość wg kategorii
+                                </div>
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 300 }}
+                                >
                                     <ResponsiveContainer>
                                         <PieChart>
                                             <Pie
@@ -376,10 +437,15 @@ function ValueTab() {
                                                 label={({ name }) => name}
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={entry.color}
+                                                    />
                                                 ))}
                                             </Pie>
-                                            <Tooltip formatter={tooltipFormatter} />
+                                            <Tooltip
+                                                formatter={tooltipFormatter}
+                                            />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -390,7 +456,10 @@ function ValueTab() {
                                 <div className="salonbw-widget__header">
                                     Ilość produktów wg kategorii
                                 </div>
-                                <div className="salonbw-widget__content" style={{ height: 300 }}>
+                                <div
+                                    className="salonbw-widget__content"
+                                    style={{ height: 300 }}
+                                >
                                     <ResponsiveContainer>
                                         <BarChart
                                             data={stats.byCategory}
@@ -399,9 +468,17 @@ function ValueTab() {
                                         >
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis type="number" />
-                                            <YAxis dataKey="category" type="category" width={90} />
+                                            <YAxis
+                                                dataKey="category"
+                                                type="category"
+                                                width={90}
+                                            />
                                             <Tooltip />
-                                            <Bar dataKey="productCount" name="Produkty" fill="#008bb4" />
+                                            <Bar
+                                                dataKey="productCount"
+                                                name="Produkty"
+                                                fill="#008bb4"
+                                            />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -410,14 +487,18 @@ function ValueTab() {
                     </div>
 
                     <div className="salonbw-widget mb-5">
-                        <div className="salonbw-widget__header">Szczegóły wg kategorii</div>
+                        <div className="salonbw-widget__header">
+                            Szczegóły wg kategorii
+                        </div>
                         <div className="salonbw-widget__content">
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
                                         <th>Kategoria</th>
                                         <th className="text-end">Produkty</th>
-                                        <th className="text-end">Ilość sztuk</th>
+                                        <th className="text-end">
+                                            Ilość sztuk
+                                        </th>
                                         <th className="text-end">Wartość</th>
                                     </tr>
                                 </thead>
@@ -425,8 +506,12 @@ function ValueTab() {
                                     {stats.byCategory.map((cat) => (
                                         <tr key={cat.category}>
                                             <td>{cat.category}</td>
-                                            <td className="text-end">{cat.productCount}</td>
-                                            <td className="text-end">{cat.totalQuantity}</td>
+                                            <td className="text-end">
+                                                {cat.productCount}
+                                            </td>
+                                            <td className="text-end">
+                                                {cat.totalQuantity}
+                                            </td>
                                             <td className="text-end fw-medium">
                                                 {formatCurrency(cat.totalValue)}
                                             </td>
@@ -447,8 +532,12 @@ function ValueTab() {
                                     <thead>
                                         <tr>
                                             <th>Produkt</th>
-                                            <th className="text-end">Stan aktualny</th>
-                                            <th className="text-end">Min. stan</th>
+                                            <th className="text-end">
+                                                Stan aktualny
+                                            </th>
+                                            <th className="text-end">
+                                                Min. stan
+                                            </th>
                                             <th className="text-end">Cena</th>
                                         </tr>
                                     </thead>
@@ -459,7 +548,9 @@ function ValueTab() {
                                                 <td className="text-end text-danger fw-bold">
                                                     {p.quantity}
                                                 </td>
-                                                <td className="text-end">{p.minQuantity}</td>
+                                                <td className="text-end">
+                                                    {p.minQuantity}
+                                                </td>
                                                 <td className="text-end">
                                                     {formatCurrency(p.price)}
                                                 </td>
@@ -484,7 +575,9 @@ export default function WarehouseStatisticsPage() {
     const activeTab = (router.query.tab as string) || 'changes';
 
     const setTab = (tab: string) =>
-        router.push(`/statistics/warehouse?tab=${tab}`, undefined, { shallow: true });
+        router.push(`/statistics/warehouse?tab=${tab}`, undefined, {
+            shallow: true,
+        });
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
@@ -503,7 +596,7 @@ export default function WarehouseStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'changes' ? ' active' : ''}`}
-                                onClick={() => setTab('changes')}
+                                onClick={() => void setTab('changes')}
                             >
                                 Zmiany magazynowe
                             </button>
@@ -512,7 +605,7 @@ export default function WarehouseStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'value' ? ' active' : ''}`}
-                                onClick={() => setTab('value')}
+                                onClick={() => void setTab('value')}
                             >
                                 Wartość produktów
                             </button>

@@ -1,4 +1,3 @@
-
 import { usePajaxLoading } from '@/hooks/usePajaxLoading';
 
 /**

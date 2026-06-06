@@ -61,7 +61,9 @@ export default function CampaignsPage() {
         if (router.query.new === '1') {
             setEditingNewsletter(null);
             setModalOpen(true);
-            void router.replace('/communication/campaigns', undefined, { shallow: true });
+            void router.replace('/communication/campaigns', undefined, {
+                shallow: true,
+            });
         }
     }, [router.query.new, router]);
 

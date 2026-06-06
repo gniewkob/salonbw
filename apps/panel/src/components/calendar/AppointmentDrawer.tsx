@@ -64,7 +64,10 @@ function formatDateTime(value: string | null | undefined): string {
     if (!value) return 'brak';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'brak';
-    return date.toLocaleString('pl-PL', { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString('pl-PL', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    });
 }
 
 function getHighestAlertSeverity(
@@ -96,7 +99,8 @@ export default function AppointmentDrawer({
 
     const [customerSearch, setCustomerSearch] = useState('');
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
-    const [showQuickCreateCustomer, setShowQuickCreateCustomer] = useState(false);
+    const [showQuickCreateCustomer, setShowQuickCreateCustomer] =
+        useState(false);
     const [newCustomerFirstName, setNewCustomerFirstName] = useState('');
     const [newCustomerLastName, setNewCustomerLastName] = useState('');
     const [newCustomerPhone, setNewCustomerPhone] = useState('');
@@ -109,7 +113,8 @@ export default function AppointmentDrawer({
     });
     const customers = customersResponse?.items ?? [];
     const createCustomer = useCreateCustomer();
-    const { cancelAppointment, updateAppointmentStatus } = useAppointmentMutations();
+    const { cancelAppointment, updateAppointmentStatus } =
+        useAppointmentMutations();
 
     const [startTime, setStartTime] = useState('');
     const [employeeId, setEmployeeId] = useState<number | ''>('');
@@ -119,32 +124,40 @@ export default function AppointmentDrawer({
     const [error, setError] = useState<string | null>(null);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
-    const title = mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
+    const title =
+        mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
 
     const selectedService = useMemo<Service | undefined>(
         () => services.find((s) => s.id === Number(serviceId)),
         [serviceId, services],
     );
     const canCreateInlineCustomer =
-        newCustomerFirstName.trim().length > 0 || newCustomerLastName.trim().length > 0;
+        newCustomerFirstName.trim().length > 0 ||
+        newCustomerLastName.trim().length > 0;
 
-    const customerIdForInsights = mode === 'edit' ? (appointment?.client?.id ?? null) : null;
-    const { data: customerStats, isLoading: customerStatsLoading } = useCustomerStatistics(customerIdForInsights);
-    const { alerts: customerAlerts, isLoading: customerAlertsLoading } = useCustomerAlerts(customerIdForInsights);
+    const customerIdForInsights =
+        mode === 'edit' ? (appointment?.client?.id ?? null) : null;
+    const { data: customerStats, isLoading: customerStatsLoading } =
+        useCustomerStatistics(customerIdForInsights);
+    const { alerts: customerAlerts, isLoading: customerAlertsLoading } =
+        useCustomerAlerts(customerIdForInsights);
     const customerAlertSeverity = useMemo(
         () => getHighestAlertSeverity(customerAlerts),
         [customerAlerts],
     );
 
-    const appointmentIdForSales = mode === 'edit' ? (appointment?.id ?? null) : null;
+    const appointmentIdForSales =
+        mode === 'edit' ? (appointment?.id ?? null) : null;
     const { data: appointmentSalesResponse } = useWarehouseSales({
         page: 1,
         pageSize: 1,
         enabled: appointmentIdForSales !== null,
-        appointmentId: appointmentIdForSales !== null ? appointmentIdForSales : undefined,
+        appointmentId:
+            appointmentIdForSales !== null ? appointmentIdForSales : undefined,
     });
     const linkedSaleId =
-        appointmentSalesResponse?.items?.[0] && Number(appointmentSalesResponse.items[0].id) > 0
+        appointmentSalesResponse?.items?.[0] &&
+        Number(appointmentSalesResponse.items[0].id) > 0
             ? Number(appointmentSalesResponse.items[0].id)
             : null;
 
@@ -205,19 +218,28 @@ export default function AppointmentDrawer({
     const currentStatus = appointment?.status ?? 'scheduled';
     const isOnlinePending = currentStatus === 'online_pending';
     const isRescheduledPending = currentStatus === 'rescheduled_pending';
-    const canConfirm = currentStatus === 'scheduled' || isOnlinePending || isRescheduledPending;
+    const canConfirm =
+        currentStatus === 'scheduled' ||
+        isOnlinePending ||
+        isRescheduledPending;
     const canStart =
-        !isOnlinePending && !isRescheduledPending &&
+        !isOnlinePending &&
+        !isRescheduledPending &&
         (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canNoShow =
-        !isOnlinePending && !isRescheduledPending &&
+        !isOnlinePending &&
+        !isRescheduledPending &&
         (currentStatus === 'scheduled' || currentStatus === 'confirmed');
     const canCancel =
-        currentStatus === 'scheduled' || currentStatus === 'confirmed' || isRescheduledPending;
+        currentStatus === 'scheduled' ||
+        currentStatus === 'confirmed' ||
+        isRescheduledPending;
     const canComplete = currentStatus === 'in_progress';
     const canShowFormulaSection =
         isEditMode &&
-        (currentStatus === 'confirmed' || currentStatus === 'in_progress' || currentStatus === 'completed');
+        (currentStatus === 'confirmed' ||
+            currentStatus === 'in_progress' ||
+            currentStatus === 'completed');
 
     const handleCreate = async () => {
         if (!canSaveCreate) return;
@@ -237,7 +259,11 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Nie udało się utworzyć wizyty');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się utworzyć wizyty',
+            );
         } finally {
             setSaving(false);
         }
@@ -262,7 +288,11 @@ export default function AppointmentDrawer({
             setNewCustomerPhone('');
             setNewCustomerEmail('');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Nie udało się utworzyć klienta');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się utworzyć klienta',
+            );
         } finally {
             setSaving(false);
         }
@@ -273,15 +303,24 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
-            await apiFetch<Appointment>(`/appointments/${appointment.id}/reschedule`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ startTime: fromLocalDateTimeInput(startTime) }),
-            });
+            await apiFetch<Appointment>(
+                `/appointments/${appointment.id}/reschedule`,
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        startTime: fromLocalDateTimeInput(startTime),
+                    }),
+                },
+            );
             onSaved();
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Nie udało się zapisać zmian');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się zapisać zmian',
+            );
         } finally {
             setSaving(false);
         }
@@ -296,18 +335,27 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Nie udało się anulować wizyty');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się anulować wizyty',
+            );
         } finally {
             setSaving(false);
         }
     };
 
-    const handleStatusChange = async (status: 'confirmed' | 'in_progress' | 'no_show') => {
+    const handleStatusChange = async (
+        status: 'confirmed' | 'in_progress' | 'no_show',
+    ) => {
         if (!appointment?.id) return;
         setSaving(true);
         setError(null);
         try {
-            await updateAppointmentStatus.mutateAsync({ id: appointment.id, status });
+            await updateAppointmentStatus.mutateAsync({
+                id: appointment.id,
+                status,
+            });
             const action =
                 status === 'confirmed'
                     ? 'confirm_appointment'
@@ -324,7 +372,11 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Nie udało się zmienić statusu wizyty');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się zmienić statusu wizyty',
+            );
         } finally {
             setSaving(false);
         }
@@ -341,7 +393,11 @@ export default function AppointmentDrawer({
                 style={
                     isMobile
                         ? { background: 'rgba(0,0,0,0.4)', zIndex: 1100 }
-                        : { background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', zIndex: 1100 }
+                        : {
+                              background: 'rgba(0,0,0,0.55)',
+                              backdropFilter: 'blur(4px)',
+                              zIndex: 1100,
+                          }
                 }
                 onClick={onClose}
             >
@@ -358,8 +414,12 @@ export default function AppointmentDrawer({
                     style={
                         isMobile
                             ? {
-                                  top: 0, right: 0, bottom: 0, left: 0,
-                                  width: '100%', height: '100dvh',
+                                  top: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100dvh',
                                   paddingTop: 'env(safe-area-inset-top)',
                                   paddingBottom: 'env(safe-area-inset-bottom)',
                               }
@@ -386,60 +446,93 @@ export default function AppointmentDrawer({
                             className="btn-close"
                             onClick={onClose}
                             aria-label="Zamknij"
-                            style={isMobile ? { width: 28, height: 28 } : undefined}
+                            style={
+                                isMobile ? { width: 28, height: 28 } : undefined
+                            }
                         />
                     </div>
 
                     {/* Body */}
                     <div
-                        className={isMobile ? 'p-3 d-flex flex-column gap-3 overflow-y-auto' : 'p-4 d-flex flex-column gap-3 overflow-y-auto'}
+                        className={
+                            isMobile
+                                ? 'p-3 d-flex flex-column gap-3 overflow-y-auto'
+                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto'
+                        }
                         style={{ flex: 1 }}
                     >
                         {/* Appointment fields */}
                         <div className="rounded border p-2">
                             <strong className="d-block mb-2">Wizyta</strong>
                             <div>
-                                <label className="form-label" htmlFor="appointment-start-time">Start wizyty</label>
+                                <label
+                                    className="form-label"
+                                    htmlFor="appointment-start-time"
+                                >
+                                    Start wizyty
+                                </label>
                                 <input
                                     id="appointment-start-time"
                                     type="datetime-local"
                                     className="form-control"
                                     value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
+                                    onChange={(e) =>
+                                        setStartTime(e.target.value)
+                                    }
                                 />
                             </div>
                             <div className="mt-2">
-                                <label className="form-label" htmlFor="appointment-employee">Pracownik</label>
+                                <label
+                                    className="form-label"
+                                    htmlFor="appointment-employee"
+                                >
+                                    Pracownik
+                                </label>
                                 <select
                                     id="appointment-employee"
                                     className="form-select"
                                     value={employeeId}
-                                    onChange={(e) => setEmployeeId(Number(e.target.value))}
+                                    onChange={(e) =>
+                                        setEmployeeId(Number(e.target.value))
+                                    }
                                     disabled={isEditMode}
                                 >
                                     <option value="">Wybierz pracownika</option>
                                     {employees.map((emp: Employee) => (
-                                        <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                        <option key={emp.id} value={emp.id}>
+                                            {emp.name}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
                             <div className="mt-2">
-                                <label className="form-label" htmlFor="appointment-service">Usługa</label>
+                                <label
+                                    className="form-label"
+                                    htmlFor="appointment-service"
+                                >
+                                    Usługa
+                                </label>
                                 <select
                                     id="appointment-service"
                                     className="form-select"
                                     value={serviceId}
-                                    onChange={(e) => setServiceId(Number(e.target.value))}
+                                    onChange={(e) =>
+                                        setServiceId(Number(e.target.value))
+                                    }
                                     disabled={isEditMode}
                                 >
                                     <option value="">Wybierz usługę</option>
                                     {services.map((svc: Service) => (
-                                        <option key={svc.id} value={svc.id}>{svc.name}</option>
+                                        <option key={svc.id} value={svc.id}>
+                                            {svc.name}
+                                        </option>
                                     ))}
                                 </select>
                                 {selectedService && (
                                     <div className="form-text">
-                                        Czas: {selectedService.duration} min, cena: {selectedService.price.toFixed(2)} PLN
+                                        Czas: {selectedService.duration} min,
+                                        cena: {selectedService.price.toFixed(2)}{' '}
+                                        PLN
                                     </div>
                                 )}
                             </div>
@@ -449,45 +542,63 @@ export default function AppointmentDrawer({
                                         <span>Status:</span>
                                         <span
                                             className={`badge ${
-                                                currentStatus === 'online_pending' || currentStatus === 'rescheduled_pending'
+                                                currentStatus ===
+                                                    'online_pending' ||
+                                                currentStatus ===
+                                                    'rescheduled_pending'
                                                     ? 'text-bg-warning'
-                                                    : currentStatus === 'confirmed'
+                                                    : currentStatus ===
+                                                        'confirmed'
                                                       ? 'text-bg-success'
-                                                      : currentStatus === 'in_progress'
+                                                      : currentStatus ===
+                                                          'in_progress'
                                                         ? 'text-bg-primary'
-                                                        : currentStatus === 'cancelled'
+                                                        : currentStatus ===
+                                                            'cancelled'
                                                           ? 'text-bg-danger'
                                                           : 'text-bg-secondary'
                                             }`}
                                         >
                                             {currentStatus === 'online_pending'
                                                 ? 'Oczekuje na potwierdzenie'
-                                                : currentStatus === 'rescheduled_pending'
+                                                : currentStatus ===
+                                                    'rescheduled_pending'
                                                   ? 'Przeniesiona — wymaga akceptacji'
-                                                  : currentStatus === 'confirmed'
+                                                  : currentStatus ===
+                                                      'confirmed'
                                                     ? 'Potwierdzona'
-                                                    : currentStatus === 'in_progress'
+                                                    : currentStatus ===
+                                                        'in_progress'
                                                       ? 'W trakcie'
-                                                      : currentStatus === 'completed'
+                                                      : currentStatus ===
+                                                          'completed'
                                                         ? 'Zakończona'
-                                                        : currentStatus === 'cancelled'
+                                                        : currentStatus ===
+                                                            'cancelled'
                                                           ? 'Anulowana'
-                                                          : currentStatus === 'no_show'
+                                                          : currentStatus ===
+                                                              'no_show'
                                                             ? 'No-show'
                                                             : 'Zaplanowana'}
                                         </span>
                                     </div>
                                     {isOnlinePending && (
                                         <p className="text-warning-emphasis small mb-1">
-                                            Klient zarezerwował online — potwierdź lub odrzuć rezerwację.
+                                            Klient zarezerwował online —
+                                            potwierdź lub odrzuć rezerwację.
                                         </p>
                                     )}
                                     {isRescheduledPending && (
                                         <p className="text-warning-emphasis small mb-1">
-                                            Wizyta przeniesiona — oczekuje na akceptację klienta.
+                                            Wizyta przeniesiona — oczekuje na
+                                            akceptację klienta.
                                         </p>
                                     )}
-                                    <div>Płatność: {appointment.paymentStatus ?? 'nieopłacona'}</div>
+                                    <div>
+                                        Płatność:{' '}
+                                        {appointment.paymentStatus ??
+                                            'nieopłacona'}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -502,7 +613,9 @@ export default function AppointmentDrawer({
                             clientId={clientId}
                             setClientId={setClientId}
                             showQuickCreateCustomer={showQuickCreateCustomer}
-                            setShowQuickCreateCustomer={setShowQuickCreateCustomer}
+                            setShowQuickCreateCustomer={
+                                setShowQuickCreateCustomer
+                            }
                             newCustomerFirstName={newCustomerFirstName}
                             setNewCustomerFirstName={setNewCustomerFirstName}
                             newCustomerLastName={newCustomerLastName}
@@ -511,7 +624,9 @@ export default function AppointmentDrawer({
                             setNewCustomerPhone={setNewCustomerPhone}
                             newCustomerEmail={newCustomerEmail}
                             setNewCustomerEmail={setNewCustomerEmail}
-                            handleQuickCreateCustomer={() => void handleQuickCreateCustomer()}
+                            handleQuickCreateCustomer={() =>
+                                void handleQuickCreateCustomer()
+                            }
                             appointment={appointment}
                             customerStats={customerStats}
                             customerStatsLoading={customerStatsLoading}
@@ -524,48 +639,92 @@ export default function AppointmentDrawer({
                         />
 
                         {/* Formula + history (edit mode, confirmed+ only) */}
-                        {canShowFormulaSection && <FormulaSection appointment={appointment} />}
-
-                        {/* Payment summary */}
-                        {appointment && (appointment.finalizedAt || appointment.paymentMethod || appointment.paidAmount !== undefined) && (
-                            <div className="rounded border p-2 small">
-                                <div className="d-flex align-items-center justify-content-between">
-                                    <strong className="d-block mb-2">Sprzedaż</strong>
-                                    <Link
-                                        href={
-                                            linkedSaleId
-                                                ? `/sales/history/${linkedSaleId}`
-                                                : appointment.id
-                                                  ? `/sales/history?appointmentId=${appointment.id}`
-                                                  : '/sales/history'
-                                        }
-                                        className="btn btn-sm btn-outline-secondary"
-                                        onClick={() => trackReceptionAction({
-                                            action: 'open_sale_detail',
-                                            appointmentId: appointment.id,
-                                            customerId: getAppointmentCustomerId(appointment),
-                                            customerAlertSeverity,
-                                            source: 'appointment_drawer',
-                                        })}
-                                    >
-                                        {linkedSaleId ? 'Szczegóły sprzedaży' : 'Historia sprzedaży'}
-                                    </Link>
-                                </div>
-                                <div className="mt-1">
-                                    <div>Metoda: {appointment.paymentMethod ?? 'brak danych'}</div>
-                                    <div>Zapłacono: {formatCurrency(appointment.paidAmount)}</div>
-                                    {appointment.discount !== undefined && (
-                                        <div>Rabat: {formatCurrency(appointment.discount)}</div>
-                                    )}
-                                    {appointment.tipAmount !== undefined && (
-                                        <div>Napiwek: {formatCurrency(appointment.tipAmount)}</div>
-                                    )}
-                                    <div>Finalizacja: {formatDateTime(appointment.finalizedAt)}</div>
-                                </div>
-                            </div>
+                        {canShowFormulaSection && (
+                            <FormulaSection appointment={appointment} />
                         )}
 
-                        {error && <div className="alert alert-danger py-2 mb-0">{error}</div>}
+                        {/* Payment summary */}
+                        {appointment &&
+                            (appointment.finalizedAt ||
+                                appointment.paymentMethod ||
+                                appointment.paidAmount !== undefined) && (
+                                <div className="rounded border p-2 small">
+                                    <div className="d-flex align-items-center justify-content-between">
+                                        <strong className="d-block mb-2">
+                                            Sprzedaż
+                                        </strong>
+                                        <Link
+                                            href={
+                                                linkedSaleId
+                                                    ? `/sales/history/${linkedSaleId}`
+                                                    : appointment.id
+                                                      ? `/sales/history?appointmentId=${appointment.id}`
+                                                      : '/sales/history'
+                                            }
+                                            className="btn btn-sm btn-outline-secondary"
+                                            onClick={() =>
+                                                trackReceptionAction({
+                                                    action: 'open_sale_detail',
+                                                    appointmentId:
+                                                        appointment.id,
+                                                    customerId:
+                                                        getAppointmentCustomerId(
+                                                            appointment,
+                                                        ),
+                                                    customerAlertSeverity,
+                                                    source: 'appointment_drawer',
+                                                })
+                                            }
+                                        >
+                                            {linkedSaleId
+                                                ? 'Szczegóły sprzedaży'
+                                                : 'Historia sprzedaży'}
+                                        </Link>
+                                    </div>
+                                    <div className="mt-1">
+                                        <div>
+                                            Metoda:{' '}
+                                            {appointment.paymentMethod ??
+                                                'brak danych'}
+                                        </div>
+                                        <div>
+                                            Zapłacono:{' '}
+                                            {formatCurrency(
+                                                appointment.paidAmount,
+                                            )}
+                                        </div>
+                                        {appointment.discount !== undefined && (
+                                            <div>
+                                                Rabat:{' '}
+                                                {formatCurrency(
+                                                    appointment.discount,
+                                                )}
+                                            </div>
+                                        )}
+                                        {appointment.tipAmount !==
+                                            undefined && (
+                                            <div>
+                                                Napiwek:{' '}
+                                                {formatCurrency(
+                                                    appointment.tipAmount,
+                                                )}
+                                            </div>
+                                        )}
+                                        <div>
+                                            Finalizacja:{' '}
+                                            {formatDateTime(
+                                                appointment.finalizedAt,
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                        {error && (
+                            <div className="alert alert-danger py-2 mb-0">
+                                {error}
+                            </div>
+                        )}
 
                         {/* Actions */}
                         <ActionsSection
@@ -586,7 +745,9 @@ export default function AppointmentDrawer({
                             handleCreate={() => void handleCreate()}
                             handleUpdate={() => void handleUpdate()}
                             handleCancel={() => void handleCancel()}
-                            handleStatusChange={(s) => void handleStatusChange(s)}
+                            handleStatusChange={(s) =>
+                                void handleStatusChange(s)
+                            }
                             setFinalizationOpen={setFinalizationOpen}
                             isMobile={isMobile}
                         />
@@ -600,7 +761,9 @@ export default function AppointmentDrawer({
                 appointment={appointment ?? null}
                 open={finalizationOpen}
                 onClose={() => setFinalizationOpen(false)}
-                onSuccess={() => { onSaved(); }}
+                onSuccess={() => {
+                    onSaved();
+                }}
             />
         </>
     );

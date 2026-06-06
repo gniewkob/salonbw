@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Customer } from '@/types';
 import CustomerSummaryTab from './CustomerSummaryTab';

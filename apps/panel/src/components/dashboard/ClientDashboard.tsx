@@ -1,10 +1,8 @@
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import type { Formula } from '@/types';
 const STATUS_LABELS: Record<string, string> = {
     scheduled: 'Zaplanowana',
     confirmed: 'Potwierdzona',

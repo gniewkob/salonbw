@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';

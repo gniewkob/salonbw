@@ -1,4 +1,3 @@
-
 import { Customer } from '@/types';
 
 interface Props {

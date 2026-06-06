@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import type { MessageTemplate, TemplateType, MessageChannel } from '@/types';

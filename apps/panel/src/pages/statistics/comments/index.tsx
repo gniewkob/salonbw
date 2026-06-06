@@ -14,10 +14,14 @@ function BooksyTab() {
                 <div className="fs-1 mb-4">🔗</div>
                 <h3 className="fs-4 mb-3">Wymagana integracja z API Booksy</h3>
                 <p className="text-muted mx-auto mb-4">
-                    Ten widok wymaga połączenia z API Booksy aby pobierać komentarze i opinie
-                    klientów. Skontaktuj się z administratorem aby skonfigurować integrację.
+                    Ten widok wymaga połączenia z API Booksy aby pobierać
+                    komentarze i opinie klientów. Skontaktuj się z
+                    administratorem aby skonfigurować integrację.
                 </p>
-                <div className="bg-light p-4 rounded text-start mx-auto" style={{ maxWidth: 400 }}>
+                <div
+                    className="bg-light p-4 rounded text-start mx-auto"
+                    style={{ maxWidth: 400 }}
+                >
                     <h4 className="fw-medium mb-3">Wymagane kroki:</h4>
                     <ol className="small text-muted mb-0">
                         <li>Uzyskaj dostęp do API Booksy</li>
@@ -41,10 +45,14 @@ function MomentTab() {
                 <div className="fs-1 mb-4">🔗</div>
                 <h3 className="fs-4 mb-3">Wymagana integracja z API Moment</h3>
                 <p className="text-muted mx-auto mb-4">
-                    Ten widok wymaga połączenia z API Moment (Google) aby pobierać komentarze i
-                    opinie klientów. Skontaktuj się z administratorem aby skonfigurować integrację.
+                    Ten widok wymaga połączenia z API Moment (Google) aby
+                    pobierać komentarze i opinie klientów. Skontaktuj się z
+                    administratorem aby skonfigurować integrację.
                 </p>
-                <div className="bg-light p-4 rounded text-start mx-auto" style={{ maxWidth: 400 }}>
+                <div
+                    className="bg-light p-4 rounded text-start mx-auto"
+                    style={{ maxWidth: 400 }}
+                >
                     <h4 className="fw-medium mb-3">Wymagane kroki:</h4>
                     <ol className="small text-muted mb-0">
                         <li>Uzyskaj dostęp do Google Business API</li>
@@ -66,7 +74,9 @@ export default function CommentsStatisticsPage() {
     const activeTab = (router.query.tab as string) || 'booksy';
 
     const setTab = (tab: string) =>
-        router.push(`/statistics/comments?tab=${tab}`, undefined, { shallow: true });
+        router.push(`/statistics/comments?tab=${tab}`, undefined, {
+            shallow: true,
+        });
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
@@ -85,7 +95,7 @@ export default function CommentsStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'booksy' ? ' active' : ''}`}
-                                onClick={() => setTab('booksy')}
+                                onClick={() => void setTab('booksy')}
                             >
                                 Booksy
                             </button>
@@ -94,7 +104,7 @@ export default function CommentsStatisticsPage() {
                             <button
                                 type="button"
                                 className={`nav-link${activeTab === 'moment' ? ' active' : ''}`}
-                                onClick={() => setTab('moment')}
+                                onClick={() => void setTab('moment')}
                             >
                                 Moment
                             </button>

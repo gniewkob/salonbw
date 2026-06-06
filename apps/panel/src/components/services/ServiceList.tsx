@@ -1,4 +1,3 @@
-
 import type { Service, ServiceCategory } from '@/types';
 
 interface Props {

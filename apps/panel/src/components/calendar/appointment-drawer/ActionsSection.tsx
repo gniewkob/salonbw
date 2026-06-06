@@ -22,7 +22,9 @@ interface Props {
     handleCreate: () => void;
     handleUpdate: () => void;
     handleCancel: () => void;
-    handleStatusChange: (status: 'confirmed' | 'in_progress' | 'no_show') => void;
+    handleStatusChange: (
+        status: 'confirmed' | 'in_progress' | 'no_show',
+    ) => void;
     setFinalizationOpen: (v: boolean) => void;
     isMobile: boolean;
 }
@@ -78,19 +80,23 @@ export default function ActionsSection({
                         <>
                             {isOnlinePending && (
                                 <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
-                                    <strong>Rezerwacja online</strong> — czeka na potwierdzenie przez salon
+                                    <strong>Rezerwacja online</strong> — czeka
+                                    na potwierdzenie przez salon
                                 </div>
                             )}
                             {isRescheduledPending && (
                                 <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
-                                    <strong>Zmiana terminu</strong> — czeka na akceptację klienta
+                                    <strong>Zmiana terminu</strong> — czeka na
+                                    akceptację klienta
                                 </div>
                             )}
                             {canConfirm && (
                                 <button
                                     type="button"
                                     className={`btn ${isOnlinePending ? 'btn-success' : 'btn-outline-primary'}`}
-                                    onClick={() => handleStatusChange('confirmed')}
+                                    onClick={() =>
+                                        handleStatusChange('confirmed')
+                                    }
                                     disabled={saving}
                                 >
                                     {isOnlinePending
@@ -101,22 +107,46 @@ export default function ActionsSection({
                                 </button>
                             )}
                             {isOnlinePending && (
-                                <button type="button" className="btn btn-outline-danger" onClick={handleCancel} disabled={saving}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-danger"
+                                    onClick={handleCancel}
+                                    disabled={saving}
+                                >
                                     Odrzuć rezerwację
                                 </button>
                             )}
                             {isRescheduledPending && (
-                                <button type="button" className="btn btn-outline-danger" onClick={handleCancel} disabled={saving}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-danger"
+                                    onClick={handleCancel}
+                                    disabled={saving}
+                                >
                                     Anuluj wizytę
                                 </button>
                             )}
                             {canStart && (
-                                <button type="button" className="btn btn-outline-secondary" onClick={() => handleStatusChange('in_progress')} disabled={saving}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() =>
+                                        handleStatusChange('in_progress')
+                                    }
+                                    disabled={saving}
+                                >
                                     Rozpocznij
                                 </button>
                             )}
                             {canNoShow && (
-                                <button type="button" className="btn btn-outline-warning" onClick={() => handleStatusChange('no_show')} disabled={saving}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-warning"
+                                    onClick={() =>
+                                        handleStatusChange('no_show')
+                                    }
+                                    disabled={saving}
+                                >
                                     No-show
                                 </button>
                             )}
@@ -128,7 +158,10 @@ export default function ActionsSection({
                                         trackReceptionAction({
                                             action: 'finalize_via_drawer',
                                             appointmentId: appointment.id,
-                                            customerId: getAppointmentCustomerId(appointment),
+                                            customerId:
+                                                getAppointmentCustomerId(
+                                                    appointment,
+                                                ),
                                             customerAlertSeverity,
                                             source: 'appointment_drawer',
                                         });
@@ -140,7 +173,12 @@ export default function ActionsSection({
                                 </button>
                             )}
                             {canCancel && (
-                                <button type="button" className="btn btn-outline-danger" onClick={handleCancel} disabled={saving}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-danger"
+                                    onClick={handleCancel}
+                                    disabled={saving}
+                                >
                                     Anuluj wizytę
                                 </button>
                             )}
@@ -156,7 +194,8 @@ export default function ActionsSection({
                         display: 'flex',
                         gap: '0.5rem',
                         padding: '0.75rem 0.875rem',
-                        paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+                        paddingBottom:
+                            'calc(0.75rem + env(safe-area-inset-bottom))',
                         borderTop: '1px solid #e5e7eb',
                         background: '#ffffff',
                     }}
@@ -181,8 +220,18 @@ export default function ActionsSection({
                     </button>
                     <button
                         type="button"
-                        disabled={mode === 'create' ? !canSaveCreate || saving : saving || !startTime}
-                        onClick={() => { if (mode === 'create') { handleCreate(); } else { handleUpdate(); } }}
+                        disabled={
+                            mode === 'create'
+                                ? !canSaveCreate || saving
+                                : saving || !startTime
+                        }
+                        onClick={() => {
+                            if (mode === 'create') {
+                                handleCreate();
+                            } else {
+                                handleUpdate();
+                            }
+                        }}
                         style={{
                             flex: 2,
                             minHeight: 48,
@@ -197,7 +246,11 @@ export default function ActionsSection({
                             cursor: saving ? 'not-allowed' : 'pointer',
                         }}
                     >
-                        {saving ? 'Zapisywanie...' : mode === 'create' ? 'Utwórz' : 'Zapisz'}
+                        {saving
+                            ? 'Zapisywanie...'
+                            : mode === 'create'
+                              ? 'Utwórz'
+                              : 'Zapisz'}
                     </button>
                 </div>
             )}

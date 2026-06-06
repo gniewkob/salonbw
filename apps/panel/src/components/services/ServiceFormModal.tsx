@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import type { Service, ServiceCategory, PriceType } from '@/types';
 import SelectorModal from '@/components/salon/modals/SelectorModal';

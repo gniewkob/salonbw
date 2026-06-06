@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -192,7 +191,9 @@ export default function WarehouseProductsPage() {
                 failed++;
             }
         }
-        void queryClient.invalidateQueries({ queryKey: ['warehouse-products'] });
+        void queryClient.invalidateQueries({
+            queryKey: ['warehouse-products'],
+        });
         setBulkDeletePending(false);
         setSelectedIds(new Set());
         if (failed === 0) {

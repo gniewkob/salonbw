@@ -1,4 +1,3 @@
-
 import type { ProductCategory } from '@/types';
 
 interface WarehouseCategoriesPanelProps {

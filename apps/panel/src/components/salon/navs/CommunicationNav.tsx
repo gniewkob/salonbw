@@ -15,7 +15,10 @@ export default function CommunicationNav() {
             <div className="nav-header">{heading}</div>
             <ul className="nav nav-list">
                 {items.map((item) => (
-                    <li key={item.href} className={isActive(item.href) ? 'active' : undefined}>
+                    <li
+                        key={item.href}
+                        className={isActive(item.href) ? 'active' : undefined}
+                    >
                         <a href={item.href}>{item.label}</a>
                     </li>
                 ))}
@@ -26,14 +29,20 @@ export default function CommunicationNav() {
     return (
         <>
             {renderGroup('AUTOMATYCZNE', [
-                { label: 'Reguły automatyczne', href: '/communication/automatic' },
+                {
+                    label: 'Reguły automatyczne',
+                    href: '/communication/automatic',
+                },
             ])}
             {renderGroup('KAMPANIE', [
                 { label: 'Wiadomości masowe', href: '/communication/mass' },
                 { label: 'Newslettery', href: '/communication/campaigns' },
             ])}
             {renderGroup('SZABLONY', [
-                { label: 'Szablony wiadomości', href: '/communication/templates' },
+                {
+                    label: 'Szablony wiadomości',
+                    href: '/communication/templates',
+                },
             ])}
             {renderGroup('HISTORIA', [
                 { label: 'Historia wiadomości', href: '/communication' },

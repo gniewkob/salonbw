@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useEmailHistory } from '@/hooks/useEmails';

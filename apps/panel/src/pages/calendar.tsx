@@ -1269,7 +1269,8 @@ export default function CalendarPage() {
                         }}
                     >
                         +
-                    </button>                )}
+                    </button>
+                )}
 
                 <AppointmentQuickModal
                     open={quickModal.event !== null}

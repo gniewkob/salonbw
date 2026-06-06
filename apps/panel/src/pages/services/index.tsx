@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useServicesWithFilters, useDeleteService } from '@/hooks/useServicesAdmin';
+import {
+    useServicesWithFilters,
+    useDeleteService,
+} from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -393,74 +396,82 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         </table>
                     </div>
 
-                    {filtered.length > 0 && <div className="pagination_container">
-                        <div className="column_row">
-                            <div className="row">
-                                <div className="infocol-7">
-                                    Pozycje od{' '}
-                                    {(currentPage - 1) * itemsPerPage + 1} do{' '}
-                                    {Math.min(
-                                        currentPage * itemsPerPage,
-                                        totalItems,
-                                    )}{' '}
-                                    z <span id="total_found">{totalItems}</span>
-                                    <span>{' | na stronie '}</span>
-                                    <select
-                                        className="pagination-size-select"
-                                        aria-label="Liczba elementów na stronie"
-                                        value={itemsPerPage}
-                                        onChange={(e) => {
-                                            setItemsPerPage(
-                                                Number(e.target.value),
-                                            );
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        <option value={5}>5</option>
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
-                                    </select>
-                                </div>
-                                <div className="form_paginationcol-5 text-end">
-                                    <input
-                                        type="text"
-                                        className="pagination-page-input"
-                                        aria-label="Aktualna strona"
-                                        value={currentPage}
-                                        onChange={(e) => {
-                                            const page = Number(e.target.value);
-                                            if (
-                                                page >= 1 &&
-                                                page <= totalPages
-                                            ) {
-                                                setCurrentPage(page);
-                                            }
-                                        }}
-                                    />
-                                    <span className="conjunction"> z </span>
-                                    <a className="pointer">{totalPages}</a>
-                                    <button
-                                        type="button"
-                                        className="button button_next ml-s"
-                                        aria-label="Następna strona"
-                                        disabled={currentPage >= totalPages}
-                                        onClick={() =>
-                                            setCurrentPage((p) =>
-                                                Math.min(totalPages, p + 1),
-                                            )
-                                        }
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-right-single-arrow"
-                                            aria-hidden="true"
+                    {filtered.length > 0 && (
+                        <div className="pagination_container">
+                            <div className="column_row">
+                                <div className="row">
+                                    <div className="infocol-7">
+                                        Pozycje od{' '}
+                                        {(currentPage - 1) * itemsPerPage + 1}{' '}
+                                        do{' '}
+                                        {Math.min(
+                                            currentPage * itemsPerPage,
+                                            totalItems,
+                                        )}{' '}
+                                        z{' '}
+                                        <span id="total_found">
+                                            {totalItems}
+                                        </span>
+                                        <span>{' | na stronie '}</span>
+                                        <select
+                                            className="pagination-size-select"
+                                            aria-label="Liczba elementów na stronie"
+                                            value={itemsPerPage}
+                                            onChange={(e) => {
+                                                setItemsPerPage(
+                                                    Number(e.target.value),
+                                                );
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                        </select>
+                                    </div>
+                                    <div className="form_paginationcol-5 text-end">
+                                        <input
+                                            type="text"
+                                            className="pagination-page-input"
+                                            aria-label="Aktualna strona"
+                                            value={currentPage}
+                                            onChange={(e) => {
+                                                const page = Number(
+                                                    e.target.value,
+                                                );
+                                                if (
+                                                    page >= 1 &&
+                                                    page <= totalPages
+                                                ) {
+                                                    setCurrentPage(page);
+                                                }
+                                            }}
                                         />
-                                    </button>
+                                        <span className="conjunction"> z </span>
+                                        <a className="pointer">{totalPages}</a>
+                                        <button
+                                            type="button"
+                                            className="button button_next ml-s"
+                                            aria-label="Następna strona"
+                                            disabled={currentPage >= totalPages}
+                                            onClick={() =>
+                                                setCurrentPage((p) =>
+                                                    Math.min(totalPages, p + 1),
+                                                )
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-right-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>}
+                    )}
 
                     <div className="products-export">
                         {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}

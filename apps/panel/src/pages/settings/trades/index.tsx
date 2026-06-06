@@ -91,7 +91,12 @@ function CategoryRow({
 
 export default function SettingsTradesPage() {
     const { role } = useAuth();
-    const { data: tree = [], isLoading, error, refetch } = useServiceCategoryTree();
+    const {
+        data: tree = [],
+        isLoading,
+        error,
+        refetch,
+    } = useServiceCategoryTree();
     const del = useDeleteServiceCategory();
 
     useSetSecondaryNav(NAV);
@@ -162,9 +167,9 @@ export default function SettingsTradesPage() {
                                                     colSpan={3}
                                                     className="text-muted text-center py-4"
                                                 >
-                                                    Brak branż. Kliknij
-                                                    &ldquo;+ Dodaj branżę&rdquo; aby dodać
-                                                    pierwszą.
+                                                    Brak branż. Kliknij &ldquo;+
+                                                    Dodaj branżę&rdquo; aby
+                                                    dodać pierwszą.
                                                 </td>
                                             </tr>
                                         ) : (
