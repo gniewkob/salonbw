@@ -7,6 +7,7 @@ import {
 } from 'react';
 import PanelActionBar from '@/components/ui/PanelActionBar';
 import { useBranchSettings, useSettingsMutations } from '@/hooks/useSettings';
+import { useToast } from '@/contexts/ToastContext';
 import type { UpdateBranchSettingsRequest } from '@/types';
 
 type BranchIdentityDraft = {
@@ -84,6 +85,7 @@ export default function BranchIdentityForm() {
         refetch,
     } = useBranchSettings();
     const { updateBranchSettings } = useSettingsMutations();
+    const toast = useToast();
     const [draft, setDraft] = useState<BranchIdentityDraft>(EMPTY_DRAFT);
     const [isSaved, setIsSaved] = useState(false);
     const [showLogoEditor, setShowLogoEditor] = useState(false);
@@ -166,6 +168,7 @@ export default function BranchIdentityForm() {
             await updateBranchSettings.mutateAsync(buildPayload(draft));
             setIsSaved(true);
             setShowLogoEditor(false);
+            toast.success('Dane salonu zostały zapisane');
         } catch {
             setIsSaved(false);
         }

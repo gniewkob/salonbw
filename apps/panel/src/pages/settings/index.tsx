@@ -97,7 +97,7 @@ const GROUPS: SettingsGroup[] = [
         heading: 'Komunikacja',
         tiles: [
             {
-                href: '/event-reminders',
+                href: '/communication/reminders',
                 label: 'komunikacja z klientem',
                 boxClass: 'client_communication',
                 iconId: 'svg-client_communication',

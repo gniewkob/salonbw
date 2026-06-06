@@ -192,8 +192,8 @@ function NoteRow({
     onDelete,
 }: {
     note: CustomerNote;
-    onTogglePin: () => Promise<void>;
-    onDelete: () => Promise<void>;
+    onTogglePin: () => void;
+    onDelete: () => void;
 }) {
     const noteType = noteTypeLabel(note.type);
 
