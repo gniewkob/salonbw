@@ -28,8 +28,12 @@ export default function ProductCommissionsPage() {
                 edited[rule.employeeId] ?? rule.commissionPercent ?? 0,
             ),
         }));
-        await updateMutation.mutateAsync(payload);
-        setEdited({});
+        try {
+            await updateMutation.mutateAsync(payload);
+            setEdited({});
+        } catch {
+            // error shown in hook onError toast
+        }
     };
 
     return (

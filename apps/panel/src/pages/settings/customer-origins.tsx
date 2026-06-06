@@ -55,7 +55,8 @@ export default function CustomerOriginsPage() {
         if (!editingOrigin) return;
         void update
             .mutateAsync({ id: editingOrigin.id, name: editName.trim() })
-            .then(() => setEditingOrigin(null));
+            .then(() => setEditingOrigin(null))
+            .catch(() => setSubmitError('Nie udało się zapisać źródła.'));
     };
 
     return (

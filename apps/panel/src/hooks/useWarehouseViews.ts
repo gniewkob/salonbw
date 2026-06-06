@@ -259,6 +259,7 @@ export function useProductCommissions(productId?: number) {
 export function useUpdateProductCommissions(productId?: number) {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: (rules: ProductCommissionRule[]) =>
@@ -282,6 +283,10 @@ export function useUpdateProductCommissions(productId?: number) {
             void queryClient.invalidateQueries({
                 queryKey: ['product-commissions', productId],
             });
+            toast.success('Prowizje zapisane');
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać prowizji');
         },
     });
 }

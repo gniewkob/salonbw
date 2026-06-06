@@ -29,12 +29,20 @@ export default function DeliveryDetailsPage() {
 
     const receive = async () => {
         if (!deliveryId) return;
-        await receiveMutation.mutateAsync({ id: deliveryId });
+        try {
+            await receiveMutation.mutateAsync({ id: deliveryId });
+        } catch {
+            // error shown in hook onError toast
+        }
     };
 
     const cancel = async () => {
         if (!deliveryId) return;
-        await cancelMutation.mutateAsync(deliveryId);
+        try {
+            await cancelMutation.mutateAsync(deliveryId);
+        } catch {
+            // error shown in hook onError toast
+        }
     };
 
     return (
