@@ -76,6 +76,8 @@ export default function SettingsEmployeeDetailPage() {
         }
     }, [employee]);
 
+    const [editError, setEditError] = useState<string | null>(null);
+
     // Password reset state
     const [resetOpen, setResetOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
@@ -93,8 +95,13 @@ export default function SettingsEmployeeDetailPage() {
     const handleEditSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!id) return;
-        await updateEmployee.mutateAsync({ id, firstName, lastName });
-        void router.push(`/settings/employees/${id}`);
+        setEditError(null);
+        try {
+            await updateEmployee.mutateAsync({ id, firstName, lastName });
+            void router.push(`/settings/employees/${id}`);
+        } catch {
+            setEditError('Nie udało się zapisać zmian. Spróbuj ponownie.');
+        }
     };
 
     const handleResetPassword = async (e: React.FormEvent) => {
@@ -272,6 +279,11 @@ export default function SettingsEmployeeDetailPage() {
                                                 required
                                             />
                                         </div>
+                                        {editError && (
+                                            <div className="alert alert-danger mb-3">
+                                                {editError}
+                                            </div>
+                                        )}
                                         <div className="mb-3 d-flex gap-2">
                                             <button
                                                 type="submit"

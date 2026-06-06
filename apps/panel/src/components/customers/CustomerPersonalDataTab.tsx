@@ -41,6 +41,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
     const [draft, setDraft] = useState<Draft>(() => toDraft(customer));
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     useEffect(() => {
         setDraft(toDraft(customer));
@@ -55,6 +56,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
     const handleSave = async () => {
         if (!onUpdate || isSaving) return;
         setIsSaving(true);
+        setSaveError(null);
         try {
             await onUpdate({
                 firstName: draft.firstName || undefined,
@@ -71,6 +73,10 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 smsConsent: draft.smsConsent,
             });
             setIsDirty(false);
+        } catch {
+            setSaveError(
+                'Nie udało się zapisać danych klienta. Spróbuj ponownie.',
+            );
         } finally {
             setIsSaving(false);
         }
@@ -89,6 +95,9 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 fieldIdPrefix="customer-personal"
             />
 
+            {saveError && (
+                <div className="alert alert-danger mt-3 mb-0">{saveError}</div>
+            )}
             <div className="customer-new-actions customer-new-actions--sticky">
                 <button
                     type="button"

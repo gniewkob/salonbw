@@ -417,10 +417,14 @@ export default function ClientsPage() {
                     customer &&
                     !customer.groups?.some((g) => g.id === groupId)
                 ) {
-                    await addToGroup.mutateAsync({
-                        groupId,
-                        customerIds: [customerId],
-                    });
+                    try {
+                        await addToGroup.mutateAsync({
+                            groupId,
+                            customerIds: [customerId],
+                        });
+                    } catch {
+                        toast.error('Nie udało się dodać klienta do grupy');
+                    }
                 }
             }
 

@@ -69,6 +69,7 @@ export default function CustomerGroupsListPage() {
     );
     const [editName, setEditName] = useState('');
     const [editParentId, setEditParentId] = useState<string>('');
+    const [actionError, setActionError] = useState<string | null>(null);
 
     const tree = useMemo(() => buildTree(groups), [groups]);
     const draftTree = useMemo(() => buildTree(draftGroups), [draftGroups]);
@@ -151,7 +152,13 @@ export default function CustomerGroupsListPage() {
                                                     'Czy na pewno chcesz usunąć tę grupę klientów?',
                                                 )
                                             ) {
-                                                void del.mutateAsync(node.id);
+                                                void del
+                                                    .mutateAsync(node.id)
+                                                    .catch(() =>
+                                                        setActionError(
+                                                            'Nie udało się usunąć grupy.',
+                                                        ),
+                                                    );
                                             }
                                         }}
                                     >
@@ -222,6 +229,11 @@ export default function CustomerGroupsListPage() {
                             void sort
                                 .mutateAsync(flattenForSort(draftTree))
                                 .then(() => setReorderMode(false))
+                                .catch(() =>
+                                    setActionError(
+                                        'Nie udało się zapisać kolejności.',
+                                    ),
+                                )
                         }
                         style={{
                             display: reorderMode ? undefined : 'none',
@@ -256,6 +268,10 @@ export default function CustomerGroupsListPage() {
                     </Link>
                 </div>
             </div>
+
+            {actionError && (
+                <div className="alert alert-danger mt-2">{actionError}</div>
+            )}
 
             {isLoading ? (
                 <div className="settings-detail-state">Ładowanie grup...</div>
@@ -306,7 +322,12 @@ export default function CustomerGroupsListPage() {
                                                 : null,
                                         },
                                     })
-                                    .then(() => setEditingGroup(null));
+                                    .then(() => setEditingGroup(null))
+                                    .catch(() =>
+                                        setActionError(
+                                            'Nie udało się zapisać zmian.',
+                                        ),
+                                    );
                             }}
                         >
                             <div className="modal-header">
