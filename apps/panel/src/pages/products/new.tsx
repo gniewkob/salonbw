@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -89,6 +90,9 @@ export default function NewProductPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
+            <Head>
+                <title>Nowy produkt — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="products_index" id="products_main">
                     <SalonBreadcrumbs

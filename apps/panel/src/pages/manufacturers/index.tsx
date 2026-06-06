@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
@@ -65,81 +66,89 @@ export default function WarehouseManufacturersPage() {
     };
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Producenci | SalonBW"
-            heading="Magazyn / Producenci"
-            activeTab="products"
-        >
-            <div className="row mb-3">
-                <div className="col-sm-6">
-                    <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        placeholder="wyszukaj producenta"
-                        aria-label="Wyszukaj producenta"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+        <>
+            <Head>
+                <title>Producenci — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Producenci | SalonBW"
+                heading="Magazyn / Producenci"
+                activeTab="products"
+            >
+                <div className="row mb-3">
+                    <div className="col-sm-6">
+                        <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            placeholder="wyszukaj producenta"
+                            aria-label="Wyszukaj producenta"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
                 </div>
-            </div>
 
-            {isLoading ? (
-                <p className="products-empty">Ładowanie producentów...</p>
-            ) : filtered.length === 0 ? (
-                <p className="products-empty">Brak producentów.</p>
-            ) : (
-                <div className="table-responsive">
-                    <table className="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Producent</th>
-                                <th>Liczba produktów</th>
-                                <th>Przykładowe produkty</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((row, i) => (
-                                <tr
-                                    key={row.manufacturer}
-                                    className={i % 2 === 0 ? 'odd' : 'even'}
-                                >
-                                    <td>{row.manufacturer}</td>
-                                    <td>{row.productsCount}</td>
-                                    <td>
-                                        {row.sample.map((product, index) => (
-                                            <span key={product.id}>
-                                                <Link
-                                                    href={`/products/${product.id}`}
-                                                    className="products-link"
-                                                >
-                                                    {product.name}
-                                                </Link>
-                                                {index < row.sample.length - 1
-                                                    ? ', '
-                                                    : ''}
-                                            </span>
-                                        ))}
-                                    </td>
+                {isLoading ? (
+                    <p className="products-empty">Ładowanie producentów...</p>
+                ) : filtered.length === 0 ? (
+                    <p className="products-empty">Brak producentów.</p>
+                ) : (
+                    <div className="table-responsive">
+                        <table className="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Producent</th>
+                                    <th>Liczba produktów</th>
+                                    <th>Przykładowe produkty</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                            </thead>
+                            <tbody>
+                                {filtered.map((row, i) => (
+                                    <tr
+                                        key={row.manufacturer}
+                                        className={i % 2 === 0 ? 'odd' : 'even'}
+                                    >
+                                        <td>{row.manufacturer}</td>
+                                        <td>{row.productsCount}</td>
+                                        <td>
+                                            {row.sample.map(
+                                                (product, index) => (
+                                                    <span key={product.id}>
+                                                        <Link
+                                                            href={`/products/${product.id}`}
+                                                            className="products-link"
+                                                        >
+                                                            {product.name}
+                                                        </Link>
+                                                        {index <
+                                                        row.sample.length - 1
+                                                            ? ', '
+                                                            : ''}
+                                                    </span>
+                                                ),
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
-            <div className="products-export">
-                <button
-                    type="button"
-                    onClick={exportCsv}
-                    className="btn btn-outline-secondary"
-                >
-                    <div
-                        className="icon sprite-exel_blue mr-xs"
-                        aria-hidden="true"
-                    />
-                    pobierz listę producentów w pliku Excel
-                </button>
-            </div>
-        </WarehouseLayout>
+                <div className="products-export">
+                    <button
+                        type="button"
+                        onClick={exportCsv}
+                        className="btn btn-outline-secondary"
+                    >
+                        <div
+                            className="icon sprite-exel_blue mr-xs"
+                            aria-hidden="true"
+                        />
+                        pobierz listę producentów w pliku Excel
+                    </button>
+                </div>
+            </WarehouseLayout>
+        </>
     );
 }

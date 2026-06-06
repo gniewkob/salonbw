@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -99,6 +100,9 @@ export default function CommunicationPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Komunikacja — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div data-testid="communication-page">
                     <SalonBreadcrumbs

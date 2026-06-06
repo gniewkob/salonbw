@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
@@ -50,159 +51,172 @@ export default function InventoryHistoryPage() {
         : 0;
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Inwentaryzacja | SalonBW"
-            heading="Magazyn / Inwentaryzacja"
-            activeTab="products"
-            inventoryActive
-            actions={
-                <Link href="/inventory/new" className="btn btn-primary">
-                    nowa inwentaryzacja
-                </Link>
-            }
-        >
-            <h2>HISTORIA INWENTARYZACJI</h2>
-            {isLoading ? (
-                <p className="text-muted">
-                    Ładowanie historii inwentaryzacji...
-                </p>
-            ) : (
-                <>
-                    <div className="row mb-3">
-                        <div className="col-sm-7 d-flex flex-wrap gap-2 mb-2 mb-md-0">
-                            <input
-                                type="text"
-                                placeholder="wyszukaj w historii inwentaryzacji..."
-                                value={search}
-                                onChange={(event) => {
-                                    setSearch(event.target.value);
-                                    setPage(1);
-                                }}
-                                className="form-control form-control-sm"
-                            />
+        <>
+            <Head>
+                <title>Inwentaryzacje — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Inwentaryzacja | SalonBW"
+                heading="Magazyn / Inwentaryzacja"
+                activeTab="products"
+                inventoryActive
+                actions={
+                    <Link href="/inventory/new" className="btn btn-primary">
+                        nowa inwentaryzacja
+                    </Link>
+                }
+            >
+                <h2>HISTORIA INWENTARYZACJI</h2>
+                {isLoading ? (
+                    <p className="text-muted">
+                        Ładowanie historii inwentaryzacji...
+                    </p>
+                ) : (
+                    <>
+                        <div className="row mb-3">
+                            <div className="col-sm-7 d-flex flex-wrap gap-2 mb-2 mb-md-0">
+                                <input
+                                    type="text"
+                                    placeholder="wyszukaj w historii inwentaryzacji..."
+                                    value={search}
+                                    onChange={(event) => {
+                                        setSearch(event.target.value);
+                                        setPage(1);
+                                    }}
+                                    className="form-control form-control-sm"
+                                />
+                            </div>
+                            <div className="col-sm-5 text-end">
+                                <select
+                                    value={normalizedStatus ?? ''}
+                                    onChange={(event) => {
+                                        const status = event.target.value;
+                                        setPage(1);
+                                        void router.push({
+                                            pathname: '/inventory',
+                                            query: status ? { status } : {},
+                                        });
+                                    }}
+                                >
+                                    <option value="">wszystkie</option>
+                                    <option value="draft">robocze</option>
+                                    <option value="in_progress">w toku</option>
+                                    <option value="completed">
+                                        zakończone
+                                    </option>
+                                    <option value="cancelled">anulowane</option>
+                                </select>
+                            </div>
                         </div>
-                        <div className="col-sm-5 text-end">
-                            <select
-                                value={normalizedStatus ?? ''}
-                                onChange={(event) => {
-                                    const status = event.target.value;
-                                    setPage(1);
-                                    void router.push({
-                                        pathname: '/inventory',
-                                        query: status ? { status } : {},
-                                    });
-                                }}
-                            >
-                                <option value="">wszystkie</option>
-                                <option value="draft">robocze</option>
-                                <option value="in_progress">w toku</option>
-                                <option value="completed">zakończone</option>
-                                <option value="cancelled">anulowane</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div>data i nazwa inwentaryzacji</div>
-                                    </th>
-                                    <th>
-                                        <div>status</div>
-                                    </th>
-                                    <th>
-                                        <div>liczba produktów</div>
-                                    </th>
-                                    <th>
-                                        <div>
-                                            liczba produktów z niedoborem w
-                                            magazynie
-                                        </div>
-                                    </th>
-                                    <th>
-                                        <div>
-                                            liczba produktów z nadwyżką w
-                                            magazynie
-                                        </div>
-                                    </th>
-                                    <th>
-                                        <div>
-                                            liczba produktów ze stanem zgodnym
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {visibleRows.map((row) => (
-                                    <tr key={row.id}>
-                                        <td>
-                                            <Link
-                                                href={`/inventory/${row.id}`}
-                                                className="link_body inverse_decoration"
-                                            >
-                                                {new Date(
-                                                    row.stocktakingDate,
-                                                ).toLocaleDateString(
-                                                    'pl-PL',
-                                                )}{' '}
-                                                {row.stocktakingNumber}
-                                            </Link>
-                                        </td>
-                                        <td>{statusLabels[row.status]}</td>
-                                        <td>{row.productsCount}</td>
-                                        <td>{row.shortageCount}</td>
-                                        <td>{row.overageCount}</td>
-                                        <td>{row.matchedCount}</td>
+                        <div className="table-responsive">
+                            <table className="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div>
+                                                data i nazwa inwentaryzacji
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div>status</div>
+                                        </th>
+                                        <th>
+                                            <div>liczba produktów</div>
+                                        </th>
+                                        <th>
+                                            <div>
+                                                liczba produktów z niedoborem w
+                                                magazynie
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div>
+                                                liczba produktów z nadwyżką w
+                                                magazynie
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div>
+                                                liczba produktów ze stanem
+                                                zgodnym
+                                            </div>
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
+                                </thead>
+                                <tbody>
+                                    {visibleRows.map((row) => (
+                                        <tr key={row.id}>
+                                            <td>
+                                                <Link
+                                                    href={`/inventory/${row.id}`}
+                                                    className="link_body inverse_decoration"
+                                                >
+                                                    {new Date(
+                                                        row.stocktakingDate,
+                                                    ).toLocaleDateString(
+                                                        'pl-PL',
+                                                    )}{' '}
+                                                    {row.stocktakingNumber}
+                                                </Link>
+                                            </td>
+                                            <td>{statusLabels[row.status]}</td>
+                                            <td>{row.productsCount}</td>
+                                            <td>{row.shortageCount}</td>
+                                            <td>{row.overageCount}</td>
+                                            <td>{row.matchedCount}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
 
-            <div className="pagination_container">
-                Pozycje od {from} do {to} z {filteredRows.length} | na stronie
-                <select
-                    aria-label="na stronie"
-                    value={String(pageSize)}
-                    onChange={(event) => {
-                        setPageSize(Number(event.target.value));
-                        setPage(1);
-                    }}
-                >
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                </select>
-                <div className="form_pagination">
-                    <input
-                        type="text"
-                        value={safePage}
+                <div className="pagination_container">
+                    Pozycje od {from} do {to} z {filteredRows.length} | na
+                    stronie
+                    <select
+                        aria-label="na stronie"
+                        value={String(pageSize)}
                         onChange={(event) => {
-                            const next = Number(event.target.value);
-                            if (
-                                Number.isFinite(next) &&
-                                next >= 1 &&
-                                next <= totalPages
-                            ) {
-                                setPage(next);
-                            }
+                            setPageSize(Number(event.target.value));
+                            setPage(1);
                         }}
-                    />
-                    <span>z {totalPages}</span>
-                    <button
-                        type="button"
-                        disabled={safePage >= totalPages}
-                        onClick={() =>
-                            setPage((prev) => Math.min(prev + 1, totalPages))
-                        }
                     >
-                        {'>'}
-                    </button>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <div className="form_pagination">
+                        <input
+                            type="text"
+                            value={safePage}
+                            onChange={(event) => {
+                                const next = Number(event.target.value);
+                                if (
+                                    Number.isFinite(next) &&
+                                    next >= 1 &&
+                                    next <= totalPages
+                                ) {
+                                    setPage(next);
+                                }
+                            }}
+                        />
+                        <span>z {totalPages}</span>
+                        <button
+                            type="button"
+                            disabled={safePage >= totalPages}
+                            onClick={() =>
+                                setPage((prev) =>
+                                    Math.min(prev + 1, totalPages),
+                                )
+                            }
+                        >
+                            {'>'}
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </WarehouseLayout>
+            </WarehouseLayout>
+        </>
     );
 }

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -48,35 +49,40 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 
 function CalendarPageShell() {
     return (
-        <div className="salonbw-page" data-testid="calendar-shell">
-            <div className="px-3 pt-3 pb-2">
-                <div
-                    className="placeholder-glow small text-muted mb-2"
-                    aria-hidden
-                >
-                    <span className="placeholder col-2" />
-                </div>
-                <div
-                    className="d-flex align-items-center justify-content-between gap-2"
-                    aria-hidden
-                >
-                    <span className="placeholder col-7" />
-                    <span className="placeholder col-2" />
-                </div>
-            </div>
-            <div className="px-3 pb-3">
-                <div className="border rounded bg-white p-3">
-                    <div className="small text-muted mb-2">
-                        Initialising calendar engine...
+        <>
+            <Head>
+                <title>Kalendarz — Salon Black &amp; White</title>
+            </Head>
+            <div className="salonbw-page" data-testid="calendar-shell">
+                <div className="px-3 pt-3 pb-2">
+                    <div
+                        className="placeholder-glow small text-muted mb-2"
+                        aria-hidden
+                    >
+                        <span className="placeholder col-2" />
                     </div>
-                    <div className="placeholder-glow d-flex flex-column gap-2">
-                        <span className="placeholder col-12" />
-                        <span className="placeholder col-12" />
-                        <span className="placeholder col-8" />
+                    <div
+                        className="d-flex align-items-center justify-content-between gap-2"
+                        aria-hidden
+                    >
+                        <span className="placeholder col-7" />
+                        <span className="placeholder col-2" />
                     </div>
                 </div>
+                <div className="px-3 pb-3">
+                    <div className="border rounded bg-white p-3">
+                        <div className="small text-muted mb-2">
+                            Initialising calendar engine...
+                        </div>
+                        <div className="placeholder-glow d-flex flex-column gap-2">
+                            <span className="placeholder col-12" />
+                            <span className="placeholder col-12" />
+                            <span className="placeholder col-8" />
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState, useEffect, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
@@ -151,6 +152,9 @@ export default function ReviewsPage() {
 
     return (
         <RouteGuard permission="nav:reviews">
+            <Head>
+                <title>Opinie — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="reviews-page">
                     <SalonBreadcrumbs

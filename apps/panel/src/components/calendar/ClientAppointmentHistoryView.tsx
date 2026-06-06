@@ -167,6 +167,7 @@ function RescheduleModal({
                         <button
                             type="button"
                             className="btn-close"
+                            aria-label="Zamknij"
                             onClick={onClose}
                         />
                     </div>

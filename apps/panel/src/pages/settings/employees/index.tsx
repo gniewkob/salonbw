@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
@@ -103,6 +104,9 @@ export default function EmployeesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
+            <Head>
+                <title>Pracownicy — ustawienia — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="employees-page">
                     <SalonBreadcrumbs

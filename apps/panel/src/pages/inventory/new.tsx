@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -29,65 +30,70 @@ export default function InventoryNewPage() {
     };
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Nowa inwentaryzacja | SalonBW"
-            heading="Magazyn / Nowa inwentaryzacja"
-            activeTab="products"
-            inventoryActive
-            actions={
-                <Link
-                    href="/inventory"
-                    className="btn btn-outline-secondary btn-sm"
-                >
-                    wróć do historii
-                </Link>
-            }
-        >
-            <h3 className="warehouse-subtitle">Nowa inwentaryzacja</h3>
-            <div className="warehouse-entry-form warehouse-new-screen">
-                <div className="warehouse-entry-row">
-                    <span className="warehouse-entry-row__index">1.</span>
-                    <span className="warehouse-entry-row__label">
-                        data inwentaryzacji
-                    </span>
-                    <input
-                        type="date"
-                        value={stocktakingDate}
-                        onChange={(event) =>
-                            setStocktakingDate(event.target.value)
-                        }
-                        className="form-control"
-                    />
+        <>
+            <Head>
+                <title>Nowa inwentaryzacja — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Nowa inwentaryzacja | SalonBW"
+                heading="Magazyn / Nowa inwentaryzacja"
+                activeTab="products"
+                inventoryActive
+                actions={
+                    <Link
+                        href="/inventory"
+                        className="btn btn-outline-secondary btn-sm"
+                    >
+                        wróć do historii
+                    </Link>
+                }
+            >
+                <h3 className="warehouse-subtitle">Nowa inwentaryzacja</h3>
+                <div className="warehouse-entry-form warehouse-new-screen">
+                    <div className="warehouse-entry-row">
+                        <span className="warehouse-entry-row__index">1.</span>
+                        <span className="warehouse-entry-row__label">
+                            data inwentaryzacji
+                        </span>
+                        <input
+                            type="date"
+                            value={stocktakingDate}
+                            onChange={(event) =>
+                                setStocktakingDate(event.target.value)
+                            }
+                            className="form-control"
+                        />
+                    </div>
+                    <div className="warehouse-entry-row">
+                        <span className="warehouse-entry-row__index">2.</span>
+                        <span className="warehouse-entry-row__label">opis</span>
+                        <textarea
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                            className="form-control"
+                        />
+                    </div>
                 </div>
-                <div className="warehouse-entry-row">
-                    <span className="warehouse-entry-row__index">2.</span>
-                    <span className="warehouse-entry-row__label">opis</span>
-                    <textarea
-                        value={notes}
-                        onChange={(event) => setNotes(event.target.value)}
-                        className="form-control"
-                    />
-                </div>
-            </div>
 
-            <div className="warehouse-entry-actions warehouse-new-screen">
-                <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => void create()}
-                    disabled={createMutation.isPending}
-                >
-                    {createMutation.isPending
-                        ? 'tworzenie...'
-                        : 'utwórz inwentaryzację'}
-                </button>
-                <Link
-                    href="/inventory"
-                    className="btn btn-outline-secondary btn-sm"
-                >
-                    anuluj
-                </Link>
-            </div>
-        </WarehouseLayout>
+                <div className="warehouse-entry-actions warehouse-new-screen">
+                    <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => void create()}
+                        disabled={createMutation.isPending}
+                    >
+                        {createMutation.isPending
+                            ? 'tworzenie...'
+                            : 'utwórz inwentaryzację'}
+                    </button>
+                    <Link
+                        href="/inventory"
+                        className="btn btn-outline-secondary btn-sm"
+                    >
+                        anuluj
+                    </Link>
+                </div>
+            </WarehouseLayout>
+        </>
     );
 }

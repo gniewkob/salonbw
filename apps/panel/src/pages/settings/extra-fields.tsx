@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useLayoutEffect, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -124,6 +125,9 @@ export default function ExtraFieldsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Pola klientów — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="extra-fields-page">
                     <SalonBreadcrumbs
@@ -277,6 +281,7 @@ export default function ExtraFieldsPage() {
                                         <button
                                             type="button"
                                             className="btn-close"
+                                            aria-label="Zamknij"
                                             onClick={() => setShowForm(false)}
                                         />
                                     </div>
@@ -340,6 +345,7 @@ export default function ExtraFieldsPage() {
                                         <button
                                             type="button"
                                             className="btn-close"
+                                            aria-label="Zamknij"
                                             onClick={() =>
                                                 setEditingField(null)
                                             }

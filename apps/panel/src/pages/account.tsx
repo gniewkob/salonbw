@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { FormEvent, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -59,6 +60,9 @@ export default function AccountPage() {
             roles={['admin', 'employee', 'receptionist', 'client']}
             permission="nav:calendar"
         >
+            <Head>
+                <title>Moje konto — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page">
                     <SalonBreadcrumbs

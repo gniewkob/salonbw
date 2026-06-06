@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -243,276 +244,288 @@ export default function WarehouseProductsPage() {
     };
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Produkty | SalonBW"
-            heading="Magazyn / Produkty"
-            activeTab="products"
-        >
-            <div className="row mb-3">
-                <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="wyszukaj produkt"
-                    />
-                    <select
-                        value={productTypeFilter}
-                        aria-label="Rodzaj produktu"
-                        onChange={(e) =>
-                            setProductTypeFilter(
-                                e.target.value as ProductTypeFilter,
-                            )
-                        }
-                    >
-                        {productTypeOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="col-sm-8 col-lg-7">
-                    <div className="d-flex flex-wrap justify-content-end">
-                        <Link
-                            href="/sales/new"
-                            className="btn btn-outline-secondary btn-sm ml-xs"
+        <>
+            <Head>
+                <title>Produkty — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Produkty | SalonBW"
+                heading="Magazyn / Produkty"
+                activeTab="products"
+            >
+                <div className="row mb-3">
+                    <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="wyszukaj produkt"
+                        />
+                        <select
+                            value={productTypeFilter}
+                            aria-label="Rodzaj produktu"
+                            onChange={(e) =>
+                                setProductTypeFilter(
+                                    e.target.value as ProductTypeFilter,
+                                )
+                            }
                         >
-                            dodaj sprzedaż
-                        </Link>
-                        <Link
-                            href="/use/new"
-                            className="btn btn-outline-secondary btn-sm ml-xs"
-                        >
-                            dodaj zużycie
-                        </Link>
-                        <button
-                            type="button"
-                            className="btn btn-primary ml-xs"
-                            onClick={() => setNewProductOpen(true)}
-                        >
-                            dodaj produkt
-                        </button>
+                            {productTypeOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="col-sm-8 col-lg-7">
+                        <div className="d-flex flex-wrap justify-content-end">
+                            <Link
+                                href="/sales/new"
+                                className="btn btn-outline-secondary btn-sm ml-xs"
+                            >
+                                dodaj sprzedaż
+                            </Link>
+                            <Link
+                                href="/use/new"
+                                className="btn btn-outline-secondary btn-sm ml-xs"
+                            >
+                                dodaj zużycie
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn btn-primary ml-xs"
+                                onClick={() => setNewProductOpen(true)}
+                            >
+                                dodaj produkt
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {selectedIds.size > 0 && (
-                <div className="d-flex align-items-center gap-2 mb-3 p-2 bg-light border rounded">
-                    <span className="text-muted small">
-                        Zaznaczono: <strong>{selectedIds.size}</strong>
-                    </span>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-danger ms-2"
-                        disabled={bulkDeletePending}
-                        onClick={() => setConfirmBulkDelete(true)}
-                    >
-                        {bulkDeletePending ? 'Usuwanie...' : 'Usuń zaznaczone'}
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => setSelectedIds(new Set())}
-                    >
-                        Odznacz wszystkie
-                    </button>
-                </div>
-            )}
+                {selectedIds.size > 0 && (
+                    <div className="d-flex align-items-center gap-2 mb-3 p-2 bg-light border rounded">
+                        <span className="text-muted small">
+                            Zaznaczono: <strong>{selectedIds.size}</strong>
+                        </span>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-danger ms-2"
+                            disabled={bulkDeletePending}
+                            onClick={() => setConfirmBulkDelete(true)}
+                        >
+                            {bulkDeletePending
+                                ? 'Usuwanie...'
+                                : 'Usuń zaznaczone'}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setSelectedIds(new Set())}
+                        >
+                            Odznacz wszystkie
+                        </button>
+                    </div>
+                )}
 
-            <div className="table-responsive">
-                <table className="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th className="pointer checkbox_container center_text">
-                                <input
-                                    type="checkbox"
-                                    aria-label="zaznacz wszystkie"
-                                    checked={
-                                        displayedProducts.length > 0 &&
-                                        selectedIds.size ===
-                                            displayedProducts.length
-                                    }
-                                    onChange={toggleSelectAll}
+                <div className="table-responsive">
+                    <table className="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th className="pointer checkbox_container center_text">
+                                    <input
+                                        type="checkbox"
+                                        aria-label="zaznacz wszystkie"
+                                        checked={
+                                            displayedProducts.length > 0 &&
+                                            selectedIds.size ===
+                                                displayedProducts.length
+                                        }
+                                        onChange={toggleSelectAll}
+                                    />
+                                </th>
+                                <th>
+                                    <div>Nazwa</div>
+                                </th>
+                                <th>
+                                    <div>Kategoria</div>
+                                </th>
+                                <th>
+                                    <div>Rodzaj produktu</div>
+                                </th>
+                                <th>
+                                    <div>Kod wewnętrzny (SKU)</div>
+                                </th>
+                                <th>
+                                    <div>Stan magazynowy</div>
+                                </th>
+                                <th>
+                                    <div>Cena sprzedaży</div>
+                                </th>
+                                <th
+                                    className="col-actions-45"
+                                    aria-label="Akcje"
                                 />
-                            </th>
-                            <th>
-                                <div>Nazwa</div>
-                            </th>
-                            <th>
-                                <div>Kategoria</div>
-                            </th>
-                            <th>
-                                <div>Rodzaj produktu</div>
-                            </th>
-                            <th>
-                                <div>Kod wewnętrzny (SKU)</div>
-                            </th>
-                            <th>
-                                <div>Stan magazynowy</div>
-                            </th>
-                            <th>
-                                <div>Cena sprzedaży</div>
-                            </th>
-                            <th className="col-actions-45" aria-label="Akcje" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {isLoading ? (
-                            <tr className="odd">
-                                <td colSpan={8} className="products-empty">
-                                    Ładowanie produktów...
-                                </td>
                             </tr>
-                        ) : filteredProducts.length === 0 ? (
-                            <tr className="odd">
-                                <td colSpan={8} className="products-empty">
-                                    Brak produktów spełniających kryteria
-                                </td>
-                            </tr>
-                        ) : (
-                            displayedProducts.map((product) => {
-                                const volume =
-                                    Number(product.volumeMl ?? 0) > 0
-                                        ? product.stock *
-                                          Number(product.volumeMl)
-                                        : 0;
-                                return (
-                                    <tr key={product.id}>
-                                        <td className="pointer checkbox_container center_text">
-                                            <input
-                                                type="checkbox"
-                                                aria-label={`zaznacz ${product.name}`}
-                                                checked={selectedIds.has(
-                                                    product.id,
+                        </thead>
+                        <tbody>
+                            {isLoading ? (
+                                <tr className="odd">
+                                    <td colSpan={8} className="products-empty">
+                                        Ładowanie produktów...
+                                    </td>
+                                </tr>
+                            ) : filteredProducts.length === 0 ? (
+                                <tr className="odd">
+                                    <td colSpan={8} className="products-empty">
+                                        Brak produktów spełniających kryteria
+                                    </td>
+                                </tr>
+                            ) : (
+                                displayedProducts.map((product) => {
+                                    const volume =
+                                        Number(product.volumeMl ?? 0) > 0
+                                            ? product.stock *
+                                              Number(product.volumeMl)
+                                            : 0;
+                                    return (
+                                        <tr key={product.id}>
+                                            <td className="pointer checkbox_container center_text">
+                                                <input
+                                                    type="checkbox"
+                                                    aria-label={`zaznacz ${product.name}`}
+                                                    checked={selectedIds.has(
+                                                        product.id,
+                                                    )}
+                                                    onChange={() =>
+                                                        toggleSelect(product.id)
+                                                    }
+                                                />
+                                            </td>
+                                            <td className="wrap blue_text pointer link_body">
+                                                <Link
+                                                    href={`/products/${product.id}`}
+                                                    className="inverse_decoration"
+                                                >
+                                                    {product.name}
+                                                </Link>
+                                            </td>
+                                            <td>
+                                                {product.category?.name ??
+                                                    'brak kategorii'}
+                                            </td>
+                                            <td>
+                                                {getProductTypeLabel(
+                                                    product.productType,
                                                 )}
-                                                onChange={() =>
-                                                    toggleSelect(product.id)
-                                                }
-                                            />
-                                        </td>
-                                        <td className="wrap blue_text pointer link_body">
-                                            <Link
-                                                href={`/products/${product.id}`}
-                                                className="inverse_decoration"
-                                            >
-                                                {product.name}
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {product.category?.name ??
-                                                'brak kategorii'}
-                                        </td>
-                                        <td>
-                                            {getProductTypeLabel(
-                                                product.productType,
-                                            )}
-                                        </td>
-                                        <td>{product.sku ?? '-'}</td>
-                                        <td>
-                                            {product.stock}{' '}
-                                            {product.unit ?? 'op.'}
-                                            {volume > 0
-                                                ? ` (${volume} ml)`
-                                                : ' (0 ml)'}
-                                        </td>
-                                        <td>
-                                            {Number(product.unitPrice ?? 0)
-                                                .toFixed(2)
-                                                .replace('.', ',')}
-                                            &nbsp;zł
-                                        </td>
-                                        <td className="center_text">
-                                            <Link
-                                                href={`/sales/new?product_id=${product.id}`}
-                                                className="icon_link stockroom_sell"
-                                                title="sprzedaj"
-                                            >
-                                                <i
-                                                    className="icon sprite-stock_action_sell"
-                                                    aria-hidden="true"
-                                                />
-                                            </Link>
-                                            <Link
-                                                href={`/use/new?product_id=${product.id}`}
-                                                className="icon_link stockroom_consumption"
-                                                title="zużyj"
-                                            >
-                                                <i
-                                                    className="icon sprite-stock_action_consumption"
-                                                    aria-hidden="true"
-                                                />
-                                            </Link>
-                                            <button
-                                                type="button"
-                                                className="icon_link btn btn-link p-0"
-                                                title="edytuj"
-                                                onClick={() =>
-                                                    setEditProductId(product.id)
-                                                }
-                                            >
-                                                <i
-                                                    className="icon sprite-edit"
-                                                    aria-hidden="true"
-                                                />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {isMobile && (
-                <div
-                    ref={sentinelRef}
-                    className="customers-infinite-sentinel"
-                    aria-hidden="true"
-                >
-                    {mobileCount < filteredProducts.length ? (
-                        <p className="text-muted text-center small py-2">
-                            Przewiń, aby załadować więcej
-                        </p>
-                    ) : null}
+                                            </td>
+                                            <td>{product.sku ?? '-'}</td>
+                                            <td>
+                                                {product.stock}{' '}
+                                                {product.unit ?? 'op.'}
+                                                {volume > 0
+                                                    ? ` (${volume} ml)`
+                                                    : ' (0 ml)'}
+                                            </td>
+                                            <td>
+                                                {Number(product.unitPrice ?? 0)
+                                                    .toFixed(2)
+                                                    .replace('.', ',')}
+                                                &nbsp;zł
+                                            </td>
+                                            <td className="center_text">
+                                                <Link
+                                                    href={`/sales/new?product_id=${product.id}`}
+                                                    className="icon_link stockroom_sell"
+                                                    title="sprzedaj"
+                                                >
+                                                    <i
+                                                        className="icon sprite-stock_action_sell"
+                                                        aria-hidden="true"
+                                                    />
+                                                </Link>
+                                                <Link
+                                                    href={`/use/new?product_id=${product.id}`}
+                                                    className="icon_link stockroom_consumption"
+                                                    title="zużyj"
+                                                >
+                                                    <i
+                                                        className="icon sprite-stock_action_consumption"
+                                                        aria-hidden="true"
+                                                    />
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    className="icon_link btn btn-link p-0"
+                                                    title="edytuj"
+                                                    onClick={() =>
+                                                        setEditProductId(
+                                                            product.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <i
+                                                        className="icon sprite-edit"
+                                                        aria-hidden="true"
+                                                    />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
                 </div>
-            )}
 
-            <div className="products-export">
-                <button
-                    type="button"
-                    onClick={exportProductsCsv}
-                    className="btn btn-outline-secondary"
-                >
+                {isMobile && (
                     <div
-                        className="icon sprite-exel_blue mr-xs"
+                        ref={sentinelRef}
+                        className="customers-infinite-sentinel"
                         aria-hidden="true"
-                    />
-                    pobierz bazę produktów w pliku Excel
-                </button>
-            </div>
-            <NewProductModal
-                open={newProductOpen}
-                onClose={() => setNewProductOpen(false)}
-                onSuccess={() => setNewProductOpen(false)}
-            />
-            <EditProductModal
-                open={editProductId !== null}
-                productId={editProductId}
-                onClose={() => setEditProductId(null)}
-                onSuccess={() => setEditProductId(null)}
-                onDeleted={() => setEditProductId(null)}
-            />
-            <ConfirmModal
-                open={confirmBulkDelete}
-                title="Usuń zaznaczone produkty"
-                message={`Czy na pewno chcesz usunąć ${selectedIds.size} produkt(ów)? Operacja jest nieodwracalna.`}
-                confirmLabel="Usuń"
-                confirmVariant="danger"
-                onConfirm={() => void doBulkDelete()}
-                onCancel={() => setConfirmBulkDelete(false)}
-            />
-        </WarehouseLayout>
+                    >
+                        {mobileCount < filteredProducts.length ? (
+                            <p className="text-muted text-center small py-2">
+                                Przewiń, aby załadować więcej
+                            </p>
+                        ) : null}
+                    </div>
+                )}
+
+                <div className="products-export">
+                    <button
+                        type="button"
+                        onClick={exportProductsCsv}
+                        className="btn btn-outline-secondary"
+                    >
+                        <div
+                            className="icon sprite-exel_blue mr-xs"
+                            aria-hidden="true"
+                        />
+                        pobierz bazę produktów w pliku Excel
+                    </button>
+                </div>
+                <NewProductModal
+                    open={newProductOpen}
+                    onClose={() => setNewProductOpen(false)}
+                    onSuccess={() => setNewProductOpen(false)}
+                />
+                <EditProductModal
+                    open={editProductId !== null}
+                    productId={editProductId}
+                    onClose={() => setEditProductId(null)}
+                    onSuccess={() => setEditProductId(null)}
+                    onDeleted={() => setEditProductId(null)}
+                />
+                <ConfirmModal
+                    open={confirmBulkDelete}
+                    title="Usuń zaznaczone produkty"
+                    message={`Czy na pewno chcesz usunąć ${selectedIds.size} produkt(ów)? Operacja jest nieodwracalna.`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => void doBulkDelete()}
+                    onCancel={() => setConfirmBulkDelete(false)}
+                />
+            </WarehouseLayout>
+        </>
     );
 }

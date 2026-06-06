@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -145,6 +146,9 @@ export default function CampaignsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Kampanie — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_communication"

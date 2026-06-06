@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -155,302 +156,323 @@ export default function WarehouseSaleCreatePage() {
     };
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Dodaj sprzedaż | SalonBW"
-            heading="Magazyn / Dodaj sprzedaż"
-            activeTab="sales"
-            actions={
-                <Link
-                    href="/sales/history"
-                    className="btn btn-outline-secondary btn-sm"
-                >
-                    historia sprzedaży
-                </Link>
-            }
-        >
-            <div className="warehouse-new-screen">
-                <div className="products-table-wrap warehouse-lines-table">
-                    <table className="products-table">
-                        <thead>
-                            <tr>
-                                <th>nazwa</th>
-                                <th>jednostka</th>
-                                <th>ilość</th>
-                                <th>cena op. (brutto)</th>
-                                <th>rabat</th>
-                                <th>VAT</th>
-                                <th>wartość (brutto)</th>
-                                <th>usuń</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {lines.map((line, index) => (
-                                <tr key={`${index}-${line.productId}`}>
-                                    <td>
-                                        <select
-                                            value={line.productId}
-                                            onChange={(event) => {
-                                                const value =
-                                                    event.target.value;
-                                                const product = products.find(
-                                                    (item) =>
-                                                        String(item.id) ===
-                                                        value,
-                                                );
-                                                updateLine(index, {
-                                                    productId: value,
-                                                    unitPrice: product
-                                                        ? String(
-                                                              product.unitPrice,
-                                                          )
-                                                        : line.unitPrice,
-                                                    unit:
-                                                        product?.unit || 'op.',
-                                                    vatRate: String(
-                                                        product?.vatRate ?? 23,
-                                                    ),
-                                                });
-                                            }}
-                                            className="form-control"
-                                        >
-                                            <option value="">
-                                                wpisz nazwę, kod kreskowy itp.
-                                            </option>
-                                            {products.map((product) => (
-                                                <option
-                                                    key={product.id}
-                                                    value={product.id}
-                                                >
-                                                    {product.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td>{line.unit || 'op.'}</td>
-                                    <td>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            value={line.quantity}
-                                            onChange={(event) =>
-                                                updateLine(index, {
-                                                    quantity:
-                                                        event.target.value,
-                                                })
-                                            }
-                                            className="form-control"
-                                        />
-                                    </td>
-                                    <td>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            step="0.01"
-                                            value={line.unitPrice}
-                                            onChange={(event) =>
-                                                updateLine(index, {
-                                                    unitPrice:
-                                                        event.target.value,
-                                                })
-                                            }
-                                            className="form-control"
-                                        />
-                                    </td>
-                                    <td>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            step="0.01"
-                                            value={line.discount}
-                                            onChange={(event) =>
-                                                updateLine(index, {
-                                                    discount:
-                                                        event.target.value,
-                                                })
-                                            }
-                                            className="form-control"
-                                        />
-                                    </td>
-                                    <td>{line.vatRate}%</td>
-                                    <td>
-                                        {formatCurrency(
-                                            Math.max(
-                                                0,
-                                                Number(line.unitPrice || 0) *
-                                                    Number(line.quantity || 0) -
-                                                    Number(line.discount || 0),
-                                            ),
-                                        )}
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() => removeLine(index)}
-                                        >
-                                            usuń
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="warehouse-actions-row">
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary btn-sm"
-                        onClick={addLine}
-                    >
-                        dodaj kolejną pozycję
-                    </button>
+        <>
+            <Head>
+                <title>Nowa sprzedaż — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Dodaj sprzedaż | SalonBW"
+                heading="Magazyn / Dodaj sprzedaż"
+                activeTab="sales"
+                actions={
                     <Link
-                        href="/products/new"
+                        href="/sales/history"
                         className="btn btn-outline-secondary btn-sm"
                     >
-                        dodaj nowy produkt
+                        historia sprzedaży
                     </Link>
-                </div>
-
-                <div className="warehouse-form-card">
-                    <div className="warehouse-form-grid">
-                        <label>
-                            <span>Klient</span>
-                            <div className="warehouse-inline-field">
-                                <input
-                                    type="text"
-                                    value={clientName}
-                                    onChange={(event) =>
-                                        setClientName(event.target.value)
-                                    }
-                                    className="form-control"
-                                    placeholder="wpisz nazwisko lub numer telefonu"
-                                />
-                                <Link
-                                    href="/customers/new"
-                                    className="btn btn-outline-secondary btn-sm"
-                                >
-                                    nowy klient
-                                </Link>
-                            </div>
-                        </label>
-                        <label>
-                            <span>Polecający pracownik</span>
-                            <select
-                                value={employeeId}
-                                onChange={(event) =>
-                                    setEmployeeId(event.target.value)
-                                }
-                                className="salonbw-select"
-                            >
-                                <option value="">
-                                    wpisz nazwę lub wybierz z listy
-                                </option>
-                                {employees?.map((employee) => (
-                                    <option
-                                        key={employee.id}
-                                        value={employee.id}
-                                    >
-                                        {employee.name}
-                                    </option>
+                }
+            >
+                <div className="warehouse-new-screen">
+                    <div className="products-table-wrap warehouse-lines-table">
+                        <table className="products-table">
+                            <thead>
+                                <tr>
+                                    <th>nazwa</th>
+                                    <th>jednostka</th>
+                                    <th>ilość</th>
+                                    <th>cena op. (brutto)</th>
+                                    <th>rabat</th>
+                                    <th>VAT</th>
+                                    <th>wartość (brutto)</th>
+                                    <th>usuń</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {lines.map((line, index) => (
+                                    <tr key={`${index}-${line.productId}`}>
+                                        <td>
+                                            <select
+                                                value={line.productId}
+                                                onChange={(event) => {
+                                                    const value =
+                                                        event.target.value;
+                                                    const product =
+                                                        products.find(
+                                                            (item) =>
+                                                                String(
+                                                                    item.id,
+                                                                ) === value,
+                                                        );
+                                                    updateLine(index, {
+                                                        productId: value,
+                                                        unitPrice: product
+                                                            ? String(
+                                                                  product.unitPrice,
+                                                              )
+                                                            : line.unitPrice,
+                                                        unit:
+                                                            product?.unit ||
+                                                            'op.',
+                                                        vatRate: String(
+                                                            product?.vatRate ??
+                                                                23,
+                                                        ),
+                                                    });
+                                                }}
+                                                className="form-control"
+                                            >
+                                                <option value="">
+                                                    wpisz nazwę, kod kreskowy
+                                                    itp.
+                                                </option>
+                                                {products.map((product) => (
+                                                    <option
+                                                        key={product.id}
+                                                        value={product.id}
+                                                    >
+                                                        {product.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td>{line.unit || 'op.'}</td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={line.quantity}
+                                                onChange={(event) =>
+                                                    updateLine(index, {
+                                                        quantity:
+                                                            event.target.value,
+                                                    })
+                                                }
+                                                className="form-control"
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step="0.01"
+                                                value={line.unitPrice}
+                                                onChange={(event) =>
+                                                    updateLine(index, {
+                                                        unitPrice:
+                                                            event.target.value,
+                                                    })
+                                                }
+                                                className="form-control"
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step="0.01"
+                                                value={line.discount}
+                                                onChange={(event) =>
+                                                    updateLine(index, {
+                                                        discount:
+                                                            event.target.value,
+                                                    })
+                                                }
+                                                className="form-control"
+                                            />
+                                        </td>
+                                        <td>{line.vatRate}%</td>
+                                        <td>
+                                            {formatCurrency(
+                                                Math.max(
+                                                    0,
+                                                    Number(
+                                                        line.unitPrice || 0,
+                                                    ) *
+                                                        Number(
+                                                            line.quantity || 0,
+                                                        ) -
+                                                        Number(
+                                                            line.discount || 0,
+                                                        ),
+                                                ),
+                                            )}
+                                        </td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    removeLine(index)
+                                                }
+                                            >
+                                                usuń
+                                            </button>
+                                        </td>
+                                    </tr>
                                 ))}
-                            </select>
-                        </label>
-                        <label>
-                            <span>Data sprzedaży</span>
-                            <input
-                                type="date"
-                                value={soldAt}
-                                onChange={(event) =>
-                                    setSoldAt(event.target.value)
-                                }
-                                className="form-control"
-                            />
-                        </label>
-                        <label>
-                            <span>Płatność</span>
-                            <select
-                                value={paymentMethod}
-                                onChange={(event) =>
-                                    setPaymentMethod(event.target.value)
-                                }
-                                className="salonbw-select"
-                            >
-                                <option value="cash">gotówka</option>
-                                <option value="card">karta</option>
-                                <option value="transfer">przelew</option>
-                            </select>
-                        </label>
-                        <label>
-                            <span>Wpłata klienta</span>
-                            <input
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                value={amountPaid}
-                                onChange={(event) =>
-                                    setAmountPaid(event.target.value)
-                                }
-                                className="form-control"
-                            />
-                        </label>
-                        <label className="warehouse-full">
-                            <span>Opis</span>
-                            <textarea
-                                value={note}
-                                onChange={(event) =>
-                                    setNote(event.target.value)
-                                }
-                                className="form-control"
-                            />
-                        </label>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
 
-                <div className="warehouse-summary">
-                    <div className="warehouse-summary-value">
-                        Wartość sprzedaży: {formatCurrency(totalGross)}
-                    </div>
-                    <div className="warehouse-summary-meta">
-                        rabat: {formatCurrency(totalDiscount)}
-                    </div>
-                    <div className="warehouse-summary-meta">
-                        netto: {formatCurrency(totalNet)} (VAT:{' '}
-                        {formatCurrency(totalVat)})
-                    </div>
-                    <div className="warehouse-summary-meta">
-                        do zapłaty: {formatCurrency(totalGross)}
-                    </div>
-                    <div className="warehouse-summary-meta">
-                        reszta:{' '}
-                        {formatCurrency(
-                            Math.max(0, Number(amountPaid || 0) - totalGross),
-                        )}
-                    </div>
                     <div className="warehouse-actions-row">
-                        <Link
-                            href="/sales/history"
-                            className="btn btn-outline-secondary btn-sm"
-                        >
-                            anuluj
-                        </Link>
                         <button
                             type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() => void submit()}
-                            disabled={createMutation.isPending}
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={addLine}
                         >
-                            {createMutation.isPending
-                                ? 'zapisywanie...'
-                                : 'wprowadź sprzedaż'}
+                            dodaj kolejną pozycję
                         </button>
+                        <Link
+                            href="/products/new"
+                            className="btn btn-outline-secondary btn-sm"
+                        >
+                            dodaj nowy produkt
+                        </Link>
+                    </div>
+
+                    <div className="warehouse-form-card">
+                        <div className="warehouse-form-grid">
+                            <label>
+                                <span>Klient</span>
+                                <div className="warehouse-inline-field">
+                                    <input
+                                        type="text"
+                                        value={clientName}
+                                        onChange={(event) =>
+                                            setClientName(event.target.value)
+                                        }
+                                        className="form-control"
+                                        placeholder="wpisz nazwisko lub numer telefonu"
+                                    />
+                                    <Link
+                                        href="/customers/new"
+                                        className="btn btn-outline-secondary btn-sm"
+                                    >
+                                        nowy klient
+                                    </Link>
+                                </div>
+                            </label>
+                            <label>
+                                <span>Polecający pracownik</span>
+                                <select
+                                    value={employeeId}
+                                    onChange={(event) =>
+                                        setEmployeeId(event.target.value)
+                                    }
+                                    className="salonbw-select"
+                                >
+                                    <option value="">
+                                        wpisz nazwę lub wybierz z listy
+                                    </option>
+                                    {employees?.map((employee) => (
+                                        <option
+                                            key={employee.id}
+                                            value={employee.id}
+                                        >
+                                            {employee.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <label>
+                                <span>Data sprzedaży</span>
+                                <input
+                                    type="date"
+                                    value={soldAt}
+                                    onChange={(event) =>
+                                        setSoldAt(event.target.value)
+                                    }
+                                    className="form-control"
+                                />
+                            </label>
+                            <label>
+                                <span>Płatność</span>
+                                <select
+                                    value={paymentMethod}
+                                    onChange={(event) =>
+                                        setPaymentMethod(event.target.value)
+                                    }
+                                    className="salonbw-select"
+                                >
+                                    <option value="cash">gotówka</option>
+                                    <option value="card">karta</option>
+                                    <option value="transfer">przelew</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Wpłata klienta</span>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    value={amountPaid}
+                                    onChange={(event) =>
+                                        setAmountPaid(event.target.value)
+                                    }
+                                    className="form-control"
+                                />
+                            </label>
+                            <label className="warehouse-full">
+                                <span>Opis</span>
+                                <textarea
+                                    value={note}
+                                    onChange={(event) =>
+                                        setNote(event.target.value)
+                                    }
+                                    className="form-control"
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="warehouse-summary">
+                        <div className="warehouse-summary-value">
+                            Wartość sprzedaży: {formatCurrency(totalGross)}
+                        </div>
+                        <div className="warehouse-summary-meta">
+                            rabat: {formatCurrency(totalDiscount)}
+                        </div>
+                        <div className="warehouse-summary-meta">
+                            netto: {formatCurrency(totalNet)} (VAT:{' '}
+                            {formatCurrency(totalVat)})
+                        </div>
+                        <div className="warehouse-summary-meta">
+                            do zapłaty: {formatCurrency(totalGross)}
+                        </div>
+                        <div className="warehouse-summary-meta">
+                            reszta:{' '}
+                            {formatCurrency(
+                                Math.max(
+                                    0,
+                                    Number(amountPaid || 0) - totalGross,
+                                ),
+                            )}
+                        </div>
+                        <div className="warehouse-actions-row">
+                            <Link
+                                href="/sales/history"
+                                className="btn btn-outline-secondary btn-sm"
+                            >
+                                anuluj
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() => void submit()}
+                                disabled={createMutation.isPending}
+                            >
+                                {createMutation.isPending
+                                    ? 'zapisywanie...'
+                                    : 'wprowadź sprzedaż'}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {formError ? (
-                <p className="warehouse-validation-error">{formError}</p>
-            ) : null}
-        </WarehouseLayout>
+                {formError ? (
+                    <p className="warehouse-validation-error">{formError}</p>
+                ) : null}
+            </WarehouseLayout>
+        </>
     );
 }

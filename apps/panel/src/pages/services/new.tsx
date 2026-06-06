@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -76,6 +77,9 @@ export default function NewServicePage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
+            <Head>
+                <title>Nowa usługa — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <NewServicePageContent />
             </SalonShell>

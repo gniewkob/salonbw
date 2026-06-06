@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import {
     addDays,
@@ -81,6 +82,9 @@ export default function StatisticsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <StatisticsPageContent />
             </SalonShell>

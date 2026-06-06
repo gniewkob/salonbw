@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { format, subDays } from 'date-fns';
 import Link from 'next/link';
@@ -39,6 +40,9 @@ export default function ServicesStatisticsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki usług — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="salonbw-page"

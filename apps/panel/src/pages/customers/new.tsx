@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -206,6 +207,9 @@ export default function NewCustomerPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
+            <Head>
+                <title>Nowy klient — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <CustomerErrorBoundary
                     fallback={
