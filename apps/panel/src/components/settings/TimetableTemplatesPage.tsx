@@ -588,7 +588,12 @@ export default function TimetableTemplatesPage() {
             />
             {nameModal !== null && (
                 <div className="modal-backdrop fade in">
-                    <div className="modal-dialog">
+                    <div
+                        className="modal-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Szablon grafiku"
+                    >
                         <form
                             className="modal-content"
                             onSubmit={(e) => {

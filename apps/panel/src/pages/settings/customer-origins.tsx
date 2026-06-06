@@ -189,7 +189,12 @@ export default function CustomerOriginsPage() {
                             className="modal d-block"
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
-                            <div className="modal-dialog">
+                            <div
+                                className="modal-dialog"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Dodaj źródło klienta"
+                            >
                                 <form
                                     className="modal-content"
                                     onSubmit={handleCreate}
@@ -263,7 +268,12 @@ export default function CustomerOriginsPage() {
                             className="modal d-block"
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
-                            <div className="modal-dialog">
+                            <div
+                                className="modal-dialog"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Edytuj źródło klienta"
+                            >
                                 <form
                                     className="modal-content"
                                     onSubmit={handleUpdate}

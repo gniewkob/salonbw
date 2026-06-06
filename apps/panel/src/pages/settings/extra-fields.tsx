@@ -260,7 +260,12 @@ export default function ExtraFieldsPage() {
                             className="modal d-block"
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
-                            <div className="modal-dialog">
+                            <div
+                                className="modal-dialog"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Dodaj pole dodatkowe"
+                            >
                                 <form
                                     className="modal-content"
                                     onSubmit={handleCreate}
@@ -318,7 +323,12 @@ export default function ExtraFieldsPage() {
                             className="modal d-block"
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
-                            <div className="modal-dialog">
+                            <div
+                                className="modal-dialog"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Edytuj pole dodatkowe"
+                            >
                                 <form
                                     className="modal-content"
                                     onSubmit={handleUpdate}

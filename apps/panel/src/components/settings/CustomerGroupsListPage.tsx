@@ -299,7 +299,12 @@ export default function CustomerGroupsListPage() {
 
             {editingGroup ? (
                 <div className="modal-backdrop fade in">
-                    <div className="modal-dialog">
+                    <div
+                        className="modal-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Edytuj grupę klientów"
+                    >
                         <form
                             className="modal-content"
                             onSubmit={(event) => {

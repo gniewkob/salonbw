@@ -100,7 +100,12 @@ export default function CategoryFormModal({
 
     return (
         <div className="modal fade in block bg-modal-overlay">
-            <div className="modal-dialog">
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Kategoria usług"
+            >
                 <div className="modal-content">
                     <div className="modal-header">
                         <button

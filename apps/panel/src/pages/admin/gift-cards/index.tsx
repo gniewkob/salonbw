@@ -1439,7 +1439,12 @@ export default function GiftCardsManagementPage() {
                 </div>
                 {cancelModal !== null && (
                     <div className="modal-backdrop fade in">
-                        <div className="modal-dialog">
+                        <div
+                            className="modal-dialog"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Anuluj kartę podarunkową"
+                        >
                             <form
                                 className="modal-content"
                                 onSubmit={(e) => {
