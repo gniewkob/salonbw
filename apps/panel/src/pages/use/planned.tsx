@@ -153,7 +153,16 @@ export default function WarehouseUsagePlannedPage() {
                                 className="pagination-page-input"
                                 aria-label="strona"
                                 value={safePage}
-                                readOnly
+                                onChange={(event) => {
+                                    const next = Number(event.target.value);
+                                    if (
+                                        Number.isFinite(next) &&
+                                        next >= 1 &&
+                                        next <= totalPages
+                                    ) {
+                                        setPage(next);
+                                    }
+                                }}
                             />
                             {' z '}
                             <a className="pointer">{totalPages}</a>

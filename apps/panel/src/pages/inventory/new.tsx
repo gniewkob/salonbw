@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useCreateStocktaking } from '@/hooks/useWarehouse';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function InventoryNewPage() {
     const router = useRouter();
+    const toast = useToast();
     const createMutation = useCreateStocktaking();
     const [stocktakingDate, setStocktakingDate] = useState(
         new Date().toISOString().slice(0, 10),
@@ -13,11 +15,17 @@ export default function InventoryNewPage() {
     const [notes, setNotes] = useState('');
 
     const create = async () => {
-        const created = await createMutation.mutateAsync({
-            stocktakingDate,
-            notes: notes || undefined,
-        });
-        await router.push(`/inventory/${created.id}`);
+        try {
+            const created = await createMutation.mutateAsync({
+                stocktakingDate,
+                notes: notes || undefined,
+            });
+            await router.push(`/inventory/${created.id}`);
+        } catch {
+            toast.error(
+                'Nie udało się utworzyć inwentaryzacji. Spróbuj ponownie.',
+            );
+        }
     };
 
     return (

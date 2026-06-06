@@ -8,7 +8,7 @@ export default function InventoryHistoryPage() {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
-    const [pageSize] = useState(20);
+    const [pageSize, setPageSize] = useState(20);
     const statusFilter = Array.isArray(router.query.status)
         ? router.query.status[0]
         : router.query.status;
@@ -167,9 +167,14 @@ export default function InventoryHistoryPage() {
                 <select
                     aria-label="na stronie"
                     value={String(pageSize)}
-                    disabled
+                    onChange={(event) => {
+                        setPageSize(Number(event.target.value));
+                        setPage(1);
+                    }}
                 >
+                    <option value="10">10</option>
                     <option value="20">20</option>
+                    <option value="50">50</option>
                 </select>
                 <div className="form_pagination">
                     <input
