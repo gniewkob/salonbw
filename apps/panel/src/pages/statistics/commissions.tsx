@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
@@ -293,6 +294,9 @@ export default function CommissionsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki prowizji — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="salonbw-page statistics-module"

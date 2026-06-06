@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +8,9 @@ export default function MomentCommentsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Szczegóły opinii — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="statistics-page">
                     <h1 className="fs-3 fw-semibold mb-5">Komentarze Moment</h1>

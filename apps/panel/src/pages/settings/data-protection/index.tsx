@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useLayoutEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
@@ -54,6 +55,9 @@ export default function DataProtectionPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Ochrona danych — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="salonbw-page"

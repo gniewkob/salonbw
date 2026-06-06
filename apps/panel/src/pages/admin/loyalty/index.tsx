@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -183,6 +184,9 @@ export default function LoyaltyManagementPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
+            <Head>
+                <title>Karty lojalnościowe — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_extensions"

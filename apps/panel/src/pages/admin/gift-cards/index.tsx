@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -217,6 +218,9 @@ export default function GiftCardsManagementPage() {
             roles={['admin', 'receptionist']}
             permission="nav:extension"
         >
+            <Head>
+                <title>Karty podarunkowe — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="gift-cards-page">
                     <SalonBreadcrumbs

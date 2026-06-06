@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
@@ -55,6 +56,9 @@ export default function CashRegisterPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki kasy — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="cash-register-page">
                     <SalonBreadcrumbs

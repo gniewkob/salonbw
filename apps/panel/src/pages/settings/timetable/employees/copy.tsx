@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
@@ -183,6 +184,9 @@ export default function SettingsTimetableEmployeesCopyPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Kopiuj harmonogram — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

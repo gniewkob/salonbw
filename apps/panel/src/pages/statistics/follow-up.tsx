@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -210,6 +211,9 @@ export default function FollowUpStatisticsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki follow-up — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="container py-4"

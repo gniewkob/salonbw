@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import {
     useEffect,
@@ -284,6 +285,9 @@ export default function SettingsTimetableBranchPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Harmonogram salonu — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -7,6 +8,9 @@ export default function AdminBranchesPage() {
     const { role } = useAuth();
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Oddziały — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page">
                     <SalonBreadcrumbs
