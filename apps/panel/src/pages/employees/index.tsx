@@ -140,10 +140,7 @@ export default function EmployeesPage() {
                 <div className="salonbw-page" data-testid="employees-page">
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_settings"
-                        items={[
-                            { label: 'Ustawienia', href: '/settings' },
-                            { label: 'Pracownicy' },
-                        ]}
+                        items={[{ label: 'Pracownicy' }]}
                     />
                     <div className="salonbw-page__toolbar">
                         <button
