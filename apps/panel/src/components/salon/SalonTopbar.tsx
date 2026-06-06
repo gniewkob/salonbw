@@ -252,7 +252,7 @@ export default function SalonTopbar() {
                                         <a
                                             href={topbar.help.knowledgeBaseHref}
                                             target="_blank"
-                                            rel="noreferrer"
+                                            rel="noopener noreferrer"
                                         >
                                             <span>Baza wiedzy</span>
                                         </a>

@@ -137,7 +137,7 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                                         href={`/customers/${d.id}` as Route}
                                         className="alert-link"
                                         target="_blank"
-                                        rel="noreferrer"
+                                        rel="noopener noreferrer"
                                     >
                                         {d.fullName || d.name}
                                     </Link>

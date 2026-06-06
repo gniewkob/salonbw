@@ -262,7 +262,7 @@ export default function NewCustomerPage() {
                                                     }
                                                     className="alert-link"
                                                     target="_blank"
-                                                    rel="noreferrer"
+                                                    rel="noopener noreferrer"
                                                 >
                                                     {d.fullName || d.name}
                                                 </Link>

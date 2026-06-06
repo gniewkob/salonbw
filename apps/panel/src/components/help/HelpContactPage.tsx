@@ -218,7 +218,7 @@ export default function HelpContactPage() {
                     Aby ułatwić korzystanie z systemu SalonBW przygotowaliśmy{' '}
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
                     >
                         Bazę Wiedzy
@@ -234,7 +234,7 @@ export default function HelpContactPage() {
                 <p>
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
                         className="btn btn-primary"
                     >
@@ -246,7 +246,7 @@ export default function HelpContactPage() {
                     Jeśli w{' '}
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
                     >
                         Bazie Wiedzy
@@ -390,7 +390,7 @@ export default function HelpContactPage() {
                         {' '}
                         <a
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             href={ANYDESK_MAC_URL}
                         >
                             Wersja dla systemu Mac OS
@@ -399,7 +399,7 @@ export default function HelpContactPage() {
                     &nbsp; &nbsp;
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={ANYDESK_WINDOWS_URL}
                     >
                         Wersja dla systemu Windows

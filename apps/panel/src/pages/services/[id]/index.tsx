@@ -456,7 +456,7 @@ export default function ServiceDetailsPage() {
                                                                 key={photo.id}
                                                                 href={`${apiBase}${photo.url}`}
                                                                 target="_blank"
-                                                                rel="noreferrer"
+                                                                rel="noopener noreferrer"
                                                                 className="service-photo-thumb"
                                                                 title={
                                                                     photo.caption ||
