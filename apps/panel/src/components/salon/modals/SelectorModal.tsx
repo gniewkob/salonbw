@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type Props = {
     title: string;
@@ -14,14 +14,60 @@ export default function SelectorModal({
     onClose,
 }: Props) {
     const [searchTerm, setSearchTerm] = useState('');
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<Element | null>(null);
 
     const filteredItems = items.filter((item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
+    useEffect(() => {
+        triggerRef.current = document.activeElement;
+        return () => {
+            (triggerRef.current as HTMLElement | null)?.focus();
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+                return;
+            }
+            if (e.key !== 'Tab' || !dialogRef.current) return;
+            const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+                'button, input, [tabindex]:not([tabindex="-1"])',
+            );
+            if (focusables.length === 0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
+    const titleId = 'selector-modal-title';
+
     return (
         <div className="modal-backdrop fade in">
-            <div className="modal-dialog">
+            <div
+                ref={dialogRef}
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+            >
                 <div className="modal-content">
                     <div className="modal-header">
                         <button
@@ -32,7 +78,9 @@ export default function SelectorModal({
                         >
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        <h4 className="modal-title">{title}</h4>
+                        <h4 className="modal-title" id={titleId}>
+                            {title}
+                        </h4>
                         <div className="mt-2">
                             <input
                                 type="text"
@@ -41,6 +89,7 @@ export default function SelectorModal({
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 aria-label="Szukaj"
+                                // eslint-disable-next-line jsx-a11y/no-autofocus
                                 autoFocus
                             />
                         </div>

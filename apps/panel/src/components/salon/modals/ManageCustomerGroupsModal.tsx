@@ -114,7 +114,13 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
 
     return (
         <div className="modal-backdrop fade in" onClick={onClose}>
-            <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Zarządzaj grupami klientów"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="modal-content">
                     <div className="modal-header">
                         <h4 className="modal-title">Grupy klientów</h4>

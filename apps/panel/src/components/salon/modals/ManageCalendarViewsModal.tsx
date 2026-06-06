@@ -28,6 +28,9 @@ export default function ManageCalendarViewsModal({
         <div className="modal-backdrop fade in" onClick={onClose}>
             <div
                 className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Zarządzaj widokami kalendarza"
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="modal-content">

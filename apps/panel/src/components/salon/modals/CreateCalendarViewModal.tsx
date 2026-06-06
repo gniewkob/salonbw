@@ -63,6 +63,9 @@ export default function CreateCalendarViewModal({
         <div className="modal-backdrop fade in calendar-view-nested-backdrop">
             <div
                 className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Nowy widok kalendarza"
                 onClick={(event) => event.stopPropagation()}
             >
                 <form className="modal-content" onSubmit={handleSubmit}>
