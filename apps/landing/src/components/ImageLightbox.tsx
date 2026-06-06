@@ -124,7 +124,7 @@ export default function ImageLightbox(props: Props) {
 
     const onShare = async () => {
         const url = absUrl(currentSrc as string);
-        await shareImage(url, alt);
+        await shareImage(url, alt || g.imageAlt);
         safeTrack('lightbox_share', { src: currentSrc });
     };
 
