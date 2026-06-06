@@ -61,7 +61,13 @@ export default function BalayagePage() {
                     property="og:image"
                     content={absUrl('/images/hero/slider1.jpg')}
                 />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
+                <meta
+                    property="og:url"
+                    content={absUrl('/services/balayage')}
+                />
                 <link rel="canonical" href={absUrl('/services/balayage')} />
                 <meta name="robots" content="index, follow" />
             </Head>

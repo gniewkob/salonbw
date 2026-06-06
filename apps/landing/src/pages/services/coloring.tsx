@@ -61,7 +61,13 @@ export default function ColoringPage() {
                     property="og:image"
                     content={absUrl('/images/hero/slider1.jpg')}
                 />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
+                <meta
+                    property="og:url"
+                    content={absUrl('/services/coloring')}
+                />
                 <link rel="canonical" href={absUrl('/services/coloring')} />
                 <meta name="robots" content="index, follow" />
             </Head>
