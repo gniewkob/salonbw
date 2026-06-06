@@ -33,6 +33,10 @@ export default function GiftCardsManagementPage() {
     const [statusFilter, setStatusFilter] = useState<GiftCardStatus | ''>('');
     const [searchCode, setSearchCode] = useState('');
     const [page, setPage] = useState(1);
+    const [cancelModal, setCancelModal] = useState<{
+        card: GiftCard;
+        reason: string;
+    } | null>(null);
 
     const { data: cardsData, isLoading } = useGiftCards({
         status: statusFilter || undefined,
@@ -161,17 +165,18 @@ export default function GiftCardsManagementPage() {
         }
     };
 
-    const handleCancel = async (card: GiftCard) => {
-        const reason = window.prompt(
-            'Podaj powód anulowania karty (opcjonalnie):',
-        );
-        if (reason === null) return;
-        try {
-            await cancelGiftCard.mutateAsync({ id: card.id, reason });
-            toast.success('Karta anulowana');
-        } catch {
-            toast.error('Nie udało się anulować karty');
-        }
+    const handleCancel = (card: GiftCard) => {
+        setCancelModal({ card, reason: '' });
+    };
+
+    const doCancelCard = () => {
+        if (!cancelModal) return;
+        const { card, reason } = cancelModal;
+        setCancelModal(null);
+        void cancelGiftCard
+            .mutateAsync({ id: card.id, reason })
+            .then(() => toast.success('Karta anulowana'))
+            .catch(() => toast.error('Nie udało się anulować karty'));
     };
 
     const STATUS_COLORS: Record<GiftCardStatus, string> = {
@@ -558,7 +563,7 @@ export default function GiftCardsManagementPage() {
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() =>
-                                                                                    void handleCancel(
+                                                                                    handleCancel(
                                                                                         card,
                                                                                     )
                                                                                 }
@@ -1432,6 +1437,73 @@ export default function GiftCardsManagementPage() {
                         )}
                     </div>
                 </div>
+                {cancelModal !== null && (
+                    <div className="modal-backdrop fade in">
+                        <div className="modal-dialog">
+                            <form
+                                className="modal-content"
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    doCancelCard();
+                                }}
+                            >
+                                <div className="modal-header">
+                                    <button
+                                        type="button"
+                                        className="close"
+                                        onClick={() => setCancelModal(null)}
+                                    >
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <h4 className="modal-title">
+                                        Anuluj kartę
+                                    </h4>
+                                </div>
+                                <div className="modal-body">
+                                    <p>
+                                        Czy na pewno chcesz anulować kartę{' '}
+                                        <strong>{cancelModal.card.code}</strong>
+                                        ?
+                                    </p>
+                                    <div className="mb-3">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="cancel-reason-input"
+                                        >
+                                            Powód anulowania (opcjonalnie)
+                                        </label>
+                                        <input
+                                            id="cancel-reason-input"
+                                            className="form-control"
+                                            value={cancelModal.reason}
+                                            onChange={(e) =>
+                                                setCancelModal({
+                                                    ...cancelModal,
+                                                    reason: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() => setCancelModal(null)}
+                                    >
+                                        Nie, wróć
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-danger"
+                                    >
+                                        Anuluj kartę
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </SalonShell>
         </RouteGuard>
     );
