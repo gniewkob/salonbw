@@ -455,6 +455,11 @@ function ExtraFieldsTab() {
                     ))}
                 </PanelTable>
             )}
+            {deleteField.isError && (
+                <div className="text-danger small mt-2">
+                    Nie udało się usunąć pola. Spróbuj ponownie.
+                </div>
+            )}
         </PanelSection>
     );
 }
@@ -668,6 +673,11 @@ function OriginsTab() {
                                     </tr>
                                 ))}
                             </PanelTable>
+                        )}
+                        {deleteOrigin.isError && (
+                            <div className="text-danger small mt-2">
+                                Nie udało się usunąć źródła. Spróbuj ponownie.
+                            </div>
                         )}
                     </div>
 
