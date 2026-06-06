@@ -63,6 +63,8 @@ export default function ExtraFieldsPage() {
     );
     const [editForm, setEditForm] = useState<FieldFormState>(EMPTY_FORM);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [updateError, setUpdateError] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     useLayoutEffect(() => {
         // no-op — secondary nav set before any early return
@@ -110,9 +112,11 @@ export default function ExtraFieldsPage() {
                 ? { options: parseOptions(editForm.options) }
                 : {}),
         };
+        setUpdateError(null);
         void update
             .mutateAsync({ id: editingField.id, data: payload })
-            .then(() => setEditingField(null));
+            .then(() => setEditingField(null))
+            .catch(() => setUpdateError('Nie udało się zaktualizować pola.'));
     };
 
     return (
@@ -158,6 +162,11 @@ export default function ExtraFieldsPage() {
                         </div>
                     ) : (
                         <div className="salonbw-table-wrap">
+                            {deleteError && (
+                                <div className="alert alert-danger mb-2">
+                                    {deleteError}
+                                </div>
+                            )}
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
@@ -231,9 +240,18 @@ export default function ExtraFieldsPage() {
                                                                     `Usunąć pole "${field.label}"?`,
                                                                 )
                                                             ) {
-                                                                void del.mutateAsync(
-                                                                    field.id,
+                                                                setDeleteError(
+                                                                    null,
                                                                 );
+                                                                void del
+                                                                    .mutateAsync(
+                                                                        field.id,
+                                                                    )
+                                                                    .catch(() =>
+                                                                        setDeleteError(
+                                                                            'Nie udało się usunąć pola.',
+                                                                        ),
+                                                                    );
                                                             }
                                                         }}
                                                     >
@@ -334,6 +352,11 @@ export default function ExtraFieldsPage() {
                                             form={editForm}
                                             onChange={setEditForm}
                                         />
+                                        {updateError && (
+                                            <div className="alert alert-danger mt-2 mb-0">
+                                                {updateError}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="modal-footer">
                                         <button
