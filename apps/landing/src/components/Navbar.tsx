@@ -21,7 +21,6 @@ export default function Navbar() {
     const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
     const panelDashboard = getPanelUrl('/dashboard');
-    const panelLogin = getPanelUrl('/auth/login');
     const effectiveRole = initialized ? role : null;
     const dashboardRoute = effectiveRole ? panelDashboard : undefined;
 
