@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useStaffOptions } from '@/hooks/useEmployees';
 import { useTimetables } from '@/hooks/useTimetables';
 import {
@@ -137,6 +138,9 @@ function getTemplateDayMap(template: TimetableTemplate) {
 
 export default function TimetableTemplatesPage() {
     const [notice, setNotice] = useState<string | null>(null);
+    const [confirmDeleteTemplateId, setConfirmDeleteTemplateId] = useState<
+        number | null
+    >(null);
     const { data: staffOptions } = useStaffOptions();
     const { data: timetables } = useTimetables({ isActive: true });
     const {
@@ -315,8 +319,11 @@ export default function TimetableTemplatesPage() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('Czy na pewno chcesz usunąć szablon?')) return;
+    const handleDelete = (id: number) => {
+        setConfirmDeleteTemplateId(id);
+    };
+
+    const doDelete = async (id: number) => {
         try {
             await deleteTemplate.mutateAsync(id);
             setNotice('Usunięto szablon grafiku.');
@@ -548,6 +555,20 @@ export default function TimetableTemplatesPage() {
                     </div>
                 ) : null}
             </div>
+            <ConfirmModal
+                open={confirmDeleteTemplateId !== null}
+                title="Usuń szablon"
+                message="Czy na pewno chcesz usunąć szablon grafiku?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteTemplateId === null) return;
+                    const id = confirmDeleteTemplateId;
+                    setConfirmDeleteTemplateId(null);
+                    void doDelete(id);
+                }}
+                onCancel={() => setConfirmDeleteTemplateId(null)}
+            />
         </div>
     );
 }

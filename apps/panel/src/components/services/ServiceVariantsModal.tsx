@@ -6,6 +6,7 @@ import {
     useUpdateServiceVariant,
     useDeleteServiceVariant,
 } from '@/hooks/useServicesAdmin';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface ServiceVariantsModalProps {
     isOpen: boolean;
@@ -39,6 +40,9 @@ export default function ServiceVariantsModal({
     );
     const [formData, setFormData] = useState<VariantFormData>(defaultFormData);
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [confirmDeleteVariantId, setConfirmDeleteVariantId] = useState<
+        number | null
+    >(null);
 
     const { data: variants = [], isLoading } = useServiceVariants(
         service?.id ?? null,
@@ -99,18 +103,9 @@ export default function ServiceVariantsModal({
         }
     };
 
-    const handleDeleteVariant = async (variantId: number) => {
+    const handleDeleteVariant = (variantId: number) => {
         if (!service) return;
-        if (window.confirm('Czy na pewno chcesz usunąć ten wariant?')) {
-            try {
-                await deleteVariant.mutateAsync({
-                    serviceId: service.id,
-                    variantId,
-                });
-            } catch {
-                // error handled by hook
-            }
-        }
+        setConfirmDeleteVariantId(variantId);
     };
 
     if (!isOpen || !service) return null;
@@ -441,6 +436,27 @@ export default function ServiceVariantsModal({
             {isOpen && (
                 <div className="modal-backdrop fade in" onClick={onClose}></div>
             )}
+            <ConfirmModal
+                open={confirmDeleteVariantId !== null}
+                title="Usuń wariant"
+                message="Czy na pewno chcesz usunąć ten wariant?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteVariantId === null || !service) return;
+                    const variantId = confirmDeleteVariantId;
+                    setConfirmDeleteVariantId(null);
+                    void deleteVariant
+                        .mutateAsync({
+                            serviceId: service.id,
+                            variantId,
+                        })
+                        .catch(() => {
+                            // error handled by hook
+                        });
+                }}
+                onCancel={() => setConfirmDeleteVariantId(null)}
+            />
         </div>
     );
 }

@@ -10,6 +10,7 @@ import { useServiceRanking } from '@/hooks/useStatistics';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import type { Role, Service, ServiceVariant } from '@/types';
@@ -39,6 +40,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
     const [search, setSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [bulkDeletePending, setBulkDeletePending] = useState(false);
+    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
     const deleteService = useDeleteService();
 
     const categoryId = router.query.categoryId
@@ -160,29 +162,31 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         );
     };
 
-    const handleBulkDelete = async () => {
-        if (
-            !window.confirm(
-                `Czy na pewno chcesz usunąć ${selectedIds.length} usług(i)? Operacja jest nieodwracalna.`,
-            )
-        )
-            return;
+    const handleBulkDelete = () => {
+        setConfirmBulkDelete(true);
+    };
+
+    const doBulkDelete = () => {
         setBulkDeletePending(true);
         let failed = 0;
-        for (const id of selectedIds) {
-            try {
-                await deleteService.mutateAsync(id);
-            } catch {
-                failed++;
+        const ids = [...selectedIds];
+        const run = async () => {
+            for (const id of ids) {
+                try {
+                    await deleteService.mutateAsync(id);
+                } catch {
+                    failed++;
+                }
             }
-        }
-        setBulkDeletePending(false);
-        setSelectedIds([]);
-        if (failed === 0) {
-            toast.success('Usługi zostały usunięte');
-        } else {
-            toast.error(`Nie udało się usunąć ${failed} usług(i)`);
-        }
+            setBulkDeletePending(false);
+            setSelectedIds([]);
+            if (failed === 0) {
+                toast.success('Usługi zostały usunięte');
+            } else {
+                toast.error(`Nie udało się usunąć ${failed} usług(i)`);
+            }
+        };
+        void run();
     };
 
     const formatPopularity = (count?: number): string => {
@@ -303,7 +307,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         type="button"
                         className="btn btn-sm btn-danger ms-2"
                         disabled={bulkDeletePending}
-                        onClick={() => void handleBulkDelete()}
+                        onClick={handleBulkDelete}
                     >
                         {bulkDeletePending ? 'Usuwanie...' : 'Usuń zaznaczone'}
                     </button>
@@ -520,6 +524,18 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                     </div>
                 </>
             )}
+            <ConfirmModal
+                open={confirmBulkDelete}
+                title="Usuń usługi"
+                message={`Czy na pewno chcesz usunąć ${selectedIds.length} usług(i)? Operacja jest nieodwracalna.`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    setConfirmBulkDelete(false);
+                    doBulkDelete();
+                }}
+                onCancel={() => setConfirmBulkDelete(false)}
+            />
         </div>
     );
 }

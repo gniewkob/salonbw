@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -103,6 +104,9 @@ export default function ServiceDetailsPage() {
     );
     const [recipeProductSearch, setRecipeProductSearch] = useState('');
     const [recipeSaving, setRecipeSaving] = useState(false);
+    const [confirmDeleteCommentId, setConfirmDeleteCommentId] = useState<
+        number | null
+    >(null);
 
     const summary = useServiceSummary(serviceId);
     const variants = useServiceVariants(serviceId);
@@ -284,17 +288,8 @@ export default function ServiceDetailsPage() {
         }
     };
 
-    const handleDeleteComment = async (commentId: number) => {
-        const shouldDelete = window.confirm(
-            'Czy na pewno chcesz usunąć ten komentarz?',
-        );
-        if (!shouldDelete) return;
-
-        try {
-            await deleteComment.mutateAsync({ serviceId, commentId });
-        } catch {
-            toast.error('Nie udało się usunąć komentarza');
-        }
+    const handleDeleteComment = (commentId: number) => {
+        setConfirmDeleteCommentId(commentId);
     };
 
     const handleSaveCommissions = async () => {
@@ -1177,6 +1172,24 @@ export default function ServiceDetailsPage() {
                         />
                     )}
                 </div>
+                <ConfirmModal
+                    open={confirmDeleteCommentId !== null}
+                    title="Usuń komentarz"
+                    message="Czy na pewno chcesz usunąć ten komentarz?"
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (confirmDeleteCommentId === null) return;
+                        const commentId = confirmDeleteCommentId;
+                        setConfirmDeleteCommentId(null);
+                        void deleteComment
+                            .mutateAsync({ serviceId, commentId })
+                            .catch(() => {
+                                toast.error('Nie udało się usunąć komentarza');
+                            });
+                    }}
+                    onCancel={() => setConfirmDeleteCommentId(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );
