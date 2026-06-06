@@ -26,15 +26,46 @@ export default function ConfirmModal({
     onCancel,
 }: Props) {
     const cancelRef = useRef<HTMLButtonElement>(null);
+    const confirmRef = useRef<HTMLButtonElement>(null);
+    const triggerRef = useRef<Element | null>(null);
 
     useEffect(() => {
-        if (open) cancelRef.current?.focus();
+        if (open) {
+            triggerRef.current = document.activeElement;
+            cancelRef.current?.focus();
+        } else {
+            (triggerRef.current as HTMLElement | null)?.focus();
+            triggerRef.current = null;
+        }
     }, [open]);
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onCancel();
+            if (e.key === 'Escape') {
+                onCancel();
+                return;
+            }
+            if (e.key === 'Tab') {
+                const focusable = [
+                    cancelRef.current,
+                    confirmRef.current,
+                ].filter(Boolean) as HTMLButtonElement[];
+                if (focusable.length < 2) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
         };
         if (open) {
             document.addEventListener('keydown', onKey);
@@ -88,6 +119,7 @@ export default function ConfirmModal({
                         Anuluj
                     </button>
                     <button
+                        ref={confirmRef}
                         type="button"
                         className={`${VARIANT_CLASS[confirmVariant]} btn-sm`}
                         onClick={onConfirm}

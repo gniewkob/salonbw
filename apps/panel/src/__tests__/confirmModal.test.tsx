@@ -96,4 +96,27 @@ describe('ConfirmModal', () => {
             'confirm-modal-title',
         );
     });
+
+    it('traps Tab focus between cancel and confirm buttons', () => {
+        render(
+            <ConfirmModal
+                open
+                title="Potwierdź akcję"
+                confirmLabel="Usuń element"
+                onConfirm={() => {}}
+                onCancel={() => {}}
+            />,
+        );
+
+        const cancelBtn = screen.getByRole('button', { name: 'Anuluj' });
+        const confirmBtn = screen.getByRole('button', { name: 'Usuń element' });
+
+        confirmBtn.focus();
+        fireEvent.keyDown(document, { key: 'Tab' });
+        expect(document.activeElement).toBe(cancelBtn);
+
+        cancelBtn.focus();
+        fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+        expect(document.activeElement).toBe(confirmBtn);
+    });
 });
