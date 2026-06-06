@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -197,6 +198,7 @@ export default function ExtensionToolPage() {
 
 function ExtensionToolContent() {
     const router = useRouter();
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const id = String(router.query.id || '');
     const resolvedId = TOOL_ALIASES[id] || id;
     const tool = resolvedId ? TOOLS[resolvedId] : undefined;
@@ -288,21 +290,30 @@ function ExtensionToolContent() {
                                         <p>{tool.description}</p>
                                         {tool.descriptionMore?.length ? (
                                             <>
-                                                <a
-                                                    data-more-link="true"
-                                                    href="#"
-                                                >
-                                                    czytaj więcej »
-                                                </a>
-                                                <div className="description_more">
-                                                    {tool.descriptionMore.map(
-                                                        (text) => (
-                                                            <p key={text}>
-                                                                {text}
-                                                            </p>
-                                                        ),
-                                                    )}
-                                                </div>
+                                                {!descriptionExpanded && (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-link p-0"
+                                                        onClick={() =>
+                                                            setDescriptionExpanded(
+                                                                true,
+                                                            )
+                                                        }
+                                                    >
+                                                        czytaj więcej »
+                                                    </button>
+                                                )}
+                                                {descriptionExpanded && (
+                                                    <div className="description_more">
+                                                        {tool.descriptionMore.map(
+                                                            (text) => (
+                                                                <p key={text}>
+                                                                    {text}
+                                                                </p>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                )}
                                             </>
                                         ) : null}
                                     </div>

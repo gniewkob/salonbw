@@ -47,6 +47,7 @@ export default function EmployeeActivityPage() {
     const [data, setData] = useState<EmployeeActivitySummary | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
+    const [activeTab, setActiveTab] = useState<'table' | 'chart'>('table');
 
     useEffect(() => {
         let cancelled = false;
@@ -141,86 +142,114 @@ export default function EmployeeActivityPage() {
                         </div>
                     ) : (
                         <div className="stats-tabs">
-                            <ul>
-                                <li className="ui-state-default active">
-                                    <a className="stats-tab-link" href="#">
+                            <ul role="tablist">
+                                <li
+                                    className={`ui-state-default${activeTab === 'table' ? ' active' : ''}`}
+                                    role="presentation"
+                                >
+                                    <button
+                                        type="button"
+                                        className="stats-tab-link"
+                                        role="tab"
+                                        aria-selected={activeTab === 'table'}
+                                        onClick={() => setActiveTab('table')}
+                                    >
                                         Tabela
-                                    </a>
+                                    </button>
                                 </li>
-                                <li className="ui-state-default">
-                                    <a className="stats-tab-link" href="#">
+                                <li
+                                    className={`ui-state-default${activeTab === 'chart' ? ' active' : ''}`}
+                                    role="presentation"
+                                >
+                                    <button
+                                        type="button"
+                                        className="stats-tab-link"
+                                        role="tab"
+                                        aria-selected={activeTab === 'chart'}
+                                        onClick={() => setActiveTab('chart')}
+                                    >
                                         Wykres
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
-                            <div className="data_table">
-                                <table className="table table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <th>Pracownik</th>
-                                            <th>Przepracowany czas</th>
-                                            <th>Liczba wizyt</th>
-                                        </tr>
-                                        {rows.map((employee, i) => {
-                                            const empMinutes = toNumber(
-                                                employee.workTimeMinutes,
-                                            );
-                                            return (
-                                                <tr
-                                                    key={employee.employeeId}
-                                                    className={
-                                                        i % 2 === 0
-                                                            ? 'even'
-                                                            : 'odd'
-                                                    }
-                                                >
-                                                    <td>
-                                                        <Link
-                                                            href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                            className="btn btn-link"
-                                                        >
-                                                            {
-                                                                employee.employeeName
-                                                            }
-                                                        </Link>
-                                                    </td>
-                                                    <td>
-                                                        {formatWorkTime(
-                                                            empMinutes,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {toNumber(
-                                                            employee.appointmentsCount,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                        <tr>
-                                            <td colSpan={4}>
-                                                <strong>Podsumowanie</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th aria-label="Pracownik" />
-                                            <th>Przepracowany czas</th>
-                                            <th>Liczba wizyt</th>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Łącznie</strong>
-                                            </td>
-                                            <td>
-                                                {formatWorkTime(
-                                                    totalWorkMinutes,
-                                                )}
-                                            </td>
-                                            <td>{totalAppointments}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            {activeTab === 'chart' ? (
+                                <div className="text-muted p-3">
+                                    Wykres aktywności pracowników wkrótce.
+                                </div>
+                            ) : (
+                                <div className="data_table">
+                                    <table className="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <th>Pracownik</th>
+                                                <th>Przepracowany czas</th>
+                                                <th>Liczba wizyt</th>
+                                            </tr>
+                                            {rows.map((employee, i) => {
+                                                const empMinutes = toNumber(
+                                                    employee.workTimeMinutes,
+                                                );
+                                                return (
+                                                    <tr
+                                                        key={
+                                                            employee.employeeId
+                                                        }
+                                                        className={
+                                                            i % 2 === 0
+                                                                ? 'even'
+                                                                : 'odd'
+                                                        }
+                                                    >
+                                                        <td>
+                                                            <Link
+                                                                href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                                className="btn btn-link"
+                                                            >
+                                                                {
+                                                                    employee.employeeName
+                                                                }
+                                                            </Link>
+                                                        </td>
+                                                        <td>
+                                                            {formatWorkTime(
+                                                                empMinutes,
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            {toNumber(
+                                                                employee.appointmentsCount,
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            <tr>
+                                                <td colSpan={4}>
+                                                    <strong>
+                                                        Podsumowanie
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th aria-label="Pracownik" />
+                                                <th>Przepracowany czas</th>
+                                                <th>Liczba wizyt</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>Łącznie</strong>
+                                                </td>
+                                                <td>
+                                                    {formatWorkTime(
+                                                        totalWorkMinutes,
+                                                    )}
+                                                </td>
+                                                <td>{totalAppointments}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
