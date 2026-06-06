@@ -2,10 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Script from 'next/script';
 import { useState, useEffect } from 'react';
-import {
-    ChevronLeftIcon,
-    MinusSmallIcon,
-} from '@heroicons/react/20/solid';
+import { ChevronLeftIcon, MinusSmallIcon } from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
 import BookingModal from '@/components/BookingModal';
 import { BUSINESS_INFO } from '@/config/content';
@@ -44,11 +41,26 @@ export default function HighlightsPage() {
         <PublicLayout>
             <Head>
                 <title>Pasemka Bytom — Salon Black &amp; White</title>
-                <meta name="description" content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku. Salon Black & White, ul. Webera 1a/13." />
-                <meta name="keywords" content="pasemka bytom, rozjaśnienia włosów bytom, highlights bytom, klasyczne pasemka bytom, salon fryzjerski bytom" />
-                <meta property="og:title" content="Pasemka — Salon Black & White Bytom" />
-                <meta property="og:description" content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku dla Twoich włosów." />
-                <meta property="og:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <meta
+                    name="description"
+                    content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku. Salon Black & White, ul. Webera 1a/13."
+                />
+                <meta
+                    name="keywords"
+                    content="pasemka bytom, rozjaśnienia włosów bytom, highlights bytom, klasyczne pasemka bytom, salon fryzjerski bytom"
+                />
+                <meta
+                    property="og:title"
+                    content="Pasemka — Salon Black & White Bytom"
+                />
+                <meta
+                    property="og:description"
+                    content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku dla Twoich włosów."
+                />
+                <meta
+                    property="og:image"
+                    content={absUrl('/images/hero/slider1.jpg')}
+                />
                 <meta property="og:type" content="website" />
                 <link rel="canonical" href={absUrl('/services/highlights')} />
                 <meta name="robots" content="index, follow" />
@@ -140,6 +152,7 @@ export default function HighlightsPage() {
                         efektami.
                     </p>
                     <button
+                        type="button"
                         onClick={() => {
                             try {
                                 trackEvent('select_item', {
@@ -162,7 +175,12 @@ export default function HighlightsPage() {
             </section>
 
             {/* Light content section */}
-            <section style={{ background: 'var(--brand-warm-bg)', padding: '5rem 2rem' }}>
+            <section
+                style={{
+                    background: 'var(--brand-warm-bg)',
+                    padding: '5rem 2rem',
+                }}
+            >
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {ITEMS.map((item) => (
@@ -173,8 +191,10 @@ export default function HighlightsPage() {
                                     alignItems: 'baseline',
                                     gap: '0.75rem',
                                     padding: '0.85rem 0',
-                                    borderBottom: '1px solid var(--brand-warm-border)',
-                                    fontFamily: 'var(--font-open-sans), sans-serif',
+                                    borderBottom:
+                                        '1px solid var(--brand-warm-border)',
+                                    fontFamily:
+                                        'var(--font-open-sans), sans-serif',
                                     color: 'var(--brand-warm-ink)',
                                     fontSize: '0.95rem',
                                 }}
