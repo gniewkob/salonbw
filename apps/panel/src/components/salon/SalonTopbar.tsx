@@ -47,8 +47,7 @@ export default function SalonTopbar() {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleMenuTogglerClick = (event: MouseEvent<HTMLAnchorElement>) => {
-        event.preventDefault();
+    const handleMenuTogglerClick = () => {
         if (typeof document === 'undefined') return;
         document.body.classList.toggle('salonbw-sidebar-open');
     };
@@ -65,8 +64,7 @@ export default function SalonTopbar() {
         return () => router.events.off('routeChangeStart', handleRouteChange);
     }, [router.events]);
 
-    const handleLogout = (event: MouseEvent<HTMLAnchorElement>) => {
-        event.preventDefault();
+    const handleLogout = () => {
         void logout().then(() => {
             void router.push('/auth/login');
         });
@@ -80,17 +78,17 @@ export default function SalonTopbar() {
             <div className="notification-bar-container"></div>
             <div>
                 {topbar.menuToggler.enabled ? (
-                    <a
+                    <button
+                        type="button"
                         aria-label="Menu"
                         className="menu-toggler navbar-toggle"
-                        href="#"
                         id="menu-toggler"
                         onClick={handleMenuTogglerClick}
                     >
                         <span className="icon-bar"></span>
                         <span className="icon-bar"></span>
                         <span className="icon-bar"></span>
-                    </a>
+                    </button>
                 ) : null}
                 <div className="brand">
                     <Link
@@ -153,15 +151,14 @@ export default function SalonTopbar() {
                             ref={tasksMenuRef}
                             className={`all_complete tasks_tooltip dropdown right-menu${tasksMenuOpen ? ' open' : ''}`}
                         >
-                            <a
+                            <button
+                                type="button"
                                 aria-expanded={tasksMenuOpen}
                                 className="link"
-                                href="#"
                                 title="Twoje zadania"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    setTasksMenuOpen((value) => !value);
-                                }}
+                                onClick={() =>
+                                    setTasksMenuOpen((value) => !value)
+                                }
                             >
                                 <div
                                     className="assigned_tasks"
@@ -172,7 +169,7 @@ export default function SalonTopbar() {
                                         className="svg-todo"
                                     />
                                 </div>
-                            </a>
+                            </button>
                             <div className="dropdown_cover"></div>
                             <ul
                                 className="dropdown-menu dropdown-menu-tasks"
@@ -207,14 +204,10 @@ export default function SalonTopbar() {
                         ref={helpMenuRef}
                         className={`dropdown help_tooltip right-menu${helpMenuOpen ? ' open' : ''}`}
                     >
-                        <a
+                        <button
+                            type="button"
                             className="ai-center d-flex dropdown-toggle"
-                            data-toggle="dropdown"
-                            href="#"
-                            onClick={(event) => {
-                                event.preventDefault();
-                                setHelpMenuOpen((value) => !value);
-                            }}
+                            onClick={() => setHelpMenuOpen((value) => !value)}
                         >
                             <div className="d-inline-block jQ_nav_chat_notification">
                                 <SalonIcon
@@ -225,19 +218,12 @@ export default function SalonTopbar() {
                             <div className="d-none d-md-inline">
                                 <span>Pomoc</span>
                             </div>
-                        </a>
+                        </button>
                         <ul className="dropdown-menu larger-dropdown-menu nav-help">
                             {topbar.help.showChat ? (
                                 <>
                                     <li className="main-menu-li">
-                                        <a
-                                            id="chat_widget"
-                                            href="#"
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={(event) =>
-                                                event.preventDefault()
-                                            }
-                                        >
+                                        <button type="button" id="chat_widget">
                                             <div className="jQ_chat_notification">
                                                 <SalonIcon
                                                     id="svg-help"
@@ -245,7 +231,7 @@ export default function SalonTopbar() {
                                                 />
                                             </div>
                                             <span>Czat z konsultantem</span>
-                                        </a>
+                                        </button>
                                     </li>
                                     <li className="divider"></li>
                                 </>
@@ -279,21 +265,17 @@ export default function SalonTopbar() {
                         ref={userMenuRef}
                         className={`dropdown right-menu${userMenuOpen ? ' open' : ''}`}
                     >
-                        <a
+                        <button
+                            type="button"
                             className="dropdown-toggle e2e-nav-user-dropdown"
-                            data-toggle="dropdown"
-                            href="#"
-                            onClick={(event) => {
-                                event.preventDefault();
-                                setUserMenuOpen((value) => !value);
-                            }}
+                            onClick={() => setUserMenuOpen((value) => !value)}
                         >
                             <div className="border-color">
                                 <div className="color1">
                                     {topbar.user.initials}
                                 </div>
                             </div>
-                        </a>
+                        </button>
                         <ul className="dropdown-menu larger-dropdown-menu">
                             <li className="main-menu-li">
                                 <a
@@ -318,13 +300,13 @@ export default function SalonTopbar() {
                             </li>
                             <li className="divider"></li>
                             <li className="main-menu-li">
-                                <a
+                                <button
+                                    type="button"
                                     className="e2e-user-logout"
-                                    href={topbar.user.logoutHref || '#'}
                                     onClick={handleLogout}
                                 >
                                     Wyloguj
-                                </a>
+                                </button>
                             </li>
                         </ul>
                     </li>
