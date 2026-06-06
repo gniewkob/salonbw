@@ -242,6 +242,39 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client)
+    @Post(':id/reschedule-request')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Create client reschedule request for appointment',
+        description:
+            'Records a reschedule request audit event without changing appointment status.',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Reschedule request recorded',
+        type: Appointment,
+    })
+    @ApiResponse({ status: 400, description: 'Invalid reschedule request' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async requestReschedule(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: { reason?: string },
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsService.requestReschedule(
+            id,
+            { id: user.userId } as User,
+            body.reason,
+        );
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+        return appointment;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
     @Patch(':id/complete')
     @ApiBearerAuth()

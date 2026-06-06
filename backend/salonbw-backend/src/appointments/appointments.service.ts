@@ -371,6 +371,50 @@ export class AppointmentsService {
         return appointment;
     }
 
+    async requestReschedule(
+        id: number,
+        user: User,
+        reason?: string,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+        if (appointment.client.id !== user.id) {
+            throw new ForbiddenException(
+                'Only appointment owner can request reschedule',
+            );
+        }
+        if (appointment.startTime.getTime() <= Date.now()) {
+            throw new BadRequestException(
+                'Reschedule request is allowed only for future appointments',
+            );
+        }
+        if (
+            appointment.status === AppointmentStatus.Cancelled ||
+            appointment.status === AppointmentStatus.Completed
+        ) {
+            throw new BadRequestException(
+                'Cannot request reschedule for completed or cancelled appointment',
+            );
+        }
+
+        await this.safeLog(
+            user,
+            LogAction.APPOINTMENT_RESCHEDULE_REQUESTED,
+            {
+                action: 'reschedule_request',
+                id: appointment.id,
+                appointmentId: appointment.id,
+                appointmentStatus: appointment.status,
+                reason: typeof reason === 'string' ? reason.trim() : undefined,
+                entity: 'appointment',
+            },
+        );
+
+        return appointment;
+    }
+
     async listCancellationRequests(limit = 50): Promise<
         Array<{
             appointmentId: number;
