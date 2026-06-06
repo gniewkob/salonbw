@@ -35,11 +35,16 @@ export default function AppointmentDetailsModal({
                 </div>
                 <div>Status: {a.paymentStatus ?? 'scheduled'}</div>
                 <div className="d-flex gap-2 justify-content-end pt-2">
-                    <button className="border px-2 py-1" onClick={onClose}>
+                    <button
+                        type="button"
+                        className="border px-2 py-1"
+                        onClick={onClose}
+                    >
                         Zamknij
                     </button>
                     {canCancel && (
                         <button
+                            type="button"
                             className="border px-2 py-1"
                             onClick={() => {
                                 if (a.id && onCancel) void onCancel(a.id);
@@ -50,6 +55,7 @@ export default function AppointmentDetailsModal({
                     )}
                     {canComplete && (
                         <button
+                            type="button"
                             className="border px-2 py-1"
                             onClick={() => {
                                 if (a.id && onComplete) void onComplete(a.id);
