@@ -41,6 +41,7 @@ export default function ReviewsPage() {
         authorName?: string;
     };
     const [rows, setRows] = useState<Row[]>([]);
+    const [minRating, setMinRating] = useState<number | undefined>(undefined);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Row | null>(null);
 
@@ -146,10 +147,7 @@ export default function ReviewsPage() {
                 <div className="salonbw-page" data-testid="reviews-page">
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_settings"
-                        items={[
-                            { label: 'Ustawienia', href: '/settings' },
-                            { label: 'Opinie' },
-                        ]}
+                        items={[{ label: 'Opinie' }]}
                     />
                     <div className="salonbw-page__toolbar">
                         {isAdmin && (
@@ -175,6 +173,27 @@ export default function ReviewsPage() {
                                 </select>
                             </label>
                         )}
+                        <label className="form-label">
+                            Min. ocena
+                            <select
+                                className="form-select form-select-sm"
+                                value={minRating ?? ''}
+                                onChange={(e) =>
+                                    setMinRating(
+                                        e.target.value
+                                            ? Number(e.target.value)
+                                            : undefined,
+                                    )
+                                }
+                            >
+                                <option value="">— wszystkie —</option>
+                                {[1, 2, 3, 4, 5].map((r) => (
+                                    <option key={r} value={r}>
+                                        {'★'.repeat(r)} ({r}+)
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
                         <button
                             type="button"
                             className="btn btn-primary"
@@ -188,7 +207,13 @@ export default function ReviewsPage() {
                     </div>
 
                     <DataTable
-                        data={rows}
+                        data={
+                            minRating
+                                ? rows.filter(
+                                      (r) => (r.rating ?? 0) >= minRating,
+                                  )
+                                : rows
+                        }
                         columns={columns}
                         renderActions={(r) => (
                             <span className="space-x-2">
