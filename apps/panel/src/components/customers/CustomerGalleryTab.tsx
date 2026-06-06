@@ -7,6 +7,7 @@ import {
     useUploadCustomerGalleryImage,
 } from '@/hooks/useCustomerMedia';
 import EmptyState from '@/components/ui/EmptyState';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     customerId: number;
@@ -19,6 +20,9 @@ export default function CustomerGalleryTab({ customerId }: Props) {
     const del = useDeleteCustomerGalleryImage(customerId);
 
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
+    const [confirmDeleteImageId, setConfirmDeleteImageId] = useState<
+        number | null
+    >(null);
     const selectedImage = useMemo(() => {
         if (selectedImageId === null) return null;
         return images.find((img) => img.id === selectedImageId) ?? null;
@@ -160,19 +164,11 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                     type="button"
                                     className="btn btn-danger btn-sm"
                                     disabled={del.isPending}
-                                    onClick={() => {
-                                        if (
-                                            !confirm(
-                                                'Czy na pewno chcesz usunąć to zdjęcie?',
-                                            )
-                                        ) {
-                                            return;
-                                        }
-                                        del.mutate(selectedImage.id, {
-                                            onSuccess: () =>
-                                                setSelectedImageId(null),
-                                        });
-                                    }}
+                                    onClick={() =>
+                                        setConfirmDeleteImageId(
+                                            selectedImage.id,
+                                        )
+                                    }
                                 >
                                     usuń
                                 </button>
@@ -181,6 +177,22 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                     </div>
                 </div>
             ) : null}
+            <ConfirmModal
+                open={confirmDeleteImageId !== null}
+                title="Usuń zdjęcie"
+                message="Czy na pewno chcesz usunąć to zdjęcie? Operacja jest nieodwracalna."
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteImageId === null) return;
+                    const id = confirmDeleteImageId;
+                    setConfirmDeleteImageId(null);
+                    del.mutate(id, {
+                        onSuccess: () => setSelectedImageId(null),
+                    });
+                }}
+                onCancel={() => setConfirmDeleteImageId(null)}
+            />
         </div>
     );
 }

@@ -5,6 +5,7 @@ import {
     useUpdateCustomerGroup,
     useDeleteCustomerGroup,
 } from '@/hooks/useCustomers';
+import ConfirmModal from '@/components/ConfirmModal';
 
 type Props = {
     onClose: () => void;
@@ -40,6 +41,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
     });
 
     const [drafts, setDrafts] = useState<Record<number, Draft>>({});
+    const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<
+        number | null
+    >(null);
 
     useEffect(() => {
         // Initialize drafts from server state.
@@ -104,19 +108,8 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
         }
     };
 
-    const handleDelete = async (groupId: number) => {
-        if (
-            !confirm(
-                'Czy na pewno chcesz usunąć tę grupę? Członkowie nie zostaną usunięci, tylko przestaną należeć do grupy.',
-            )
-        ) {
-            return;
-        }
-        try {
-            await del.mutateAsync(groupId);
-        } catch {
-            // error handled by hook
-        }
+    const handleDelete = (groupId: number) => {
+        setConfirmDeleteGroupId(groupId);
     };
 
     return (
@@ -432,6 +425,22 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                     </div>
                 </div>
             </div>
+            <ConfirmModal
+                open={confirmDeleteGroupId !== null}
+                title="Usuń grupę"
+                message="Czy na pewno chcesz usunąć tę grupę? Członkowie nie zostaną usunięci, tylko przestaną należeć do grupy."
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteGroupId === null) return;
+                    const id = confirmDeleteGroupId;
+                    setConfirmDeleteGroupId(null);
+                    void del.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteGroupId(null)}
+            />
         </div>
     );
 }

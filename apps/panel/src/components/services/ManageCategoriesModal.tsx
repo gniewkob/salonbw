@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ServiceCategory } from '@/types';
 import CategoryFormModal from './CategoryFormModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     type CreateServiceCategoryDto,
     useCreateServiceCategory,
@@ -23,6 +24,10 @@ export default function ManageCategoriesModal({
         useState<ServiceCategory | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [parentId, setParentId] = useState<number | null>(null);
+    const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
 
     const createCategory = useCreateServiceCategory();
     const updateCategory = useUpdateServiceCategory();
@@ -56,14 +61,8 @@ export default function ManageCategoriesModal({
         }
     };
 
-    const handleDelete = async (id: number, name: string) => {
-        if (confirm(`Czy na pewno chcesz usunąć kategorię "${name}"?`)) {
-            try {
-                await deleteCategory.mutateAsync(id);
-            } catch {
-                // error handled by hook
-            }
-        }
+    const handleDelete = (id: number, name: string) => {
+        setConfirmDeleteCategory({ id, name });
     };
 
     const renderCategoryRow = (category: ServiceCategory, level = 0) => {
@@ -190,6 +189,22 @@ export default function ManageCategoriesModal({
                 categories={categories}
                 onClose={() => setIsFormOpen(false)}
                 onSave={handleSave}
+            />
+            <ConfirmModal
+                open={!!confirmDeleteCategory}
+                title="Usuń kategorię"
+                message={`Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmDeleteCategory) return;
+                    const { id } = confirmDeleteCategory;
+                    setConfirmDeleteCategory(null);
+                    void deleteCategory.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteCategory(null)}
             />
         </div>
     );

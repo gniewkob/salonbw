@@ -2,6 +2,7 @@ import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
@@ -59,6 +60,7 @@ export default function TemplatesPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [filterChannel, setFilterChannel] = useState<MessageChannel | ''>('');
     const [filterType, setFilterType] = useState<TemplateType | ''>('');
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const filteredTemplates = templates.filter((t) => {
         if (filterChannel && t.channel !== filterChannel) return false;
@@ -108,15 +110,17 @@ export default function TemplatesPage() {
         setIsSubmitting(false);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć ten szablon?')) return;
+    const handleDelete = (id: number) => {
+        setConfirmDeleteId(id);
+    };
 
-        try {
-            await deleteTemplate.mutateAsync(id);
-            void refetch();
-        } catch {
-            toast.error('Wystąpił błąd podczas usuwania szablonu');
-        }
+    const doDelete = (id: number) => {
+        void deleteTemplate
+            .mutateAsync(id)
+            .then(() => refetch())
+            .catch(() => {
+                toast.error('Wystąpił błąd podczas usuwania szablonu');
+            });
     };
 
     const getTypeLabel = (type: TemplateType) =>
@@ -531,6 +535,20 @@ export default function TemplatesPage() {
                         </div>
                     )}
                 </div>
+                <ConfirmModal
+                    open={confirmDeleteId !== null}
+                    title="Usuń szablon"
+                    message="Czy na pewno chcesz usunąć ten szablon? Operacja jest nieodwracalna."
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (confirmDeleteId === null) return;
+                        const id = confirmDeleteId;
+                        setConfirmDeleteId(null);
+                        doDelete(id);
+                    }}
+                    onCancel={() => setConfirmDeleteId(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

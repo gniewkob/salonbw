@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ServiceCategory } from '@/types';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     categories: ServiceCategory[];
@@ -20,6 +21,8 @@ export default function ServiceCategoryTree({
 }: Props) {
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
     const [hoveredId, setHoveredId] = useState<number | null>(null);
+    const [confirmDeleteCategory, setConfirmDeleteCategory] =
+        useState<ServiceCategory | null>(null);
 
     const toggleExpanded = (id: number) => {
         setExpandedIds((prev) => {
@@ -172,13 +175,7 @@ export default function ServiceCategoryTree({
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (
-                                    confirm(
-                                        `Czy na pewno chcesz usunąć kategorię "${category.name}"?`,
-                                    )
-                                ) {
-                                    void onDeleteCategory(category.id);
-                                }
+                                setConfirmDeleteCategory(category);
                             }}
                             className="p-1 rounded text-muted"
                             title="Usuń kategorię"
@@ -278,6 +275,20 @@ export default function ServiceCategoryTree({
                     <span className="fw-medium">Bez kategorii</span>
                 </div>
             </div>
+            <ConfirmModal
+                open={!!confirmDeleteCategory}
+                title="Usuń kategorię"
+                message={`Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmDeleteCategory) return;
+                    const id = confirmDeleteCategory.id;
+                    setConfirmDeleteCategory(null);
+                    void onDeleteCategory(id);
+                }}
+                onCancel={() => setConfirmDeleteCategory(null)}
+            />
         </div>
     );
 }

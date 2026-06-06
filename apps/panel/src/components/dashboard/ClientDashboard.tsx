@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import ConfirmModal from '@/components/ConfirmModal';
 const STATUS_LABELS: Record<string, string> = {
     scheduled: 'Zaplanowana',
     confirmed: 'Potwierdzona',
@@ -46,9 +47,9 @@ export default function ClientDashboard() {
     const toast = useToast();
     const [cancelling, setCancelling] = useState<Set<number>>(new Set());
     const [accepting, setAccepting] = useState<Set<number>>(new Set());
+    const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
 
     const cancelAppointment = async (id: number) => {
-        if (!confirm('Czy na pewno chcesz anulować tę wizytę?')) return;
         setCancelling((prev) => new Set(prev).add(id));
         try {
             await apiFetch(`/appointments/${id}/cancel`, {
@@ -201,13 +202,13 @@ export default function ClientDashboard() {
                                                 disabled={cancelling.has(
                                                     data.upcomingAppointment.id,
                                                 )}
-                                                onClick={() => {
-                                                    void cancelAppointment(
+                                                onClick={() =>
+                                                    setConfirmCancelId(
                                                         data
                                                             .upcomingAppointment!
                                                             .id,
-                                                    );
-                                                }}
+                                                    )
+                                                }
                                             >
                                                 Anuluj
                                             </button>
@@ -347,11 +348,9 @@ export default function ClientDashboard() {
                                                 disabled={cancelling.has(
                                                     apt.id,
                                                 )}
-                                                onClick={() => {
-                                                    void cancelAppointment(
-                                                        apt.id,
-                                                    );
-                                                }}
+                                                onClick={() =>
+                                                    setConfirmCancelId(apt.id)
+                                                }
                                             >
                                                 Anuluj
                                             </button>
@@ -368,6 +367,20 @@ export default function ClientDashboard() {
                     </div>
                 )}
             </div>
+            <ConfirmModal
+                open={confirmCancelId !== null}
+                title="Anuluj wizytę"
+                message="Czy na pewno chcesz anulować tę wizytę?"
+                confirmLabel="Anuluj wizytę"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmCancelId === null) return;
+                    const id = confirmCancelId;
+                    setConfirmCancelId(null);
+                    void cancelAppointment(id);
+                }}
+                onCancel={() => setConfirmCancelId(null)}
+            />
         </div>
     );
 }

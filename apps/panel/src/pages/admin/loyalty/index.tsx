@@ -4,6 +4,7 @@ import { useToast } from '@/contexts/ToastContext';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
@@ -65,6 +66,8 @@ export default function LoyaltyManagementPage() {
         null,
     );
     const [page, setPage] = useState(1);
+    const [confirmDeleteReward, setConfirmDeleteReward] =
+        useState<LoyaltyReward | null>(null);
 
     const { data: program } = useLoyaltyProgram();
     const { data: stats } = useLoyaltyStats();
@@ -135,18 +138,8 @@ export default function LoyaltyManagementPage() {
         }
     };
 
-    const handleDeleteReward = async (reward: LoyaltyReward) => {
-        if (
-            window.confirm(
-                `Czy na pewno chcesz usunąć nagrodę "${reward.name}"?`,
-            )
-        ) {
-            try {
-                await deleteReward.mutateAsync(reward.id);
-            } catch {
-                toast.error('Nie udało się usunąć nagrody.');
-            }
-        }
+    const handleDeleteReward = (reward: LoyaltyReward) => {
+        setConfirmDeleteReward(reward);
     };
 
     const handleUseCoupon = async (e: React.FormEvent) => {
@@ -1149,6 +1142,22 @@ export default function LoyaltyManagementPage() {
                         </div>
                     </div>
                 )}
+                <ConfirmModal
+                    open={!!confirmDeleteReward}
+                    title="Usuń nagrodę"
+                    message={`Czy na pewno chcesz usunąć nagrodę "${confirmDeleteReward?.name}"?`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteReward) return;
+                        const id = confirmDeleteReward.id;
+                        setConfirmDeleteReward(null);
+                        void deleteReward.mutateAsync(id).catch(() => {
+                            toast.error('Nie udało się usunąć nagrody.');
+                        });
+                    }}
+                    onCancel={() => setConfirmDeleteReward(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

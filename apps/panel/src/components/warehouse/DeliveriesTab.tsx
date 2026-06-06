@@ -8,6 +8,7 @@ import {
 } from '@/hooks/useWarehouse';
 import type { DeliveryStatus } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { formatPanelCurrency, formatPanelDate } from '@/utils/formatters';
 
 const statusLabels: Record<DeliveryStatus, string> = {
@@ -34,6 +35,10 @@ export default function DeliveriesTab() {
         notes: '',
     });
     const [error, setError] = useState<string | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{
+        id: number;
+        action: 'receive' | 'cancel';
+    } | null>(null);
 
     const { data: deliveries = [], isLoading } = useDeliveries(
         statusFilter ? { status: statusFilter } : undefined,
@@ -77,29 +82,31 @@ export default function DeliveriesTab() {
         }
     };
 
-    const handleReceive = async (id: number) => {
-        if (
-            confirm(
-                'Czy na pewno chcesz przyjąć tę dostawę? Stany magazynowe zostaną zaktualizowane.',
-            )
-        ) {
-            setError(null);
-            try {
-                await receiveDelivery.mutateAsync({ id });
-            } catch {
-                setError('Nie udało się przyjąć dostawy. Spróbuj ponownie.');
-            }
-        }
+    const handleReceive = (id: number) => {
+        setConfirmAction({ id, action: 'receive' });
     };
 
-    const handleCancel = async (id: number) => {
-        if (confirm('Czy na pewno chcesz anulować tę dostawę?')) {
-            setError(null);
-            try {
+    const handleCancel = (id: number) => {
+        setConfirmAction({ id, action: 'cancel' });
+    };
+
+    const doConfirmAction = async (
+        id: number,
+        action: 'receive' | 'cancel',
+    ) => {
+        setError(null);
+        try {
+            if (action === 'receive') {
+                await receiveDelivery.mutateAsync({ id });
+            } else {
                 await cancelDelivery.mutateAsync(id);
-            } catch {
-                setError('Nie udało się anulować dostawy. Spróbuj ponownie.');
             }
+        } catch {
+            setError(
+                action === 'receive'
+                    ? 'Nie udało się przyjąć dostawy. Spróbuj ponownie.'
+                    : 'Nie udało się anulować dostawy. Spróbuj ponownie.',
+            );
         }
     };
 
@@ -379,6 +386,32 @@ export default function DeliveriesTab() {
                     </form>
                 </PanelModal>
             )}
+            <ConfirmModal
+                open={!!confirmAction}
+                title={
+                    confirmAction?.action === 'receive'
+                        ? 'Przyjmij dostawę'
+                        : 'Anuluj dostawę'
+                }
+                message={
+                    confirmAction?.action === 'receive'
+                        ? 'Czy na pewno chcesz przyjąć tę dostawę? Stany magazynowe zostaną zaktualizowane.'
+                        : 'Czy na pewno chcesz anulować tę dostawę?'
+                }
+                confirmLabel={
+                    confirmAction?.action === 'receive'
+                        ? 'Przyjmij'
+                        : 'Anuluj dostawę'
+                }
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmAction) return;
+                    const { id, action } = confirmAction;
+                    setConfirmAction(null);
+                    void doConfirmAction(id, action);
+                }}
+                onCancel={() => setConfirmAction(null)}
+            />
         </div>
     );
 }

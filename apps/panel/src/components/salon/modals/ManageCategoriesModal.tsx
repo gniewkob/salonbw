@@ -6,6 +6,7 @@ import {
     useUpdateProductCategory,
 } from '@/hooks/useWarehouseViews';
 import type { ProductCategory } from '@/types';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     type: 'service' | 'product';
@@ -111,6 +112,10 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
     const [newParentId, setNewParentId] = useState<number | undefined>(
         undefined,
     );
+    const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
 
     const flatTree = useMemo(() => flattenCategories(tree), [tree]);
     const drafts = useMemo(() => toDrafts(tree), [tree]);
@@ -161,13 +166,8 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
         }
     };
 
-    const handleDelete = async (id: number, name: string) => {
-        if (!confirm(`Usunąć kategorię "${name}"?`)) return;
-        try {
-            await deleteCategory.mutateAsync(id);
-        } catch {
-            // error handled by hook
-        }
+    const handleDelete = (id: number, name: string) => {
+        setConfirmDeleteCategory({ id, name });
     };
 
     return (
@@ -289,6 +289,22 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                     </div>
                 </div>
             </div>
+            <ConfirmModal
+                open={!!confirmDeleteCategory}
+                title="Usuń kategorię"
+                message={`Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmDeleteCategory) return;
+                    const { id } = confirmDeleteCategory;
+                    setConfirmDeleteCategory(null);
+                    void deleteCategory.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteCategory(null)}
+            />
         </div>
     );
 }
@@ -308,7 +324,7 @@ function CategoryEditorRow({
     isSaving: boolean;
     isDeleting: boolean;
     onSave: (draft: CategoryDraft) => Promise<void>;
-    onDelete: (id: number, name: string) => Promise<void>;
+    onDelete: (id: number, name: string) => void | Promise<void>;
 }) {
     const [state, setState] = useState<CategoryDraft>(draft);
 

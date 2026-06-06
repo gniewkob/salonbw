@@ -4,6 +4,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import EmployeesNav from '@/components/salon/navs/EmployeesNav';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -35,6 +36,8 @@ export default function EmployeesPage() {
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
+    const [confirmDeleteEmployee, setConfirmDeleteEmployee] =
+        useState<Employee | null>(null);
     const secondaryNav = useMemo(() => <EmployeesNav />, []);
 
     useEffect(() => {
@@ -84,8 +87,11 @@ export default function EmployeesPage() {
         }
     };
 
-    const handleDelete = async (row: Employee) => {
-        if (!confirm(`Usunąć pracownika ${row.fullName ?? row.name}?`)) return;
+    const handleDelete = (row: Employee) => {
+        setConfirmDeleteEmployee(row);
+    };
+
+    const doDelete = async (row: Employee) => {
         try {
             await api.remove(row.id);
             setRows((c) => c.filter((cl) => cl.id !== row.id));
@@ -137,7 +143,7 @@ export default function EmployeesPage() {
                                     </button>
                                     <button
                                         className="btn btn-sm btn-danger"
-                                        onClick={() => void handleDelete(r)}
+                                        onClick={() => handleDelete(r)}
                                     >
                                         Usuń
                                     </button>
@@ -166,6 +172,20 @@ export default function EmployeesPage() {
                         />
                     </Modal>
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteEmployee}
+                    title="Usuń pracownika"
+                    message={`Czy na pewno chcesz usunąć pracownika ${confirmDeleteEmployee?.fullName ?? confirmDeleteEmployee?.name}? Operacja jest nieodwracalna.`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteEmployee) return;
+                        const row = confirmDeleteEmployee;
+                        setConfirmDeleteEmployee(null);
+                        void doDelete(row);
+                    }}
+                    onCancel={() => setConfirmDeleteEmployee(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

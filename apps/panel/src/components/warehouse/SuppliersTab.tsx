@@ -7,6 +7,7 @@ import {
 } from '@/hooks/useWarehouse';
 import type { Supplier } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface SupplierFormData {
     name: string;
@@ -38,6 +39,7 @@ export default function SuppliersTab() {
     );
     const [formData, setFormData] = useState<SupplierFormData>(defaultFormData);
     const [error, setError] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const { data: suppliers = [], isLoading } = useSuppliers(showInactive);
     const createSupplier = useCreateSupplier();
@@ -92,17 +94,8 @@ export default function SuppliersTab() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (confirm('Czy na pewno chcesz usunąć tego dostawcę?')) {
-            setError(null);
-            try {
-                await deleteSupplier.mutateAsync(id);
-            } catch {
-                setError(
-                    'Nie udało się usunąć dostawcy. Upewnij się, że nie ma przypisanych dostaw.',
-                );
-            }
-        }
+    const handleDelete = (id: number) => {
+        setConfirmDeleteId(id);
     };
 
     return (
@@ -400,6 +393,25 @@ export default function SuppliersTab() {
                     </form>
                 </PanelModal>
             )}
+            <ConfirmModal
+                open={confirmDeleteId !== null}
+                title="Usuń dostawcę"
+                message="Czy na pewno chcesz usunąć tego dostawcę?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteId === null) return;
+                    const id = confirmDeleteId;
+                    setConfirmDeleteId(null);
+                    setError(null);
+                    void deleteSupplier.mutateAsync(id).catch(() => {
+                        setError(
+                            'Nie udało się usunąć dostawcy. Upewnij się, że nie ma przypisanych dostaw.',
+                        );
+                    });
+                }}
+                onCancel={() => setConfirmDeleteId(null)}
+            />
         </div>
     );
 }

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/contexts/ToastContext';
@@ -160,6 +161,8 @@ export default function AppointmentsPage() {
     };
 
     const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const [confirmRejectAppt, setConfirmRejectAppt] =
+        useState<AppointmentWithVariant | null>(null);
 
     const handleConfirm = useCallback(
         async (e: React.MouseEvent, appt: AppointmentWithVariant) => {
@@ -187,9 +190,15 @@ export default function AppointmentsPage() {
     );
 
     const handleReject = useCallback(
-        async (e: React.MouseEvent, appt: AppointmentWithVariant) => {
+        (e: React.MouseEvent, appt: AppointmentWithVariant) => {
             e.stopPropagation();
-            if (!confirm('Odrzucić rezerwację i anulować wizytę?')) return;
+            setConfirmRejectAppt(appt);
+        },
+        [],
+    );
+
+    const doReject = useCallback(
+        async (appt: AppointmentWithVariant) => {
             setActionLoading(appt.id);
             try {
                 await apiFetch(`/appointments/${appt.id}/cancel`, {
@@ -569,6 +578,20 @@ export default function AppointmentsPage() {
                         </div>
                     )}
                 </div>
+                <ConfirmModal
+                    open={!!confirmRejectAppt}
+                    title="Odrzuć rezerwację"
+                    message="Czy na pewno chcesz odrzucić tę rezerwację i anulować wizytę?"
+                    confirmLabel="Odrzuć"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmRejectAppt) return;
+                        const appt = confirmRejectAppt;
+                        setConfirmRejectAppt(null);
+                        void doReject(appt);
+                    }}
+                    onCancel={() => setConfirmRejectAppt(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

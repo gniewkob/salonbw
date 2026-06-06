@@ -8,6 +8,7 @@ import {
     type CustomerFileCategory,
 } from '@/hooks/useCustomerMedia';
 import EmptyState from '@/components/ui/EmptyState';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     customerId: number;
@@ -59,6 +60,9 @@ export default function CustomerFilesTab({ customerId }: Props) {
     const [filterCategory, setFilterCategory] = useState<
         CustomerFileCategory | 'all'
     >('all');
+    const [confirmDeleteFileId, setConfirmDeleteFileId] = useState<
+        number | null
+    >(null);
     const [uploadCategory, setUploadCategory] =
         useState<CustomerFileCategory>('other');
 
@@ -74,13 +78,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
         window.open(`${base}${downloadUrl}`, '_blank', 'noopener,noreferrer');
     };
 
-    const handleDelete = async (fileId: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć ten plik?')) return;
-        try {
-            await del.mutateAsync(fileId);
-        } catch {
-            // error handled by hook
-        }
+    const handleDelete = (fileId: number) => {
+        setConfirmDeleteFileId(fileId);
     };
 
     if (isLoading) {
@@ -267,7 +266,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    void handleDelete(
+                                                                    handleDelete(
                                                                         file.id,
                                                                     )
                                                                 }
@@ -292,6 +291,22 @@ export default function CustomerFilesTab({ customerId }: Props) {
                     </div>
                 </div>
             </div>
+            <ConfirmModal
+                open={confirmDeleteFileId !== null}
+                title="Usuń plik"
+                message="Czy na pewno chcesz usunąć ten plik? Operacja jest nieodwracalna."
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteFileId === null) return;
+                    const id = confirmDeleteFileId;
+                    setConfirmDeleteFileId(null);
+                    void del.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteFileId(null)}
+            />
         </div>
     );
 }
