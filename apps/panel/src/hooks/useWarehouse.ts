@@ -355,6 +355,7 @@ export function useAddStocktakingItems() {
 export function useUpdateStocktakingItem() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             stocktakingId,
@@ -374,6 +375,9 @@ export function useUpdateStocktakingItem() {
             void queryClient.invalidateQueries({
                 queryKey: ['stocktaking', stocktakingId],
             });
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać pozycji inwentaryzacji.');
         },
     });
 }
