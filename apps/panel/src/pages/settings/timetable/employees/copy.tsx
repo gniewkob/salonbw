@@ -274,9 +274,9 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                                 </div>
 
                                                 <div className="mb-3">
-                                                    <label className="form-label">
+                                                    <span className="form-label d-block">
                                                         Kopiowany okres
-                                                    </label>
+                                                    </span>
                                                     <div className="data-protection-limits__editor">
                                                         <span>od</span>
                                                         <input

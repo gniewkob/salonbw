@@ -55,10 +55,14 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
             <div className="d-flex flex-column gap-2">
                 {/* Recipient */}
                 <div>
-                    <label className="d-block small fw-medium text-body mb-1">
+                    <label
+                        htmlFor="sms-phone"
+                        className="d-block small fw-medium text-body mb-1"
+                    >
                         Numer telefonu
                     </label>
                     <input
+                        id="sms-phone"
                         type="tel"
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
@@ -101,7 +105,10 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                 {/* Content */}
                 <div>
                     <div className="d-flex align-items-center justify-content-between mb-1">
-                        <label className="d-block small fw-medium text-body">
+                        <label
+                            htmlFor="sms-content"
+                            className="d-block small fw-medium text-body"
+                        >
                             Treść wiadomości
                         </label>
                         <span className="small text-muted">
@@ -109,6 +116,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         </span>
                     </div>
                     <textarea
+                        id="sms-content"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         rows={4}

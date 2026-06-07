@@ -515,9 +515,12 @@ function OriginsTab() {
         >
             {isAdding && (
                 <div className="mb-3">
-                    <label className="form-label">Nazwa źródła</label>
+                    <label className="form-label" htmlFor="origin-name">
+                        Nazwa źródła
+                    </label>
                     <div className="input-group">
                         <input
+                            id="origin-name"
                             type="text"
                             className="form-control"
                             value={addingName}
