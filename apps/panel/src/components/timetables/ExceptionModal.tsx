@@ -121,10 +121,14 @@ export default function ExceptionModal({
                 <div className="d-flex flex-column gap-2">
                     {/* Date */}
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="exception-date"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Data
                         </label>
                         <input
+                            id="exception-date"
                             type="date"
                             value={form.date}
                             onChange={(e) =>
@@ -162,10 +166,14 @@ export default function ExceptionModal({
 
                     {/* Title */}
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="exception-title"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Tytuł (opcjonalnie)
                         </label>
                         <input
+                            id="exception-title"
                             type="text"
                             value={form.title}
                             onChange={(e) =>
@@ -202,10 +210,14 @@ export default function ExceptionModal({
                     {showCustomHours && (
                         <div className="d-flex align-items-center gap-3">
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="exception-start"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Od
                                 </label>
                                 <input
+                                    id="exception-start"
                                     type="time"
                                     value={form.customStartTime}
                                     onChange={(e) =>
@@ -218,10 +230,14 @@ export default function ExceptionModal({
                                 />
                             </div>
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="exception-end"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Do
                                 </label>
                                 <input
+                                    id="exception-end"
                                     type="time"
                                     value={form.customEndTime}
                                     onChange={(e) =>
@@ -238,10 +254,14 @@ export default function ExceptionModal({
 
                     {/* Reason */}
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="exception-reason"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Powód (opcjonalnie)
                         </label>
                         <textarea
+                            id="exception-reason"
                             value={form.reason}
                             onChange={(e) =>
                                 setForm({ ...form, reason: e.target.value })
