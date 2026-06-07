@@ -446,21 +446,21 @@ export default function CustomerSummaryTab({
                             </div>
                             <div className="salonbw-widget__content form-horizontal">
                                 <div className="form-">
-                                    <label className="form-label">
+                                    <span className="form-label d-block">
                                         Telefon
-                                    </label>
+                                    </span>
                                     <div className="control-content">
                                         {customer.phone || '-'}
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="form-label">E-mail</label>
+                                    <span className="form-label d-block">E-mail</span>
                                     <div className="control-content">
                                         {customer.email || '-'}
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="form-label">Adres</label>
+                                    <span className="form-label d-block">Adres</span>
                                     <div className="control-content">
                                         {[
                                             customer.address,
@@ -472,9 +472,9 @@ export default function CustomerSummaryTab({
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="form-label">
+                                    <span className="form-label d-block">
                                         Klient od
-                                    </label>
+                                    </span>
                                     <div className="control-content">
                                         {formatDate(customer.createdAt)}
                                     </div>
@@ -482,9 +482,9 @@ export default function CustomerSummaryTab({
 
                                 {/* Grupy klienta - jak w source UI */}
                                 <div className="form-">
-                                    <label className="form-label">
+                                    <span className="form-label d-block">
                                         należy do grup
-                                    </label>
+                                    </span>
                                     <div className="control-content">
                                         {customer.groups &&
                                         customer.groups.length > 0 ? (
