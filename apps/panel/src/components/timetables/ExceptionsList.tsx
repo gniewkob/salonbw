@@ -122,12 +122,14 @@ export default function ExceptionsList({
                                     onClick={() => onEdit(exception)}
                                     className="p-1 text-muted rounded"
                                     title="Edytuj"
+                                    aria-label="Edytuj wyjątek"
                                 >
                                     <svg
                                         className="w-4 h-4"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -146,12 +148,14 @@ export default function ExceptionsList({
                                     }}
                                     className="p-1 text-danger bg-opacity-10 rounded"
                                     title="Usuń"
+                                    aria-label="Usuń wyjątek"
                                 >
                                     <svg
                                         className="w-4 h-4"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"

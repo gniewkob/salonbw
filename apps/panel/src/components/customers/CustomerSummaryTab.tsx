@@ -532,11 +532,14 @@ export default function CustomerSummaryTab({
                                                                     }}
                                                                     className="ms-3 opacity-0 - -opacity text-current"
                                                                     title="Usuń z grupy"
+                                                                    aria-label={`Usuń z grupy ${group.name}`}
                                                                     disabled={
                                                                         removeFromGroup.isPending
                                                                     }
                                                                 >
-                                                                    ×
+                                                                    <span aria-hidden="true">
+                                                                        ×
+                                                                    </span>
                                                                 </button>
                                                             </span>
                                                         );

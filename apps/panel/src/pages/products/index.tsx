@@ -457,6 +457,7 @@ export default function WarehouseProductsPage() {
                                                     type="button"
                                                     className="icon_link btn btn-link p-0"
                                                     title="edytuj"
+                                                    aria-label={`Edytuj produkt ${product.name}`}
                                                     onClick={() =>
                                                         setEditProductId(
                                                             product.id,
