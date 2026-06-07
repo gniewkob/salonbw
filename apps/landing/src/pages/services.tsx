@@ -127,20 +127,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                 />
                 <meta
                     property="og:image"
-                    content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/images/hero/slider1.jpg`}
+                    content={absUrl('/images/hero/slider1.jpg')}
                 />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
                 <meta property="og:locale" content="pl_PL" />
-                <meta
-                    property="og:url"
-                    content={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/services`}
-                />
-                <link
-                    rel="canonical"
-                    href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl'}/services`}
-                />
+                <meta property="og:url" content={absUrl('/services')} />
+                <link rel="canonical" href={absUrl('/services')} />
                 <meta name="robots" content="index, follow" />
             </Head>
             <Script

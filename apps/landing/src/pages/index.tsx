@@ -67,13 +67,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                     name="twitter:image"
                     content={absUrl('/images/hero/slider1.jpg')}
                 />
-                <link
-                    rel="canonical"
-                    href={
-                        process.env.NEXT_PUBLIC_SITE_URL ||
-                        'https://salon-bw.pl'
-                    }
-                />
+                <link rel="canonical" href={absUrl('/')} />
                 <meta name="robots" content="index, follow" />
                 <meta name="geo.region" content={SEO_META.geo.region} />
                 <meta name="geo.placename" content={SEO_META.geo.placename} />
