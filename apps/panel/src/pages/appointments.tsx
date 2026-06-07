@@ -288,11 +288,15 @@ export default function AppointmentsPage() {
                                 </select>
                             </div>
                             <div className="flex-grow-1">
-                                <label className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appointments-search"
+                                    className="form-label mb-1 small"
+                                >
                                     Klient / telefon
                                 </label>
                                 <div className="input-group input-group-sm">
                                     <input
+                                        id="appointments-search"
                                         type="text"
                                         className="form-control"
                                         placeholder="Szukaj..."

@@ -97,6 +97,7 @@ export default function ClientSection({
                     <input
                         id="appointment-client-search"
                         type="search"
+                        aria-label="Szukaj klienta"
                         className="form-control mb-2"
                         placeholder="Szukaj po imieniu, nazwisku, telefonie..."
                         value={customerSearch}

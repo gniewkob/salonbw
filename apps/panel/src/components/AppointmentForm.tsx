@@ -47,7 +47,11 @@ export default function AppointmentForm({
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
+            <label htmlFor="appointment-service" className="visually-hidden">
+                Usługa
+            </label>
             <select
+                id="appointment-service"
                 className="border p-1 w-100"
                 data-testid="service-select"
                 value={serviceId}
@@ -59,7 +63,11 @@ export default function AppointmentForm({
                     </option>
                 ))}
             </select>
+            <label htmlFor="appointment-time" className="visually-hidden">
+                Data i godzina
+            </label>
             <input
+                id="appointment-time"
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
