@@ -295,6 +295,7 @@ export default function HelpContactPage() {
                                     id="physical_help_email"
                                     className="string email required helps-page__email"
                                     type="email"
+                                    aria-describedby="physical_help_email_hint"
                                     value={email}
                                     onChange={(event) => {
                                         setEmail(event.target.value);
@@ -309,7 +310,10 @@ export default function HelpContactPage() {
                                         );
                                     }}
                                 />
-                                <p className="inline-hint">
+                                <p
+                                    id="physical_help_email_hint"
+                                    className="inline-hint"
+                                >
                                     Adres email, na który należy przesłać
                                     odpowiedź
                                 </p>
