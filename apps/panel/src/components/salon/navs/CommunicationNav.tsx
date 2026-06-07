@@ -19,7 +19,14 @@ export default function CommunicationNav() {
                         key={item.href}
                         className={isActive(item.href) ? 'active' : undefined}
                     >
-                        <a href={item.href}>{item.label}</a>
+                        <a
+                            href={item.href}
+                            aria-current={
+                                isActive(item.href) ? 'page' : undefined
+                            }
+                        >
+                            {item.label}
+                        </a>
                     </li>
                 ))}
             </ul>

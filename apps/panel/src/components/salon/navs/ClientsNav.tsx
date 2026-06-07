@@ -152,6 +152,11 @@ export default function ClientsNav() {
                                     type="button"
                                     className={`root ${activeQuickGroup === 'all' ? 'active' : ''}`}
                                     data-name="all"
+                                    aria-current={
+                                        activeQuickGroup === 'all'
+                                            ? 'true'
+                                            : undefined
+                                    }
                                     onClick={() =>
                                         updateFilters({
                                             groupId: undefined,

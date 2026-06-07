@@ -35,6 +35,9 @@ export default function SalonGroupedNav({
                                     href={item.href}
                                     className={item.active ? 'active' : ''}
                                     title={item.label}
+                                    aria-current={
+                                        item.active ? 'page' : undefined
+                                    }
                                 >
                                     {item.label}
                                 </Link>

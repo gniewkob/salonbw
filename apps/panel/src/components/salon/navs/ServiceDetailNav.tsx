@@ -103,6 +103,9 @@ export default function ServiceDetailNav({
                                               query: { tab: tab.tabName },
                                           }
                                 }
+                                aria-current={
+                                    activeTab === tab.id ? 'page' : undefined
+                                }
                             >
                                 <div className="icon_box">
                                     <i
