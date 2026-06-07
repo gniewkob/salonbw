@@ -85,7 +85,6 @@ export default function CustomerSidebar({
                                                         group.color || '#999',
                                                 } as React.CSSProperties;
                                                 return (
-                                                    // eslint-disable-next-line
                                                     <span
                                                         className="status-dot w-8 h-8 bg-dynamic"
                                                         style={dotStyle}
@@ -119,7 +118,6 @@ export default function CustomerSidebar({
                                         : tag.color || '#999',
                             } as React.CSSProperties;
                             return (
-                                // eslint-disable-next-line
                                 <button
                                     type="button"
                                     key={tag.id}

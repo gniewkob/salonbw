@@ -219,7 +219,6 @@ export default function CategoryFormModal({
                                                         : '1px solid #ddd',
                                             } as React.CSSProperties;
                                             return (
-                                                // eslint-disable-next-line
                                                 <button
                                                     key={color}
                                                     type="button"
@@ -241,7 +240,6 @@ export default function CategoryFormModal({
                                                     'transparent',
                                             } as React.CSSProperties;
                                             return (
-                                                // eslint-disable-next-line
                                                 <input
                                                     type="color"
                                                     value={formData.color}

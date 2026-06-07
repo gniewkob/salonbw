@@ -75,14 +75,12 @@ export default function ManageCategoriesModal({
 
         return (
             <div key={category.id}>
-                {/* eslint-disable-next-line */}
                 <div
                     className="salonbw-list-item flex-between pl-dynamic"
                     style={rowStyle}
                 >
                     <div className="d-flex align-items-center gap-3">
                         {category.color && (
-                            // eslint-disable-next-line
                             <span
                                 className="status-dot w-10 h-10 bg-dynamic"
                                 style={dotStyle}
