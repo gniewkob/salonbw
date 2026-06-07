@@ -107,6 +107,7 @@ export default function CreateCustomerModal({
                                 id="cc-email"
                                 className="form-control"
                                 type="email"
+                                autoComplete="email"
                                 value={form.email}
                                 onChange={(event) =>
                                     setForm((prev) => ({
@@ -124,6 +125,8 @@ export default function CreateCustomerModal({
                             <input
                                 id="cc-phone"
                                 className="form-control"
+                                type="tel"
+                                autoComplete="tel"
                                 value={form.phone}
                                 onChange={(event) =>
                                     setForm((prev) => ({

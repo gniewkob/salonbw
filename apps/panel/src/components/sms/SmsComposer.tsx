@@ -64,6 +64,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                     <input
                         id="sms-phone"
                         type="tel"
+                        autoComplete="tel"
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
                         placeholder="+48 123 456 789"
