@@ -608,7 +608,13 @@ export default function CustomerSummaryTab({
 
             {/* Modal dodawania do grupy */}
             {showAddToGroupModal && (
-                <div className="modal fade in" {...{ style: modalStyle }}>
+                <div
+                    className="modal fade in"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="add-to-group-modal-title"
+                    {...{ style: modalStyle }}
+                >
                     <div className="modal-dialog modal-sm">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -622,7 +628,12 @@ export default function CustomerSummaryTab({
                                 >
                                     <span aria-hidden="true">×</span>
                                 </button>
-                                <h4 className="modal-title">Dodaj do grupy</h4>
+                                <h4
+                                    id="add-to-group-modal-title"
+                                    className="modal-title"
+                                >
+                                    Dodaj do grupy
+                                </h4>
                             </div>
                             <div className="modal-body">
                                 {availableGroups.length === 0 ? (

@@ -564,7 +564,12 @@ export default function ServiceFormModal({
     );
 
     return (
-        <div className="modal fade in block bg-modal-overlay">
+        <div
+            className="modal fade in block bg-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="service-form-modal-title"
+        >
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -576,7 +581,10 @@ export default function ServiceFormModal({
                         >
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        <h4 className="modal-title">
+                        <h4
+                            id="service-form-modal-title"
+                            className="modal-title"
+                        >
                             {service ? 'Edytuj usługę' : 'Nowa usługa'}
                         </h4>
                     </div>
