@@ -362,7 +362,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                             }}
                                         />
                                         {' z '}
-                                        <a className="pointer">{totalPages}</a>
+                                        <span>{totalPages}</span>
                                         <button
                                             type="button"
                                             className="btn btn-link button_next ml-s"

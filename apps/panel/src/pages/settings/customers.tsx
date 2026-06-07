@@ -372,6 +372,7 @@ function ExtraFieldsTab() {
                                         <input
                                             type="checkbox"
                                             title="Wymagane"
+                                            aria-label="Wymagane"
                                             checked={editForm.required}
                                             onChange={(e) =>
                                                 setEditForm((f) =>

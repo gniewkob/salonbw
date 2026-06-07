@@ -63,7 +63,15 @@ export default function CustomerSidebar({
                     </div>
                     <ul className="salonbw-sidebar__nav">
                         <li className={!filters.groupId ? 'active' : ''}>
-                            <a onClick={() => handleGroupSelect(undefined)}>
+                            <a
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => handleGroupSelect(undefined)}
+                                onKeyDown={(e) =>
+                                    e.key === 'Enter' &&
+                                    handleGroupSelect(undefined)
+                                }
+                            >
                                 <span className="flex-fill">
                                     Wszyscy klienci
                                 </span>
@@ -76,7 +84,15 @@ export default function CustomerSidebar({
                                     filters.groupId === group.id ? 'active' : ''
                                 }
                             >
-                                <a onClick={() => handleGroupSelect(group.id)}>
+                                <a
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => handleGroupSelect(group.id)}
+                                    onKeyDown={(e) =>
+                                        e.key === 'Enter' &&
+                                        handleGroupSelect(group.id)
+                                    }
+                                >
                                     <div className="flex-center w-full gap-8">
                                         {group.color &&
                                             (() => {
