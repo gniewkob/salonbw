@@ -318,7 +318,10 @@ export default function HelpContactPage() {
                                     odpowiedź
                                 </p>
                                 {emailError ? (
-                                    <p className="helps-page__feedback helps-page__feedback--error">
+                                    <p
+                                        role="alert"
+                                        className="helps-page__feedback helps-page__feedback--error"
+                                    >
                                         {emailError}
                                     </p>
                                 ) : null}
@@ -364,12 +367,18 @@ export default function HelpContactPage() {
                         </button>
                     </div>
                     {submitError ? (
-                        <p className="helps-page__feedback helps-page__feedback--error">
+                        <p
+                            role="alert"
+                            className="helps-page__feedback helps-page__feedback--error"
+                        >
                             {submitError}
                         </p>
                     ) : null}
                     {submitted ? (
-                        <p className="helps-page__feedback helps-page__feedback--success">
+                        <p
+                            role="status"
+                            className="helps-page__feedback helps-page__feedback--success"
+                        >
                             Pytanie zostało wysłane.
                         </p>
                     ) : null}
