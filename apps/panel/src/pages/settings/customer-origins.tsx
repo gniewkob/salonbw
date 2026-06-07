@@ -119,9 +119,9 @@ export default function CustomerOriginsPage() {
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa źródła</th>
-                                        <th>Systemowe</th>
-                                        <th />
+                                        <th scope="col">Nazwa źródła</th>
+                                        <th scope="col">Systemowe</th>
+                                        <th scope="col" />
                                     </tr>
                                 </thead>
                                 <tbody>

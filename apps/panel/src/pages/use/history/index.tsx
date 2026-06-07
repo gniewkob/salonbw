@@ -51,12 +51,12 @@ export default function WarehouseUsageHistoryPage() {
                             <table className="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>nr zużycia</th>
-                                        <th>data</th>
-                                        <th>klient</th>
-                                        <th>pracownik</th>
-                                        <th>pozycje</th>
-                                        <th>szczegóły</th>
+                                        <th scope="col">nr zużycia</th>
+                                        <th scope="col">data</th>
+                                        <th scope="col">klient</th>
+                                        <th scope="col">pracownik</th>
+                                        <th scope="col">pozycje</th>
+                                        <th scope="col">szczegóły</th>
                                     </tr>
                                 </thead>
                                 <tbody>

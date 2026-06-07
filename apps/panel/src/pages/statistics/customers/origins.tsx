@@ -288,11 +288,17 @@ export default function ClientOriginsPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Źródło</th>
-                                                <th className="text-end">
+                                                <th scope="col">Źródło</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Liczba klientów
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Udział
                                                 </th>
                                             </tr>

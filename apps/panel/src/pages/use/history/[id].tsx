@@ -40,10 +40,10 @@ export default function WarehouseUsageDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>nazwa</th>
-                                    <th>ilość</th>
-                                    <th>stan przed</th>
-                                    <th>stan po</th>
+                                    <th scope="col">nazwa</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">stan przed</th>
+                                    <th scope="col">stan po</th>
                                 </tr>
                             </thead>
                             <tbody>

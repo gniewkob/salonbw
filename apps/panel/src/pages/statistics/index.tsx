@@ -556,11 +556,13 @@ function StatisticsPageContent() {
                                         <tbody>
                                             <tr>
                                                 <td className="empty" />
-                                                <th>netto</th>
-                                                <th>brutto</th>
+                                                <th scope="col">netto</th>
+                                                <th scope="col">brutto</th>
                                             </tr>
                                             <tr>
-                                                <th>Sprzedaż usług</th>
+                                                <th scope="col">
+                                                    Sprzedaż usług
+                                                </th>
                                                 <td>
                                                     {formatMoney(
                                                         reportTotals.dayServiceRevenue /
@@ -574,7 +576,9 @@ function StatisticsPageContent() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Sprzedaż towarów</th>
+                                                <th scope="col">
+                                                    Sprzedaż towarów
+                                                </th>
                                                 <td>
                                                     {formatMoney(
                                                         reportTotals.dayProductRevenue /
@@ -603,7 +607,7 @@ function StatisticsPageContent() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Napiwki</th>
+                                                <th scope="col">Napiwki</th>
                                                 <td className="no-right-border" />
                                                 <td className="no-left-border">
                                                     {formatMoney(
@@ -684,25 +688,25 @@ function StatisticsPageContent() {
                         <table className="table table-bordered">
                             <tbody>
                                 <tr>
-                                    <th>Pracownik</th>
-                                    <th>Wizyty</th>
-                                    <th>Łączny czas wizyt</th>
-                                    <th>
+                                    <th scope="col">Pracownik</th>
+                                    <th scope="col">Wizyty</th>
+                                    <th scope="col">Łączny czas wizyt</th>
+                                    <th scope="col">
                                         Sprzedaż usług <small>brutto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Sprzedaż usług <small>netto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Sprzedaż towarów <small>brutto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Sprzedaż towarów <small>netto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Utarg <small>brutto</small>
                                     </th>
-                                    <th>Procent</th>
+                                    <th scope="col">Procent</th>
                                 </tr>
                                 {employeeRows.map((employee, index) => (
                                     <tr
@@ -756,25 +760,25 @@ function StatisticsPageContent() {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th />
-                                    <th>Wizyty</th>
-                                    <th>Łączny czas wizyt</th>
-                                    <th>
+                                    <th scope="col" />
+                                    <th scope="col">Wizyty</th>
+                                    <th scope="col">Łączny czas wizyt</th>
+                                    <th scope="col">
                                         Sprzedaż usług <small>brutto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Sprzedaż usług <small>netto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Sprzedaż towarów <small>brutto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Sprzedaż towarów <small>netto</small>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         Utarg <small>brutto</small>
                                     </th>
-                                    <th>Procent</th>
+                                    <th scope="col">Procent</th>
                                 </tr>
                                 <tr>
                                     <td>

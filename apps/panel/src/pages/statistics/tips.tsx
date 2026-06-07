@@ -138,14 +138,23 @@ export default function TipsPage() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Pracownik</th>
-                                            <th className="text-end">
+                                            <th scope="col">Pracownik</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Liczba napiwków
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Suma napiwków
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Średni napiwek
                                             </th>
                                         </tr>

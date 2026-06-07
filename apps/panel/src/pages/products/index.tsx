@@ -331,7 +331,10 @@ export default function WarehouseProductsPage() {
                     <table className="table table-bordered">
                         <thead>
                             <tr>
-                                <th className="pointer checkbox_container center_text">
+                                <th
+                                    scope="col"
+                                    className="pointer checkbox_container center_text"
+                                >
                                     <input
                                         type="checkbox"
                                         aria-label="zaznacz wszystkie"
@@ -343,22 +346,22 @@ export default function WarehouseProductsPage() {
                                         onChange={toggleSelectAll}
                                     />
                                 </th>
-                                <th>
+                                <th scope="col">
                                     <div>Nazwa</div>
                                 </th>
-                                <th>
+                                <th scope="col">
                                     <div>Kategoria</div>
                                 </th>
-                                <th>
+                                <th scope="col">
                                     <div>Rodzaj produktu</div>
                                 </th>
-                                <th>
+                                <th scope="col">
                                     <div>Kod wewnętrzny (SKU)</div>
                                 </th>
-                                <th>
+                                <th scope="col">
                                     <div>Stan magazynowy</div>
                                 </th>
-                                <th>
+                                <th scope="col">
                                     <div>Cena sprzedaży</div>
                                 </th>
                                 <th

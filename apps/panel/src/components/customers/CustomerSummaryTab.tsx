@@ -213,9 +213,12 @@ export default function CustomerSummaryTab({
                                     <table className="salonbw-table fs-12">
                                         <thead>
                                             <tr>
-                                                <th>Data</th>
-                                                <th>Usługa</th>
-                                                <th className="text-end">
+                                                <th scope="col">Data</th>
+                                                <th scope="col">Usługa</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Cena
                                                 </th>
                                             </tr>
@@ -274,10 +277,15 @@ export default function CustomerSummaryTab({
                                         <table className="salonbw-table fs-12">
                                             <thead>
                                                 <tr>
-                                                    <th>Data</th>
-                                                    <th>Sprzedaż</th>
-                                                    <th>Metoda</th>
-                                                    <th className="text-end">
+                                                    <th scope="col">Data</th>
+                                                    <th scope="col">
+                                                        Sprzedaż
+                                                    </th>
+                                                    <th scope="col">Metoda</th>
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Kwota
                                                     </th>
                                                 </tr>

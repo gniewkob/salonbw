@@ -178,14 +178,14 @@ export default function WarehouseSaleCreatePage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>nazwa</th>
-                                    <th>jednostka</th>
-                                    <th>ilość</th>
-                                    <th>cena op. (brutto)</th>
-                                    <th>rabat</th>
-                                    <th>VAT</th>
-                                    <th>wartość (brutto)</th>
-                                    <th>usuń</th>
+                                    <th scope="col">nazwa</th>
+                                    <th scope="col">jednostka</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">cena op. (brutto)</th>
+                                    <th scope="col">rabat</th>
+                                    <th scope="col">VAT</th>
+                                    <th scope="col">wartość (brutto)</th>
+                                    <th scope="col">usuń</th>
                                 </tr>
                             </thead>
                             <tbody>

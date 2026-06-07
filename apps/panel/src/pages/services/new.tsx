@@ -728,10 +728,14 @@ function NewServicePageContent() {
                                         <table className="salonbw-table services-create-variants-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Nazwa wariantu</th>
-                                                    <th>Czas trwania</th>
-                                                    <th>Cena</th>
-                                                    <th>usuń</th>
+                                                    <th scope="col">
+                                                        Nazwa wariantu
+                                                    </th>
+                                                    <th scope="col">
+                                                        Czas trwania
+                                                    </th>
+                                                    <th scope="col">Cena</th>
+                                                    <th scope="col">usuń</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -898,7 +902,7 @@ function NewServicePageContent() {
                         </li>
 
                         <li className="services-create-field">
-                            <label>Zdjęcia</label>
+                            <span>Zdjęcia</span>
                             <div className="services-create-control">
                                 <div className="services-create-gallery">
                                     <div className="services-create-panel services-create-upload-panel">
@@ -998,7 +1002,7 @@ function NewServicePageContent() {
                             </div>
 
                             <div className="services-create-field">
-                                <label>Receptura</label>
+                                <span>Receptura</span>
                                 <div className="services-create-control">
                                     <div className="services-create-panel">
                                         <button
@@ -1019,10 +1023,18 @@ function NewServicePageContent() {
                                                 <table className="salonbw-table services-create-recipe-table">
                                                     <thead>
                                                         <tr>
-                                                            <th>materiał</th>
-                                                            <th>jednostka</th>
-                                                            <th>ilość</th>
-                                                            <th>usuń</th>
+                                                            <th scope="col">
+                                                                materiał
+                                                            </th>
+                                                            <th scope="col">
+                                                                jednostka
+                                                            </th>
+                                                            <th scope="col">
+                                                                ilość
+                                                            </th>
+                                                            <th scope="col">
+                                                                usuń
+                                                            </th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>

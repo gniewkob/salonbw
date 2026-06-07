@@ -123,10 +123,10 @@ export default function InventoryDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>produkt</th>
-                                    <th>stan systemowy</th>
-                                    <th>stan policzony</th>
-                                    <th>różnica</th>
+                                    <th scope="col">produkt</th>
+                                    <th scope="col">stan systemowy</th>
+                                    <th scope="col">stan policzony</th>
+                                    <th scope="col">różnica</th>
                                 </tr>
                             </thead>
                             <tbody>

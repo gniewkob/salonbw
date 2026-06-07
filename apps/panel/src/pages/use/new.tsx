@@ -122,9 +122,9 @@ export default function WarehouseUsageCreatePage() {
                     <table className="products-table">
                         <thead>
                             <tr>
-                                <th>nazwa</th>
-                                <th>ilość</th>
-                                <th>usuń</th>
+                                <th scope="col">nazwa</th>
+                                <th scope="col">ilość</th>
+                                <th scope="col">usuń</th>
                             </tr>
                         </thead>
                         <tbody>

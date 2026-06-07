@@ -134,12 +134,12 @@ export default function DeliveryDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>produkt</th>
-                                    <th>ilość</th>
-                                    <th>cena/op. (netto)</th>
-                                    <th>wartość (netto)</th>
-                                    <th>partia</th>
-                                    <th>ważność</th>
+                                    <th scope="col">produkt</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">cena/op. (netto)</th>
+                                    <th scope="col">wartość (netto)</th>
+                                    <th scope="col">partia</th>
+                                    <th scope="col">ważność</th>
                                 </tr>
                             </thead>
                             <tbody>

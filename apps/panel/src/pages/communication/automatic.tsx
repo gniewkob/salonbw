@@ -196,13 +196,13 @@ export default function AutomaticMessagesPage() {
                             <table className="list-table">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa</th>
-                                        <th>Wyzwalacz</th>
-                                        <th>Kanał</th>
-                                        <th>Offset</th>
-                                        <th>Wysłanych</th>
-                                        <th>Status</th>
-                                        <th></th>
+                                        <th scope="col">Nazwa</th>
+                                        <th scope="col">Wyzwalacz</th>
+                                        <th scope="col">Kanał</th>
+                                        <th scope="col">Offset</th>
+                                        <th scope="col">Wysłanych</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col"></th>
                                     </tr>
                                 </thead>
                                 <tbody>

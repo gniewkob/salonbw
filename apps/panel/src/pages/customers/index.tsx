@@ -788,7 +788,7 @@ export default function ClientsPage() {
                                                         </span>
                                                     </div>
                                                 </th>
-                                                <th>
+                                                <th scope="col">
                                                     <div>Kontakt</div>
                                                 </th>
                                                 <th

@@ -145,9 +145,13 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                     <table className="customer-communication-table">
                         <thead>
                             <tr>
-                                <th>Typ wiadomości</th>
-                                <th className="col-center">SMS</th>
-                                <th className="col-center">Email</th>
+                                <th scope="col">Typ wiadomości</th>
+                                <th scope="col" className="col-center">
+                                    SMS
+                                </th>
+                                <th scope="col" className="col-center">
+                                    Email
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -246,9 +250,9 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                 <table className="customer-communication-table customer-communication-history-table">
                     <thead>
                         <tr>
-                            <th>Data</th>
-                            <th>Zgoda</th>
-                            <th>Zmiana</th>
+                            <th scope="col">Data</th>
+                            <th scope="col">Zgoda</th>
+                            <th scope="col">Zmiana</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -302,9 +306,9 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                         <table className="customer-communication-table customer-communication-history-table">
                             <thead>
                                 <tr>
-                                    <th>Data</th>
-                                    <th>Status</th>
-                                    <th>Wiadomość</th>
+                                    <th scope="col">Data</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Wiadomość</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -332,10 +336,10 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                     <table className="customer-communication-table customer-communication-history-table">
                         <thead>
                             <tr>
-                                <th>Data</th>
-                                <th>Status</th>
-                                <th>Temat</th>
-                                <th>Odbiorca</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Temat</th>
+                                <th scope="col">Odbiorca</th>
                             </tr>
                         </thead>
                         <tbody>

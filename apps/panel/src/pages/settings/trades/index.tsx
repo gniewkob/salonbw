@@ -165,9 +165,9 @@ export default function SettingsTradesPage() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Nazwa</th>
-                                            <th>Status</th>
-                                            <th />
+                                            <th scope="col">Nazwa</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col" />
                                         </tr>
                                     </thead>
                                     <tbody>

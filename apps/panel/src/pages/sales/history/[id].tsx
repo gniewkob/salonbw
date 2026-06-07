@@ -259,14 +259,14 @@ export default function WarehouseSaleDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>lp</th>
-                                    <th>nazwa</th>
-                                    <th>cena netto</th>
-                                    <th>cena brutto</th>
-                                    <th>ilość</th>
-                                    <th>VAT</th>
-                                    <th>rabat</th>
-                                    <th>wartość brutto</th>
+                                    <th scope="col">lp</th>
+                                    <th scope="col">nazwa</th>
+                                    <th scope="col">cena netto</th>
+                                    <th scope="col">cena brutto</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">VAT</th>
+                                    <th scope="col">rabat</th>
+                                    <th scope="col">wartość brutto</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -398,9 +398,9 @@ export default function WarehouseSaleDetailsPage() {
                                 <table className="products-table">
                                     <thead>
                                         <tr>
-                                            <th>pozycja</th>
-                                            <th>sprzedano</th>
-                                            <th>ilość do akcji</th>
+                                            <th scope="col">pozycja</th>
+                                            <th scope="col">sprzedano</th>
+                                            <th scope="col">ilość do akcji</th>
                                         </tr>
                                     </thead>
                                     <tbody>

@@ -244,13 +244,19 @@ function ChangesTab() {
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Data</th>
-                                        <th>Produkt</th>
-                                        <th>Typ</th>
-                                        <th className="text-end">Zmiana</th>
-                                        <th className="text-end">Stan przed</th>
-                                        <th className="text-end">Stan po</th>
-                                        <th>Użytkownik</th>
+                                        <th scope="col">Data</th>
+                                        <th scope="col">Produkt</th>
+                                        <th scope="col">Typ</th>
+                                        <th scope="col" className="text-end">
+                                            Zmiana
+                                        </th>
+                                        <th scope="col" className="text-end">
+                                            Stan przed
+                                        </th>
+                                        <th scope="col" className="text-end">
+                                            Stan po
+                                        </th>
+                                        <th scope="col">Użytkownik</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -496,12 +502,16 @@ function ValueTab() {
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Kategoria</th>
-                                        <th className="text-end">Produkty</th>
-                                        <th className="text-end">
+                                        <th scope="col">Kategoria</th>
+                                        <th scope="col" className="text-end">
+                                            Produkty
+                                        </th>
+                                        <th scope="col" className="text-end">
                                             Ilość sztuk
                                         </th>
-                                        <th className="text-end">Wartość</th>
+                                        <th scope="col" className="text-end">
+                                            Wartość
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -533,14 +543,25 @@ function ValueTab() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Produkt</th>
-                                            <th className="text-end">
+                                            <th scope="col">Produkt</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Stan aktualny
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Min. stan
                                             </th>
-                                            <th className="text-end">Cena</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
+                                                Cena
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>

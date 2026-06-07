@@ -202,10 +202,10 @@ export default function CommunicationPage() {
                                 <table className="table table-bordered table-hover table-sm">
                                     <thead className="table-light">
                                         <tr>
-                                            <th>Odbiorca</th>
-                                            <th>Wiadomość</th>
-                                            <th>Rodzaj</th>
-                                            <th>Wysłano</th>
+                                            <th scope="col">Odbiorca</th>
+                                            <th scope="col">Wiadomość</th>
+                                            <th scope="col">Rodzaj</th>
+                                            <th scope="col">Wysłano</th>
                                         </tr>
                                     </thead>
                                     <tbody>

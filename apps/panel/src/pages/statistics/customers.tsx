@@ -167,11 +167,17 @@ function OverviewTab() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Klient</th>
-                                            <th className="text-end">
+                                            <th scope="col">Klient</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Liczba wizyt
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Łącznie wydane
                                             </th>
                                         </tr>
@@ -621,11 +627,13 @@ function OriginsTab() {
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Źródło</th>
-                                        <th className="text-end">
+                                        <th scope="col">Źródło</th>
+                                        <th scope="col" className="text-end">
                                             Liczba klientów
                                         </th>
-                                        <th className="text-end">Udział</th>
+                                        <th scope="col" className="text-end">
+                                            Udział
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>

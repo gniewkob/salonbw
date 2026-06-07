@@ -112,30 +112,30 @@ export default function InventoryHistoryPage() {
                             <table className="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>
+                                        <th scope="col">
                                             <div>
                                                 data i nazwa inwentaryzacji
                                             </div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>status</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>liczba produktów</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>
                                                 liczba produktów z niedoborem w
                                                 magazynie
                                             </div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>
                                                 liczba produktów z nadwyżką w
                                                 magazynie
                                             </div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>
                                                 liczba produktów ze stanem
                                                 zgodnym

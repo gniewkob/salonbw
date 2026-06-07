@@ -106,11 +106,11 @@ export default function WarehouseOrderCreatePage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>lp</th>
-                                    <th>nazwa</th>
-                                    <th>jednostka</th>
-                                    <th>ilość</th>
-                                    <th>usuń</th>
+                                    <th scope="col">lp</th>
+                                    <th scope="col">nazwa</th>
+                                    <th scope="col">jednostka</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">usuń</th>
                                 </tr>
                             </thead>
                             <tbody>

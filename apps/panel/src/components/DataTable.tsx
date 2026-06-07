@@ -135,18 +135,29 @@ export default function DataTable<T>({
                     </tr>
                 </thead>
                 <tbody>
-                    {paginated.map((row, i) => (
-                        <tr key={i} className="border-top">
-                            {columns.map((col) => (
-                                <td key={colKey(col)} className="p-2">
-                                    {getCellValue(row, col.accessor)}
-                                </td>
-                            ))}
-                            <td className="p-2">
-                                {renderActions ? renderActions(row) : null}
+                    {paginated.length === 0 ? (
+                        <tr>
+                            <td
+                                colSpan={columns.length + 1}
+                                className="text-center py-4 text-muted"
+                            >
+                                Brak danych do wyświetlenia
                             </td>
                         </tr>
-                    ))}
+                    ) : (
+                        paginated.map((row, i) => (
+                            <tr key={i} className="border-top">
+                                {columns.map((col) => (
+                                    <td key={colKey(col)} className="p-2">
+                                        {getCellValue(row, col.accessor)}
+                                    </td>
+                                ))}
+                                <td className="p-2">
+                                    {renderActions ? renderActions(row) : null}
+                                </td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
             <div className="mt-2 d-flex align-items-center gap-2">

@@ -195,12 +195,12 @@ export default function WarehouseSalesHistoryPage() {
                             <table className="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa</th>
-                                        <th>Rodzaj</th>
-                                        <th>Suma brutto</th>
-                                        <th>Sprzedano</th>
-                                        <th>Pracownik</th>
-                                        <th>Klient</th>
+                                        <th scope="col">Nazwa</th>
+                                        <th scope="col">Rodzaj</th>
+                                        <th scope="col">Suma brutto</th>
+                                        <th scope="col">Sprzedano</th>
+                                        <th scope="col">Pracownik</th>
+                                        <th scope="col">Klient</th>
                                     </tr>
                                 </thead>
                                 <tbody>

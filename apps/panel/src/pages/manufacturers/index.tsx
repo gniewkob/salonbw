@@ -97,9 +97,9 @@ export default function WarehouseManufacturersPage() {
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Producent</th>
-                                    <th>Liczba produktów</th>
-                                    <th>Przykładowe produkty</th>
+                                    <th scope="col">Producent</th>
+                                    <th scope="col">Liczba produktów</th>
+                                    <th scope="col">Przykładowe produkty</th>
                                 </tr>
                             </thead>
                             <tbody>

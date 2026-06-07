@@ -308,8 +308,11 @@ export default function SettingsCategoriesPage() {
                                 <table className="table table-striped table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>Nazwa</th>
-                                            <th style={{ width: 260 }}>
+                                            <th scope="col">Nazwa</th>
+                                            <th
+                                                scope="col"
+                                                style={{ width: 260 }}
+                                            >
                                                 Akcje
                                             </th>
                                         </tr>

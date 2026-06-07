@@ -64,12 +64,12 @@ export default function InvoicesPage() {
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Numer faktury</th>
-                                        <th>Data wystawienia</th>
-                                        <th>Termin płatności</th>
-                                        <th>Kwota</th>
-                                        <th>Status</th>
-                                        <th>Akcje</th>
+                                        <th scope="col">Numer faktury</th>
+                                        <th scope="col">Data wystawienia</th>
+                                        <th scope="col">Termin płatności</th>
+                                        <th scope="col">Kwota</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Akcje</th>
                                     </tr>
                                 </thead>
                                 <tbody>

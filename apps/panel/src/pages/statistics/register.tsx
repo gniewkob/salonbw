@@ -273,14 +273,16 @@ export default function CashRegisterPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Czas</th>
-                                                <th>Typ</th>
-                                                <th>Opis</th>
-                                                <th>Klient</th>
-                                                <th>Pracownik</th>
-                                                <th>Metoda płatności</th>
-                                                <th>Kwota</th>
-                                                <th>Napiwek</th>
+                                                <th scope="col">Czas</th>
+                                                <th scope="col">Typ</th>
+                                                <th scope="col">Opis</th>
+                                                <th scope="col">Klient</th>
+                                                <th scope="col">Pracownik</th>
+                                                <th scope="col">
+                                                    Metoda płatności
+                                                </th>
+                                                <th scope="col">Kwota</th>
+                                                <th scope="col">Napiwek</th>
                                             </tr>
                                         </thead>
                                         <tbody>

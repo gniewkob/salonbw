@@ -333,7 +333,10 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th className="pointer checkbox_container center_text">
+                                    <th
+                                        scope="col"
+                                        className="pointer checkbox_container center_text"
+                                    >
                                         <label className="mb-0 mt-1">
                                             <input
                                                 type="checkbox"
@@ -347,22 +350,22 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                             />
                                         </label>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Nazwa</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Kategoria</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Czas trwania</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Popularność</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Cena brutto</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>VAT</div>
                                     </th>
                                 </tr>

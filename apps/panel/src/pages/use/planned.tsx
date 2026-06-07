@@ -53,12 +53,12 @@ export default function WarehouseUsagePlannedPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>nr zużycia</th>
-                                    <th>data planowana</th>
-                                    <th>klient</th>
-                                    <th>pracownik</th>
-                                    <th>pozycje</th>
-                                    <th>szczegóły</th>
+                                    <th scope="col">nr zużycia</th>
+                                    <th scope="col">data planowana</th>
+                                    <th scope="col">klient</th>
+                                    <th scope="col">pracownik</th>
+                                    <th scope="col">pozycje</th>
+                                    <th scope="col">szczegóły</th>
                                 </tr>
                             </thead>
                             <tbody>

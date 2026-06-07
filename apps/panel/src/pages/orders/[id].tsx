@@ -137,10 +137,10 @@ export default function WarehouseOrderDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>produkt</th>
-                                    <th>ilość</th>
-                                    <th>jednostka</th>
-                                    <th>przyjęto</th>
+                                    <th scope="col">produkt</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">jednostka</th>
+                                    <th scope="col">przyjęto</th>
                                 </tr>
                             </thead>
                             <tbody>

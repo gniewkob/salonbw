@@ -194,12 +194,20 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     <thead>
                                         <tr>
                                             <>
-                                                <th style={{ width: 40 }}></th>
-                                                <th>Nazwa pliku</th>
-                                                <th>Kategoria</th>
-                                                <th>Rozmiar</th>
-                                                <th>Data dodania</th>
-                                                <th style={{ width: 80 }}>
+                                                <th
+                                                    scope="col"
+                                                    style={{ width: 40 }}
+                                                ></th>
+                                                <th scope="col">Nazwa pliku</th>
+                                                <th scope="col">Kategoria</th>
+                                                <th scope="col">Rozmiar</th>
+                                                <th scope="col">
+                                                    Data dodania
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    style={{ width: 80 }}
+                                                >
                                                     Opcje
                                                 </th>
                                             </>

@@ -130,14 +130,14 @@ export default function WarehouseDeliveriesHistoryPage() {
                             <table className="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>wystawiono</th>
-                                        <th>liczba pozycji</th>
-                                        <th>numer faktury</th>
-                                        <th>wartość</th>
-                                        <th>dostawca</th>
-                                        <th>rodzaj</th>
-                                        <th>wprowadzone</th>
-                                        <th />
+                                        <th scope="col">wystawiono</th>
+                                        <th scope="col">liczba pozycji</th>
+                                        <th scope="col">numer faktury</th>
+                                        <th scope="col">wartość</th>
+                                        <th scope="col">dostawca</th>
+                                        <th scope="col">rodzaj</th>
+                                        <th scope="col">wprowadzone</th>
+                                        <th scope="col" />
                                     </tr>
                                 </thead>
                                 <tbody>

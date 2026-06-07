@@ -527,12 +527,16 @@ export default function ServiceDetailsPage() {
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Data</th>
-                                                    <th>Wariant</th>
-                                                    <th>Klient</th>
-                                                    <th>Pracownik</th>
-                                                    <th>Czas trwania</th>
-                                                    <th>Cena</th>
+                                                    <th scope="col">Data</th>
+                                                    <th scope="col">Wariant</th>
+                                                    <th scope="col">Klient</th>
+                                                    <th scope="col">
+                                                        Pracownik
+                                                    </th>
+                                                    <th scope="col">
+                                                        Czas trwania
+                                                    </th>
+                                                    <th scope="col">Cena</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -611,10 +615,13 @@ export default function ServiceDetailsPage() {
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th className="service-employees-variant-col">
+                                                    <th
+                                                        scope="col"
+                                                        className="service-employees-variant-col"
+                                                    >
                                                         Nazwa wariantu
                                                     </th>
-                                                    <th>
+                                                    <th scope="col">
                                                         Pracownicy i czas
                                                         wykonywania
                                                     </th>
@@ -768,12 +775,24 @@ export default function ServiceDetailsPage() {
                                             <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Data</th>
-                                                        <th>Źródło</th>
-                                                        <th>Autor</th>
-                                                        <th>Ocena</th>
-                                                        <th>Komentarz</th>
-                                                        <th>Akcje</th>
+                                                        <th scope="col">
+                                                            Data
+                                                        </th>
+                                                        <th scope="col">
+                                                            Źródło
+                                                        </th>
+                                                        <th scope="col">
+                                                            Autor
+                                                        </th>
+                                                        <th scope="col">
+                                                            Ocena
+                                                        </th>
+                                                        <th scope="col">
+                                                            Komentarz
+                                                        </th>
+                                                        <th scope="col">
+                                                            Akcje
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -857,8 +876,12 @@ export default function ServiceDetailsPage() {
                                             <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Pracownik</th>
-                                                        <th>Prowizja (%)</th>
+                                                        <th scope="col">
+                                                            Pracownik
+                                                        </th>
+                                                        <th scope="col">
+                                                            Prowizja (%)
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -966,10 +989,18 @@ export default function ServiceDetailsPage() {
                                             <table className="salonbw-table services-create-recipe-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>materiał</th>
-                                                        <th>jednostka</th>
-                                                        <th>ilość</th>
-                                                        <th>usuń</th>
+                                                        <th scope="col">
+                                                            materiał
+                                                        </th>
+                                                        <th scope="col">
+                                                            jednostka
+                                                        </th>
+                                                        <th scope="col">
+                                                            ilość
+                                                        </th>
+                                                        <th scope="col">
+                                                            usuń
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>

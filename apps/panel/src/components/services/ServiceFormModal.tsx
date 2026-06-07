@@ -437,10 +437,14 @@ export default function ServiceFormModal({
                 <table className="salonbw-table">
                     <thead>
                         <tr>
-                            <th>Pracownik</th>
-                            <th className="w-150">Czas trwania</th>
-                            <th className="w-150">Cena</th>
-                            <th className="w-50"></th>
+                            <th scope="col">Pracownik</th>
+                            <th scope="col" className="w-150">
+                                Czas trwania
+                            </th>
+                            <th scope="col" className="w-150">
+                                Cena
+                            </th>
+                            <th scope="col" className="w-50"></th>
                         </tr>
                     </thead>
                     <tbody>

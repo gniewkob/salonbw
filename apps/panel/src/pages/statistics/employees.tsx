@@ -185,9 +185,13 @@ export default function EmployeeActivityPage() {
                                     <table className="table table-bordered">
                                         <tbody>
                                             <tr>
-                                                <th>Pracownik</th>
-                                                <th>Przepracowany czas</th>
-                                                <th>Liczba wizyt</th>
+                                                <th scope="col">Pracownik</th>
+                                                <th scope="col">
+                                                    Przepracowany czas
+                                                </th>
+                                                <th scope="col">
+                                                    Liczba wizyt
+                                                </th>
                                             </tr>
                                             {rows.map((employee, i) => {
                                                 const empMinutes = toNumber(
@@ -235,9 +239,16 @@ export default function EmployeeActivityPage() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th aria-label="Pracownik" />
-                                                <th>Przepracowany czas</th>
-                                                <th>Liczba wizyt</th>
+                                                <th
+                                                    scope="col"
+                                                    aria-label="Pracownik"
+                                                />
+                                                <th scope="col">
+                                                    Przepracowany czas
+                                                </th>
+                                                <th scope="col">
+                                                    Liczba wizyt
+                                                </th>
                                             </tr>
                                             <tr>
                                                 <td>

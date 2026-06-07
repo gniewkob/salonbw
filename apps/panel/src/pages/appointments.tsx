@@ -367,14 +367,16 @@ export default function AppointmentsPage() {
                         <table className="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th>Data</th>
-                                    <th>Klient</th>
-                                    <th>Usługa</th>
-                                    <th>Pracownik</th>
-                                    <th>Status</th>
-                                    <th>Płatność</th>
-                                    <th className="text-end">Kwota</th>
-                                    <th></th>
+                                    <th scope="col">Data</th>
+                                    <th scope="col">Klient</th>
+                                    <th scope="col">Usługa</th>
+                                    <th scope="col">Pracownik</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Płatność</th>
+                                    <th scope="col" className="text-end">
+                                        Kwota
+                                    </th>
+                                    <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>

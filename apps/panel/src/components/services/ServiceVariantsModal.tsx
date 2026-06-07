@@ -158,10 +158,19 @@ export default function ServiceVariantsModal({
                                             <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Nazwa</th>
-                                                        <th>Czas</th>
-                                                        <th>Cena</th>
-                                                        <th className="w-100">
+                                                        <th scope="col">
+                                                            Nazwa
+                                                        </th>
+                                                        <th scope="col">
+                                                            Czas
+                                                        </th>
+                                                        <th scope="col">
+                                                            Cena
+                                                        </th>
+                                                        <th
+                                                            scope="col"
+                                                            className="w-100"
+                                                        >
                                                             Akcje
                                                         </th>
                                                     </tr>

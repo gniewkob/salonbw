@@ -34,13 +34,13 @@ export default function WarehouseLowStockPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>nazwa</th>
-                                    <th>sku</th>
-                                    <th>stan</th>
-                                    <th>min.</th>
-                                    <th>brak</th>
-                                    <th>dostawca</th>
-                                    <th>akcje</th>
+                                    <th scope="col">nazwa</th>
+                                    <th scope="col">sku</th>
+                                    <th scope="col">stan</th>
+                                    <th scope="col">min.</th>
+                                    <th scope="col">brak</th>
+                                    <th scope="col">dostawca</th>
+                                    <th scope="col">akcje</th>
                                 </tr>
                             </thead>
                             <tbody>

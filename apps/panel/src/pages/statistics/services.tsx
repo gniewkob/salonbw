@@ -130,18 +130,30 @@ export default function ServicesStatisticsPage() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Usługa</th>
-                                            <th>Kategoria</th>
-                                            <th className="text-end">
+                                            <th scope="col">Usługa</th>
+                                            <th scope="col">Kategoria</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Liczba wizyt
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Przychód
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Średnia cena
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Średni czas
                                             </th>
                                         </tr>

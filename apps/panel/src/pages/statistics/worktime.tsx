@@ -187,8 +187,13 @@ export default function WorkTimeReportPage() {
                                             <table className="salonbw-table table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>Pracownik</th>
-                                                        <th className="text-end">
+                                                        <th scope="col">
+                                                            Pracownik
+                                                        </th>
+                                                        <th
+                                                            scope="col"
+                                                            className="text-end"
+                                                        >
                                                             Godziny
                                                         </th>
                                                     </tr>
@@ -372,20 +377,35 @@ export default function WorkTimeReportPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Pracownik</th>
-                                                <th className="text-end">
+                                                <th scope="col">Pracownik</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Godziny
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Wizyty
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Dni
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Średnio/dzień
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Wizyt/godzinę
                                                 </th>
                                             </tr>

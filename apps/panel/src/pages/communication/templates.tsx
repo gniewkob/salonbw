@@ -213,12 +213,12 @@ export default function TemplatesPage() {
                             <table className="table table-bordered table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa</th>
-                                        <th>Typ</th>
-                                        <th>Kanał</th>
-                                        <th>Treść</th>
-                                        <th>Status</th>
-                                        <th>Akcje</th>
+                                        <th scope="col">Nazwa</th>
+                                        <th scope="col">Typ</th>
+                                        <th scope="col">Kanał</th>
+                                        <th scope="col">Treść</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Akcje</th>
                                     </tr>
                                 </thead>
                                 <tbody>

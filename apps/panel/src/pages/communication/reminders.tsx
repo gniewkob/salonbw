@@ -164,10 +164,10 @@ export default function RemindersPage() {
                                         <table className="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Klient</th>
-                                                    <th>SMS</th>
-                                                    <th>Email</th>
-                                                    <th>Status</th>
+                                                    <th scope="col">Klient</th>
+                                                    <th scope="col">SMS</th>
+                                                    <th scope="col">Email</th>
+                                                    <th scope="col">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

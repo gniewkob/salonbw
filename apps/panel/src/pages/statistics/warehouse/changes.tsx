@@ -207,19 +207,28 @@ export default function WarehouseChangesPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Data</th>
-                                                <th>Produkt</th>
-                                                <th>Typ</th>
-                                                <th className="text-end">
+                                                <th scope="col">Data</th>
+                                                <th scope="col">Produkt</th>
+                                                <th scope="col">Typ</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Zmiana
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Stan przed
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Stan po
                                                 </th>
-                                                <th>Użytkownik</th>
+                                                <th scope="col">Użytkownik</th>
                                             </tr>
                                         </thead>
                                         <tbody>

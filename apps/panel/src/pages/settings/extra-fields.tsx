@@ -177,11 +177,13 @@ export default function ExtraFieldsPage() {
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa pola</th>
-                                        <th>Typ</th>
-                                        <th>Wymagane</th>
-                                        <th>Opcje (dla lista wyboru)</th>
-                                        <th />
+                                        <th scope="col">Nazwa pola</th>
+                                        <th scope="col">Typ</th>
+                                        <th scope="col">Wymagane</th>
+                                        <th scope="col">
+                                            Opcje (dla lista wyboru)
+                                        </th>
+                                        <th scope="col" />
                                     </tr>
                                 </thead>
                                 <tbody>

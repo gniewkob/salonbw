@@ -386,12 +386,20 @@ export default function ActivityLogRoute({
                                         <table className="table data_table no_hover table-bordered">
                                             <thead>
                                                 <tr>
-                                                    <th>Data</th>
-                                                    <th>Pracownik</th>
-                                                    <th>Adres IP</th>
-                                                    <th>Dział i akcja</th>
-                                                    <th>Dział</th>
-                                                    <th>Szczegóły</th>
+                                                    <th scope="col">Data</th>
+                                                    <th scope="col">
+                                                        Pracownik
+                                                    </th>
+                                                    <th scope="col">
+                                                        Adres IP
+                                                    </th>
+                                                    <th scope="col">
+                                                        Dział i akcja
+                                                    </th>
+                                                    <th scope="col">Dział</th>
+                                                    <th scope="col">
+                                                        Szczegóły
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>

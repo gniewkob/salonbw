@@ -186,22 +186,22 @@ export default function CampaignsPage() {
                             <table className="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>
+                                        <th scope="col">
                                             <div>Nazwa</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Kanał</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Data wysyłki</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Odbiorcy</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Status</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Akcje</div>
                                         </th>
                                     </tr>

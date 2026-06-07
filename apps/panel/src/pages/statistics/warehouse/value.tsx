@@ -286,14 +286,23 @@ export default function WarehouseValuePage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Kategoria</th>
-                                                <th className="text-end">
+                                                <th scope="col">Kategoria</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Produkty
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Ilość sztuk
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Wartość
                                                 </th>
                                             </tr>
@@ -330,14 +339,23 @@ export default function WarehouseValuePage() {
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Produkt</th>
-                                                    <th className="text-end">
+                                                    <th scope="col">Produkt</th>
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Stan aktualny
                                                     </th>
-                                                    <th className="text-end">
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Min. stan
                                                     </th>
-                                                    <th className="text-end">
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Cena
                                                     </th>
                                                 </tr>
