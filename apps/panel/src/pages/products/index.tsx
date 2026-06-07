@@ -260,6 +260,7 @@ export default function WarehouseProductsPage() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="wyszukaj produkt"
+                            aria-label="Wyszukaj produkt"
                         />
                         <select
                             value={productTypeFilter}

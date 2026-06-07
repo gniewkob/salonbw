@@ -197,6 +197,7 @@ function ExtraFieldsTab() {
                             <select
                                 className="form-control"
                                 title="Typ pola"
+                                aria-label="Typ pola"
                                 value={addForm.type}
                                 onChange={(e) =>
                                     setAddForm((f) => ({
@@ -320,6 +321,7 @@ function ExtraFieldsTab() {
                                         <select
                                             className="form-control input-sm"
                                             title="Typ pola"
+                                            aria-label="Typ pola"
                                             value={editForm.type}
                                             onChange={(e) =>
                                                 setEditForm((f) =>

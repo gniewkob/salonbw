@@ -577,6 +577,7 @@ export default function ClientsPage() {
                                     type="text"
                                     name="query"
                                     placeholder="wyszukaj po nazwie, telefonie lub emailu"
+                                    aria-label="Wyszukaj klienta"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);

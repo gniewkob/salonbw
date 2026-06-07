@@ -78,6 +78,7 @@ export default function InventoryHistoryPage() {
                                 <input
                                     type="text"
                                     placeholder="wyszukaj w historii inwentaryzacji..."
+                                    aria-label="Wyszukaj w historii inwentaryzacji"
                                     value={search}
                                     onChange={(event) => {
                                         setSearch(event.target.value);
@@ -88,6 +89,7 @@ export default function InventoryHistoryPage() {
                             </div>
                             <div className="col-sm-5 text-end">
                                 <select
+                                    aria-label="Filtruj po statusie"
                                     value={normalizedStatus ?? ''}
                                     onChange={(event) => {
                                         const status = event.target.value;

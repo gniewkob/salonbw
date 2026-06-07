@@ -193,6 +193,7 @@ export default function WarehouseSaleCreatePage() {
                                     <tr key={`${index}-${line.productId}`}>
                                         <td>
                                             <select
+                                                aria-label={`Produkt (pozycja ${index + 1})`}
                                                 value={line.productId}
                                                 onChange={(event) => {
                                                     const value =

@@ -263,6 +263,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                     <input
                         className="services-search-input"
                         placeholder="wyszukaj usługę"
+                        aria-label="Wyszukaj usługę"
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -273,6 +274,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                 <div className="col-sm-4">
                     <select
                         className="form-select"
+                        aria-label="Filtruj po kategorii"
                         value={categoryId ?? ''}
                         onChange={(e) => {
                             const val = e.target.value;

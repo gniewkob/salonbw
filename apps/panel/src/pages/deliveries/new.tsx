@@ -161,6 +161,7 @@ export default function WarehouseDeliveryCreatePage() {
                                         <td>{index + 1}</td>
                                         <td>
                                             <select
+                                                aria-label={`Produkt (pozycja ${index + 1})`}
                                                 value={line.productId}
                                                 onChange={(event) => {
                                                     const value =
@@ -275,6 +276,7 @@ export default function WarehouseDeliveryCreatePage() {
                             </span>
                             <div className="warehouse-inline-field">
                                 <select
+                                    aria-label="Dostawca"
                                     value={supplierId}
                                     onChange={(event) =>
                                         setSupplierId(event.target.value)

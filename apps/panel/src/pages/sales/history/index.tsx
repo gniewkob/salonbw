@@ -131,6 +131,7 @@ export default function WarehouseSalesHistoryPage() {
                                 <input
                                     type="text"
                                     placeholder="wyszukaj w historii sprzedaży..."
+                                    aria-label="Wyszukaj w historii sprzedaży"
                                     value={search}
                                     onChange={(e) => {
                                         setSearch(e.target.value);

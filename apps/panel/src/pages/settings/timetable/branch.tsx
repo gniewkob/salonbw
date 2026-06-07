@@ -470,6 +470,7 @@ export default function SettingsTimetableBranchPage() {
                                                                             </span>
                                                                             <select
                                                                                 className="schedule-time"
+                                                                                aria-label={`Godzina otwarcia (${day.key}, zakres ${rangeIndex + 1})`}
                                                                                 value={
                                                                                     range.open
                                                                                 }
@@ -503,6 +504,7 @@ export default function SettingsTimetableBranchPage() {
                                                                             </span>
                                                                             <select
                                                                                 className="schedule-time"
+                                                                                aria-label={`Godzina zamknięcia (${day.key}, zakres ${rangeIndex + 1})`}
                                                                                 value={
                                                                                     range.close
                                                                                 }
