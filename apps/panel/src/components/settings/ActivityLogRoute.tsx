@@ -209,7 +209,10 @@ export default function ActivityLogRoute({
                                 });
                             }}
                         >
-                            <i className="icon sprite-filter mr-xs" />
+                            <i
+                                className="icon sprite-filter mr-xs"
+                                aria-hidden="true"
+                            />
                             filtruj
                         </button>
 
