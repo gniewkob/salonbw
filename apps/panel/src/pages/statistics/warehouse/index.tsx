@@ -171,7 +171,7 @@ function ChangesTab() {
             {isLoading ? (
                 <div className="text-center py-5">Ładowanie...</div>
             ) : error ? (
-                <div className="alert alert-warning">
+                <div className="alert alert-warning" role="alert">
                     Statystyki magazynowe chwilowo niedostępne.
                 </div>
             ) : stats ? (
@@ -373,7 +373,7 @@ function ValueTab() {
             {isLoading ? (
                 <div className="text-center py-5">Ładowanie...</div>
             ) : error ? (
-                <div className="alert alert-warning">
+                <div className="alert alert-warning" role="alert">
                     Raport wartości chwilowo niedostępny.
                 </div>
             ) : stats ? (

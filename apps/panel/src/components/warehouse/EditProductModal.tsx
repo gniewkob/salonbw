@@ -162,7 +162,9 @@ export default function EditProductModal({
             </div>
 
             {apiError ? (
-                <div className="alert alert-danger py-2 small">{apiError}</div>
+                <div className="alert alert-danger py-2 small" role="alert">
+                    {apiError}
+                </div>
             ) : null}
 
             {isLoading ? (

@@ -327,7 +327,7 @@ function ProtectionTab() {
             )}
             {isError && (
                 <div className="edit_branch_form">
-                    <div className="alert alert-danger">
+                    <div className="alert alert-danger" role="alert">
                         Nie udało się załadować ustawień.
                     </div>
                 </div>
@@ -346,12 +346,12 @@ function ProtectionTab() {
                     <h2>Tryb ochrony danych</h2>
 
                     {saved && (
-                        <div className="alert alert-success">
+                        <div className="alert alert-success" role="status">
                             Ustawienia zostały zapisane.
                         </div>
                     )}
                     {updateDataProtection.isError && (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Wystąpił błąd podczas zapisywania ustawień.
                         </div>
                     )}
@@ -444,13 +444,19 @@ function ProtectionTab() {
                                     </p>
                                 )}
                                 {employeeLimits.isError && (
-                                    <div className="alert alert-danger">
+                                    <div
+                                        className="alert alert-danger"
+                                        role="alert"
+                                    >
                                         Nie udało się załadować limitów
                                         pracowników.
                                     </div>
                                 )}
                                 {updateDataProtectionEmployeeLimit.isError && (
-                                    <div className="alert alert-danger">
+                                    <div
+                                        className="alert alert-danger"
+                                        role="alert"
+                                    >
                                         Nie udało się zapisać limitu pracownika.
                                     </div>
                                 )}

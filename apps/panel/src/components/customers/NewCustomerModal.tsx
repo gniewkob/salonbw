@@ -125,6 +125,7 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                 <div
                     className="alert alert-warning d-flex align-items-start gap-2 py-2 small"
                     role="alert"
+                    role="alert"
                 >
                     <span>⚠️</span>
                     <div>
@@ -151,7 +152,9 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
             ) : null}
 
             {error ? (
-                <div className="alert alert-danger py-2 small">{error}</div>
+                <div className="alert alert-danger py-2 small" role="alert">
+                    {error}
+                </div>
             ) : null}
 
             <form onSubmit={(e) => void handleSubmit(e)}>

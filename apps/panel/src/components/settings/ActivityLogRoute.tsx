@@ -221,8 +221,12 @@ export default function ActivityLogRoute({
                             style={{ display: filtersOpen ? 'block' : 'none' }}
                         >
                             <div className="rows" id="filter_rows">
-                                <Link className="close" href={clearHref}>
-                                    ×
+                                <Link
+                                    className="close"
+                                    href={clearHref}
+                                    aria-label="Wyczyść filtry"
+                                >
+                                    <span aria-hidden="true">×</span>
                                 </Link>
                                 <div className="row" id="first_filter_row">
                                     <form

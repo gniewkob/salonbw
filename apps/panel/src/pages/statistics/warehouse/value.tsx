@@ -120,7 +120,7 @@ export default function WarehouseValuePage() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Raport wartości chwilowo niedostępny.
                         </div>
                     ) : stats ? (

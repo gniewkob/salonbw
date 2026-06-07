@@ -794,7 +794,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                         </div>
 
                                         {scheduleError && (
-                                            <div className="alert alert-danger mt-2">
+                                            <div
+                                                className="alert alert-danger mt-2"
+                                                role="alert"
+                                            >
                                                 {scheduleError}
                                             </div>
                                         )}
@@ -842,7 +845,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                         </div>
 
                                         {exceptionError && (
-                                            <div className="alert alert-danger mb-2">
+                                            <div
+                                                className="alert alert-danger mb-2"
+                                                role="alert"
+                                            >
                                                 {exceptionError}
                                             </div>
                                         )}

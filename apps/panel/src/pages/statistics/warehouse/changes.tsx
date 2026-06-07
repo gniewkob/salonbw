@@ -130,7 +130,7 @@ export default function WarehouseChangesPage() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Statystyki magazynowe chwilowo niedostępne.
                         </div>
                     ) : stats ? (

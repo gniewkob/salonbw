@@ -74,7 +74,7 @@ export default function DataProtectionPage() {
                     {isLoading ? (
                         <div className="text-muted p-3">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Nie udało się pobrać ustawień ochrony danych.
                         </div>
                     ) : (
@@ -157,12 +157,18 @@ export default function DataProtectionPage() {
                             </div>
 
                             {saved && (
-                                <div className="alert alert-success mb-3">
+                                <div
+                                    className="alert alert-success mb-3"
+                                    role="status"
+                                >
                                     Ustawienia zostały zapisane.
                                 </div>
                             )}
                             {saveError && (
-                                <div className="alert alert-danger mb-3">
+                                <div
+                                    className="alert alert-danger mb-3"
+                                    role="alert"
+                                >
                                     {saveError}
                                 </div>
                             )}

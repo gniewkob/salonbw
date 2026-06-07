@@ -141,7 +141,7 @@ export default function EmployeeActivityPage() {
                     {loading ? (
                         <div className="text-muted">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Raport aktywności chwilowo niedostępny.
                         </div>
                     ) : (

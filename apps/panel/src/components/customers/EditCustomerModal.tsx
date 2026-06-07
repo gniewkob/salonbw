@@ -84,7 +84,9 @@ export default function EditCustomerModal({
             </div>
 
             {error ? (
-                <div className="alert alert-danger py-2 small">{error}</div>
+                <div className="alert alert-danger py-2 small" role="alert">
+                    {error}
+                </div>
             ) : null}
 
             {isLoading ? (

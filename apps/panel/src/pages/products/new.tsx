@@ -111,7 +111,9 @@ export default function NewProductPage() {
                         }}
                     >
                         {apiError ? (
-                            <div className="alert alert-danger">{apiError}</div>
+                            <div className="alert alert-danger" role="alert">
+                                {apiError}
+                            </div>
                         ) : null}
                         <div className="product-form__section">
                             <h4>dane podstawowe</h4>

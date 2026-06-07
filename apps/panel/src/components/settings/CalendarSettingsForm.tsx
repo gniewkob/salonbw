@@ -448,10 +448,12 @@ export default function CalendarSettingsForm() {
                     </ol>
 
                     {submitError ? (
-                        <div className="alert alert-danger">{submitError}</div>
+                        <div className="alert alert-danger" role="alert">
+                            {submitError}
+                        </div>
                     ) : null}
                     {saved ? (
-                        <div className="alert alert-success">
+                        <div className="alert alert-success" role="status">
                             Ustawienia kalendarza zostały zapisane.
                         </div>
                     ) : null}

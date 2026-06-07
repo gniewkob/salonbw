@@ -606,7 +606,10 @@ export default function CalendarPage() {
 
                     <div className="px-3 pb-3">
                         {deepLinkError ? (
-                            <div className="alert alert-warning py-2 mb-2">
+                            <div
+                                className="alert alert-warning py-2 mb-2"
+                                role="alert"
+                            >
                                 {deepLinkError}
                             </div>
                         ) : null}
@@ -635,7 +638,10 @@ export default function CalendarPage() {
                                     </div>
                                 ) : null}
                                 {customerAlertStatsError ? (
-                                    <div className="alert alert-warning py-2 mb-0">
+                                    <div
+                                        className="alert alert-warning py-2 mb-0"
+                                        role="alert"
+                                    >
                                         <div>
                                             Część alertów CRM jest chwilowo
                                             niedostępna. Spróbujemy ponownie
@@ -785,7 +791,10 @@ export default function CalendarPage() {
                                         </div>
                                     ) : null}
                                     {cancellationRequestsError ? (
-                                        <div className="alert alert-warning py-2 mb-0">
+                                        <div
+                                            className="alert alert-warning py-2 mb-0"
+                                            role="alert"
+                                        >
                                             Nie udało się pobrać próśb o
                                             anulowanie. Spróbuj odświeżyć widok.
                                         </div>

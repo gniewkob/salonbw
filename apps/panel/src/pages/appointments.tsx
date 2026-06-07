@@ -358,7 +358,7 @@ export default function AppointmentsPage() {
                     </div>
 
                     {error && (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Błąd ładowania danych.
                         </div>
                     )}

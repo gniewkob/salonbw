@@ -285,20 +285,22 @@ export default function FollowUpStatisticsPage() {
                     </div>
 
                     {loading ? (
-                        <div className="alert alert-light border">
+                        <div className="alert alert-light border" role="status">
                             Ładowanie audytu follow-up...
                         </div>
                     ) : null}
                     {!loading && rangeError ? (
-                        <div className="alert alert-warning">{rangeError}</div>
+                        <div className="alert alert-warning" role="alert">
+                            {rangeError}
+                        </div>
                     ) : null}
                     {!loading && error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Audyt follow-up chwilowo niedostępny.
                         </div>
                     ) : null}
                     {!loading && !error && !rangeError && !hasData ? (
-                        <div className="alert alert-light border">
+                        <div className="alert alert-light border" role="status">
                             Brak danych dla wybranego zakresu.
                         </div>
                     ) : null}

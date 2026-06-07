@@ -266,7 +266,7 @@ function ExtraFieldsTab() {
 
             {isLoading && <p>Ładowanie...</p>}
             {isError && (
-                <div className="alert alert-danger">
+                <div className="alert alert-danger" role="alert">
                     Nie udało się załadować pól.
                 </div>
             )}
@@ -561,7 +561,7 @@ function OriginsTab() {
 
             {isLoading && <p>Ładowanie...</p>}
             {isError && (
-                <div className="alert alert-danger">
+                <div className="alert alert-danger" role="alert">
                     Nie udało się załadować źródeł.
                 </div>
             )}

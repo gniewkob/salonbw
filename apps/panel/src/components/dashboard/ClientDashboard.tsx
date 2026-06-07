@@ -100,7 +100,7 @@ export default function ClientDashboard() {
     if (error) {
         return (
             <div className="salonbw-dashboard">
-                <div className="alert alert-danger">
+                <div className="alert alert-danger" role="alert">
                     Błąd ładowania danych: {error.message}
                 </div>
             </div>

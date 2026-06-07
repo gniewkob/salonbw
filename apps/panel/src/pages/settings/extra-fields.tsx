@@ -170,7 +170,10 @@ export default function ExtraFieldsPage() {
                     ) : (
                         <div className="salonbw-table-wrap">
                             {deleteError && (
-                                <div className="alert alert-danger mb-2">
+                                <div
+                                    className="alert alert-danger mb-2"
+                                    role="alert"
+                                >
                                     {deleteError}
                                 </div>
                             )}
@@ -293,7 +296,10 @@ export default function ExtraFieldsPage() {
                                             onChange={setForm}
                                         />
                                         {submitError && (
-                                            <div className="alert alert-danger mt-2">
+                                            <div
+                                                className="alert alert-danger mt-2"
+                                                role="alert"
+                                            >
                                                 {submitError}
                                             </div>
                                         )}
@@ -359,7 +365,10 @@ export default function ExtraFieldsPage() {
                                             onChange={setEditForm}
                                         />
                                         {updateError && (
-                                            <div className="alert alert-danger mt-2 mb-0">
+                                            <div
+                                                className="alert alert-danger mt-2 mb-0"
+                                                role="alert"
+                                            >
                                                 {updateError}
                                             </div>
                                         )}

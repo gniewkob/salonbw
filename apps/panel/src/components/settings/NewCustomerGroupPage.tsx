@@ -111,7 +111,9 @@ export default function NewCustomerGroupPage() {
                 </ol>
 
                 {submitError ? (
-                    <div className="alert alert-danger">{submitError}</div>
+                    <div className="alert alert-danger" role="alert">
+                        {submitError}
+                    </div>
                 ) : null}
 
                 <PanelActionBar

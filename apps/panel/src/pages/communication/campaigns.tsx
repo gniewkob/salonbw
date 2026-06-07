@@ -170,7 +170,7 @@ export default function CampaignsPage() {
                     <h2>Wiadomości</h2>
 
                     {actionError && (
-                        <div className="alert alert-danger mt-2">
+                        <div className="alert alert-danger mt-2" role="alert">
                             {actionError}
                         </div>
                     )}
@@ -178,7 +178,7 @@ export default function CampaignsPage() {
                     {isLoading ? (
                         <p className="text-muted">Ładowanie...</p>
                     ) : error ? (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Błąd ładowania wiadomości
                         </div>
                     ) : (

@@ -459,10 +459,12 @@ export default function BranchIdentityForm() {
             </ol>
 
             {submitError ? (
-                <div className="alert alert-danger">{submitError}</div>
+                <div className="alert alert-danger" role="alert">
+                    {submitError}
+                </div>
             ) : null}
             {isSaved ? (
-                <div className="alert alert-success">
+                <div className="alert alert-success" role="status">
                     Dane salonu zostały zapisane.
                 </div>
             ) : null}

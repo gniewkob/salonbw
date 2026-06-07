@@ -288,7 +288,10 @@ export default function SettingsEmployeeDetailPage() {
                                             />
                                         </div>
                                         {editError && (
-                                            <div className="alert alert-danger mb-3">
+                                            <div
+                                                className="alert alert-danger mb-3"
+                                                role="alert"
+                                            >
                                                 {editError}
                                             </div>
                                         )}
@@ -377,6 +380,7 @@ export default function SettingsEmployeeDetailPage() {
                         <div
                             role="status"
                             className="alert alert-success py-2 small"
+                            role="status"
                         >
                             Hasło zostało zmienione.
                         </div>
@@ -433,6 +437,7 @@ export default function SettingsEmployeeDetailPage() {
                                 <div
                                     role="alert"
                                     className="alert alert-danger py-2 small mb-3"
+                                    role="alert"
                                 >
                                     {resetError}
                                 </div>

@@ -416,7 +416,7 @@ export default function ServiceFormModal({
 
     const renderResourcesTab = () => (
         <div className="tab-pane active py-20">
-            <div className="alert alert-info">
+            <div className="alert alert-info" role="status">
                 W tej sekcji możesz przypisać zasoby (gabinety, urządzenia)
                 wymagane do wykonania tej usługi.
             </div>
@@ -428,7 +428,7 @@ export default function ServiceFormModal({
 
     const renderEmployeesTab = () => (
         <div className="tab-pane active py-20">
-            <div className="alert alert-info">
+            <div className="alert alert-info" role="status">
                 Wybierz pracowników, którzy świadczą tę usługę. Możesz również
                 zdefiniować indywidualne czasy trwania i ceny.
             </div>

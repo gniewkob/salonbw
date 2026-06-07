@@ -20,7 +20,7 @@ export default function AdminCompanySettingsPage() {
                             { label: 'Ustawienia firmy' },
                         ]}
                     />
-                    <div className="alert alert-info mt-4">
+                    <div className="alert alert-info mt-4" role="status">
                         Ustawienia firmy nie są jeszcze dostępne w tej wersji
                         aplikacji.
                     </div>

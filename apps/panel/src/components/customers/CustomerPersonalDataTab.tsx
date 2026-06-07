@@ -96,7 +96,9 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
             />
 
             {saveError && (
-                <div className="alert alert-danger mt-3 mb-0">{saveError}</div>
+                <div className="alert alert-danger mt-3 mb-0" role="alert">
+                    {saveError}
+                </div>
             )}
             <div className="customer-new-actions customer-new-actions--sticky">
                 <button

@@ -286,7 +286,7 @@ function ReturningTab() {
             {isLoading ? (
                 <div className="text-center py-5">Ładowanie...</div>
             ) : error ? (
-                <div className="alert alert-warning">
+                <div className="alert alert-warning" role="alert">
                     Statystyki powracalności chwilowo niedostępne.
                 </div>
             ) : stats ? (
@@ -504,7 +504,7 @@ function OriginsTab() {
             {isLoading ? (
                 <div className="text-center py-5">Ładowanie...</div>
             ) : error ? (
-                <div className="alert alert-warning">
+                <div className="alert alert-warning" role="alert">
                     Statystyki pochodzenia chwilowo niedostępne.
                 </div>
             ) : stats ? (

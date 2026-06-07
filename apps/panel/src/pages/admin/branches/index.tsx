@@ -20,7 +20,7 @@ export default function AdminBranchesPage() {
                             { label: 'Salony (Multi-location)' },
                         ]}
                     />
-                    <div className="alert alert-info mt-4">
+                    <div className="alert alert-info mt-4" role="status">
                         Zarządzanie wieloma salonami (Multi-location) nie jest
                         jeszcze dostępne w tej wersji aplikacji.
                     </div>

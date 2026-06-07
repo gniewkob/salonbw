@@ -291,13 +291,19 @@ export default function SettingsCategoriesPage() {
                                 )}
                             </div>
                             {deleteCategory.isError && (
-                                <div className="alert alert-danger mb-2">
+                                <div
+                                    className="alert alert-danger mb-2"
+                                    role="alert"
+                                >
                                     Nie udało się usunąć kategorii. Spróbuj
                                     ponownie.
                                 </div>
                             )}
                             {reorderCategories.isError && (
-                                <div className="alert alert-danger mb-2">
+                                <div
+                                    className="alert alert-danger mb-2"
+                                    role="alert"
+                                >
                                     Nie udało się zapisać nowego układu. Spróbuj
                                     ponownie.
                                 </div>

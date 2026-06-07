@@ -721,7 +721,10 @@ export default function AppointmentDrawer({
                             )}
 
                         {error && (
-                            <div className="alert alert-danger py-2 mb-0">
+                            <div
+                                className="alert alert-danger py-2 mb-0"
+                                role="alert"
+                            >
                                 {error}
                             </div>
                         )}

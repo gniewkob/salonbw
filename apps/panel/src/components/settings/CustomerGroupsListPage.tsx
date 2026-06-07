@@ -262,7 +262,9 @@ export default function CustomerGroupsListPage() {
             </div>
 
             {actionError && (
-                <div className="alert alert-danger mt-2">{actionError}</div>
+                <div className="alert alert-danger mt-2" role="alert">
+                    {actionError}
+                </div>
             )}
 
             {isLoading ? (

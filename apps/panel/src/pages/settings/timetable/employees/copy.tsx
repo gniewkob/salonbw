@@ -214,12 +214,18 @@ export default function SettingsTimetableEmployeesCopyPage() {
                                 <div className="row">
                                     <div className="col-md-8">
                                         {successMessage ? (
-                                            <div className="alert alert-success">
+                                            <div
+                                                className="alert alert-success"
+                                                role="status"
+                                            >
                                                 {successMessage}
                                             </div>
                                         ) : null}
                                         {errorMessage ? (
-                                            <div className="alert alert-danger">
+                                            <div
+                                                className="alert alert-danger"
+                                                role="alert"
+                                            >
                                                 {errorMessage}
                                             </div>
                                         ) : null}
