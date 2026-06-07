@@ -116,6 +116,7 @@ export default function StocktakingTab() {
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="d-flex align-items-center gap-3">
                     <select
+                        aria-label="Filtruj po statusie"
                         value={statusFilter}
                         onChange={(e) =>
                             setStatusFilter(

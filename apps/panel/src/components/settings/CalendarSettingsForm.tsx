@@ -356,6 +356,7 @@ export default function CalendarSettingsForm() {
                                         className="string optional small short"
                                         type="text"
                                         inputMode="numeric"
+                                        aria-describedby="setting-days-while-editable-hint"
                                         value={customDaysValue}
                                         onChange={(event) => {
                                             setCustomDaysValue(
@@ -368,6 +369,7 @@ export default function CalendarSettingsForm() {
                                     <select
                                         id="setting-days-while-editable"
                                         className="select optional align-middle small"
+                                        aria-describedby="setting-days-while-editable-hint"
                                         value={formData.daysWhileEditable ?? 1}
                                         onChange={(event) => {
                                             const selected = Number.parseInt(
@@ -396,7 +398,10 @@ export default function CalendarSettingsForm() {
                                         <option value={40}>inny okres</option>
                                     </select>
                                 )}
-                                <span className="inline-hint">
+                                <span
+                                    id="setting-days-while-editable-hint"
+                                    className="inline-hint"
+                                >
                                     {' '}
                                     dni wstecz
                                     <br />

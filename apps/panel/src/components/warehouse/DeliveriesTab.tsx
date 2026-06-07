@@ -121,6 +121,7 @@ export default function DeliveriesTab() {
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="d-flex align-items-center gap-3">
                     <select
+                        aria-label="Filtruj po statusie"
                         value={statusFilter}
                         onChange={(e) =>
                             setStatusFilter(
@@ -298,10 +299,14 @@ export default function DeliveriesTab() {
                         className="gap-2"
                     >
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-supplier"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Dostawca
                             </label>
                             <select
+                                id="delivery-supplier"
                                 value={formData.supplierId}
                                 onChange={(e) =>
                                     setFormData({
@@ -320,10 +325,14 @@ export default function DeliveriesTab() {
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-date"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Data dostawy
                             </label>
                             <input
+                                id="delivery-date"
                                 type="date"
                                 value={formData.deliveryDate}
                                 onChange={(e) =>
@@ -336,10 +345,14 @@ export default function DeliveriesTab() {
                             />
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-invoice"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Nr faktury
                             </label>
                             <input
+                                id="delivery-invoice"
                                 type="text"
                                 value={formData.invoiceNumber}
                                 onChange={(e) =>
@@ -352,10 +365,14 @@ export default function DeliveriesTab() {
                             />
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-notes"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Notatki
                             </label>
                             <textarea
+                                id="delivery-notes"
                                 value={formData.notes}
                                 onChange={(e) =>
                                     setFormData({

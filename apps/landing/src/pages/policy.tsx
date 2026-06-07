@@ -1,14 +1,35 @@
 import Link from 'next/link';
 import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
+import { absUrl } from '@/utils/seo';
 
 export default function PolicyPage() {
     return (
         <PublicLayout>
             <Head>
                 <title>Regulamin Świadczenia Usług | Salon Black & White</title>
-                <meta name="description" content="Regulamin świadczenia usług drogą elektroniczną oraz zasady korzystania z usług Salonu Fryzjerskiego Black & White." />
-                <link rel="canonical" href="https://salon-bw.pl/policy" />
+                <meta
+                    name="description"
+                    content="Regulamin świadczenia usług drogą elektroniczną oraz zasady korzystania z usług Salonu Fryzjerskiego Black & White."
+                />
+                <meta
+                    property="og:title"
+                    content="Regulamin Świadczenia Usług — Salon Black & White"
+                />
+                <meta
+                    property="og:description"
+                    content="Regulamin świadczenia usług drogą elektroniczną oraz zasady korzystania z usług Salonu Fryzjerskiego Black & White."
+                />
+                <meta
+                    property="og:image"
+                    content={absUrl('/images/hero/slider1.jpg')}
+                />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:type" content="website" />
+                <meta property="og:locale" content="pl_PL" />
+                <meta property="og:url" content={absUrl('/policy')} />
+                <link rel="canonical" href={absUrl('/policy')} />
                 <meta name="robots" content="index, follow" />
             </Head>
             <div className="legal-page">
@@ -19,8 +40,8 @@ export default function PolicyPage() {
                     <p className="legal-lead">
                         Niniejszy Regulamin określa ogólne warunki, zasady oraz
                         sposób świadczenia usług drogą elektroniczną przez Salon
-                        Fryzjerski &quot;Black &amp; White&quot;, a także zasady korzystania
-                        z systemu rezerwacji i świadczenia usług
+                        Fryzjerski &quot;Black &amp; White&quot;, a także zasady
+                        korzystania z systemu rezerwacji i świadczenia usług
                         kosmetyczno-fryzjerskich na miejscu.
                     </p>
 
@@ -30,7 +51,8 @@ export default function PolicyPage() {
                             Właścicielem serwisu internetowego oraz systemu
                             rezerwacji jest{' '}
                             <strong>
-                                Salon Fryzjerski Black&amp;White Aleksandra Bodora
+                                Salon Fryzjerski Black&amp;White Aleksandra
+                                Bodora
                             </strong>{' '}
                             z siedzibą w Radzionkowie (41-922), ul. Mikołaja
                             Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588
@@ -125,7 +147,8 @@ export default function PolicyPage() {
                         <li>
                             <strong>Anulacja:</strong> Klient może bezkosztowo
                             odwołać wizytę lub zmienić jej termin na minimalnie
-                            24 godziny przed zaplanowanym czasem jej rozpoczęcia.
+                            24 godziny przed zaplanowanym czasem jej
+                            rozpoczęcia.
                         </li>
                         <li>
                             W przypadku nieodwołania wizyty w wyznaczonym wyżej
