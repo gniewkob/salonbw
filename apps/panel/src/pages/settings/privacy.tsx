@@ -444,19 +444,13 @@ function ProtectionTab() {
                                     </p>
                                 )}
                                 {employeeLimits.isError && (
-                                    <div
-                                        className="alert alert-danger"
-                                        role="alert"
-                                    >
+                                    <div className="alert alert-danger">
                                         Nie udało się załadować limitów
                                         pracowników.
                                     </div>
                                 )}
                                 {updateDataProtectionEmployeeLimit.isError && (
-                                    <div
-                                        className="alert alert-danger"
-                                        role="alert"
-                                    >
+                                    <div className="alert alert-danger">
                                         Nie udało się zapisać limitu pracownika.
                                     </div>
                                 )}

@@ -247,7 +247,6 @@ export default function NewCustomerPage() {
                             <div
                                 className="alert alert-warning d-flex align-items-start gap-2 py-2"
                                 role="alert"
-                                role="alert"
                             >
                                 <span>⚠️</span>
                                 <div>

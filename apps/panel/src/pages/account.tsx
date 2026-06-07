@@ -150,7 +150,6 @@ export default function AccountPage() {
                                 <div
                                     role="alert"
                                     className="alert alert-danger py-2 small mb-3"
-                                    role="alert"
                                 >
                                     {error}
                                 </div>
@@ -159,7 +158,6 @@ export default function AccountPage() {
                                 <div
                                     role="status"
                                     className="alert alert-success py-2 small mb-3"
-                                    role="status"
                                 >
                                     Hasło zostało zmienione.
                                 </div>

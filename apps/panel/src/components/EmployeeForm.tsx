@@ -135,7 +135,6 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
                 <div
                     role="alert"
                     className="alert alert-danger py-2 small mb-3"
-                    role="alert"
                 >
                     {error}
                 </div>

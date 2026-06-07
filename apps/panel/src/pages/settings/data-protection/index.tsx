@@ -157,18 +157,12 @@ export default function DataProtectionPage() {
                             </div>
 
                             {saved && (
-                                <div
-                                    className="alert alert-success mb-3"
-                                    role="status"
-                                >
+                                <div className="alert alert-success mb-3">
                                     Ustawienia zostały zapisane.
                                 </div>
                             )}
                             {saveError && (
-                                <div
-                                    className="alert alert-danger mb-3"
-                                    role="alert"
-                                >
+                                <div className="alert alert-danger mb-3">
                                     {saveError}
                                 </div>
                             )}

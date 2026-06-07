@@ -134,10 +134,7 @@ export default function SettingsTradesNewPage() {
                                 <h2>Dodaj branżę</h2>
 
                                 {error && (
-                                    <div
-                                        className="alert alert-danger"
-                                        role="alert"
-                                    >
+                                    <div className="alert alert-danger">
                                         {error}
                                     </div>
                                 )}

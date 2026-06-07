@@ -145,18 +145,12 @@ export default function SettingsEmployeeCommissionDetailPage() {
                                         </div>
                                     </div>
                                     {saved && (
-                                        <div
-                                            className="alert alert-success mb-3"
-                                            role="status"
-                                        >
+                                        <div className="alert alert-success mb-3">
                                             Prowizja została zapisana.
                                         </div>
                                     )}
                                     {saveError && (
-                                        <div
-                                            className="alert alert-danger mb-3"
-                                            role="alert"
-                                        >
+                                        <div className="alert alert-danger mb-3">
                                             {saveError}
                                         </div>
                                     )}

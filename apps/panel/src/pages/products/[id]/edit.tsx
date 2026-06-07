@@ -341,10 +341,7 @@ export default function EditProductPage() {
                             </div>
 
                             {saveError && (
-                                <div
-                                    className="alert alert-danger mb-3"
-                                    role="alert"
-                                >
+                                <div className="alert alert-danger mb-3">
                                     {saveError}
                                 </div>
                             )}

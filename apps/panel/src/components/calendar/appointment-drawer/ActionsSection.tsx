@@ -79,19 +79,13 @@ export default function ActionsSection({
                     {mode === 'edit' && appointment?.id && (
                         <>
                             {isOnlinePending && (
-                                <div
-                                    className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2"
-                                    role="alert"
-                                >
+                                <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
                                     <strong>Rezerwacja online</strong> — czeka
                                     na potwierdzenie przez salon
                                 </div>
                             )}
                             {isRescheduledPending && (
-                                <div
-                                    className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2"
-                                    role="status"
-                                >
+                                <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
                                     <strong>Zmiana terminu</strong> — czeka na
                                     akceptację klienta
                                 </div>

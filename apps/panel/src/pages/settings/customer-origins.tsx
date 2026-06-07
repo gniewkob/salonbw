@@ -236,10 +236,7 @@ export default function CustomerOriginsPage() {
                                             />
                                         </div>
                                         {submitError && (
-                                            <div
-                                                className="alert alert-danger"
-                                                role="alert"
-                                            >
+                                            <div className="alert alert-danger">
                                                 {submitError}
                                             </div>
                                         )}

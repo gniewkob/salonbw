@@ -133,10 +133,7 @@ export default function SettingsEmployeeNewPage() {
                                     />
                                 </div>
                                 {submitError && (
-                                    <div
-                                        className="alert alert-danger mb-3"
-                                        role="alert"
-                                    >
+                                    <div className="alert alert-danger mb-3">
                                         {submitError}
                                     </div>
                                 )}

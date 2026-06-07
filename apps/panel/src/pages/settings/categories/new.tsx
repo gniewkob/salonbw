@@ -116,10 +116,7 @@ export default function SettingsCategoriesNewPage() {
                         <PanelSection>
                             <form onSubmit={(e) => void handleSubmit(e)}>
                                 {submitError && (
-                                    <div
-                                        className="alert alert-danger py-2 small mb-3"
-                                        role="alert"
-                                    >
+                                    <div className="alert alert-danger py-2 small mb-3">
                                         {submitError}
                                     </div>
                                 )}

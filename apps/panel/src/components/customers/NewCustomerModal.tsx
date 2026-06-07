@@ -125,7 +125,6 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                 <div
                     className="alert alert-warning d-flex align-items-start gap-2 py-2 small"
                     role="alert"
-                    role="alert"
                 >
                     <span>⚠️</span>
                     <div>
