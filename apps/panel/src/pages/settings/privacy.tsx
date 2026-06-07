@@ -357,9 +357,9 @@ function ProtectionTab() {
                     )}
 
                     <div className="mb-3">
-                        <label className="form-label">
+                        <span className="form-label d-block">
                             Tryb ochrony danych
-                        </label>
+                        </span>
                         <div>
                             <label className="checkbox-inline">
                                 <input
@@ -377,11 +377,12 @@ function ProtectionTab() {
                     {paranoiaMode && (
                         <>
                             <div className="mb-3">
-                                <label className="form-label">
+                                <label htmlFor="privacy-paranoia-limit" className="form-label">
                                     Limit kontaktów
                                 </label>
                                 <div className="input-group input-group--narrow">
                                     <input
+                                        id="privacy-paranoia-limit"
                                         type="number"
                                         className="form-control"
                                         min={1}
@@ -405,10 +406,11 @@ function ProtectionTab() {
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label">
+                                <label htmlFor="privacy-paranoia-email" className="form-label">
                                     E-mail powiadomień
                                 </label>
                                 <input
+                                    id="privacy-paranoia-email"
                                     type="email"
                                     className="form-control"
                                     value={paranoiaEmail}
@@ -467,7 +469,7 @@ function ProtectionTab() {
                                                             employee.id;
                                                     return (
                                                         <li key={employee.id}>
-                                                            <label>
+                                                            <span>
                                                                 {employee.name}{' '}
                                                                 <span className="data-protection-limits__role">
                                                                     (
@@ -476,7 +478,7 @@ function ProtectionTab() {
                                                                     )}
                                                                     )
                                                                 </span>
-                                                            </label>
+                                                            </span>
                                                             <br className="c" />
                                                             {isAdmin ? (
                                                                 <span>

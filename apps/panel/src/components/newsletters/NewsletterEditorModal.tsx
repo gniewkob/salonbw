@@ -138,9 +138,9 @@ export default function NewsletterEditorModal({
         if (channel !== 'email' || !content) return null;
         return (
             <div>
-                <label className="d-block small fw-medium text-body mb-2">
+                <span className="d-block small fw-medium text-body mb-2">
                     Podgląd HTML
-                </label>
+                </span>
                 <div
                     className="bg-white border rounded-3 p-3 overflow-auto"
                     // eslint-disable-next-line react/no-danger
@@ -264,9 +264,9 @@ export default function NewsletterEditorModal({
 
                                 {/* Variables */}
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-2">
+                                    <span className="d-block small fw-medium text-body mb-2">
                                         Zmienne
-                                    </label>
+                                    </span>
                                     <div className="d-flex flex-wrap gap-2">
                                         {VARIABLES.map((v) => (
                                             <button
@@ -317,9 +317,9 @@ export default function NewsletterEditorModal({
                             {/* Right column - Recipients */}
                             <div className="d-flex flex-column gap-2">
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-2">
+                                    <span className="d-block small fw-medium text-body mb-2">
                                         Odbiorcy
-                                    </label>
+                                    </span>
                                     <div className="d-flex gap-3 mb-3">
                                         <label className="d-flex align-items-center">
                                             <input
