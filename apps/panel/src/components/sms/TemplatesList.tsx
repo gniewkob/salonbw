@@ -112,6 +112,7 @@ export default function TemplatesList({
                                     }}
                                     className="p-1 text-secondary bg-secondary bg-opacity-10 rounded"
                                     title="Ustaw jako domyślny"
+                                    aria-label="Ustaw jako domyślny"
                                 >
                                     <svg
                                         style={{
@@ -121,6 +122,7 @@ export default function TemplatesList({
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -137,6 +139,7 @@ export default function TemplatesList({
                                     onClick={() => onEdit(template)}
                                     className="p-1 text-muted rounded"
                                     title="Edytuj"
+                                    aria-label="Edytuj szablon"
                                 >
                                     <svg
                                         style={{
@@ -146,6 +149,7 @@ export default function TemplatesList({
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -164,6 +168,7 @@ export default function TemplatesList({
                                     }}
                                     className="p-1 text-danger bg-danger bg-opacity-10 rounded"
                                     title="Usuń"
+                                    aria-label="Usuń szablon"
                                 >
                                     <svg
                                         style={{
@@ -173,6 +178,7 @@ export default function TemplatesList({
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
