@@ -338,10 +338,14 @@ export default function GiftCardsManagementPage() {
                             <div className="bg-white rounded-4 shadow-sm p-3 mb-4">
                                 <div className="d-flex flex-wrap gap-3">
                                     <div className="flex-fill">
-                                        <label className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="gift-card-search"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Szukaj po kodzie
                                         </label>
                                         <input
+                                            id="gift-card-search"
                                             type="text"
                                             value={searchCode}
                                             onChange={(e) =>
