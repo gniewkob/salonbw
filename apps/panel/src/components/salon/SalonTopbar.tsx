@@ -156,6 +156,7 @@ export default function SalonTopbar() {
                                 aria-expanded={tasksMenuOpen}
                                 className="link"
                                 title="Twoje zadania"
+                                aria-label="Twoje zadania"
                                 onClick={() =>
                                     setTasksMenuOpen((value) => !value)
                                 }

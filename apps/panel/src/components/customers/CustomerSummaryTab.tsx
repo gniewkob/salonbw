@@ -618,8 +618,9 @@ export default function CustomerSummaryTab({
                                     onClick={() =>
                                         setShowAddToGroupModal(false)
                                     }
+                                    aria-label="Zamknij"
                                 >
-                                    ×
+                                    <span aria-hidden="true">×</span>
                                 </button>
                                 <h4 className="modal-title">Dodaj do grupy</h4>
                             </div>

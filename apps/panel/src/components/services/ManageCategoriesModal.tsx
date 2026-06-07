@@ -148,8 +148,9 @@ export default function ManageCategoriesModal({
                             type="button"
                             className="close"
                             onClick={onClose}
+                            aria-label="Zamknij"
                         >
-                            &times;
+                            <span aria-hidden="true">&times;</span>
                         </button>
                         <h4 className="modal-title">Zarządzaj kategoriami</h4>
                     </div>

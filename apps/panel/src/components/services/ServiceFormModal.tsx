@@ -471,6 +471,7 @@ export default function ServiceFormModal({
                                                     ''
                                                 }
                                                 title="Indywidualny czas trwania"
+                                                aria-label="Indywidualny czas trwania"
                                                 onChange={(e) =>
                                                     handleEmployeeDataChange(
                                                         assignment.employeeId,
@@ -501,6 +502,7 @@ export default function ServiceFormModal({
                                                     type="number"
                                                     className="form-control"
                                                     title="Indywidualna cena dla pracownika"
+                                                    aria-label="Indywidualna cena dla pracownika"
                                                     placeholder={formData.price.toString()}
                                                     value={
                                                         assignment.customPrice ??
@@ -533,9 +535,12 @@ export default function ServiceFormModal({
                                                         assignment.employeeId,
                                                     )
                                                 }
-                                                title="Usuń"
+                                                title="Usuń pracownika"
+                                                aria-label="Usuń pracownika"
                                             >
-                                                &times;
+                                                <span aria-hidden="true">
+                                                    &times;
+                                                </span>
                                             </button>
                                         </td>
                                     </tr>
@@ -567,8 +572,9 @@ export default function ServiceFormModal({
                             type="button"
                             className="close"
                             onClick={onClose}
+                            aria-label="Zamknij"
                         >
-                            &times;
+                            <span aria-hidden="true">&times;</span>
                         </button>
                         <h4 className="modal-title">
                             {service ? 'Edytuj usługę' : 'Nowa usługa'}

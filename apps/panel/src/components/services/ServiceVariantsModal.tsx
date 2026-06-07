@@ -119,8 +119,9 @@ export default function ServiceVariantsModal({
                             type="button"
                             className="close"
                             onClick={onClose}
+                            aria-label="Zamknij"
                         >
-                            ×
+                            <span aria-hidden="true">×</span>
                         </button>
                         <h4 className="modal-title">
                             Warianty usługi: {service.name}

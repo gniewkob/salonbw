@@ -95,6 +95,7 @@ archive/
 .cursor/rules/codacy.mdc
 *.txt
 !.github/ops-noise-allowlist.txt
+!apps/panel/public/robots.txt
 *.log
 
 # Versum dump and static preview - reference only

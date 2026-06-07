@@ -1461,6 +1461,7 @@ export default function GiftCardsManagementPage() {
                                         type="button"
                                         className="close"
                                         onClick={() => setCancelModal(null)}
+                                        aria-label="Zamknij"
                                     >
                                         <span aria-hidden="true">&times;</span>
                                     </button>

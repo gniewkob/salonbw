@@ -606,6 +606,7 @@ export default function TimetableTemplatesPage() {
                                     type="button"
                                     className="close"
                                     onClick={() => setNameModal(null)}
+                                    aria-label="Zamknij"
                                 >
                                     <span aria-hidden="true">&times;</span>
                                 </button>

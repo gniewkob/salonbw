@@ -332,6 +332,7 @@ export default function CustomerGroupsListPage() {
                                     type="button"
                                     className="close"
                                     onClick={() => setEditingGroup(null)}
+                                    aria-label="Zamknij"
                                 >
                                     <span aria-hidden="true">&times;</span>
                                 </button>
