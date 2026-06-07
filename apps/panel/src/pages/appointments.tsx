@@ -546,7 +546,10 @@ export default function AppointmentsPage() {
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="pagination_container mt-3">
+                        <nav
+                            className="pagination_container mt-3"
+                            aria-label="Paginacja"
+                        >
                             <div className="row">
                                 <div className="infocol-7">
                                     <span>
@@ -559,6 +562,7 @@ export default function AppointmentsPage() {
                                         type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         disabled={page <= 1}
+                                        aria-label="Poprzednia strona"
                                         onClick={() =>
                                             setPage((p) => Math.max(1, p - 1))
                                         }
@@ -581,6 +585,12 @@ export default function AppointmentsPage() {
                                                     type="button"
                                                     key={pageNum}
                                                     className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                    aria-label={`Strona ${pageNum}`}
+                                                    aria-current={
+                                                        pageNum === page
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
                                                     onClick={() =>
                                                         setPage(pageNum)
                                                     }
@@ -594,6 +604,7 @@ export default function AppointmentsPage() {
                                         type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         disabled={page >= totalPages}
+                                        aria-label="Następna strona"
                                         onClick={() =>
                                             setPage((p) =>
                                                 Math.min(totalPages, p + 1),
@@ -604,7 +615,7 @@ export default function AppointmentsPage() {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </nav>
                     )}
                 </div>
                 <ConfirmModal
