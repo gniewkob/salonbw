@@ -295,6 +295,7 @@ export default function HelpContactPage() {
                                     id="physical_help_email"
                                     className="string email required helps-page__email"
                                     type="email"
+                                    autoComplete="email"
                                     aria-describedby="physical_help_email_hint"
                                     value={email}
                                     onChange={(event) => {

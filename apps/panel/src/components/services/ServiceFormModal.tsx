@@ -289,6 +289,7 @@ export default function ServiceFormModal({
                             })
                         }
                         title="Typ ceny"
+                        aria-label="Typ ceny"
                         className="form-control"
                     >
                         <option value="fixed">Stała</option>
