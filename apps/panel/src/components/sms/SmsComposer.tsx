@@ -70,10 +70,14 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                 {/* Template selector */}
                 {templates.length > 0 && (
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="sms-template-select"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Użyj szablonu (opcjonalnie)
                         </label>
                         <select
+                            id="sms-template-select"
                             value={selectedTemplateId ?? ''}
                             onChange={(e) =>
                                 handleTemplateSelect(

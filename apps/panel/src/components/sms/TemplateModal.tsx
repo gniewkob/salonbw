@@ -140,10 +140,14 @@ export default function TemplateModal({
                     {/* Type & Channel */}
                     <div className="row row-cols-1 row-cols-sm-2 g-3">
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="template-type"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Typ
                             </label>
                             <select
+                                id="template-type"
                                 value={form.type}
                                 onChange={(e) =>
                                     setForm({
@@ -161,10 +165,14 @@ export default function TemplateModal({
                             </select>
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="template-channel"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Kanał
                             </label>
                             <select
+                                id="template-channel"
                                 value={form.channel}
                                 onChange={(e) =>
                                     setForm({
