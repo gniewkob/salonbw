@@ -285,7 +285,10 @@ export default function CustomerGroupsListPage() {
                             <div className="item">
                                 <div className="pull_left">
                                     <div className="icon_box">
-                                        <i className="icon sprite-group" />
+                                        <i
+                                            className="icon sprite-group"
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Wszyscy klienci
                                 </div>

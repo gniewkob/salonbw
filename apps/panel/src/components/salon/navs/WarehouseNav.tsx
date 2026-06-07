@@ -259,7 +259,10 @@ export default function WarehouseNav() {
                         onClick={() => updateFilters(undefined)}
                     >
                         <div className="icon_box">
-                            <i className="icon sprite-stock_products" />
+                            <i
+                                className="icon sprite-stock_products"
+                                aria-hidden="true"
+                            />
                         </div>
                         Wszystkie produkty
                     </button>

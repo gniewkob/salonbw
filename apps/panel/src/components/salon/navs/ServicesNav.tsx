@@ -41,7 +41,10 @@ export default function ServicesNav() {
                     onClick={() => updateFilters(undefined)}
                 >
                     <span className="icon_box">
-                        <i className="icon sprite-settings_services" />
+                        <i
+                            className="icon sprite-settings_services"
+                            aria-hidden="true"
+                        />
                     </span>
                     Wszystkie usługi
                 </button>

@@ -108,7 +108,10 @@ function DraggableCustomerRow({
                             onPointerDown={(e) => e.stopPropagation()}
                         >
                             <div className="icon_box float-start">
-                                <i className="icon sprite-customer_telephone" />
+                                <i
+                                    className="icon sprite-customer_telephone"
+                                    aria-hidden="true"
+                                />
                             </div>
                             {customer.phone}
                         </a>
@@ -125,7 +128,10 @@ function DraggableCustomerRow({
                             className="icon_box"
                             title={`wyślij email: ${customer.email}`}
                         >
-                            <i className="icon sprite-customer_email" />
+                            <i
+                                className="icon sprite-customer_email"
+                                aria-hidden="true"
+                            />
                         </div>
                     </a>
                 ) : null}
@@ -139,7 +145,10 @@ function DraggableCustomerRow({
                             : 'brak wizyt'
                     }
                 >
-                    <i className="icon sprite-settings_opening_hours" />
+                    <i
+                        className="icon sprite-settings_opening_hours"
+                        aria-hidden="true"
+                    />
                 </div>
                 <span>{formatLastVisit(customer.lastVisitDate)}</span>
             </td>
@@ -583,7 +592,10 @@ export default function ClientsPage() {
                                     id="add_customer_button"
                                     onClick={() => setNewCustomerOpen(true)}
                                 >
-                                    <i className="icon sprite-add_customer" />
+                                    <i
+                                        className="icon sprite-add_customer"
+                                        aria-hidden="true"
+                                    />
                                     Dodaj klienta
                                 </button>
                             </div>

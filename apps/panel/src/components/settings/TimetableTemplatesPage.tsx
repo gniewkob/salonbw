@@ -209,7 +209,10 @@ export default function TimetableTemplatesPage() {
                             href="/settings/timetable/employees"
                         >
                             <div className="icon_box">
-                                <i className="icon sprite-filter_handled_employees " />
+                                <i
+                                    className="icon sprite-filter_handled_employees "
+                                    aria-hidden="true"
+                                />
                             </div>
                             Wszyscy pracownicy
                         </Link>
@@ -256,7 +259,10 @@ export default function TimetableTemplatesPage() {
                             <li>
                                 <span className="settings-detail-layout__nav-disabled">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_report mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_report mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Raport czasu pracy
                                 </span>
@@ -267,7 +273,10 @@ export default function TimetableTemplatesPage() {
                                     className="active"
                                 >
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_template mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_template mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Szablony
                                 </Link>
@@ -275,7 +284,10 @@ export default function TimetableTemplatesPage() {
                             <li>
                                 <span className="settings-detail-layout__nav-disabled">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_copy mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_copy mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Kopiuj grafiki pracy
                                 </span>

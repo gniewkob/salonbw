@@ -187,7 +187,10 @@ export default function CalendarSettingsForm() {
                     <li className="active tab">
                         <Link href="/settings/calendar">
                             <div className="icon_box">
-                                <i className="icon sprite-settings_calendar icon-up" />
+                                <i
+                                    className="icon sprite-settings_calendar icon-up"
+                                    aria-hidden="true"
+                                />
                             </div>
                             Kalendarz
                         </Link>
@@ -195,7 +198,10 @@ export default function CalendarSettingsForm() {
                     <li className="tab">
                         <Link href="/settings/tags">
                             <div className="icon_box">
-                                <i className="icon sprite-settings_label_visits icon-up" />
+                                <i
+                                    className="icon sprite-settings_label_visits icon-up"
+                                    aria-hidden="true"
+                                />
                             </div>
                             Etykiety wizyt
                         </Link>

@@ -44,7 +44,7 @@ function DroppableGroupItem({
                 onClick={onClick}
             >
                 <div className="icon_box">
-                    <i className="icon sprite-user_group" />
+                    <i className="icon sprite-user_group" aria-hidden="true" />
                 </div>
                 {group.name}
                 {isOver ? (
@@ -163,7 +163,10 @@ export default function ClientsNav() {
                                     }
                                 >
                                     <div className="icon_box">
-                                        <i className="icon sprite-group" />
+                                        <i
+                                            className="icon sprite-group"
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     wszyscy klienci
                                 </button>
@@ -204,7 +207,10 @@ export default function ClientsNav() {
                                             }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-group_recent_added" />
+                                                <i
+                                                    className="icon sprite-group_recent_added"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             Ostatnio dodani
                                         </button>
@@ -352,7 +358,10 @@ export default function ClientsNav() {
                                             }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-filter_purchased_services" />
+                                                <i
+                                                    className="icon sprite-filter_purchased_services"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             skorzystali z usług
                                         </button>
@@ -367,7 +376,10 @@ export default function ClientsNav() {
                                             }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-filter_visit_salon" />
+                                                <i
+                                                    className="icon sprite-filter_visit_salon"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             mają wizytę w salonie
                                         </button>
@@ -384,7 +396,10 @@ export default function ClientsNav() {
                                             }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-filter_handled_employees" />
+                                                <i
+                                                    className="icon sprite-filter_handled_employees"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             obsługiwani przez pracowników
                                         </button>
