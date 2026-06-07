@@ -123,10 +123,11 @@ export default function TemplateModal({
                 <div className="d-flex flex-column gap-2">
                     {/* Name */}
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label htmlFor="tmpl-name" className="d-block small fw-medium text-body mb-1">
                             Nazwa szablonu
                         </label>
                         <input
+                            id="tmpl-name"
                             type="text"
                             value={form.name}
                             onChange={(e) =>
@@ -195,10 +196,11 @@ export default function TemplateModal({
                     {/* Subject (for email) */}
                     {form.channel === 'email' && (
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label htmlFor="tmpl-subject" className="d-block small fw-medium text-body mb-1">
                                 Temat
                             </label>
                             <input
+                                id="tmpl-subject"
                                 type="text"
                                 value={form.subject}
                                 onChange={(e) =>
@@ -215,7 +217,7 @@ export default function TemplateModal({
                     {/* Content */}
                     <div>
                         <div className="d-flex align-items-center justify-content-between mb-1">
-                            <label className="d-block small fw-medium text-body">
+                            <label htmlFor="tmpl-content" className="d-block small fw-medium text-body">
                                 Treść wiadomości
                             </label>
                             {form.channel === 'sms' && (
@@ -225,6 +227,7 @@ export default function TemplateModal({
                             )}
                         </div>
                         <textarea
+                            id="tmpl-content"
                             value={form.content}
                             onChange={(e) =>
                                 setForm({ ...form, content: e.target.value })
@@ -238,9 +241,9 @@ export default function TemplateModal({
 
                     {/* Variables */}
                     <div>
-                        <label className="d-block small fw-medium text-body mb-2">
+                        <span className="d-block small fw-medium text-body mb-2">
                             Dostępne zmienne
-                        </label>
+                        </span>
                         <div className="d-flex flex-wrap gap-2">
                             {AVAILABLE_VARIABLES.map((v) => (
                                 <button
@@ -258,10 +261,11 @@ export default function TemplateModal({
 
                     {/* Description */}
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label htmlFor="tmpl-desc" className="d-block small fw-medium text-body mb-1">
                             Opis (opcjonalnie)
                         </label>
                         <input
+                            id="tmpl-desc"
                             type="text"
                             value={form.description}
                             onChange={(e) =>

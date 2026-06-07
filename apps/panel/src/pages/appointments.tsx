@@ -236,10 +236,11 @@ export default function AppointmentsPage() {
                     <div className="column_row mb-3">
                         <div className="d-flex flex-wrap gap-2 align-items-end">
                             <div>
-                                <label className="form-label mb-1 small">
+                                <label htmlFor="appts-from" className="form-label mb-1 small">
                                     Od
                                 </label>
                                 <input
+                                    id="appts-from"
                                     type="date"
                                     className="form-control form-control-sm"
                                     value={from}
@@ -250,10 +251,11 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="form-label mb-1 small">
+                                <label htmlFor="appts-to" className="form-label mb-1 small">
                                     Do
                                 </label>
                                 <input
+                                    id="appts-to"
                                     type="date"
                                     className="form-control form-control-sm"
                                     value={to}
@@ -264,10 +266,11 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="form-label mb-1 small">
+                                <label htmlFor="appts-status" className="form-label mb-1 small">
                                     Status
                                 </label>
                                 <select
+                                    id="appts-status"
                                     className="form-select form-select-sm"
                                     value={status}
                                     onChange={(e) => {
