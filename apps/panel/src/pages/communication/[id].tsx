@@ -590,17 +590,17 @@ export default function CommunicationDetailPage() {
                                 <div id="reply_form">
                                     <ol className="communication-reply-list">
                                         <li className="control-group">
-                                            <label className="form-label">
+                                            <span className="form-label d-block">
                                                 Dane odbiorcy
-                                            </label>
+                                            </span>
                                             <div className="controls">
                                                 {recipientName}
                                             </div>
                                         </li>
                                         <li className="control-group">
-                                            <label className="form-label">
+                                            <span className="form-label d-block">
                                                 Szablon
-                                            </label>
+                                            </span>
                                             <div className="controls">
                                                 <div className="radio-inline">
                                                     <label className="auto-width">

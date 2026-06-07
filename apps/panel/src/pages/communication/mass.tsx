@@ -355,13 +355,14 @@ export default function MassCommunicationPage() {
 
                                 {channel === 'email' && (
                                     <div className="mb-3">
-                                        <label>
+                                        <label htmlFor="mass-subject">
                                             Temat{' '}
                                             <span className="text-danger">
                                                 *
                                             </span>
                                         </label>
                                         <input
+                                            id="mass-subject"
                                             type="text"
                                             className="form-control"
                                             value={subject}
@@ -375,8 +376,9 @@ export default function MassCommunicationPage() {
                                 )}
 
                                 <div className="mb-3">
-                                    <label>Treść</label>
+                                    <label htmlFor="mass-content">Treść</label>
                                     <textarea
+                                        id="mass-content"
                                         className="form-control"
                                         value={content}
                                         onChange={(e) => {
