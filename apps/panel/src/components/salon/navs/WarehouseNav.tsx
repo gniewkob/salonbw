@@ -101,6 +101,9 @@ export default function WarehouseNav() {
             >
                 <button
                     type="button"
+                    aria-current={
+                        currentCategoryId === category.id ? 'true' : undefined
+                    }
                     onClick={() => updateFilters(category.id, false)}
                 >
                     {category.name}
@@ -125,46 +128,45 @@ export default function WarehouseNav() {
         <div className="column_row">
             <div className="nav-header">{header}</div>
             <ul className="nav nav-list">
-                {items.map((item) => (
-                    <li
-                        key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
-                        className={(() => {
-                            const queryMatches = item.query
-                                ? Object.entries(item.query).every(
-                                      ([key, value]) =>
-                                          router.query[key] === value,
-                                  )
-                                : true;
-                            const hasStatusFilter =
-                                typeof router.query.status === 'string';
-                            const plainHistoryItem =
-                                !item.query && item.href.endsWith('/history');
-                            const plainHistoryBlocked =
-                                plainHistoryItem && hasStatusFilter;
-
-                            return (path === item.href &&
-                                queryMatches &&
-                                !plainHistoryBlocked) ||
-                                path.startsWith(`${item.href}/`) ||
-                                (item.href.endsWith('/history') &&
-                                    path.startsWith(
-                                        `${item.href.replace('/history', '/history/')}`,
-                                    ))
-                                ? 'active'
-                                : undefined;
-                        })()}
-                    >
-                        <a
-                            href={
-                                item.query
-                                    ? `${item.href}?${new URLSearchParams(item.query).toString()}`
-                                    : item.href
-                            }
+                {items.map((item) => {
+                    const queryMatches = item.query
+                        ? Object.entries(item.query).every(
+                              ([key, value]) => router.query[key] === value,
+                          )
+                        : true;
+                    const hasStatusFilter =
+                        typeof router.query.status === 'string';
+                    const plainHistoryItem =
+                        !item.query && item.href.endsWith('/history');
+                    const plainHistoryBlocked =
+                        plainHistoryItem && hasStatusFilter;
+                    const isActive =
+                        (path === item.href &&
+                            queryMatches &&
+                            !plainHistoryBlocked) ||
+                        path.startsWith(`${item.href}/`) ||
+                        (item.href.endsWith('/history') &&
+                            path.startsWith(
+                                `${item.href.replace('/history', '/history/')}`,
+                            ));
+                    return (
+                        <li
+                            key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
+                            className={isActive ? 'active' : undefined}
                         >
-                            {item.label}
-                        </a>
-                    </li>
-                ))}
+                            <a
+                                href={
+                                    item.query
+                                        ? `${item.href}?${new URLSearchParams(item.query).toString()}`
+                                        : item.href
+                                }
+                                aria-current={isActive ? 'page' : undefined}
+                            >
+                                {item.label}
+                            </a>
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );
@@ -256,6 +258,12 @@ export default function WarehouseNav() {
                                 : 'root'
                         }
                         data-menu-item-name="root"
+                        aria-current={
+                            !currentCategoryId &&
+                            router.query.uncategorized !== 'true'
+                                ? 'true'
+                                : undefined
+                        }
                         onClick={() => updateFilters(undefined)}
                     >
                         <div className="icon_box">
@@ -281,6 +289,11 @@ export default function WarehouseNav() {
                         >
                             <button
                                 type="button"
+                                aria-current={
+                                    router.query.uncategorized === 'true'
+                                        ? 'true'
+                                        : undefined
+                                }
                                 onClick={() => updateFilters(undefined, true)}
                             >
                                 produkty bez kategorii
