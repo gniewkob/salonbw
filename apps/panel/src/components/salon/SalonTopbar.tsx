@@ -208,6 +208,8 @@ export default function SalonTopbar() {
                         <button
                             type="button"
                             className="ai-center d-flex dropdown-toggle"
+                            aria-label="Pomoc"
+                            aria-expanded={helpMenuOpen}
                             onClick={() => setHelpMenuOpen((value) => !value)}
                         >
                             <div className="d-inline-block jQ_nav_chat_notification">
@@ -269,6 +271,8 @@ export default function SalonTopbar() {
                         <button
                             type="button"
                             className="dropdown-toggle e2e-nav-user-dropdown"
+                            aria-label="Menu użytkownika"
+                            aria-expanded={userMenuOpen}
                             onClick={() => setUserMenuOpen((value) => !value)}
                         >
                             <div className="border-color">

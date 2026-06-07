@@ -162,6 +162,7 @@ function DraggableCustomerRow({
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                     title="Umów wizytę"
+                    aria-label="Umów wizytę"
                 >
                     <i
                         className="icon sprite-add_appointment"
@@ -177,6 +178,7 @@ function DraggableCustomerRow({
                     }}
                     onPointerDown={(e) => e.stopPropagation()}
                     title="Edytuj"
+                    aria-label="Edytuj klienta"
                 >
                     <i className="icon sprite-pencil" aria-hidden="true" />
                 </button>
