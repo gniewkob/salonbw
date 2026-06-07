@@ -263,9 +263,9 @@ export default function BranchIdentityForm() {
                     </div>
                 </li>
                 <li className="control-group">
-                    <label className="string optional form-label">
+                    <span className="string optional form-label d-block">
                         Numer telefonu
-                    </label>
+                    </span>
                     <div className="controls phones">
                         {draft.phoneNumbers.map((phone, index) => (
                             <div
@@ -274,6 +274,7 @@ export default function BranchIdentityForm() {
                             >
                                 <input
                                     type="tel"
+                                    aria-label={`Numer telefonu ${index + 1}`}
                                     value={phone}
                                     onChange={handlePhoneChange(index)}
                                 />

@@ -179,7 +179,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                 />
                             </div>
                             <div className="form-">
-                                <label className="form-label">Kolor</label>
+                                <span className="form-label d-block">Kolor</span>
                                 <div className="salonbw-color-picker">
                                     {colorOptions.map((color) => {
                                         return (
@@ -366,9 +366,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                             </div>
 
                                             <div className="form-">
-                                                <label className="form-label">
+                                                <span className="form-label d-block">
                                                     Kolor
-                                                </label>
+                                                </span>
                                                 <div className="salonbw-color-picker">
                                                     {colorOptions.map(
                                                         (color) => {

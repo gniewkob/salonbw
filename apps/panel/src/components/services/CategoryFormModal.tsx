@@ -205,9 +205,9 @@ export default function CategoryFormModal({
                             </div>
 
                             <div className="mb-3">
-                                <label className="col-sm-3 form-label">
+                                <span className="col-sm-3 form-label d-block">
                                     Kolor
-                                </label>
+                                </span>
                                 <div className="col-sm-9">
                                     <div className="d-flex align-items-center gap-5 flex-wrap mt-5">
                                         {COLOR_OPTIONS.map((color) => {

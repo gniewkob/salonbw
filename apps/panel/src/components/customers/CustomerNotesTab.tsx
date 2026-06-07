@@ -88,6 +88,7 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     className="form-control"
                     rows={3}
                     placeholder="Dodaj komentarz klienta..."
+                    aria-label="Treść notatki"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                 />
