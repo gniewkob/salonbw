@@ -230,6 +230,7 @@ export default function Navbar() {
                             aria-controls="mobile-menu"
                         >
                             <svg
+                                aria-hidden="true"
                                 className="w-6 h-6 text-gray-800"
                                 fill="none"
                                 stroke="currentColor"
@@ -356,7 +357,10 @@ export default function Navbar() {
                             </ul>
 
                             {/* Mobile language switcher */}
-                            <div className="flex items-center gap-3 px-4 mt-3 mb-2">
+                            <div
+                                className="flex items-center gap-3 px-4 mt-3 mb-2"
+                                aria-label="Wybór języka"
+                            >
                                 {LANGUAGES.map(({ code, label }) => (
                                     <button
                                         key={code}
@@ -376,6 +380,7 @@ export default function Navbar() {
                                                     : '1px solid transparent',
                                         }}
                                         aria-pressed={lang === code}
+                                        aria-label={`Język: ${label}`}
                                     >
                                         {label}
                                     </button>
