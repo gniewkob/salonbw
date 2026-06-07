@@ -359,9 +359,9 @@ export default function FinalizationModal({
 
                 {/* Payment Method */}
                 <div className="mb-3">
-                    <label className="d-block small fw-medium text-body mb-2">
+                    <span className="d-block small fw-medium text-body mb-2">
                         Metoda płatności
-                    </label>
+                    </span>
                     <div
                         className="d-grid gap-2 mb-2"
                         style={{
@@ -394,10 +394,11 @@ export default function FinalizationModal({
                     style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}
                 >
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label htmlFor="fin-discount" className="d-block small fw-medium text-body mb-1">
                             Rabat (PLN)
                         </label>
                         <input
+                            id="fin-discount"
                             type="number"
                             min="0"
                             step="0.01"
@@ -414,10 +415,11 @@ export default function FinalizationModal({
                         )}
                     </div>
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label htmlFor="fin-tip" className="d-block small fw-medium text-body mb-1">
                             Napiwek (PLN)
                         </label>
                         <input
+                            id="fin-tip"
                             type="number"
                             min="0"
                             step="0.01"
@@ -432,9 +434,9 @@ export default function FinalizationModal({
                 {/* Usage Materials (from service recipe) */}
                 {usageMaterials.length > 0 && (
                     <div className="mb-3">
-                        <label className="d-block small fw-medium text-body mb-2">
+                        <span className="d-block small fw-medium text-body mb-2">
                             Materiały do zabiegu
-                        </label>
+                        </span>
                         <div className="d-flex flex-column gap-2">
                             {usageMaterials.map((material) => (
                                 <div
@@ -509,9 +511,9 @@ export default function FinalizationModal({
                 {/* Product Upselling */}
                 <div className="mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                        <label className="d-block small fw-medium text-body">
+                        <span className="d-block small fw-medium text-body">
                             Sprzedaż produktów
-                        </label>
+                        </span>
                         <button
                             type="button"
                             onClick={() =>
@@ -645,9 +647,9 @@ export default function FinalizationModal({
                 {/* Materials used */}
                 <div className="mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                        <label className="small fw-medium text-body mb-0">
+                        <span className="small fw-medium text-body mb-0">
                             Użyte materiały
-                        </label>
+                        </span>
                         <button
                             type="button"
                             onClick={() => setShowUsagePicker(!showUsagePicker)}
@@ -758,10 +760,11 @@ export default function FinalizationModal({
 
                 {/* Note */}
                 <div className="mb-3">
-                    <label className="d-block small fw-medium text-body mb-1">
+                    <label htmlFor="fin-note" className="d-block small fw-medium text-body mb-1">
                         Notatka (opcjonalnie)
                     </label>
                     <textarea
+                        id="fin-note"
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
                         className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"

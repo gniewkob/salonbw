@@ -663,10 +663,11 @@ export default function GiftCardsManagementPage() {
                                         </div>
                                         <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-create-value" className="d-block small fw-medium text-body mb-1">
                                                     Wartość karty (PLN) *
                                                 </label>
                                                 <input
+                                                    id="gc-create-value"
                                                     type="number"
                                                     required
                                                     min={1}
@@ -690,10 +691,11 @@ export default function GiftCardsManagementPage() {
                                             </div>
                                             <div className="row row-cols-1 row-cols-sm-2 g-3">
                                                 <div>
-                                                    <label className="d-block small fw-medium text-body mb-1">
+                                                    <label htmlFor="gc-create-valid-from" className="d-block small fw-medium text-body mb-1">
                                                         Ważna od *
                                                     </label>
                                                     <input
+                                                        id="gc-create-valid-from"
                                                         type="date"
                                                         required
                                                         title="Ważna od"
@@ -714,10 +716,11 @@ export default function GiftCardsManagementPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="d-block small fw-medium text-body mb-1">
+                                                    <label htmlFor="gc-create-valid-until" className="d-block small fw-medium text-body mb-1">
                                                         Ważna do *
                                                     </label>
                                                     <input
+                                                        id="gc-create-valid-until"
                                                         type="date"
                                                         required
                                                         title="Ważna do"
@@ -739,10 +742,11 @@ export default function GiftCardsManagementPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-create-recipient-name" className="d-block small fw-medium text-body mb-1">
                                                     Nazwa odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-create-recipient-name"
                                                     type="text"
                                                     title="Nazwa odbiorcy"
                                                     placeholder="Imię i nazwisko"
@@ -761,10 +765,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-create-recipient-email" className="d-block small fw-medium text-body mb-1">
                                                     Email odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-create-recipient-email"
                                                     type="email"
                                                     title="Email odbiorcy"
                                                     placeholder="adres@email.pl"
@@ -783,10 +788,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-create-message" className="d-block small fw-medium text-body mb-1">
                                                     Wiadomość (życzenia)
                                                 </label>
                                                 <textarea
+                                                    id="gc-create-message"
                                                     rows={3}
                                                     value={
                                                         createForm.message ?? ''
@@ -846,10 +852,11 @@ export default function GiftCardsManagementPage() {
                                         </div>
                                         <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-edit-valid-until" className="d-block small fw-medium text-body mb-1">
                                                     Ważna do
                                                 </label>
                                                 <input
+                                                    id="gc-edit-valid-until"
                                                     type="date"
                                                     title="Ważna do"
                                                     value={
@@ -867,10 +874,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-edit-recipient-name" className="d-block small fw-medium text-body mb-1">
                                                     Nazwa odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-edit-recipient-name"
                                                     type="text"
                                                     title="Nazwa odbiorcy"
                                                     placeholder="Imię i nazwisko"
@@ -889,10 +897,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-edit-recipient-email" className="d-block small fw-medium text-body mb-1">
                                                     Email odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-edit-recipient-email"
                                                     type="email"
                                                     title="Email odbiorcy"
                                                     placeholder="adres@email.pl"
@@ -911,10 +920,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-edit-message" className="d-block small fw-medium text-body mb-1">
                                                     Wiadomość
                                                 </label>
                                                 <textarea
+                                                    id="gc-edit-message"
                                                     rows={3}
                                                     title="Wiadomość"
                                                     placeholder="Treść wiadomości"
@@ -932,10 +942,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-edit-notes" className="d-block small fw-medium text-body mb-1">
                                                     Notatki wewnętrzne
                                                 </label>
                                                 <textarea
+                                                    id="gc-edit-notes"
                                                     rows={2}
                                                     title="Notatki wewnętrzne"
                                                     placeholder="Dodatkowe informacje..."
@@ -994,10 +1005,11 @@ export default function GiftCardsManagementPage() {
                                         </div>
                                         <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-redeem-code" className="d-block small fw-medium text-body mb-1">
                                                     Kod karty *
                                                 </label>
                                                 <input
+                                                    id="gc-redeem-code"
                                                     type="text"
                                                     required
                                                     value={redeemForm.code}
@@ -1012,10 +1024,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-redeem-amount" className="d-block small fw-medium text-body mb-1">
                                                     Kwota do pobrania (PLN) *
                                                 </label>
                                                 <input
+                                                    id="gc-redeem-amount"
                                                     type="number"
                                                     required
                                                     min={0.01}
@@ -1035,10 +1048,11 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-redeem-notes" className="d-block small fw-medium text-body mb-1">
                                                     Notatka
                                                 </label>
                                                 <input
+                                                    id="gc-redeem-notes"
                                                     type="text"
                                                     value={redeemForm.notes}
                                                     onChange={(e) =>
@@ -1108,10 +1122,11 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-adjust-amount" className="d-block small fw-medium text-body mb-1">
                                                     Kwota korekty (PLN) *
                                                 </label>
                                                 <input
+                                                    id="gc-adjust-amount"
                                                     type="number"
                                                     required
                                                     step={0.01}
@@ -1137,10 +1152,11 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label htmlFor="gc-adjust-notes" className="d-block small fw-medium text-body mb-1">
                                                     Powód korekty *
                                                 </label>
                                                 <input
+                                                    id="gc-adjust-notes"
                                                     type="text"
                                                     required
                                                     value={adjustForm.notes}
