@@ -326,9 +326,10 @@ export default function TemplatesPage() {
                                     <button
                                         type="button"
                                         className="salonbw-modal__close"
+                                        aria-label="Zamknij"
                                         onClick={() => setIsModalOpen(false)}
                                     >
-                                        ×
+                                        <span aria-hidden="true">×</span>
                                     </button>
                                 </div>
                                 <form onSubmit={(e) => void handleSubmit(e)}>

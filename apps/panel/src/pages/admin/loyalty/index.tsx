@@ -229,7 +229,10 @@ export default function LoyaltyManagementPage() {
 
                     {/* Tabs */}
                     <div className="border-bottom border-secondary border-opacity-25 mb-4">
-                        <nav className="d-flex">
+                        <nav
+                            className="d-flex"
+                            aria-label="Zakładki programu lojalnościowego"
+                        >
                             {TABS.map((tab) => (
                                 <button
                                     key={tab.id}

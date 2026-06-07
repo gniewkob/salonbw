@@ -89,7 +89,7 @@ export default function DashboardNav() {
     return (
         <aside className="w-48 bg-secondary bg-opacity-25 p-3 gap-2 border-end-2 border-secondary border-opacity-50">
             <h2 className="fw-bold mb-2">Menu</h2>
-            <nav className="gap-1">
+            <nav className="gap-1" aria-label="Menu nawigacyjne">
                 {links.map((l) => {
                     const isActive = router.pathname.startsWith(l.href);
                     return (

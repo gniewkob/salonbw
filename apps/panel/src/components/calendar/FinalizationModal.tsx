@@ -504,8 +504,9 @@ export default function FinalizationModal({
                                                 )
                                             }
                                             className="text-danger ms-1"
+                                            aria-label="Usuń materiał do zabiegu"
                                         >
-                                            ×
+                                            <span aria-hidden="true">×</span>
                                         </button>
                                     </div>
                                 </div>
@@ -639,8 +640,11 @@ export default function FinalizationModal({
                                                     )
                                                 }
                                                 className="text-danger ms-1"
+                                                aria-label="Usuń produkt ze sprzedaży"
                                             >
-                                                ×
+                                                <span aria-hidden="true">
+                                                    ×
+                                                </span>
                                             </button>
                                         </div>
                                     </div>
@@ -747,6 +751,7 @@ export default function FinalizationModal({
                                         <button
                                             type="button"
                                             className="text-danger small"
+                                            aria-label="Usuń użyty materiał"
                                             onClick={() =>
                                                 setUsageItems((prev) =>
                                                     prev.filter(
@@ -755,7 +760,7 @@ export default function FinalizationModal({
                                                 )
                                             }
                                         >
-                                            ×
+                                            <span aria-hidden="true">×</span>
                                         </button>
                                     </div>
                                 ))}
