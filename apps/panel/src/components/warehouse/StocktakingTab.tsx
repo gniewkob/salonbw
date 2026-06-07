@@ -324,10 +324,14 @@ export default function StocktakingTab() {
                         className="gap-2"
                     >
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="stocktaking-date"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Data inwentaryzacji
                             </label>
                             <input
+                                id="stocktaking-date"
                                 type="date"
                                 value={formData.stocktakingDate}
                                 onChange={(e) =>
@@ -340,10 +344,14 @@ export default function StocktakingTab() {
                             />
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="stocktaking-notes"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Notatki
                             </label>
                             <textarea
+                                id="stocktaking-notes"
                                 value={formData.notes}
                                 onChange={(e) =>
                                     setFormData({

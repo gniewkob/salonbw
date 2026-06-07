@@ -241,10 +241,14 @@ export default function SuppliersTab() {
                         className="gap-2"
                     >
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-name"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Nazwa *
                             </label>
                             <input
+                                id="supplier-name"
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) =>
@@ -258,10 +262,14 @@ export default function SuppliersTab() {
                             />
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-contact"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Osoba kontaktowa
                             </label>
                             <input
+                                id="supplier-contact"
                                 type="text"
                                 value={formData.contactPerson}
                                 onChange={(e) =>
@@ -275,10 +283,14 @@ export default function SuppliersTab() {
                         </div>
                         <div className="row row-cols-1 row-cols-sm-2 g-3">
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="supplier-email"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Email
                                 </label>
                                 <input
+                                    id="supplier-email"
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) =>
@@ -291,10 +303,14 @@ export default function SuppliersTab() {
                                 />
                             </div>
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="supplier-phone"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Telefon
                                 </label>
                                 <input
+                                    id="supplier-phone"
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) =>
@@ -308,10 +324,14 @@ export default function SuppliersTab() {
                             </div>
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-nip"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 NIP
                             </label>
                             <input
+                                id="supplier-nip"
                                 type="text"
                                 value={formData.nip}
                                 onChange={(e) =>
@@ -324,10 +344,14 @@ export default function SuppliersTab() {
                             />
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-address"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Adres
                             </label>
                             <textarea
+                                id="supplier-address"
                                 value={formData.address}
                                 onChange={(e) =>
                                     setFormData({
@@ -340,10 +364,14 @@ export default function SuppliersTab() {
                             />
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-notes"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Notatki
                             </label>
                             <textarea
+                                id="supplier-notes"
                                 value={formData.notes}
                                 onChange={(e) =>
                                     setFormData({
