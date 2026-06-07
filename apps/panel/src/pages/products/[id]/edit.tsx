@@ -139,6 +139,7 @@ export default function EditProductPage() {
                                     <input
                                         id="name"
                                         className="form-control"
+                                        required
                                         value={form.name}
                                         onChange={(event) =>
                                             setForm((prev) => ({
@@ -223,6 +224,7 @@ export default function EditProductPage() {
                                     <input
                                         id="stock"
                                         type="number"
+                                        min="0"
                                         className="form-control"
                                         value={form.stock}
                                         onChange={(event) =>
@@ -242,6 +244,7 @@ export default function EditProductPage() {
                                         id="unitPrice"
                                         type="number"
                                         step="0.01"
+                                        min="0"
                                         className="form-control"
                                         value={form.unitPrice}
                                         onChange={(event) =>
@@ -258,6 +261,8 @@ export default function EditProductPage() {
                                     <input
                                         id="vatRate"
                                         type="number"
+                                        min="0"
+                                        max="100"
                                         className="form-control"
                                         value={form.vatRate}
                                         onChange={(event) =>
@@ -295,6 +300,7 @@ export default function EditProductPage() {
                                     <input
                                         id="minQuantity"
                                         type="number"
+                                        min="0"
                                         className="form-control"
                                         value={form.minQuantity}
                                         onChange={(event) =>

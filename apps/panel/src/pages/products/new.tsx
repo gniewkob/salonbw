@@ -215,6 +215,7 @@ export default function NewProductPage() {
                                     type="number"
                                     className="form-control"
                                     min="0"
+                                    max="100"
                                     value={form.vatRate}
                                     onChange={handleFieldChange('vatRate')}
                                 />
