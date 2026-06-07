@@ -1,8 +1,10 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
+import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -106,7 +108,10 @@ function DraggableCustomerRow({
                             onPointerDown={(e) => e.stopPropagation()}
                         >
                             <div className="icon_box float-start">
-                                <i className="icon sprite-customer_telephone" />
+                                <i
+                                    className="icon sprite-customer_telephone"
+                                    aria-hidden="true"
+                                />
                             </div>
                             {customer.phone}
                         </a>
@@ -123,7 +128,10 @@ function DraggableCustomerRow({
                             className="icon_box"
                             title={`wyślij email: ${customer.email}`}
                         >
-                            <i className="icon sprite-customer_email" />
+                            <i
+                                className="icon sprite-customer_email"
+                                aria-hidden="true"
+                            />
                         </div>
                     </a>
                 ) : null}
@@ -137,7 +145,10 @@ function DraggableCustomerRow({
                             : 'brak wizyt'
                     }
                 >
-                    <i className="icon sprite-settings_opening_hours" />
+                    <i
+                        className="icon sprite-settings_opening_hours"
+                        aria-hidden="true"
+                    />
                 </div>
                 <span>{formatLastVisit(customer.lastVisitDate)}</span>
             </td>
@@ -160,6 +171,7 @@ function DraggableCustomerRow({
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                     title="Umów wizytę"
+                    aria-label="Umów wizytę"
                 >
                     <i
                         className="icon sprite-add_appointment"
@@ -175,6 +187,7 @@ function DraggableCustomerRow({
                     }}
                     onPointerDown={(e) => e.stopPropagation()}
                     title="Edytuj"
+                    aria-label="Edytuj klienta"
                 >
                     <i className="icon sprite-pencil" aria-hidden="true" />
                 </button>
@@ -186,6 +199,7 @@ function DraggableCustomerRow({
 export default function ClientsPage() {
     const { role } = useAuth();
     const router = useRouter();
+    const toast = useToast();
 
     const currentGroupId = router.query.groupId
         ? Number(router.query.groupId)
@@ -379,6 +393,9 @@ export default function ClientsPage() {
             });
             setSelectedIds(new Set());
             setBulkGroupId('');
+            toast.success('Klienci dodani do grupy');
+        } catch {
+            toast.error('Nie udało się dodać klientów do grupy');
         } finally {
             setBulkGroupPending(false);
         }
@@ -412,10 +429,14 @@ export default function ClientsPage() {
                     customer &&
                     !customer.groups?.some((g) => g.id === groupId)
                 ) {
-                    await addToGroup.mutateAsync({
-                        groupId,
-                        customerIds: [customerId],
-                    });
+                    try {
+                        await addToGroup.mutateAsync({
+                            groupId,
+                            customerIds: [customerId],
+                        });
+                    } catch {
+                        toast.error('Nie udało się dodać klienta do grupy');
+                    }
                 }
             }
 
@@ -532,6 +553,9 @@ export default function ClientsPage() {
             roles={['employee', 'receptionist', 'admin']}
             permission="nav:customers"
         >
+            <Head>
+                <title>Klienci — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <DndContext
                     sensors={sensors}
@@ -553,6 +577,7 @@ export default function ClientsPage() {
                                     type="text"
                                     name="query"
                                     placeholder="wyszukaj po nazwie, telefonie lub emailu"
+                                    aria-label="Wyszukaj klienta"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -568,7 +593,10 @@ export default function ClientsPage() {
                                     id="add_customer_button"
                                     onClick={() => setNewCustomerOpen(true)}
                                 >
-                                    <i className="icon sprite-add_customer" />
+                                    <i
+                                        className="icon sprite-add_customer"
+                                        aria-hidden="true"
+                                    />
                                     Dodaj klienta
                                 </button>
                             </div>
@@ -673,16 +701,14 @@ export default function ClientsPage() {
 
                         {activeGroup && (
                             <div className="column_row results_info">
-                                <a
+                                <button
+                                    type="button"
                                     className="close close_all"
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        clearGroupFilter();
-                                    }}
+                                    aria-label="Wyczyść filtr"
+                                    onClick={clearGroupFilter}
                                 >
                                     ×
-                                </a>
+                                </button>
                                 <div className="results_title">
                                     wybrane kryteria wyszukiwania:
                                 </div>
@@ -692,11 +718,10 @@ export default function ClientsPage() {
                                 <div className="results_size_info">
                                     Klientów spełniających kryteria:{' '}
                                     <strong>{displayedCustomers.length}</strong>
-                                    <a
-                                        href="#"
+                                    <button
+                                        type="button"
                                         id="create_group_button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
+                                        onClick={() => {
                                             void router.push(
                                                 {
                                                     pathname: router.pathname,
@@ -711,7 +736,7 @@ export default function ClientsPage() {
                                         }}
                                     >
                                         utwórz grupę
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -764,7 +789,7 @@ export default function ClientsPage() {
                                                         </span>
                                                     </div>
                                                 </th>
-                                                <th>
+                                                <th scope="col">
                                                     <div>Kontakt</div>
                                                 </th>
                                                 <th
@@ -853,7 +878,10 @@ export default function ClientsPage() {
                         )}
 
                         {!isMobile && (
-                            <div className="pagination_container">
+                            <nav
+                                className="pagination_container"
+                                aria-label="Paginacja"
+                            >
                                 <div className="row">
                                     <div className="infocol-7">
                                         Pozycje od {fromItem} do {toItem} z{' '}
@@ -901,7 +929,7 @@ export default function ClientsPage() {
                                             readOnly
                                         />
                                         {' z '}
-                                        <a className="pointer">{totalPages}</a>
+                                        <span>{totalPages}</span>
                                         <button
                                             type="button"
                                             className="btn btn-link button_next ml-s"
@@ -918,7 +946,7 @@ export default function ClientsPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </nav>
                         )}
                     </div>
 

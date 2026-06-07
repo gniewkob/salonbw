@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -78,7 +78,6 @@ export default function NewProductPage() {
             });
             await router.push('/products');
         } catch (error) {
-            console.error('Błąd zapisu produktu:', error);
             setApiError(
                 error instanceof Error
                     ? error.message
@@ -91,6 +90,9 @@ export default function NewProductPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
+            <Head>
+                <title>Nowy produkt — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="products_index" id="products_main">
                     <SalonBreadcrumbs
@@ -109,7 +111,9 @@ export default function NewProductPage() {
                         }}
                     >
                         {apiError ? (
-                            <div className="alert alert-danger">{apiError}</div>
+                            <div className="alert alert-danger" role="alert">
+                                {apiError}
+                            </div>
                         ) : null}
                         <div className="product-form__section">
                             <h4>dane podstawowe</h4>
@@ -211,6 +215,7 @@ export default function NewProductPage() {
                                     type="number"
                                     className="form-control"
                                     min="0"
+                                    max="100"
                                     value={form.vatRate}
                                     onChange={handleFieldChange('vatRate')}
                                 />

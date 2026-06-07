@@ -1,30 +1,38 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
-import { useInvoices } from '@/hooks/useInvoices';
+import { useInvoices, useMyInvoices } from '@/hooks/useInvoices';
 
 const STATUS_LABELS: Record<string, string> = {
+    issued: 'Wystawiona',
     paid: 'Opłacona',
-    unpaid: 'Nieopłacona',
     overdue: 'Zaległa',
     cancelled: 'Anulowana',
 };
 
-const STATUS_BADGE: Record<string, string> = {
-    paid: 'bg-success',
-    unpaid: 'bg-warning text-dark',
-    overdue: 'bg-danger',
-    cancelled: 'bg-secondary',
-};
+function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('pl-PL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+}
 
 export default function InvoicesPage() {
     const { role } = useAuth();
-    const { data: invoicesRaw, loading: isLoading, error, refetch } = useInvoices();
-    const invoices = invoicesRaw ?? [];
+    const isAdmin = role === 'admin';
+
+    const allInvoices = useInvoices({ enabled: Boolean(role) && isAdmin });
+    const myInvoices = useMyInvoices({ enabled: Boolean(role) && !isAdmin });
+    const { data, loading } = isAdmin ? allInvoices : myInvoices;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Faktury — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="invoices-page">
                     <SalonBreadcrumbs
@@ -35,74 +43,80 @@ export default function InvoicesPage() {
                         ]}
                     />
 
-                    {isLoading ? (
-                        <div className="text-muted p-3">Ładowanie...</div>
-                    ) : error ? (
-                        <div className="d-flex flex-column gap-2 p-3">
-                            <div className="text-danger">Nie udało się pobrać faktur.</div>
-                            <button
-                                type="button"
-                                className="btn btn-outline-secondary"
-                                onClick={() => void refetch()}
-                            >
-                                Odśwież
-                            </button>
+                    <div className="mb-3">
+                        <h2 className="fs-4 fw-bold">Faktury i abonament</h2>
+                        <p className="text-muted small">
+                            Historia faktur za korzystanie z systemu
+                        </p>
+                    </div>
+
+                    {loading ? (
+                        <div className="salonbw-loading">Ładowanie...</div>
+                    ) : !data?.length ? (
+                        <div className="text-center py-5 text-muted">
+                            <p className="fw-medium">Brak faktur</p>
+                            <p className="small mt-1">
+                                Faktury pojawią się tutaj po dokonaniu płatności
+                            </p>
                         </div>
                     ) : (
                         <div className="salonbw-table-wrap">
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Numer</th>
-                                        <th>Data wystawienia</th>
-                                        <th>Status</th>
-                                        <th className="text-end">Akcje</th>
+                                        <th scope="col">Numer faktury</th>
+                                        <th scope="col">Data wystawienia</th>
+                                        <th scope="col">Termin płatności</th>
+                                        <th scope="col">Kwota</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Akcje</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {invoices.length === 0 ? (
-                                        <tr>
-                                            <td
-                                                colSpan={4}
-                                                className="text-muted text-center py-4"
-                                            >
-                                                Brak faktur.
+                                    {data.map((inv) => (
+                                        <tr key={inv.id}>
+                                            <td className="fw-medium">
+                                                {inv.number}
+                                                {inv.description ? (
+                                                    <div className="text-muted small">
+                                                        {inv.description}
+                                                    </div>
+                                                ) : null}
+                                            </td>
+                                            <td>{formatDate(inv.createdAt)}</td>
+                                            <td>
+                                                {inv.dueDate
+                                                    ? formatDate(inv.dueDate)
+                                                    : '—'}
+                                            </td>
+                                            <td>
+                                                {inv.amount != null
+                                                    ? `${inv.amount.toFixed(2)} ${inv.currency ?? 'PLN'}`
+                                                    : '—'}
+                                            </td>
+                                            <td>
+                                                <span
+                                                    className={`badge ${inv.status === 'paid' ? 'badge-salon-success' : inv.status === 'overdue' ? 'badge-salon-danger' : 'badge-salon'}`}
+                                                >
+                                                    {STATUS_LABELS[
+                                                        inv.status
+                                                    ] ?? inv.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {inv.pdfUrl && (
+                                                    <a
+                                                        className="btn btn-link p-0 small"
+                                                        href={inv.pdfUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Pobierz PDF
+                                                    </a>
+                                                )}
                                             </td>
                                         </tr>
-                                    ) : (
-                                        invoices.map((invoice) => (
-                                            <tr key={invoice.id}>
-                                                <td className="fw-medium">
-                                                    {invoice.number}
-                                                </td>
-                                                <td>
-                                                    {new Date(
-                                                        invoice.createdAt,
-                                                    ).toLocaleDateString('pl-PL')}
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        className={`badge ${STATUS_BADGE[invoice.status] ?? 'bg-secondary'}`}
-                                                    >
-                                                        {STATUS_LABELS[invoice.status] ??
-                                                            invoice.status}
-                                                    </span>
-                                                </td>
-                                                <td className="text-end">
-                                                    {invoice.pdfUrl && (
-                                                        <a
-                                                            href={invoice.pdfUrl}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="btn btn-sm btn-outline-secondary"
-                                                        >
-                                                            Pobierz PDF
-                                                        </a>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
     useSuppliers,
@@ -8,6 +7,7 @@ import {
 } from '@/hooks/useWarehouse';
 import type { Supplier } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface SupplierFormData {
     name: string;
@@ -39,6 +39,7 @@ export default function SuppliersTab() {
     );
     const [formData, setFormData] = useState<SupplierFormData>(defaultFormData);
     const [error, setError] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const { data: suppliers = [], isLoading } = useSuppliers(showInactive);
     const createSupplier = useCreateSupplier();
@@ -86,26 +87,15 @@ export default function SuppliersTab() {
                 await createSupplier.mutateAsync(formData);
             }
             handleCloseModal();
-        } catch (err) {
-            console.error('Error saving supplier:', err);
+        } catch {
             setError(
                 'Wystąpił błąd podczas zapisywania dostawcy. Spróbuj ponownie.',
             );
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (confirm('Czy na pewno chcesz usunąć tego dostawcę?')) {
-            setError(null);
-            try {
-                await deleteSupplier.mutateAsync(id);
-            } catch (err) {
-                console.error('Error deleting supplier:', err);
-                setError(
-                    'Nie udało się usunąć dostawcy. Upewnij się, że nie ma przypisanych dostaw.',
-                );
-            }
-        }
+    const handleDelete = (id: number) => {
+        setConfirmDeleteId(id);
     };
 
     return (
@@ -129,6 +119,7 @@ export default function SuppliersTab() {
                     </label>
                 </div>
                 <button
+                    type="button"
                     onClick={() => handleOpenModal()}
                     className="px-3 py-2 btn-salon rounded-3"
                 >
@@ -205,6 +196,7 @@ export default function SuppliersTab() {
                                     </td>
                                     <td className="px-4 py-3 text-nowrap text-end small">
                                         <button
+                                            type="button"
                                             onClick={() =>
                                                 handleOpenModal(supplier)
                                             }
@@ -213,6 +205,7 @@ export default function SuppliersTab() {
                                             Edytuj
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 void handleDelete(supplier.id);
                                             }}
@@ -248,10 +241,14 @@ export default function SuppliersTab() {
                         className="gap-2"
                     >
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-name"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Nazwa *
                             </label>
                             <input
+                                id="supplier-name"
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) =>
@@ -265,10 +262,14 @@ export default function SuppliersTab() {
                             />
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-contact"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Osoba kontaktowa
                             </label>
                             <input
+                                id="supplier-contact"
                                 type="text"
                                 value={formData.contactPerson}
                                 onChange={(e) =>
@@ -282,10 +283,14 @@ export default function SuppliersTab() {
                         </div>
                         <div className="row row-cols-1 row-cols-sm-2 g-3">
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="supplier-email"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Email
                                 </label>
                                 <input
+                                    id="supplier-email"
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) =>
@@ -298,10 +303,14 @@ export default function SuppliersTab() {
                                 />
                             </div>
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="supplier-phone"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Telefon
                                 </label>
                                 <input
+                                    id="supplier-phone"
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) =>
@@ -315,10 +324,14 @@ export default function SuppliersTab() {
                             </div>
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-nip"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 NIP
                             </label>
                             <input
+                                id="supplier-nip"
                                 type="text"
                                 value={formData.nip}
                                 onChange={(e) =>
@@ -331,10 +344,14 @@ export default function SuppliersTab() {
                             />
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-address"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Adres
                             </label>
                             <textarea
+                                id="supplier-address"
                                 value={formData.address}
                                 onChange={(e) =>
                                     setFormData({
@@ -347,10 +364,14 @@ export default function SuppliersTab() {
                             />
                         </div>
                         <div>
-                            <label className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="supplier-notes"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Notatki
                             </label>
                             <textarea
+                                id="supplier-notes"
                                 value={formData.notes}
                                 onChange={(e) =>
                                     setFormData({
@@ -403,6 +424,25 @@ export default function SuppliersTab() {
                     </form>
                 </PanelModal>
             )}
+            <ConfirmModal
+                open={confirmDeleteId !== null}
+                title="Usuń dostawcę"
+                message="Czy na pewno chcesz usunąć tego dostawcę?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteId === null) return;
+                    const id = confirmDeleteId;
+                    setConfirmDeleteId(null);
+                    setError(null);
+                    void deleteSupplier.mutateAsync(id).catch(() => {
+                        setError(
+                            'Nie udało się usunąć dostawcy. Upewnij się, że nie ma przypisanych dostaw.',
+                        );
+                    });
+                }}
+                onCancel={() => setConfirmDeleteId(null)}
+            />
         </div>
     );
 }

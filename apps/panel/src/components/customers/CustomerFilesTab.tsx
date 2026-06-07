@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import {
@@ -9,6 +8,7 @@ import {
     type CustomerFileCategory,
 } from '@/hooks/useCustomerMedia';
 import EmptyState from '@/components/ui/EmptyState';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     customerId: number;
@@ -60,6 +60,9 @@ export default function CustomerFilesTab({ customerId }: Props) {
     const [filterCategory, setFilterCategory] = useState<
         CustomerFileCategory | 'all'
     >('all');
+    const [confirmDeleteFileId, setConfirmDeleteFileId] = useState<
+        number | null
+    >(null);
     const [uploadCategory, setUploadCategory] =
         useState<CustomerFileCategory>('other');
 
@@ -75,9 +78,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
         window.open(`${base}${downloadUrl}`, '_blank', 'noopener,noreferrer');
     };
 
-    const handleDelete = async (fileId: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć ten plik?')) return;
-        await del.mutateAsync(fileId);
+    const handleDelete = (fileId: number) => {
+        setConfirmDeleteFileId(fileId);
     };
 
     if (isLoading) {
@@ -126,7 +128,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
-                                        void upload.mutateAsync({
+                                        upload.mutate({
                                             file,
                                             category: uploadCategory,
                                         });
@@ -192,12 +194,20 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     <thead>
                                         <tr>
                                             <>
-                                                <th style={{ width: 40 }}></th>
-                                                <th>Nazwa pliku</th>
-                                                <th>Kategoria</th>
-                                                <th>Rozmiar</th>
-                                                <th>Data dodania</th>
-                                                <th style={{ width: 80 }}>
+                                                <th
+                                                    scope="col"
+                                                    style={{ width: 40 }}
+                                                ></th>
+                                                <th scope="col">Nazwa pliku</th>
+                                                <th scope="col">Kategoria</th>
+                                                <th scope="col">Rozmiar</th>
+                                                <th scope="col">
+                                                    Data dodania
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    style={{ width: 80 }}
+                                                >
                                                     Opcje
                                                 </th>
                                             </>
@@ -264,7 +274,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    void handleDelete(
+                                                                    handleDelete(
                                                                         file.id,
                                                                     )
                                                                 }
@@ -289,6 +299,22 @@ export default function CustomerFilesTab({ customerId }: Props) {
                     </div>
                 </div>
             </div>
+            <ConfirmModal
+                open={confirmDeleteFileId !== null}
+                title="Usuń plik"
+                message="Czy na pewno chcesz usunąć ten plik? Operacja jest nieodwracalna."
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteFileId === null) return;
+                    const id = confirmDeleteFileId;
+                    setConfirmDeleteFileId(null);
+                    void del.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteFileId(null)}
+            />
         </div>
     );
 }

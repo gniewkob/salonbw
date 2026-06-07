@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
@@ -76,6 +77,8 @@ export default function SettingsEmployeeDetailPage() {
         }
     }, [employee]);
 
+    const [editError, setEditError] = useState<string | null>(null);
+
     // Password reset state
     const [resetOpen, setResetOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
@@ -93,8 +96,13 @@ export default function SettingsEmployeeDetailPage() {
     const handleEditSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!id) return;
-        await updateEmployee.mutateAsync({ id, firstName, lastName });
-        void router.push(`/settings/employees/${id}`);
+        setEditError(null);
+        try {
+            await updateEmployee.mutateAsync({ id, firstName, lastName });
+            void router.push(`/settings/employees/${id}`);
+        } catch {
+            setEditError('Nie udało się zapisać zmian. Spróbuj ponownie.');
+        }
     };
 
     const handleResetPassword = async (e: React.FormEvent) => {
@@ -119,43 +127,71 @@ export default function SettingsEmployeeDetailPage() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (err) {
-            setResetError(err instanceof Error ? err.message : 'Błąd resetu hasła');
+            setResetError(
+                err instanceof Error ? err.message : 'Błąd resetu hasła',
+            );
         } finally {
             setResetting(false);
         }
     };
 
     const tabHref = (t: Tab) =>
-        id ? `/settings/employees/${id}${t !== 'details' ? `?tab=${t}` : ''}` : '#';
+        id
+            ? `/settings/employees/${id}${t !== 'details' ? `?tab=${t}` : ''}`
+            : '#';
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>
+                    {employee?.name
+                        ? `${employee.name} — Ustawienia — Salon Black & White`
+                        : 'Pracownik — Ustawienia — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
-                <div className="settings-detail-layout" data-testid="settings-detail">
-                    <aside className="settings-detail-layout__sidebar">{NAV}</aside>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
                     <div className="settings-detail-layout__main">
                         <SalonBreadcrumbs
                             iconClass="sprite-breadcrumbs_settings"
                             items={[
                                 { label: 'Ustawienia', href: '/settings' },
-                                { label: 'Pracownicy', href: '/settings/employees' },
+                                {
+                                    label: 'Pracownicy',
+                                    href: '/settings/employees',
+                                },
                                 { label: employee?.name ?? '...' },
                             ]}
                         />
 
                         <ul className="nav nav-tabs mb-3">
                             <li className="nav-item">
-                                <Link href={tabHref('details')} className={`nav-link${tab === 'details' ? ' active' : ''}`}>
+                                <Link
+                                    href={tabHref('details')}
+                                    className={`nav-link${tab === 'details' ? ' active' : ''}`}
+                                >
                                     Szczegóły
                                 </Link>
                             </li>
                             <li className="nav-item">
-                                <Link href={tabHref('edit')} className={`nav-link${tab === 'edit' ? ' active' : ''}`}>
+                                <Link
+                                    href={tabHref('edit')}
+                                    className={`nav-link${tab === 'edit' ? ' active' : ''}`}
+                                >
                                     Edytuj
                                 </Link>
                             </li>
                             <li className="nav-item">
-                                <Link href={tabHref('history')} className={`nav-link${tab === 'history' ? ' active' : ''}`}>
+                                <Link
+                                    href={tabHref('history')}
+                                    className={`nav-link${tab === 'history' ? ' active' : ''}`}
+                                >
                                     Historia wydarzeń
                                 </Link>
                             </li>
@@ -175,7 +211,11 @@ export default function SettingsEmployeeDetailPage() {
                                             <dd>{employee.email ?? '—'}</dd>
                                             <dt>Rola</dt>
                                             <dd>
-                                                {ROLE_LABELS[employee.role ?? ''] ?? employee.role ?? '—'}
+                                                {ROLE_LABELS[
+                                                    employee.role ?? ''
+                                                ] ??
+                                                    employee.role ??
+                                                    '—'}
                                             </dd>
                                         </dl>
                                         <div className="d-flex gap-2 mt-3">
@@ -205,10 +245,17 @@ export default function SettingsEmployeeDetailPage() {
                                 {isLoading ? (
                                     <p>Ładowanie...</p>
                                 ) : (
-                                    <form onSubmit={(e) => void handleEditSubmit(e)}>
+                                    <form
+                                        onSubmit={(e) =>
+                                            void handleEditSubmit(e)
+                                        }
+                                    >
                                         <h2>Edytuj pracownika</h2>
                                         <div className="mb-3">
-                                            <label htmlFor="firstName" className="form-label">
+                                            <label
+                                                htmlFor="firstName"
+                                                className="form-label"
+                                            >
                                                 Imię
                                             </label>
                                             <input
@@ -216,12 +263,17 @@ export default function SettingsEmployeeDetailPage() {
                                                 type="text"
                                                 className="form-control"
                                                 value={firstName}
-                                                onChange={(e) => setFirstName(e.target.value)}
+                                                onChange={(e) =>
+                                                    setFirstName(e.target.value)
+                                                }
                                                 required
                                             />
                                         </div>
                                         <div className="mb-3">
-                                            <label htmlFor="lastName" className="form-label">
+                                            <label
+                                                htmlFor="lastName"
+                                                className="form-label"
+                                            >
                                                 Nazwisko
                                             </label>
                                             <input
@@ -229,20 +281,35 @@ export default function SettingsEmployeeDetailPage() {
                                                 type="text"
                                                 className="form-control"
                                                 value={lastName}
-                                                onChange={(e) => setLastName(e.target.value)}
+                                                onChange={(e) =>
+                                                    setLastName(e.target.value)
+                                                }
                                                 required
                                             />
                                         </div>
+                                        {editError && (
+                                            <div className="alert alert-danger mb-3">
+                                                {editError}
+                                            </div>
+                                        )}
                                         <div className="mb-3 d-flex gap-2">
                                             <button
                                                 type="submit"
                                                 className="btn btn-primary"
-                                                disabled={updateEmployee.isPending}
+                                                disabled={
+                                                    updateEmployee.isPending
+                                                }
                                             >
-                                                {updateEmployee.isPending ? 'Zapisywanie...' : 'Zapisz'}
+                                                {updateEmployee.isPending
+                                                    ? 'Zapisywanie...'
+                                                    : 'Zapisz'}
                                             </button>
                                             <Link
-                                                href={id ? `/settings/employees/${id}` : '/settings/employees'}
+                                                href={
+                                                    id
+                                                        ? `/settings/employees/${id}`
+                                                        : '/settings/employees'
+                                                }
                                                 className="btn btn-outline-secondary"
                                             >
                                                 Anuluj
@@ -254,7 +321,9 @@ export default function SettingsEmployeeDetailPage() {
                         )}
 
                         {tab === 'history' && (
-                            <PanelSection title={`Historia wydarzeń — ${employee?.name ?? '...'}`}>
+                            <PanelSection
+                                title={`Historia wydarzeń — ${employee?.name ?? '...'}`}
+                            >
                                 {logsLoading ? (
                                     <p>Ładowanie...</p>
                                 ) : (
@@ -268,13 +337,24 @@ export default function SettingsEmployeeDetailPage() {
                                         emptyMessage="Brak historii wydarzeń"
                                     >
                                         {(logs?.items ?? []).map((log, i) => (
-                                            <tr key={log.id} className={i % 2 === 0 ? 'even' : 'odd'}>
+                                            <tr
+                                                key={log.id}
+                                                className={
+                                                    i % 2 === 0 ? 'even' : 'odd'
+                                                }
+                                            >
                                                 <td>
-                                                    {new Date(log.timestamp).toLocaleString('pl-PL')}
+                                                    {new Date(
+                                                        log.timestamp,
+                                                    ).toLocaleString('pl-PL')}
                                                 </td>
                                                 <td>{log.actionLabel}</td>
                                                 <td>
-                                                    {log.details ? JSON.stringify(log.details) : '—'}
+                                                    {log.details
+                                                        ? JSON.stringify(
+                                                              log.details,
+                                                          )
+                                                        : '—'}
                                                 </td>
                                             </tr>
                                         ))}
@@ -285,16 +365,31 @@ export default function SettingsEmployeeDetailPage() {
                     </div>
                 </div>
 
-                <Modal open={resetOpen} onClose={() => setResetOpen(false)} size="sm">
-                    <h5 className="fw-bold mb-4">Resetuj hasło — {employee?.name}</h5>
+                <Modal
+                    open={resetOpen}
+                    onClose={() => setResetOpen(false)}
+                    size="sm"
+                >
+                    <h5 className="fw-bold mb-4">
+                        Resetuj hasło — {employee?.name}
+                    </h5>
                     {resetSuccess ? (
-                        <div role="status" className="alert alert-success py-2 small">
+                        <div
+                            role="status"
+                            className="alert alert-success py-2 small"
+                        >
                             Hasło zostało zmienione.
                         </div>
                     ) : (
-                        <form onSubmit={(e) => void handleResetPassword(e)} noValidate>
+                        <form
+                            onSubmit={(e) => void handleResetPassword(e)}
+                            noValidate
+                        >
                             <div className="mb-3">
-                                <label htmlFor="rp-new" className="form-label fw-medium">
+                                <label
+                                    htmlFor="rp-new"
+                                    className="form-label fw-medium"
+                                >
                                     Nowe hasło
                                 </label>
                                 <input
@@ -302,16 +397,23 @@ export default function SettingsEmployeeDetailPage() {
                                     type="password"
                                     className="form-control"
                                     value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewPassword(e.target.value)
+                                    }
                                     autoComplete="new-password"
                                     disabled={resetting}
                                     minLength={6}
                                     required
                                 />
-                                <div className="form-text">Minimum 6 znaków</div>
+                                <div className="form-text">
+                                    Minimum 6 znaków
+                                </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="rp-confirm" className="form-label fw-medium">
+                                <label
+                                    htmlFor="rp-confirm"
+                                    className="form-label fw-medium"
+                                >
                                     Potwierdź hasło
                                 </label>
                                 <input
@@ -319,14 +421,19 @@ export default function SettingsEmployeeDetailPage() {
                                     type="password"
                                     className="form-control"
                                     value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onChange={(e) =>
+                                        setConfirmPassword(e.target.value)
+                                    }
                                     autoComplete="new-password"
                                     disabled={resetting}
                                     required
                                 />
                             </div>
                             {resetError && (
-                                <div role="alert" className="alert alert-danger py-2 small mb-3">
+                                <div
+                                    role="alert"
+                                    className="alert alert-danger py-2 small mb-3"
+                                >
                                     {resetError}
                                 </div>
                             )}
@@ -342,7 +449,11 @@ export default function SettingsEmployeeDetailPage() {
                                 <button
                                     type="submit"
                                     className="btn btn-warning"
-                                    disabled={resetting || !newPassword || !confirmPassword}
+                                    disabled={
+                                        resetting ||
+                                        !newPassword ||
+                                        !confirmPassword
+                                    }
                                 >
                                     {resetting ? 'Zapisywanie…' : 'Ustaw hasło'}
                                 </button>

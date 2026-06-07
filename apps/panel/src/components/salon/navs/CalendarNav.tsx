@@ -1,4 +1,3 @@
-
 import { useRouter } from 'next/router';
 import { useEmployees } from '@/hooks/useEmployees';
 import {
@@ -119,6 +118,7 @@ export default function CalendarNav() {
                 }}
             >
                 <button
+                    type="button"
                     onClick={() => changeMonth(-1)}
                     className="btn btn-sm btn-link p-0"
                     aria-label="Poprzedni miesiąc"
@@ -147,6 +147,7 @@ export default function CalendarNav() {
                     {monthYear}
                 </span>
                 <button
+                    type="button"
                     onClick={() => changeMonth(1)}
                     className="btn btn-sm btn-link p-0"
                     aria-label="Następny miesiąc"
@@ -186,6 +187,7 @@ export default function CalendarNav() {
 
                         return (
                             <button
+                                type="button"
                                 key={day.toISOString()}
                                 onClick={() => handleDateClick(day)}
                                 className={`

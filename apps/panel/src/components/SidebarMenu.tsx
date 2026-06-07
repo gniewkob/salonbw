@@ -23,7 +23,7 @@ export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
             onClick={onClose}
         >
             <div className="p-3 fs-5 fw-bold">Dashboard</div>
-            <nav className="gap-1 px-3">
+            <nav className="gap-1 px-3" aria-label="Menu boczne">
                 {links.map((link) => (
                     <Link
                         key={link.href}
@@ -36,6 +36,7 @@ export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
                     </Link>
                 ))}
                 <button
+                    type="button"
                     className="d-block w-100 text-start rounded px-2 py-1"
                     onClick={() => {
                         void onLogout();

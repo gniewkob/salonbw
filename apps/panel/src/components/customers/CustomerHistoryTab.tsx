@@ -306,10 +306,10 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                             <table className="salonbw-table fs-12 mb-3">
                                 <thead>
                                     <tr>
-                                        <th>Data</th>
-                                        <th>Akcja</th>
-                                        <th>Powód</th>
-                                        <th>Wizyta</th>
+                                        <th scope="col">Data</th>
+                                        <th scope="col">Akcja</th>
+                                        <th scope="col">Powód</th>
+                                        <th scope="col">Wizyta</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -380,10 +380,12 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                             <table className="salonbw-table fs-12">
                                 <thead>
                                     <tr>
-                                        <th>Data</th>
-                                        <th>Sprzedaż</th>
-                                        <th>Metoda</th>
-                                        <th className="text-end">Kwota</th>
+                                        <th scope="col">Data</th>
+                                        <th scope="col">Sprzedaż</th>
+                                        <th scope="col">Metoda</th>
+                                        <th scope="col" className="text-end">
+                                            Kwota
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>

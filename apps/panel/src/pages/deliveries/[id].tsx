@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -30,12 +29,20 @@ export default function DeliveryDetailsPage() {
 
     const receive = async () => {
         if (!deliveryId) return;
-        await receiveMutation.mutateAsync({ id: deliveryId });
+        try {
+            await receiveMutation.mutateAsync({ id: deliveryId });
+        } catch {
+            // error shown in hook onError toast
+        }
     };
 
     const cancel = async () => {
         if (!deliveryId) return;
-        await cancelMutation.mutateAsync(deliveryId);
+        try {
+            await cancelMutation.mutateAsync(deliveryId);
+        } catch {
+            // error shown in hook onError toast
+        }
     };
 
     return (
@@ -127,12 +134,12 @@ export default function DeliveryDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>produkt</th>
-                                    <th>ilość</th>
-                                    <th>cena/op. (netto)</th>
-                                    <th>wartość (netto)</th>
-                                    <th>partia</th>
-                                    <th>ważność</th>
+                                    <th scope="col">produkt</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">cena/op. (netto)</th>
+                                    <th scope="col">wartość (netto)</th>
+                                    <th scope="col">partia</th>
+                                    <th scope="col">ważność</th>
                                 </tr>
                             </thead>
                             <tbody>

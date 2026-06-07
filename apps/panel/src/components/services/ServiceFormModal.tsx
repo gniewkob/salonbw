@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import type { Service, ServiceCategory, PriceType } from '@/types';
 import SelectorModal from '@/components/salon/modals/SelectorModal';
@@ -290,6 +289,7 @@ export default function ServiceFormModal({
                             })
                         }
                         title="Typ ceny"
+                        aria-label="Typ ceny"
                         className="form-control"
                     >
                         <option value="fixed">Stała</option>
@@ -416,7 +416,7 @@ export default function ServiceFormModal({
 
     const renderResourcesTab = () => (
         <div className="tab-pane active py-20">
-            <div className="alert alert-info">
+            <div className="alert alert-info" role="status">
                 W tej sekcji możesz przypisać zasoby (gabinety, urządzenia)
                 wymagane do wykonania tej usługi.
             </div>
@@ -428,7 +428,7 @@ export default function ServiceFormModal({
 
     const renderEmployeesTab = () => (
         <div className="tab-pane active py-20">
-            <div className="alert alert-info">
+            <div className="alert alert-info" role="status">
                 Wybierz pracowników, którzy świadczą tę usługę. Możesz również
                 zdefiniować indywidualne czasy trwania i ceny.
             </div>
@@ -437,10 +437,14 @@ export default function ServiceFormModal({
                 <table className="salonbw-table">
                     <thead>
                         <tr>
-                            <th>Pracownik</th>
-                            <th className="w-150">Czas trwania</th>
-                            <th className="w-150">Cena</th>
-                            <th className="w-50"></th>
+                            <th scope="col">Pracownik</th>
+                            <th scope="col" className="w-150">
+                                Czas trwania
+                            </th>
+                            <th scope="col" className="w-150">
+                                Cena
+                            </th>
+                            <th scope="col" className="w-50"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -472,6 +476,7 @@ export default function ServiceFormModal({
                                                     ''
                                                 }
                                                 title="Indywidualny czas trwania"
+                                                aria-label="Indywidualny czas trwania"
                                                 onChange={(e) =>
                                                     handleEmployeeDataChange(
                                                         assignment.employeeId,
@@ -502,6 +507,7 @@ export default function ServiceFormModal({
                                                     type="number"
                                                     className="form-control"
                                                     title="Indywidualna cena dla pracownika"
+                                                    aria-label="Indywidualna cena dla pracownika"
                                                     placeholder={formData.price.toString()}
                                                     value={
                                                         assignment.customPrice ??
@@ -534,9 +540,12 @@ export default function ServiceFormModal({
                                                         assignment.employeeId,
                                                     )
                                                 }
-                                                title="Usuń"
+                                                title="Usuń pracownika"
+                                                aria-label="Usuń pracownika"
                                             >
-                                                &times;
+                                                <span aria-hidden="true">
+                                                    &times;
+                                                </span>
                                             </button>
                                         </td>
                                     </tr>
@@ -560,7 +569,12 @@ export default function ServiceFormModal({
     );
 
     return (
-        <div className="modal fade in block bg-modal-overlay">
+        <div
+            className="modal fade in block bg-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="service-form-modal-title"
+        >
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -568,28 +582,35 @@ export default function ServiceFormModal({
                             type="button"
                             className="close"
                             onClick={onClose}
+                            aria-label="Zamknij"
                         >
-                            &times;
+                            <span aria-hidden="true">&times;</span>
                         </button>
-                        <h4 className="modal-title">
+                        <h4
+                            id="service-form-modal-title"
+                            className="modal-title"
+                        >
                             {service ? 'Edytuj usługę' : 'Nowa usługa'}
                         </h4>
                     </div>
 
                     <form className="form-horizontal" onSubmit={handleSubmit}>
                         <div className="modal-body px-15">
-                            <ul className="nav nav-tabs mt-15">
+                            <ul className="nav nav-tabs mt-15" role="tablist">
                                 <li
                                     className={
                                         activeTab === 'basic' ? 'active' : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeTab === 'basic'}
                                         onClick={() => setActiveTab('basic')}
                                     >
                                         Podstawowe dane
-                                    </a>
+                                    </button>
                                 </li>
                                 <li
                                     className={
@@ -597,15 +618,20 @@ export default function ServiceFormModal({
                                             ? 'active'
                                             : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={
+                                            activeTab === 'resources'
+                                        }
                                         onClick={() =>
                                             setActiveTab('resources')
                                         }
                                     >
                                         Zasoby
-                                    </a>
+                                    </button>
                                 </li>
                                 <li
                                     className={
@@ -613,15 +639,20 @@ export default function ServiceFormModal({
                                             ? 'active'
                                             : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={
+                                            activeTab === 'employees'
+                                        }
                                         onClick={() =>
                                             setActiveTab('employees')
                                         }
                                     >
                                         Pracownicy
-                                    </a>
+                                    </button>
                                 </li>
                                 <li
                                     className={
@@ -629,15 +660,20 @@ export default function ServiceFormModal({
                                             ? 'active'
                                             : ''
                                     }
+                                    role="presentation"
                                 >
-                                    <a
-                                        href="javascript:;"
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={
+                                            activeTab === 'description'
+                                        }
                                         onClick={() =>
                                             setActiveTab('description')
                                         }
                                     >
                                         Opis
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
 

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import CalendarSettingsForm from '@/components/settings/CalendarSettingsForm';
 import SalonShell from '@/components/salon/SalonShell';
@@ -8,6 +9,9 @@ export default function CalendarSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Ustawienia kalendarza — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <CalendarSettingsForm />
             </SalonShell>

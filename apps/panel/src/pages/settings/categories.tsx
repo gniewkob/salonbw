@@ -1,9 +1,11 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -167,6 +169,8 @@ export default function SettingsCategoriesPage() {
     const reorderCategories = useReorderProductCategories();
     const [reorderMode, setReorderMode] = useState(false);
     const [draftTree, setDraftTree] = useState<CategoryNode[]>([]);
+    const [confirmDeleteCategory, setConfirmDeleteCategory] =
+        useState<ProductCategory | null>(null);
 
     const tree = useMemo<CategoryNode[]>(
         () => toCategoryNodes(categories),
@@ -186,15 +190,7 @@ export default function SettingsCategoriesPage() {
     };
 
     const handleDelete = (category: ProductCategory) => {
-        if (
-            !window.confirm(
-                `Operacji nie można cofnąć. Czy na pewno chcesz usunąć kategorię "${category.name}"?`,
-            )
-        ) {
-            return;
-        }
-
-        void deleteCategory.mutateAsync(category.id);
+        setConfirmDeleteCategory(category);
     };
 
     const handleMove = (categoryId: number, direction: 'up' | 'down') => {
@@ -204,19 +200,28 @@ export default function SettingsCategoriesPage() {
     };
 
     const handleSaveOrder = async () => {
-        await reorderCategories.mutateAsync(flattenTree(draftTree));
-        setReorderMode(false);
-        setDraftTree([]);
-        await Promise.all([
-            queryClient.invalidateQueries({ queryKey: ['product-categories'] }),
-            queryClient.invalidateQueries({
-                queryKey: ['product-categories-tree'],
-            }),
-        ]);
+        try {
+            await reorderCategories.mutateAsync(flattenTree(draftTree));
+            setReorderMode(false);
+            setDraftTree([]);
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories'],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories-tree'],
+                }),
+            ]);
+        } catch {
+            // error shown via reorderCategories.isError
+        }
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Kategorie usług — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -285,14 +290,29 @@ export default function SettingsCategoriesPage() {
                                     </button>
                                 )}
                             </div>
+                            {deleteCategory.isError && (
+                                <div className="alert alert-danger mb-2">
+                                    Nie udało się usunąć kategorii. Spróbuj
+                                    ponownie.
+                                </div>
+                            )}
+                            {reorderCategories.isError && (
+                                <div className="alert alert-danger mb-2">
+                                    Nie udało się zapisać nowego układu. Spróbuj
+                                    ponownie.
+                                </div>
+                            )}
                             {isLoading ? (
                                 <p>Ładowanie...</p>
                             ) : (
                                 <table className="table table-striped table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>Nazwa</th>
-                                            <th style={{ width: 260 }}>
+                                            <th scope="col">Nazwa</th>
+                                            <th
+                                                scope="col"
+                                                style={{ width: 260 }}
+                                            >
                                                 Akcje
                                             </th>
                                         </tr>
@@ -322,6 +342,19 @@ export default function SettingsCategoriesPage() {
                         </PanelSection>
                     </div>
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteCategory}
+                    title="Usuń kategorię"
+                    message={`Operacji nie można cofnąć. Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteCategory) return;
+                        deleteCategory.mutate(confirmDeleteCategory.id);
+                        setConfirmDeleteCategory(null);
+                    }}
+                    onCancel={() => setConfirmDeleteCategory(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

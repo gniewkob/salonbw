@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
     useDeliveries,
@@ -9,6 +8,7 @@ import {
 } from '@/hooks/useWarehouse';
 import type { DeliveryStatus } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { formatPanelCurrency, formatPanelDate } from '@/utils/formatters';
 
 const statusLabels: Record<DeliveryStatus, string> = {
@@ -35,6 +35,10 @@ export default function DeliveriesTab() {
         notes: '',
     });
     const [error, setError] = useState<string | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{
+        id: number;
+        action: 'receive' | 'cancel';
+    } | null>(null);
 
     const { data: deliveries = [], isLoading } = useDeliveries(
         statusFilter ? { status: statusFilter } : undefined,
@@ -73,37 +77,36 @@ export default function DeliveriesTab() {
                 notes: formData.notes || undefined,
             });
             handleCloseModal();
-        } catch (err) {
-            console.error('Error creating delivery:', err);
+        } catch {
             setError('Wystąpił błąd podczas tworzenia dostawy.');
         }
     };
 
-    const handleReceive = async (id: number) => {
-        if (
-            confirm(
-                'Czy na pewno chcesz przyjąć tę dostawę? Stany magazynowe zostaną zaktualizowane.',
-            )
-        ) {
-            setError(null);
-            try {
-                await receiveDelivery.mutateAsync({ id });
-            } catch (err) {
-                console.error('Error receiving delivery:', err);
-                setError('Nie udało się przyjąć dostawy. Spróbuj ponownie.');
-            }
-        }
+    const handleReceive = (id: number) => {
+        setConfirmAction({ id, action: 'receive' });
     };
 
-    const handleCancel = async (id: number) => {
-        if (confirm('Czy na pewno chcesz anulować tę dostawę?')) {
-            setError(null);
-            try {
+    const handleCancel = (id: number) => {
+        setConfirmAction({ id, action: 'cancel' });
+    };
+
+    const doConfirmAction = async (
+        id: number,
+        action: 'receive' | 'cancel',
+    ) => {
+        setError(null);
+        try {
+            if (action === 'receive') {
+                await receiveDelivery.mutateAsync({ id });
+            } else {
                 await cancelDelivery.mutateAsync(id);
-            } catch (err) {
-                console.error('Error cancelling delivery:', err);
-                setError('Nie udało się anulować dostawy. Spróbuj ponownie.');
             }
+        } catch {
+            setError(
+                action === 'receive'
+                    ? 'Nie udało się przyjąć dostawy. Spróbuj ponownie.'
+                    : 'Nie udało się anulować dostawy. Spróbuj ponownie.',
+            );
         }
     };
 
@@ -118,6 +121,7 @@ export default function DeliveriesTab() {
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="d-flex align-items-center gap-3">
                     <select
+                        aria-label="Filtruj po statusie"
                         value={statusFilter}
                         onChange={(e) =>
                             setStatusFilter(
@@ -135,6 +139,7 @@ export default function DeliveriesTab() {
                     </select>
                 </div>
                 <button
+                    type="button"
                     onClick={handleOpenModal}
                     className="px-3 py-2 btn-salon rounded-3"
                 >
@@ -214,6 +219,7 @@ export default function DeliveriesTab() {
                                         {delivery.status === 'draft' && (
                                             <>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleReceive(
                                                             delivery.id,
@@ -224,6 +230,7 @@ export default function DeliveriesTab() {
                                                     Przyjmij
                                                 </button>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleCancel(
                                                             delivery.id,
@@ -238,6 +245,7 @@ export default function DeliveriesTab() {
                                         {delivery.status === 'pending' && (
                                             <>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleReceive(
                                                             delivery.id,
@@ -248,6 +256,7 @@ export default function DeliveriesTab() {
                                                     Przyjmij
                                                 </button>
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleCancel(
                                                             delivery.id,
@@ -290,10 +299,14 @@ export default function DeliveriesTab() {
                         className="gap-2"
                     >
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-supplier"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Dostawca
                             </label>
                             <select
+                                id="delivery-supplier"
                                 value={formData.supplierId}
                                 onChange={(e) =>
                                     setFormData({
@@ -312,10 +325,14 @@ export default function DeliveriesTab() {
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-date"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Data dostawy
                             </label>
                             <input
+                                id="delivery-date"
                                 type="date"
                                 value={formData.deliveryDate}
                                 onChange={(e) =>
@@ -328,10 +345,14 @@ export default function DeliveriesTab() {
                             />
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-invoice"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Nr faktury
                             </label>
                             <input
+                                id="delivery-invoice"
                                 type="text"
                                 value={formData.invoiceNumber}
                                 onChange={(e) =>
@@ -344,10 +365,14 @@ export default function DeliveriesTab() {
                             />
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="delivery-notes"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Notatki
                             </label>
                             <textarea
+                                id="delivery-notes"
                                 value={formData.notes}
                                 onChange={(e) =>
                                     setFormData({
@@ -383,6 +408,32 @@ export default function DeliveriesTab() {
                     </form>
                 </PanelModal>
             )}
+            <ConfirmModal
+                open={!!confirmAction}
+                title={
+                    confirmAction?.action === 'receive'
+                        ? 'Przyjmij dostawę'
+                        : 'Anuluj dostawę'
+                }
+                message={
+                    confirmAction?.action === 'receive'
+                        ? 'Czy na pewno chcesz przyjąć tę dostawę? Stany magazynowe zostaną zaktualizowane.'
+                        : 'Czy na pewno chcesz anulować tę dostawę?'
+                }
+                confirmLabel={
+                    confirmAction?.action === 'receive'
+                        ? 'Przyjmij'
+                        : 'Anuluj dostawę'
+                }
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmAction) return;
+                    const { id, action } = confirmAction;
+                    setConfirmAction(null);
+                    void doConfirmAction(id, action);
+                }}
+                onCancel={() => setConfirmAction(null)}
+            />
         </div>
     );
 }

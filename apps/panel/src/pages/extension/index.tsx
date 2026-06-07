@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -97,6 +98,9 @@ export default function ExtensionPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
+            <Head>
+                <title>Rozszerzenia — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="extension-page">
                     <SalonBreadcrumbs

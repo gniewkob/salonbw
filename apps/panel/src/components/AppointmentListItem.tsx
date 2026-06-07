@@ -7,7 +7,7 @@ interface Props {
 export default function AppointmentListItem({ appointment }: Props) {
     return (
         <li className="border p-2">
-            <div>{new Date(appointment.startTime).toLocaleString()}</div>
+            <div>{new Date(appointment.startTime).toLocaleString('pl-PL')}</div>
             <div className="small text-muted">{appointment.client?.name}</div>
             <div className="small text-muted">{appointment.service?.name}</div>
             <div className="small text-muted">

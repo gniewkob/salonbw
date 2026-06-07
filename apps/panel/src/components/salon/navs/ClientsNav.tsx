@@ -36,18 +36,15 @@ function DroppableGroupItem({
                 isOver ? { backgroundColor: 'rgba(0,139,180,0.10)' } : undefined
             }
         >
-            <a
+            <button
+                type="button"
                 className="standard_group"
                 data-id={group.id}
-                href="#"
                 title={group.name}
-                onClick={(e) => {
-                    e.preventDefault();
-                    onClick();
-                }}
+                onClick={onClick}
             >
                 <div className="icon_box">
-                    <i className="icon sprite-user_group" />
+                    <i className="icon sprite-user_group" aria-hidden="true" />
                 </div>
                 {group.name}
                 {isOver ? (
@@ -55,7 +52,7 @@ function DroppableGroupItem({
                         ↑ upuść
                     </span>
                 ) : null}
-            </a>
+            </button>
         </li>
     );
 }
@@ -151,89 +148,96 @@ export default function ClientsNav() {
                         <div className="customer_groups column_row">
                             <div className="nav-header">GRUPY KLIENTÓW</div>
                             <div className="tree" id="groups">
-                                <a
+                                <button
+                                    type="button"
                                     className={`root ${activeQuickGroup === 'all' ? 'active' : ''}`}
                                     data-name="all"
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
+                                    aria-current={
+                                        activeQuickGroup === 'all'
+                                            ? 'true'
+                                            : undefined
+                                    }
+                                    onClick={() =>
                                         updateFilters({
                                             groupId: undefined,
                                             tagId: undefined,
                                             hasUpcomingVisit: undefined,
                                             recentlyAdded: undefined,
                                             noOnlineReservations: undefined,
-                                        });
-                                    }}
+                                        })
+                                    }
                                 >
                                     <div className="icon_box">
-                                        <i className="icon sprite-group" />
+                                        <i
+                                            className="icon sprite-group"
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     wszyscy klienci
-                                </a>
+                                </button>
 
                                 <ul>
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             data-name="visit_today"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
+                                            onClick={() =>
                                                 updateFilters({
                                                     groupId: undefined,
                                                     hasUpcomingVisit: true,
                                                     recentlyAdded: undefined,
                                                     noOnlineReservations:
                                                         undefined,
-                                                });
-                                            }}
+                                                })
+                                            }
                                         >
                                             <div className="icon_box">
                                                 <div className="icon sprite-group_today" />
                                             </div>
                                             Umówieni na dzisiaj
-                                        </a>
+                                        </button>
                                     </li>
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             data-name="recently_added"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
+                                            onClick={() =>
                                                 updateFilters({
                                                     groupId: undefined,
                                                     hasUpcomingVisit: undefined,
                                                     recentlyAdded: true,
                                                     noOnlineReservations:
                                                         undefined,
-                                                });
-                                            }}
+                                                })
+                                            }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-group_recent_added" />
+                                                <i
+                                                    className="icon sprite-group_recent_added"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             Ostatnio dodani
-                                        </a>
+                                        </button>
                                     </li>
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             data-name="offline_customers"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
+                                            onClick={() =>
                                                 updateFilters({
                                                     groupId: undefined,
                                                     hasUpcomingVisit: undefined,
                                                     recentlyAdded: undefined,
                                                     noOnlineReservations: true,
-                                                });
-                                            }}
+                                                })
+                                            }
                                         >
                                             <div className="icon_box">
                                                 <div className="icon sprite-client_absent_on" />
                                             </div>
                                             Nie rezerwują online
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
 
@@ -261,14 +265,13 @@ export default function ClientsNav() {
 
                                 <ul>
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             className="toggle_button"
                                             data-for="#standard_groups, #group_options"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setShowMoreGroups((v) => !v);
-                                            }}
+                                            onClick={() =>
+                                                setShowMoreGroups((v) => !v)
+                                            }
                                         >
                                             <div className="icon_box">
                                                 <i
@@ -280,7 +283,7 @@ export default function ClientsNav() {
                                                     ? 'mniej'
                                                     : 'więcej'}
                                             </span>
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
@@ -289,25 +292,22 @@ export default function ClientsNav() {
                                 className={`tree_options ${showMoreGroups ? '' : 'hidden'}`}
                                 id="group_options"
                             >
-                                <a
-                                    data-enable-sortable=""
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setShowManageGroupsModal(true);
-                                    }}
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowManageGroupsModal(true)
+                                    }
                                 >
                                     dodaj/edytuj/usuń
-                                </a>
-                                <a
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setShowCreateGroupModal(true);
-                                    }}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowCreateGroupModal(true)
+                                    }
                                 >
                                     dodaj grupę
-                                </a>
+                                </button>
                             </div>
                         </div>
 
@@ -328,18 +328,17 @@ export default function ClientsNav() {
                                         >
                                             <span>należą do grup:</span>{' '}
                                             <strong>{group.name}</strong>{' '}
-                                            <a
-                                                href="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
+                                            <button
+                                                type="button"
+                                                aria-label="Wyczyść"
+                                                onClick={() =>
                                                     updateFilters({
                                                         groupId: undefined,
-                                                    });
-                                                }}
-                                                title="Wyczyść"
+                                                    })
+                                                }
                                             >
                                                 ✕
-                                            </a>
+                                            </button>
                                         </div>
                                     ))}
                             </div>
@@ -353,58 +352,62 @@ export default function ClientsNav() {
                                     id="visible_filters"
                                 >
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             className="filter_link"
                                             data-filter_name="services"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
+                                            onClick={() =>
                                                 handleCriteriaClick(
                                                     'used_services',
-                                                );
-                                            }}
+                                                )
+                                            }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-filter_purchased_services" />
+                                                <i
+                                                    className="icon sprite-filter_purchased_services"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             skorzystali z usług
-                                        </a>
+                                        </button>
                                     </li>
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             className="filter_link"
                                             data-filter_name="events"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                handleCriteriaClick(
-                                                    'has_visit',
-                                                );
-                                            }}
+                                            onClick={() =>
+                                                handleCriteriaClick('has_visit')
+                                            }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-filter_visit_salon" />
+                                                <i
+                                                    className="icon sprite-filter_visit_salon"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             mają wizytę w salonie
-                                        </a>
+                                        </button>
                                     </li>
                                     <li>
-                                        <a
+                                        <button
+                                            type="button"
                                             className="filter_link"
                                             data-filter_name="employees"
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
+                                            onClick={() =>
                                                 handleCriteriaClick(
                                                     'by_employee',
-                                                );
-                                            }}
+                                                )
+                                            }
                                         >
                                             <div className="icon_box">
-                                                <i className="icon sprite-filter_handled_employees" />
+                                                <i
+                                                    className="icon sprite-filter_handled_employees"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             obsługiwani przez pracowników
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
@@ -417,8 +420,12 @@ export default function ClientsNav() {
                 <CreateCustomerGroupModal
                     onClose={() => setShowCreateGroupModal(false)}
                     onCreate={async (data) => {
-                        await createGroup.mutateAsync(data);
-                        setShowCreateGroupModal(false);
+                        try {
+                            await createGroup.mutateAsync(data);
+                            setShowCreateGroupModal(false);
+                        } catch {
+                            // error handled by hook
+                        }
                     }}
                     submitting={createGroup.isPending}
                 />

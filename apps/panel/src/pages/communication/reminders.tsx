@@ -1,14 +1,16 @@
-
+import Head from 'next/head';
 import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useReminderStats, useSmsMutations } from '@/hooks/useSms';
 
 export default function RemindersPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data: stats, refetch } = useReminderStats(7);
     const { triggerAutomaticReminders } = useSmsMutations();
 
@@ -33,15 +35,17 @@ export default function RemindersPage() {
             setResults(response.results);
             setShowResults(true);
             void refetch();
-        } catch (error) {
-            console.error('Failed to trigger reminders:', error);
-            alert('Wystąpił błąd podczas wyzwalania przypomnień');
+        } catch {
+            toast.error('Wystąpił błąd podczas wyzwalania przypomnień');
         }
         setIsTriggering(false);
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Przypomnienia — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page">
                     <SalonBreadcrumbs
@@ -160,10 +164,10 @@ export default function RemindersPage() {
                                         <table className="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Klient</th>
-                                                    <th>SMS</th>
-                                                    <th>Email</th>
-                                                    <th>Status</th>
+                                                    <th scope="col">Klient</th>
+                                                    <th scope="col">SMS</th>
+                                                    <th scope="col">Email</th>
+                                                    <th scope="col">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

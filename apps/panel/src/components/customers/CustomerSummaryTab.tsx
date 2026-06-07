@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Customer } from '@/types';
 import {
@@ -77,31 +76,37 @@ export default function CustomerSummaryTab({
         ) ?? [];
 
     const handleAddToGroup = async (groupId: number) => {
-        await addToGroup.mutateAsync({
-            groupId,
-            customerIds: [customer.id],
-        });
-        // Aktualizuj lokalny stan
-        const group = allGroups?.find((g) => g.id === groupId);
-        if (group) {
-            setCustomer((prev) => ({
-                ...prev,
-                groups: [...(prev.groups ?? []), group],
-            }));
+        try {
+            await addToGroup.mutateAsync({
+                groupId,
+                customerIds: [customer.id],
+            });
+            const group = allGroups?.find((g) => g.id === groupId);
+            if (group) {
+                setCustomer((prev) => ({
+                    ...prev,
+                    groups: [...(prev.groups ?? []), group],
+                }));
+            }
+            setShowAddToGroupModal(false);
+        } catch {
+            // error handled by hook
         }
-        setShowAddToGroupModal(false);
     };
 
     const handleRemoveFromGroup = async (groupId: number) => {
-        await removeFromGroup.mutateAsync({
-            groupId,
-            customerId: customer.id,
-        });
-        // Aktualizuj lokalny stan
-        setCustomer((prev) => ({
-            ...prev,
-            groups: prev.groups?.filter((g) => g.id !== groupId) ?? [],
-        }));
+        try {
+            await removeFromGroup.mutateAsync({
+                groupId,
+                customerId: customer.id,
+            });
+            setCustomer((prev) => ({
+                ...prev,
+                groups: prev.groups?.filter((g) => g.id !== groupId) ?? [],
+            }));
+        } catch {
+            // error handled by hook
+        }
     };
 
     return (
@@ -208,9 +213,12 @@ export default function CustomerSummaryTab({
                                     <table className="salonbw-table fs-12">
                                         <thead>
                                             <tr>
-                                                <th>Data</th>
-                                                <th>Usługa</th>
-                                                <th className="text-end">
+                                                <th scope="col">Data</th>
+                                                <th scope="col">Usługa</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Cena
                                                 </th>
                                             </tr>
@@ -269,10 +277,15 @@ export default function CustomerSummaryTab({
                                         <table className="salonbw-table fs-12">
                                             <thead>
                                                 <tr>
-                                                    <th>Data</th>
-                                                    <th>Sprzedaż</th>
-                                                    <th>Metoda</th>
-                                                    <th className="text-end">
+                                                    <th scope="col">Data</th>
+                                                    <th scope="col">
+                                                        Sprzedaż
+                                                    </th>
+                                                    <th scope="col">Metoda</th>
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Kwota
                                                     </th>
                                                 </tr>
@@ -441,21 +454,25 @@ export default function CustomerSummaryTab({
                             </div>
                             <div className="salonbw-widget__content form-horizontal">
                                 <div className="form-">
-                                    <label className="form-label">
+                                    <span className="form-label d-block">
                                         Telefon
-                                    </label>
+                                    </span>
                                     <div className="control-content">
                                         {customer.phone || '-'}
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="form-label">E-mail</label>
+                                    <span className="form-label d-block">
+                                        E-mail
+                                    </span>
                                     <div className="control-content">
                                         {customer.email || '-'}
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="form-label">Adres</label>
+                                    <span className="form-label d-block">
+                                        Adres
+                                    </span>
                                     <div className="control-content">
                                         {[
                                             customer.address,
@@ -467,9 +484,9 @@ export default function CustomerSummaryTab({
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <label className="form-label">
+                                    <span className="form-label d-block">
                                         Klient od
-                                    </label>
+                                    </span>
                                     <div className="control-content">
                                         {formatDate(customer.createdAt)}
                                     </div>
@@ -477,9 +494,9 @@ export default function CustomerSummaryTab({
 
                                 {/* Grupy klienta - jak w source UI */}
                                 <div className="form-">
-                                    <label className="form-label">
+                                    <span className="form-label d-block">
                                         należy do grup
-                                    </label>
+                                    </span>
                                     <div className="control-content">
                                         {customer.groups &&
                                         customer.groups.length > 0 ? (
@@ -519,6 +536,7 @@ export default function CustomerSummaryTab({
                                                                 />
                                                                 {group.name}
                                                                 <button
+                                                                    type="button"
                                                                     onClick={() => {
                                                                         void handleRemoveFromGroup(
                                                                             group.id,
@@ -526,11 +544,14 @@ export default function CustomerSummaryTab({
                                                                     }}
                                                                     className="ms-3 opacity-0 - -opacity text-current"
                                                                     title="Usuń z grupy"
+                                                                    aria-label={`Usuń z grupy ${group.name}`}
                                                                     disabled={
                                                                         removeFromGroup.isPending
                                                                     }
                                                                 >
-                                                                    ×
+                                                                    <span aria-hidden="true">
+                                                                        ×
+                                                                    </span>
                                                                 </button>
                                                             </span>
                                                         );
@@ -546,6 +567,7 @@ export default function CustomerSummaryTab({
                                         {/* Przycisk dodawania do grupy */}
                                         {availableGroups.length > 0 && (
                                             <button
+                                                type="button"
                                                 onClick={() =>
                                                     setShowAddToGroupModal(true)
                                                 }
@@ -598,7 +620,13 @@ export default function CustomerSummaryTab({
 
             {/* Modal dodawania do grupy */}
             {showAddToGroupModal && (
-                <div className="modal fade in" {...{ style: modalStyle }}>
+                <div
+                    className="modal fade in"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="add-to-group-modal-title"
+                    {...{ style: modalStyle }}
+                >
                     <div className="modal-dialog modal-sm">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -608,10 +636,16 @@ export default function CustomerSummaryTab({
                                     onClick={() =>
                                         setShowAddToGroupModal(false)
                                     }
+                                    aria-label="Zamknij"
                                 >
-                                    ×
+                                    <span aria-hidden="true">×</span>
                                 </button>
-                                <h4 className="modal-title">Dodaj do grupy</h4>
+                                <h4
+                                    id="add-to-group-modal-title"
+                                    className="modal-title"
+                                >
+                                    Dodaj do grupy
+                                </h4>
                             </div>
                             <div className="modal-body">
                                 {availableGroups.length === 0 ? (

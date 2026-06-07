@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -92,6 +93,11 @@ export default function WarehouseValuePage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>
+                    Statystyki — wartość magazynu — Salon Black &amp; White
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
@@ -100,6 +106,7 @@ export default function WarehouseValuePage() {
                             Raport wartości produktów
                         </h1>
                         <button
+                            type="button"
                             onClick={() =>
                                 setRefreshToken((value) => value + 1)
                             }
@@ -113,7 +120,7 @@ export default function WarehouseValuePage() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Raport wartości chwilowo niedostępny.
                         </div>
                     ) : stats ? (
@@ -279,14 +286,23 @@ export default function WarehouseValuePage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Kategoria</th>
-                                                <th className="text-end">
+                                                <th scope="col">Kategoria</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Produkty
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Ilość sztuk
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Wartość
                                                 </th>
                                             </tr>
@@ -323,14 +339,23 @@ export default function WarehouseValuePage() {
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Produkt</th>
-                                                    <th className="text-end">
+                                                    <th scope="col">Produkt</th>
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Stan aktualny
                                                     </th>
-                                                    <th className="text-end">
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Min. stan
                                                     </th>
-                                                    <th className="text-end">
+                                                    <th
+                                                        scope="col"
+                                                        className="text-end"
+                                                    >
                                                         Cena
                                                     </th>
                                                 </tr>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { CustomerGroup, CustomerTag, CustomerFilterParams } from '@/types';
 
@@ -54,6 +53,7 @@ export default function CustomerSidebar({
                         <span>GRUPY</span>
                         {onCreateGroup && (
                             <button
+                                type="button"
                                 onClick={onCreateGroup}
                                 className="btn btn-link btn-sm p-0 text-salonbw-blue"
                             >
@@ -63,7 +63,15 @@ export default function CustomerSidebar({
                     </div>
                     <ul className="salonbw-sidebar__nav">
                         <li className={!filters.groupId ? 'active' : ''}>
-                            <a onClick={() => handleGroupSelect(undefined)}>
+                            <a
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => handleGroupSelect(undefined)}
+                                onKeyDown={(e) =>
+                                    e.key === 'Enter' &&
+                                    handleGroupSelect(undefined)
+                                }
+                            >
                                 <span className="flex-fill">
                                     Wszyscy klienci
                                 </span>
@@ -76,7 +84,15 @@ export default function CustomerSidebar({
                                     filters.groupId === group.id ? 'active' : ''
                                 }
                             >
-                                <a onClick={() => handleGroupSelect(group.id)}>
+                                <a
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => handleGroupSelect(group.id)}
+                                    onKeyDown={(e) =>
+                                        e.key === 'Enter' &&
+                                        handleGroupSelect(group.id)
+                                    }
+                                >
                                     <div className="flex-center w-full gap-8">
                                         {group.color &&
                                             (() => {
@@ -85,7 +101,6 @@ export default function CustomerSidebar({
                                                         group.color || '#999',
                                                 } as React.CSSProperties;
                                                 return (
-                                                    // eslint-disable-next-line
                                                     <span
                                                         className="status-dot w-8 h-8 bg-dynamic"
                                                         style={dotStyle}
@@ -119,8 +134,8 @@ export default function CustomerSidebar({
                                         : tag.color || '#999',
                             } as React.CSSProperties;
                             return (
-                                // eslint-disable-next-line
                                 <button
+                                    type="button"
                                     key={tag.id}
                                     onClick={() =>
                                         handleTagSelect(
@@ -322,6 +337,7 @@ export default function CustomerSidebar({
                             </div>
 
                             <button
+                                type="button"
                                 onClick={() =>
                                     onFilterChange({
                                         page: 1,

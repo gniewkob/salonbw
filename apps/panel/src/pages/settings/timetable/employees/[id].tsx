@@ -1,9 +1,11 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployee, useStaffOptions } from '@/hooks/useEmployees';
@@ -272,6 +274,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
     const [exceptionModalOpen, setExceptionModalOpen] = useState(false);
     const [editingException, setEditingException] =
         useState<TimetableException | null>(null);
+    const [scheduleError, setScheduleError] = useState<string | null>(null);
+    const [exceptionError, setExceptionError] = useState<string | null>(null);
+    const [confirmDeleteExceptionId, setConfirmDeleteExceptionId] = useState<
+        number | null
+    >(null);
 
     const previousMonth = addMonths(date, -1);
     const nextMonth = addMonths(date, 1);
@@ -308,7 +315,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             }}
                         >
                             <div className="icon_box">
-                                <i className="icon sprite-filter_handled_employees " />
+                                <i
+                                    className="icon sprite-filter_handled_employees "
+                                    aria-hidden="true"
+                                />
                             </div>
                             Wszyscy pracownicy
                         </Link>
@@ -370,7 +380,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             <li>
                                 <Link href="/statistics/worktime">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_report mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_report mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Raport czasu pracy
                                 </Link>
@@ -378,7 +391,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             <li>
                                 <Link href="/settings/timetable/templates">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_template mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_template mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Szablony
                                 </Link>
@@ -386,7 +402,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             <li>
                                 <Link href="/settings/timetable/employees/copy">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_copy mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_copy mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Kopiuj grafiki pracy
                                 </Link>
@@ -403,44 +422,54 @@ export default function SettingsTimetableEmployeeDetailPage() {
 
     const handleSaveSchedule = async (slots: SlotData[]) => {
         if (!id) return;
+        setScheduleError(null);
+        try {
+            if (activeTimetable) {
+                await updateTimetable.mutateAsync({
+                    id: activeTimetable.id,
+                    slots,
+                });
+                return;
+            }
 
-        if (activeTimetable) {
-            await updateTimetable.mutateAsync({
-                id: activeTimetable.id,
+            await createTimetable.mutateAsync({
+                employeeId: id,
+                name: `Grafik - ${employee?.name ?? 'pracownik'}`,
+                validFrom: toIsoDate(date),
                 slots,
             });
-            return;
+        } catch {
+            setScheduleError(
+                'Nie udało się zapisać grafiku. Spróbuj ponownie.',
+            );
         }
-
-        await createTimetable.mutateAsync({
-            employeeId: id,
-            name: `Grafik - ${employee?.name ?? 'pracownik'}`,
-            validFrom: toIsoDate(date),
-            slots,
-        });
     };
 
     const handleSaveException = async (data: ExceptionFormData) => {
         if (!activeTimetable) return;
+        setExceptionError(null);
+        try {
+            if (editingException) {
+                await updateException.mutateAsync({
+                    id: editingException.id,
+                    ...data,
+                });
+                return;
+            }
 
-        if (editingException) {
-            await updateException.mutateAsync({
-                id: editingException.id,
+            await createException.mutateAsync({
+                timetableId: activeTimetable.id,
                 ...data,
             });
-            return;
+        } catch {
+            setExceptionError(
+                'Nie udało się zapisać wyjątku. Spróbuj ponownie.',
+            );
         }
-
-        await createException.mutateAsync({
-            timetableId: activeTimetable.id,
-            ...data,
-        });
     };
 
-    const handleDeleteException = async (exceptionId: number) => {
-        if (window.confirm('Czy na pewno chcesz usunąć ten wyjątek?')) {
-            await deleteException.mutateAsync(exceptionId);
-        }
+    const handleDeleteException = (exceptionId: number) => {
+        setConfirmDeleteExceptionId(exceptionId);
     };
 
     if (employeeLoading || timetablesLoading) {
@@ -498,6 +527,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>
+                    {`Grafik: ${employee.name} — Ustawienia — Salon Black & White`}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -759,6 +793,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                             </button>
                                         </div>
 
+                                        {scheduleError && (
+                                            <div className="alert alert-danger mt-2">
+                                                {scheduleError}
+                                            </div>
+                                        )}
                                         {editorOpen ? (
                                             <TimetableEditor
                                                 timetable={activeTimetable}
@@ -802,6 +841,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                             </button>
                                         </div>
 
+                                        {exceptionError && (
+                                            <div className="alert alert-danger mb-2">
+                                                {exceptionError}
+                                            </div>
+                                        )}
                                         {!activeTimetable ? (
                                             <div className="timetable-employee-detail__card-placeholder">
                                                 Zapisz najpierw grafik
@@ -818,9 +862,15 @@ export default function SettingsTimetableEmployeeDetailPage() {
                                                 }}
                                                 onDelete={handleDeleteException}
                                                 onApprove={(exceptionId) => {
-                                                    void approveException.mutateAsync(
-                                                        exceptionId,
-                                                    );
+                                                    void approveException
+                                                        .mutateAsync(
+                                                            exceptionId,
+                                                        )
+                                                        .catch(() =>
+                                                            setExceptionError(
+                                                                'Nie udało się zatwierdzić wyjątku.',
+                                                            ),
+                                                        );
                                                 }}
                                                 canApprove
                                             />
@@ -841,6 +891,24 @@ export default function SettingsTimetableEmployeeDetailPage() {
                         onSave={handleSaveException}
                     />
                 </div>
+                <ConfirmModal
+                    open={confirmDeleteExceptionId !== null}
+                    title="Usuń wyjątek"
+                    message="Czy na pewno chcesz usunąć ten wyjątek? Operacja jest nieodwracalna."
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (confirmDeleteExceptionId === null) return;
+                        const id = confirmDeleteExceptionId;
+                        setConfirmDeleteExceptionId(null);
+                        void deleteException.mutateAsync(id).catch(() => {
+                            setExceptionError(
+                                'Nie udało się usunąć wyjątku. Spróbuj ponownie.',
+                            );
+                        });
+                    }}
+                    onCancel={() => setConfirmDeleteExceptionId(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

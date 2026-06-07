@@ -29,6 +29,7 @@ export default function SalonMainNav({
                                 href={item.href}
                                 data-testid={`mainnav-${item.key}`}
                                 title={item.label}
+                                aria-current={isActive ? 'page' : undefined}
                             >
                                 <div className="nav-icon-wrapper">
                                     <SalonIcon

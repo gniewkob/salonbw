@@ -218,7 +218,7 @@ export default function HelpContactPage() {
                     Aby ułatwić korzystanie z systemu SalonBW przygotowaliśmy{' '}
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
                     >
                         Bazę Wiedzy
@@ -234,7 +234,7 @@ export default function HelpContactPage() {
                 <p>
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
                         className="btn btn-primary"
                     >
@@ -246,7 +246,7 @@ export default function HelpContactPage() {
                     Jeśli w{' '}
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={SALONBW_KNOWLEDGE_BASE_URL}
                     >
                         Bazie Wiedzy
@@ -295,6 +295,8 @@ export default function HelpContactPage() {
                                     id="physical_help_email"
                                     className="string email required helps-page__email"
                                     type="email"
+                                    autoComplete="email"
+                                    aria-describedby="physical_help_email_hint"
                                     value={email}
                                     onChange={(event) => {
                                         setEmail(event.target.value);
@@ -309,12 +311,18 @@ export default function HelpContactPage() {
                                         );
                                     }}
                                 />
-                                <p className="inline-hint">
+                                <p
+                                    id="physical_help_email_hint"
+                                    className="inline-hint"
+                                >
                                     Adres email, na który należy przesłać
                                     odpowiedź
                                 </p>
                                 {emailError ? (
-                                    <p className="helps-page__feedback helps-page__feedback--error">
+                                    <p
+                                        role="alert"
+                                        className="helps-page__feedback helps-page__feedback--error"
+                                    >
                                         {emailError}
                                     </p>
                                 ) : null}
@@ -360,12 +368,18 @@ export default function HelpContactPage() {
                         </button>
                     </div>
                     {submitError ? (
-                        <p className="helps-page__feedback helps-page__feedback--error">
+                        <p
+                            role="alert"
+                            className="helps-page__feedback helps-page__feedback--error"
+                        >
                             {submitError}
                         </p>
                     ) : null}
                     {submitted ? (
-                        <p className="helps-page__feedback helps-page__feedback--success">
+                        <p
+                            role="status"
+                            className="helps-page__feedback helps-page__feedback--success"
+                        >
                             Pytanie zostało wysłane.
                         </p>
                     ) : null}
@@ -390,7 +404,7 @@ export default function HelpContactPage() {
                         {' '}
                         <a
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             href={ANYDESK_MAC_URL}
                         >
                             Wersja dla systemu Mac OS
@@ -399,7 +413,7 @@ export default function HelpContactPage() {
                     &nbsp; &nbsp;
                     <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         href={ANYDESK_WINDOWS_URL}
                     >
                         Wersja dla systemu Windows

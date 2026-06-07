@@ -27,15 +27,15 @@ describe('AppointmentDetailsModal', () => {
             />,
         );
 
-        expect(screen.getByText(/Appointment #123/)).toBeInTheDocument();
+        expect(screen.getByText(/Wizyta #123/)).toBeInTheDocument();
         expect(screen.getByText(/John Client/)).toBeInTheDocument();
         expect(screen.getByText(/Haircut/)).toBeInTheDocument();
         expect(screen.getByText(/Eve Employee/)).toBeInTheDocument();
 
-        fireEvent.click(screen.getByText(/Cancel/));
+        fireEvent.click(screen.getByText(/Anuluj wizytę/));
         expect(onCancel).toHaveBeenCalledWith(123);
 
-        fireEvent.click(screen.getByText(/Complete/));
+        fireEvent.click(screen.getByText(/Zakończ/));
         expect(onComplete).toHaveBeenCalledWith(123);
     });
 });

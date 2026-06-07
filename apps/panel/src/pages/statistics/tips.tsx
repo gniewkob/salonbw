@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
@@ -39,6 +40,9 @@ export default function TipsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki napiwków — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="tips-page">
                     <SalonBreadcrumbs
@@ -134,14 +138,23 @@ export default function TipsPage() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Pracownik</th>
-                                            <th className="text-end">
+                                            <th scope="col">Pracownik</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Liczba napiwków
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Suma napiwków
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Średni napiwek
                                             </th>
                                         </tr>

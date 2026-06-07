@@ -143,7 +143,13 @@ export default function NextTwoHoursWidget({
                     borderBottom: '1px solid #f3f4f6',
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.625rem' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: '0.625rem',
+                    }}
+                >
                     <span
                         style={{
                             fontSize: '0.75rem',
@@ -194,7 +200,9 @@ export default function NextTwoHoursWidget({
                                 gap: '0 0.75rem',
                                 alignItems: 'center',
                                 padding: '0.625rem 1rem',
-                                borderBottom: isLast ? 'none' : '1px solid #f3f4f6',
+                                borderBottom: isLast
+                                    ? 'none'
+                                    : '1px solid #f3f4f6',
                             }}
                         >
                             {/* Time column */}
@@ -208,7 +216,9 @@ export default function NextTwoHoursWidget({
                                         lineHeight: 1.2,
                                     }}
                                 >
-                                    {format(apt.startDate, 'HH:mm', { locale: pl })}
+                                    {format(apt.startDate, 'HH:mm', {
+                                        locale: pl,
+                                    })}
                                 </div>
                                 <div
                                     style={{
@@ -263,7 +273,9 @@ export default function NextTwoHoursWidget({
                                     }}
                                 >
                                     {apt.serviceName}
-                                    {apt.employeeName ? ` · ${apt.employeeName}` : ''}
+                                    {apt.employeeName
+                                        ? ` · ${apt.employeeName}`
+                                        : ''}
                                 </div>
                             </div>
 

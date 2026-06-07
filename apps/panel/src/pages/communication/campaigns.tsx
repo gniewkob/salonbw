@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -61,7 +62,9 @@ export default function CampaignsPage() {
         if (router.query.new === '1') {
             setEditingNewsletter(null);
             setModalOpen(true);
-            void router.replace('/communication/campaigns', undefined, { shallow: true });
+            void router.replace('/communication/campaigns', undefined, {
+                shallow: true,
+            });
         }
     }, [router.query.new, router]);
 
@@ -143,6 +146,9 @@ export default function CampaignsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Kampanie — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <SalonBreadcrumbs
                     iconClass="sprite-breadcrumbs_communication"
@@ -164,7 +170,7 @@ export default function CampaignsPage() {
                     <h2>Wiadomości</h2>
 
                     {actionError && (
-                        <div className="alert alert-danger mt-2">
+                        <div className="alert alert-danger mt-2" role="alert">
                             {actionError}
                         </div>
                     )}
@@ -172,7 +178,7 @@ export default function CampaignsPage() {
                     {isLoading ? (
                         <p className="text-muted">Ładowanie...</p>
                     ) : error ? (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Błąd ładowania wiadomości
                         </div>
                     ) : (
@@ -180,22 +186,22 @@ export default function CampaignsPage() {
                             <table className="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>
+                                        <th scope="col">
                                             <div>Nazwa</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Kanał</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Data wysyłki</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Odbiorcy</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Status</div>
                                         </th>
-                                        <th>
+                                        <th scope="col">
                                             <div>Akcje</div>
                                         </th>
                                     </tr>

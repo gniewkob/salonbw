@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -51,7 +50,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-primary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void sendMutation.mutateAsync(orderId)
+                                        ? sendMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -62,9 +61,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-outline-secondary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void cancelMutation.mutateAsync(
-                                              orderId,
-                                          )
+                                        ? cancelMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -79,9 +76,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-primary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void receiveMutation.mutateAsync(
-                                              orderId,
-                                          )
+                                        ? receiveMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -92,9 +87,7 @@ export default function WarehouseOrderDetailsPage() {
                                 className="btn btn-outline-secondary btn-sm"
                                 onClick={() =>
                                     orderId
-                                        ? void cancelMutation.mutateAsync(
-                                              orderId,
-                                          )
+                                        ? cancelMutation.mutate(orderId)
                                         : undefined
                                 }
                             >
@@ -144,10 +137,10 @@ export default function WarehouseOrderDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>produkt</th>
-                                    <th>ilość</th>
-                                    <th>jednostka</th>
-                                    <th>przyjęto</th>
+                                    <th scope="col">produkt</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">jednostka</th>
+                                    <th scope="col">przyjęto</th>
                                 </tr>
                             </thead>
                             <tbody>

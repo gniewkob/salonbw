@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
     useCreateCustomerNote,
@@ -89,6 +88,7 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     className="form-control"
                     rows={3}
                     placeholder="Dodaj komentarz klienta..."
+                    aria-label="Treść notatki"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                 />
@@ -145,15 +145,15 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     <NoteRow
                         key={note.id}
                         note={note}
-                        onTogglePin={async () => {
-                            await update.mutateAsync({
+                        onTogglePin={() => {
+                            update.mutate({
                                 noteId: note.id,
                                 customerId,
                                 data: { isPinned: false },
                             });
                         }}
-                        onDelete={async () => {
-                            await remove.mutateAsync({
+                        onDelete={() => {
+                            remove.mutate({
                                 noteId: note.id,
                                 customerId,
                             });
@@ -164,15 +164,15 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     <NoteRow
                         key={note.id}
                         note={note}
-                        onTogglePin={async () => {
-                            await update.mutateAsync({
+                        onTogglePin={() => {
+                            update.mutate({
                                 noteId: note.id,
                                 customerId,
                                 data: { isPinned: true },
                             });
                         }}
-                        onDelete={async () => {
-                            await remove.mutateAsync({
+                        onDelete={() => {
+                            remove.mutate({
                                 noteId: note.id,
                                 customerId,
                             });
@@ -193,8 +193,8 @@ function NoteRow({
     onDelete,
 }: {
     note: CustomerNote;
-    onTogglePin: () => Promise<void>;
-    onDelete: () => Promise<void>;
+    onTogglePin: () => void;
+    onDelete: () => void;
 }) {
     const noteType = noteTypeLabel(note.type);
 

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useLayoutEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
@@ -22,6 +23,7 @@ export default function DataProtectionPage() {
     const [paranoiaLimit, setParanoiaLimit] = useState(30);
     const [paranoiaEmail, setParanoiaEmail] = useState('');
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     useLayoutEffect(() => {
         if (settings) {
@@ -36,19 +38,31 @@ export default function DataProtectionPage() {
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         setSaved(false);
+        setSaveError(null);
         void updateDataProtection
             .mutateAsync({
                 paranoiaMode,
                 paranoiaLimit,
                 paranoiaEmail: paranoiaEmail || undefined,
             })
-            .then(() => setSaved(true));
+            .then(() => setSaved(true))
+            .catch(() =>
+                setSaveError(
+                    'Nie udało się zapisać ustawień. Spróbuj ponownie.',
+                ),
+            );
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Ochrona danych — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
-                <div className="salonbw-page" data-testid="data-protection-page">
+                <div
+                    className="salonbw-page"
+                    data-testid="data-protection-page"
+                >
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_settings"
                         items={[
@@ -60,7 +74,7 @@ export default function DataProtectionPage() {
                     {isLoading ? (
                         <div className="text-muted p-3">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Nie udało się pobrać ustawień ochrony danych.
                         </div>
                     ) : (
@@ -86,8 +100,9 @@ export default function DataProtectionPage() {
                                         Włącz tryb ochrony danych
                                     </label>
                                     <div className="form-text text-muted">
-                                        Ogranicza dostęp do danych osobowych klientów dla
-                                        pracowników na podstawie ostatniej wizyty.
+                                        Ogranicza dostęp do danych osobowych
+                                        klientów dla pracowników na podstawie
+                                        ostatniej wizyty.
                                     </div>
                                 </div>
 
@@ -107,13 +122,15 @@ export default function DataProtectionPage() {
                                         min={1}
                                         max={3650}
                                         onChange={(e) =>
-                                            setParanoiaLimit(Number(e.target.value))
+                                            setParanoiaLimit(
+                                                Number(e.target.value),
+                                            )
                                         }
                                         disabled={!paranoiaMode}
                                     />
                                     <div className="form-text text-muted">
-                                        Po ilu dniach bez wizyty dane klienta stają się
-                                        niedostępne.
+                                        Po ilu dniach bez wizyty dane klienta
+                                        stają się niedostępne.
                                     </div>
                                 </div>
 
@@ -144,6 +161,11 @@ export default function DataProtectionPage() {
                                     Ustawienia zostały zapisane.
                                 </div>
                             )}
+                            {saveError && (
+                                <div className="alert alert-danger mb-3">
+                                    {saveError}
+                                </div>
+                            )}
 
                             <div className="d-flex gap-2 mb-4">
                                 <button
@@ -162,7 +184,8 @@ export default function DataProtectionPage() {
                     <div className="border-top pt-4 mt-2">
                         <h3 className="fs-5 fw-semibold mb-3">Logi i audyt</h3>
                         <p className="text-muted mb-3">
-                            Historia dostępów i operacji na danych osobowych klientów.
+                            Historia dostępów i operacji na danych osobowych
+                            klientów.
                         </p>
                         <Link
                             href="/settings/data-protection/logs"

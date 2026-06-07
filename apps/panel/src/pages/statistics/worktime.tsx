@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -100,6 +101,9 @@ export default function WorkTimeReportPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki czasu pracy — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
@@ -123,7 +127,7 @@ export default function WorkTimeReportPage() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Raport czasu pracy chwilowo niedostępny.
                         </div>
                     ) : (
@@ -183,8 +187,13 @@ export default function WorkTimeReportPage() {
                                             <table className="salonbw-table table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>Pracownik</th>
-                                                        <th className="text-end">
+                                                        <th scope="col">
+                                                            Pracownik
+                                                        </th>
+                                                        <th
+                                                            scope="col"
+                                                            className="text-end"
+                                                        >
                                                             Godziny
                                                         </th>
                                                     </tr>
@@ -368,20 +377,35 @@ export default function WorkTimeReportPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Pracownik</th>
-                                                <th className="text-end">
+                                                <th scope="col">Pracownik</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Godziny
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Wizyty
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Dni
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Średnio/dzień
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Wizyt/godzinę
                                                 </th>
                                             </tr>

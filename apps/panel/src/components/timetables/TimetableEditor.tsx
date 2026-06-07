@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import type { Timetable, DayOfWeek } from '@/types';
 
@@ -178,6 +177,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                         <input
                                             type="time"
                                             value={slot.startTime}
+                                            aria-label={`${DAY_NAMES[day]} — godzina rozpoczęcia`}
                                             onChange={(e) =>
                                                 updateSlot(
                                                     day,
@@ -193,6 +193,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                         <input
                                             type="time"
                                             value={slot.endTime}
+                                            aria-label={`${DAY_NAMES[day]} — godzina zakończenia`}
                                             onChange={(e) =>
                                                 updateSlot(
                                                     day,
@@ -223,6 +224,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                 <input
                                                     type="time"
                                                     value={breakSlot.startTime}
+                                                    aria-label={`${DAY_NAMES[day]} — przerwa od`}
                                                     onChange={(e) =>
                                                         updateBreak(
                                                             day,
@@ -238,6 +240,7 @@ export default function TimetableEditor({ timetable, onSave, saving }: Props) {
                                                 <input
                                                     type="time"
                                                     value={breakSlot.endTime}
+                                                    aria-label={`${DAY_NAMES[day]} — przerwa do`}
                                                     onChange={(e) =>
                                                         updateBreak(
                                                             day,

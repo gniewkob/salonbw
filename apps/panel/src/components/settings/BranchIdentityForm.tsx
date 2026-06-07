@@ -7,6 +7,7 @@ import {
 } from 'react';
 import PanelActionBar from '@/components/ui/PanelActionBar';
 import { useBranchSettings, useSettingsMutations } from '@/hooks/useSettings';
+import { useToast } from '@/contexts/ToastContext';
 import type { UpdateBranchSettingsRequest } from '@/types';
 
 type BranchIdentityDraft = {
@@ -84,6 +85,7 @@ export default function BranchIdentityForm() {
         refetch,
     } = useBranchSettings();
     const { updateBranchSettings } = useSettingsMutations();
+    const toast = useToast();
     const [draft, setDraft] = useState<BranchIdentityDraft>(EMPTY_DRAFT);
     const [isSaved, setIsSaved] = useState(false);
     const [showLogoEditor, setShowLogoEditor] = useState(false);
@@ -166,6 +168,7 @@ export default function BranchIdentityForm() {
             await updateBranchSettings.mutateAsync(buildPayload(draft));
             setIsSaved(true);
             setShowLogoEditor(false);
+            toast.success('Dane salonu zostały zapisane');
         } catch {
             setIsSaved(false);
         }
@@ -260,9 +263,9 @@ export default function BranchIdentityForm() {
                     </div>
                 </li>
                 <li className="control-group">
-                    <label className="string optional form-label">
+                    <span className="string optional form-label d-block">
                         Numer telefonu
-                    </label>
+                    </span>
                     <div className="controls phones">
                         {draft.phoneNumbers.map((phone, index) => (
                             <div
@@ -271,6 +274,7 @@ export default function BranchIdentityForm() {
                             >
                                 <input
                                     type="tel"
+                                    aria-label={`Numer telefonu ${index + 1}`}
                                     value={phone}
                                     onChange={handlePhoneChange(index)}
                                 />
@@ -455,10 +459,12 @@ export default function BranchIdentityForm() {
             </ol>
 
             {submitError ? (
-                <div className="alert alert-danger">{submitError}</div>
+                <div className="alert alert-danger" role="alert">
+                    {submitError}
+                </div>
             ) : null}
             {isSaved ? (
-                <div className="alert alert-success">
+                <div className="alert alert-success" role="status">
                     Dane salonu zostały zapisane.
                 </div>
             ) : null}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useStaffOptions } from '@/hooks/useEmployees';
 import { useTimetables } from '@/hooks/useTimetables';
 import {
@@ -135,8 +136,18 @@ function getTemplateDayMap(template: TimetableTemplate) {
     );
 }
 
+interface NameModalState {
+    mode: 'add' | 'rename';
+    value: string;
+    renameId?: number;
+}
+
 export default function TimetableTemplatesPage() {
     const [notice, setNotice] = useState<string | null>(null);
+    const [confirmDeleteTemplateId, setConfirmDeleteTemplateId] = useState<
+        number | null
+    >(null);
+    const [nameModal, setNameModal] = useState<NameModalState | null>(null);
     const { data: staffOptions } = useStaffOptions();
     const { data: timetables } = useTimetables({ isActive: true });
     const {
@@ -198,7 +209,10 @@ export default function TimetableTemplatesPage() {
                             href="/settings/timetable/employees"
                         >
                             <div className="icon_box">
-                                <i className="icon sprite-filter_handled_employees " />
+                                <i
+                                    className="icon sprite-filter_handled_employees "
+                                    aria-hidden="true"
+                                />
                             </div>
                             Wszyscy pracownicy
                         </Link>
@@ -245,7 +259,10 @@ export default function TimetableTemplatesPage() {
                             <li>
                                 <span className="settings-detail-layout__nav-disabled">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_report mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_report mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Raport czasu pracy
                                 </span>
@@ -256,7 +273,10 @@ export default function TimetableTemplatesPage() {
                                     className="active"
                                 >
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_template mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_template mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Szablony
                                 </Link>
@@ -264,7 +284,10 @@ export default function TimetableTemplatesPage() {
                             <li>
                                 <span className="settings-detail-layout__nav-disabled">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_copy mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_copy mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Kopiuj grafiki pracy
                                 </span>
@@ -278,45 +301,58 @@ export default function TimetableTemplatesPage() {
 
     useSetSecondaryNav(secondaryNav);
 
-    const handleAdd = async () => {
-        const name = window.prompt('Nazwa szablonu', 'Nowy szablon');
-        if (!name) return;
-        const colorClass = `color${(
-            (templates.length % 5) +
-            1
-        ).toString()}` as TimetableTemplate['colorClass'];
-        try {
-            await createTemplate.mutateAsync(
-                getDefaultTemplate(name, colorClass),
-            );
-            setNotice('Dodano szablon grafiku.');
-        } catch (mutationError) {
-            setNotice(
-                mutationError instanceof Error
-                    ? mutationError.message
-                    : 'Nie udało się dodać szablonu.',
-            );
-        }
+    const handleAdd = () => {
+        setNameModal({ mode: 'add', value: 'Nowy szablon' });
     };
 
-    const handleRename = async (id: number) => {
+    const handleRename = (id: number) => {
         const current = templates.find((template) => template.id === id);
-        const nextName = window.prompt('Edytuj nazwę szablonu', current?.name);
-        if (!nextName) return;
-        try {
-            await updateTemplate.mutateAsync({ id, name: nextName });
-            setNotice('Zmieniono nazwę szablonu.');
-        } catch (mutationError) {
-            setNotice(
-                mutationError instanceof Error
-                    ? mutationError.message
-                    : 'Nie udało się zmienić nazwy szablonu.',
-            );
+        setNameModal({
+            mode: 'rename',
+            value: current?.name ?? '',
+            renameId: id,
+        });
+    };
+
+    const doNameModalConfirm = () => {
+        if (!nameModal) return;
+        const { mode, value, renameId } = nameModal;
+        setNameModal(null);
+        if (!value.trim()) return;
+        if (mode === 'add') {
+            const colorClass = `color${(
+                (templates.length % 5) +
+                1
+            ).toString()}` as TimetableTemplate['colorClass'];
+            void createTemplate
+                .mutateAsync(getDefaultTemplate(value.trim(), colorClass))
+                .then(() => setNotice('Dodano szablon grafiku.'))
+                .catch((mutationError: unknown) => {
+                    setNotice(
+                        mutationError instanceof Error
+                            ? mutationError.message
+                            : 'Nie udało się dodać szablonu.',
+                    );
+                });
+        } else if (renameId !== undefined) {
+            void updateTemplate
+                .mutateAsync({ id: renameId, name: value.trim() })
+                .then(() => setNotice('Zmieniono nazwę szablonu.'))
+                .catch((mutationError: unknown) => {
+                    setNotice(
+                        mutationError instanceof Error
+                            ? mutationError.message
+                            : 'Nie udało się zmienić nazwy szablonu.',
+                    );
+                });
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('Czy na pewno chcesz usunąć szablon?')) return;
+    const handleDelete = (id: number) => {
+        setConfirmDeleteTemplateId(id);
+    };
+
+    const doDelete = async (id: number) => {
         try {
             await deleteTemplate.mutateAsync(id);
             setNotice('Usunięto szablon grafiku.');
@@ -370,7 +406,7 @@ export default function TimetableTemplatesPage() {
                         <button
                             type="button"
                             className="btn btn-primary"
-                            onClick={() => void handleAdd()}
+                            onClick={handleAdd}
                         >
                             Dodaj szablon
                         </button>
@@ -414,7 +450,7 @@ export default function TimetableTemplatesPage() {
                                                                 type="button"
                                                                 className="timetable-employees-page__link-button"
                                                                 onClick={() =>
-                                                                    void handleRename(
+                                                                    handleRename(
                                                                         template.id,
                                                                     )
                                                                 }
@@ -515,6 +551,7 @@ export default function TimetableTemplatesPage() {
                                     <form
                                         className="pagination_container"
                                         action="/settings/timetable/templates"
+                                        aria-label="Paginacja"
                                     >
                                         <div className="row">
                                             <div className="infocol-7">
@@ -548,6 +585,94 @@ export default function TimetableTemplatesPage() {
                     </div>
                 ) : null}
             </div>
+            <ConfirmModal
+                open={confirmDeleteTemplateId !== null}
+                title="Usuń szablon"
+                message="Czy na pewno chcesz usunąć szablon grafiku?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteTemplateId === null) return;
+                    const id = confirmDeleteTemplateId;
+                    setConfirmDeleteTemplateId(null);
+                    void doDelete(id);
+                }}
+                onCancel={() => setConfirmDeleteTemplateId(null)}
+            />
+            {nameModal !== null && (
+                <div className="modal-backdrop fade in">
+                    <div
+                        className="modal-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Szablon grafiku"
+                    >
+                        <form
+                            className="modal-content"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                doNameModalConfirm();
+                            }}
+                        >
+                            <div className="modal-header">
+                                <button
+                                    type="button"
+                                    className="close"
+                                    onClick={() => setNameModal(null)}
+                                    aria-label="Zamknij"
+                                >
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <h4 className="modal-title">
+                                    {nameModal.mode === 'add'
+                                        ? 'Dodaj szablon'
+                                        : 'Zmień nazwę szablonu'}
+                                </h4>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="template-name-input"
+                                    >
+                                        Nazwa szablonu
+                                    </label>
+                                    <input
+                                        id="template-name-input"
+                                        className="form-control"
+                                        autoFocus
+                                        value={nameModal.value}
+                                        onChange={(e) =>
+                                            setNameModal({
+                                                ...nameModal,
+                                                value: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() => setNameModal(null)}
+                                >
+                                    anuluj
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={!nameModal.value.trim()}
+                                >
+                                    {nameModal.mode === 'add'
+                                        ? 'dodaj'
+                                        : 'zapisz'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

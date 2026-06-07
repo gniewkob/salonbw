@@ -1,7 +1,9 @@
+import Head from 'next/head';
 import { useLayoutEffect, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
@@ -46,16 +48,27 @@ function parseOptions(raw: string): string[] {
 
 export default function ExtraFieldsPage() {
     const { role } = useAuth();
-    const { data: fields = [], isLoading, error, refetch } = useCustomerExtraFields();
+    const {
+        data: fields = [],
+        isLoading,
+        error,
+        refetch,
+    } = useCustomerExtraFields();
     const create = useCreateCustomerExtraField();
     const update = useUpdateCustomerExtraField();
     const del = useDeleteCustomerExtraField();
 
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState<FieldFormState>(EMPTY_FORM);
-    const [editingField, setEditingField] = useState<CustomerExtraField | null>(null);
+    const [editingField, setEditingField] = useState<CustomerExtraField | null>(
+        null,
+    );
     const [editForm, setEditForm] = useState<FieldFormState>(EMPTY_FORM);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [updateError, setUpdateError] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [confirmDeleteField, setConfirmDeleteField] =
+        useState<CustomerExtraField | null>(null);
 
     useLayoutEffect(() => {
         // no-op — secondary nav set before any early return
@@ -69,7 +82,9 @@ export default function ExtraFieldsPage() {
             label: form.label.trim(),
             type: form.type,
             required: form.required,
-            ...(form.type === 'select' ? { options: parseOptions(form.options) } : {}),
+            ...(form.type === 'select'
+                ? { options: parseOptions(form.options) }
+                : {}),
         };
         void create
             .mutateAsync(payload)
@@ -97,15 +112,22 @@ export default function ExtraFieldsPage() {
             label: editForm.label.trim(),
             type: editForm.type,
             required: editForm.required,
-            ...(editForm.type === 'select' ? { options: parseOptions(editForm.options) } : {}),
+            ...(editForm.type === 'select'
+                ? { options: parseOptions(editForm.options) }
+                : {}),
         };
+        setUpdateError(null);
         void update
             .mutateAsync({ id: editingField.id, data: payload })
-            .then(() => setEditingField(null));
+            .then(() => setEditingField(null))
+            .catch(() => setUpdateError('Nie udało się zaktualizować pola.'));
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Pola klientów — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="extra-fields-page">
                     <SalonBreadcrumbs
@@ -134,7 +156,9 @@ export default function ExtraFieldsPage() {
                         <div className="text-muted p-3">Ładowanie...</div>
                     ) : error ? (
                         <div className="d-flex flex-column gap-2 p-3">
-                            <div className="text-danger">Nie udało się pobrać pól klientów.</div>
+                            <div className="text-danger">
+                                Nie udało się pobrać pól klientów.
+                            </div>
                             <button
                                 type="button"
                                 className="btn btn-outline-secondary"
@@ -145,61 +169,85 @@ export default function ExtraFieldsPage() {
                         </div>
                     ) : (
                         <div className="salonbw-table-wrap">
+                            {deleteError && (
+                                <div className="alert alert-danger mb-2">
+                                    {deleteError}
+                                </div>
+                            )}
                             <table className="salonbw-table">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa pola</th>
-                                        <th>Typ</th>
-                                        <th>Wymagane</th>
-                                        <th>Opcje (dla lista wyboru)</th>
-                                        <th />
+                                        <th scope="col">Nazwa pola</th>
+                                        <th scope="col">Typ</th>
+                                        <th scope="col">Wymagane</th>
+                                        <th scope="col">
+                                            Opcje (dla lista wyboru)
+                                        </th>
+                                        <th scope="col" />
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {fields.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="text-muted text-center py-4">
-                                                Brak dodatkowych pól klientów. Kliknij
-                                                &ldquo;+ Dodaj pole&rdquo; aby dodać pierwsze.
+                                            <td
+                                                colSpan={5}
+                                                className="text-muted text-center py-4"
+                                            >
+                                                Brak dodatkowych pól klientów.
+                                                Kliknij &ldquo;+ Dodaj
+                                                pole&rdquo; aby dodać pierwsze.
                                             </td>
                                         </tr>
                                     ) : (
                                         fields.map((field) => (
                                             <tr key={field.id}>
-                                                <td className="fw-medium">{field.label}</td>
-                                                <td>{FIELD_TYPE_LABELS[field.type]}</td>
+                                                <td className="fw-medium">
+                                                    {field.label}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        FIELD_TYPE_LABELS[
+                                                            field.type
+                                                        ]
+                                                    }
+                                                </td>
                                                 <td>
                                                     {field.required ? (
-                                                        <span className="badge bg-primary">Tak</span>
+                                                        <span className="badge bg-primary">
+                                                            Tak
+                                                        </span>
                                                     ) : (
-                                                        <span className="badge bg-secondary">Nie</span>
+                                                        <span className="badge bg-secondary">
+                                                            Nie
+                                                        </span>
                                                     )}
                                                 </td>
                                                 <td>
-                                                    {field.type === 'select' && field.options
-                                                        ? field.options.join(', ')
+                                                    {field.type === 'select' &&
+                                                    field.options
+                                                        ? field.options.join(
+                                                              ', ',
+                                                          )
                                                         : '—'}
                                                 </td>
                                                 <td className="text-end">
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm btn-outline-secondary me-1"
-                                                        onClick={() => beginEdit(field)}
+                                                        onClick={() =>
+                                                            beginEdit(field)
+                                                        }
                                                     >
                                                         Edytuj
                                                     </button>
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm btn-outline-danger"
-                                                        onClick={() => {
-                                                            if (
-                                                                window.confirm(
-                                                                    `Usunąć pole "${field.label}"?`,
-                                                                )
-                                                            ) {
-                                                                void del.mutateAsync(field.id);
-                                                            }
-                                                        }}
+                                                        onClick={() =>
+                                                            setConfirmDeleteField(
+                                                                field,
+                                                            )
+                                                        }
                                                     >
                                                         Usuń
                                                     </button>
@@ -218,13 +266,24 @@ export default function ExtraFieldsPage() {
                             className="modal d-block"
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
-                            <div className="modal-dialog">
-                                <form className="modal-content" onSubmit={handleCreate}>
+                            <div
+                                className="modal-dialog"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Dodaj pole dodatkowe"
+                            >
+                                <form
+                                    className="modal-content"
+                                    onSubmit={handleCreate}
+                                >
                                     <div className="modal-header">
-                                        <h5 className="modal-title">Dodaj pole klienta</h5>
+                                        <h5 className="modal-title">
+                                            Dodaj pole klienta
+                                        </h5>
                                         <button
                                             type="button"
                                             className="btn-close"
+                                            aria-label="Zamknij"
                                             onClick={() => setShowForm(false)}
                                         />
                                     </div>
@@ -250,9 +309,14 @@ export default function ExtraFieldsPage() {
                                         <button
                                             type="submit"
                                             className="btn btn-primary"
-                                            disabled={create.isPending || !form.label.trim()}
+                                            disabled={
+                                                create.isPending ||
+                                                !form.label.trim()
+                                            }
                                         >
-                                            {create.isPending ? 'Dodawanie...' : 'Dodaj pole'}
+                                            {create.isPending
+                                                ? 'Dodawanie...'
+                                                : 'Dodaj pole'}
                                         </button>
                                     </div>
                                 </form>
@@ -266,14 +330,27 @@ export default function ExtraFieldsPage() {
                             className="modal d-block"
                             style={{ background: 'rgba(0,0,0,.5)' }}
                         >
-                            <div className="modal-dialog">
-                                <form className="modal-content" onSubmit={handleUpdate}>
+                            <div
+                                className="modal-dialog"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Edytuj pole dodatkowe"
+                            >
+                                <form
+                                    className="modal-content"
+                                    onSubmit={handleUpdate}
+                                >
                                     <div className="modal-header">
-                                        <h5 className="modal-title">Edytuj pole klienta</h5>
+                                        <h5 className="modal-title">
+                                            Edytuj pole klienta
+                                        </h5>
                                         <button
                                             type="button"
                                             className="btn-close"
-                                            onClick={() => setEditingField(null)}
+                                            aria-label="Zamknij"
+                                            onClick={() =>
+                                                setEditingField(null)
+                                            }
                                         />
                                     </div>
                                     <div className="modal-body">
@@ -281,21 +358,33 @@ export default function ExtraFieldsPage() {
                                             form={editForm}
                                             onChange={setEditForm}
                                         />
+                                        {updateError && (
+                                            <div className="alert alert-danger mt-2 mb-0">
+                                                {updateError}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="modal-footer">
                                         <button
                                             type="button"
                                             className="btn btn-outline-secondary"
-                                            onClick={() => setEditingField(null)}
+                                            onClick={() =>
+                                                setEditingField(null)
+                                            }
                                         >
                                             Anuluj
                                         </button>
                                         <button
                                             type="submit"
                                             className="btn btn-primary"
-                                            disabled={update.isPending || !editForm.label.trim()}
+                                            disabled={
+                                                update.isPending ||
+                                                !editForm.label.trim()
+                                            }
                                         >
-                                            {update.isPending ? 'Zapisywanie...' : 'Zapisz'}
+                                            {update.isPending
+                                                ? 'Zapisywanie...'
+                                                : 'Zapisz'}
                                         </button>
                                     </div>
                                 </form>
@@ -303,6 +392,25 @@ export default function ExtraFieldsPage() {
                         </div>
                     )}
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteField}
+                    title="Usuń pole"
+                    message={`Czy na pewno chcesz usunąć pole "${confirmDeleteField?.label}"?`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteField) return;
+                        const id = confirmDeleteField.id;
+                        setConfirmDeleteField(null);
+                        setDeleteError(null);
+                        void del
+                            .mutateAsync(id)
+                            .catch(() =>
+                                setDeleteError('Nie udało się usunąć pola.'),
+                            );
+                    }}
+                    onCancel={() => setConfirmDeleteField(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );
@@ -325,7 +433,9 @@ function FieldFormFields({
                     id="extra-field-label"
                     className="form-control"
                     value={form.label}
-                    onChange={(e) => onChange({ ...form, label: e.target.value })}
+                    onChange={(e) =>
+                        onChange({ ...form, label: e.target.value })
+                    }
                     required
                 />
             </div>
@@ -338,14 +448,19 @@ function FieldFormFields({
                     className="form-control"
                     value={form.type}
                     onChange={(e) =>
-                        onChange({ ...form, type: e.target.value as ExtraFieldType })
+                        onChange({
+                            ...form,
+                            type: e.target.value as ExtraFieldType,
+                        })
                     }
                 >
-                    {(Object.keys(FIELD_TYPE_LABELS) as ExtraFieldType[]).map((t) => (
-                        <option key={t} value={t}>
-                            {FIELD_TYPE_LABELS[t]}
-                        </option>
-                    ))}
+                    {(Object.keys(FIELD_TYPE_LABELS) as ExtraFieldType[]).map(
+                        (t) => (
+                            <option key={t} value={t}>
+                                {FIELD_TYPE_LABELS[t]}
+                            </option>
+                        ),
+                    )}
                 </select>
             </div>
             {form.type === 'select' && (
@@ -358,7 +473,9 @@ function FieldFormFields({
                         className="form-control"
                         rows={4}
                         value={form.options}
-                        onChange={(e) => onChange({ ...form, options: e.target.value })}
+                        onChange={(e) =>
+                            onChange({ ...form, options: e.target.value })
+                        }
                         placeholder="Opcja 1&#10;Opcja 2&#10;Opcja 3"
                     />
                 </div>
@@ -369,9 +486,14 @@ function FieldFormFields({
                     className="form-check-input"
                     type="checkbox"
                     checked={form.required}
-                    onChange={(e) => onChange({ ...form, required: e.target.checked })}
+                    onChange={(e) =>
+                        onChange({ ...form, required: e.target.checked })
+                    }
                 />
-                <label className="form-check-label" htmlFor="extra-field-required">
+                <label
+                    className="form-check-label"
+                    htmlFor="extra-field-required"
+                >
                     Pole wymagane
                 </label>
             </div>

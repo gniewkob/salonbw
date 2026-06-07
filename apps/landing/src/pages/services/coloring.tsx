@@ -2,10 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Script from 'next/script';
 import { useState, useEffect } from 'react';
-import {
-    ChevronLeftIcon,
-    MinusSmallIcon,
-} from '@heroicons/react/20/solid';
+import { ChevronLeftIcon, MinusSmallIcon } from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
 import BookingModal from '@/components/BookingModal';
 import { BUSINESS_INFO } from '@/config/content';
@@ -44,12 +41,34 @@ export default function ColoringPage() {
         <PublicLayout>
             <Head>
                 <title>Koloryzacja Bytom — Salon Black &amp; White</title>
-                <meta name="description" content="Profesjonalna koloryzacja włosów w Bytomiu — farby Wella i Kerastase, color correction, toning. Salon Black & White, ul. Webera 1a/13." />
-                <meta name="keywords" content="koloryzacja włosów bytom, color correction bytom, farbowanie włosów bytom, toning włosów, salon fryzjerski bytom" />
-                <meta property="og:title" content="Koloryzacja włosów — Salon Black & White Bytom" />
-                <meta property="og:description" content="Profesjonalna koloryzacja włosów w Bytomiu. Farby Wella i Kerastase, color correction, toning, farbowanie odrostów." />
-                <meta property="og:image" content={absUrl('/images/hero/slider1.jpg')} />
+                <meta
+                    name="description"
+                    content="Profesjonalna koloryzacja włosów w Bytomiu — farby Wella i Kerastase, color correction, toning. Salon Black & White, ul. Webera 1a/13."
+                />
+                <meta
+                    name="keywords"
+                    content="koloryzacja włosów bytom, color correction bytom, farbowanie włosów bytom, toning włosów, salon fryzjerski bytom"
+                />
+                <meta
+                    property="og:title"
+                    content="Koloryzacja włosów — Salon Black & White Bytom"
+                />
+                <meta
+                    property="og:description"
+                    content="Profesjonalna koloryzacja włosów w Bytomiu. Farby Wella i Kerastase, color correction, toning, farbowanie odrostów."
+                />
+                <meta
+                    property="og:image"
+                    content={absUrl('/images/hero/slider1.jpg')}
+                />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
+                <meta property="og:locale" content="pl_PL" />
+                <meta
+                    property="og:url"
+                    content={absUrl('/services/coloring')}
+                />
                 <link rel="canonical" href={absUrl('/services/coloring')} />
                 <meta name="robots" content="index, follow" />
             </Head>
@@ -134,19 +153,32 @@ export default function ColoringPage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Pełna koloryzacja to kompletna zmiana lub odświeżenie koloru
-                        włosów. Używamy wyłącznie profesjonalnych farb Wella i
-                        Kerastase, które zapewniają intensywny kolor i pielęgnację
-                        jednocześnie.
+                        Pełna koloryzacja to kompletna zmiana lub odświeżenie
+                        koloru włosów. Używamy wyłącznie profesjonalnych farb
+                        Wella i Kerastase, które zapewniają intensywny kolor i
+                        pielęgnację jednocześnie.
                     </p>
                     <button
+                        type="button"
                         onClick={() => {
                             try {
                                 trackEvent('select_item', {
-                                    items: [{ item_id: 'coloring', item_name: 'Koloryzacja', item_category: 'Usługi fryzjerskie' }],
+                                    items: [
+                                        {
+                                            item_id: 'coloring',
+                                            item_name: 'Koloryzacja',
+                                            item_category: 'Usługi fryzjerskie',
+                                        },
+                                    ],
                                 });
                                 trackEvent('begin_checkout', {
-                                    items: [{ item_id: 'coloring', item_name: 'Koloryzacja', item_category: 'Usługi fryzjerskie' }],
+                                    items: [
+                                        {
+                                            item_id: 'coloring',
+                                            item_name: 'Koloryzacja',
+                                            item_category: 'Usługi fryzjerskie',
+                                        },
+                                    ],
                                     cta: 'service_page',
                                 });
                             } catch {}
@@ -161,7 +193,12 @@ export default function ColoringPage() {
             </section>
 
             {/* Light content section */}
-            <section style={{ background: 'var(--brand-warm-bg)', padding: '5rem 2rem' }}>
+            <section
+                style={{
+                    background: 'var(--brand-warm-bg)',
+                    padding: '5rem 2rem',
+                }}
+            >
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {ITEMS.map((item) => (
@@ -172,8 +209,10 @@ export default function ColoringPage() {
                                     alignItems: 'baseline',
                                     gap: '0.75rem',
                                     padding: '0.85rem 0',
-                                    borderBottom: '1px solid var(--brand-warm-border)',
-                                    fontFamily: 'var(--font-open-sans), sans-serif',
+                                    borderBottom:
+                                        '1px solid var(--brand-warm-border)',
+                                    fontFamily:
+                                        'var(--font-open-sans), sans-serif',
                                     color: 'var(--brand-warm-ink)',
                                     fontSize: '0.95rem',
                                 }}

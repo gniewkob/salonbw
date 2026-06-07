@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -248,7 +247,6 @@ export default function ReceptionView({
             }
             onChanged?.();
         } catch (error) {
-            console.error('Action failed:', error);
             const message =
                 error instanceof Error
                     ? error.message
@@ -564,13 +562,13 @@ export default function ReceptionView({
                         <table className="salonbw-reception-table">
                             <thead>
                                 <tr>
-                                    <th>Godzina</th>
-                                    <th>Klient</th>
-                                    <th>Usługa</th>
-                                    <th>Pracownik</th>
-                                    <th>Czas</th>
-                                    <th>Status</th>
-                                    <th>Akcje</th>
+                                    <th scope="col">Godzina</th>
+                                    <th scope="col">Klient</th>
+                                    <th scope="col">Usługa</th>
+                                    <th scope="col">Pracownik</th>
+                                    <th scope="col">Czas</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -588,13 +586,13 @@ export default function ReceptionView({
                 <table className="salonbw-reception-table">
                     <thead>
                         <tr>
-                            <th>Godzina</th>
-                            <th>Klient</th>
-                            <th>Usługa</th>
-                            <th>Pracownik</th>
-                            <th>Czas</th>
-                            <th>Status</th>
-                            <th>Akcje</th>
+                            <th scope="col">Godzina</th>
+                            <th scope="col">Klient</th>
+                            <th scope="col">Usługa</th>
+                            <th scope="col">Pracownik</th>
+                            <th scope="col">Czas</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Akcje</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -52,9 +52,9 @@ describe('SaleForm', () => {
             />,
         );
 
-        const quantityInput = screen.getByPlaceholderText('Quantity');
+        const quantityInput = screen.getByPlaceholderText('Ilość');
         fireEvent.change(quantityInput, { target: { value: '' } });
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         expect(await screen.findByRole('alert')).toBeInTheDocument();
         expect(onSubmit).not.toHaveBeenCalled();
@@ -72,16 +72,16 @@ describe('SaleForm', () => {
             />,
         );
 
-        const quantityInput = screen.getByPlaceholderText('Quantity');
+        const quantityInput = screen.getByPlaceholderText('Ilość');
         fireEvent.change(quantityInput, { target: { value: '2' } });
-        fireEvent.change(screen.getByPlaceholderText('Unit price override'), {
+        fireEvent.change(screen.getByPlaceholderText('Cena jednostkowa'), {
             target: { value: '' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Discount'), {
+        fireEvent.change(screen.getByPlaceholderText('Rabat'), {
             target: { value: '' },
         });
 
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         await waitFor(() =>
             expect(onSubmit).toHaveBeenCalledWith({
@@ -108,7 +108,7 @@ describe('SaleForm', () => {
             />,
         );
 
-        const quantityInput = screen.getByPlaceholderText('Quantity');
+        const quantityInput = screen.getByPlaceholderText('Ilość');
         fireEvent.change(quantityInput, { target: { value: '3' } });
 
         fireEvent.mouseDown(screen.getByTestId('employee-select'));
@@ -117,17 +117,17 @@ describe('SaleForm', () => {
         fireEvent.mouseDown(screen.getByTestId('appointment-select'));
         fireEvent.click(await screen.findByTestId('appointment-option-1'));
 
-        fireEvent.change(screen.getByPlaceholderText('Unit price override'), {
+        fireEvent.change(screen.getByPlaceholderText('Cena jednostkowa'), {
             target: { value: '12.50' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Discount'), {
+        fireEvent.change(screen.getByPlaceholderText('Rabat'), {
             target: { value: '1.5' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Note'), {
+        fireEvent.change(screen.getByPlaceholderText('Notatka'), {
             target: { value: 'Special request' },
         });
 
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         await waitFor(() =>
             expect(onSubmit).toHaveBeenCalledWith({
@@ -156,7 +156,7 @@ describe('SaleForm', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
         expect(await screen.findByRole('alert')).toHaveTextContent(
             'Failed to save sale',
         );
@@ -180,11 +180,11 @@ describe('SaleForm', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+        fireEvent.click(screen.getByRole('button', { name: /zapisz/i }));
 
         await waitFor(() =>
             expect(
-                screen.getByRole('button', { name: /saving/i }),
+                screen.getByRole('button', { name: /zapisywanie/i }),
             ).toBeDisabled(),
         );
 

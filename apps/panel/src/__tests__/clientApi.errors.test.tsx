@@ -12,10 +12,9 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useCustomerApi errors', () => {
-    it('remove shows error on failure', async () => {
+    it('remove throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -26,11 +25,10 @@ describe('useCustomerApi errors', () => {
             act(async () => {
                 await result.current.remove(1);
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 
-    it('create shows error on failure', async () => {
+    it('create throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('bad'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -41,7 +39,6 @@ describe('useCustomerApi errors', () => {
             act(async () => {
                 await result.current.create({ name: 'X' });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('bad');
     });
 });

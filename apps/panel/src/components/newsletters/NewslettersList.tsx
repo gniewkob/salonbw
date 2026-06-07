@@ -1,4 +1,3 @@
-
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { Newsletter, NewsletterStatus } from '@/types';
@@ -166,12 +165,14 @@ export default function NewslettersList({
                                         }}
                                         className="p-2 text-success bg-success bg-opacity-10 rounded-3"
                                         title="Wyślij"
+                                        aria-label="Wyślij newsletter"
                                     >
                                         <svg
                                             className="w-5 h-5"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
+                                            aria-hidden="true"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -186,12 +187,14 @@ export default function NewslettersList({
                                         onClick={() => onEdit(newsletter)}
                                         className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                         title="Edytuj"
+                                        aria-label="Edytuj newsletter"
                                     >
                                         <svg
                                             className="w-5 h-5"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
+                                            aria-hidden="true"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -212,12 +215,14 @@ export default function NewslettersList({
                                     }}
                                     className="p-2 text-warning bg-opacity-10 rounded-3"
                                     title="Anuluj"
+                                    aria-label="Anuluj newsletter"
                                 >
                                     <svg
                                         className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -236,12 +241,14 @@ export default function NewslettersList({
                                     }}
                                     className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                     title="Odbiorcy"
+                                    aria-label="Wyświetl odbiorców"
                                 >
                                     <svg
                                         className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -259,12 +266,14 @@ export default function NewslettersList({
                                 }}
                                 className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Duplikuj"
+                                aria-label="Duplikuj newsletter"
                             >
                                 <svg
                                     className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -282,12 +291,14 @@ export default function NewslettersList({
                                     }}
                                     className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                     title="Usuń"
+                                    aria-label="Usuń newsletter"
                                 >
                                     <svg
                                         className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"

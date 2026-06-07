@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -74,174 +74,191 @@ export default function WarehouseUsageCreatePage() {
             return;
         }
 
-        await createMutation.mutateAsync({
-            clientName: clientName || undefined,
-            employeeId: employeeId ? Number(employeeId) : undefined,
-            scope: usageScope,
-            plannedFor: isPlanned
-                ? new Date(plannedFor).toISOString()
-                : undefined,
-            items,
-        });
-
-        await router.push(isPlanned ? '/use/planned' : '/use/history');
+        try {
+            await createMutation.mutateAsync({
+                clientName: clientName || undefined,
+                employeeId: employeeId ? Number(employeeId) : undefined,
+                scope: usageScope,
+                plannedFor: isPlanned
+                    ? new Date(plannedFor).toISOString()
+                    : undefined,
+                items,
+            });
+            await router.push(isPlanned ? '/use/planned' : '/use/history');
+        } catch {
+            setFormError(
+                'Nie udało się zapisać zużycia. Sprawdź dane i spróbuj ponownie.',
+            );
+        }
     };
 
     return (
-        <WarehouseLayout
-            pageTitle={`Magazyn / ${isPlanned ? 'Dodaj planowane zużycie' : 'Dodaj zużycie'} | SalonBW`}
-            heading={`Magazyn / ${isPlanned ? 'Dodaj planowane zużycie' : 'Dodaj zużycie'}`}
-            activeTab="use"
-            actions={
-                <>
-                    <Link
-                        href="/use/history"
-                        className="btn btn-outline-secondary btn-sm"
-                    >
-                        historia zużycia
-                    </Link>
-                    <Link
-                        href="/use/planned"
-                        className="btn btn-outline-secondary btn-sm"
-                    >
-                        planowane zużycie
-                    </Link>
-                </>
-            }
-        >
-            <div className="products-table-wrap">
-                <table className="products-table">
-                    <thead>
-                        <tr>
-                            <th>nazwa</th>
-                            <th>ilość</th>
-                            <th>usuń</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {lines.map((line, index) => (
-                            <tr key={`${index}-${line.productId}`}>
-                                <td>
-                                    <select
-                                        value={line.productId}
-                                        onChange={(event) =>
-                                            updateLine(index, {
-                                                productId: event.target.value,
-                                            })
-                                        }
-                                        className="form-control"
-                                    >
-                                        <option value="">
-                                            wpisz nazwę, kod kreskowy itp.
-                                        </option>
-                                        {products.map((product) => (
-                                            <option
-                                                key={product.id}
-                                                value={product.id}
-                                            >
-                                                {product.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={line.quantity}
-                                        onChange={(event) =>
-                                            updateLine(index, {
-                                                quantity: event.target.value,
-                                            })
-                                        }
-                                        className="form-control"
-                                    />
-                                </td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-secondary btn-sm"
-                                        onClick={() => removeLine(index)}
-                                    >
-                                        usuń
-                                    </button>
-                                </td>
+        <>
+            <Head>
+                <title>Nowe zużycie — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle={`Magazyn / ${isPlanned ? 'Dodaj planowane zużycie' : 'Dodaj zużycie'} | SalonBW`}
+                heading={`Magazyn / ${isPlanned ? 'Dodaj planowane zużycie' : 'Dodaj zużycie'}`}
+                activeTab="use"
+                actions={
+                    <>
+                        <Link
+                            href="/use/history"
+                            className="btn btn-outline-secondary btn-sm"
+                        >
+                            historia zużycia
+                        </Link>
+                        <Link
+                            href="/use/planned"
+                            className="btn btn-outline-secondary btn-sm"
+                        >
+                            planowane zużycie
+                        </Link>
+                    </>
+                }
+            >
+                <div className="products-table-wrap">
+                    <table className="products-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">nazwa</th>
+                                <th scope="col">ilość</th>
+                                <th scope="col">usuń</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {lines.map((line, index) => (
+                                <tr key={`${index}-${line.productId}`}>
+                                    <td>
+                                        <select
+                                            aria-label={`Produkt (pozycja ${index + 1})`}
+                                            value={line.productId}
+                                            onChange={(event) =>
+                                                updateLine(index, {
+                                                    productId:
+                                                        event.target.value,
+                                                })
+                                            }
+                                            className="form-control"
+                                        >
+                                            <option value="">
+                                                wpisz nazwę, kod kreskowy itp.
+                                            </option>
+                                            {products.map((product) => (
+                                                <option
+                                                    key={product.id}
+                                                    value={product.id}
+                                                >
+                                                    {product.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={line.quantity}
+                                            onChange={(event) =>
+                                                updateLine(index, {
+                                                    quantity:
+                                                        event.target.value,
+                                                })
+                                            }
+                                            className="form-control"
+                                        />
+                                    </td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => removeLine(index)}
+                                        >
+                                            usuń
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-            <div className="warehouse-actions-row">
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={addLine}
-                >
-                    dodaj kolejną pozycję
-                </button>
-            </div>
-
-            <div className="warehouse-form-grid">
-                <label>
-                    <span>Klient</span>
-                    <input
-                        type="text"
-                        value={clientName}
-                        onChange={(event) => setClientName(event.target.value)}
-                        className="form-control"
-                        placeholder="wpisz nazwisko lub imię klienta"
-                    />
-                </label>
-                <label>
-                    <span>Pracownik, który zużył materiał</span>
-                    <select
-                        value={employeeId}
-                        onChange={(event) => setEmployeeId(event.target.value)}
-                        className="salonbw-select"
+                <div className="warehouse-actions-row">
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={addLine}
                     >
-                        <option value="">
-                            wpisz nazwę lub wybierz z listy
-                        </option>
-                        {employees?.map((employee) => (
-                            <option key={employee.id} value={employee.id}>
-                                {employee.name}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                {isPlanned ? (
+                        dodaj kolejną pozycję
+                    </button>
+                </div>
+
+                <div className="warehouse-form-grid">
                     <label>
-                        <span>Planowana data i godzina</span>
+                        <span>Klient</span>
                         <input
-                            type="datetime-local"
-                            value={plannedFor}
+                            type="text"
+                            value={clientName}
                             onChange={(event) =>
-                                setPlannedFor(event.target.value)
+                                setClientName(event.target.value)
                             }
                             className="form-control"
+                            placeholder="wpisz nazwisko lub imię klienta"
                         />
                     </label>
-                ) : null}
-            </div>
+                    <label>
+                        <span>Pracownik, który zużył materiał</span>
+                        <select
+                            value={employeeId}
+                            onChange={(event) =>
+                                setEmployeeId(event.target.value)
+                            }
+                            className="salonbw-select"
+                        >
+                            <option value="">
+                                wpisz nazwę lub wybierz z listy
+                            </option>
+                            {employees?.map((employee) => (
+                                <option key={employee.id} value={employee.id}>
+                                    {employee.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    {isPlanned ? (
+                        <label>
+                            <span>Planowana data i godzina</span>
+                            <input
+                                type="datetime-local"
+                                value={plannedFor}
+                                onChange={(event) =>
+                                    setPlannedFor(event.target.value)
+                                }
+                                className="form-control"
+                            />
+                        </label>
+                    ) : null}
+                </div>
 
-            <div className="warehouse-actions-row">
-                <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => void submit()}
-                    disabled={createMutation.isPending}
-                >
-                    {createMutation.isPending
-                        ? 'zapisywanie...'
-                        : isPlanned
-                          ? 'zapisz planowane zużycie'
-                          : 'wprowadź zużycie'}
-                </button>
-            </div>
-            {formError ? (
-                <p className="warehouse-validation-error">{formError}</p>
-            ) : null}
-        </WarehouseLayout>
+                <div className="warehouse-actions-row">
+                    <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => void submit()}
+                        disabled={createMutation.isPending}
+                    >
+                        {createMutation.isPending
+                            ? 'zapisywanie...'
+                            : isPlanned
+                              ? 'zapisz planowane zużycie'
+                              : 'wprowadź zużycie'}
+                    </button>
+                </div>
+                {formError ? (
+                    <p className="warehouse-validation-error">{formError}</p>
+                ) : null}
+            </WarehouseLayout>
+        </>
     );
 }

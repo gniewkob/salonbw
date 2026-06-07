@@ -1,4 +1,3 @@
-'use client';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Language } from '@/i18n/translations';
 import t, { type Translations } from '@/i18n/translations';

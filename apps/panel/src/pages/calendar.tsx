@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import Head from 'next/head';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -15,6 +16,7 @@ import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmen
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
+import TimeBlockModal from '@/components/calendar/TimeBlockModal';
 import {
     hasCustomerAlert,
     isPriorityAppointment,
@@ -28,6 +30,7 @@ import type {
     Appointment,
     CalendarEvent,
     CalendarView as CalendarViewType,
+    TimeBlock,
 } from '@/types';
 import { toDateParam } from '@/utils/calendarQueryState';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
@@ -46,35 +49,40 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 
 function CalendarPageShell() {
     return (
-        <div className="salonbw-page" data-testid="calendar-shell">
-            <div className="px-3 pt-3 pb-2">
-                <div
-                    className="placeholder-glow small text-muted mb-2"
-                    aria-hidden
-                >
-                    <span className="placeholder col-2" />
-                </div>
-                <div
-                    className="d-flex align-items-center justify-content-between gap-2"
-                    aria-hidden
-                >
-                    <span className="placeholder col-7" />
-                    <span className="placeholder col-2" />
-                </div>
-            </div>
-            <div className="px-3 pb-3">
-                <div className="border rounded bg-white p-3">
-                    <div className="small text-muted mb-2">
-                        Initialising calendar engine...
+        <>
+            <Head>
+                <title>Kalendarz — Salon Black &amp; White</title>
+            </Head>
+            <div className="salonbw-page" data-testid="calendar-shell">
+                <div className="px-3 pt-3 pb-2">
+                    <div
+                        className="placeholder-glow small text-muted mb-2"
+                        aria-hidden
+                    >
+                        <span className="placeholder col-2" />
                     </div>
-                    <div className="placeholder-glow d-flex flex-column gap-2">
-                        <span className="placeholder col-12" />
-                        <span className="placeholder col-12" />
-                        <span className="placeholder col-8" />
+                    <div
+                        className="d-flex align-items-center justify-content-between gap-2"
+                        aria-hidden
+                    >
+                        <span className="placeholder col-7" />
+                        <span className="placeholder col-2" />
                     </div>
                 </div>
+                <div className="px-3 pb-3">
+                    <div className="border rounded bg-white p-3">
+                        <div className="small text-muted mb-2">
+                            Initialising calendar engine...
+                        </div>
+                        <div className="placeholder-glow d-flex flex-column gap-2">
+                            <span className="placeholder col-12" />
+                            <span className="placeholder col-12" />
+                            <span className="placeholder col-8" />
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 
@@ -162,6 +170,14 @@ export default function CalendarPage() {
     } = useAppointmentDrawer({
         onClose: () => clearAppointmentDeepLink(),
     });
+
+    const [timeBlockModal, setTimeBlockModal] = useState<{
+        open: boolean;
+        existingBlock: TimeBlock | null;
+        initialStartTime?: Date;
+        initialEndTime?: Date;
+        initialEmployeeId?: number;
+    }>({ open: false, existingBlock: null });
 
     const { data, loading, refetch } = useCalendar({
         date: toDateParam(currentDate),
@@ -268,6 +284,20 @@ export default function CalendarPage() {
         });
 
     const handleEventClick = (event: CalendarEvent) => {
+        if (event.type === 'time_block') {
+            const block: TimeBlock = {
+                id: event.id,
+                employeeId: event.employeeId ?? 0,
+                employeeName: event.employeeName ?? '',
+                startTime: event.startTime,
+                endTime: event.endTime,
+                type: event.blockType ?? 'other',
+                title: event.title,
+                allDay: event.allDay ?? false,
+            };
+            setTimeBlockModal({ open: true, existingBlock: block });
+            return;
+        }
         if (event.type !== 'appointment') return;
         const appointment = appointmentsById.get(event.id);
         trackReceptionAction({
@@ -526,12 +556,16 @@ export default function CalendarPage() {
             return;
         }
 
-        await rescheduleAppointment.mutateAsync({
-            id: eventId,
-            startTime: newStart.toISOString(),
-            endTime: newEnd.toISOString(),
-            employeeId: targetEmployeeId,
-        });
+        try {
+            await rescheduleAppointment.mutateAsync({
+                id: eventId,
+                startTime: newStart.toISOString(),
+                endTime: newEnd.toISOString(),
+                employeeId: targetEmployeeId,
+            });
+        } catch {
+            revert?.();
+        }
     };
 
     return (
@@ -1268,6 +1302,21 @@ export default function CalendarPage() {
                     initialClientId={drawer.initialClientId}
                     initialClientName={drawer.initialClientName}
                     onClose={closeDrawer}
+                    onSaved={() => {
+                        void refetch();
+                    }}
+                />
+
+                <TimeBlockModal
+                    open={timeBlockModal.open}
+                    employees={data?.employees ?? []}
+                    existingBlock={timeBlockModal.existingBlock}
+                    initialStartTime={timeBlockModal.initialStartTime}
+                    initialEndTime={timeBlockModal.initialEndTime}
+                    initialEmployeeId={timeBlockModal.initialEmployeeId}
+                    onClose={() =>
+                        setTimeBlockModal((s) => ({ ...s, open: false }))
+                    }
                     onSaved={() => {
                         void refetch();
                     }}

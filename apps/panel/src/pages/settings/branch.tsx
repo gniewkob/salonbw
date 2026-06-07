@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import BranchIdentityForm from '@/components/settings/BranchIdentityForm';
 import SettingsDetailLayout from '@/components/settings/SettingsDetailLayout';
@@ -26,6 +27,9 @@ export default function BranchSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Dane salonu — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <SettingsDetailLayout
                     sectionTitle="Dane salonu"

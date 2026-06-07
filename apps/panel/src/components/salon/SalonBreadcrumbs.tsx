@@ -17,26 +17,34 @@ export default function SalonBreadcrumbs({
     if (!items.length) return null;
 
     return (
-        <div className="breadcrumbs" e2e-breadcrumbs="">
-            <ul>
-                {items.map((item, index) => {
-                    const isLast = index === items.length - 1;
+        <nav aria-label="Breadcrumb">
+            <div className="breadcrumbs" e2e-breadcrumbs="">
+                <ul>
+                    {items.map((item, index) => {
+                        const isLast = index === items.length - 1;
 
-                    return (
-                        <li key={`${item.label}:${item.href ?? index}`}>
-                            {index === 0 ? (
-                                <div className={`icon ${iconClass}`} />
-                            ) : null}
-                            {index > 0 ? <span> / </span> : null}
-                            {isLast || !item.href ? (
-                                item.label
-                            ) : (
-                                <Link href={item.href}>{item.label}</Link>
-                            )}
-                        </li>
-                    );
-                })}
-            </ul>
-        </div>
+                        return (
+                            <li key={`${item.label}:${item.href ?? index}`}>
+                                {index === 0 ? (
+                                    <div className={`icon ${iconClass}`} />
+                                ) : null}
+                                {index > 0 ? <span> / </span> : null}
+                                {isLast || !item.href ? (
+                                    <span
+                                        aria-current={
+                                            isLast ? 'page' : undefined
+                                        }
+                                    >
+                                        {item.label}
+                                    </span>
+                                ) : (
+                                    <Link href={item.href}>{item.label}</Link>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+        </nav>
     );
 }

@@ -12,28 +12,32 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useEmployeeApi', () => {
-    it('shows success toast on create', async () => {
-        const apiFetch = jest.fn().mockResolvedValue({
+    it('returns created employee on create', async () => {
+        const employee = {
             id: 1,
             firstName: 'A',
             lastName: 'B',
             fullName: 'A B',
-        });
+        };
+        const apiFetch = jest.fn().mockResolvedValue(employee);
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
         const { result } = renderHook(() => useEmployeeApi(), { wrapper });
+        let created: unknown;
         await act(async () => {
-            await result.current.create({ firstName: 'A', lastName: 'B' });
+            created = await result.current.create({
+                firstName: 'A',
+                lastName: 'B',
+            });
         });
-        expect(toast.success).toHaveBeenCalled();
+        expect(created).toEqual(employee);
     });
 
-    it('shows error toast on failure', async () => {
+    it('throws on create failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -44,7 +48,6 @@ describe('useEmployeeApi', () => {
             act(async () => {
                 await result.current.create({ firstName: 'A', lastName: 'B' });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 });

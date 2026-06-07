@@ -1,11 +1,13 @@
-
-import { useMemo, useState } from 'react';
+import Head from 'next/head';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     useServiceSummary,
     useServiceStats,
@@ -20,14 +22,29 @@ import {
     useServicePhotos,
     useServiceCommissions,
     useUpdateServiceCommissions,
+    useServiceRecipe,
+    useUpdateServiceRecipe,
 } from '@/hooks/useServicesAdmin';
 import ServiceFormModal, {
     ServiceFormData,
 } from '@/components/services/ServiceFormModal';
 import ServiceVariantsModal from '@/components/services/ServiceVariantsModal';
 import { useEmployees } from '@/hooks/useEmployees';
+import { useWarehouseProducts } from '@/hooks/useWarehouseViews';
 import { getBrowserApiBase } from '@/hooks/useCustomerMedia';
 import type { EmployeeService } from '@/types';
+
+interface RecipeDraft {
+    key: number;
+    productId: number | null;
+    productName: string;
+    unit: string;
+    quantity: string;
+}
+
+function createRecipeDraft(key: number): RecipeDraft {
+    return { key, productId: null, productName: '', unit: 'op.', quantity: '' };
+}
 
 type TabKey =
     | 'summary'
@@ -35,7 +52,8 @@ type TabKey =
     | 'history'
     | 'employees'
     | 'comments'
-    | 'commissions';
+    | 'commissions'
+    | 'recipe';
 
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat('pl-PL', {
@@ -52,6 +70,7 @@ const formatDuration = (minutes: number) => {
 
 export default function ServiceDetailsPage() {
     const { user, role } = useAuth();
+    const toast = useToast();
     const router = useRouter();
     const serviceId = Number(router.query.id);
     const tabParam = Array.isArray(router.query.tab)
@@ -62,7 +81,8 @@ export default function ServiceDetailsPage() {
         tabParam === 'history' ||
         tabParam === 'employees' ||
         tabParam === 'comments' ||
-        tabParam === 'commissions'
+        tabParam === 'commissions' ||
+        tabParam === 'recipe'
             ? tabParam
             : 'summary';
     const [historyPage] = useState(1);
@@ -76,6 +96,19 @@ export default function ServiceDetailsPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isVariantsModalOpen, setIsVariantsModalOpen] = useState(false);
 
+    const [recipeDrafts, setRecipeDrafts] = useState<RecipeDraft[]>([
+        createRecipeDraft(1),
+    ]);
+    const [nextRecipeKey, setNextRecipeKey] = useState(2);
+    const [activeRecipeRowKey, setActiveRecipeRowKey] = useState<number | null>(
+        null,
+    );
+    const [recipeProductSearch, setRecipeProductSearch] = useState('');
+    const [recipeSaving, setRecipeSaving] = useState(false);
+    const [confirmDeleteCommentId, setConfirmDeleteCommentId] = useState<
+        number | null
+    >(null);
+
     const summary = useServiceSummary(serviceId);
     const variants = useServiceVariants(serviceId);
     const stats = useServiceStats(serviceId, { groupBy: 'month' });
@@ -87,13 +120,18 @@ export default function ServiceDetailsPage() {
     const comments = useServiceComments(serviceId);
     const photos = useServicePhotos(serviceId);
     const commissions = useServiceCommissions(serviceId);
+    const recipe = useServiceRecipe(serviceId);
     const allEmployees = useEmployees();
     const { data: categories = [] } = useServiceCategories();
+    const { data: recipeProducts = [] } = useWarehouseProducts({
+        search: activeRecipeRowKey !== null ? recipeProductSearch : undefined,
+    });
 
     const updateService = useUpdateService();
     const addComment = useAddServiceComment();
     const deleteComment = useDeleteServiceComment();
     const updateCommissions = useUpdateServiceCommissions();
+    const updateServiceRecipe = useUpdateServiceRecipe();
 
     const summaryData = summary.data;
     const variantsData = variants.data ?? summaryData?.variants ?? [];
@@ -135,6 +173,78 @@ export default function ServiceDetailsPage() {
         return map;
     }, [allEmployees.data]);
 
+    useEffect(() => {
+        if (!recipe.data) return;
+        const items = recipe.data;
+        if (items.length === 0) {
+            setRecipeDrafts([createRecipeDraft(1)]);
+            setNextRecipeKey(2);
+        } else {
+            const drafts = items.map((item, i) => ({
+                key: i + 1,
+                productId: item.productId ?? null,
+                productName: item.product?.name ?? '',
+                unit: item.unit ?? 'op.',
+                quantity: item.quantity != null ? String(item.quantity) : '',
+            }));
+            setRecipeDrafts(drafts);
+            setNextRecipeKey(items.length + 1);
+        }
+    }, [recipe.data]);
+
+    const recipeSuggestions = useMemo(() => {
+        if (activeRecipeRowKey === null || !recipeProductSearch.trim())
+            return [];
+        return recipeProducts.slice(0, 8);
+    }, [activeRecipeRowKey, recipeProductSearch, recipeProducts]);
+
+    const updateRecipeDraft = (
+        key: number,
+        field: keyof Omit<RecipeDraft, 'key'>,
+        value: string | number | null,
+    ) => {
+        setRecipeDrafts((prev) =>
+            prev.map((item) =>
+                item.key === key ? { ...item, [field]: value } : item,
+            ),
+        );
+    };
+
+    const addRecipeDraft = () => {
+        setRecipeDrafts((prev) => [...prev, createRecipeDraft(nextRecipeKey)]);
+        setNextRecipeKey((k) => k + 1);
+    };
+
+    const removeRecipeDraft = (key: number) => {
+        setRecipeDrafts((prev) => {
+            if (prev.length <= 1) return [createRecipeDraft(key)];
+            return prev.filter((item) => item.key !== key);
+        });
+        if (activeRecipeRowKey === key) {
+            setActiveRecipeRowKey(null);
+            setRecipeProductSearch('');
+        }
+    };
+
+    const handleSaveRecipe = async () => {
+        const items = recipeDrafts
+            .filter((item) => item.productId && Number(item.quantity) > 0)
+            .map((item) => ({
+                productId: item.productId as number,
+                quantity: Number(item.quantity),
+                unit: item.unit.trim() || null,
+            }));
+        setRecipeSaving(true);
+        try {
+            await updateServiceRecipe.mutateAsync({ serviceId, items });
+            toast.success('Receptura zapisana');
+        } catch {
+            toast.error('Nie udało się zapisać receptury');
+        } finally {
+            setRecipeSaving(false);
+        }
+    };
+
     const commissionRows = useMemo(() => {
         const rules = commissions.data ?? [];
         const rows = rules.map((rule) => ({
@@ -154,8 +264,8 @@ export default function ServiceDetailsPage() {
             await updateService.mutateAsync({ id: serviceId, data });
             setIsEditModalOpen(false);
             void summary.refetch();
-        } catch (error) {
-            console.error('Failed to update service:', error);
+        } catch {
+            toast.error('Nie udało się zaktualizować usługi');
         }
     };
 
@@ -174,22 +284,13 @@ export default function ServiceDetailsPage() {
             setCommentText('');
             setCommentAuthor('');
             setCommentRating(5);
-        } catch (error) {
-            console.error('Failed to add service comment:', error);
+        } catch {
+            toast.error('Nie udało się dodać komentarza');
         }
     };
 
-    const handleDeleteComment = async (commentId: number) => {
-        const shouldDelete = window.confirm(
-            'Czy na pewno chcesz usunąć ten komentarz?',
-        );
-        if (!shouldDelete) return;
-
-        try {
-            await deleteComment.mutateAsync({ serviceId, commentId });
-        } catch (error) {
-            console.error('Failed to delete service comment:', error);
-        }
+    const handleDeleteComment = (commentId: number) => {
+        setConfirmDeleteCommentId(commentId);
     };
 
     const handleSaveCommissions = async () => {
@@ -202,13 +303,20 @@ export default function ServiceDetailsPage() {
 
         try {
             await updateCommissions.mutateAsync({ serviceId, rules });
-        } catch (error) {
-            console.error('Failed to save commissions:', error);
+        } catch {
+            toast.error('Nie udało się zapisać prowizji');
         }
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
+            <Head>
+                <title>
+                    {summaryData?.name
+                        ? `${summaryData.name} — Salon Black & White`
+                        : 'Usługa — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role || 'admin'}>
                 <div
                     className="salonbw-page service-details-page"
@@ -356,7 +464,7 @@ export default function ServiceDetailsPage() {
                                                                 key={photo.id}
                                                                 href={`${apiBase}${photo.url}`}
                                                                 target="_blank"
-                                                                rel="noreferrer"
+                                                                rel="noopener noreferrer"
                                                                 className="service-photo-thumb"
                                                                 title={
                                                                     photo.caption ||
@@ -419,12 +527,16 @@ export default function ServiceDetailsPage() {
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Data</th>
-                                                    <th>Wariant</th>
-                                                    <th>Klient</th>
-                                                    <th>Pracownik</th>
-                                                    <th>Czas trwania</th>
-                                                    <th>Cena</th>
+                                                    <th scope="col">Data</th>
+                                                    <th scope="col">Wariant</th>
+                                                    <th scope="col">Klient</th>
+                                                    <th scope="col">
+                                                        Pracownik
+                                                    </th>
+                                                    <th scope="col">
+                                                        Czas trwania
+                                                    </th>
+                                                    <th scope="col">Cena</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -503,10 +615,13 @@ export default function ServiceDetailsPage() {
                                         <table className="salonbw-table">
                                             <thead>
                                                 <tr>
-                                                    <th className="service-employees-variant-col">
+                                                    <th
+                                                        scope="col"
+                                                        className="service-employees-variant-col"
+                                                    >
                                                         Nazwa wariantu
                                                     </th>
-                                                    <th>
+                                                    <th scope="col">
                                                         Pracownicy i czas
                                                         wykonywania
                                                     </th>
@@ -660,12 +775,24 @@ export default function ServiceDetailsPage() {
                                             <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Data</th>
-                                                        <th>Źródło</th>
-                                                        <th>Autor</th>
-                                                        <th>Ocena</th>
-                                                        <th>Komentarz</th>
-                                                        <th>Akcje</th>
+                                                        <th scope="col">
+                                                            Data
+                                                        </th>
+                                                        <th scope="col">
+                                                            Źródło
+                                                        </th>
+                                                        <th scope="col">
+                                                            Autor
+                                                        </th>
+                                                        <th scope="col">
+                                                            Ocena
+                                                        </th>
+                                                        <th scope="col">
+                                                            Komentarz
+                                                        </th>
+                                                        <th scope="col">
+                                                            Akcje
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -749,8 +876,12 @@ export default function ServiceDetailsPage() {
                                             <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Pracownik</th>
-                                                        <th>Prowizja (%)</th>
+                                                        <th scope="col">
+                                                            Pracownik
+                                                        </th>
+                                                        <th scope="col">
+                                                            Prowizja (%)
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -844,6 +975,220 @@ export default function ServiceDetailsPage() {
                                         </div>
                                     </div>
                                 )}
+
+                                {activeTab === 'recipe' && (
+                                    <div>
+                                        <h2>Receptura usługi</h2>
+                                        <p className="text-muted mb-3">
+                                            Materiały zużywane podczas
+                                            wykonywania usługi. Receptura jest
+                                            automatycznie podpowiadana podczas
+                                            finalizacji wizyty.
+                                        </p>
+                                        <div className="services-create-recipe">
+                                            <table className="salonbw-table services-create-recipe-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">
+                                                            materiał
+                                                        </th>
+                                                        <th scope="col">
+                                                            jednostka
+                                                        </th>
+                                                        <th scope="col">
+                                                            ilość
+                                                        </th>
+                                                        <th scope="col">
+                                                            usuń
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {recipeDrafts.map(
+                                                        (item) => (
+                                                            <tr key={item.key}>
+                                                                <td className="services-create-recipe-cell">
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control"
+                                                                        placeholder="wpisz nazwę, kod kreskowy, itp."
+                                                                        value={
+                                                                            item.productName
+                                                                        }
+                                                                        onFocus={() => {
+                                                                            setActiveRecipeRowKey(
+                                                                                item.key,
+                                                                            );
+                                                                            setRecipeProductSearch(
+                                                                                item.productName,
+                                                                            );
+                                                                        }}
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            updateRecipeDraft(
+                                                                                item.key,
+                                                                                'productId',
+                                                                                null,
+                                                                            );
+                                                                            updateRecipeDraft(
+                                                                                item.key,
+                                                                                'productName',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            );
+                                                                            setActiveRecipeRowKey(
+                                                                                item.key,
+                                                                            );
+                                                                            setRecipeProductSearch(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            );
+                                                                        }}
+                                                                    />
+                                                                    {activeRecipeRowKey ===
+                                                                        item.key &&
+                                                                    recipeSuggestions.length >
+                                                                        0 ? (
+                                                                        <div className="services-create-recipe-suggestions">
+                                                                            {recipeSuggestions.map(
+                                                                                (
+                                                                                    product,
+                                                                                ) => (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        key={
+                                                                                            product.id
+                                                                                        }
+                                                                                        className="services-create-recipe-option"
+                                                                                        onClick={() => {
+                                                                                            updateRecipeDraft(
+                                                                                                item.key,
+                                                                                                'productId',
+                                                                                                product.id,
+                                                                                            );
+                                                                                            updateRecipeDraft(
+                                                                                                item.key,
+                                                                                                'productName',
+                                                                                                product.name,
+                                                                                            );
+                                                                                            updateRecipeDraft(
+                                                                                                item.key,
+                                                                                                'unit',
+                                                                                                product.unit ||
+                                                                                                    product.packageUnit ||
+                                                                                                    'op.',
+                                                                                            );
+                                                                                            setActiveRecipeRowKey(
+                                                                                                null,
+                                                                                            );
+                                                                                            setRecipeProductSearch(
+                                                                                                '',
+                                                                                            );
+                                                                                        }}
+                                                                                    >
+                                                                                        <span>
+                                                                                            {
+                                                                                                product.name
+                                                                                            }
+                                                                                        </span>
+                                                                                        <span className="services-create-muted">
+                                                                                            {product.unit ||
+                                                                                                product.packageUnit ||
+                                                                                                'op.'}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    ) : null}
+                                                                </td>
+                                                                <td>
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control"
+                                                                        value={
+                                                                            item.unit
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            updateRecipeDraft(
+                                                                                item.key,
+                                                                                'unit',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </td>
+                                                                <td>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        step="0.01"
+                                                                        className="form-control services-create-number"
+                                                                        value={
+                                                                            item.quantity
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            updateRecipeDraft(
+                                                                                item.key,
+                                                                                'quantity',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </td>
+                                                                <td className="text-center">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-link services-create-delete"
+                                                                        onClick={() =>
+                                                                            removeRecipeDraft(
+                                                                                item.key,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        usuń
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ),
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                            <div className="d-flex gap-2 mt-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={addRecipeDraft}
+                                                >
+                                                    dodaj kolejną pozycję
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary"
+                                                    disabled={recipeSaving}
+                                                    onClick={() => {
+                                                        void handleSaveRecipe();
+                                                    }}
+                                                >
+                                                    {recipeSaving
+                                                        ? 'Zapisywanie...'
+                                                        : 'zapisz recepturę'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </section>
                         </div>
                     )}
@@ -866,6 +1211,24 @@ export default function ServiceDetailsPage() {
                         />
                     )}
                 </div>
+                <ConfirmModal
+                    open={confirmDeleteCommentId !== null}
+                    title="Usuń komentarz"
+                    message="Czy na pewno chcesz usunąć ten komentarz?"
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (confirmDeleteCommentId === null) return;
+                        const commentId = confirmDeleteCommentId;
+                        setConfirmDeleteCommentId(null);
+                        void deleteComment
+                            .mutateAsync({ serviceId, commentId })
+                            .catch(() => {
+                                toast.error('Nie udało się usunąć komentarza');
+                            });
+                    }}
+                    onCancel={() => setConfirmDeleteCommentId(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

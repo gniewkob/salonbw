@@ -50,10 +50,9 @@ export default function BookingModal({
         if (!open) return;
         previousActiveRef.current =
             document.activeElement as HTMLElement | null;
-        const firstFocusable =
-            dialogRef.current?.querySelector<HTMLElement>(
-                'input, button, [href], select, textarea, [tabindex]:not([tabindex="-1"])',
-            );
+        const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
+            'input, button, [href], select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
         firstFocusable?.focus();
         return () => {
             previousActiveRef.current?.focus?.();
@@ -70,10 +69,9 @@ export default function BookingModal({
                 return;
             }
             if (e.key !== 'Tab' || !dialogRef.current) return;
-            const focusables =
-                dialogRef.current.querySelectorAll<HTMLElement>(
-                    'input:not([disabled]), button:not([disabled]), [href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-                );
+            const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+                'input:not([disabled]), button:not([disabled]), [href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            );
             if (focusables.length === 0) return;
             const first = focusables[0];
             const last = focusables[focusables.length - 1];
@@ -125,11 +123,7 @@ export default function BookingModal({
             await login(email.trim(), password);
             handleRedirectToPanel();
         } catch (err: unknown) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : m.errorLoginFailed,
-            );
+            setError(err instanceof Error ? err.message : m.errorLoginFailed);
             setPassword('');
         } finally {
             setSubmitting(false);
@@ -205,9 +199,7 @@ export default function BookingModal({
                                 marginBottom: '0.5rem',
                             }}
                         >
-                            {service
-                                ? m.bookingServiceLabel
-                                : T.nav.booking}
+                            {service ? m.bookingServiceLabel : T.nav.booking}
                         </p>
                         <h2
                             style={{
@@ -249,7 +241,9 @@ export default function BookingModal({
                                 }}
                             >
                                 {isAuthenticated
-                                    ? BUSINESS_INFO.address.city + ' · ' + m.since
+                                    ? BUSINESS_INFO.address.city +
+                                      ' · ' +
+                                      m.since
                                     : m.loginSub}
                             </p>
                         )}
@@ -279,6 +273,7 @@ export default function BookingModal({
                                 {m.alreadyLoggedIn}
                             </p>
                             <button
+                                type="button"
                                 onClick={handleRedirectToPanel}
                                 style={{
                                     display: 'block',
@@ -492,6 +487,7 @@ export default function BookingModal({
 
                     {/* Cancel */}
                     <button
+                        type="button"
                         onClick={onClose}
                         style={{
                             display: 'block',

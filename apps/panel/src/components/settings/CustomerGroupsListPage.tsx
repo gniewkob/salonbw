@@ -8,6 +8,7 @@ import {
 } from '@/hooks/useCustomers';
 import type { CustomerGroup } from '@/types';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 
 type GroupNode = CustomerGroup & { children: GroupNode[] };
 
@@ -69,6 +70,10 @@ export default function CustomerGroupsListPage() {
     );
     const [editName, setEditName] = useState('');
     const [editParentId, setEditParentId] = useState<string>('');
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<
+        number | null
+    >(null);
 
     const tree = useMemo(() => buildTree(groups), [groups]);
     const draftTree = useMemo(() => buildTree(draftGroups), [draftGroups]);
@@ -145,15 +150,9 @@ export default function CustomerGroupsListPage() {
                                 <li>
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            if (
-                                                window.confirm(
-                                                    'Czy na pewno chcesz usunąć tę grupę klientów?',
-                                                )
-                                            ) {
-                                                void del.mutateAsync(node.id);
-                                            }
-                                        }}
+                                        onClick={() =>
+                                            setConfirmDeleteGroupId(node.id)
+                                        }
                                     >
                                         Usuń
                                     </button>
@@ -222,6 +221,11 @@ export default function CustomerGroupsListPage() {
                             void sort
                                 .mutateAsync(flattenForSort(draftTree))
                                 .then(() => setReorderMode(false))
+                                .catch(() =>
+                                    setActionError(
+                                        'Nie udało się zapisać kolejności.',
+                                    ),
+                                )
                         }
                         style={{
                             display: reorderMode ? undefined : 'none',
@@ -257,6 +261,12 @@ export default function CustomerGroupsListPage() {
                 </div>
             </div>
 
+            {actionError && (
+                <div className="alert alert-danger mt-2" role="alert">
+                    {actionError}
+                </div>
+            )}
+
             {isLoading ? (
                 <div className="settings-detail-state">Ładowanie grup...</div>
             ) : error ? (
@@ -277,7 +287,10 @@ export default function CustomerGroupsListPage() {
                             <div className="item">
                                 <div className="pull_left">
                                     <div className="icon_box">
-                                        <i className="icon sprite-group" />
+                                        <i
+                                            className="icon sprite-group"
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Wszyscy klienci
                                 </div>
@@ -291,7 +304,12 @@ export default function CustomerGroupsListPage() {
 
             {editingGroup ? (
                 <div className="modal-backdrop fade in">
-                    <div className="modal-dialog">
+                    <div
+                        className="modal-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Edytuj grupę klientów"
+                    >
                         <form
                             className="modal-content"
                             onSubmit={(event) => {
@@ -306,7 +324,12 @@ export default function CustomerGroupsListPage() {
                                                 : null,
                                         },
                                     })
-                                    .then(() => setEditingGroup(null));
+                                    .then(() => setEditingGroup(null))
+                                    .catch(() =>
+                                        setActionError(
+                                            'Nie udało się zapisać zmian.',
+                                        ),
+                                    );
                             }}
                         >
                             <div className="modal-header">
@@ -314,6 +337,7 @@ export default function CustomerGroupsListPage() {
                                     type="button"
                                     className="close"
                                     onClick={() => setEditingGroup(null)}
+                                    aria-label="Zamknij"
                                 >
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -389,6 +413,24 @@ export default function CustomerGroupsListPage() {
                     </div>
                 </div>
             ) : null}
+            <ConfirmModal
+                open={confirmDeleteGroupId !== null}
+                title="Usuń grupę"
+                message="Czy na pewno chcesz usunąć tę grupę klientów?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteGroupId === null) return;
+                    const id = confirmDeleteGroupId;
+                    setConfirmDeleteGroupId(null);
+                    void del
+                        .mutateAsync(id)
+                        .catch(() =>
+                            setActionError('Nie udało się usunąć grupy.'),
+                        );
+                }}
+                onCancel={() => setConfirmDeleteGroupId(null)}
+            />
         </div>
     );
 }

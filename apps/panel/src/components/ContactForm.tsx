@@ -82,15 +82,7 @@ export default function ContactForm() {
                 setSubmitted(true);
                 setForm({ name: '', email: '', message: '' });
                 return;
-            } catch (error: unknown) {
-                const err = error as {
-                    response?: { data?: unknown };
-                    message?: string;
-                };
-                console.error(
-                    'Failed to submit contact form',
-                    err.response?.data || err.message,
-                );
+            } catch {
                 if (attempt === retries - 1) {
                     setSubmitError('Nie udało się wysłać formularza');
                     toast.error('Nie udało się wysłać formularza');

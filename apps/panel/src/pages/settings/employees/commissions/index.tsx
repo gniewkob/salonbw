@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -54,6 +55,9 @@ export default function SettingsEmployeeCommissionsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Prowizje pracowników — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -93,7 +97,11 @@ export default function SettingsEmployeeCommissionsPage() {
                                             }
                                         >
                                             <td>{emp.name}</td>
-                                            <td>—</td>
+                                            <td>
+                                                {emp.commissionBase != null
+                                                    ? `${Number(emp.commissionBase).toFixed(1)}%`
+                                                    : '—'}
+                                            </td>
                                             <td>—</td>
                                             <td style={{ textAlign: 'right' }}>
                                                 <Link

@@ -1,8 +1,10 @@
-
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import WarehouseLayout from './WarehouseLayout';
 import ProductDetailsTabs from './ProductDetailsTabs';
+import ConfirmModal from '@/components/ConfirmModal';
+import { useDeleteProduct } from '@/hooks/useWarehouseViews';
 
 type ProductViewTab = 'card' | 'history' | 'formulas' | 'commissions';
 
@@ -19,6 +21,19 @@ export default function ProductViewShell({
     activeTab,
     children,
 }: ProductViewShellProps) {
+    const router = useRouter();
+    const deleteProduct = useDeleteProduct();
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
+    const doDelete = async () => {
+        try {
+            await deleteProduct.mutateAsync(productId);
+            void router.push('/products');
+        } catch {
+            // toast shown in hook
+        }
+    };
+
     const actions = (
         <div className="products-card-actions">
             <Link
@@ -36,6 +51,14 @@ export default function ProductViewShell({
             >
                 edytuj
             </Link>
+            <button
+                type="button"
+                className="btn btn-outline-danger btn-sm"
+                disabled={deleteProduct.isPending}
+                onClick={() => setConfirmDelete(true)}
+            >
+                usuń
+            </button>
             <Link href="/products/new" className="btn btn-primary btn-sm">
                 dodaj produkt
             </Link>
@@ -51,6 +74,18 @@ export default function ProductViewShell({
         >
             <ProductDetailsTabs productId={productId} activeTab={activeTab} />
             {children}
+            <ConfirmModal
+                open={confirmDelete}
+                title="Usuń produkt"
+                message="Czy na pewno chcesz usunąć ten produkt? Operacja jest nieodwracalna."
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    setConfirmDelete(false);
+                    void doDelete();
+                }}
+                onCancel={() => setConfirmDelete(false)}
+            />
         </WarehouseLayout>
     );
 }

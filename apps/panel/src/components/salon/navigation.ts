@@ -253,7 +253,10 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonShellProfile>;
     }
 
-    if (path.startsWith('/settings/customer-groups') || path.startsWith('/settings/customer_groups')) {
+    if (
+        path.startsWith('/settings/customer-groups') ||
+        path.startsWith('/settings/customer_groups')
+    ) {
         return {
             bodyId: 'settings_customer_groups',
         } satisfies Partial<SalonShellProfile>;

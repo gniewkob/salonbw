@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import type { ComponentProps } from 'react';
 import RouteGuard from '@/components/RouteGuard';
@@ -43,6 +44,9 @@ export default function DashboardPage() {
 
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
+            <Head>
+                <title>Pulpit — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>{renderDashboard()}</SalonShell>
         </RouteGuard>
     );

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -6,6 +7,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CommunicationNav from '@/components/salon/navs/CommunicationNav';
 import { useSmsHistory, useSmsMutations } from '@/hooks/useSms';
@@ -29,6 +31,7 @@ function formatDateTime(value?: string) {
 
 export default function CommunicationPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const [kind, setKind] = useState<'sms' | 'email'>('sms');
     const [status, setStatus] = useState('');
     const [page, setPage] = useState(1);
@@ -87,9 +90,8 @@ export default function CommunicationPage() {
             }
             setIsModalOpen(false);
             resetCompose();
-        } catch (error) {
-            console.error('Failed to send message:', error);
-            alert('Wystąpił błąd podczas wysyłania wiadomości');
+        } catch {
+            toast.error('Wystąpił błąd podczas wysyłania wiadomości');
         }
         setIsSending(false);
     };
@@ -98,6 +100,9 @@ export default function CommunicationPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Komunikacja — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div data-testid="communication-page">
                     <SalonBreadcrumbs
@@ -197,10 +202,10 @@ export default function CommunicationPage() {
                                 <table className="table table-bordered table-hover table-sm">
                                     <thead className="table-light">
                                         <tr>
-                                            <th>Odbiorca</th>
-                                            <th>Wiadomość</th>
-                                            <th>Rodzaj</th>
-                                            <th>Wysłano</th>
+                                            <th scope="col">Odbiorca</th>
+                                            <th scope="col">Wiadomość</th>
+                                            <th scope="col">Rodzaj</th>
+                                            <th scope="col">Wysłano</th>
                                         </tr>
                                     </thead>
                                     <tbody>

@@ -1,4 +1,3 @@
-'use client';
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,27 +14,39 @@ export default function SplitHero() {
             {/* Left — black panel */}
             <div className="split-hero__left">
                 <div className="grain-overlay" aria-hidden="true" />
-                <span className="split-hero__bw-mark" aria-hidden="true">B&W</span>
+                <span className="split-hero__bw-mark" aria-hidden="true">
+                    B&W
+                </span>
 
                 <div className="split-hero__left-content">
                     <p className="split-hero__eyebrow">{T.hero.eyebrow}</p>
 
                     <h1 className="split-hero__heading">
                         <span className="split-hero__heading-line1">Black</span>
-                        <span className="split-hero__heading-ampersand">&amp;</span>
+                        <span className="split-hero__heading-ampersand">
+                            &amp;
+                        </span>
                         <span className="split-hero__heading-line2">White</span>
                     </h1>
 
                     <p className="split-hero__tagline">
-                        {T.hero.tagline1}<br />
+                        {T.hero.tagline1}
+                        <br />
                         {T.hero.tagline2}
                     </p>
 
                     <div className="split-hero__cta-group">
-                        <button onClick={() => setModalOpen(true)} className="split-hero__cta-primary">
+                        <button
+                            type="button"
+                            onClick={() => setModalOpen(true)}
+                            className="split-hero__cta-primary"
+                        >
                             {T.nav.booking}
                         </button>
-                        <Link href="/services" className="split-hero__cta-secondary">
+                        <Link
+                            href="/services"
+                            className="split-hero__cta-secondary"
+                        >
                             {T.hero.ctaSecondary}
                         </Link>
                     </div>
@@ -64,10 +75,21 @@ export default function SplitHero() {
                 <div className="split-hero__right-overlay" aria-hidden="true" />
 
                 <div className="split-hero__float-card">
-                    <p className="split-hero__float-label">{T.hero.hoursLabel}</p>
-                    <p className="split-hero__float-hours">{T.hours.mondayFriday} <strong>{BUSINESS_INFO.hours.mondayFriday}</strong></p>
-                    <p className="split-hero__float-hours">{T.hours.saturday} <strong>{BUSINESS_INFO.hours.saturday}</strong></p>
-                    <a href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`} className="split-hero__float-phone">
+                    <p className="split-hero__float-label">
+                        {T.hero.hoursLabel}
+                    </p>
+                    <p className="split-hero__float-hours">
+                        {T.hours.mondayFriday}{' '}
+                        <strong>{BUSINESS_INFO.hours.mondayFriday}</strong>
+                    </p>
+                    <p className="split-hero__float-hours">
+                        {T.hours.saturday}{' '}
+                        <strong>{BUSINESS_INFO.hours.saturday}</strong>
+                    </p>
+                    <a
+                        href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
+                        className="split-hero__float-phone"
+                    >
                         {BUSINESS_INFO.contact.phone}
                     </a>
                 </div>
@@ -78,7 +100,10 @@ export default function SplitHero() {
                 <div className="split-hero__scroll-line" />
             </div>
 
-            <BookingModal open={modalOpen} onClose={() => setModalOpen(false)} />
+            <BookingModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+            />
         </section>
     );
 }

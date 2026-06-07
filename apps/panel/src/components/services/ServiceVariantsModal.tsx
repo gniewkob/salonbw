@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import type { Service, ServiceVariant, PriceType } from '@/types';
 import {
@@ -7,6 +6,7 @@ import {
     useUpdateServiceVariant,
     useDeleteServiceVariant,
 } from '@/hooks/useServicesAdmin';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface ServiceVariantsModalProps {
     isOpen: boolean;
@@ -40,6 +40,9 @@ export default function ServiceVariantsModal({
     );
     const [formData, setFormData] = useState<VariantFormData>(defaultFormData);
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [confirmDeleteVariantId, setConfirmDeleteVariantId] = useState<
+        number | null
+    >(null);
 
     const { data: variants = [], isLoading } = useServiceVariants(
         service?.id ?? null,
@@ -81,30 +84,28 @@ export default function ServiceVariantsModal({
 
     const handleSaveVariant = async () => {
         if (!service) return;
-
-        if (editingVariant) {
-            await updateVariant.mutateAsync({
-                serviceId: service.id,
-                variantId: editingVariant.id,
-                data: formData,
-            });
-        } else {
-            await createVariant.mutateAsync({
-                serviceId: service.id,
-                data: formData,
-            });
+        try {
+            if (editingVariant) {
+                await updateVariant.mutateAsync({
+                    serviceId: service.id,
+                    variantId: editingVariant.id,
+                    data: formData,
+                });
+            } else {
+                await createVariant.mutateAsync({
+                    serviceId: service.id,
+                    data: formData,
+                });
+            }
+            handleCancelForm();
+        } catch {
+            // error handled by hook
         }
-        handleCancelForm();
     };
 
-    const handleDeleteVariant = async (variantId: number) => {
+    const handleDeleteVariant = (variantId: number) => {
         if (!service) return;
-        if (window.confirm('Czy na pewno chcesz usunąć ten wariant?')) {
-            await deleteVariant.mutateAsync({
-                serviceId: service.id,
-                variantId,
-            });
-        }
+        setConfirmDeleteVariantId(variantId);
     };
 
     if (!isOpen || !service) return null;
@@ -118,8 +119,9 @@ export default function ServiceVariantsModal({
                             type="button"
                             className="close"
                             onClick={onClose}
+                            aria-label="Zamknij"
                         >
-                            ×
+                            <span aria-hidden="true">×</span>
                         </button>
                         <h4 className="modal-title">
                             Warianty usługi: {service.name}
@@ -156,10 +158,19 @@ export default function ServiceVariantsModal({
                                             <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Nazwa</th>
-                                                        <th>Czas</th>
-                                                        <th>Cena</th>
-                                                        <th className="w-100">
+                                                        <th scope="col">
+                                                            Nazwa
+                                                        </th>
+                                                        <th scope="col">
+                                                            Czas
+                                                        </th>
+                                                        <th scope="col">
+                                                            Cena
+                                                        </th>
+                                                        <th
+                                                            scope="col"
+                                                            className="w-100"
+                                                        >
                                                             Akcje
                                                         </th>
                                                     </tr>
@@ -259,7 +270,10 @@ export default function ServiceVariantsModal({
                                         </h5>
 
                                         <div className="control-group">
-                                            <label className="form-label">
+                                            <label
+                                                htmlFor="variant-name"
+                                                className="form-label"
+                                            >
                                                 Nazwa wariantu *
                                             </label>
                                             <div className="controls">
@@ -282,7 +296,10 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label className="form-label">
+                                            <label
+                                                htmlFor="variant-description"
+                                                className="form-label"
+                                            >
                                                 Opis (opcjonalnie)
                                             </label>
                                             <div className="controls">
@@ -307,7 +324,10 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label className="form-label">
+                                            <label
+                                                htmlFor="variant-duration"
+                                                className="form-label"
+                                            >
                                                 Czas trwania (min) *
                                             </label>
                                             <div className="controls">
@@ -334,7 +354,10 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label className="form-label">
+                                            <label
+                                                htmlFor="variant-price"
+                                                className="form-label"
+                                            >
                                                 Cena (zł) *
                                             </label>
                                             <div className="controls">
@@ -435,6 +458,27 @@ export default function ServiceVariantsModal({
             {isOpen && (
                 <div className="modal-backdrop fade in" onClick={onClose}></div>
             )}
+            <ConfirmModal
+                open={confirmDeleteVariantId !== null}
+                title="Usuń wariant"
+                message="Czy na pewno chcesz usunąć ten wariant?"
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (confirmDeleteVariantId === null || !service) return;
+                    const variantId = confirmDeleteVariantId;
+                    setConfirmDeleteVariantId(null);
+                    void deleteVariant
+                        .mutateAsync({
+                            serviceId: service.id,
+                            variantId,
+                        })
+                        .catch(() => {
+                            // error handled by hook
+                        });
+                }}
+                onCancel={() => setConfirmDeleteVariantId(null)}
+            />
         </div>
     );
 }

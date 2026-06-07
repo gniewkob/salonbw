@@ -119,7 +119,9 @@ export default function NewProductModal({ open, onClose, onSuccess }: Props) {
             </div>
 
             {apiError ? (
-                <div className="alert alert-danger py-2 small">{apiError}</div>
+                <div className="alert alert-danger py-2 small" role="alert">
+                    {apiError}
+                </div>
             ) : null}
 
             <form

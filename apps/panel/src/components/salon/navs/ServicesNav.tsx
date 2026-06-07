@@ -31,23 +31,23 @@ export default function ServicesNav() {
     return (
         <div className="column_row">
             <div className="tree">
-                <a
+                <button
+                    type="button"
                     className={
                         !currentCategoryId
                             ? 'item root with_icon active'
                             : 'item root with_icon'
                     }
-                    href="#"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        updateFilters(undefined);
-                    }}
+                    onClick={() => updateFilters(undefined)}
                 >
                     <span className="icon_box">
-                        <i className="icon sprite-settings_services" />
+                        <i
+                            className="icon sprite-settings_services"
+                            aria-hidden="true"
+                        />
                     </span>
                     Wszystkie usługi
-                </a>
+                </button>
                 <ul>
                     {categories.map((category) => (
                         <li
@@ -58,15 +58,12 @@ export default function ServicesNav() {
                                     : undefined
                             }
                         >
-                            <a
-                                href="#"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    updateFilters(category.id);
-                                }}
+                            <button
+                                type="button"
+                                onClick={() => updateFilters(category.id)}
                             >
                                 {category.name}
-                            </a>
+                            </button>
                         </li>
                     ))}
                     <li
@@ -74,29 +71,20 @@ export default function ServicesNav() {
                             currentCategoryId === 0 ? 'active' : undefined
                         }
                     >
-                        <a
-                            href="#"
-                            onClick={(event) => {
-                                event.preventDefault();
-                                updateFilters(0);
-                            }}
-                        >
+                        <button type="button" onClick={() => updateFilters(0)}>
                             usługi bez kategorii
-                        </a>
+                        </button>
                     </li>
                 </ul>
             </div>
 
             <div className="tree_options">
-                <a
-                    href="#"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        setIsManageModalOpen(true);
-                    }}
+                <button
+                    type="button"
+                    onClick={() => setIsManageModalOpen(true)}
                 >
                     dodaj/edytuj/usuń
-                </a>
+                </button>
             </div>
 
             <ManageCategoriesModal

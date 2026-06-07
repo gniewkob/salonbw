@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
     useCreateProductCategory,
@@ -7,6 +6,7 @@ import {
     useUpdateProductCategory,
 } from '@/hooks/useWarehouseViews';
 import type { ProductCategory } from '@/types';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     type: 'service' | 'product';
@@ -64,6 +64,9 @@ export default function ManageCategoriesModal({ type, onClose }: Props) {
             <div className="modal-backdrop fade in" onClick={onClose}>
                 <div
                     className="modal-dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Zarządzaj kategoriami"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="modal-content">
@@ -112,6 +115,10 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
     const [newParentId, setNewParentId] = useState<number | undefined>(
         undefined,
     );
+    const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
 
     const flatTree = useMemo(() => flattenCategories(tree), [tree]);
     const drafts = useMemo(() => toDrafts(tree), [tree]);
@@ -124,14 +131,18 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
         event.preventDefault();
         const name = newName.trim();
         if (!name) return;
-        await createCategory.mutateAsync({
-            name,
-            parentId: newParentId,
-            sortOrder: 0,
-            isActive: true,
-        });
-        setNewName('');
-        setNewParentId(undefined);
+        try {
+            await createCategory.mutateAsync({
+                name,
+                parentId: newParentId,
+                sortOrder: 0,
+                isActive: true,
+            });
+            setNewName('');
+            setNewParentId(undefined);
+        } catch {
+            // error handled by hook
+        }
     };
 
     const handleUpdate = async (draft: CategoryDraft) => {
@@ -148,20 +159,29 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
         if (draft.parentId && draft.parentId > 0) {
             payload.parentId = draft.parentId;
         }
-        await updateCategory.mutateAsync({
-            id: draft.id,
-            payload,
-        });
+        try {
+            await updateCategory.mutateAsync({
+                id: draft.id,
+                payload,
+            });
+        } catch {
+            // error handled by hook
+        }
     };
 
-    const handleDelete = async (id: number, name: string) => {
-        if (!confirm(`Usunąć kategorię "${name}"?`)) return;
-        await deleteCategory.mutateAsync(id);
+    const handleDelete = (id: number, name: string) => {
+        setConfirmDeleteCategory({ id, name });
     };
 
     return (
         <div className="modal-backdrop fade in" onClick={onClose}>
-            <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Zarządzaj kategoriami"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="modal-content">
                     <div className="modal-header">
                         <h4 className="modal-title">
@@ -278,6 +298,22 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                     </div>
                 </div>
             </div>
+            <ConfirmModal
+                open={!!confirmDeleteCategory}
+                title="Usuń kategorię"
+                message={`Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmDeleteCategory) return;
+                    const { id } = confirmDeleteCategory;
+                    setConfirmDeleteCategory(null);
+                    void deleteCategory.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteCategory(null)}
+            />
         </div>
     );
 }
@@ -297,7 +333,7 @@ function CategoryEditorRow({
     isSaving: boolean;
     isDeleting: boolean;
     onSave: (draft: CategoryDraft) => Promise<void>;
-    onDelete: (id: number, name: string) => Promise<void>;
+    onDelete: (id: number, name: string) => void | Promise<void>;
 }) {
     const [state, setState] = useState<CategoryDraft>(draft);
 

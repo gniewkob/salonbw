@@ -12,10 +12,9 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useProductApi extra', () => {
-    it('updates and updates stock', async () => {
+    it('updates product and updates stock without throwing', async () => {
         const apiFetch = jest
             .fn()
             .mockResolvedValueOnce({
@@ -23,14 +22,12 @@ describe('useProductApi extra', () => {
                 name: 'A',
                 unitPrice: 2,
                 stock: 1,
-                lowStockThreshold: 5,
             }) // update
             .mockResolvedValueOnce({
                 id: 1,
                 name: 'A',
                 unitPrice: 2,
                 stock: 3,
-                lowStockThreshold: 5,
             }); // stock
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -40,14 +37,13 @@ describe('useProductApi extra', () => {
         await act(async () => {
             await result.current.update(1, { unitPrice: 2 });
         });
-        expect(toast.success).toHaveBeenCalled();
         await act(async () => {
             await result.current.updateStock(1, 3);
         });
-        expect(toast.success).toHaveBeenCalled();
+        expect(apiFetch).toHaveBeenCalledTimes(2);
     });
 
-    it('remove shows error on failure', async () => {
+    it('remove throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -58,11 +54,10 @@ describe('useProductApi extra', () => {
             act(async () => {
                 await result.current.remove(1);
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 
-    it('shows error toast on update failure', async () => {
+    it('update throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('bad'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -73,11 +68,10 @@ describe('useProductApi extra', () => {
             act(async () => {
                 await result.current.update(1, { name: 'X' });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('bad');
     });
 
-    it('shows error toast on updateStock failure', async () => {
+    it('updateStock throws on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('nope'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -88,7 +82,6 @@ describe('useProductApi extra', () => {
             act(async () => {
                 await result.current.updateStock(1, 5);
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('nope');
     });
 });

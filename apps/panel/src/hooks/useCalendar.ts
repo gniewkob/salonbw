@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type {
     CalendarData,
     CalendarView,
@@ -173,6 +174,7 @@ export function useTimeBlocks(from: string, to: string, employeeId?: number) {
 export function useCalendarMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     const invalidateCalendar = () => {
         void queryClient.invalidateQueries({ queryKey: CALENDAR_QUERY_KEY });
@@ -225,6 +227,9 @@ export function useCalendarMutations() {
             });
         },
         onSuccess: invalidateCalendar,
+        onError: () => {
+            toast.error('Nie udało się przenieść wizyty. Spróbuj ponownie.');
+        },
     });
 
     const checkConflicts = async (

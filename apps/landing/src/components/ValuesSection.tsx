@@ -1,4 +1,3 @@
-'use client';
 import { useState, useCallback } from 'react';
 import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';

@@ -4,6 +4,7 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import PanelActionBar from '@/components/ui/PanelActionBar';
 import { useCalendarSettings, useSettingsMutations } from '@/hooks/useSettings';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useToast } from '@/contexts/ToastContext';
 import type { CalendarView, UpdateCalendarSettingsRequest } from '@/types';
 
 type CalendarViewOption = 'month' | 'agendaWeek' | 'agendaDay' | 'reception';
@@ -74,6 +75,7 @@ function toApiView(value: CalendarViewOption): CalendarView {
 export default function CalendarSettingsForm() {
     const { data: settings, isLoading, error, refetch } = useCalendarSettings();
     const { updateCalendarSettings } = useSettingsMutations();
+    const toast = useToast();
     const [viewValue, setViewValue] = useState<CalendarViewOption>('reception');
     const [formData, setFormData] =
         useState<UpdateCalendarSettingsRequest>(DEFAULT_FORM);
@@ -143,6 +145,7 @@ export default function CalendarSettingsForm() {
         try {
             await updateCalendarSettings.mutateAsync(payload);
             setSaved(true);
+            toast.success('Ustawienia kalendarza zostały zapisane');
         } catch {
             setSubmitError('Nie udało się zapisać ustawień kalendarza.');
         }
@@ -184,7 +187,10 @@ export default function CalendarSettingsForm() {
                     <li className="active tab">
                         <Link href="/settings/calendar">
                             <div className="icon_box">
-                                <i className="icon sprite-settings_calendar icon-up" />
+                                <i
+                                    className="icon sprite-settings_calendar icon-up"
+                                    aria-hidden="true"
+                                />
                             </div>
                             Kalendarz
                         </Link>
@@ -192,7 +198,10 @@ export default function CalendarSettingsForm() {
                     <li className="tab">
                         <Link href="/settings/tags">
                             <div className="icon_box">
-                                <i className="icon sprite-settings_label_visits icon-up" />
+                                <i
+                                    className="icon sprite-settings_label_visits icon-up"
+                                    aria-hidden="true"
+                                />
                             </div>
                             Etykiety wizyt
                         </Link>
@@ -353,6 +362,7 @@ export default function CalendarSettingsForm() {
                                         className="string optional small short"
                                         type="text"
                                         inputMode="numeric"
+                                        aria-describedby="setting-days-while-editable-hint"
                                         value={customDaysValue}
                                         onChange={(event) => {
                                             setCustomDaysValue(
@@ -365,6 +375,7 @@ export default function CalendarSettingsForm() {
                                     <select
                                         id="setting-days-while-editable"
                                         className="select optional align-middle small"
+                                        aria-describedby="setting-days-while-editable-hint"
                                         value={formData.daysWhileEditable ?? 1}
                                         onChange={(event) => {
                                             const selected = Number.parseInt(
@@ -393,7 +404,10 @@ export default function CalendarSettingsForm() {
                                         <option value={40}>inny okres</option>
                                     </select>
                                 )}
-                                <span className="inline-hint">
+                                <span
+                                    id="setting-days-while-editable-hint"
+                                    className="inline-hint"
+                                >
                                     {' '}
                                     dni wstecz
                                     <br />
@@ -434,10 +448,12 @@ export default function CalendarSettingsForm() {
                     </ol>
 
                     {submitError ? (
-                        <div className="alert alert-danger">{submitError}</div>
+                        <div className="alert alert-danger" role="alert">
+                            {submitError}
+                        </div>
                     ) : null}
                     {saved ? (
-                        <div className="alert alert-success">
+                        <div className="alert alert-success" role="status">
                             Ustawienia kalendarza zostały zapisane.
                         </div>
                     ) : null}

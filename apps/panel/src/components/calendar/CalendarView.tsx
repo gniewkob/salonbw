@@ -22,7 +22,7 @@ const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
             style={{ minHeight: 560 }}
         >
             <div className="small text-muted mb-3">
-                Initialising calendar engine...
+                Inicjowanie silnika kalendarza…
             </div>
             <div className="placeholder-glow d-flex flex-column gap-2">
                 <span className="placeholder col-12" />
@@ -250,7 +250,7 @@ export default function CalendarView({
 
                 {pluginLoadError ? (
                     <div className="p-3 text-center small text-danger">
-                        Calendar engine failed to load: {pluginLoadError}
+                        Nie udało się załadować kalendarza: {pluginLoadError}
                     </div>
                 ) : loading ? (
                     <div
@@ -258,7 +258,7 @@ export default function CalendarView({
                         style={{ minHeight: CALENDAR_MIN_HEIGHT }}
                     >
                         <div className="small text-muted mb-3">
-                            Loading appointments...
+                            Ładowanie wizyt…
                         </div>
                         <div className="placeholder-glow d-flex flex-column gap-2">
                             <span className="placeholder col-12" />

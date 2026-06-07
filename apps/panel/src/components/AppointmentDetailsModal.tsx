@@ -22,40 +22,46 @@ export default function AppointmentDetailsModal({
 }: Props) {
     if (!appointment) return null;
     const a = appointment;
-    const date = new Date(a.startTime).toLocaleString();
+    const date = new Date(a.startTime).toLocaleString('pl-PL');
     return (
         <Modal open={open} onClose={onClose}>
             <div className="gap-2">
-                <h3 className="fs-5 fw-semibold">Appointment #{a.id}</h3>
+                <h3 className="fs-5 fw-semibold">Wizyta #{a.id}</h3>
                 <div className="small text-muted">{date}</div>
-                <div>Client: {a.client?.name ?? '-'}</div>
-                <div>Service: {a.service?.name ?? '-'}</div>
+                <div>Klient: {a.client?.name ?? '-'}</div>
+                <div>Usługa: {a.service?.name ?? '-'}</div>
                 <div>
-                    Employee: {a.employee?.fullName ?? a.employee?.name ?? '-'}
+                    Pracownik: {a.employee?.fullName ?? a.employee?.name ?? '-'}
                 </div>
                 <div>Status: {a.paymentStatus ?? 'scheduled'}</div>
                 <div className="d-flex gap-2 justify-content-end pt-2">
-                    <button className="border px-2 py-1" onClick={onClose}>
-                        Close
+                    <button
+                        type="button"
+                        className="border px-2 py-1"
+                        onClick={onClose}
+                    >
+                        Zamknij
                     </button>
                     {canCancel && (
                         <button
+                            type="button"
                             className="border px-2 py-1"
                             onClick={() => {
                                 if (a.id && onCancel) void onCancel(a.id);
                             }}
                         >
-                            Cancel
+                            Anuluj wizytę
                         </button>
                     )}
                     {canComplete && (
                         <button
+                            type="button"
                             className="border px-2 py-1"
                             onClick={() => {
                                 if (a.id && onComplete) void onComplete(a.id);
                             }}
                         >
-                            Complete
+                            Zakończ
                         </button>
                     )}
                 </div>

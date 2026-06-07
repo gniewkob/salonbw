@@ -1,4 +1,3 @@
-
 import { Customer } from '@/types';
 
 interface Props {
@@ -167,9 +166,9 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                             <table className="salonbw-table fz-12">
                                 <thead>
                                     <tr>
-                                        <th>Data</th>
-                                        <th>Zgoda</th>
-                                        <th>Zmiana</th>
+                                        <th scope="col">Data</th>
+                                        <th scope="col">Zgoda</th>
+                                        <th scope="col">Zmiana</th>
                                     </tr>
                                 </thead>
                                 <tbody>

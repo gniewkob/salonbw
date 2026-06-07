@@ -1,13 +1,34 @@
 import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
+import { absUrl } from '@/utils/seo';
 
 export default function PrivacyPage() {
     return (
         <PublicLayout>
             <Head>
                 <title>Polityka Prywatności | Salon Black & White</title>
-                <meta name="description" content="Polityka prywatności Salonu Fryzjerskiego Black & White. Informacje o przetwarzaniu danych osobowych (RODO)." />
-                <link rel="canonical" href="https://salon-bw.pl/privacy" />
+                <meta
+                    name="description"
+                    content="Polityka prywatności Salonu Fryzjerskiego Black & White. Informacje o przetwarzaniu danych osobowych (RODO)."
+                />
+                <meta
+                    property="og:title"
+                    content="Polityka Prywatności — Salon Black & White"
+                />
+                <meta
+                    property="og:description"
+                    content="Polityka prywatności Salonu Fryzjerskiego Black & White. Informacje o przetwarzaniu danych osobowych (RODO)."
+                />
+                <meta
+                    property="og:image"
+                    content={absUrl('/images/hero/slider1.jpg')}
+                />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:type" content="website" />
+                <meta property="og:locale" content="pl_PL" />
+                <meta property="og:url" content={absUrl('/privacy')} />
+                <link rel="canonical" href={absUrl('/privacy')} />
                 <meta name="robots" content="index, follow" />
             </Head>
             <div className="legal-page">
@@ -19,11 +40,13 @@ export default function PrivacyPage() {
                         Poniższa Polityka Prywatności określa zasady
                         przetwarzania i ochrony danych osobowych przekazywanych
                         przez Klientów w związku z korzystaniem z usług Salonu
-                        Fryzjerskiego &quot;Black &amp; White&quot; oraz systemu rezerwacji
-                        wizyt online (CRM).
+                        Fryzjerskiego &quot;Black &amp; White&quot; oraz systemu
+                        rezerwacji wizyt online (CRM).
                     </p>
 
-                    <h2 className="legal-h2">1. Administrator Danych Osobowych</h2>
+                    <h2 className="legal-h2">
+                        1. Administrator Danych Osobowych
+                    </h2>
                     <p className="legal-body">
                         Administratorem Państwa danych osobowych jest{' '}
                         <strong>
@@ -156,8 +179,8 @@ export default function PrivacyPage() {
                             sprostowania,
                         </li>
                         <li>
-                            Usunięcia (&quot;prawo do bycia zapomnianym&quot;) lub
-                            ograniczenia przetwarzania,
+                            Usunięcia (&quot;prawo do bycia zapomnianym&quot;)
+                            lub ograniczenia przetwarzania,
                         </li>
                         <li>
                             <strong>Przenoszenia danych</strong> wprost ze

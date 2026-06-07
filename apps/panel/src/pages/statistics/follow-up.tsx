@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -210,6 +211,9 @@ export default function FollowUpStatisticsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki follow-up — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="container py-4"
@@ -281,20 +285,22 @@ export default function FollowUpStatisticsPage() {
                     </div>
 
                     {loading ? (
-                        <div className="alert alert-light border">
+                        <div className="alert alert-light border" role="status">
                             Ładowanie audytu follow-up...
                         </div>
                     ) : null}
                     {!loading && rangeError ? (
-                        <div className="alert alert-warning">{rangeError}</div>
+                        <div className="alert alert-warning" role="alert">
+                            {rangeError}
+                        </div>
                     ) : null}
                     {!loading && error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Audyt follow-up chwilowo niedostępny.
                         </div>
                     ) : null}
                     {!loading && !error && !rangeError && !hasData ? (
-                        <div className="alert alert-light border">
+                        <div className="alert alert-light border" role="status">
                             Brak danych dla wybranego zakresu.
                         </div>
                     ) : null}

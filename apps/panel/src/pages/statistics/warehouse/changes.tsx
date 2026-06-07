@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -99,6 +100,11 @@ export default function WarehouseChangesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>
+                    Statystyki — zmiany magazynu — Salon Black &amp; White
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
@@ -124,7 +130,7 @@ export default function WarehouseChangesPage() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Statystyki magazynowe chwilowo niedostępne.
                         </div>
                     ) : stats ? (
@@ -201,19 +207,28 @@ export default function WarehouseChangesPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Data</th>
-                                                <th>Produkt</th>
-                                                <th>Typ</th>
-                                                <th className="text-end">
+                                                <th scope="col">Data</th>
+                                                <th scope="col">Produkt</th>
+                                                <th scope="col">Typ</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Zmiana
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Stan przed
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Stan po
                                                 </th>
-                                                <th>Użytkownik</th>
+                                                <th scope="col">Użytkownik</th>
                                             </tr>
                                         </thead>
                                         <tbody>

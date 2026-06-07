@@ -1,12 +1,19 @@
 import { useMemo, useState } from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
+import {
+    useServicesWithFilters,
+    useDeleteService,
+    useServiceCategories,
+} from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type { Role, Service, ServiceVariant } from '@/types';
 
 // Extended service type with computed fields for display
@@ -21,6 +28,9 @@ export default function ServicesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
+            <Head>
+                <title>Usługi — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <ServicesPageContent role={role} />
             </SalonShell>
@@ -30,8 +40,12 @@ export default function ServicesPage() {
 
 function ServicesPageContent({ role }: { role: Role | null }) {
     const router = useRouter();
+    const toast = useToast();
     const [search, setSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [bulkDeletePending, setBulkDeletePending] = useState(false);
+    const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+    const deleteService = useDeleteService();
 
     const categoryId = router.query.categoryId
         ? Number(router.query.categoryId)
@@ -42,6 +56,8 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         includeCategory: true,
         includeVariants: true,
     });
+
+    const { data: categories = [] } = useServiceCategories();
 
     const { data: ranking = [] } = useServiceRanking({
         range: 'this_month',
@@ -150,6 +166,33 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         );
     };
 
+    const handleBulkDelete = () => {
+        setConfirmBulkDelete(true);
+    };
+
+    const doBulkDelete = () => {
+        setBulkDeletePending(true);
+        let failed = 0;
+        const ids = [...selectedIds];
+        const run = async () => {
+            for (const id of ids) {
+                try {
+                    await deleteService.mutateAsync(id);
+                } catch {
+                    failed++;
+                }
+            }
+            setBulkDeletePending(false);
+            setSelectedIds([]);
+            if (failed === 0) {
+                toast.success('Usługi zostały usunięte');
+            } else {
+                toast.error(`Nie udało się usunąć ${failed} usług(i)`);
+            }
+        };
+        void run();
+    };
+
     const formatPopularity = (count?: number): string => {
         if (count === undefined || count === null) return '0 razy';
         if (count === 1) return 'raz';
@@ -216,10 +259,11 @@ function ServicesPageContent({ role }: { role: Role | null }) {
             />
 
             <div className="row mb-xl">
-                <div className="col-sm-6">
+                <div className="col-sm-4">
                     <input
                         className="services-search-input"
                         placeholder="wyszukaj usługę"
+                        aria-label="Wyszukaj usługę"
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -227,12 +271,61 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         }}
                     />
                 </div>
-                <div className="col-sm-6 text-end mt-1">
+                <div className="col-sm-4">
+                    <select
+                        className="form-select"
+                        aria-label="Filtruj po kategorii"
+                        value={categoryId ?? ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            void router.push(
+                                {
+                                    pathname: router.pathname,
+                                    query: val ? { categoryId: val } : {},
+                                },
+                                undefined,
+                                { shallow: true },
+                            );
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <option value="">wszystkie kategorie</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-sm-4 text-end mt-1">
                     <Link href="/services/new" className="btn btn-primary">
                         dodaj usługę
                     </Link>
                 </div>
             </div>
+
+            {selectedIds.length > 0 && (
+                <div className="d-flex align-items-center gap-2 mb-3 p-2 bg-light border rounded">
+                    <span className="text-muted small">
+                        Zaznaczono: <strong>{selectedIds.length}</strong>
+                    </span>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-danger ms-2"
+                        disabled={bulkDeletePending}
+                        onClick={handleBulkDelete}
+                    >
+                        {bulkDeletePending ? 'Usuwanie...' : 'Usuń zaznaczone'}
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setSelectedIds([])}
+                    >
+                        Odznacz wszystkie
+                    </button>
+                </div>
+            )}
 
             {isLoading ? (
                 <div className="text-muted">Ładowanie usług...</div>
@@ -242,7 +335,10 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th className="pointer checkbox_container center_text">
+                                    <th
+                                        scope="col"
+                                        className="pointer checkbox_container center_text"
+                                    >
                                         <label className="mb-0 mt-1">
                                             <input
                                                 type="checkbox"
@@ -256,22 +352,22 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                             />
                                         </label>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Nazwa</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Kategoria</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Czas trwania</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Popularność</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>Cena brutto</div>
                                     </th>
-                                    <th>
+                                    <th scope="col">
                                         <div>VAT</div>
                                     </th>
                                 </tr>
@@ -341,83 +437,90 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         </table>
                     </div>
 
-                    <div className="pagination_container">
-                        <div className="column_row">
-                            <div className="row">
-                                <div className="infocol-7">
-                                    Pozycje od{' '}
-                                    {(currentPage - 1) * itemsPerPage + 1} do{' '}
-                                    {Math.min(
-                                        currentPage * itemsPerPage,
-                                        totalItems,
-                                    )}{' '}
-                                    z <span id="total_found">{totalItems}</span>
-                                    <span>{' | na stronie '}</span>
-                                    <select
-                                        className="pagination-size-select"
-                                        aria-label="Liczba elementów na stronie"
-                                        value={itemsPerPage}
-                                        onChange={(e) => {
-                                            setItemsPerPage(
-                                                Number(e.target.value),
-                                            );
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        <option value={5}>5</option>
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
-                                    </select>
-                                </div>
-                                <div className="form_paginationcol-5 text-end">
-                                    <input
-                                        type="text"
-                                        className="pagination-page-input"
-                                        aria-label="Aktualna strona"
-                                        value={currentPage}
-                                        onChange={(e) => {
-                                            const page = Number(e.target.value);
-                                            if (
-                                                page >= 1 &&
-                                                page <= totalPages
-                                            ) {
-                                                setCurrentPage(page);
-                                            }
-                                        }}
-                                    />
-                                    <span className="conjunction"> z </span>
-                                    <a className="pointer">{totalPages}</a>
-                                    <button
-                                        type="button"
-                                        className="button button_next ml-s"
-                                        aria-label="Następna strona"
-                                        disabled={currentPage >= totalPages}
-                                        onClick={() =>
-                                            setCurrentPage((p) =>
-                                                Math.min(totalPages, p + 1),
-                                            )
-                                        }
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-right-single-arrow"
-                                            aria-hidden="true"
+                    {filtered.length > 0 && (
+                        <nav
+                            className="pagination_container"
+                            aria-label="Paginacja"
+                        >
+                            <div className="column_row">
+                                <div className="row">
+                                    <div className="infocol-7">
+                                        Pozycje od{' '}
+                                        {(currentPage - 1) * itemsPerPage + 1}{' '}
+                                        do{' '}
+                                        {Math.min(
+                                            currentPage * itemsPerPage,
+                                            totalItems,
+                                        )}{' '}
+                                        z{' '}
+                                        <span id="total_found">
+                                            {totalItems}
+                                        </span>
+                                        <span>{' | na stronie '}</span>
+                                        <select
+                                            className="pagination-size-select"
+                                            aria-label="Liczba elementów na stronie"
+                                            value={itemsPerPage}
+                                            onChange={(e) => {
+                                                setItemsPerPage(
+                                                    Number(e.target.value),
+                                                );
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                        </select>
+                                    </div>
+                                    <div className="form_paginationcol-5 text-end">
+                                        <input
+                                            type="text"
+                                            className="pagination-page-input"
+                                            aria-label="Aktualna strona"
+                                            value={currentPage}
+                                            onChange={(e) => {
+                                                const page = Number(
+                                                    e.target.value,
+                                                );
+                                                if (
+                                                    page >= 1 &&
+                                                    page <= totalPages
+                                                ) {
+                                                    setCurrentPage(page);
+                                                }
+                                            }}
                                         />
-                                    </button>
+                                        <span className="conjunction"> z </span>
+                                        <span>{totalPages}</span>
+                                        <button
+                                            type="button"
+                                            className="button button_next ml-s"
+                                            aria-label="Następna strona"
+                                            disabled={currentPage >= totalPages}
+                                            onClick={() =>
+                                                setCurrentPage((p) =>
+                                                    Math.min(totalPages, p + 1),
+                                                )
+                                            }
+                                        >
+                                            <span
+                                                className="fc-icon fc-icon-right-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </nav>
+                    )}
 
                     <div className="products-export">
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                downloadCsvPriceList();
-                            }}
+                        <button
+                            type="button"
+                            onClick={downloadCsvPriceList}
                             className="btn btn-outline-secondary"
                         >
                             <div
@@ -425,10 +528,22 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                 aria-hidden="true"
                             />
                             pobierz cennik w pliku Excel
-                        </a>
+                        </button>
                     </div>
                 </>
             )}
+            <ConfirmModal
+                open={confirmBulkDelete}
+                title="Usuń usługi"
+                message={`Czy na pewno chcesz usunąć ${selectedIds.length} usług(i)? Operacja jest nieodwracalna.`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    setConfirmBulkDelete(false);
+                    doBulkDelete();
+                }}
+                onCancel={() => setConfirmBulkDelete(false)}
+            />
         </div>
     );
 }

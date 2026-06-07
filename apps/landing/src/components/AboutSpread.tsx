@@ -1,4 +1,3 @@
-'use client';
 import Image from 'next/image';
 import { FOUNDER_MESSAGE } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';

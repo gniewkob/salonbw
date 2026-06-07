@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import type { MessageTemplate } from '@/types';
 
@@ -56,11 +55,16 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
             <div className="d-flex flex-column gap-2">
                 {/* Recipient */}
                 <div>
-                    <label className="d-block small fw-medium text-body mb-1">
+                    <label
+                        htmlFor="sms-phone"
+                        className="d-block small fw-medium text-body mb-1"
+                    >
                         Numer telefonu
                     </label>
                     <input
+                        id="sms-phone"
                         type="tel"
+                        autoComplete="tel"
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
                         placeholder="+48 123 456 789"
@@ -71,10 +75,14 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                 {/* Template selector */}
                 {templates.length > 0 && (
                     <div>
-                        <label className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="sms-template-select"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Użyj szablonu (opcjonalnie)
                         </label>
                         <select
+                            id="sms-template-select"
                             value={selectedTemplateId ?? ''}
                             onChange={(e) =>
                                 handleTemplateSelect(
@@ -98,7 +106,10 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                 {/* Content */}
                 <div>
                     <div className="d-flex align-items-center justify-content-between mb-1">
-                        <label className="d-block small fw-medium text-body">
+                        <label
+                            htmlFor="sms-content"
+                            className="d-block small fw-medium text-body"
+                        >
                             Treść wiadomości
                         </label>
                         <span className="small text-muted">
@@ -106,6 +117,7 @@ export default function SmsComposer({ templates, onSend, sending }: Props) {
                         </span>
                     </div>
                     <textarea
+                        id="sms-content"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         rows={4}

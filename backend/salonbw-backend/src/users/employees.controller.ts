@@ -11,6 +11,7 @@ import {
     Put,
     UseGuards,
     BadRequestException,
+    HttpCode,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -68,6 +69,10 @@ class ResetPasswordDto {
     @IsString()
     @MinLength(6)
     newPassword!: string;
+}
+
+class UpdateCommissionBaseDto {
+    commissionBase!: number;
 }
 
 @ApiTags('employees')
@@ -268,6 +273,43 @@ export class EmployeesController {
             },
         );
         return { success: true };
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Get(':id/commission-base')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get commission base rate for employee' })
+    async getCommissionBase(@Param('id', ParseIntPipe) id: number) {
+        const employee = await this.usersService.findById(id);
+        if (!employee) throw new NotFoundException('Employee not found');
+        return { commissionBase: Number(employee.commissionBase ?? 0) };
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Patch(':id/commission-base')
+    @HttpCode(200)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Set commission base rate for employee' })
+    async updateCommissionBase(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateCommissionBaseDto,
+        @CurrentUser() actor?: User,
+    ) {
+        const rate = Number(dto.commissionBase ?? 0);
+        if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+            throw new BadRequestException(
+                'commissionBase must be between 0 and 100',
+            );
+        }
+        await this.usersService.updateCommissionBase(id, rate);
+        await this.logService.logAction(
+            actor ?? null,
+            LogAction.EMPLOYEE_UPDATED,
+            { employeeId: id, commissionBase: rate },
+        );
+        return { commissionBase: rate };
     }
 
     private genEmail(name: string, prefix: string): string {

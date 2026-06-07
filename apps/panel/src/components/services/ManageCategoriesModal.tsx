@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import type { ServiceCategory } from '@/types';
 import CategoryFormModal from './CategoryFormModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     type CreateServiceCategoryDto,
     useCreateServiceCategory,
@@ -24,6 +24,10 @@ export default function ManageCategoriesModal({
         useState<ServiceCategory | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [parentId, setParentId] = useState<number | null>(null);
+    const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
 
     const createCategory = useCreateServiceCategory();
     const updateCategory = useUpdateServiceCategory();
@@ -42,21 +46,23 @@ export default function ManageCategoriesModal({
     };
 
     const handleSave = async (data: CreateServiceCategoryDto) => {
-        if (editingCategory) {
-            await updateCategory.mutateAsync({
-                id: editingCategory.id,
-                data,
-            });
-        } else {
-            await createCategory.mutateAsync(data);
+        try {
+            if (editingCategory) {
+                await updateCategory.mutateAsync({
+                    id: editingCategory.id,
+                    data,
+                });
+            } else {
+                await createCategory.mutateAsync(data);
+            }
+            setIsFormOpen(false);
+        } catch {
+            // error handled by hook
         }
-        setIsFormOpen(false);
     };
 
-    const handleDelete = async (id: number, name: string) => {
-        if (confirm(`Czy na pewno chcesz usunąć kategorię "${name}"?`)) {
-            await deleteCategory.mutateAsync(id);
-        }
+    const handleDelete = (id: number, name: string) => {
+        setConfirmDeleteCategory({ id, name });
     };
 
     const renderCategoryRow = (category: ServiceCategory, level = 0) => {
@@ -69,14 +75,12 @@ export default function ManageCategoriesModal({
 
         return (
             <div key={category.id}>
-                {/* eslint-disable-next-line */}
                 <div
                     className="salonbw-list-item flex-between pl-dynamic"
                     style={rowStyle}
                 >
                     <div className="d-flex align-items-center gap-3">
                         {category.color && (
-                            // eslint-disable-next-line
                             <span
                                 className="status-dot w-10 h-10 bg-dynamic"
                                 style={dotStyle}
@@ -88,6 +92,7 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="btn-group">
                         <button
+                            type="button"
                             className="btn btn-outline-secondary btn-sm"
                             onClick={() => handleEdit(category)}
                             title="Edytuj kategorię"
@@ -96,6 +101,7 @@ export default function ManageCategoriesModal({
                             <i className="fa fa-pencil"></i>
                         </button>
                         <button
+                            type="button"
                             className="btn btn-outline-secondary btn-sm"
                             onClick={() => handleAdd(category.id)}
                             title="Dodaj podkategorię"
@@ -104,6 +110,7 @@ export default function ManageCategoriesModal({
                             <i className="fa fa-plus"></i>
                         </button>
                         <button
+                            type="button"
                             className="btn btn-outline-secondary btn-sm"
                             onClick={() => {
                                 void handleDelete(category.id, category.name);
@@ -127,15 +134,21 @@ export default function ManageCategoriesModal({
 
     return (
         <div className="modal fade in block bg-modal-overlay">
-            <div className="modal-dialog">
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Zarządzaj kategoriami usług"
+            >
                 <div className="modal-content">
                     <div className="modal-header">
                         <button
                             type="button"
                             className="close"
                             onClick={onClose}
+                            aria-label="Zamknij"
                         >
-                            &times;
+                            <span aria-hidden="true">&times;</span>
                         </button>
                         <h4 className="modal-title">Zarządzaj kategoriami</h4>
                     </div>
@@ -163,13 +176,18 @@ export default function ManageCategoriesModal({
                     </div>
                     <div className="modal-footer">
                         <button
+                            type="button"
                             className="btn btn-outline-secondary float-start"
                             onClick={() => handleAdd(null)}
                         >
                             <i className="fa fa-plus me-2"></i>
                             Dodaj kategorię główną
                         </button>
-                        <button className="btn btn-primary" onClick={onClose}>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={onClose}
+                        >
                             Gotowe
                         </button>
                     </div>
@@ -183,6 +201,22 @@ export default function ManageCategoriesModal({
                 categories={categories}
                 onClose={() => setIsFormOpen(false)}
                 onSave={handleSave}
+            />
+            <ConfirmModal
+                open={!!confirmDeleteCategory}
+                title="Usuń kategorię"
+                message={`Czy na pewno chcesz usunąć kategorię "${confirmDeleteCategory?.name}"?`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmDeleteCategory) return;
+                    const { id } = confirmDeleteCategory;
+                    setConfirmDeleteCategory(null);
+                    void deleteCategory.mutateAsync(id).catch(() => {
+                        // error handled by hook
+                    });
+                }}
+                onCancel={() => setConfirmDeleteCategory(null)}
             />
         </div>
     );

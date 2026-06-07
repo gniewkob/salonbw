@@ -7,7 +7,8 @@ type TabId =
     | 'history'
     | 'employees'
     | 'comments'
-    | 'commissions';
+    | 'commissions'
+    | 'recipe';
 
 interface Tab {
     id: TabId;
@@ -52,6 +53,12 @@ const tabs: Tab[] = [
         iconClass: 'sprite-stock_value_report',
         tabName: 'commissions',
     },
+    {
+        id: 'recipe',
+        label: 'receptura',
+        iconClass: 'sprite-stock_products',
+        tabName: 'recipe',
+    },
 ];
 
 interface ServiceDetailNavProps {
@@ -95,6 +102,9 @@ export default function ServiceDetailNav({
                                               pathname: `/services/${serviceId}`,
                                               query: { tab: tab.tabName },
                                           }
+                                }
+                                aria-current={
+                                    activeTab === tab.id ? 'page' : undefined
                                 }
                             >
                                 <div className="icon_box">

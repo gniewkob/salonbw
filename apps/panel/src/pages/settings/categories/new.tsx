@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -54,6 +55,7 @@ export default function SettingsCategoriesNewPage() {
     const createCategory = useCreateProductCategory();
     const { data: categories = [] } = useProductCategories();
     const [name, setName] = useState('');
+    const [submitError, setSubmitError] = useState('');
     const initialParentId = useMemo(() => {
         const queryValue = router.query.parent_id;
         return typeof queryValue === 'string' ? queryValue : '';
@@ -68,15 +70,29 @@ export default function SettingsCategoriesNewPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await createCategory.mutateAsync({
-            name,
-            ...(parentId ? { parentId: Number(parentId) } : {}),
-        });
-        void router.push('/settings/categories');
+        if (!name.trim()) {
+            setSubmitError('Nazwa kategorii jest wymagana');
+            return;
+        }
+        setSubmitError('');
+        try {
+            await createCategory.mutateAsync({
+                name: name.trim(),
+                ...(parentId ? { parentId: Number(parentId) } : {}),
+            });
+            void router.push('/settings/categories');
+        } catch {
+            setSubmitError(
+                'Nie udało się zapisać kategorii. Spróbuj ponownie.',
+            );
+        }
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Nowa kategoria usług — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -99,6 +115,11 @@ export default function SettingsCategoriesNewPage() {
                         />
                         <PanelSection>
                             <form onSubmit={(e) => void handleSubmit(e)}>
+                                {submitError && (
+                                    <div className="alert alert-danger py-2 small mb-3">
+                                        {submitError}
+                                    </div>
+                                )}
                                 <h2>Dodaj kategorię produktów</h2>
                                 <div className="mb-3">
                                     <label

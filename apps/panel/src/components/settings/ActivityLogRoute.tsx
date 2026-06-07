@@ -209,7 +209,10 @@ export default function ActivityLogRoute({
                                 });
                             }}
                         >
-                            <i className="icon sprite-filter mr-xs" />
+                            <i
+                                className="icon sprite-filter mr-xs"
+                                aria-hidden="true"
+                            />
                             filtruj
                         </button>
 
@@ -218,8 +221,12 @@ export default function ActivityLogRoute({
                             style={{ display: filtersOpen ? 'block' : 'none' }}
                         >
                             <div className="rows" id="filter_rows">
-                                <Link className="close" href={clearHref}>
-                                    ×
+                                <Link
+                                    className="close"
+                                    href={clearHref}
+                                    aria-label="Wyczyść filtry"
+                                >
+                                    <span aria-hidden="true">×</span>
                                 </Link>
                                 <div className="row" id="first_filter_row">
                                     <form
@@ -383,12 +390,20 @@ export default function ActivityLogRoute({
                                         <table className="table data_table no_hover table-bordered">
                                             <thead>
                                                 <tr>
-                                                    <th>Data</th>
-                                                    <th>Pracownik</th>
-                                                    <th>Adres IP</th>
-                                                    <th>Dział i akcja</th>
-                                                    <th>Dział</th>
-                                                    <th>Szczegóły</th>
+                                                    <th scope="col">Data</th>
+                                                    <th scope="col">
+                                                        Pracownik
+                                                    </th>
+                                                    <th scope="col">
+                                                        Adres IP
+                                                    </th>
+                                                    <th scope="col">
+                                                        Dział i akcja
+                                                    </th>
+                                                    <th scope="col">Dział</th>
+                                                    <th scope="col">
+                                                        Szczegóły
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -482,7 +497,10 @@ export default function ActivityLogRoute({
                                             </tbody>
                                         </table>
 
-                                        <form className="pagination_container">
+                                        <form
+                                            className="pagination_container"
+                                            aria-label="Paginacja"
+                                        >
                                             <div className="row">
                                                 <div className="info col-md-6">
                                                     Pozycje od {fromItem} do{' '}

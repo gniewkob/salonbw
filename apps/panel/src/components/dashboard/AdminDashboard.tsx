@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import NextTwoHoursWidget from './NextTwoHoursWidget';
 import Skeleton from '@/components/ui/Skeleton';
@@ -270,80 +269,97 @@ export default function AdminDashboard() {
                                 fontWeight: 500,
                             }}
                         >
-                            {(dashboardData?.inProgressAppointments ?? []).length === 1
+                            {(dashboardData?.inProgressAppointments ?? [])
+                                .length === 1
                                 ? '1 wizyta w trakcie'
                                 : `${(dashboardData?.inProgressAppointments ?? []).length} wizyty w trakcie`}
                         </span>
                     </div>
-                    {(dashboardData?.inProgressAppointments ?? []).map((apt, idx, arr) => (
-                        <div
-                            key={apt.id}
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'auto 1fr',
-                                gap: '0 0.75rem',
-                                alignItems: 'center',
-                                padding: '0.625rem 1rem',
-                                borderBottom: idx < arr.length - 1 ? '1px solid #f3f4f6' : 'none',
-                            }}
-                        >
-                            <div style={{ textAlign: 'right', minWidth: 44 }}>
+                    {(dashboardData?.inProgressAppointments ?? []).map(
+                        (apt, idx, arr) => (
+                            <div
+                                key={apt.id}
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'auto 1fr',
+                                    gap: '0 0.75rem',
+                                    alignItems: 'center',
+                                    padding: '0.625rem 1rem',
+                                    borderBottom:
+                                        idx < arr.length - 1
+                                            ? '1px solid #f3f4f6'
+                                            : 'none',
+                                }}
+                            >
                                 <div
-                                    style={{
-                                        fontSize: '1.05rem',
-                                        fontWeight: 700,
-                                        color: '#0d0d0d',
-                                        fontVariantNumeric: 'tabular-nums',
-                                    }}
+                                    style={{ textAlign: 'right', minWidth: 44 }}
                                 >
-                                    {format(new Date(apt.startTime), 'HH:mm', { locale: pl })}
+                                    <div
+                                        style={{
+                                            fontSize: '1.05rem',
+                                            fontWeight: 700,
+                                            color: '#0d0d0d',
+                                            fontVariantNumeric: 'tabular-nums',
+                                        }}
+                                    >
+                                        {format(
+                                            new Date(apt.startTime),
+                                            'HH:mm',
+                                            { locale: pl },
+                                        )}
+                                    </div>
+                                    <span
+                                        className="badge bg-primary"
+                                        style={{ fontSize: '0.68rem' }}
+                                    >
+                                        W trakcie
+                                    </span>
                                 </div>
-                                <span className="badge bg-primary" style={{ fontSize: '0.68rem' }}>
-                                    W trakcie
-                                </span>
+                                <div style={{ minWidth: 0 }}>
+                                    <div
+                                        style={{
+                                            fontSize: '0.9rem',
+                                            fontWeight: 600,
+                                            color: '#0d0d0d',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            flexWrap: 'wrap',
+                                        }}
+                                    >
+                                        <span>{apt.clientName || '—'}</span>
+                                        {apt.clientPhone && (
+                                            <a
+                                                href={`tel:${apt.clientPhone}`}
+                                                style={{
+                                                    fontSize: '0.78rem',
+                                                    color: '#6c757d',
+                                                    textDecoration: 'none',
+                                                    fontWeight: 400,
+                                                }}
+                                            >
+                                                {apt.clientPhone}
+                                            </a>
+                                        )}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '0.8rem',
+                                            color: '#6c757d',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        {apt.serviceName}
+                                        {apt.employeeName
+                                            ? ` · ${apt.employeeName}`
+                                            : ''}
+                                    </div>
+                                </div>
                             </div>
-                            <div style={{ minWidth: 0 }}>
-                                <div
-                                    style={{
-                                        fontSize: '0.9rem',
-                                        fontWeight: 600,
-                                        color: '#0d0d0d',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        flexWrap: 'wrap',
-                                    }}
-                                >
-                                    <span>{apt.clientName || '—'}</span>
-                                    {apt.clientPhone && (
-                                        <a
-                                            href={`tel:${apt.clientPhone}`}
-                                            style={{
-                                                fontSize: '0.78rem',
-                                                color: '#6c757d',
-                                                textDecoration: 'none',
-                                                fontWeight: 400,
-                                            }}
-                                        >
-                                            {apt.clientPhone}
-                                        </a>
-                                    )}
-                                </div>
-                                <div
-                                    style={{
-                                        fontSize: '0.8rem',
-                                        color: '#6c757d',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                >
-                                    {apt.serviceName}
-                                    {apt.employeeName ? ` · ${apt.employeeName}` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                        ),
+                    )}
                 </div>
             )}
 

@@ -32,7 +32,12 @@ export default function CreateCustomerModal({
 
     return (
         <div className="modal-backdrop fade in">
-            <div className="modal-dialog">
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Nowy klient"
+            >
                 <form
                     className="modal-content"
                     onSubmit={(event) => {
@@ -52,8 +57,14 @@ export default function CreateCustomerModal({
                     </div>
                     <div className="modal-body">
                         <div className="mb-3">
-                            <label className="form-label">Imię</label>
+                            <label
+                                htmlFor="cc-first-name"
+                                className="form-label"
+                            >
+                                Imię
+                            </label>
                             <input
+                                id="cc-first-name"
                                 className="form-control"
                                 value={form.firstName}
                                 onChange={(event) =>
@@ -68,8 +79,14 @@ export default function CreateCustomerModal({
                             />
                         </div>
                         <div className="mb-3">
-                            <label className="form-label">Nazwisko</label>
+                            <label
+                                htmlFor="cc-last-name"
+                                className="form-label"
+                            >
+                                Nazwisko
+                            </label>
                             <input
+                                id="cc-last-name"
                                 className="form-control"
                                 value={form.lastName}
                                 onChange={(event) =>
@@ -83,10 +100,14 @@ export default function CreateCustomerModal({
                             />
                         </div>
                         <div className="mb-3">
-                            <label className="form-label">Email</label>
+                            <label htmlFor="cc-email" className="form-label">
+                                Email
+                            </label>
                             <input
+                                id="cc-email"
                                 className="form-control"
                                 type="email"
+                                autoComplete="email"
                                 value={form.email}
                                 onChange={(event) =>
                                     setForm((prev) => ({
@@ -98,9 +119,14 @@ export default function CreateCustomerModal({
                             />
                         </div>
                         <div className="mb-3">
-                            <label className="form-label">Telefon</label>
+                            <label htmlFor="cc-phone" className="form-label">
+                                Telefon
+                            </label>
                             <input
+                                id="cc-phone"
                                 className="form-control"
+                                type="tel"
+                                autoComplete="tel"
                                 value={form.phone}
                                 onChange={(event) =>
                                     setForm((prev) => ({

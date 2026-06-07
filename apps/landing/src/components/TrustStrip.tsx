@@ -1,4 +1,3 @@
-'use client';
 import type { CSSProperties } from 'react';
 import { PARTNER_BRANDS } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';

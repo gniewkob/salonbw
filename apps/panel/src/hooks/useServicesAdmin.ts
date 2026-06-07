@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type {
     Service,
     ServiceCategory,
@@ -51,6 +52,7 @@ export interface CreateServiceCategoryDto {
 export function useCreateServiceCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (data: CreateServiceCategoryDto) =>
             apiFetch<ServiceCategory>('/service-categories', {
@@ -63,12 +65,16 @@ export function useCreateServiceCategory() {
                 queryKey: ['service-categories'],
             });
         },
+        onError: () => {
+            toast.error('Nie udało się dodać kategorii');
+        },
     });
 }
 
 export function useUpdateServiceCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             id,
@@ -87,12 +93,16 @@ export function useUpdateServiceCategory() {
                 queryKey: ['service-categories'],
             });
         },
+        onError: () => {
+            toast.error('Nie udało się zapisać kategorii');
+        },
     });
 }
 
 export function useDeleteServiceCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch<void>(`/service-categories/${id}`, { method: 'DELETE' }),
@@ -100,6 +110,9 @@ export function useDeleteServiceCategory() {
             void queryClient.invalidateQueries({
                 queryKey: ['service-categories'],
             });
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć kategorii');
         },
     });
 }
@@ -287,6 +300,7 @@ export interface CreateServiceVariantDto {
 export function useCreateServiceVariant() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             serviceId,
@@ -306,12 +320,16 @@ export function useCreateServiceVariant() {
             });
             void queryClient.invalidateQueries({ queryKey: ['services'] });
         },
+        onError: () => {
+            toast.error('Nie udało się dodać wariantu');
+        },
     });
 }
 
 export function useUpdateServiceVariant() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             serviceId,
@@ -336,12 +354,16 @@ export function useUpdateServiceVariant() {
             });
             void queryClient.invalidateQueries({ queryKey: ['services'] });
         },
+        onError: () => {
+            toast.error('Nie udało się zapisać wariantu');
+        },
     });
 }
 
 export function useDeleteServiceVariant() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             serviceId,
@@ -358,6 +380,9 @@ export function useDeleteServiceVariant() {
                 queryKey: ['service-variants', serviceId],
             });
             void queryClient.invalidateQueries({ queryKey: ['services'] });
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć wariantu');
         },
     });
 }

@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
@@ -97,8 +97,7 @@ export default function SettingsTradesNewPage() {
             });
 
             await router.push(`/services?categoryId=${created.id}`);
-        } catch (err) {
-            console.error('Error creating service category:', err);
+        } catch {
             setError(
                 'Nie udało się zapisać branży. Sprawdź dane i spróbuj ponownie.',
             );
@@ -107,6 +106,9 @@ export default function SettingsTradesNewPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Nowy zawód — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

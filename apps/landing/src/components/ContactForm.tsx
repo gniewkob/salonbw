@@ -17,6 +17,7 @@ export default function ContactForm() {
     const [emailError, setEmailError] = useState('');
     const [submitError, setSubmitError] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -51,46 +52,72 @@ export default function ContactForm() {
         e.preventDefault();
         const { name, email, message } = trimmedForm;
 
-        if (!name) { setError(c.formErrorName); return; }
-        if (!emailPattern.test(email)) { setEmailError(c.formErrorEmail); return; }
-        if (!message) { setError(c.formErrorMessage); return; }
+        if (!name) {
+            setError(c.formErrorName);
+            return;
+        }
+        if (!emailPattern.test(email)) {
+            setEmailError(c.formErrorEmail);
+            return;
+        }
+        if (!message) {
+            setError(c.formErrorMessage);
+            return;
+        }
 
         setError('');
         setEmailError('');
         setSubmitError('');
+        setSubmitting(true);
         const retries = 3;
-        for (let attempt = 0; attempt < retries; attempt++) {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, replyTo: email, message }),
-                    },
-                );
-                if (!res.ok) throw new Error('Failed');
-                toast.success(c.formSuccess);
-                setSubmitted(true);
-                setForm({ name: '', email: '', message: '' });
-                return;
-            } catch (err: unknown) {
-                const e = err as { response?: { data?: unknown }; message?: string };
-                console.error('Failed to submit contact form', e.response?.data || e.message);
-                if (attempt === retries - 1) {
-                    setSubmitError(c.formErrorSend);
-                    toast.error(c.formErrorSend);
-                } else {
-                    await new Promise((res) => setTimeout(res, 1000));
+        try {
+            for (let attempt = 0; attempt < retries; attempt++) {
+                try {
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name,
+                                replyTo: email,
+                                message,
+                            }),
+                        },
+                    );
+                    if (!res.ok) throw new Error('Failed');
+                    toast.success(c.formSuccess);
+                    setSubmitted(true);
+                    setForm({ name: '', email: '', message: '' });
+                    return;
+                } catch (err: unknown) {
+                    const e = err as {
+                        response?: { data?: unknown };
+                        message?: string;
+                    };
+                    console.error(
+                        'Failed to submit contact form',
+                        e.response?.data || e.message,
+                    );
+                    if (attempt === retries - 1) {
+                        setSubmitError(c.formErrorSend);
+                        toast.error(c.formErrorSend);
+                    } else {
+                        await new Promise((res) => setTimeout(res, 1000));
+                    }
                 }
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="contact-form">
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-name">{c.formName}</label>
+                <label className="contact-form__label" htmlFor="cf-name">
+                    {c.formName}
+                </label>
                 <input
                     id="cf-name"
                     name="name"
@@ -99,11 +126,14 @@ export default function ContactForm() {
                     placeholder={c.formNamePlaceholder}
                     className="contact-form__input"
                     autoComplete="name"
+                    required
                 />
             </div>
 
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-email">{c.formEmail}</label>
+                <label className="contact-form__label" htmlFor="cf-email">
+                    {c.formEmail}
+                </label>
                 <input
                     id="cf-email"
                     name="email"
@@ -113,6 +143,7 @@ export default function ContactForm() {
                     placeholder={c.formEmailPlaceholder}
                     className="contact-form__input"
                     autoComplete="email"
+                    required
                     aria-invalid={!!emailError}
                     aria-describedby={emailError ? 'cf-email-error' : undefined}
                 />
@@ -132,7 +163,9 @@ export default function ContactForm() {
             </div>
 
             <div className="contact-form__field">
-                <label className="contact-form__label" htmlFor="cf-message">{c.formMessage}</label>
+                <label className="contact-form__label" htmlFor="cf-message">
+                    {c.formMessage}
+                </label>
                 <textarea
                     id="cf-message"
                     name="message"
@@ -141,6 +174,7 @@ export default function ContactForm() {
                     placeholder={c.formMessagePlaceholder}
                     className="contact-form__input contact-form__textarea"
                     rows={5}
+                    required
                 />
             </div>
 
@@ -184,10 +218,10 @@ export default function ContactForm() {
 
             <button
                 type="submit"
-                disabled={!isValid}
+                disabled={!isValid || submitting}
                 className="btn-silver contact-form__submit"
             >
-                {c.formSubmit}
+                {submitting ? 'Wysyłanie…' : c.formSubmit}
             </button>
         </form>
     );

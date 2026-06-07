@@ -1,10 +1,13 @@
+import Head from 'next/head';
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import EmployeesNav from '@/components/salon/navs/EmployeesNav';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
@@ -28,11 +31,14 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
 
 export default function EmployeesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data } = useEmployees();
     const api = useEmployeeApi();
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
+    const [confirmDeleteEmployee, setConfirmDeleteEmployee] =
+        useState<Employee | null>(null);
     const secondaryNav = useMemo(() => <EmployeesNav />, []);
 
     useEffect(() => {
@@ -53,9 +59,14 @@ export default function EmployeesPage() {
         lastName: string;
         email?: string;
     }) => {
-        const created = await api.create(values);
-        setRows((c) => [...c, created]);
-        setOpenForm(false);
+        try {
+            const created = await api.create(values);
+            setRows((c) => [...c, created]);
+            setOpenForm(false);
+            toast.success('Pracownik został dodany');
+        } catch {
+            toast.error('Nie udało się dodać pracownika');
+        }
     };
 
     const handleUpdate = async (values: {
@@ -64,20 +75,38 @@ export default function EmployeesPage() {
         email?: string;
     }) => {
         if (!editing) return;
-        const updated = await api.update(editing.id, values);
-        setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
-        setEditing(null);
-        setOpenForm(false);
+        try {
+            const updated = await api.update(editing.id, values);
+            setRows((c) =>
+                c.map((cl) => (cl.id === editing.id ? updated : cl)),
+            );
+            setEditing(null);
+            setOpenForm(false);
+            toast.success('Dane pracownika zostały zapisane');
+        } catch {
+            toast.error('Nie udało się zapisać danych pracownika');
+        }
     };
 
-    const handleDelete = async (row: Employee) => {
-        if (!confirm(`Usunąć pracownika ${row.fullName ?? row.name}?`)) return;
-        await api.remove(row.id);
-        setRows((c) => c.filter((cl) => cl.id !== row.id));
+    const handleDelete = (row: Employee) => {
+        setConfirmDeleteEmployee(row);
+    };
+
+    const doDelete = async (row: Employee) => {
+        try {
+            await api.remove(row.id);
+            setRows((c) => c.filter((cl) => cl.id !== row.id));
+            toast.success('Pracownik został usunięty');
+        } catch {
+            toast.error('Nie udało się usunąć pracownika');
+        }
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
+            <Head>
+                <title>Pracownicy — ustawienia — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="employees-page">
                     <SalonBreadcrumbs
@@ -108,6 +137,7 @@ export default function EmployeesPage() {
                             renderActions={(r) => (
                                 <span className="space-x-2">
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         onClick={() => {
                                             setEditing(r);
@@ -117,8 +147,9 @@ export default function EmployeesPage() {
                                         Edytuj
                                     </button>
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-danger"
-                                        onClick={() => void handleDelete(r)}
+                                        onClick={() => handleDelete(r)}
                                     >
                                         Usuń
                                     </button>
@@ -147,6 +178,20 @@ export default function EmployeesPage() {
                         />
                     </Modal>
                 </div>
+                <ConfirmModal
+                    open={!!confirmDeleteEmployee}
+                    title="Usuń pracownika"
+                    message={`Czy na pewno chcesz usunąć pracownika ${confirmDeleteEmployee?.fullName ?? confirmDeleteEmployee?.name}? Operacja jest nieodwracalna.`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDeleteEmployee) return;
+                        const row = confirmDeleteEmployee;
+                        setConfirmDeleteEmployee(null);
+                        void doDelete(row);
+                    }}
+                    onCancel={() => setConfirmDeleteEmployee(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

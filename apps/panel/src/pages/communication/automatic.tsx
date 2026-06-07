@@ -1,10 +1,11 @@
-
+import Head from 'next/head';
 import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useAutomaticMessages } from '@/hooks/useAutomaticMessages';
 import { useMessageTemplates } from '@/hooks/useSms';
 import type {
@@ -52,6 +53,7 @@ const DEFAULT_FORM: CreateAutomaticMessageRuleRequest = {
 
 export default function AutomaticMessagesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { rules, loading, createRule, updateRule, toggleRule, deleteRule } =
         useAutomaticMessages();
     const { data: templates } = useMessageTemplates();
@@ -91,7 +93,16 @@ export default function AutomaticMessagesPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.name.trim()) return;
+        if (!form.name.trim()) {
+            toast.error('Nazwa reguły jest wymagana.');
+            return;
+        }
+        if (!form.templateId && !form.content?.trim()) {
+            toast.error(
+                'Treść wiadomości jest wymagana (lub wybierz szablon).',
+            );
+            return;
+        }
         setIsSaving(true);
         try {
             if (editingRule) {
@@ -101,7 +112,7 @@ export default function AutomaticMessagesPage() {
             }
             setIsModalOpen(false);
         } catch {
-            alert('Nie udało się zapisać reguły. Spróbuj ponownie.');
+            toast.error('Nie udało się zapisać reguły. Spróbuj ponownie.');
         } finally {
             setIsSaving(false);
         }
@@ -111,7 +122,7 @@ export default function AutomaticMessagesPage() {
         try {
             await toggleRule(id);
         } catch {
-            alert('Nie udało się zmienić statusu reguły.');
+            toast.error('Nie udało się zmienić statusu reguły.');
         }
     };
 
@@ -120,7 +131,7 @@ export default function AutomaticMessagesPage() {
             await deleteRule(id);
             setConfirmDeleteId(null);
         } catch {
-            alert('Nie udało się usunąć reguły.');
+            toast.error('Nie udało się usunąć reguły.');
         }
     };
 
@@ -130,6 +141,9 @@ export default function AutomaticMessagesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Automatyczne wiadomości — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page">
                     <SalonBreadcrumbs
@@ -182,13 +196,13 @@ export default function AutomaticMessagesPage() {
                             <table className="list-table">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa</th>
-                                        <th>Wyzwalacz</th>
-                                        <th>Kanał</th>
-                                        <th>Offset</th>
-                                        <th>Wysłanych</th>
-                                        <th>Status</th>
-                                        <th></th>
+                                        <th scope="col">Nazwa</th>
+                                        <th scope="col">Wyzwalacz</th>
+                                        <th scope="col">Kanał</th>
+                                        <th scope="col">Offset</th>
+                                        <th scope="col">Wysłanych</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -526,13 +540,17 @@ export default function AutomaticMessagesPage() {
                                     {!form.templateId && (
                                         <div className="mb-3">
                                             <label htmlFor="rule-content">
-                                                Treść wiadomości
+                                                Treść wiadomości{' '}
+                                                <span className="text-danger">
+                                                    *
+                                                </span>
                                             </label>
                                             <textarea
                                                 id="rule-content"
                                                 className="form-control"
                                                 rows={4}
                                                 value={form.content ?? ''}
+                                                required
                                                 onChange={(e) =>
                                                     setForm((f) => ({
                                                         ...f,
@@ -587,7 +605,10 @@ export default function AutomaticMessagesPage() {
                     </div>
                 )}
                 <div className="mt-3 pt-3 border-top">
-                    <Link href="/communication/reminders" className="btn btn-sm btn-outline-secondary">
+                    <Link
+                        href="/communication/reminders"
+                        className="btn btn-sm btn-outline-secondary"
+                    >
                         Wyzwól przypomnienia ręcznie →
                     </Link>
                 </div>

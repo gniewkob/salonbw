@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import type { ServiceCategory } from '@/types';
 
@@ -101,7 +100,12 @@ export default function CategoryFormModal({
 
     return (
         <div className="modal fade in block bg-modal-overlay">
-            <div className="modal-dialog">
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Kategoria usług"
+            >
                 <div className="modal-content">
                     <div className="modal-header">
                         <button
@@ -201,9 +205,9 @@ export default function CategoryFormModal({
                             </div>
 
                             <div className="mb-3">
-                                <label className="col-sm-3 form-label">
+                                <span className="col-sm-3 form-label d-block">
                                     Kolor
-                                </label>
+                                </span>
                                 <div className="col-sm-9">
                                     <div className="d-flex align-items-center gap-5 flex-wrap mt-5">
                                         {COLOR_OPTIONS.map((color) => {
@@ -215,7 +219,6 @@ export default function CategoryFormModal({
                                                         : '1px solid #ddd',
                                             } as React.CSSProperties;
                                             return (
-                                                // eslint-disable-next-line
                                                 <button
                                                     key={color}
                                                     type="button"
@@ -237,7 +240,6 @@ export default function CategoryFormModal({
                                                     'transparent',
                                             } as React.CSSProperties;
                                             return (
-                                                // eslint-disable-next-line
                                                 <input
                                                     type="color"
                                                     value={formData.color}

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import PaymentConfigurationPage from '@/components/settings/PaymentConfigurationPage';
 import SalonShell from '@/components/salon/SalonShell';
@@ -8,6 +9,9 @@ export default function PaymentConfigurationRoute() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Płatności — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <PaymentConfigurationPage />
             </SalonShell>

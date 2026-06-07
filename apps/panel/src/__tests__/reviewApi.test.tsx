@@ -12,23 +12,24 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useReviewApi', () => {
-    it('shows success toast on create', async () => {
-        const apiFetch = jest.fn().mockResolvedValue({ id: 1, rating: 5 });
+    it('returns created review', async () => {
+        const review = { id: 1, rating: 5 };
+        const apiFetch = jest.fn().mockResolvedValue(review);
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
         const { result } = renderHook(() => useReviewApi(), { wrapper });
+        let created: unknown;
         await act(async () => {
-            await result.current.create(1, { rating: 5 });
+            created = await result.current.create(1, { rating: 5 });
         });
-        expect(toast.success).toHaveBeenCalled();
+        expect(created).toEqual(review);
     });
 
-    it('shows error toast on failure', async () => {
+    it('throws on create failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -39,7 +40,6 @@ describe('useReviewApi', () => {
             act(async () => {
                 await result.current.create(1, { rating: 5 });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 });

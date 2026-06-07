@@ -50,18 +50,26 @@ export default function FormulaSection({ appointment }: Props) {
                     setFormulas(data.slice(0, 5));
                     setFormulasLoaded(true);
                 })
-                .catch(() => { if (alive) setFormulasLoaded(true); });
+                .catch(() => {
+                    if (alive) setFormulasLoaded(true);
+                });
 
-            apiFetch<UsageHistoryEntry[]>(`/customers/${clientId}/usage-history`)
+            apiFetch<UsageHistoryEntry[]>(
+                `/customers/${clientId}/usage-history`,
+            )
                 .then((data) => {
                     if (!alive) return;
                     setUsageHistory(data.slice(0, 5));
                     setHistoryLoaded(true);
                 })
-                .catch(() => { if (alive) setHistoryLoaded(true); });
+                .catch(() => {
+                    if (alive) setHistoryLoaded(true);
+                });
         }
 
-        return () => { alive = false; };
+        return () => {
+            alive = false;
+        };
     }, [appointment, apiFetch]);
 
     const handleSaveNote = async () => {
@@ -75,7 +83,10 @@ export default function FormulaSection({ appointment }: Props) {
             });
             if (noteSavedTimer.current) clearTimeout(noteSavedTimer.current);
             setNoteSaved(true);
-            noteSavedTimer.current = setTimeout(() => setNoteSaved(false), 2000);
+            noteSavedTimer.current = setTimeout(
+                () => setNoteSaved(false),
+                2000,
+            );
         } finally {
             setNoteSaving(false);
         }
@@ -89,11 +100,16 @@ export default function FormulaSection({ appointment }: Props) {
             await apiFetch(`/appointments/${appointment.id}/formulas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description: formulaText.trim(), date: new Date().toISOString() }),
+                body: JSON.stringify({
+                    description: formulaText.trim(),
+                    date: new Date().toISOString(),
+                }),
             });
             setFormulaText('');
             if (appointment.client?.id) {
-                const data = await apiFetch<Formula[]>(`/customers/${appointment.client.id}/formulas`);
+                const data = await apiFetch<Formula[]>(
+                    `/customers/${appointment.client.id}/formulas`,
+                );
                 setFormulas(data.slice(0, 3));
             }
         } catch {
@@ -106,55 +122,89 @@ export default function FormulaSection({ appointment }: Props) {
     return (
         <>
             {/* Client history: previous formulas + material usage */}
-            {(formulasLoaded || historyLoaded) && (formulas.length > 0 || usageHistory.length > 0) && (
-                <div className="rounded border p-2">
-                    <strong className="d-block mb-2">Historia klienta</strong>
+            {(formulasLoaded || historyLoaded) &&
+                (formulas.length > 0 || usageHistory.length > 0) && (
+                    <div className="rounded border p-2">
+                        <strong className="d-block mb-2">
+                            Historia klienta
+                        </strong>
 
-                    {formulas.length > 0 && (
-                        <div className="mb-3">
-                            <div className="small fw-medium text-muted mb-1">Poprzednie receptury</div>
-                            <div className="d-flex flex-column gap-1">
-                                {formulas.map((f) => (
-                                    <div key={f.id} className="small bg-light rounded px-2 py-1">
-                                        <div className="text-muted mb-0" style={{ fontSize: '0.7rem' }}>
-                                            {new Date(f.date).toLocaleDateString('pl-PL')}
-                                        </div>
-                                        <div>{f.description}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {usageHistory.length > 0 && (
-                        <div>
-                            <div className="small fw-medium text-muted mb-1">Użyte materiały (poprzednie wizyty)</div>
-                            <div className="d-flex flex-column gap-1">
-                                {usageHistory.map((entry) => (
-                                    <div key={entry.id} className="small bg-light rounded px-2 py-1">
-                                        <div className="text-muted mb-1" style={{ fontSize: '0.7rem' }}>
-                                            {new Date(entry.usedAt).toLocaleDateString('pl-PL')}
-                                        </div>
-                                        {entry.items.map((item, i) => (
-                                            <div key={i} className="d-flex justify-content-between">
-                                                <span>{item.productName}</span>
-                                                <span className="text-muted">{item.quantity} {item.unit}</span>
+                        {formulas.length > 0 && (
+                            <div className="mb-3">
+                                <div className="small fw-medium text-muted mb-1">
+                                    Poprzednie receptury
+                                </div>
+                                <div className="d-flex flex-column gap-1">
+                                    {formulas.map((f) => (
+                                        <div
+                                            key={f.id}
+                                            className="small bg-light rounded px-2 py-1"
+                                        >
+                                            <div
+                                                className="text-muted mb-0"
+                                                style={{ fontSize: '0.7rem' }}
+                                            >
+                                                {new Date(
+                                                    f.date,
+                                                ).toLocaleDateString('pl-PL')}
                                             </div>
-                                        ))}
-                                    </div>
-                                ))}
+                                            <div>{f.description}</div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-            )}
+                        )}
+
+                        {usageHistory.length > 0 && (
+                            <div>
+                                <div className="small fw-medium text-muted mb-1">
+                                    Użyte materiały (poprzednie wizyty)
+                                </div>
+                                <div className="d-flex flex-column gap-1">
+                                    {usageHistory.map((entry) => (
+                                        <div
+                                            key={entry.id}
+                                            className="small bg-light rounded px-2 py-1"
+                                        >
+                                            <div
+                                                className="text-muted mb-1"
+                                                style={{ fontSize: '0.7rem' }}
+                                            >
+                                                {new Date(
+                                                    entry.usedAt,
+                                                ).toLocaleDateString('pl-PL')}
+                                            </div>
+                                            {entry.items.map((item, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="d-flex justify-content-between"
+                                                >
+                                                    <span>
+                                                        {item.productName}
+                                                    </span>
+                                                    <span className="text-muted">
+                                                        {item.quantity}{' '}
+                                                        {item.unit}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
             {/* Formula entry + internal note */}
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Formularz zabiegu</strong>
 
                 <div className="mb-2">
-                    <label className="form-label form-label-sm mb-1" htmlFor="appointment-internal-note">
+                    <label
+                        className="form-label form-label-sm mb-1"
+                        htmlFor="appointment-internal-note"
+                    >
                         Notatka wewnętrzna
                     </label>
                     <textarea
@@ -174,12 +224,17 @@ export default function FormulaSection({ appointment }: Props) {
                         >
                             {noteSaving ? 'Zapisywanie…' : 'Zapisz notatkę'}
                         </button>
-                        {noteSaved && <span className="small text-success">Zapisano</span>}
+                        {noteSaved && (
+                            <span className="small text-success">Zapisano</span>
+                        )}
                     </div>
                 </div>
 
                 <div className="mb-2">
-                    <label className="form-label form-label-sm mb-1" htmlFor="appointment-formula">
+                    <label
+                        className="form-label form-label-sm mb-1"
+                        htmlFor="appointment-formula"
+                    >
                         Receptura / formularz zabiegu
                     </label>
                     <textarea
@@ -190,7 +245,11 @@ export default function FormulaSection({ appointment }: Props) {
                         onChange={(e) => setFormulaText(e.target.value)}
                         placeholder="Np. kolor: 7.1 + 8 vol, 40 min..."
                     />
-                    {formulaError && <div className="small text-danger mt-1">{formulaError}</div>}
+                    {formulaError && (
+                        <div className="small text-danger mt-1">
+                            {formulaError}
+                        </div>
+                    )}
                     <button
                         type="button"
                         className="btn btn-outline-primary btn-sm mt-1"

@@ -99,15 +99,15 @@ export default function WarehouseNav() {
                     currentCategoryId === category.id ? 'active' : undefined
                 }
             >
-                <a
-                    href="#"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        updateFilters(category.id, false);
-                    }}
+                <button
+                    type="button"
+                    aria-current={
+                        currentCategoryId === category.id ? 'true' : undefined
+                    }
+                    onClick={() => updateFilters(category.id, false)}
                 >
                     {category.name}
-                </a>
+                </button>
                 {category.children?.length &&
                 depth < 1 &&
                 expandedCategoryPath.has(category.id) ? (
@@ -128,46 +128,45 @@ export default function WarehouseNav() {
         <div className="column_row">
             <div className="nav-header">{header}</div>
             <ul className="nav nav-list">
-                {items.map((item) => (
-                    <li
-                        key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
-                        className={(() => {
-                            const queryMatches = item.query
-                                ? Object.entries(item.query).every(
-                                      ([key, value]) =>
-                                          router.query[key] === value,
-                                  )
-                                : true;
-                            const hasStatusFilter =
-                                typeof router.query.status === 'string';
-                            const plainHistoryItem =
-                                !item.query && item.href.endsWith('/history');
-                            const plainHistoryBlocked =
-                                plainHistoryItem && hasStatusFilter;
-
-                            return (path === item.href &&
-                                queryMatches &&
-                                !plainHistoryBlocked) ||
-                                path.startsWith(`${item.href}/`) ||
-                                (item.href.endsWith('/history') &&
-                                    path.startsWith(
-                                        `${item.href.replace('/history', '/history/')}`,
-                                    ))
-                                ? 'active'
-                                : undefined;
-                        })()}
-                    >
-                        <a
-                            href={
-                                item.query
-                                    ? `${item.href}?${new URLSearchParams(item.query).toString()}`
-                                    : item.href
-                            }
+                {items.map((item) => {
+                    const queryMatches = item.query
+                        ? Object.entries(item.query).every(
+                              ([key, value]) => router.query[key] === value,
+                          )
+                        : true;
+                    const hasStatusFilter =
+                        typeof router.query.status === 'string';
+                    const plainHistoryItem =
+                        !item.query && item.href.endsWith('/history');
+                    const plainHistoryBlocked =
+                        plainHistoryItem && hasStatusFilter;
+                    const isActive =
+                        (path === item.href &&
+                            queryMatches &&
+                            !plainHistoryBlocked) ||
+                        path.startsWith(`${item.href}/`) ||
+                        (item.href.endsWith('/history') &&
+                            path.startsWith(
+                                `${item.href.replace('/history', '/history/')}`,
+                            ));
+                    return (
+                        <li
+                            key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
+                            className={isActive ? 'active' : undefined}
                         >
-                            {item.label}
-                        </a>
-                    </li>
-                ))}
+                            <a
+                                href={
+                                    item.query
+                                        ? `${item.href}?${new URLSearchParams(item.query).toString()}`
+                                        : item.href
+                                }
+                                aria-current={isActive ? 'page' : undefined}
+                            >
+                                {item.label}
+                            </a>
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );
@@ -220,11 +219,38 @@ export default function WarehouseNav() {
         ]);
     }
 
+    if (isSubmodulePath('/suppliers')) {
+        return renderModuleNav('DOSTAWCY', [
+            { label: 'lista dostawców', href: '/suppliers' },
+        ]);
+    }
+
+    if (isSubmodulePath('/deliveries')) {
+        return renderModuleNav('DOSTAWY', [
+            { label: 'nowa dostawa', href: '/deliveries/new' },
+            { label: 'historia dostaw', href: '/deliveries/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/orders')) {
+        return renderModuleNav('ZAMÓWIENIA', [
+            { label: 'nowe zamówienie', href: '/orders/new' },
+            { label: 'historia zamówień', href: '/orders/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/manufacturers')) {
+        return renderModuleNav('PRODUCENCI', [
+            { label: 'lista producentów', href: '/manufacturers' },
+        ]);
+    }
+
     return (
         <div className="column_row">
             <div data-product-categories-menu="">
                 <div className="tree">
-                    <a
+                    <button
+                        type="button"
                         className={
                             !currentCategoryId &&
                             router.query.uncategorized !== 'true'
@@ -232,17 +258,22 @@ export default function WarehouseNav() {
                                 : 'root'
                         }
                         data-menu-item-name="root"
-                        href="#"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            updateFilters(undefined);
-                        }}
+                        aria-current={
+                            !currentCategoryId &&
+                            router.query.uncategorized !== 'true'
+                                ? 'true'
+                                : undefined
+                        }
+                        onClick={() => updateFilters(undefined)}
                     >
                         <div className="icon_box">
-                            <i className="icon sprite-stock_products" />
+                            <i
+                                className="icon sprite-stock_products"
+                                aria-hidden="true"
+                            />
                         </div>
                         Wszystkie produkty
-                    </a>
+                    </button>
 
                     <ul>
                         {categories?.length
@@ -256,29 +287,28 @@ export default function WarehouseNav() {
                                     : undefined
                             }
                         >
-                            <a
-                                href="#"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    updateFilters(undefined, true);
-                                }}
+                            <button
+                                type="button"
+                                aria-current={
+                                    router.query.uncategorized === 'true'
+                                        ? 'true'
+                                        : undefined
+                                }
+                                onClick={() => updateFilters(undefined, true)}
                             >
                                 produkty bez kategorii
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </div>
 
                 <div className="tree_options">
-                    <a
-                        href="#"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            setIsManageModalOpen(true);
-                        }}
+                    <button
+                        type="button"
+                        onClick={() => setIsManageModalOpen(true)}
                     >
                         dodaj/edytuj/usuń
-                    </a>
+                    </button>
                 </div>
             </div>
 

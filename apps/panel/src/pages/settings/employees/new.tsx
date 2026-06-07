@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
@@ -51,17 +52,27 @@ export default function SettingsEmployeeNewPage() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
 
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const created = await createEmployee.mutateAsync({
-            firstName,
-            lastName,
-        });
-        void router.push(`/settings/employees/${created.id}`);
+        setSubmitError(null);
+        try {
+            const created = await createEmployee.mutateAsync({
+                firstName,
+                lastName,
+            });
+            void router.push(`/settings/employees/${created.id}`);
+        } catch {
+            setSubmitError('Nie udało się dodać pracownika. Spróbuj ponownie.');
+        }
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Nowy pracownik — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -121,6 +132,11 @@ export default function SettingsEmployeeNewPage() {
                                         required
                                     />
                                 </div>
+                                {submitError && (
+                                    <div className="alert alert-danger mb-3">
+                                        {submitError}
+                                    </div>
+                                )}
                                 <div className="mb-3">
                                     <button
                                         type="submit"

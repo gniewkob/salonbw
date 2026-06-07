@@ -1,9 +1,10 @@
-
+import Head from 'next/head';
 import { useState, useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
 import { useEmailMutations } from '@/hooks/useEmails';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
@@ -11,6 +12,7 @@ import type { MessageChannel } from '@/types';
 
 export default function MassCommunicationPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data: groups = [] } = useCustomerGroups();
     const { data: customersData } = useCustomers({ limit: 1000 });
     const { data: templates = [] } = useMessageTemplates();
@@ -108,15 +110,17 @@ export default function MassCommunicationPage() {
                 setSendResult(result);
             }
             setStep('preview');
-        } catch (error) {
-            console.error('Failed to send:', error);
-            alert('Wystąpił błąd podczas wysyłania');
+        } catch {
+            toast.error('Wystąpił błąd podczas wysyłania');
         }
         setIsSending(false);
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Masowe wiadomości — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page">
                     <SalonBreadcrumbs
@@ -351,8 +355,14 @@ export default function MassCommunicationPage() {
 
                                 {channel === 'email' && (
                                     <div className="mb-3">
-                                        <label>Temat</label>
+                                        <label htmlFor="mass-subject">
+                                            Temat{' '}
+                                            <span className="text-danger">
+                                                *
+                                            </span>
+                                        </label>
                                         <input
+                                            id="mass-subject"
                                             type="text"
                                             className="form-control"
                                             value={subject}
@@ -360,13 +370,15 @@ export default function MassCommunicationPage() {
                                                 setSubject(e.target.value)
                                             }
                                             placeholder="Wpisz temat wiadomości"
+                                            required
                                         />
                                     </div>
                                 )}
 
                                 <div className="mb-3">
-                                    <label>Treść</label>
+                                    <label htmlFor="mass-content">Treść</label>
                                     <textarea
+                                        id="mass-content"
                                         className="form-control"
                                         value={content}
                                         onChange={(e) => {

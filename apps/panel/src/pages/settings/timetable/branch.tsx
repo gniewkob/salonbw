@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import {
     useEffect,
@@ -284,6 +285,9 @@ export default function SettingsTimetableBranchPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Harmonogram salonu — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -308,7 +312,10 @@ export default function SettingsTimetableBranchPage() {
                                     <li className="active tab">
                                         <Link href="/settings/timetable/branch">
                                             <div className="icon_box">
-                                                <i className="icon sprite-group_today" />
+                                                <i
+                                                    className="icon sprite-group_today"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             Godziny otwarcia
                                         </Link>
@@ -316,7 +323,10 @@ export default function SettingsTimetableBranchPage() {
                                     <li className="tab">
                                         <Link href="/settings/calendar">
                                             <div className="icon_box">
-                                                <i className="icon sprite-customer_history_visits" />
+                                                <i
+                                                    className="icon sprite-customer_history_visits"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             Kalendarz
                                         </Link>
@@ -324,7 +334,10 @@ export default function SettingsTimetableBranchPage() {
                                     <li className="tab">
                                         <Link href="/settings/timetable/employees">
                                             <div className="icon_box">
-                                                <i className="icon sprite-schedule_employees mr-xs" />
+                                                <i
+                                                    className="icon sprite-schedule_employees mr-xs"
+                                                    aria-hidden="true"
+                                                />
                                             </div>
                                             Dostępność pracowników
                                         </Link>
@@ -457,6 +470,7 @@ export default function SettingsTimetableBranchPage() {
                                                                             </span>
                                                                             <select
                                                                                 className="schedule-time"
+                                                                                aria-label={`Godzina otwarcia (${day.key}, zakres ${rangeIndex + 1})`}
                                                                                 value={
                                                                                     range.open
                                                                                 }
@@ -490,6 +504,7 @@ export default function SettingsTimetableBranchPage() {
                                                                             </span>
                                                                             <select
                                                                                 className="schedule-time"
+                                                                                aria-label={`Godzina zamknięcia (${day.key}, zakres ${rangeIndex + 1})`}
                                                                                 value={
                                                                                     range.close
                                                                                 }

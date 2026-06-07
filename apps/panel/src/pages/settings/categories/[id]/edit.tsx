@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,6 +8,7 @@ import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useProductCategories } from '@/hooks/useProducts';
 import PanelSection from '@/components/ui/PanelSection';
 import type { ProductCategory } from '@/types';
@@ -45,6 +47,7 @@ export default function SettingsCategoriesEditPage() {
     useSetSecondaryNav(NAV);
 
     const { apiFetch } = useAuth();
+    const toast = useToast();
     const queryClient = useQueryClient();
     const categoryId = Number(router.query.id);
     const { data: categories = [], isLoading } = useProductCategories();
@@ -98,11 +101,16 @@ export default function SettingsCategoriesEditPage() {
         event.preventDefault();
         if (!categoryId) return;
 
-        await updateCategory.mutateAsync({
-            name,
-            parentId: parentId ? Number(parentId) : null,
-        });
-        void router.push('/settings/categories');
+        try {
+            await updateCategory.mutateAsync({
+                name,
+                parentId: parentId ? Number(parentId) : null,
+            });
+            toast.success('Kategoria została zapisana');
+            void router.push('/settings/categories');
+        } catch {
+            toast.error('Nie udało się zapisać kategorii');
+        }
     };
 
     if (isLoading) {
@@ -151,6 +159,13 @@ export default function SettingsCategoriesEditPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>
+                    {category?.name
+                        ? `Edytuj: ${category.name} — Ustawienia — Salon Black & White`
+                        : 'Edycja kategorii — Ustawienia — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"

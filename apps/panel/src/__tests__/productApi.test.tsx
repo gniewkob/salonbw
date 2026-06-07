@@ -12,34 +12,29 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useProductApi', () => {
-    it('shows success toast on create', async () => {
-        const apiFetch = jest.fn().mockResolvedValue({
-            id: 1,
-            name: 'A',
-            unitPrice: 1,
-            stock: 1,
-            lowStockThreshold: 5,
-        });
+    it('returns created product', async () => {
+        const product = { id: 1, name: 'A', unitPrice: 1, stock: 1 };
+        const apiFetch = jest.fn().mockResolvedValue(product);
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
         const { result } = renderHook(() => useProductApi(), { wrapper });
+        let created: unknown;
         await act(async () => {
-            await result.current.create({
+            created = await result.current.create({
                 name: 'A',
                 unitPrice: 1,
                 stock: 1,
                 lowStockThreshold: 5,
             });
         });
-        expect(toast.success).toHaveBeenCalled();
+        expect(created).toEqual(product);
     });
 
-    it('shows error toast on failure', async () => {
+    it('throws on create failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -55,7 +50,6 @@ describe('useProductApi', () => {
                     lowStockThreshold: 5,
                 });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 });

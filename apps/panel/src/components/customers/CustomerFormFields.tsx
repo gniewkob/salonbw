@@ -66,6 +66,8 @@ export default function CustomerFormFields({
                     <input
                         id={`${fieldIdPrefix}-first-name`}
                         className="form-control"
+                        type="text"
+                        autoComplete="given-name"
                         value={values.firstName}
                         onChange={(e) => onChange('firstName', e.target.value)}
                         disabled={disabled}
@@ -79,6 +81,8 @@ export default function CustomerFormFields({
                     <input
                         id={`${fieldIdPrefix}-last-name`}
                         className="form-control"
+                        type="text"
+                        autoComplete="family-name"
                         value={values.lastName}
                         onChange={(e) => onChange('lastName', e.target.value)}
                         disabled={disabled}
@@ -89,6 +93,8 @@ export default function CustomerFormFields({
                     <input
                         id={`${fieldIdPrefix}-email`}
                         className="form-control"
+                        type="email"
+                        autoComplete="email"
                         value={values.email}
                         onChange={(e) => onChange('email', e.target.value)}
                         disabled={disabled}
@@ -99,6 +105,8 @@ export default function CustomerFormFields({
                     <input
                         id={`${fieldIdPrefix}-phone`}
                         className="form-control"
+                        type="tel"
+                        autoComplete="tel"
                         value={values.phone}
                         onChange={(e) => onChange('phone', e.target.value)}
                         disabled={disabled}
@@ -126,7 +134,9 @@ export default function CustomerFormFields({
                     </select>
                 </div>
                 <div className="customer-new-row customer-new-row--consent">
-                    <label>7. Zgody udzielone przez klienta</label>
+                    <span className="form-label d-block">
+                        7. Zgody udzielone przez klienta
+                    </span>
                     <div className="customer-consent-box">
                         Pamiętaj o dopełnieniu obowiązku informacyjnego w
                         zakresie realizacji umowy.

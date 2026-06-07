@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -97,7 +98,7 @@ const GROUPS: SettingsGroup[] = [
         heading: 'Komunikacja',
         tiles: [
             {
-                href: '/event-reminders',
+                href: '/communication/reminders',
                 label: 'komunikacja z klientem',
                 boxClass: 'client_communication',
                 iconId: 'svg-client_communication',
@@ -193,6 +194,9 @@ export default function SettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Ustawienia — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div data-testid="settings-page">
                     <SalonBreadcrumbs

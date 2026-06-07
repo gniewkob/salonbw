@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
@@ -293,6 +294,9 @@ export default function CommissionsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki prowizji — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="salonbw-page statistics-module"
@@ -398,12 +402,20 @@ export default function CommissionsPage() {
                                     >
                                         <tbody>
                                             <tr>
-                                                <th>Pracownik</th>
-                                                <th>Obroty na usługach</th>
-                                                <th>Prowizja od usług</th>
-                                                <th>Obroty na produktach</th>
-                                                <th>Prowizja z produktów</th>
-                                                <th>
+                                                <th scope="col">Pracownik</th>
+                                                <th scope="col">
+                                                    Obroty na usługach
+                                                </th>
+                                                <th scope="col">
+                                                    Prowizja od usług
+                                                </th>
+                                                <th scope="col">
+                                                    Obroty na produktach
+                                                </th>
+                                                <th scope="col">
+                                                    Prowizja z produktów
+                                                </th>
+                                                <th scope="col">
                                                     Łącznie obroty{' '}
                                                     <small
                                                         style={{
@@ -414,7 +426,9 @@ export default function CommissionsPage() {
                                                         brutto
                                                     </small>
                                                 </th>
-                                                <th>Łącznie prowizja</th>
+                                                <th scope="col">
+                                                    Łącznie prowizja
+                                                </th>
                                             </tr>
                                             {commissionRows.map(
                                                 (employee, i) => (
@@ -503,12 +517,20 @@ export default function CommissionsPage() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th />
-                                                <th>Obroty na usługach</th>
-                                                <th>Prowizja od usług</th>
-                                                <th>Obroty na produktach</th>
-                                                <th>Prowizja z produktów</th>
-                                                <th>
+                                                <th scope="col" />
+                                                <th scope="col">
+                                                    Obroty na usługach
+                                                </th>
+                                                <th scope="col">
+                                                    Prowizja od usług
+                                                </th>
+                                                <th scope="col">
+                                                    Obroty na produktach
+                                                </th>
+                                                <th scope="col">
+                                                    Prowizja z produktów
+                                                </th>
+                                                <th scope="col">
                                                     Łącznie obroty{' '}
                                                     <small
                                                         style={{
@@ -519,7 +541,9 @@ export default function CommissionsPage() {
                                                         brutto
                                                     </small>
                                                 </th>
-                                                <th>Łącznie prowizja</th>
+                                                <th scope="col">
+                                                    Łącznie prowizja
+                                                </th>
                                             </tr>
                                             <tr>
                                                 <td>

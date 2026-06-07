@@ -1,5 +1,6 @@
-
+import { useState } from 'react';
 import type { Service, ServiceCategory } from '@/types';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface Props {
     services: Service[];
@@ -20,6 +21,9 @@ export default function ServiceList({
     onManageVariants,
     onOpenDetails,
 }: Props) {
+    const [confirmDeleteService, setConfirmDeleteService] =
+        useState<Service | null>(null);
+
     const formatPrice = (price: number, priceType: string) => {
         const formatted = new Intl.NumberFormat('pl-PL', {
             style: 'currency',
@@ -299,15 +303,9 @@ export default function ServiceList({
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            if (
-                                                confirm(
-                                                    `Czy na pewno chcesz usunąć usługę "${service.name}"?`,
-                                                )
-                                            ) {
-                                                void onDelete(service.id);
-                                            }
-                                        }}
+                                        onClick={() =>
+                                            setConfirmDeleteService(service)
+                                        }
                                         className="p-1 rounded text-muted"
                                         title="Usuń usługę"
                                         aria-label="Usuń usługę"
@@ -332,6 +330,20 @@ export default function ServiceList({
                     ))}
                 </tbody>
             </table>
+            <ConfirmModal
+                open={!!confirmDeleteService}
+                title="Usuń usługę"
+                message={`Czy na pewno chcesz usunąć usługę "${confirmDeleteService?.name}"?`}
+                confirmLabel="Usuń"
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmDeleteService) return;
+                    const id = confirmDeleteService.id;
+                    setConfirmDeleteService(null);
+                    void onDelete(id);
+                }}
+                onCancel={() => setConfirmDeleteService(null)}
+            />
         </div>
     );
 }

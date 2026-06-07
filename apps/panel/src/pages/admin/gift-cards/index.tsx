@@ -1,5 +1,7 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -26,11 +28,16 @@ type ModalType = 'create' | 'edit' | 'redeem' | 'adjust' | 'details' | null;
 
 export default function GiftCardsManagementPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const [modalType, setModalType] = useState<ModalType>(null);
     const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
     const [statusFilter, setStatusFilter] = useState<GiftCardStatus | ''>('');
     const [searchCode, setSearchCode] = useState('');
     const [page, setPage] = useState(1);
+    const [cancelModal, setCancelModal] = useState<{
+        card: GiftCard;
+        reason: string;
+    } | null>(null);
 
     const { data: cardsData, isLoading } = useGiftCards({
         status: statusFilter || undefined,
@@ -112,8 +119,9 @@ export default function GiftCardsManagementPage() {
         try {
             await createGiftCard.mutateAsync(createForm);
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to create gift card:', error);
+            toast.success('Karta podarunkowa została utworzona');
+        } catch {
+            toast.error('Nie udało się utworzyć karty podarunkowej');
         }
     };
 
@@ -126,8 +134,9 @@ export default function GiftCardsManagementPage() {
                 data: editForm,
             });
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to update gift card:', error);
+            toast.success('Karta podarunkowa zaktualizowana');
+        } catch {
+            toast.error('Nie udało się zaktualizować karty');
         }
     };
 
@@ -136,8 +145,9 @@ export default function GiftCardsManagementPage() {
         try {
             await redeemGiftCard.mutateAsync(redeemForm);
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to redeem gift card:', error);
+            toast.success('Karta zrealizowana');
+        } catch {
+            toast.error('Nie udało się zrealizować karty');
         }
     };
 
@@ -150,21 +160,24 @@ export default function GiftCardsManagementPage() {
                 data: adjustForm,
             });
             setModalType(null);
-        } catch (error) {
-            console.error('Failed to adjust balance:', error);
+            toast.success('Saldo zostało skorygowane');
+        } catch {
+            toast.error('Nie udało się skorygować salda');
         }
     };
 
-    const handleCancel = async (card: GiftCard) => {
-        const reason = window.prompt(
-            'Podaj powód anulowania karty (opcjonalnie):',
-        );
-        if (reason === null) return;
-        try {
-            await cancelGiftCard.mutateAsync({ id: card.id, reason });
-        } catch (error) {
-            console.error('Failed to cancel gift card:', error);
-        }
+    const handleCancel = (card: GiftCard) => {
+        setCancelModal({ card, reason: '' });
+    };
+
+    const doCancelCard = () => {
+        if (!cancelModal) return;
+        const { card, reason } = cancelModal;
+        setCancelModal(null);
+        void cancelGiftCard
+            .mutateAsync({ id: card.id, reason })
+            .then(() => toast.success('Karta anulowana'))
+            .catch(() => toast.error('Nie udało się anulować karty'));
     };
 
     const STATUS_COLORS: Record<GiftCardStatus, string> = {
@@ -205,6 +218,9 @@ export default function GiftCardsManagementPage() {
             roles={['admin', 'receptionist']}
             permission="nav:extension"
         >
+            <Head>
+                <title>Karty podarunkowe — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="gift-cards-page">
                     <SalonBreadcrumbs
@@ -322,10 +338,14 @@ export default function GiftCardsManagementPage() {
                             <div className="bg-white rounded-4 shadow-sm p-3 mb-4">
                                 <div className="d-flex flex-wrap gap-3">
                                     <div className="flex-fill">
-                                        <label className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="gift-card-search"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Szukaj po kodzie
                                         </label>
                                         <input
+                                            id="gift-card-search"
                                             type="text"
                                             value={searchCode}
                                             onChange={(e) =>
@@ -551,7 +571,7 @@ export default function GiftCardsManagementPage() {
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() =>
-                                                                                    void handleCancel(
+                                                                                    handleCancel(
                                                                                         card,
                                                                                     )
                                                                                 }
@@ -643,10 +663,14 @@ export default function GiftCardsManagementPage() {
                                         </div>
                                         <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-create-value"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Wartość karty (PLN) *
                                                 </label>
                                                 <input
+                                                    id="gc-create-value"
                                                     type="number"
                                                     required
                                                     min={1}
@@ -670,10 +694,14 @@ export default function GiftCardsManagementPage() {
                                             </div>
                                             <div className="row row-cols-1 row-cols-sm-2 g-3">
                                                 <div>
-                                                    <label className="d-block small fw-medium text-body mb-1">
+                                                    <label
+                                                        htmlFor="gc-create-valid-from"
+                                                        className="d-block small fw-medium text-body mb-1"
+                                                    >
                                                         Ważna od *
                                                     </label>
                                                     <input
+                                                        id="gc-create-valid-from"
                                                         type="date"
                                                         required
                                                         title="Ważna od"
@@ -694,10 +722,14 @@ export default function GiftCardsManagementPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="d-block small fw-medium text-body mb-1">
+                                                    <label
+                                                        htmlFor="gc-create-valid-until"
+                                                        className="d-block small fw-medium text-body mb-1"
+                                                    >
                                                         Ważna do *
                                                     </label>
                                                     <input
+                                                        id="gc-create-valid-until"
                                                         type="date"
                                                         required
                                                         title="Ważna do"
@@ -719,10 +751,14 @@ export default function GiftCardsManagementPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-create-recipient-name"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Nazwa odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-create-recipient-name"
                                                     type="text"
                                                     title="Nazwa odbiorcy"
                                                     placeholder="Imię i nazwisko"
@@ -741,10 +777,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-create-recipient-email"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Email odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-create-recipient-email"
                                                     type="email"
                                                     title="Email odbiorcy"
                                                     placeholder="adres@email.pl"
@@ -763,10 +803,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-create-message"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Wiadomość (życzenia)
                                                 </label>
                                                 <textarea
+                                                    id="gc-create-message"
                                                     rows={3}
                                                     value={
                                                         createForm.message ?? ''
@@ -826,10 +870,14 @@ export default function GiftCardsManagementPage() {
                                         </div>
                                         <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-edit-valid-until"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Ważna do
                                                 </label>
                                                 <input
+                                                    id="gc-edit-valid-until"
                                                     type="date"
                                                     title="Ważna do"
                                                     value={
@@ -847,10 +895,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-edit-recipient-name"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Nazwa odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-edit-recipient-name"
                                                     type="text"
                                                     title="Nazwa odbiorcy"
                                                     placeholder="Imię i nazwisko"
@@ -869,10 +921,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-edit-recipient-email"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Email odbiorcy
                                                 </label>
                                                 <input
+                                                    id="gc-edit-recipient-email"
                                                     type="email"
                                                     title="Email odbiorcy"
                                                     placeholder="adres@email.pl"
@@ -891,10 +947,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-edit-message"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Wiadomość
                                                 </label>
                                                 <textarea
+                                                    id="gc-edit-message"
                                                     rows={3}
                                                     title="Wiadomość"
                                                     placeholder="Treść wiadomości"
@@ -912,10 +972,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-edit-notes"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Notatki wewnętrzne
                                                 </label>
                                                 <textarea
+                                                    id="gc-edit-notes"
                                                     rows={2}
                                                     title="Notatki wewnętrzne"
                                                     placeholder="Dodatkowe informacje..."
@@ -974,10 +1038,14 @@ export default function GiftCardsManagementPage() {
                                         </div>
                                         <div className="px-4 py-3 gap-2">
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-redeem-code"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Kod karty *
                                                 </label>
                                                 <input
+                                                    id="gc-redeem-code"
                                                     type="text"
                                                     required
                                                     value={redeemForm.code}
@@ -992,10 +1060,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-redeem-amount"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Kwota do pobrania (PLN) *
                                                 </label>
                                                 <input
+                                                    id="gc-redeem-amount"
                                                     type="number"
                                                     required
                                                     min={0.01}
@@ -1015,10 +1087,14 @@ export default function GiftCardsManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-redeem-notes"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Notatka
                                                 </label>
                                                 <input
+                                                    id="gc-redeem-notes"
                                                     type="text"
                                                     value={redeemForm.notes}
                                                     onChange={(e) =>
@@ -1088,10 +1164,14 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-adjust-amount"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Kwota korekty (PLN) *
                                                 </label>
                                                 <input
+                                                    id="gc-adjust-amount"
                                                     type="number"
                                                     required
                                                     step={0.01}
@@ -1117,10 +1197,14 @@ export default function GiftCardsManagementPage() {
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="gc-adjust-notes"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Powód korekty *
                                                 </label>
                                                 <input
+                                                    id="gc-adjust-notes"
                                                     type="text"
                                                     required
                                                     value={adjustForm.notes}
@@ -1425,6 +1509,79 @@ export default function GiftCardsManagementPage() {
                         )}
                     </div>
                 </div>
+                {cancelModal !== null && (
+                    <div className="modal-backdrop fade in">
+                        <div
+                            className="modal-dialog"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Anuluj kartę podarunkową"
+                        >
+                            <form
+                                className="modal-content"
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    doCancelCard();
+                                }}
+                            >
+                                <div className="modal-header">
+                                    <button
+                                        type="button"
+                                        className="close"
+                                        onClick={() => setCancelModal(null)}
+                                        aria-label="Zamknij"
+                                    >
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <h4 className="modal-title">
+                                        Anuluj kartę
+                                    </h4>
+                                </div>
+                                <div className="modal-body">
+                                    <p>
+                                        Czy na pewno chcesz anulować kartę{' '}
+                                        <strong>{cancelModal.card.code}</strong>
+                                        ?
+                                    </p>
+                                    <div className="mb-3">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="cancel-reason-input"
+                                        >
+                                            Powód anulowania (opcjonalnie)
+                                        </label>
+                                        <input
+                                            id="cancel-reason-input"
+                                            className="form-control"
+                                            value={cancelModal.reason}
+                                            onChange={(e) =>
+                                                setCancelModal({
+                                                    ...cancelModal,
+                                                    reason: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() => setCancelModal(null)}
+                                    >
+                                        Nie, wróć
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-danger"
+                                    >
+                                        Anuluj kartę
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </SalonShell>
         </RouteGuard>
     );

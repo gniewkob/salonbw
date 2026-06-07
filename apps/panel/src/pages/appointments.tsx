@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/contexts/ToastContext';
@@ -66,9 +68,12 @@ export default function AppointmentsPage() {
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
+    const defaultFrom = isoDate(thirtyDaysAgo);
+    const defaultTo = isoDate(today);
+
     const initialStatus = (router.query.status as AppointmentStatus) || '';
-    const [from, setFrom] = useState(isoDate(thirtyDaysAgo));
-    const [to, setTo] = useState(isoDate(today));
+    const [from, setFrom] = useState(defaultFrom);
+    const [to, setTo] = useState(defaultTo);
     const [status, setStatus] = useState<AppointmentStatus | ''>(initialStatus);
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
@@ -97,6 +102,21 @@ export default function AppointmentsPage() {
     const handleFilterChange = useCallback(() => {
         setPage(1);
     }, []);
+
+    const hasActiveFilters =
+        from !== defaultFrom ||
+        to !== defaultTo ||
+        status !== '' ||
+        search !== '';
+
+    const resetFilters = useCallback(() => {
+        setFrom(defaultFrom);
+        setTo(defaultTo);
+        setStatus('');
+        setSearch('');
+        setSearchInput('');
+        setPage(1);
+    }, [defaultFrom, defaultTo]);
 
     useEffect(() => {
         setPage(1);
@@ -142,6 +162,8 @@ export default function AppointmentsPage() {
     };
 
     const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const [confirmRejectAppt, setConfirmRejectAppt] =
+        useState<AppointmentWithVariant | null>(null);
 
     const handleConfirm = useCallback(
         async (e: React.MouseEvent, appt: AppointmentWithVariant) => {
@@ -169,9 +191,15 @@ export default function AppointmentsPage() {
     );
 
     const handleReject = useCallback(
-        async (e: React.MouseEvent, appt: AppointmentWithVariant) => {
+        (e: React.MouseEvent, appt: AppointmentWithVariant) => {
             e.stopPropagation();
-            if (!confirm('Odrzucić rezerwację i anulować wizytę?')) return;
+            setConfirmRejectAppt(appt);
+        },
+        [],
+    );
+
+    const doReject = useCallback(
+        async (appt: AppointmentWithVariant) => {
             setActionLoading(appt.id);
             try {
                 await apiFetch(`/appointments/${appt.id}/cancel`, {
@@ -190,15 +218,14 @@ export default function AppointmentsPage() {
         [apiFetch, toast, queryClient],
     );
 
-    if (role !== 'admin' && role !== 'receptionist') {
-        return null;
-    }
-
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:appointments"
         >
+            <Head>
+                <title>Wizyty — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="inner">
                     <SalonBreadcrumbs
@@ -209,10 +236,14 @@ export default function AppointmentsPage() {
                     <div className="column_row mb-3">
                         <div className="d-flex flex-wrap gap-2 align-items-end">
                             <div>
-                                <label className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appts-from"
+                                    className="form-label mb-1 small"
+                                >
                                     Od
                                 </label>
                                 <input
+                                    id="appts-from"
                                     type="date"
                                     className="form-control form-control-sm"
                                     value={from}
@@ -223,10 +254,14 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appts-to"
+                                    className="form-label mb-1 small"
+                                >
                                     Do
                                 </label>
                                 <input
+                                    id="appts-to"
                                     type="date"
                                     className="form-control form-control-sm"
                                     value={to}
@@ -237,10 +272,14 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appts-status"
+                                    className="form-label mb-1 small"
+                                >
                                     Status
                                 </label>
                                 <select
+                                    id="appts-status"
                                     className="form-select form-select-sm"
                                     value={status}
                                     onChange={(e) => {
@@ -261,11 +300,15 @@ export default function AppointmentsPage() {
                                 </select>
                             </div>
                             <div className="flex-grow-1">
-                                <label className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appointments-search"
+                                    className="form-label mb-1 small"
+                                >
                                     Klient / telefon
                                 </label>
                                 <div className="input-group input-group-sm">
                                     <input
+                                        id="appointments-search"
                                         type="text"
                                         className="form-control"
                                         placeholder="Szukaj..."
@@ -278,6 +321,7 @@ export default function AppointmentsPage() {
                                         }
                                     />
                                     <button
+                                        type="button"
                                         className="btn btn-outline-secondary"
                                         onClick={handleSearch}
                                     >
@@ -285,7 +329,16 @@ export default function AppointmentsPage() {
                                     </button>
                                 </div>
                             </div>
-                            <div>
+                            <div className="d-flex align-items-end gap-2">
+                                {hasActiveFilters && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={resetFilters}
+                                    >
+                                        Wyczyść filtry
+                                    </button>
+                                )}
                                 <Link
                                     href="/calendar"
                                     className="btn btn-sm btn-dark"
@@ -305,7 +358,7 @@ export default function AppointmentsPage() {
                     </div>
 
                     {error && (
-                        <div className="alert alert-danger">
+                        <div className="alert alert-danger" role="alert">
                             Błąd ładowania danych.
                         </div>
                     )}
@@ -314,14 +367,16 @@ export default function AppointmentsPage() {
                         <table className="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th>Data</th>
-                                    <th>Klient</th>
-                                    <th>Usługa</th>
-                                    <th>Pracownik</th>
-                                    <th>Status</th>
-                                    <th>Płatność</th>
-                                    <th className="text-end">Kwota</th>
-                                    <th></th>
+                                    <th scope="col">Data</th>
+                                    <th scope="col">Klient</th>
+                                    <th scope="col">Usługa</th>
+                                    <th scope="col">Pracownik</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Płatność</th>
+                                    <th scope="col" className="text-end">
+                                        Kwota
+                                    </th>
+                                    <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -434,6 +489,7 @@ export default function AppointmentsPage() {
                                                     'online_pending' && (
                                                     <>
                                                         <button
+                                                            type="button"
                                                             className="btn btn-sm btn-success"
                                                             disabled={
                                                                 actionLoading ===
@@ -453,6 +509,7 @@ export default function AppointmentsPage() {
                                                                 : '✓ Potwierdź'}
                                                         </button>
                                                         <button
+                                                            type="button"
                                                             className="btn btn-sm btn-outline-danger"
                                                             disabled={
                                                                 actionLoading ===
@@ -471,6 +528,7 @@ export default function AppointmentsPage() {
                                                     </>
                                                 )}
                                                 <button
+                                                    type="button"
                                                     className="btn btn-sm btn-outline-secondary"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -488,7 +546,10 @@ export default function AppointmentsPage() {
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="pagination_container mt-3">
+                        <nav
+                            className="pagination_container mt-3"
+                            aria-label="Paginacja"
+                        >
                             <div className="row">
                                 <div className="infocol-7">
                                     <span>
@@ -498,8 +559,10 @@ export default function AppointmentsPage() {
                                 </div>
                                 <div className="form_paginationcol-5 d-flex gap-1 justify-content-end">
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         disabled={page <= 1}
+                                        aria-label="Poprzednia strona"
                                         onClick={() =>
                                             setPage((p) => Math.max(1, p - 1))
                                         }
@@ -519,8 +582,15 @@ export default function AppointmentsPage() {
                                                         : page - 3 + i;
                                             return (
                                                 <button
+                                                    type="button"
                                                     key={pageNum}
                                                     className={`btn btn-sm ${pageNum === page ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                    aria-label={`Strona ${pageNum}`}
+                                                    aria-current={
+                                                        pageNum === page
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
                                                     onClick={() =>
                                                         setPage(pageNum)
                                                     }
@@ -531,8 +601,10 @@ export default function AppointmentsPage() {
                                         },
                                     )}
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         disabled={page >= totalPages}
+                                        aria-label="Następna strona"
                                         onClick={() =>
                                             setPage((p) =>
                                                 Math.min(totalPages, p + 1),
@@ -543,9 +615,23 @@ export default function AppointmentsPage() {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </nav>
                     )}
                 </div>
+                <ConfirmModal
+                    open={!!confirmRejectAppt}
+                    title="Odrzuć rezerwację"
+                    message="Czy na pewno chcesz odrzucić tę rezerwację i anulować wizytę?"
+                    confirmLabel="Odrzuć"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmRejectAppt) return;
+                        const appt = confirmRejectAppt;
+                        setConfirmRejectAppt(null);
+                        void doReject(appt);
+                    }}
+                    onCancel={() => setConfirmRejectAppt(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

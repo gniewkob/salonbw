@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -68,253 +68,277 @@ export default function WarehouseOrderCreatePage() {
             return;
         }
 
-        await createMutation.mutateAsync({
-            supplierId: supplierId ? Number(supplierId) : undefined,
-            notes: notes || undefined,
-            items,
-        });
-
-        await router.push('/orders/history?status=draft');
+        try {
+            await createMutation.mutateAsync({
+                supplierId: supplierId ? Number(supplierId) : undefined,
+                notes: notes || undefined,
+                items,
+            });
+            await router.push('/orders/history?status=draft');
+        } catch {
+            setFormError(
+                'Nie udało się zapisać zamówienia. Sprawdź dane i spróbuj ponownie.',
+            );
+        }
     };
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Dodaj zamówienie | SalonBW"
-            heading="Magazyn / Dodaj zamówienie"
-            activeTab="products"
-            actions={
-                <Link
-                    href="/orders/history"
-                    className="btn btn-outline-secondary btn-sm"
-                >
-                    historia zamówień
-                </Link>
-            }
-        >
-            <div className="warehouse-new-screen">
-                <h3 className="warehouse-subtitle">Pozycje zamówienia</h3>
-                <div className="products-table-wrap warehouse-lines-table">
-                    <table className="products-table">
-                        <thead>
-                            <tr>
-                                <th>lp</th>
-                                <th>nazwa</th>
-                                <th>jednostka</th>
-                                <th>ilość</th>
-                                <th>usuń</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {lines.map((line, index) => (
-                                <tr key={`${index}-${line.productId}`}>
-                                    <td>{index + 1}</td>
-                                    <td>
-                                        <select
-                                            value={line.productId}
-                                            onChange={(event) => {
-                                                const value =
-                                                    event.target.value;
-                                                const product = products.find(
-                                                    (item) =>
-                                                        String(item.id) ===
-                                                        value,
-                                                );
-                                                updateLine(index, {
-                                                    productId: value,
-                                                    productName:
-                                                        product?.name ?? '',
-                                                    unit:
-                                                        product?.unit || 'op.',
-                                                });
-                                            }}
-                                            className="form-control"
-                                        >
-                                            <option value="">
-                                                wybierz produkt
-                                            </option>
-                                            {products.map((product) => (
-                                                <option
-                                                    key={product.id}
-                                                    value={product.id}
-                                                >
-                                                    {product.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <input
-                                            type="text"
-                                            value={line.productName}
-                                            onChange={(event) =>
-                                                updateLine(index, {
-                                                    productName:
-                                                        event.target.value,
-                                                })
-                                            }
-                                            className="form-control"
-                                            placeholder="nazwa alternatywna"
-                                        />
-                                    </td>
-                                    <td>
-                                        <select
-                                            value={line.unit}
-                                            onChange={(event) =>
-                                                updateLine(index, {
-                                                    unit: event.target.value,
-                                                })
-                                            }
-                                            className="form-control"
-                                        >
-                                            <option value="op.">op.</option>
-                                            <option value="szt.">szt.</option>
-                                            <option value="ml">ml</option>
-                                            <option value="g">g</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            value={line.quantity}
-                                            onChange={(event) =>
-                                                updateLine(index, {
-                                                    quantity:
-                                                        event.target.value,
-                                                })
-                                            }
-                                            className="form-control"
-                                        />
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() =>
-                                                setLines((current) =>
-                                                    current.filter(
-                                                        (_, lineIndex) =>
-                                                            lineIndex !== index,
-                                                    ),
-                                                )
-                                            }
-                                        >
-                                            usuń
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="warehouse-actions-row">
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary btn-sm"
-                        onClick={addLine}
-                    >
-                        dodaj kolejną pozycję
-                    </button>
+        <>
+            <Head>
+                <title>Nowe zamówienie — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Dodaj zamówienie | SalonBW"
+                heading="Magazyn / Dodaj zamówienie"
+                activeTab="products"
+                actions={
                     <Link
-                        href="/products/new"
+                        href="/orders/history"
                         className="btn btn-outline-secondary btn-sm"
                     >
-                        dodaj nowy produkt
+                        historia zamówień
                     </Link>
-                </div>
-
-                <div className="warehouse-entry-form">
-                    <div className="warehouse-entry-row">
-                        <span className="warehouse-entry-row__index">1.</span>
-                        <span className="warehouse-entry-row__label">
-                            dostawca
-                        </span>
-                        <div className="warehouse-inline-field">
-                            <select
-                                value={supplierId}
-                                onChange={(event) =>
-                                    setSupplierId(event.target.value)
-                                }
-                                className="salonbw-select"
-                            >
-                                <option value="">
-                                    wpisz nazwę lub wybierz z listy
-                                </option>
-                                {suppliers.map((supplier) => (
-                                    <option
-                                        key={supplier.id}
-                                        value={supplier.id}
-                                    >
-                                        {supplier.name}
-                                    </option>
+                }
+            >
+                <div className="warehouse-new-screen">
+                    <h3 className="warehouse-subtitle">Pozycje zamówienia</h3>
+                    <div className="products-table-wrap warehouse-lines-table">
+                        <table className="products-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">lp</th>
+                                    <th scope="col">nazwa</th>
+                                    <th scope="col">jednostka</th>
+                                    <th scope="col">ilość</th>
+                                    <th scope="col">usuń</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {lines.map((line, index) => (
+                                    <tr key={`${index}-${line.productId}`}>
+                                        <td>{index + 1}</td>
+                                        <td>
+                                            <select
+                                                aria-label={`Produkt (pozycja ${index + 1})`}
+                                                value={line.productId}
+                                                onChange={(event) => {
+                                                    const value =
+                                                        event.target.value;
+                                                    const product =
+                                                        products.find(
+                                                            (item) =>
+                                                                String(
+                                                                    item.id,
+                                                                ) === value,
+                                                        );
+                                                    updateLine(index, {
+                                                        productId: value,
+                                                        productName:
+                                                            product?.name ?? '',
+                                                        unit:
+                                                            product?.unit ||
+                                                            'op.',
+                                                    });
+                                                }}
+                                                className="form-control"
+                                            >
+                                                <option value="">
+                                                    wybierz produkt
+                                                </option>
+                                                {products.map((product) => (
+                                                    <option
+                                                        key={product.id}
+                                                        value={product.id}
+                                                    >
+                                                        {product.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                type="text"
+                                                value={line.productName}
+                                                onChange={(event) =>
+                                                    updateLine(index, {
+                                                        productName:
+                                                            event.target.value,
+                                                    })
+                                                }
+                                                className="form-control"
+                                                placeholder="nazwa alternatywna"
+                                            />
+                                        </td>
+                                        <td>
+                                            <select
+                                                aria-label={`Jednostka (pozycja ${index + 1})`}
+                                                value={line.unit}
+                                                onChange={(event) =>
+                                                    updateLine(index, {
+                                                        unit: event.target
+                                                            .value,
+                                                    })
+                                                }
+                                                className="form-control"
+                                            >
+                                                <option value="op.">op.</option>
+                                                <option value="szt.">
+                                                    szt.
+                                                </option>
+                                                <option value="ml">ml</option>
+                                                <option value="g">g</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={line.quantity}
+                                                onChange={(event) =>
+                                                    updateLine(index, {
+                                                        quantity:
+                                                            event.target.value,
+                                                    })
+                                                }
+                                                className="form-control"
+                                            />
+                                        </td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    setLines((current) =>
+                                                        current.filter(
+                                                            (_, lineIndex) =>
+                                                                lineIndex !==
+                                                                index,
+                                                        ),
+                                                    )
+                                                }
+                                            >
+                                                usuń
+                                            </button>
+                                        </td>
+                                    </tr>
                                 ))}
-                            </select>
-                            <Link
-                                href="/suppliers"
-                                className="btn btn-outline-secondary btn-sm"
-                            >
-                                dodaj dostawcę
-                            </Link>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
-                    {notesEnabled ? (
-                        <div className="warehouse-entry-row">
-                            <span className="warehouse-entry-row__index">
-                                2.
-                            </span>
-                            <span className="warehouse-entry-row__label">
-                                opis
-                            </span>
-                            <textarea
-                                value={notes}
-                                onChange={(event) =>
-                                    setNotes(event.target.value)
-                                }
-                                className="form-control"
-                            />
-                        </div>
-                    ) : (
-                        <div className="warehouse-entry-row">
-                            <span className="warehouse-entry-row__index">
-                                2.
-                            </span>
-                            <span className="warehouse-entry-row__label">
-                                opis
-                            </span>
-                            <button
-                                type="button"
-                                className="btn btn-outline-secondary btn-sm"
-                                onClick={() => setNotesEnabled(true)}
-                            >
-                                dodaj uwagi
-                            </button>
-                        </div>
-                    )}
-                    <div className="warehouse-entry-actions">
-                        <Link
-                            href="/orders/history"
-                            className="btn btn-outline-secondary btn-sm"
-                        >
-                            anuluj
-                        </Link>
+
+                    <div className="warehouse-actions-row">
                         <button
                             type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() => void submit()}
-                            disabled={createMutation.isPending}
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={addLine}
                         >
-                            {createMutation.isPending
-                                ? 'zapisywanie...'
-                                : 'zapisz zamówienie'}
+                            dodaj kolejną pozycję
                         </button>
-                        <span className="warehouse-entry-total">
-                            pozycje: {lines.length}
-                        </span>
+                        <Link
+                            href="/products/new"
+                            className="btn btn-outline-secondary btn-sm"
+                        >
+                            dodaj nowy produkt
+                        </Link>
                     </div>
+
+                    <div className="warehouse-entry-form">
+                        <div className="warehouse-entry-row">
+                            <span className="warehouse-entry-row__index">
+                                1.
+                            </span>
+                            <span className="warehouse-entry-row__label">
+                                dostawca
+                            </span>
+                            <div className="warehouse-inline-field">
+                                <select
+                                    aria-label="Dostawca"
+                                    value={supplierId}
+                                    onChange={(event) =>
+                                        setSupplierId(event.target.value)
+                                    }
+                                    className="salonbw-select"
+                                >
+                                    <option value="">
+                                        wpisz nazwę lub wybierz z listy
+                                    </option>
+                                    {suppliers.map((supplier) => (
+                                        <option
+                                            key={supplier.id}
+                                            value={supplier.id}
+                                        >
+                                            {supplier.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <Link
+                                    href="/suppliers"
+                                    className="btn btn-outline-secondary btn-sm"
+                                >
+                                    dodaj dostawcę
+                                </Link>
+                            </div>
+                        </div>
+                        {notesEnabled ? (
+                            <div className="warehouse-entry-row">
+                                <span className="warehouse-entry-row__index">
+                                    2.
+                                </span>
+                                <span className="warehouse-entry-row__label">
+                                    opis
+                                </span>
+                                <textarea
+                                    value={notes}
+                                    onChange={(event) =>
+                                        setNotes(event.target.value)
+                                    }
+                                    className="form-control"
+                                />
+                            </div>
+                        ) : (
+                            <div className="warehouse-entry-row">
+                                <span className="warehouse-entry-row__index">
+                                    2.
+                                </span>
+                                <span className="warehouse-entry-row__label">
+                                    opis
+                                </span>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={() => setNotesEnabled(true)}
+                                >
+                                    dodaj uwagi
+                                </button>
+                            </div>
+                        )}
+                        <div className="warehouse-entry-actions">
+                            <Link
+                                href="/orders/history"
+                                className="btn btn-outline-secondary btn-sm"
+                            >
+                                anuluj
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() => void submit()}
+                                disabled={createMutation.isPending}
+                            >
+                                {createMutation.isPending
+                                    ? 'zapisywanie...'
+                                    : 'zapisz zamówienie'}
+                            </button>
+                            <span className="warehouse-entry-total">
+                                pozycje: {lines.length}
+                            </span>
+                        </div>
+                    </div>
+                    {formError ? (
+                        <p className="warehouse-validation-error">
+                            {formError}
+                        </p>
+                    ) : null}
                 </div>
-                {formError ? (
-                    <p className="warehouse-validation-error">{formError}</p>
-                ) : null}
-            </div>
-        </WarehouseLayout>
+            </WarehouseLayout>
+        </>
     );
 }

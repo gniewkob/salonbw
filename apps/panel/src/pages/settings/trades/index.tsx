@@ -1,8 +1,12 @@
+import Head from 'next/head';
 import Link from 'next/link';
+import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
     useServiceCategoryTree,
@@ -91,19 +95,30 @@ function CategoryRow({
 
 export default function SettingsTradesPage() {
     const { role } = useAuth();
-    const { data: tree = [], isLoading, error, refetch } = useServiceCategoryTree();
+    const toast = useToast();
+    const {
+        data: tree = [],
+        isLoading,
+        error,
+        refetch,
+    } = useServiceCategoryTree();
     const del = useDeleteServiceCategory();
+    const [confirmDelete, setConfirmDelete] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
 
     useSetSecondaryNav(NAV);
 
     const handleDelete = (id: number, name: string) => {
-        if (window.confirm(`Usunąć branżę "${name}"?`)) {
-            void del.mutateAsync(id);
-        }
+        setConfirmDelete({ id, name });
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
+            <Head>
+                <title>Zawody — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="settings-detail-layout"
@@ -150,9 +165,9 @@ export default function SettingsTradesPage() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Nazwa</th>
-                                            <th>Status</th>
-                                            <th />
+                                            <th scope="col">Nazwa</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col" />
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -162,9 +177,9 @@ export default function SettingsTradesPage() {
                                                     colSpan={3}
                                                     className="text-muted text-center py-4"
                                                 >
-                                                    Brak branż. Kliknij
-                                                    &ldquo;+ Dodaj branżę&rdquo; aby dodać
-                                                    pierwszą.
+                                                    Brak branż. Kliknij &ldquo;+
+                                                    Dodaj branżę&rdquo; aby
+                                                    dodać pierwszą.
                                                 </td>
                                             </tr>
                                         ) : (
@@ -183,6 +198,24 @@ export default function SettingsTradesPage() {
                         )}
                     </div>
                 </div>
+                <ConfirmModal
+                    open={!!confirmDelete}
+                    title="Usuń branżę"
+                    message={`Czy na pewno chcesz usunąć branżę "${confirmDelete?.name}"? Operacja jest nieodwracalna.`}
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (!confirmDelete) return;
+                        const { id } = confirmDelete;
+                        setConfirmDelete(null);
+                        void del.mutateAsync(id).catch(() => {
+                            toast.error(
+                                'Nie udało się usunąć branży. Spróbuj ponownie.',
+                            );
+                        });
+                    }}
+                    onCancel={() => setConfirmDelete(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

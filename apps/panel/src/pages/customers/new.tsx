@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -168,12 +169,8 @@ export default function NewCustomerPage() {
                 emailConsent: form.emailConsent,
                 smsConsent: form.smsConsent,
             });
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się zapisać klienta',
-            );
+        } catch {
+            // onError in useCreateCustomer already shows the toast
             return;
         }
         if (submitMode === 'next') {
@@ -210,6 +207,9 @@ export default function NewCustomerPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
+            <Head>
+                <title>Nowy klient — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <CustomerErrorBoundary
                     fallback={
@@ -262,7 +262,7 @@ export default function NewCustomerPage() {
                                                     }
                                                     className="alert-link"
                                                     target="_blank"
-                                                    rel="noreferrer"
+                                                    rel="noopener noreferrer"
                                                 >
                                                     {d.fullName || d.name}
                                                 </Link>

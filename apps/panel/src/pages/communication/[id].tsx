@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -7,6 +7,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     useMessageTemplates,
     useSmsHistory,
@@ -56,6 +57,7 @@ function getCommunicationHref(id: number, kind: 'sms' | 'email') {
 
 export default function CommunicationDetailPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const router = useRouter();
     const rawId = Array.isArray(router.query.id)
         ? router.query.id[0]
@@ -254,9 +256,8 @@ export default function CommunicationDetailPage() {
             setSelectedTemplateId('');
             setReplyMode('new');
             setReplyVisible(false);
-        } catch (error) {
-            console.error('Failed to send reply:', error);
-            alert('Wystąpił błąd podczas wysyłania wiadomości');
+        } catch {
+            toast.error('Wystąpił błąd podczas wysyłania wiadomości');
         } finally {
             setIsSending(false);
         }
@@ -305,6 +306,13 @@ export default function CommunicationDetailPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>
+                    {activeKind === 'sms'
+                        ? 'Wiadomość SMS — Łączność — Salon Black & White'
+                        : 'Wiadomość email — Łączność — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page communication-detail-page">
                     <SalonBreadcrumbs
@@ -582,17 +590,17 @@ export default function CommunicationDetailPage() {
                                 <div id="reply_form">
                                     <ol className="communication-reply-list">
                                         <li className="control-group">
-                                            <label className="form-label">
+                                            <span className="form-label d-block">
                                                 Dane odbiorcy
-                                            </label>
+                                            </span>
                                             <div className="controls">
                                                 {recipientName}
                                             </div>
                                         </li>
                                         <li className="control-group">
-                                            <label className="form-label">
+                                            <span className="form-label d-block">
                                                 Szablon
-                                            </label>
+                                            </span>
                                             <div className="controls">
                                                 <div className="radio-inline">
                                                     <label className="auto-width">

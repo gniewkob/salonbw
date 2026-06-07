@@ -235,7 +235,10 @@ export default function TimetableEmployeesPage() {
                             }}
                         >
                             <div className="icon_box">
-                                <i className="icon sprite-filter_handled_employees " />
+                                <i
+                                    className="icon sprite-filter_handled_employees "
+                                    aria-hidden="true"
+                                />
                             </div>
                             Wszyscy pracownicy
                         </Link>
@@ -298,7 +301,10 @@ export default function TimetableEmployeesPage() {
                             <li>
                                 <Link href="/statistics/worktime">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_report mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_report mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Raport czasu pracy
                                 </Link>
@@ -306,7 +312,10 @@ export default function TimetableEmployeesPage() {
                             <li>
                                 <Link href="/settings/timetable/templates">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_template mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_template mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Szablony
                                 </Link>
@@ -314,7 +323,10 @@ export default function TimetableEmployeesPage() {
                             <li>
                                 <Link href="/settings/timetable/employees/copy">
                                     <div className="icon_box">
-                                        <i className="icon sprite-schedule_copy mr-xs " />
+                                        <i
+                                            className="icon sprite-schedule_copy mr-xs "
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     Kopiuj grafiki pracy
                                 </Link>

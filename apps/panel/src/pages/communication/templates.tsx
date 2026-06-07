@@ -1,9 +1,11 @@
-
+import Head from 'next/head';
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
 import type { TemplateType, MessageChannel } from '@/types';
 
@@ -45,6 +47,7 @@ const DEFAULT_FORM_DATA: TemplateFormData = {
 
 export default function TemplatesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data: templates, loading, refetch } = useMessageTemplates();
     const { createTemplate, updateTemplate, deleteTemplate } =
         useSmsMutations();
@@ -58,6 +61,7 @@ export default function TemplatesPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [filterChannel, setFilterChannel] = useState<MessageChannel | ''>('');
     const [filterType, setFilterType] = useState<TemplateType | ''>('');
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const filteredTemplates = templates.filter((t) => {
         if (filterChannel && t.channel !== filterChannel) return false;
@@ -100,24 +104,24 @@ export default function TemplatesPage() {
             }
             setIsModalOpen(false);
             void refetch();
-        } catch (error) {
-            console.error('Failed to save template:', error);
-            alert('Wystąpił błąd podczas zapisywania szablonu');
+        } catch {
+            toast.error('Wystąpił błąd podczas zapisywania szablonu');
         }
 
         setIsSubmitting(false);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć ten szablon?')) return;
+    const handleDelete = (id: number) => {
+        setConfirmDeleteId(id);
+    };
 
-        try {
-            await deleteTemplate.mutateAsync(id);
-            void refetch();
-        } catch (error) {
-            console.error('Failed to delete template:', error);
-            alert('Wystąpił błąd podczas usuwania szablonu');
-        }
+    const doDelete = (id: number) => {
+        void deleteTemplate
+            .mutateAsync(id)
+            .then(() => refetch())
+            .catch(() => {
+                toast.error('Wystąpił błąd podczas usuwania szablonu');
+            });
     };
 
     const getTypeLabel = (type: TemplateType) =>
@@ -131,6 +135,9 @@ export default function TemplatesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
+            <Head>
+                <title>Szablony wiadomości — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page">
                     <SalonBreadcrumbs
@@ -206,12 +213,12 @@ export default function TemplatesPage() {
                             <table className="table table-bordered table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Nazwa</th>
-                                        <th>Typ</th>
-                                        <th>Kanał</th>
-                                        <th>Treść</th>
-                                        <th>Status</th>
-                                        <th>Akcje</th>
+                                        <th scope="col">Nazwa</th>
+                                        <th scope="col">Typ</th>
+                                        <th scope="col">Kanał</th>
+                                        <th scope="col">Treść</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Akcje</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -319,9 +326,10 @@ export default function TemplatesPage() {
                                     <button
                                         type="button"
                                         className="salonbw-modal__close"
+                                        aria-label="Zamknij"
                                         onClick={() => setIsModalOpen(false)}
                                     >
-                                        ×
+                                        <span aria-hidden="true">×</span>
                                     </button>
                                 </div>
                                 <form onSubmit={(e) => void handleSubmit(e)}>
@@ -532,6 +540,20 @@ export default function TemplatesPage() {
                         </div>
                     )}
                 </div>
+                <ConfirmModal
+                    open={confirmDeleteId !== null}
+                    title="Usuń szablon"
+                    message="Czy na pewno chcesz usunąć ten szablon? Operacja jest nieodwracalna."
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (confirmDeleteId === null) return;
+                        const id = confirmDeleteId;
+                        setConfirmDeleteId(null);
+                        doDelete(id);
+                    }}
+                    onCancel={() => setConfirmDeleteId(null)}
+                />
             </SalonShell>
         </RouteGuard>
     );

@@ -1,4 +1,3 @@
-
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { AutomaticMessageRule, AutomaticMessageTrigger } from '@/types';
@@ -149,12 +148,14 @@ export default function AutomaticRulesList({
                                 }}
                                 className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Uruchom teraz"
+                                aria-label="Uruchom teraz"
                             >
                                 <svg
                                     className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -181,12 +182,18 @@ export default function AutomaticRulesList({
                                         : 'text-secondary '
                                 }`}
                                 title={rule.isActive ? 'Wyłącz' : 'Włącz'}
+                                aria-label={
+                                    rule.isActive
+                                        ? 'Wyłącz regułę'
+                                        : 'Włącz regułę'
+                                }
                             >
                                 <svg
                                     className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     {rule.isActive ? (
                                         <path
@@ -210,12 +217,14 @@ export default function AutomaticRulesList({
                                 onClick={() => onEdit(rule)}
                                 className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Edytuj"
+                                aria-label="Edytuj regułę"
                             >
                                 <svg
                                     className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -232,12 +241,14 @@ export default function AutomaticRulesList({
                                 }}
                                 className="p-2 text-secondary bg-secondary bg-opacity-10 rounded-3"
                                 title="Usuń"
+                                aria-label="Usuń regułę"
                             >
                                 <svg
                                     className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         strokeLinecap="round"

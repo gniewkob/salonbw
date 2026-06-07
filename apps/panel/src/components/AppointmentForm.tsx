@@ -34,11 +34,11 @@ export default function AppointmentForm({
                 'status' in err &&
                 (err as { status?: number }).status === 409
             ) {
-                setError('Conflict');
+                setError('Termin zajęty – wybierz inny');
             } else if (err instanceof Error) {
-                setError(err.message || 'Error');
+                setError(err.message || 'Wystąpił błąd');
             } else {
-                setError('Error');
+                setError('Wystąpił błąd');
             }
         } finally {
             setSubmitting(false);
@@ -47,7 +47,11 @@ export default function AppointmentForm({
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="gap-2">
+            <label htmlFor="appointment-service" className="visually-hidden">
+                Usługa
+            </label>
             <select
+                id="appointment-service"
                 className="border p-1 w-100"
                 data-testid="service-select"
                 value={serviceId}
@@ -59,7 +63,11 @@ export default function AppointmentForm({
                     </option>
                 ))}
             </select>
+            <label htmlFor="appointment-time" className="visually-hidden">
+                Data i godzina
+            </label>
             <input
+                id="appointment-time"
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -76,14 +84,14 @@ export default function AppointmentForm({
                     onClick={onCancel}
                     className="border px-2 py-1"
                 >
-                    Cancel
+                    Anuluj
                 </button>
                 <button
                     type="submit"
                     className="border px-2 py-1"
                     disabled={submitting}
                 >
-                    {submitting ? 'Saving…' : 'Save'}
+                    {submitting ? 'Zapisywanie…' : 'Zapisz'}
                 </button>
             </div>
         </form>

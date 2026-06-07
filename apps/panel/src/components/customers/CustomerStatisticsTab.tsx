@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCustomerStatistics } from '@/hooks/useCustomers';

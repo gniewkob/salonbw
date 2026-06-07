@@ -41,7 +41,12 @@ export default function CreateCustomerGroupModal({
 
     return (
         <div className="modal-backdrop fade in">
-            <div className="modal-dialog">
+            <div
+                className="modal-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Nowa grupa klientów"
+            >
                 <form
                     className="modal-content"
                     onSubmit={(event) => {

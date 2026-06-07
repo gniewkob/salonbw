@@ -12,7 +12,6 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useReviewApi get', () => {
     it('returns review from get', async () => {
@@ -28,7 +27,7 @@ describe('useReviewApi get', () => {
         });
     });
 
-    it('shows error on get failure', async () => {
+    it('throws on get failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -39,7 +38,6 @@ describe('useReviewApi get', () => {
             act(async () => {
                 await result.current.get(1);
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 });

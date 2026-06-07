@@ -95,6 +95,7 @@ export default function PWAInstallPrompt() {
     return (
         <div
             role="dialog"
+            aria-modal="true"
             aria-label="Zainstaluj aplikację Salon B&W"
             style={{
                 position: 'fixed',

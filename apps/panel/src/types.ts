@@ -187,6 +187,7 @@ export interface Employee {
     role?: 'admin' | 'employee' | 'receptionist' | 'client';
     email?: string;
     phone?: string | null;
+    commissionBase?: number;
 }
 
 export interface StaffOption {
@@ -361,6 +362,10 @@ export interface Invoice {
     pdfUrl: string;
     createdAt: string;
     status: string;
+    amount?: number;
+    currency?: string;
+    dueDate?: string;
+    description?: string;
 }
 
 export type TimeBlockType =

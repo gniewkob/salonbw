@@ -12,23 +12,24 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useServiceApi', () => {
-    it('shows success toast on create', async () => {
-        const apiFetch = jest.fn().mockResolvedValue({ id: 1, name: 'A' });
+    it('returns created service', async () => {
+        const service = { id: 1, name: 'A' };
+        const apiFetch = jest.fn().mockResolvedValue(service);
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
         const { result } = renderHook(() => useServiceApi(), { wrapper });
+        let created: unknown;
         await act(async () => {
-            await result.current.create({ name: 'A' });
+            created = await result.current.create({ name: 'A' });
         });
-        expect(toast.success).toHaveBeenCalled();
+        expect(created).toEqual(service);
     });
 
-    it('shows error toast on failure', async () => {
+    it('throws on create failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -39,7 +40,6 @@ describe('useServiceApi', () => {
             act(async () => {
                 await result.current.create({ name: 'A' });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('fail');
     });
 });

@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
+import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import EmployeesNav from '@/components/salon/navs/EmployeesNav';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeApi } from '@/api/employees';
 import { Employee, StaffRole } from '@/types';
@@ -42,11 +45,13 @@ const ROLE_BADGE: Record<string, string> = {
 
 export default function EmployeesPage() {
     const { role } = useAuth();
+    const toast = useToast();
     const { data } = useEmployees();
     const api = useEmployeeApi();
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<Employee | null>(null);
     const secondaryNav = useMemo(() => <EmployeesNav />, []);
 
     useEffect(() => {
@@ -80,9 +85,14 @@ export default function EmployeesPage() {
         email?: string;
         role?: StaffRole;
     }) => {
-        const created = await api.create(values);
-        setRows((c) => [...c, created]);
-        setOpenForm(false);
+        try {
+            const created = await api.create(values);
+            setRows((c) => [...c, created]);
+            setOpenForm(false);
+            toast.success('Pracownik został dodany');
+        } catch {
+            toast.error('Nie udało się dodać pracownika');
+        }
     };
 
     const handleUpdate = async (values: {
@@ -92,41 +102,57 @@ export default function EmployeesPage() {
         role?: StaffRole;
     }) => {
         if (!editing) return;
-        const updated = await api.update(editing.id, values);
-        if (values.role && values.role !== editing.role) {
-            await api.updateRole(editing.id, values.role);
-            setRows((c) =>
-                c.map((cl) =>
-                    cl.id === editing.id
-                        ? { ...updated, role: values.role! }
-                        : cl,
-                ),
-            );
-        } else {
-            setRows((c) =>
-                c.map((cl) => (cl.id === editing.id ? updated : cl)),
-            );
+        try {
+            const updated = await api.update(editing.id, values);
+            if (values.role && values.role !== editing.role) {
+                await api.updateRole(editing.id, values.role);
+                setRows((c) =>
+                    c.map((cl) =>
+                        cl.id === editing.id
+                            ? { ...updated, role: values.role! }
+                            : cl,
+                    ),
+                );
+            } else {
+                setRows((c) =>
+                    c.map((cl) => (cl.id === editing.id ? updated : cl)),
+                );
+            }
+            setEditing(null);
+            setOpenForm(false);
+            toast.success('Dane pracownika zostały zapisane');
+        } catch {
+            toast.error('Nie udało się zapisać danych pracownika');
         }
-        setEditing(null);
-        setOpenForm(false);
     };
 
     const handleDelete = async (row: Employee) => {
-        if (!confirm(`Usunąć pracownika ${row.fullName ?? row.name}?`)) return;
-        await api.remove(row.id);
-        setRows((c) => c.filter((cl) => cl.id !== row.id));
+        setConfirmDelete(row);
+    };
+
+    const doDelete = async () => {
+        if (!confirmDelete) return;
+        const row = confirmDelete;
+        setConfirmDelete(null);
+        try {
+            await api.remove(row.id);
+            setRows((c) => c.filter((cl) => cl.id !== row.id));
+            toast.success('Pracownik został usunięty');
+        } catch {
+            toast.error('Nie udało się usunąć pracownika');
+        }
     };
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
+            <Head>
+                <title>Pracownicy — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="employees-page">
                     <SalonBreadcrumbs
                         iconClass="sprite-breadcrumbs_settings"
-                        items={[
-                            { label: 'Ustawienia', href: '/settings' },
-                            { label: 'Pracownicy' },
-                        ]}
+                        items={[{ label: 'Pracownicy' }]}
                     />
                     <div className="salonbw-page__toolbar">
                         <button
@@ -149,6 +175,7 @@ export default function EmployeesPage() {
                             renderActions={(r) => (
                                 <span className="space-x-2">
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-secondary"
                                         onClick={() => {
                                             setEditing(r);
@@ -158,6 +185,7 @@ export default function EmployeesPage() {
                                         Edytuj
                                     </button>
                                     <button
+                                        type="button"
                                         className="btn btn-sm btn-danger"
                                         onClick={() => void handleDelete(r)}
                                     >
@@ -187,6 +215,15 @@ export default function EmployeesPage() {
                             onSubmit={editing ? handleUpdate : handleCreate}
                         />
                     </Modal>
+                    <ConfirmModal
+                        open={!!confirmDelete}
+                        title="Usuń pracownika"
+                        message={`Czy na pewno chcesz usunąć pracownika ${confirmDelete?.fullName ?? confirmDelete?.name}? Operacja jest nieodwracalna.`}
+                        confirmLabel="Usuń"
+                        confirmVariant="danger"
+                        onConfirm={() => void doDelete()}
+                        onCancel={() => setConfirmDelete(null)}
+                    />
                 </div>
             </SalonShell>
         </RouteGuard>

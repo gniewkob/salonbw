@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
@@ -111,235 +111,258 @@ export default function WarehouseSalesHistoryPage() {
     };
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Historia sprzedaży | SalonBW"
-            heading="Magazyn / Historia sprzedaży"
-            activeTab="sales"
-        >
-            {isLoading ? (
-                <p className="text-muted">Ładowanie historii sprzedaży...</p>
-            ) : (
-                <>
-                    <div className="row mb-3">
-                        <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
-                            <input
-                                type="text"
-                                placeholder="wyszukaj w historii sprzedaży..."
-                                value={search}
-                                onChange={(e) => {
-                                    setSearch(e.target.value);
-                                    setPage(1);
-                                }}
-                            />
-                            <select
-                                aria-label="rodzaj sprzedaży"
-                                value={kindFilter}
-                                onChange={(e) => {
-                                    setKindFilter(e.target.value);
-                                    setPage(1);
+        <>
+            <Head>
+                <title>Historia sprzedaży — Salon Black &amp; White</title>
+            </Head>
+            <WarehouseLayout
+                pageTitle="Magazyn / Historia sprzedaży | SalonBW"
+                heading="Magazyn / Historia sprzedaży"
+                activeTab="sales"
+            >
+                {isLoading ? (
+                    <p className="text-muted">
+                        Ładowanie historii sprzedaży...
+                    </p>
+                ) : (
+                    <>
+                        <div className="row mb-3">
+                            <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+                                <input
+                                    type="text"
+                                    placeholder="wyszukaj w historii sprzedaży..."
+                                    aria-label="Wyszukaj w historii sprzedaży"
+                                    value={search}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        setPage(1);
+                                    }}
+                                />
+                                <select
+                                    aria-label="rodzaj sprzedaży"
+                                    value={kindFilter}
+                                    onChange={(e) => {
+                                        setKindFilter(e.target.value);
+                                        setPage(1);
+                                    }}
+                                >
+                                    <option value="">wszystkie</option>
+                                    <option value="sale">sprzedaż</option>
+                                    <option value="void">void</option>
+                                    <option value="refund">zwrot</option>
+                                    <option value="correction">korekta</option>
+                                </select>
+                            </div>
+                            <div className="col-sm-8 col-lg-7">
+                                <div className="d-flex flex-wrap justify-content-end">
+                                    {Number.isFinite(appointmentIdFromQuery) &&
+                                    appointmentIdFromQuery > 0 ? (
+                                        <span className="badge text-bg-info me-2 align-self-center">
+                                            Filtr: wizyta #
+                                            {appointmentIdFromQuery}
+                                        </span>
+                                    ) : null}
+                                    {appointmentIdsFromQuery.length > 0 ? (
+                                        <span className="badge text-bg-info me-2 align-self-center">
+                                            Filtr: wizyty (
+                                            {appointmentIdsFromQuery.length})
+                                        </span>
+                                    ) : null}
+                                    {hasCustomerFilter ? (
+                                        <span className="badge text-bg-info me-2 align-self-center">
+                                            Filtr: klient #{customerIdFromQuery}
+                                        </span>
+                                    ) : null}
+                                    {hasAppointmentFilters ||
+                                    hasCustomerFilter ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary ml-xs"
+                                            onClick={clearAppointmentFilters}
+                                        >
+                                            Pokaż wszystko
+                                        </button>
+                                    ) : null}
+                                    <Link
+                                        href="/sales/new"
+                                        className="btn btn-primary ml-xs"
+                                    >
+                                        dodaj sprzedaż
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="table-responsive">
+                            <table className="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Nazwa</th>
+                                        <th scope="col">Rodzaj</th>
+                                        <th scope="col">Suma brutto</th>
+                                        <th scope="col">Sprzedano</th>
+                                        <th scope="col">Pracownik</th>
+                                        <th scope="col">Klient</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {items.map((sale, i) => {
+                                        const firstItem =
+                                            sale.items?.[0]?.productName ??
+                                            sale.saleNumber;
+                                        const saleType = saleKindLabel(sale);
+                                        return (
+                                            <tr
+                                                key={sale.id}
+                                                className={
+                                                    i % 2 === 0 ? 'odd' : 'even'
+                                                }
+                                            >
+                                                <td className="wrap blue_text pointer link_body">
+                                                    <Link
+                                                        href={`/sales/history/${sale.id}`}
+                                                    >
+                                                        {firstItem}
+                                                    </Link>
+                                                </td>
+                                                <td>{saleType}</td>
+                                                <td>
+                                                    {formatCurrency(
+                                                        Number(
+                                                            sale.totalGross ??
+                                                                0,
+                                                        ),
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {new Date(
+                                                        sale.soldAt,
+                                                    ).toLocaleDateString(
+                                                        'pl-PL',
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {sale.employee?.name ?? '-'}
+                                                </td>
+                                                <td>
+                                                    {sale.clientName ?? '-'}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="products-export">
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary"
+                                onClick={() => {
+                                    const header = [
+                                        'Nazwa',
+                                        'Rodzaj',
+                                        'Suma brutto',
+                                        'Sprzedano',
+                                        'Pracownik',
+                                        'Klient',
+                                    ];
+                                    const rows = items.map((sale) => [
+                                        sale.items?.[0]?.productName ??
+                                            sale.saleNumber,
+                                        saleKindLabel(sale),
+                                        formatCurrency(
+                                            Number(sale.totalGross ?? 0),
+                                        ),
+                                        new Date(
+                                            sale.soldAt,
+                                        ).toLocaleDateString('pl-PL'),
+                                        sale.employee?.name ?? '',
+                                        sale.clientName ?? '',
+                                    ]);
+                                    const csv = [header, ...rows]
+                                        .map((line) =>
+                                            line
+                                                .map(
+                                                    (v) =>
+                                                        `"${String(v).replaceAll('"', '""')}"`,
+                                                )
+                                                .join(';'),
+                                        )
+                                        .join('\n');
+                                    const blob = new Blob([`﻿${csv}`], {
+                                        type: 'text/csv;charset=utf-8;',
+                                    });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'historia-sprzedazy.csv';
+                                    a.click();
+                                    URL.revokeObjectURL(url);
                                 }}
                             >
-                                <option value="">wszystkie</option>
-                                <option value="sale">sprzedaż</option>
-                                <option value="void">void</option>
-                                <option value="refund">zwrot</option>
-                                <option value="correction">korekta</option>
-                            </select>
+                                <div
+                                    className="icon sprite-exel_blue mr-xs"
+                                    aria-hidden="true"
+                                />
+                                pobierz historię sprzedaży w pliku Excel
+                            </button>
                         </div>
-                        <div className="col-sm-8 col-lg-7">
-                            <div className="d-flex flex-wrap justify-content-end">
-                                {Number.isFinite(appointmentIdFromQuery) &&
-                                appointmentIdFromQuery > 0 ? (
-                                    <span className="badge text-bg-info me-2 align-self-center">
-                                        Filtr: wizyta #{appointmentIdFromQuery}
-                                    </span>
-                                ) : null}
-                                {appointmentIdsFromQuery.length > 0 ? (
-                                    <span className="badge text-bg-info me-2 align-self-center">
-                                        Filtr: wizyty (
-                                        {appointmentIdsFromQuery.length})
-                                    </span>
-                                ) : null}
-                                {hasCustomerFilter ? (
-                                    <span className="badge text-bg-info me-2 align-self-center">
-                                        Filtr: klient #{customerIdFromQuery}
-                                    </span>
-                                ) : null}
-                                {hasAppointmentFilters || hasCustomerFilter ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-secondary ml-xs"
-                                        onClick={clearAppointmentFilters}
-                                    >
-                                        Pokaż wszystko
-                                    </button>
-                                ) : null}
-                                <Link
-                                    href="/sales/new"
-                                    className="btn btn-primary ml-xs"
-                                >
-                                    dodaj sprzedaż
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Nazwa</th>
-                                    <th>Rodzaj</th>
-                                    <th>Suma brutto</th>
-                                    <th>Sprzedano</th>
-                                    <th>Pracownik</th>
-                                    <th>Klient</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map((sale, i) => {
-                                    const firstItem =
-                                        sale.items?.[0]?.productName ??
-                                        sale.saleNumber;
-                                    const saleType = saleKindLabel(sale);
-                                    return (
-                                        <tr
-                                            key={sale.id}
-                                            className={
-                                                i % 2 === 0 ? 'odd' : 'even'
+                        <nav
+                            className="pagination_container"
+                            aria-label="Paginacja"
+                        >
+                            <div className="column_row">
+                                <div className="row">
+                                    <div className="infocol-7">
+                                        Pozycje od {from} do {to} z {total} | na
+                                        stronie 20
+                                    </div>
+                                    <div className="form_paginationcol-5">
+                                        <input
+                                            type="text"
+                                            className="pagination-page-input"
+                                            aria-label="strona"
+                                            value={safePage}
+                                            onChange={(e) => {
+                                                const next = Number(
+                                                    e.target.value,
+                                                );
+                                                if (
+                                                    Number.isFinite(next) &&
+                                                    next >= 1 &&
+                                                    next <= totalPages
+                                                ) {
+                                                    setPage(next);
+                                                }
+                                            }}
+                                        />
+                                        {' z '}
+                                        <span>{totalPages}</span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-link button_next ml-s"
+                                            aria-label="Następna strona"
+                                            disabled={safePage >= totalPages}
+                                            onClick={() =>
+                                                setPage((prev) =>
+                                                    Math.min(
+                                                        prev + 1,
+                                                        totalPages,
+                                                    ),
+                                                )
                                             }
                                         >
-                                            <td className="wrap blue_text pointer link_body">
-                                                <Link
-                                                    href={`/sales/history/${sale.id}`}
-                                                >
-                                                    {firstItem}
-                                                </Link>
-                                            </td>
-                                            <td>{saleType}</td>
-                                            <td>
-                                                {formatCurrency(
-                                                    Number(
-                                                        sale.totalGross ?? 0,
-                                                    ),
-                                                )}
-                                            </td>
-                                            <td>
-                                                {new Date(
-                                                    sale.soldAt,
-                                                ).toLocaleDateString('pl-PL')}
-                                            </td>
-                                            <td>
-                                                {sale.employee?.name ?? '-'}
-                                            </td>
-                                            <td>{sale.clientName ?? '-'}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="products-export">
-                        <button
-                            type="button"
-                            className="btn btn-outline-secondary"
-                            onClick={() => {
-                                const header = [
-                                    'Nazwa',
-                                    'Rodzaj',
-                                    'Suma brutto',
-                                    'Sprzedano',
-                                    'Pracownik',
-                                    'Klient',
-                                ];
-                                const rows = items.map((sale) => [
-                                    sale.items?.[0]?.productName ??
-                                        sale.saleNumber,
-                                    saleKindLabel(sale),
-                                    formatCurrency(
-                                        Number(sale.totalGross ?? 0),
-                                    ),
-                                    new Date(sale.soldAt).toLocaleDateString(
-                                        'pl-PL',
-                                    ),
-                                    sale.employee?.name ?? '',
-                                    sale.clientName ?? '',
-                                ]);
-                                const csv = [header, ...rows]
-                                    .map((line) =>
-                                        line
-                                            .map(
-                                                (v) =>
-                                                    `"${String(v).replaceAll('"', '""')}"`,
-                                            )
-                                            .join(';'),
-                                    )
-                                    .join('\n');
-                                const blob = new Blob([`﻿${csv}`], {
-                                    type: 'text/csv;charset=utf-8;',
-                                });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = 'historia-sprzedazy.csv';
-                                a.click();
-                                URL.revokeObjectURL(url);
-                            }}
-                        >
-                            <div
-                                className="icon sprite-exel_blue mr-xs"
-                                aria-hidden="true"
-                            />
-                            pobierz historię sprzedaży w pliku Excel
-                        </button>
-                    </div>
-                    <div className="pagination_container">
-                        <div className="column_row">
-                            <div className="row">
-                                <div className="infocol-7">
-                                    Pozycje od {from} do {to} z {total} | na
-                                    stronie 20
-                                </div>
-                                <div className="form_paginationcol-5">
-                                    <input
-                                        type="text"
-                                        className="pagination-page-input"
-                                        aria-label="strona"
-                                        value={safePage}
-                                        onChange={(e) => {
-                                            const next = Number(e.target.value);
-                                            if (
-                                                Number.isFinite(next) &&
-                                                next >= 1 &&
-                                                next <= totalPages
-                                            ) {
-                                                setPage(next);
-                                            }
-                                        }}
-                                    />
-                                    {' z '}
-                                    <a className="pointer">{totalPages}</a>
-                                    <button
-                                        type="button"
-                                        className="btn btn-link button_next ml-s"
-                                        aria-label="Następna strona"
-                                        disabled={safePage >= totalPages}
-                                        onClick={() =>
-                                            setPage((prev) =>
-                                                Math.min(prev + 1, totalPages),
-                                            )
-                                        }
-                                    >
-                                        <span
-                                            className="fc-icon fc-icon-right-single-arrow"
-                                            aria-hidden="true"
-                                        />
-                                    </button>
+                                            <span
+                                                className="fc-icon fc-icon-right-single-arrow"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </>
-            )}
-        </WarehouseLayout>
+                        </nav>
+                    </>
+                )}
+            </WarehouseLayout>
+        </>
     );
 }

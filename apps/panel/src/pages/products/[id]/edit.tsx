@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -22,6 +22,7 @@ export default function EditProductPage() {
         return Number.isFinite(parsed) ? parsed : undefined;
     }, [router.query.id]);
     const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     const { data: product, isLoading } = useQuery<ProductExtended>({
         queryKey: ['product-edit', productId],
@@ -66,6 +67,7 @@ export default function EditProductPage() {
     const handleSubmit = async () => {
         if (!productId || !form.name.trim()) return;
         setIsSaving(true);
+        setSaveError(null);
         try {
             await productApi.update(productId, {
                 name: form.name.trim(),
@@ -89,6 +91,10 @@ export default function EditProductPage() {
                 }),
             });
             await router.push(`/products/${productId}`);
+        } catch {
+            setSaveError(
+                'Nie udało się zapisać produktu. Sprawdź dane i spróbuj ponownie.',
+            );
         } finally {
             setIsSaving(false);
         }
@@ -96,6 +102,13 @@ export default function EditProductPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
+            <Head>
+                <title>
+                    {product?.name
+                        ? `Edytuj: ${product.name} — Magazyn — Salon Black & White`
+                        : 'Edycja produktu — Magazyn — Salon Black & White'}
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="products_index" id="products_main">
                     <SalonBreadcrumbs
@@ -126,6 +139,7 @@ export default function EditProductPage() {
                                     <input
                                         id="name"
                                         className="form-control"
+                                        required
                                         value={form.name}
                                         onChange={(event) =>
                                             setForm((prev) => ({
@@ -210,6 +224,7 @@ export default function EditProductPage() {
                                     <input
                                         id="stock"
                                         type="number"
+                                        min="0"
                                         className="form-control"
                                         value={form.stock}
                                         onChange={(event) =>
@@ -229,6 +244,7 @@ export default function EditProductPage() {
                                         id="unitPrice"
                                         type="number"
                                         step="0.01"
+                                        min="0"
                                         className="form-control"
                                         value={form.unitPrice}
                                         onChange={(event) =>
@@ -245,6 +261,8 @@ export default function EditProductPage() {
                                     <input
                                         id="vatRate"
                                         type="number"
+                                        min="0"
+                                        max="100"
                                         className="form-control"
                                         value={form.vatRate}
                                         onChange={(event) =>
@@ -282,6 +300,7 @@ export default function EditProductPage() {
                                     <input
                                         id="minQuantity"
                                         type="number"
+                                        min="0"
                                         className="form-control"
                                         value={form.minQuantity}
                                         onChange={(event) =>
@@ -327,6 +346,11 @@ export default function EditProductPage() {
                                 </div>
                             </div>
 
+                            {saveError && (
+                                <div className="alert alert-danger mb-3">
+                                    {saveError}
+                                </div>
+                            )}
                             <div className="product-form__actions">
                                 <button
                                     type="submit"

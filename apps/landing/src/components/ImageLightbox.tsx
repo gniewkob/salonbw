@@ -1,4 +1,3 @@
-'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
@@ -125,7 +124,7 @@ export default function ImageLightbox(props: Props) {
 
     const onShare = async () => {
         const url = absUrl(currentSrc as string);
-        await shareImage(url, alt);
+        await shareImage(url, alt || g.imageAlt);
         safeTrack('lightbox_share', { src: currentSrc });
     };
 
@@ -149,7 +148,7 @@ export default function ImageLightbox(props: Props) {
             >
                 <Image
                     src={currentSrc}
-                    alt={alt || 'Image preview'}
+                    alt={alt || g.imageAlt}
                     fill
                     style={{ objectFit: 'contain' }}
                     sizes="90vw"

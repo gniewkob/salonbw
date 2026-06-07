@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -86,6 +87,11 @@ export default function ClientOriginsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>
+                    Statystyki — źródła klientów — Salon Black &amp; White
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
@@ -113,7 +119,7 @@ export default function ClientOriginsPage() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Statystyki pochodzenia chwilowo niedostępne.
                         </div>
                     ) : stats ? (
@@ -282,11 +288,17 @@ export default function ClientOriginsPage() {
                                     <table className="salonbw-table">
                                         <thead>
                                             <tr>
-                                                <th>Źródło</th>
-                                                <th className="text-end">
+                                                <th scope="col">Źródło</th>
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Liczba klientów
                                                 </th>
-                                                <th className="text-end">
+                                                <th
+                                                    scope="col"
+                                                    className="text-end"
+                                                >
                                                     Udział
                                                 </th>
                                             </tr>

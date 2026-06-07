@@ -10,6 +10,7 @@ const t = {
     pl: {
         nav: {
             home: 'Start',
+            about: 'O nas',
             services: 'Usługi',
             gallery: 'Galeria',
             contact: 'Kontakt',
@@ -25,7 +26,7 @@ const t = {
             ctaSecondary: 'Odkryj usługi',
             imageAlt: 'Wnętrze salonu Black & White',
             hoursLabel: 'Godziny otwarcia',
-            scroll: 'Scroll',
+            scroll: 'Przewiń',
             metaYears: 'lat z Bytomiem',
             trustPill: 'Bytom · zaufanie od 2011',
         },
@@ -38,7 +39,16 @@ const t = {
             { suffix: '★', label: 'ocena Google' },
             { suffix: '+', label: 'lat w branży' },
         ],
-        ticker: ['PASJA', 'PROFESJONALIZM', 'PIELĘGNACJA', 'PIĘKNO', 'BYTOM', 'AKADEMIA', 'ZDROWE WŁOSY', 'BLACK & WHITE'],
+        ticker: [
+            'PASJA',
+            'PROFESJONALIZM',
+            'PIELĘGNACJA',
+            'PIĘKNO',
+            'BYTOM',
+            'AKADEMIA',
+            'ZDROWE WŁOSY',
+            'BLACK & WHITE',
+        ],
         founder: {
             eyebrow: 'Słowo od założycielki',
             role: 'Założycielka & Właścicielka Salon Black & White',
@@ -48,22 +58,29 @@ const t = {
         history: {
             eyebrow: 'Skąd pochodzimy',
             title: 'Nasza historia',
-            yearMap: { historia: '30+ lat', poczatek: '2011', wartosci: 'dziś' },
+            yearMap: {
+                historia: '30+ lat',
+                poczatek: '2011',
+                wartosci: 'dziś',
+            },
             items: [
                 {
                     id: 'historia',
                     title: 'Historia salonu',
-                    content: 'Przez ponad 30 lat zdobywałam kompetencje w technikach strzyżenia oraz koloryzacji. Nauczyłam się, że nieodłączną częścią pracy fryzjera jest praca z ludźmi i spełnianie ich fantazji o pięknych włosach. Dzięki tym doświadczeniom, poznając różnorodne oczekiwania klientów, powstała wizja miejsca w którym każdy klient znalazłby usługę dostosowaną do indywidualnych potrzeb, dostarczoną w profesjonalny sposób oraz będzie to dla niego chwila prawdziwego relaksu.',
+                    content:
+                        'Przez ponad 30 lat zdobywałam kompetencje w technikach strzyżenia oraz koloryzacji. Nauczyłam się, że nieodłączną częścią pracy fryzjera jest praca z ludźmi i spełnianie ich fantazji o pięknych włosach. Dzięki tym doświadczeniom, poznając różnorodne oczekiwania klientów, powstała wizja miejsca w którym każdy klient znalazłby usługę dostosowaną do indywidualnych potrzeb, dostarczoną w profesjonalny sposób oraz będzie to dla niego chwila prawdziwego relaksu.',
                 },
                 {
                     id: 'poczatek',
                     title: 'Początek',
-                    content: 'W 2011 roku udało mi się zrealizować moje marzenie o takim właśnie miejscu. Salon Black & White urządziłam według własnego projektu bazując na nowoczesnym ale też komfortowym stylu.',
+                    content:
+                        'W 2011 roku udało mi się zrealizować moje marzenie o takim właśnie miejscu. Salon Black & White urządziłam według własnego projektu bazując na nowoczesnym ale też komfortowym stylu.',
                 },
                 {
                     id: 'wartosci',
                     title: 'Nasze Wartości',
-                    content: 'W naszym salonie kierujemy się sześcioma kluczowymi wartościami: pasją i kreatywnością, profesjonalizmem i doskonałością, indywidualnym podejściem, zadowoleniem klienta, higieną i bezpieczeństwem oraz zaangażowaniem w środowisko.',
+                    content:
+                        'W naszym salonie kierujemy się sześcioma kluczowymi wartościami: pasją i kreatywnością, profesjonalizmem i doskonałością, indywidualnym podejściem, zadowoleniem klienta, higieną i bezpieczeństwem oraz zaangażowaniem w środowisko.',
                 },
             ],
         },
@@ -71,12 +88,42 @@ const t = {
             eyebrow: 'To, w co wierzymy',
             title: 'Nasze wartości',
             items: [
-                { id: 'pasja', title: 'Pasja i Kreatywność', description: 'W naszym salonie fryzjerskim wkładamy całe serce w to, co robimy. Nasza pasja do sztuki fryzjerskiej jest nieodłączną częścią naszej pracy. Jesteśmy kreatywni i otwarci na nowe trendy, dzięki czemu możemy stworzyć dla Ciebie wyjątkowe i niepowtarzalne fryzury, które podkreślą Twoją indywidualność.' },
-                { id: 'profesjonalizm', title: 'Profesjonalizm i Doskonałość', description: 'W naszym zespole mamy doświadczonych fryzjerów, którzy są mistrzami swojego fachu. Stale doskonalimy swoje umiejętności, uczestnicząc w szkoleniach i śledząc najnowsze techniki i trendy fryzjerskie. Możesz mieć pewność, że otrzymasz usługę na najwyższym poziomie.' },
-                { id: 'indywidualne', title: 'Indywidualne Podejście', description: 'Wiemy, że każdy klient jest wyjątkowy. Dlatego zawsze słuchamy uważnie Twoich potrzeb i preferencji. Nasz zespół fryzjerów jest wyszkolony, aby zrozumieć Twoje oczekiwania i zaproponować rozwiązania dopasowane do Twojego stylu życia, osobowości i indywidualnych cech.' },
-                { id: 'zadowolenie', title: 'Zadowolenie Klienta', description: 'Twoje zadowolenie jest dla nas najważniejsze. Dlatego staramy się stworzyć przyjazną i komfortową atmosferę w naszym salonie. Chcemy, abyś czuł się jak w domu i opuszczał nasz salon z uśmiechem na twarzy.' },
-                { id: 'higiena', title: 'Higiena i Bezpieczeństwo', description: 'Twoje zdrowie i bezpieczeństwo są dla nas priorytetem. Przestrzegamy surowych standardów higieny i dbamy o to, aby nasz salon był czysty i bezpieczny. Wszystkie nasze narzędzia i sprzęt są starannie dezynfekowane.' },
-                { id: 'srodowisko', title: 'Zaangażowanie w Środowisko', description: 'Jesteśmy świadomi wpływu, jaki nasza branża może mieć na środowisko. Dlatego podejmujemy działania mające na celu ograniczenie naszego śladu ekologicznego. Stosujemy produkty przyjazne dla środowiska i angażujemy się w praktyki zrównoważonego rozwoju.' },
+                {
+                    id: 'pasja',
+                    title: 'Pasja i Kreatywność',
+                    description:
+                        'W naszym salonie fryzjerskim wkładamy całe serce w to, co robimy. Nasza pasja do sztuki fryzjerskiej jest nieodłączną częścią naszej pracy. Jesteśmy kreatywni i otwarci na nowe trendy, dzięki czemu możemy stworzyć dla Ciebie wyjątkowe i niepowtarzalne fryzury, które podkreślą Twoją indywidualność.',
+                },
+                {
+                    id: 'profesjonalizm',
+                    title: 'Profesjonalizm i Doskonałość',
+                    description:
+                        'W naszym zespole mamy doświadczonych fryzjerów, którzy są mistrzami swojego fachu. Stale doskonalimy swoje umiejętności, uczestnicząc w szkoleniach i śledząc najnowsze techniki i trendy fryzjerskie. Możesz mieć pewność, że otrzymasz usługę na najwyższym poziomie.',
+                },
+                {
+                    id: 'indywidualne',
+                    title: 'Indywidualne Podejście',
+                    description:
+                        'Wiemy, że każdy klient jest wyjątkowy. Dlatego zawsze słuchamy uważnie Twoich potrzeb i preferencji. Nasz zespół fryzjerów jest wyszkolony, aby zrozumieć Twoje oczekiwania i zaproponować rozwiązania dopasowane do Twojego stylu życia, osobowości i indywidualnych cech.',
+                },
+                {
+                    id: 'zadowolenie',
+                    title: 'Zadowolenie Klienta',
+                    description:
+                        'Twoje zadowolenie jest dla nas najważniejsze. Dlatego staramy się stworzyć przyjazną i komfortową atmosferę w naszym salonie. Chcemy, abyś czuł się jak w domu i opuszczał nasz salon z uśmiechem na twarzy.',
+                },
+                {
+                    id: 'higiena',
+                    title: 'Higiena i Bezpieczeństwo',
+                    description:
+                        'Twoje zdrowie i bezpieczeństwo są dla nas priorytetem. Przestrzegamy surowych standardów higieny i dbamy o to, aby nasz salon był czysty i bezpieczny. Wszystkie nasze narzędzia i sprzęt są starannie dezynfekowane.',
+                },
+                {
+                    id: 'srodowisko',
+                    title: 'Zaangażowanie w Środowisko',
+                    description:
+                        'Jesteśmy świadomi wpływu, jaki nasza branża może mieć na środowisko. Dlatego podejmujemy działania mające na celu ograniczenie naszego śladu ekologicznego. Stosujemy produkty przyjazne dla środowiska i angażujemy się w praktyki zrównoważonego rozwoju.',
+                },
             ],
         },
         services: {
@@ -85,10 +132,12 @@ const t = {
             featured: 'Polecane',
             learnMore: 'Dowiedz się więcej',
             viewAll: 'Pełna oferta usług',
-            teaserSubtitle: 'Zdrowie włosów jest punktem wyjścia — dlatego łączymy zaawansowane zabiegi regeneracyjne z precyzyjną stylistyką i koloryzacją.',
+            teaserSubtitle:
+                'Zdrowie włosów jest punktem wyjścia — dlatego łączymy zaawansowane zabiegi regeneracyjne z precyzyjną stylistyką i koloryzacją.',
             pageEyebrow: 'Cennik & Oferta',
             pageHeading: 'Nasze Usługi',
-            pageDesc: 'Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów dla kobiet i mężczyzn. Każda wizyta to indywidualne podejście.',
+            pageDesc:
+                'Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów dla kobiet i mężczyzn. Każda wizyta to indywidualne podejście.',
             bookBtn: 'Umów',
             serviceCount1: 'usługa',
             serviceCountMany: 'usługi',
@@ -96,9 +145,32 @@ const t = {
             ctaSub: 'Zarezerwuj termin online lub zadzwoń. Czekamy na Ciebie od {hours} w tygodniu.',
             from: 'od',
             items: [
-                { title: 'Fryzjerstwo', subtitle: 'Strzyżenie & Koloryzacja', description: 'Cięcia damskie i męskie, koloryzacja Wella (Koleston Perfect, Ilumina, Color Touch) i nowoczesna technika Air Touch — fryzury codzienne, wieczorowe i ślubne.', keyServices: ['Strzyżenie damskie', 'Strzyżenie męskie', 'Air Touch', 'Fryzura ślubna', 'Trwała ondulacja', 'Modelowanie'] },
-                { title: 'Akademia Pielęgnacji', subtitle: 'Botox • Złote Proteiny • Olaplex', description: 'Zabiegi regeneracyjne Kérastase, botox na włosy, złote proteiny oraz Olaplex — dedykowana pielęgnacja dla zniszczonych i cienkich włosów.' },
-                { title: 'Przedłużanie Włosów', subtitle: 'Metoda HairTalk', description: 'Naturalne przedłużanie i zagęszczanie włosów metodą HairTalk — dyskretne, trwałe, dopasowane do Ciebie.' },
+                {
+                    title: 'Fryzjerstwo',
+                    subtitle: 'Strzyżenie & Koloryzacja',
+                    description:
+                        'Cięcia damskie i męskie, koloryzacja Wella (Koleston Perfect, Ilumina, Color Touch) i nowoczesna technika Air Touch — fryzury codzienne, wieczorowe i ślubne.',
+                    keyServices: [
+                        'Strzyżenie damskie',
+                        'Strzyżenie męskie',
+                        'Air Touch',
+                        'Fryzura ślubna',
+                        'Trwała ondulacja',
+                        'Modelowanie',
+                    ],
+                },
+                {
+                    title: 'Akademia Pielęgnacji',
+                    subtitle: 'Botox • Złote Proteiny • Olaplex',
+                    description:
+                        'Zabiegi regeneracyjne Kérastase, botox na włosy, złote proteiny oraz Olaplex — dedykowana pielęgnacja dla zniszczonych i cienkich włosów.',
+                },
+                {
+                    title: 'Przedłużanie Włosów',
+                    subtitle: 'Metoda HairTalk',
+                    description:
+                        'Naturalne przedłużanie i zagęszczanie włosów metodą HairTalk — dyskretne, trwałe, dopasowane do Ciebie.',
+                },
             ],
         },
         testimonials: {
@@ -168,7 +240,8 @@ const t = {
             errorInvalidEmail: 'Nieprawidłowy adres e-mail',
             errorEmailRequired: 'Adres e-mail jest wymagany',
             errorPasswordRequired: 'Hasło jest wymagane',
-            errorLoginFailed: 'Logowanie nieudane. Sprawdź dane i spróbuj ponownie.',
+            errorLoginFailed:
+                'Logowanie nieudane. Sprawdź dane i spróbuj ponownie.',
             submitLogin: 'Zaloguj i umów wizytę',
             submitting: 'Logowanie…',
             noAccount: 'Nie masz konta?',
@@ -178,15 +251,18 @@ const t = {
         salonGallery: {
             eyebrow: 'Zajrzyj do nas',
             title: 'Nasz salon',
-            subtitle: 'Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie.',
+            subtitle:
+                'Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie.',
             viewAll: 'Zobacz pełną galerię',
             open: 'Otwórz',
         },
         gallery: {
             eyebrow: 'Instagram · Nasze realizacje',
             title: 'Galeria',
-            subtitle: 'Najnowsze prace naszego zespołu — fryzury, stylizacje i koloryzacje.',
-            fallback: 'Wyświetlamy przykładowe zdjęcia — brak połączenia z Instagram.',
+            subtitle:
+                'Najnowsze prace naszego zespołu — fryzury, stylizacje i koloryzacje.',
+            fallback:
+                'Wyświetlamy przykładowe zdjęcia — brak połączenia z Instagram.',
             loading: 'Ładowanie…',
             refresh: 'Odśwież',
             scrollMore: 'Przewiń, aby zobaczyć więcej',
@@ -219,7 +295,8 @@ const t = {
             daySat: 'Sobota',
             daySun: 'Niedziela',
             bookingTitle: 'Zarezerwuj termin',
-            bookingDesc: 'Umów wizytę online — wybierz usługę, stylistę i termin który Ci odpowiada.',
+            bookingDesc:
+                'Umów wizytę online — wybierz usługę, stylistę i termin który Ci odpowiada.',
             bookingBtn: 'Umów wizytę',
             formSubtitle: 'Lub napisz do nas',
             formTitle: 'Wyślij wiadomość',
@@ -242,6 +319,7 @@ const t = {
     en: {
         nav: {
             home: 'Home',
+            about: 'About us',
             services: 'Services',
             gallery: 'Gallery',
             contact: 'Contact',
@@ -252,7 +330,8 @@ const t = {
         },
         hero: {
             eyebrow: 'Academy of Healthy Hair',
-            tagline1: 'Healthy hair is the foundation. Style — the natural result.',
+            tagline1:
+                'Healthy hair is the foundation. Style — the natural result.',
             tagline2: 'Discover what your hair is truly capable of.',
             ctaSecondary: 'Discover services',
             imageAlt: 'Interior of Black & White salon',
@@ -270,7 +349,16 @@ const t = {
             { suffix: '★', label: 'Google rating' },
             { suffix: '+', label: 'years in the industry' },
         ],
-        ticker: ['PASSION', 'PROFESSIONALISM', 'CARE', 'BEAUTY', 'BYTOM', 'ACADEMY', 'HEALTHY HAIR', 'BLACK & WHITE'],
+        ticker: [
+            'PASSION',
+            'PROFESSIONALISM',
+            'CARE',
+            'BEAUTY',
+            'BYTOM',
+            'ACADEMY',
+            'HEALTHY HAIR',
+            'BLACK & WHITE',
+        ],
         founder: {
             eyebrow: 'A word from the founder',
             role: 'Founder & Owner of Black & White Salon',
@@ -280,22 +368,29 @@ const t = {
         history: {
             eyebrow: 'Our roots',
             title: 'Our story',
-            yearMap: { historia: '30+ yrs', poczatek: '2011', wartosci: 'today' },
+            yearMap: {
+                historia: '30+ yrs',
+                poczatek: '2011',
+                wartosci: 'today',
+            },
             items: [
                 {
                     id: 'historia',
                     title: 'Salon history',
-                    content: 'For over 30 years I built expertise in cutting and colouring techniques. I learned that working with people and fulfilling their dreams of beautiful hair is an inseparable part of a hairdresser\'s work. These experiences — understanding the diverse expectations of clients — gave rise to a vision of a place where every client could find a service tailored to their individual needs, delivered professionally, and experience a moment of true relaxation.',
+                    content:
+                        "For over 30 years I built expertise in cutting and colouring techniques. I learned that working with people and fulfilling their dreams of beautiful hair is an inseparable part of a hairdresser's work. These experiences — understanding the diverse expectations of clients — gave rise to a vision of a place where every client could find a service tailored to their individual needs, delivered professionally, and experience a moment of true relaxation.",
                 },
                 {
                     id: 'poczatek',
                     title: 'The beginning',
-                    content: 'In 2011, I was able to realise my dream of exactly such a place. I designed the Black & White Salon myself, basing it on a modern yet comfortable style.',
+                    content:
+                        'In 2011, I was able to realise my dream of exactly such a place. I designed the Black & White Salon myself, basing it on a modern yet comfortable style.',
                 },
                 {
                     id: 'wartosci',
                     title: 'Our Values',
-                    content: 'Our salon is guided by six core values: passion and creativity, professionalism and excellence, individual approach, client satisfaction, hygiene and safety, and environmental commitment.',
+                    content:
+                        'Our salon is guided by six core values: passion and creativity, professionalism and excellence, individual approach, client satisfaction, hygiene and safety, and environmental commitment.',
                 },
             ],
         },
@@ -303,12 +398,42 @@ const t = {
             eyebrow: 'What we believe in',
             title: 'Our values',
             items: [
-                { id: 'pasja', title: 'Passion & Creativity', description: 'We pour our whole heart into everything we do. Our passion for the art of hairdressing is an inseparable part of our work. We are creative and open to new trends, allowing us to create unique hairstyles that highlight your individuality.' },
-                { id: 'profesjonalizm', title: 'Professionalism & Excellence', description: 'Our team of experienced hairdressers are masters of their craft. We continuously improve our skills, attending training sessions and following the latest techniques and trends. You can be sure you will receive a service at the highest level.' },
-                { id: 'indywidualne', title: 'Individual Approach', description: 'We know every client is unique. That\'s why we always listen carefully to your needs and preferences. Our team is trained to understand your expectations and propose solutions tailored to your lifestyle, personality, and individual characteristics.' },
-                { id: 'zadowolenie', title: 'Client Satisfaction', description: 'Your satisfaction is our top priority. We strive to create a friendly and comfortable atmosphere in our salon. We want you to feel at home and leave our salon with a smile on your face.' },
-                { id: 'higiena', title: 'Hygiene & Safety', description: 'Your health and safety are our priority. We adhere to strict hygiene standards and ensure our salon is clean and safe. All our tools and equipment are carefully disinfected to provide a safe environment during your visit.' },
-                { id: 'srodowisko', title: 'Environmental Commitment', description: 'We are aware of the impact our industry can have on the environment. We take steps to reduce our ecological footprint, use eco-friendly products, minimise waste, and engage in sustainable practices.' },
+                {
+                    id: 'pasja',
+                    title: 'Passion & Creativity',
+                    description:
+                        'We pour our whole heart into everything we do. Our passion for the art of hairdressing is an inseparable part of our work. We are creative and open to new trends, allowing us to create unique hairstyles that highlight your individuality.',
+                },
+                {
+                    id: 'profesjonalizm',
+                    title: 'Professionalism & Excellence',
+                    description:
+                        'Our team of experienced hairdressers are masters of their craft. We continuously improve our skills, attending training sessions and following the latest techniques and trends. You can be sure you will receive a service at the highest level.',
+                },
+                {
+                    id: 'indywidualne',
+                    title: 'Individual Approach',
+                    description:
+                        "We know every client is unique. That's why we always listen carefully to your needs and preferences. Our team is trained to understand your expectations and propose solutions tailored to your lifestyle, personality, and individual characteristics.",
+                },
+                {
+                    id: 'zadowolenie',
+                    title: 'Client Satisfaction',
+                    description:
+                        'Your satisfaction is our top priority. We strive to create a friendly and comfortable atmosphere in our salon. We want you to feel at home and leave our salon with a smile on your face.',
+                },
+                {
+                    id: 'higiena',
+                    title: 'Hygiene & Safety',
+                    description:
+                        'Your health and safety are our priority. We adhere to strict hygiene standards and ensure our salon is clean and safe. All our tools and equipment are carefully disinfected to provide a safe environment during your visit.',
+                },
+                {
+                    id: 'srodowisko',
+                    title: 'Environmental Commitment',
+                    description:
+                        'We are aware of the impact our industry can have on the environment. We take steps to reduce our ecological footprint, use eco-friendly products, minimise waste, and engage in sustainable practices.',
+                },
             ],
         },
         services: {
@@ -317,20 +442,45 @@ const t = {
             featured: 'Featured',
             learnMore: 'Learn more',
             viewAll: 'Full service menu',
-            teaserSubtitle: 'Healthy hair is the starting point — we combine advanced regenerative treatments with precise styling and colouring.',
+            teaserSubtitle:
+                'Healthy hair is the starting point — we combine advanced regenerative treatments with precise styling and colouring.',
             pageEyebrow: 'Pricing & Services',
             pageHeading: 'Our Services',
-            pageDesc: 'Professional hairdressing, barber, and hair care services for women and men. Every visit is tailored to you.',
+            pageDesc:
+                'Professional hairdressing, barber, and hair care services for women and men. Every visit is tailored to you.',
             bookBtn: 'Book',
             serviceCount1: 'service',
             serviceCountMany: 'services',
             ctaHeading: 'Ready for a transformation?',
-            ctaSub: 'Book online or call us. We\'re here from {hours} on weekdays.',
+            ctaSub: "Book online or call us. We're here from {hours} on weekdays.",
             from: 'from',
             items: [
-                { title: 'Hairdressing', subtitle: 'Cuts & Colouring', description: 'Women\'s and men\'s cuts, Wella colouring (Koleston Perfect, Ilumina, Color Touch) and the modern Air Touch technique — everyday, evening and wedding styles.', keyServices: ['Women\'s cut', 'Men\'s cut', 'Air Touch', 'Wedding style', 'Permanent wave', 'Blow-dry'] },
-                { title: 'Care Academy', subtitle: 'Botox • Golden Proteins • Olaplex', description: 'Regenerative treatments by Kérastase, hair botox, golden proteins and Olaplex — dedicated care for damaged or fine hair.' },
-                { title: 'Hair Extensions', subtitle: 'HairTalk Method', description: 'Natural hair extensions and thickening using the HairTalk method — discreet, lasting, tailored to you.' },
+                {
+                    title: 'Hairdressing',
+                    subtitle: 'Cuts & Colouring',
+                    description:
+                        "Women's and men's cuts, Wella colouring (Koleston Perfect, Ilumina, Color Touch) and the modern Air Touch technique — everyday, evening and wedding styles.",
+                    keyServices: [
+                        "Women's cut",
+                        "Men's cut",
+                        'Air Touch',
+                        'Wedding style',
+                        'Permanent wave',
+                        'Blow-dry',
+                    ],
+                },
+                {
+                    title: 'Care Academy',
+                    subtitle: 'Botox • Golden Proteins • Olaplex',
+                    description:
+                        'Regenerative treatments by Kérastase, hair botox, golden proteins and Olaplex — dedicated care for damaged or fine hair.',
+                },
+                {
+                    title: 'Hair Extensions',
+                    subtitle: 'HairTalk Method',
+                    description:
+                        'Natural hair extensions and thickening using the HairTalk method — discreet, lasting, tailored to you.',
+                },
             ],
         },
         testimonials: {
@@ -400,7 +550,8 @@ const t = {
             errorInvalidEmail: 'Invalid email address',
             errorEmailRequired: 'Email is required',
             errorPasswordRequired: 'Password is required',
-            errorLoginFailed: 'Login failed. Check your credentials and try again.',
+            errorLoginFailed:
+                'Login failed. Check your credentials and try again.',
             submitLogin: 'Log in & book',
             submitting: 'Logging in…',
             noAccount: 'No account?',
@@ -410,14 +561,16 @@ const t = {
         salonGallery: {
             eyebrow: 'Take a look inside',
             title: 'Our salon',
-            subtitle: 'A modern space designed with your comfort and relaxation in mind.',
+            subtitle:
+                'A modern space designed with your comfort and relaxation in mind.',
             viewAll: 'See full gallery',
             open: 'Open',
         },
         gallery: {
             eyebrow: 'Instagram · Our work',
             title: 'Gallery',
-            subtitle: 'The latest work by our team — hairstyles, styling and colouring.',
+            subtitle:
+                'The latest work by our team — hairstyles, styling and colouring.',
             fallback: 'Showing sample photos — no Instagram connection.',
             loading: 'Loading…',
             refresh: 'Refresh',
@@ -436,7 +589,7 @@ const t = {
         },
         notFound: {
             heading: 'Lost your way?',
-            sub: 'This page doesn\'t exist — but your hair can look perfect.',
+            sub: "This page doesn't exist — but your hair can look perfect.",
             cta: 'Back to home',
             ctaBooking: 'Book an appointment',
         },
@@ -451,7 +604,8 @@ const t = {
             daySat: 'Saturday',
             daySun: 'Sunday',
             bookingTitle: 'Book an appointment',
-            bookingDesc: 'Book online — choose your service, stylist and a time that works for you.',
+            bookingDesc:
+                'Book online — choose your service, stylist and a time that works for you.',
             bookingBtn: 'Book now',
             formSubtitle: 'Or send us a message',
             formTitle: 'Send a message',
@@ -474,6 +628,7 @@ const t = {
     de: {
         nav: {
             home: 'Start',
+            about: 'Über uns',
             services: 'Leistungen',
             gallery: 'Galerie',
             contact: 'Kontakt',
@@ -484,7 +639,8 @@ const t = {
         },
         hero: {
             eyebrow: 'Akademie für gesundes Haar',
-            tagline1: 'Gesundes Haar ist das Fundament. Stil — das natürliche Ergebnis.',
+            tagline1:
+                'Gesundes Haar ist das Fundament. Stil — das natürliche Ergebnis.',
             tagline2: 'Entdecken Sie, wozu Ihr Haar wirklich fähig ist.',
             ctaSecondary: 'Leistungen entdecken',
             imageAlt: 'Interieur des Salons Black & White',
@@ -502,7 +658,16 @@ const t = {
             { suffix: '★', label: 'Google-Bewertung' },
             { suffix: '+', label: 'Jahre in der Branche' },
         ],
-        ticker: ['LEIDENSCHAFT', 'PROFESSIONALITÄT', 'PFLEGE', 'SCHÖNHEIT', 'BYTOM', 'AKADEMIE', 'GESUNDES HAAR', 'BLACK & WHITE'],
+        ticker: [
+            'LEIDENSCHAFT',
+            'PROFESSIONALITÄT',
+            'PFLEGE',
+            'SCHÖNHEIT',
+            'BYTOM',
+            'AKADEMIE',
+            'GESUNDES HAAR',
+            'BLACK & WHITE',
+        ],
         founder: {
             eyebrow: 'Ein Wort von der Gründerin',
             role: 'Gründerin & Inhaberin des Salons Black & White',
@@ -512,22 +677,29 @@ const t = {
         history: {
             eyebrow: 'Woher wir kommen',
             title: 'Unsere Geschichte',
-            yearMap: { historia: '30+ J.', poczatek: '2011', wartosci: 'heute' },
+            yearMap: {
+                historia: '30+ J.',
+                poczatek: '2011',
+                wartosci: 'heute',
+            },
             items: [
                 {
                     id: 'historia',
                     title: 'Salongeschichte',
-                    content: 'Über 30 Jahre lang habe ich Kompetenzen in Schnitt- und Färbetechniken aufgebaut. Ich lernte, dass die Arbeit mit Menschen und die Erfüllung ihrer Träume von schönem Haar ein untrennbarer Teil der Arbeit eines Friseurs ist. Durch diese Erfahrungen entstand die Vision eines Ortes, an dem jeder Kunde eine auf seine individuellen Bedürfnisse zugeschnittene Dienstleistung professionell und entspannt erleben kann.',
+                    content:
+                        'Über 30 Jahre lang habe ich Kompetenzen in Schnitt- und Färbetechniken aufgebaut. Ich lernte, dass die Arbeit mit Menschen und die Erfüllung ihrer Träume von schönem Haar ein untrennbarer Teil der Arbeit eines Friseurs ist. Durch diese Erfahrungen entstand die Vision eines Ortes, an dem jeder Kunde eine auf seine individuellen Bedürfnisse zugeschnittene Dienstleistung professionell und entspannt erleben kann.',
                 },
                 {
                     id: 'poczatek',
                     title: 'Der Anfang',
-                    content: 'Im Jahr 2011 konnte ich meinen Traum von einem solchen Ort verwirklichen. Ich entwarf den Salon Black & White selbst, basierend auf einem modernen, aber komfortablen Stil.',
+                    content:
+                        'Im Jahr 2011 konnte ich meinen Traum von einem solchen Ort verwirklichen. Ich entwarf den Salon Black & White selbst, basierend auf einem modernen, aber komfortablen Stil.',
                 },
                 {
                     id: 'wartosci',
                     title: 'Unsere Werte',
-                    content: 'Unser Salon orientiert sich an sechs Kernwerten: Leidenschaft und Kreativität, Professionalität und Exzellenz, individuellem Ansatz, Kundenzufriedenheit, Hygiene und Sicherheit sowie Umweltengagement.',
+                    content:
+                        'Unser Salon orientiert sich an sechs Kernwerten: Leidenschaft und Kreativität, Professionalität und Exzellenz, individuellem Ansatz, Kundenzufriedenheit, Hygiene und Sicherheit sowie Umweltengagement.',
                 },
             ],
         },
@@ -535,12 +707,42 @@ const t = {
             eyebrow: 'Woran wir glauben',
             title: 'Unsere Werte',
             items: [
-                { id: 'pasja', title: 'Leidenschaft & Kreativität', description: 'Wir stecken unser ganzes Herz in alles, was wir tun. Unsere Leidenschaft für die Friseurkunst ist ein untrennbarer Teil unserer Arbeit. Wir sind kreativ und offen für neue Trends, sodass wir einzigartige Frisuren schaffen können, die Ihre Individualität unterstreichen.' },
-                { id: 'profesjonalizm', title: 'Professionalität & Exzellenz', description: 'Unser Team aus erfahrenen Friseuren sind Meister ihres Fachs. Wir verbessern unsere Fähigkeiten ständig, nehmen an Schulungen teil und verfolgen die neuesten Techniken und Trends. Sie können sicher sein, einen Service auf höchstem Niveau zu erhalten.' },
-                { id: 'indywidualne', title: 'Individueller Ansatz', description: 'Wir wissen, dass jeder Kunde einzigartig ist. Deshalb hören wir immer sorgfältig auf Ihre Bedürfnisse und Vorlieben. Unser Team ist darauf geschult, Ihre Erwartungen zu verstehen und Lösungen vorzuschlagen, die zu Ihrem Lebensstil passen.' },
-                { id: 'zadowolenie', title: 'Kundenzufriedenheit', description: 'Ihre Zufriedenheit ist unser oberstes Ziel. Wir streben danach, eine freundliche und komfortable Atmosphäre in unserem Salon zu schaffen. Wir möchten, dass Sie sich wie zu Hause fühlen und unser Salon mit einem Lächeln verlassen.' },
-                { id: 'higiena', title: 'Hygiene & Sicherheit', description: 'Ihre Gesundheit und Sicherheit haben für uns Priorität. Wir halten strenge Hygienestandards ein und sorgen dafür, dass unser Salon sauber und sicher ist. Alle unsere Werkzeuge und Geräte werden sorgfältig desinfiziert.' },
-                { id: 'srodowisko', title: 'Umweltengagement', description: 'Wir sind uns des Einflusses bewusst, den unsere Branche auf die Umwelt haben kann. Wir ergreifen Maßnahmen zur Reduzierung unseres ökologischen Fußabdrucks, verwenden umweltfreundliche Produkte und engagieren uns für nachhaltige Praktiken.' },
+                {
+                    id: 'pasja',
+                    title: 'Leidenschaft & Kreativität',
+                    description:
+                        'Wir stecken unser ganzes Herz in alles, was wir tun. Unsere Leidenschaft für die Friseurkunst ist ein untrennbarer Teil unserer Arbeit. Wir sind kreativ und offen für neue Trends, sodass wir einzigartige Frisuren schaffen können, die Ihre Individualität unterstreichen.',
+                },
+                {
+                    id: 'profesjonalizm',
+                    title: 'Professionalität & Exzellenz',
+                    description:
+                        'Unser Team aus erfahrenen Friseuren sind Meister ihres Fachs. Wir verbessern unsere Fähigkeiten ständig, nehmen an Schulungen teil und verfolgen die neuesten Techniken und Trends. Sie können sicher sein, einen Service auf höchstem Niveau zu erhalten.',
+                },
+                {
+                    id: 'indywidualne',
+                    title: 'Individueller Ansatz',
+                    description:
+                        'Wir wissen, dass jeder Kunde einzigartig ist. Deshalb hören wir immer sorgfältig auf Ihre Bedürfnisse und Vorlieben. Unser Team ist darauf geschult, Ihre Erwartungen zu verstehen und Lösungen vorzuschlagen, die zu Ihrem Lebensstil passen.',
+                },
+                {
+                    id: 'zadowolenie',
+                    title: 'Kundenzufriedenheit',
+                    description:
+                        'Ihre Zufriedenheit ist unser oberstes Ziel. Wir streben danach, eine freundliche und komfortable Atmosphäre in unserem Salon zu schaffen. Wir möchten, dass Sie sich wie zu Hause fühlen und unser Salon mit einem Lächeln verlassen.',
+                },
+                {
+                    id: 'higiena',
+                    title: 'Hygiene & Sicherheit',
+                    description:
+                        'Ihre Gesundheit und Sicherheit haben für uns Priorität. Wir halten strenge Hygienestandards ein und sorgen dafür, dass unser Salon sauber und sicher ist. Alle unsere Werkzeuge und Geräte werden sorgfältig desinfiziert.',
+                },
+                {
+                    id: 'srodowisko',
+                    title: 'Umweltengagement',
+                    description:
+                        'Wir sind uns des Einflusses bewusst, den unsere Branche auf die Umwelt haben kann. Wir ergreifen Maßnahmen zur Reduzierung unseres ökologischen Fußabdrucks, verwenden umweltfreundliche Produkte und engagieren uns für nachhaltige Praktiken.',
+                },
             ],
         },
         services: {
@@ -549,10 +751,12 @@ const t = {
             featured: 'Empfohlen',
             learnMore: 'Mehr erfahren',
             viewAll: 'Vollständiges Angebot',
-            teaserSubtitle: 'Gesundes Haar als Ausgangspunkt — wir verbinden fortschrittliche Regenerationsbehandlungen mit präziser Styling- und Färbetechnik.',
+            teaserSubtitle:
+                'Gesundes Haar als Ausgangspunkt — wir verbinden fortschrittliche Regenerationsbehandlungen mit präziser Styling- und Färbetechnik.',
             pageEyebrow: 'Preisliste & Angebot',
             pageHeading: 'Unsere Leistungen',
-            pageDesc: 'Professionelle Friseur-, Barber- und Haarpflegeleistungen für Damen und Herren. Jeder Besuch ist individuell auf Sie zugeschnitten.',
+            pageDesc:
+                'Professionelle Friseur-, Barber- und Haarpflegeleistungen für Damen und Herren. Jeder Besuch ist individuell auf Sie zugeschnitten.',
             bookBtn: 'Buchen',
             serviceCount1: 'Leistung',
             serviceCountMany: 'Leistungen',
@@ -560,9 +764,32 @@ const t = {
             ctaSub: 'Online buchen oder anrufen. Wir sind von {hours} unter der Woche für Sie da.',
             from: 'ab',
             items: [
-                { title: 'Friseurleistungen', subtitle: 'Schnitt & Färbung', description: 'Damen- und Herrenschnitte, Wella-Färbung (Koleston Perfect, Ilumina, Color Touch) und moderne Air Touch-Technik — für Alltag, Abend und Hochzeit.', keyServices: ['Damenhaarschnitt', 'Herrenhaarschnitt', 'Air Touch', 'Hochzeitsfrisur', 'Dauerwelle', 'Föhnen'] },
-                { title: 'Pflege-Akademie', subtitle: 'Botox • Goldene Proteine • Olaplex', description: 'Regenerationsbehandlungen von Kérastase, Haarbotox, goldene Proteine und Olaplex — gezielte Pflege für geschädigtes oder feines Haar.' },
-                { title: 'Haarverlängerung', subtitle: 'HairTalk-Methode', description: 'Natürliche Haarverlängerung und -verdichtung mit der HairTalk-Methode — diskret, langlebig, auf Sie zugeschnitten.' },
+                {
+                    title: 'Friseurleistungen',
+                    subtitle: 'Schnitt & Färbung',
+                    description:
+                        'Damen- und Herrenschnitte, Wella-Färbung (Koleston Perfect, Ilumina, Color Touch) und moderne Air Touch-Technik — für Alltag, Abend und Hochzeit.',
+                    keyServices: [
+                        'Damenhaarschnitt',
+                        'Herrenhaarschnitt',
+                        'Air Touch',
+                        'Hochzeitsfrisur',
+                        'Dauerwelle',
+                        'Föhnen',
+                    ],
+                },
+                {
+                    title: 'Pflege-Akademie',
+                    subtitle: 'Botox • Goldene Proteine • Olaplex',
+                    description:
+                        'Regenerationsbehandlungen von Kérastase, Haarbotox, goldene Proteine und Olaplex — gezielte Pflege für geschädigtes oder feines Haar.',
+                },
+                {
+                    title: 'Haarverlängerung',
+                    subtitle: 'HairTalk-Methode',
+                    description:
+                        'Natürliche Haarverlängerung und -verdichtung mit der HairTalk-Methode — diskret, langlebig, auf Sie zugeschnitten.',
+                },
             ],
         },
         testimonials: {
@@ -632,7 +859,8 @@ const t = {
             errorInvalidEmail: 'Ungültige E-Mail-Adresse',
             errorEmailRequired: 'E-Mail ist erforderlich',
             errorPasswordRequired: 'Passwort ist erforderlich',
-            errorLoginFailed: 'Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Daten.',
+            errorLoginFailed:
+                'Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Daten.',
             submitLogin: 'Anmelden & buchen',
             submitting: 'Wird angemeldet…',
             noAccount: 'Kein Konto?',
@@ -642,15 +870,18 @@ const t = {
         salonGallery: {
             eyebrow: 'Schauen Sie rein',
             title: 'Unser Salon',
-            subtitle: 'Ein moderner Raum, der für Ihren Komfort und Ihre Entspannung gestaltet wurde.',
+            subtitle:
+                'Ein moderner Raum, der für Ihren Komfort und Ihre Entspannung gestaltet wurde.',
             viewAll: 'Vollständige Galerie',
             open: 'Öffnen',
         },
         gallery: {
             eyebrow: 'Instagram · Unsere Arbeiten',
             title: 'Galerie',
-            subtitle: 'Die neuesten Arbeiten unseres Teams — Frisuren, Stylings und Färbungen.',
-            fallback: 'Beispielfotos werden angezeigt — keine Instagram-Verbindung.',
+            subtitle:
+                'Die neuesten Arbeiten unseres Teams — Frisuren, Stylings und Färbungen.',
+            fallback:
+                'Beispielfotos werden angezeigt — keine Instagram-Verbindung.',
             loading: 'Wird geladen…',
             refresh: 'Aktualisieren',
             scrollMore: 'Scrollen Sie für mehr',
@@ -683,7 +914,8 @@ const t = {
             daySat: 'Samstag',
             daySun: 'Sonntag',
             bookingTitle: 'Termin buchen',
-            bookingDesc: 'Buchen Sie online — wählen Sie Ihre Leistung, Ihren Stylisten und einen passenden Termin.',
+            bookingDesc:
+                'Buchen Sie online — wählen Sie Ihre Leistung, Ihren Stylisten und einen passenden Termin.',
             bookingBtn: 'Termin buchen',
             formSubtitle: 'Oder schreiben Sie uns',
             formTitle: 'Nachricht senden',
@@ -698,7 +930,8 @@ const t = {
             formErrorEmail: 'Ungültige E-Mail-Adresse',
             formErrorName: 'Name ist erforderlich',
             formErrorMessage: 'Nachricht ist erforderlich',
-            formErrorSend: 'Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
+            formErrorSend:
+                'Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
             findUs: 'Finden Sie uns',
             formLink: 'Kontaktformular',
         },
@@ -710,7 +943,7 @@ export default t;
 type DeepMutable<T> = T extends readonly (infer U)[]
     ? DeepMutable<U>[]
     : T extends object
-    ? { [K in keyof T]: DeepMutable<T[K]> }
-    : string;
+      ? { [K in keyof T]: DeepMutable<T[K]> }
+      : string;
 
 export type Translations = DeepMutable<typeof t.pl>;

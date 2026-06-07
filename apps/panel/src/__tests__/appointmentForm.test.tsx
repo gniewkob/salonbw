@@ -20,7 +20,7 @@ describe('AppointmentForm', () => {
         fireEvent.change(screen.getByDisplayValue(''), {
             target: { value: '2024-01-01T10:00' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
         await waitFor(() => screen.getByRole('alert'));
     });
 });

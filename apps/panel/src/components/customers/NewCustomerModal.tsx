@@ -137,7 +137,7 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                                         href={`/customers/${d.id}` as Route}
                                         className="alert-link"
                                         target="_blank"
-                                        rel="noreferrer"
+                                        rel="noopener noreferrer"
                                     >
                                         {d.fullName || d.name}
                                     </Link>
@@ -151,7 +151,9 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
             ) : null}
 
             {error ? (
-                <div className="alert alert-danger py-2 small">{error}</div>
+                <div className="alert alert-danger py-2 small" role="alert">
+                    {error}
+                </div>
             ) : null}
 
             <form onSubmit={(e) => void handleSubmit(e)}>

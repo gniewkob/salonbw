@@ -1,4 +1,4 @@
-
+import Head from 'next/head';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -7,6 +7,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import ManageCategoriesModal from '@/components/services/ManageCategoriesModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import {
     useCreateService,
     useServiceCategories,
@@ -76,6 +77,9 @@ export default function NewServicePage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
+            <Head>
+                <title>Nowa usługa — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <NewServicePageContent />
             </SalonShell>
@@ -85,6 +89,7 @@ export default function NewServicePage() {
 
 function NewServicePageContent() {
     const router = useRouter();
+    const toast = useToast();
     const { data: categories = [] } = useServiceCategories();
     const createService = useCreateService();
     const uploadServicePhoto = useUploadServicePhoto();
@@ -419,12 +424,8 @@ function NewServicePageContent() {
                         serviceId: createdService.id,
                         items: recipeItemsForSave,
                     });
-                } catch (recipeError) {
+                } catch {
                     recipeSaveFailed = true;
-                    console.error(
-                        'Failed to save service recipe:',
-                        recipeError,
-                    );
                 }
             }
 
@@ -438,12 +439,8 @@ function NewServicePageContent() {
                             sortOrder: index,
                             isPublic: true,
                         });
-                    } catch (photoError) {
+                    } catch {
                         photoUploadFailed = true;
-                        console.error(
-                            'Failed to upload service photo:',
-                            photoError,
-                        );
                     }
                 }
             }
@@ -469,14 +466,13 @@ function NewServicePageContent() {
                     recipeSaveFailed ? 'receptura' : null,
                     photoUploadFailed ? 'zdjęcia' : null,
                 ].filter(Boolean);
-                window.alert(
-                    `Usługa została zapisana, ale create-flow nie domknął jeszcze: ${warnings.join(', ')}.`,
+                toast.error(
+                    `Usługa została zapisana, ale wystąpiły błędy: ${warnings.join(', ')}.`,
                 );
             }
 
             await router.push(`/services/${createdService.id}`);
-        } catch (submitError) {
-            console.error('Failed to create service:', submitError);
+        } catch {
             setError(
                 'Nie udało się zapisać usługi. Sprawdź dane i spróbuj ponownie.',
             );
@@ -732,10 +728,14 @@ function NewServicePageContent() {
                                         <table className="salonbw-table services-create-variants-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Nazwa wariantu</th>
-                                                    <th>Czas trwania</th>
-                                                    <th>Cena</th>
-                                                    <th>usuń</th>
+                                                    <th scope="col">
+                                                        Nazwa wariantu
+                                                    </th>
+                                                    <th scope="col">
+                                                        Czas trwania
+                                                    </th>
+                                                    <th scope="col">Cena</th>
+                                                    <th scope="col">usuń</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -902,7 +902,7 @@ function NewServicePageContent() {
                         </li>
 
                         <li className="services-create-field">
-                            <label>Zdjęcia</label>
+                            <span>Zdjęcia</span>
                             <div className="services-create-control">
                                 <div className="services-create-gallery">
                                     <div className="services-create-panel services-create-upload-panel">
@@ -1002,7 +1002,7 @@ function NewServicePageContent() {
                             </div>
 
                             <div className="services-create-field">
-                                <label>Receptura</label>
+                                <span>Receptura</span>
                                 <div className="services-create-control">
                                     <div className="services-create-panel">
                                         <button
@@ -1023,10 +1023,18 @@ function NewServicePageContent() {
                                                 <table className="salonbw-table services-create-recipe-table">
                                                     <thead>
                                                         <tr>
-                                                            <th>materiał</th>
-                                                            <th>jednostka</th>
-                                                            <th>ilość</th>
-                                                            <th>usuń</th>
+                                                            <th scope="col">
+                                                                materiał
+                                                            </th>
+                                                            <th scope="col">
+                                                                jednostka
+                                                            </th>
+                                                            <th scope="col">
+                                                                ilość
+                                                            </th>
+                                                            <th scope="col">
+                                                                usuń
+                                                            </th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1088,10 +1096,10 @@ function NewServicePageContent() {
                                                                                         product,
                                                                                     ) => (
                                                                                         <button
+                                                                                            type="button"
                                                                                             key={
                                                                                                 product.id
                                                                                             }
-                                                                                            type="button"
                                                                                             className="services-create-recipe-option"
                                                                                             onClick={() => {
                                                                                                 updateRecipeItem(

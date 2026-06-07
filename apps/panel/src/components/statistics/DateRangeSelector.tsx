@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { DateRange } from '@/types';
@@ -67,6 +66,7 @@ export default function DateRangeSelector({
             <div className="d-flex flex-wrap gap-1">
                 {RANGE_OPTIONS.map((option) => (
                     <button
+                        type="button"
                         key={option.value}
                         onClick={() => handleRangeChange(option.value)}
                         className={`px-3 py-1 small rounded-3 ${
@@ -98,6 +98,7 @@ export default function DateRangeSelector({
                         className="px-2 py-1 small border border-secondary border-opacity-50 rounded-3"
                     />
                     <button
+                        type="button"
                         onClick={handleCustomApply}
                         className="px-3 py-1 small bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
                     >

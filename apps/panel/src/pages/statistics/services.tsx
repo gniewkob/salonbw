@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import { format, subDays } from 'date-fns';
 import Link from 'next/link';
@@ -39,6 +40,9 @@ export default function ServicesStatisticsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>Statystyki usług — Salon Black &amp; White</title>
+            </Head>
             <SalonShell role={role}>
                 <div
                     className="salonbw-page"
@@ -126,18 +130,30 @@ export default function ServicesStatisticsPage() {
                                 <table className="salonbw-table">
                                     <thead>
                                         <tr>
-                                            <th>Usługa</th>
-                                            <th>Kategoria</th>
-                                            <th className="text-end">
+                                            <th scope="col">Usługa</th>
+                                            <th scope="col">Kategoria</th>
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Liczba wizyt
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Przychód
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Średnia cena
                                             </th>
-                                            <th className="text-end">
+                                            <th
+                                                scope="col"
+                                                className="text-end"
+                                            >
                                                 Średni czas
                                             </th>
                                         </tr>

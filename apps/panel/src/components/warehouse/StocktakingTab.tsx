@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
     useStocktakings,
@@ -8,6 +7,7 @@ import {
 } from '@/hooks/useWarehouse';
 import type { StocktakingStatus } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { formatPanelDate } from '@/utils/formatters';
 
 const statusLabels: Record<StocktakingStatus, string> = {
@@ -34,6 +34,10 @@ export default function StocktakingTab() {
         notes: '',
     });
     const [error, setError] = useState<string | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{
+        id: number;
+        action: 'start' | 'complete';
+    } | null>(null);
 
     const { data: stocktakings = [], isLoading } = useStocktakings(
         statusFilter ? { status: statusFilter } : undefined,
@@ -65,48 +69,39 @@ export default function StocktakingTab() {
                 notes: formData.notes || undefined,
             });
             handleCloseModal();
-        } catch (err) {
-            console.error('Error creating stocktaking:', err);
+        } catch {
             setError('Wystąpił błąd podczas tworzenia inwentaryzacji.');
         }
     };
 
-    const handleStart = async (id: number) => {
-        if (
-            confirm(
-                'Czy chcesz rozpocząć inwentaryzację? Wszystkie aktywne produkty zostaną załadowane.',
-            )
-        ) {
-            setError(null);
-            try {
-                await startStocktaking.mutateAsync(id);
-            } catch (err) {
-                console.error('Error starting stocktaking:', err);
-                setError(
-                    'Nie udało się rozpocząć inwentaryzacji. Spróbuj ponownie.',
-                );
-            }
-        }
+    const handleStart = (id: number) => {
+        setConfirmAction({ id, action: 'start' });
     };
 
-    const handleComplete = async (id: number) => {
-        if (
-            confirm(
-                'Czy na pewno chcesz zakończyć inwentaryzację? Różnice zostaną zastosowane do stanów magazynowych.',
-            )
-        ) {
-            setError(null);
-            try {
+    const handleComplete = (id: number) => {
+        setConfirmAction({ id, action: 'complete' });
+    };
+
+    const doConfirmAction = async (
+        id: number,
+        action: 'start' | 'complete',
+    ) => {
+        setError(null);
+        try {
+            if (action === 'start') {
+                await startStocktaking.mutateAsync(id);
+            } else {
                 await completeStocktaking.mutateAsync({
                     id,
                     applyDifferences: true,
                 });
-            } catch (err) {
-                console.error('Error completing stocktaking:', err);
-                setError(
-                    'Nie udało się zakończyć inwentaryzacji. Spróbuj ponownie.',
-                );
             }
+        } catch {
+            setError(
+                action === 'start'
+                    ? 'Nie udało się rozpocząć inwentaryzacji. Spróbuj ponownie.'
+                    : 'Nie udało się zakończyć inwentaryzacji. Spróbuj ponownie.',
+            );
         }
     };
 
@@ -121,6 +116,7 @@ export default function StocktakingTab() {
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="d-flex align-items-center gap-3">
                     <select
+                        aria-label="Filtruj po statusie"
                         value={statusFilter}
                         onChange={(e) =>
                             setStatusFilter(
@@ -138,6 +134,7 @@ export default function StocktakingTab() {
                     </select>
                 </div>
                 <button
+                    type="button"
                     onClick={handleOpenModal}
                     className="px-3 py-2 btn-salon rounded-3"
                 >
@@ -253,6 +250,7 @@ export default function StocktakingTab() {
                                         <td className="px-4 py-3 text-nowrap text-end small">
                                             {stocktaking.status === 'draft' && (
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleStart(
                                                             stocktaking.id,
@@ -266,6 +264,7 @@ export default function StocktakingTab() {
                                             {stocktaking.status ===
                                                 'in_progress' && (
                                                 <button
+                                                    type="button"
                                                     onClick={() =>
                                                         void handleComplete(
                                                             stocktaking.id,
@@ -325,10 +324,14 @@ export default function StocktakingTab() {
                         className="gap-2"
                     >
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="stocktaking-date"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Data inwentaryzacji
                             </label>
                             <input
+                                id="stocktaking-date"
                                 type="date"
                                 value={formData.stocktakingDate}
                                 onChange={(e) =>
@@ -341,10 +344,14 @@ export default function StocktakingTab() {
                             />
                         </div>
                         <div>
-                            <label className="mb-1 d-block small fw-medium text-body">
+                            <label
+                                htmlFor="stocktaking-notes"
+                                className="mb-1 d-block small fw-medium text-body"
+                            >
                                 Notatki
                             </label>
                             <textarea
+                                id="stocktaking-notes"
                                 value={formData.notes}
                                 onChange={(e) =>
                                     setFormData({
@@ -378,6 +385,30 @@ export default function StocktakingTab() {
                     </form>
                 </PanelModal>
             )}
+            <ConfirmModal
+                open={!!confirmAction}
+                title={
+                    confirmAction?.action === 'start'
+                        ? 'Rozpocznij inwentaryzację'
+                        : 'Zakończ inwentaryzację'
+                }
+                message={
+                    confirmAction?.action === 'start'
+                        ? 'Czy chcesz rozpocząć inwentaryzację? Wszystkie aktywne produkty zostaną załadowane.'
+                        : 'Czy na pewno chcesz zakończyć inwentaryzację? Różnice zostaną zastosowane do stanów magazynowych.'
+                }
+                confirmLabel={
+                    confirmAction?.action === 'start' ? 'Rozpocznij' : 'Zakończ'
+                }
+                confirmVariant="danger"
+                onConfirm={() => {
+                    if (!confirmAction) return;
+                    const { id, action } = confirmAction;
+                    setConfirmAction(null);
+                    void doConfirmAction(id, action);
+                }}
+                onCancel={() => setConfirmAction(null)}
+            />
         </div>
     );
 }

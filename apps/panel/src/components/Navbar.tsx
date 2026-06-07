@@ -12,7 +12,7 @@ export default function Navbar() {
 
     return (
         <nav
-            aria-label="Main navigation"
+            aria-label="Nawigacja główna"
             className="d-flex justify-content-between align-items-center p-3 bg-light shadow"
         >
             <Link

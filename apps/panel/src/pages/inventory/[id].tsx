@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -35,15 +34,23 @@ export default function InventoryDetailsPage() {
 
     const start = async () => {
         if (!stocktakingId) return;
-        await startMutation.mutateAsync(stocktakingId);
+        try {
+            await startMutation.mutateAsync(stocktakingId);
+        } catch {
+            // error handled by hook
+        }
     };
 
     const complete = async () => {
         if (!stocktakingId) return;
-        await completeMutation.mutateAsync({
-            id: stocktakingId,
-            applyDifferences: true,
-        });
+        try {
+            await completeMutation.mutateAsync({
+                id: stocktakingId,
+                applyDifferences: true,
+            });
+        } catch {
+            // error handled by hook
+        }
     };
 
     return (
@@ -116,10 +123,10 @@ export default function InventoryDetailsPage() {
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>produkt</th>
-                                    <th>stan systemowy</th>
-                                    <th>stan policzony</th>
-                                    <th>różnica</th>
+                                    <th scope="col">produkt</th>
+                                    <th scope="col">stan systemowy</th>
+                                    <th scope="col">stan policzony</th>
+                                    <th scope="col">różnica</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -139,7 +146,7 @@ export default function InventoryDetailsPage() {
                                                         ''
                                                     }
                                                     onChange={(event) =>
-                                                        void updateItemMutation.mutateAsync(
+                                                        updateItemMutation.mutate(
                                                             {
                                                                 stocktakingId:
                                                                     data.id,

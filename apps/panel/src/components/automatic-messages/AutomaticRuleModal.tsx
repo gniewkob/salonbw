@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import type {
     AutomaticMessageRule,
@@ -172,12 +171,14 @@ export default function AutomaticRuleModal({
                             type="button"
                             onClick={onClose}
                             className="p-2 text-secondary rounded-3"
+                            aria-label="Zamknij"
                         >
                             <svg
                                 className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -198,10 +199,14 @@ export default function AutomaticRuleModal({
                             {/* Basic Info */}
                             <div className="row row-cols-1 row-cols-sm-2 g-3">
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-1">
+                                    <label
+                                        htmlFor="auto-rule-name"
+                                        className="d-block small fw-medium text-body mb-1"
+                                    >
                                         Nazwa reguły *
                                     </label>
                                     <input
+                                        id="auto-rule-name"
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) =>
@@ -215,10 +220,14 @@ export default function AutomaticRuleModal({
                                     />
                                 </div>
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-1">
+                                    <label
+                                        htmlFor="auto-rule-trigger"
+                                        className="d-block small fw-medium text-body mb-1"
+                                    >
                                         Typ wyzwalacza *
                                     </label>
                                     <select
+                                        id="auto-rule-trigger"
                                         value={formData.trigger}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
@@ -242,10 +251,14 @@ export default function AutomaticRuleModal({
                             </div>
 
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="auto-rule-description"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Opis (opcjonalny)
                                 </label>
                                 <input
+                                    id="auto-rule-description"
                                     type="text"
                                     value={formData.description ?? ''}
                                     onChange={(e) =>
@@ -262,10 +275,14 @@ export default function AutomaticRuleModal({
                             {/* Timing */}
                             <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-1">
+                                    <label
+                                        htmlFor="auto-rule-channel"
+                                        className="d-block small fw-medium text-body mb-1"
+                                    >
                                         Kanał
                                     </label>
                                     <select
+                                        id="auto-rule-channel"
                                         value={formData.channel}
                                         onChange={(e) =>
                                             setFormData((prev) => ({
@@ -289,10 +306,14 @@ export default function AutomaticRuleModal({
 
                                 {needsOffset && (
                                     <div>
-                                        <label className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="auto-rule-offset"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Godziny przed/po
                                         </label>
                                         <input
+                                            id="auto-rule-offset"
                                             type="number"
                                             value={formData.offsetHours}
                                             onChange={(e) =>
@@ -316,10 +337,14 @@ export default function AutomaticRuleModal({
 
                                 {needsInactivityDays && (
                                     <div>
-                                        <label className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="auto-rule-inactivity"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Dni nieaktywności
                                         </label>
                                         <input
+                                            id="auto-rule-inactivity"
                                             type="number"
                                             value={formData.inactivityDays}
                                             onChange={(e) =>
@@ -342,10 +367,14 @@ export default function AutomaticRuleModal({
                             {/* Send Window */}
                             <div className="row row-cols-1 row-cols-sm-2 g-3">
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-1">
+                                    <label
+                                        htmlFor="auto-rule-window-start"
+                                        className="d-block small fw-medium text-body mb-1"
+                                    >
                                         Okno wysyłki od
                                     </label>
                                     <input
+                                        id="auto-rule-window-start"
                                         type="time"
                                         value={formData.sendWindowStart?.slice(
                                             0,
@@ -362,10 +391,14 @@ export default function AutomaticRuleModal({
                                     />
                                 </div>
                                 <div>
-                                    <label className="d-block small fw-medium text-body mb-1">
+                                    <label
+                                        htmlFor="auto-rule-window-end"
+                                        className="d-block small fw-medium text-body mb-1"
+                                    >
                                         Okno wysyłki do
                                     </label>
                                     <input
+                                        id="auto-rule-window-end"
                                         type="time"
                                         value={formData.sendWindowEnd?.slice(
                                             0,
@@ -385,10 +418,14 @@ export default function AutomaticRuleModal({
 
                             {/* Message Content */}
                             <div>
-                                <label className="d-block small fw-medium text-body mb-1">
+                                <label
+                                    htmlFor="auto-rule-content"
+                                    className="d-block small fw-medium text-body mb-1"
+                                >
                                     Treść wiadomości *
                                 </label>
                                 <textarea
+                                    id="auto-rule-content"
                                     value={formData.content ?? ''}
                                     onChange={(e) =>
                                         setFormData((prev) => ({

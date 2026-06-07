@@ -12,10 +12,9 @@ jest.mock('react-hot-toast', () => ({
 }));
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const toast = require('react-hot-toast').toast;
 
 describe('useReviewApi extra', () => {
-    it('updates and deletes review', async () => {
+    it('updates and deletes review without throwing', async () => {
         const apiFetch = jest
             .fn()
             .mockResolvedValueOnce({ id: 10, rating: 4 }) // update
@@ -28,14 +27,13 @@ describe('useReviewApi extra', () => {
         await act(async () => {
             await result.current.update(10, { rating: 4 });
         });
-        expect(toast.success).toHaveBeenCalled();
         await act(async () => {
             await result.current.remove(10);
         });
-        expect(toast.success).toHaveBeenCalled();
+        expect(apiFetch).toHaveBeenCalledTimes(2);
     });
 
-    it('handles listForEmployee query params and errors', async () => {
+    it('handles listForEmployee query params and throws on error', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('bad'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -50,7 +48,6 @@ describe('useReviewApi extra', () => {
                     rating: 5,
                 });
             }),
-        ).rejects.toThrow();
-        expect(toast.error).toHaveBeenCalled();
+        ).rejects.toThrow('bad');
     });
 });

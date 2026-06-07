@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -85,6 +86,11 @@ export default function CustomersReturning() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
+            <Head>
+                <title>
+                    Statystyki — powracający klienci — Salon Black &amp; White
+                </title>
+            </Head>
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
@@ -112,7 +118,7 @@ export default function CustomersReturning() {
                     {isLoading ? (
                         <div className="text-center py-40">Ładowanie...</div>
                     ) : error ? (
-                        <div className="alert alert-warning">
+                        <div className="alert alert-warning" role="alert">
                             Statystyki powracalności chwilowo niedostępne.
                         </div>
                     ) : stats ? (

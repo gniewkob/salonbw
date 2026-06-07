@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import type {
     ProductCardView,
     ProductCategory,
@@ -69,6 +70,7 @@ export function useProductCategories(enabled = true) {
 export function useCreateProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (payload: {
             name: string;
@@ -89,12 +91,16 @@ export function useCreateProductCategory() {
                 queryKey: ['warehouse-products'],
             });
         },
+        onError: () => {
+            toast.error('Nie udało się dodać kategorii');
+        },
     });
 }
 
 export function useUpdateProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: ({
             id,
@@ -121,12 +127,35 @@ export function useUpdateProductCategory() {
                 queryKey: ['warehouse-products'],
             });
         },
+        onError: () => {
+            toast.error('Nie udało się zapisać kategorii');
+        },
+    });
+}
+
+export function useDeleteProduct() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    const toast = useToast();
+    return useMutation({
+        mutationFn: (id: number) =>
+            apiFetch(`/products/${id}`, { method: 'DELETE' }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+            toast.success('Produkt został usunięty');
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć produktu');
+        },
     });
 }
 
 export function useDeleteProductCategory() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch(`/product-categories/${id}`, { method: 'DELETE' }),
@@ -137,6 +166,9 @@ export function useDeleteProductCategory() {
             void queryClient.invalidateQueries({
                 queryKey: ['warehouse-products'],
             });
+        },
+        onError: () => {
+            toast.error('Nie udało się usunąć kategorii');
         },
     });
 }
@@ -239,6 +271,7 @@ export function useProductCommissions(productId?: number) {
 export function useUpdateProductCommissions(productId?: number) {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: (rules: ProductCommissionRule[]) =>
@@ -262,6 +295,10 @@ export function useUpdateProductCommissions(productId?: number) {
             void queryClient.invalidateQueries({
                 queryKey: ['product-commissions', productId],
             });
+            toast.success('Prowizje zapisane');
+        },
+        onError: () => {
+            toast.error('Nie udało się zapisać prowizji');
         },
     });
 }
@@ -501,12 +538,19 @@ export function useCreateWarehouseOrder() {
     });
 }
 
+const ORDER_ACTION_LABELS: Record<string, string> = {
+    send: 'wysłać zamówienie',
+    cancel: 'anulować zamówienie',
+    receive: 'przyjąć zamówienie',
+};
+
 function useOrderAction(
     action: 'send' | 'cancel' | 'receive',
     payload?: Record<string, unknown>,
 ) {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         mutationFn: (orderId: number) =>
@@ -525,6 +569,11 @@ function useOrderAction(
             void queryClient.invalidateQueries({
                 queryKey: ['warehouse-products'],
             });
+        },
+        onError: () => {
+            toast.error(
+                `Nie udało się ${ORDER_ACTION_LABELS[action] ?? 'wykonać akcji'}. Spróbuj ponownie.`,
+            );
         },
     });
 }

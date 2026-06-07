@@ -1,4 +1,3 @@
-'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';
@@ -27,7 +26,11 @@ export default function BookNowFab() {
                 }}
             >
                 <button
-                    onClick={() => { trackEvent('begin_checkout', { cta: 'fab' }); setModalOpen(true); }}
+                    type="button"
+                    onClick={() => {
+                        trackEvent('begin_checkout', { cta: 'fab' });
+                        setModalOpen(true);
+                    }}
                     className="btn-silver px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
                     style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
                     aria-label={T.nav.booking}
@@ -35,7 +38,10 @@ export default function BookNowFab() {
                     {T.nav.booking}
                 </button>
             </div>
-            <BookingModal open={modalOpen} onClose={() => setModalOpen(false)} />
+            <BookingModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+            />
         </>
     );
 }
