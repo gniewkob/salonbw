@@ -162,7 +162,10 @@ export default function WarehouseUsageHistoryPage() {
                                 pobierz historię zużycia w pliku Excel
                             </button>
                         </div>
-                        <div className="pagination_container">
+                        <nav
+                            className="pagination_container"
+                            aria-label="Paginacja"
+                        >
                             <div className="column_row">
                                 <div className="row">
                                     <div className="infocol-7">
@@ -209,7 +212,7 @@ export default function WarehouseUsageHistoryPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </nav>
                     </>
                 )}
             </WarehouseLayout>

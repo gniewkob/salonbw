@@ -877,7 +877,10 @@ export default function ClientsPage() {
                         )}
 
                         {!isMobile && (
-                            <div className="pagination_container">
+                            <nav
+                                className="pagination_container"
+                                aria-label="Paginacja"
+                            >
                                 <div className="row">
                                     <div className="infocol-7">
                                         Pozycje od {fromItem} do {toItem} z{' '}
@@ -942,7 +945,7 @@ export default function ClientsPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </nav>
                         )}
                     </div>
 

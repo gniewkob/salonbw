@@ -551,6 +551,7 @@ export default function TimetableTemplatesPage() {
                                     <form
                                         className="pagination_container"
                                         action="/settings/timetable/templates"
+                                        aria-label="Paginacja"
                                     >
                                         <div className="row">
                                             <div className="infocol-7">

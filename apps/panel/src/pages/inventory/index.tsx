@@ -172,7 +172,7 @@ export default function InventoryHistoryPage() {
                     </>
                 )}
 
-                <div className="pagination_container">
+                <nav className="pagination_container" aria-label="Paginacja">
                     Pozycje od {from} do {to} z {filteredRows.length} | na
                     stronie
                     <select
@@ -215,7 +215,7 @@ export default function InventoryHistoryPage() {
                             {'>'}
                         </button>
                     </div>
-                </div>
+                </nav>
             </WarehouseLayout>
         </>
     );

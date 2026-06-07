@@ -497,7 +497,10 @@ export default function ActivityLogRoute({
                                             </tbody>
                                         </table>
 
-                                        <form className="pagination_container">
+                                        <form
+                                            className="pagination_container"
+                                            aria-label="Paginacja"
+                                        >
                                             <div className="row">
                                                 <div className="info col-md-6">
                                                     Pozycje od {fromItem} do{' '}

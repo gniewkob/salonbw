@@ -331,7 +331,10 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 pobierz historię dostaw w pliku Excel
                             </button>
                         </div>
-                        <div className="pagination_container">
+                        <nav
+                            className="pagination_container"
+                            aria-label="Paginacja"
+                        >
                             <div className="column_row">
                                 <div className="row">
                                     <div className="infocol-7">
@@ -382,7 +385,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </nav>
                     </>
                 )}
             </WarehouseLayout>

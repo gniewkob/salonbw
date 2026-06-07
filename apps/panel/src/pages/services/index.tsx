@@ -436,7 +436,10 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                     </div>
 
                     {filtered.length > 0 && (
-                        <div className="pagination_container">
+                        <nav
+                            className="pagination_container"
+                            aria-label="Paginacja"
+                        >
                             <div className="column_row">
                                 <div className="row">
                                     <div className="infocol-7">
@@ -509,7 +512,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </nav>
                     )}
 
                     <div className="products-export">
