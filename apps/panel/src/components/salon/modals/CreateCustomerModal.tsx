@@ -57,7 +57,12 @@ export default function CreateCustomerModal({
                     </div>
                     <div className="modal-body">
                         <div className="mb-3">
-                            <label htmlFor="cc-first-name" className="form-label">Imię</label>
+                            <label
+                                htmlFor="cc-first-name"
+                                className="form-label"
+                            >
+                                Imię
+                            </label>
                             <input
                                 id="cc-first-name"
                                 className="form-control"
@@ -74,7 +79,12 @@ export default function CreateCustomerModal({
                             />
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="cc-last-name" className="form-label">Nazwisko</label>
+                            <label
+                                htmlFor="cc-last-name"
+                                className="form-label"
+                            >
+                                Nazwisko
+                            </label>
                             <input
                                 id="cc-last-name"
                                 className="form-control"
@@ -90,7 +100,9 @@ export default function CreateCustomerModal({
                             />
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="cc-email" className="form-label">Email</label>
+                            <label htmlFor="cc-email" className="form-label">
+                                Email
+                            </label>
                             <input
                                 id="cc-email"
                                 className="form-control"
@@ -106,7 +118,9 @@ export default function CreateCustomerModal({
                             />
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="cc-phone" className="form-label">Telefon</label>
+                            <label htmlFor="cc-phone" className="form-label">
+                                Telefon
+                            </label>
                             <input
                                 id="cc-phone"
                                 className="form-control"

@@ -236,7 +236,10 @@ export default function AppointmentsPage() {
                     <div className="column_row mb-3">
                         <div className="d-flex flex-wrap gap-2 align-items-end">
                             <div>
-                                <label htmlFor="appts-from" className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appts-from"
+                                    className="form-label mb-1 small"
+                                >
                                     Od
                                 </label>
                                 <input
@@ -251,7 +254,10 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="appts-to" className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appts-to"
+                                    className="form-label mb-1 small"
+                                >
                                     Do
                                 </label>
                                 <input
@@ -266,7 +272,10 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="appts-status" className="form-label mb-1 small">
+                                <label
+                                    htmlFor="appts-status"
+                                    className="form-label mb-1 small"
+                                >
                                     Status
                                 </label>
                                 <select

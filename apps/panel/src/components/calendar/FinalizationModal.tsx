@@ -394,7 +394,10 @@ export default function FinalizationModal({
                     style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}
                 >
                     <div>
-                        <label htmlFor="fin-discount" className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="fin-discount"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Rabat (PLN)
                         </label>
                         <input
@@ -415,7 +418,10 @@ export default function FinalizationModal({
                         )}
                     </div>
                     <div>
-                        <label htmlFor="fin-tip" className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="fin-tip"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Napiwek (PLN)
                         </label>
                         <input
@@ -760,7 +766,10 @@ export default function FinalizationModal({
 
                 {/* Note */}
                 <div className="mb-3">
-                    <label htmlFor="fin-note" className="d-block small fw-medium text-body mb-1">
+                    <label
+                        htmlFor="fin-note"
+                        className="d-block small fw-medium text-body mb-1"
+                    >
                         Notatka (opcjonalnie)
                     </label>
                     <textarea

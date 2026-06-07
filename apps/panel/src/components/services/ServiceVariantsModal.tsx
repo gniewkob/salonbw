@@ -261,7 +261,10 @@ export default function ServiceVariantsModal({
                                         </h5>
 
                                         <div className="control-group">
-                                            <label htmlFor="variant-name" className="form-label">
+                                            <label
+                                                htmlFor="variant-name"
+                                                className="form-label"
+                                            >
                                                 Nazwa wariantu *
                                             </label>
                                             <div className="controls">
@@ -284,7 +287,10 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label htmlFor="variant-description" className="form-label">
+                                            <label
+                                                htmlFor="variant-description"
+                                                className="form-label"
+                                            >
                                                 Opis (opcjonalnie)
                                             </label>
                                             <div className="controls">
@@ -309,7 +315,10 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label htmlFor="variant-duration" className="form-label">
+                                            <label
+                                                htmlFor="variant-duration"
+                                                className="form-label"
+                                            >
                                                 Czas trwania (min) *
                                             </label>
                                             <div className="controls">
@@ -336,7 +345,10 @@ export default function ServiceVariantsModal({
                                         </div>
 
                                         <div className="control-group">
-                                            <label htmlFor="variant-price" className="form-label">
+                                            <label
+                                                htmlFor="variant-price"
+                                                className="form-label"
+                                            >
                                                 Cena (zł) *
                                             </label>
                                             <div className="controls">

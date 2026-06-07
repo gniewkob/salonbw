@@ -377,7 +377,10 @@ function ProtectionTab() {
                     {paranoiaMode && (
                         <>
                             <div className="mb-3">
-                                <label htmlFor="privacy-paranoia-limit" className="form-label">
+                                <label
+                                    htmlFor="privacy-paranoia-limit"
+                                    className="form-label"
+                                >
                                     Limit kontaktów
                                 </label>
                                 <div className="input-group input-group--narrow">
@@ -406,7 +409,10 @@ function ProtectionTab() {
                             </div>
 
                             <div className="mb-3">
-                                <label htmlFor="privacy-paranoia-email" className="form-label">
+                                <label
+                                    htmlFor="privacy-paranoia-email"
+                                    className="form-label"
+                                >
                                     E-mail powiadomień
                                 </label>
                                 <input

@@ -675,7 +675,10 @@ export default function LoyaltyManagementPage() {
                             >
                                 <div className="row row-cols-1 row-cols-sm-2 g-3">
                                     <div>
-                                        <label htmlFor="loy-points-per-currency" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-points-per-currency"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Punkty za 1 PLN wydany
                                         </label>
                                         <input
@@ -698,7 +701,10 @@ export default function LoyaltyManagementPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="loy-points-value" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-points-value"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Wartość 1 punktu (PLN)
                                         </label>
                                         <input
@@ -724,7 +730,10 @@ export default function LoyaltyManagementPage() {
 
                                 <div className="row row-cols-1 row-cols-sm-2 g-3">
                                     <div>
-                                        <label htmlFor="loy-min-points" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-min-points"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Min. punktów do wymiany
                                         </label>
                                         <input
@@ -746,7 +755,10 @@ export default function LoyaltyManagementPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="loy-points-expire" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-points-expire"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Wygasanie punktów (miesiące)
                                         </label>
                                         <input
@@ -775,7 +787,10 @@ export default function LoyaltyManagementPage() {
                                     <h3 className="fw-medium mb-2">Bonusy</h3>
                                     <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                                         <div>
-                                            <label htmlFor="loy-signup-bonus" className="d-block small fw-medium text-body mb-1">
+                                            <label
+                                                htmlFor="loy-signup-bonus"
+                                                className="d-block small fw-medium text-body mb-1"
+                                            >
                                                 Za rejestrację
                                             </label>
                                             <input
@@ -798,7 +813,10 @@ export default function LoyaltyManagementPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="loy-referral-bonus" className="d-block small fw-medium text-body mb-1">
+                                            <label
+                                                htmlFor="loy-referral-bonus"
+                                                className="d-block small fw-medium text-body mb-1"
+                                            >
                                                 Za polecenie
                                             </label>
                                             <input
@@ -821,7 +839,10 @@ export default function LoyaltyManagementPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="loy-birthday-bonus" className="d-block small fw-medium text-body mb-1">
+                                            <label
+                                                htmlFor="loy-birthday-bonus"
+                                                className="d-block small fw-medium text-body mb-1"
+                                            >
                                                 Urodzinowy
                                             </label>
                                             <input
@@ -881,7 +902,10 @@ export default function LoyaltyManagementPage() {
                                 </div>
                                 <div className="px-4 py-3 gap-2">
                                     <div>
-                                        <label htmlFor="loy-reward-name" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-reward-name"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Nazwa *
                                         </label>
                                         <input
@@ -899,7 +923,10 @@ export default function LoyaltyManagementPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="loy-reward-desc" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-reward-desc"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Opis
                                         </label>
                                         <textarea
@@ -917,7 +944,10 @@ export default function LoyaltyManagementPage() {
                                     </div>
                                     <div className="row row-cols-1 row-cols-sm-2 g-3">
                                         <div>
-                                            <label htmlFor="loy-reward-type" className="d-block small fw-medium text-body mb-1">
+                                            <label
+                                                htmlFor="loy-reward-type"
+                                                className="d-block small fw-medium text-body mb-1"
+                                            >
                                                 Typ *
                                             </label>
                                             <select
@@ -945,7 +975,10 @@ export default function LoyaltyManagementPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label htmlFor="loy-reward-points-cost" className="d-block small fw-medium text-body mb-1">
+                                            <label
+                                                htmlFor="loy-reward-points-cost"
+                                                className="d-block small fw-medium text-body mb-1"
+                                            >
                                                 Koszt (punkty) *
                                             </label>
                                             <input
@@ -969,7 +1002,10 @@ export default function LoyaltyManagementPage() {
                                     {rewardForm.type === 'discount' && (
                                         <div className="row row-cols-1 row-cols-sm-2 g-3">
                                             <div>
-                                                <label htmlFor="loy-reward-discount-pct" className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="loy-reward-discount-pct"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     Rabat %
                                                 </label>
                                                 <input
@@ -997,7 +1033,10 @@ export default function LoyaltyManagementPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label htmlFor="loy-reward-discount-amt" className="d-block small fw-medium text-body mb-1">
+                                                <label
+                                                    htmlFor="loy-reward-discount-amt"
+                                                    className="d-block small fw-medium text-body mb-1"
+                                                >
                                                     lub Kwota (PLN)
                                                 </label>
                                                 <input
@@ -1028,7 +1067,10 @@ export default function LoyaltyManagementPage() {
                                     )}
                                     {rewardForm.type === 'gift_card' && (
                                         <div>
-                                            <label htmlFor="loy-reward-gift-value" className="d-block small fw-medium text-body mb-1">
+                                            <label
+                                                htmlFor="loy-reward-gift-value"
+                                                className="d-block small fw-medium text-body mb-1"
+                                            >
                                                 Wartość karty (PLN)
                                             </label>
                                             <input
@@ -1057,7 +1099,10 @@ export default function LoyaltyManagementPage() {
                                         </div>
                                     )}
                                     <div>
-                                        <label htmlFor="loy-reward-max-redemptions" className="d-block small fw-medium text-body mb-1">
+                                        <label
+                                            htmlFor="loy-reward-max-redemptions"
+                                            className="d-block small fw-medium text-body mb-1"
+                                        >
                                             Max. realizacji (opcjonalnie)
                                         </label>
                                         <input
@@ -1123,7 +1168,10 @@ export default function LoyaltyManagementPage() {
                                     </h2>
                                 </div>
                                 <div className="px-4 py-3">
-                                    <label htmlFor="loy-coupon-code" className="d-block small fw-medium text-body mb-1">
+                                    <label
+                                        htmlFor="loy-coupon-code"
+                                        className="d-block small fw-medium text-body mb-1"
+                                    >
                                         Kod kuponu *
                                     </label>
                                     <input

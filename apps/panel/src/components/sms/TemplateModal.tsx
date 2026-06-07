@@ -123,7 +123,10 @@ export default function TemplateModal({
                 <div className="d-flex flex-column gap-2">
                     {/* Name */}
                     <div>
-                        <label htmlFor="tmpl-name" className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="tmpl-name"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Nazwa szablonu
                         </label>
                         <input
@@ -196,7 +199,10 @@ export default function TemplateModal({
                     {/* Subject (for email) */}
                     {form.channel === 'email' && (
                         <div>
-                            <label htmlFor="tmpl-subject" className="d-block small fw-medium text-body mb-1">
+                            <label
+                                htmlFor="tmpl-subject"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
                                 Temat
                             </label>
                             <input
@@ -217,7 +223,10 @@ export default function TemplateModal({
                     {/* Content */}
                     <div>
                         <div className="d-flex align-items-center justify-content-between mb-1">
-                            <label htmlFor="tmpl-content" className="d-block small fw-medium text-body">
+                            <label
+                                htmlFor="tmpl-content"
+                                className="d-block small fw-medium text-body"
+                            >
                                 Treść wiadomości
                             </label>
                             {form.channel === 'sms' && (
@@ -261,7 +270,10 @@ export default function TemplateModal({
 
                     {/* Description */}
                     <div>
-                        <label htmlFor="tmpl-desc" className="d-block small fw-medium text-body mb-1">
+                        <label
+                            htmlFor="tmpl-desc"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
                             Opis (opcjonalnie)
                         </label>
                         <input

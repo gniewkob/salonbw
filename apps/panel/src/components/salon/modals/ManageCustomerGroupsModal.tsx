@@ -179,7 +179,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                 />
                             </div>
                             <div className="form-">
-                                <span className="form-label d-block">Kolor</span>
+                                <span className="form-label d-block">
+                                    Kolor
+                                </span>
                                 <div className="salonbw-color-picker">
                                     {colorOptions.map((color) => {
                                         return (

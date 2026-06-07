@@ -454,13 +454,17 @@ export default function CustomerSummaryTab({
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <span className="form-label d-block">E-mail</span>
+                                    <span className="form-label d-block">
+                                        E-mail
+                                    </span>
                                     <div className="control-content">
                                         {customer.email || '-'}
                                     </div>
                                 </div>
                                 <div className="form-">
-                                    <span className="form-label d-block">Adres</span>
+                                    <span className="form-label d-block">
+                                        Adres
+                                    </span>
                                     <div className="control-content">
                                         {[
                                             customer.address,
