@@ -12,18 +12,56 @@
 
 ## Current focus
 
-- **WAI-ARIA accessibility sprint — COMPLETE (2026-06-09)** (commits `2a6a7063`–`9c875628`, merged `40800b93`)
-  - Pagination containers: `<div className="pagination_container">` → `<nav aria-label="Paginacja">` across all paginated pages
-  - Non-interactive `<a className="pointer">` displaying page counts: replaced with `<span>`
-  - Sidebar group `<a onClick>` (no href): added `role="button"` + `tabIndex={0}` + `onKeyDown` for keyboard nav
-  - Advanced filters toggle: `<div onClick>` → `<button type="button" aria-expanded>` with `aria-hidden` on caret icon
-  - Active nav items: `aria-current="page"` on all nav links (main nav, warehouse nav, clients nav, service detail nav, communication nav)
-  - Search inputs: `aria-label` on all unlabelled search inputs across products, services, customers, sales, orders, deliveries, use history, inventory pages
-  - Filter selects: `aria-label` on category/status/supplier filter selects
-  - Settings tables: `aria-label` on contextual type-selects and required-checkboxes (`settings/customers.tsx`)
-  - Timetable: `aria-label` on time range selects with day+index context (`settings/timetable/branch.tsx`)
-  - Form table rows: `aria-label` with row index on product/unit selects in sales/new, deliveries/new, orders/new, use/new
-  - Pagination `<form>` variants: added `aria-label="Paginacja"` (can't change form→nav; `TimetableTemplatesPage`, `ActivityLogRoute`)
+- **Full-session sprint — COMPLETE (2026-06-08/09)** (commits `ea63309b`–`9c875628`, master `3b1d03f5`)
+  See `docs/IMPLEMENTATION_BACKLOG_STATUS.md` for full per-phase details. Summary:
+
+  **Phase 0 — Feature hardening:**
+  - `'use client'` removed from all 73 Pages Router components (was causing SSR issues; Pages Router doesn't use this directive)
+  - All `window.alert()` → toast notifications (15 sites)
+  - All `window.confirm()` / `window.prompt()` → `ConfirmModal` + custom modal
+  - Error handling rollout: every mutation in panel has `onError` toast handler — no silent failures
+  - Polish-only UI: all English strings translated across panel and landing
+  - Bulk delete for services and products (with checkboxes)
+  - TimeBlockModal for calendar time blocks
+  - Commission base rate editor + display
+  - Delivery row-level receive/cancel actions
+  - Recipe tab on service detail; delete button on product detail
+  - `/settings/customer-origins`, `/settings/data-protection` pages added
+  - Account page: profile section added; API module English toasts removed
+  - `rel="noopener noreferrer"` on all `target="_blank"` links
+
+  **Phase 1 — a11y: Interactive elements:**
+  - `href="#"` / `javascript:;` → `<button type="button">` everywhere
+  - `type="button"` added to 56+ buttons missing it (prevents form submission)
+  - SalonBreadcrumbs: `<nav aria-label="Nawigacja">` + `aria-current="page"`
+
+  **Phase 2 — a11y + SEO: Titles + meta:**
+  - Page-specific `<title>` on ALL 44+ panel pages; default fallback in `_app.tsx`
+  - Custom 404 page for panel
+  - Full OG/Twitter/JSON-LD meta on all landing pages; `og:locale=pl_PL`, dimensions, canonical with `absUrl()`
+  - `theme-color` + Twitter card; JSON-LD Organization schema (services, gallery, contact)
+  - Missing `<meta name="viewport">` fix in landing
+
+  **Phase 3 — a11y: Form semantics:**
+  - `htmlFor`/`id` linkage on ALL labels across all modals and forms
+  - `aria-label` on all icon-only buttons and controls without visible labels
+  - `aria-hidden="true"` on 25+ decorative icons (FontAwesome + SVGs)
+  - `role="alert"` / `role="status"` on error/warning/success messages
+  - `aria-describedby` on hint-associated inputs
+  - `autoComplete` attributes on customer form inputs
+
+  **Phase 4 — a11y: Modal dialogs + nav:**
+  - `role="dialog"` + `aria-modal="true"` + `aria-labelledby` on ALL modals (3 batches)
+  - Focus trap + ESC handler + focus restoration on close
+
+  **Phase 5 — a11y: Tables + pagination + nav:**
+  - `scope="col"` on ALL `<th>` in panel
+  - Pagination: `<nav aria-label="Paginacja">` on all paginated pages
+  - `aria-current="page"` on active nav items in ALL navigation components
+  - Non-interactive `<a>` → `<span>`; `<a onClick>` → `role="button"` + keyboard nav
+
+  **Phase 6 — Route integrity + calendar:**
+  - Legacy rewrites fixed; time-block validation hardened; calendar overlap queries fixed
 
 - **Bootstrap 5 migration — COMPLETE (2026-03-27)**
 - **Faza E — Versum visual parity sprint — COMPLETE (2026-05-24)**
@@ -58,14 +96,11 @@
   - Deploy command: MyDevil → `passenger-config restart-app`
 - **Panel redeploy needed** — all commits since `d9e72660` not yet deployed to production
 
-### P2 — Accessibility (remaining)
-- Form labels: `<label>` elements without associated `htmlFor` still exist in some settings pages — not yet audited exhaustively
-- Modal dialogs: `role="dialog"` + `aria-modal="true"` + focus trap — not audited; may be missing in older modals
-- Table headers: `scope="col"` on `<th>` elements — not yet added systematically (WCAG 1.3.1)
-- Image alt text: landing images — not audited
-- Color contrast: no audit run (axe-core or Lighthouse)
-- `aria-live` regions for dynamic content (toast messages, error banners) — not audited
-- Keyboard focus indicators — not checked if CSS removes outline
+### P2 — Accessibility (remaining — all other a11y DONE in full-session sprint)
+- `aria-live` regions for dynamically injected toast messages — `role="alert"` added to static error banners, but toast container's live region not verified
+- Color contrast audit — no tool run (axe-core / Lighthouse)
+- Image alt text on landing pages — not audited
+- Keyboard focus-ring CSS audit — not verified if theme CSS suppresses outline
 
 ### P3 — Code quality
 - `data_protection.tsx`: `inner edit_branch_form` on a `<form>` — refactor deferred
@@ -77,7 +112,21 @@
 
 ## Recent decisions
 
-- **a11y approach:** WAI-ARIA improvements done incrementally; `<form>` pagination wrappers get `aria-label` attribute rather than element change (can't convert form→nav without breaking form semantics).
+- **`'use client'` prohibition (Pages Router):** Remove from ALL panel components/hooks. Pages Router components are server-renderable by default; `'use client'` is App Router only. Removed from 73 files in this session.
+- **Error handling contract:** Every `mutation.mutate()` / `mutation.mutateAsync()` call must have `onError: (err) => toast(...)`. Never log silently. Rolled out across all panel pages in this session.
+- **Polish-only UI:** All user-visible strings must be in Polish. No English in buttons, labels, toasts, errors, placeholders. Translated all remaining English strings in this session.
+- **`type="button"` required:** All `<button>` elements that are not `type="submit"` must explicitly declare `type="button"`. Untyped buttons inside forms default to submit.
+- **No `href="#"` / `javascript:;`:** Use `<button type="button">` for interactive elements that aren't real navigation links.
+- **`window.confirm()` / `window.alert()` → ConfirmModal / toast:** Native dialogs inaccessible and unstyled. All replaced in this session.
+- **Modal semantics:** All modals require `role="dialog"` + `aria-modal="true"` + `aria-labelledby` (title id) + ESC closes + focus trap + focus restore on close.
+- **SEO meta pattern:** Every public landing page needs title, og:title/description/url/image/locale/type, twitter:card, canonical. Services/gallery/contact also get JSON-LD Organization schema. `og:url` and canonical must use absolute URLs via `absUrl()`.
+- **Form labels:** Every `<input>`/`<select>`/`<textarea>` must be linked to a `<label>` via `htmlFor`/`id` OR have `aria-label`/`aria-labelledby`. `aria-label` used when no visible label (icon buttons, table row selects).
+- **Decorative icons:** `aria-hidden="true"` on all decorative FontAwesome `<i>` and inline SVGs. Icon-only buttons get `aria-label`.
+- **Pagination landmark:** Wrap with `<nav aria-label="Paginacja">`. Active page: `aria-current="page"`. Form-based pagination: add `aria-label="Paginacja"` to `<form>`.
+- **Nav `aria-current`:** All active nav items across ALL navigation components must have `aria-current="page"` (links) or `aria-current="true"` (filter/group buttons).
+- **a11y form toggle:** Clickable `<div>` that shows/hides content → `<button type="button" aria-expanded={bool}>`. Caret icon gets `aria-hidden="true"`.
+- **`rel="noopener noreferrer"`:** Required on ALL `target="_blank"` links. Security + performance.
+- **a11y — `<form>` pagination:** Can't convert to `<nav>` without breaking form semantics. Add `aria-label="Paginacja"` to the `<form>` instead.
   Evidence: TimetableTemplatesPage and ActivityLogRoute use `<form>` for page navigation
 - salonbw-btn → Bootstrap 5 btn btn-* migration: all done; dead CSS removed.
 - Formula service: accepts Role.Admin + Confirmed status (was bug: 403 for admin, 400 for confirmed)
