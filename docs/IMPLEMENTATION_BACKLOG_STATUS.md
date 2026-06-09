@@ -1,10 +1,65 @@
 # Implementation Backlog Status
 
-_Last updated: 2026-05-22_
+_Last updated: 2026-06-09_
 
 This file tracks the current status of the AI-ready implementation backlog against the repository state.
 
 ## Closed in Code
+
+### 2026-06-09. Route integrity + calendar time-block hardening
+
+- Status: implemented locally, pending push/deploy
+- Why this was done:
+  - the post-merge review found legacy rewrites pointing to removed pages,
+  - the settings navigation exposed pages that were only informational stubs,
+  - panel registration and calendar settings had static links that could land on missing routes,
+  - calendar time blocks accepted invalid ranges and overlapping blocks without backend enforcement,
+  - calendar range queries only matched events whose `startTime` was inside the range, so events starting before the range and ending inside it could be omitted.
+- Files:
+  - `apps/panel/next.config.mjs`
+  - `apps/panel/src/components/calendar/TimeBlockModal.tsx`
+  - `apps/panel/src/components/salon/navs/SettingsNav.tsx`
+  - `apps/panel/src/components/settings/CalendarSettingsForm.tsx`
+  - `apps/panel/src/pages/auth/register.tsx`
+  - `apps/panel/src/__tests__/routeIntegrity.test.ts`
+  - `backend/salonbw-backend/src/calendar/calendar.service.ts`
+  - `backend/salonbw-backend/src/calendar/calendar.service.spec.ts`
+- Current behavior:
+  - legacy `/salonblackandwhite/settings/customer_groups*` now maps to canonical customer settings routes,
+  - legacy event reminder paths now map to `/communication/automatic`,
+  - legacy customer panel settings now map to `/settings/online-booking`,
+  - `/settings/reminders` redirects directly to `/communication/automatic`,
+  - `/admin/branches` and `/admin/settings/company` are compatibility redirects to `/settings/branch` instead of real stub pages,
+  - settings navigation no longer surfaces unavailable `admin/*` stub pages,
+  - registration privacy link points to the public landing privacy page,
+  - calendar settings tag link points to the existing customer extra-fields tab,
+  - time-block creation/update rejects invalid date ranges, non-employee targets, appointment overlaps, and time-block overlaps,
+  - calendar event/time-block reads use overlap semantics (`start < rangeEnd AND end > rangeStart`) instead of start-time-only filtering.
+- Regression coverage:
+  - `apps/panel/src/__tests__/routeIntegrity.test.ts` guards static internal links and rewrite/redirect destinations against missing pages,
+  - `backend/salonbw-backend/src/calendar/calendar.service.spec.ts` guards core time-block validation rules.
+- Validation snapshot:
+  - `apps/panel`: route integrity test, `pnpm eslint src --fix`, `pnpm tsc --noEmit`,
+  - `backend/salonbw-backend`: calendar service test, `pnpm lint --fix`, `pnpm tsc --noEmit`,
+  - backend lint still reports existing `@typescript-eslint/no-unsafe-*` warnings in unrelated files but exits with `0` errors.
+- Guidance for future changes:
+  - do not add visible navigation to stub/TODO pages; hide it or redirect to a canonical implemented page,
+  - every new static route/link/legacy rewrite should be covered by route integrity checks,
+  - preserve canonical panel routes from `AGENTS.md` and treat legacy `/admin/*`, snake_case, and `/salonblackandwhite/*` routes as compatibility aliases only,
+  - validate calendar scheduling invariants in the backend first, then mirror the fast UX validation in the panel,
+  - for calendar range reads, prefer overlap queries over `Between(startTime)` unless the business rule explicitly requires start-time-only matching.
+
+### Remaining follow-ups from the same review
+
+- Bulk delete for services/products still runs frontend-side as per-item deletion. Recommended next step: add backend bulk endpoints with transaction boundaries and explicit partial-failure semantics.
+- Next config still contains `eslint.ignoreDuringBuilds` / panel `typescript.ignoreBuildErrors`; CI currently catches lint/typecheck, but build config should eventually stop ignoring these once the warning backlog is under control.
+- Backend has a broad existing `@typescript-eslint/no-unsafe-*` warning backlog. Treat it as technical debt, not as part of this route/time-block fix.
+- After this commit is pushed, monitor `CI` and `Deploy (MyDevil)` for the commit SHA and run a manual panel smoke for:
+  - `/settings`,
+  - `/communication/automatic`,
+  - `/calendar`,
+  - registration privacy link,
+  - creating/editing a valid time block and attempting an overlap.
 
 ### 0. Booking role gating for `reservedOnline`
 

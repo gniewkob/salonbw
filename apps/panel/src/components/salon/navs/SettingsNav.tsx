@@ -34,20 +34,6 @@ const SETTINGS_GROUPS: NavGroup[] = [
                 matchPrefix: '/settings/timetable/branch',
             },
             {
-                id: 'settings-branches',
-                href: '/admin/branches',
-                label: 'Salony (Multi-location)',
-                iconClass: 'sprite-settings_branch',
-                matchPrefix: '/admin/branches',
-            },
-            {
-                id: 'settings-company',
-                href: '/admin/settings/company',
-                label: 'Ustawienia firmy',
-                iconClass: 'sprite-settings_branch',
-                matchPrefix: '/admin/settings/company',
-            },
-            {
                 id: 'settings-calendar',
                 href: '/settings/calendar',
                 label: 'Kalendarz',

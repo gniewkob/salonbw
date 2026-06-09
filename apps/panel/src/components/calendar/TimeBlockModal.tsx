@@ -29,10 +29,6 @@ function toDatetimeLocal(date: Date): string {
     return format(date, "yyyy-MM-dd'T'HH:mm");
 }
 
-function fromDatetimeLocal(value: string): string {
-    return new Date(value).toISOString();
-}
-
 export default function TimeBlockModal({
     open,
     employees,
@@ -109,11 +105,28 @@ export default function TimeBlockModal({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        if (!isEdit && employeeId <= 0) {
+            toast.error('Wybierz pracownika dla blokady');
+            return;
+        }
+        if (
+            Number.isNaN(startDate.getTime()) ||
+            Number.isNaN(endDate.getTime())
+        ) {
+            toast.error('Podaj poprawny zakres dat');
+            return;
+        }
+        if (endDate <= startDate) {
+            toast.error('Koniec blokady musi być po jej początku');
+            return;
+        }
         setSaving(true);
         try {
             const payload = {
-                startTime: fromDatetimeLocal(startTime),
-                endTime: fromDatetimeLocal(endTime),
+                startTime: startDate.toISOString(),
+                endTime: endDate.toISOString(),
                 type: blockType,
                 title: title.trim() || undefined,
                 notes: notes.trim() || undefined,

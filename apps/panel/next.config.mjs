@@ -126,19 +126,19 @@ const nextConfig = {
             },
             {
                 source: '/salonblackandwhite/settings/customer_groups',
-                destination: '/settings/customer_groups',
+                destination: '/settings/customers',
             },
             {
                 source: '/salonblackandwhite/settings/customer_groups/new',
-                destination: '/settings/customer_groups/new',
+                destination: '/settings/customer-groups/new',
             },
             {
                 source: '/salonblackandwhite/event_reminders',
-                destination: '/event-reminders',
+                destination: '/communication/automatic',
             },
             {
                 source: '/salonblackandwhite/event_reminders/edit',
-                destination: '/event-reminders?edit=1',
+                destination: '/communication/automatic?edit=1',
             },
             {
                 source: '/salonblackandwhite/settings/categories',
@@ -154,7 +154,7 @@ const nextConfig = {
             },
             {
                 source: '/salonblackandwhite/settings/customer_panel/settings',
-                destination: '/settings/customer-panel',
+                destination: '/settings/online-booking',
             },
             {
                 source: '/salonblackandwhite/settings/data_protection',
@@ -338,6 +338,16 @@ const nextConfig = {
                 permanent: false,
             },
             {
+                source: '/admin/branches',
+                destination: '/settings/branch',
+                permanent: false,
+            },
+            {
+                source: '/admin/settings/company',
+                destination: '/settings/branch',
+                permanent: false,
+            },
+            {
                 source: '/signout',
                 destination: '/auth/login',
                 permanent: false,
@@ -389,7 +399,7 @@ const nextConfig = {
             },
             {
                 source: '/settings/reminders',
-                destination: '/event-reminders',
+                destination: '/communication/automatic',
                 permanent: false,
             },
             {

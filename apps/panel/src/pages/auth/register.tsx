@@ -398,7 +398,7 @@ export default function RegisterPage() {
                                     celu realizacji usług oraz obsługi konta
                                     zgodnie z{' '}
                                     <a
-                                        href="/privacy"
+                                        href="https://dev.salon-bw.pl/privacy"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         style={{

@@ -399,18 +399,14 @@ export class AppointmentsService {
             );
         }
 
-        await this.safeLog(
-            user,
-            LogAction.APPOINTMENT_RESCHEDULE_REQUESTED,
-            {
-                action: 'reschedule_request',
-                id: appointment.id,
-                appointmentId: appointment.id,
-                appointmentStatus: appointment.status,
-                reason: typeof reason === 'string' ? reason.trim() : undefined,
-                entity: 'appointment',
-            },
-        );
+        await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULE_REQUESTED, {
+            action: 'reschedule_request',
+            id: appointment.id,
+            appointmentId: appointment.id,
+            appointmentStatus: appointment.status,
+            reason: typeof reason === 'string' ? reason.trim() : undefined,
+            entity: 'appointment',
+        });
 
         return appointment;
     }

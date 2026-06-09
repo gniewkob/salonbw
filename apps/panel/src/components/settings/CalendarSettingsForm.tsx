@@ -196,7 +196,7 @@ export default function CalendarSettingsForm() {
                         </Link>
                     </li>
                     <li className="tab">
-                        <Link href="/settings/tags">
+                        <Link href="/settings/customers?tab=extra-fields">
                             <div className="icon_box">
                                 <i
                                     className="icon sprite-settings_label_visits icon-up"

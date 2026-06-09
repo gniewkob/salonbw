@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
     startOfDay,
     endOfDay,
@@ -18,6 +23,7 @@ import {
 import { Service } from '../services/service.entity';
 import { EmployeeService } from '../services/entities/employee-service.entity';
 import { User } from '../users/user.entity';
+import { Role } from '../users/role.enum';
 import { CalendarView } from './dto/calendar-query.dto';
 import {
     CreateTimeBlockDto,
@@ -70,25 +76,9 @@ export class CalendarService {
     ): Promise<CalendarData> {
         const { start, end } = this.getDateRange(date, view);
 
-        const whereConditions: Record<string, unknown> = {
-            startTime: Between(start, end),
-        };
-
-        if (employeeIds && employeeIds.length > 0) {
-            whereConditions.employee = { id: In(employeeIds) };
-        }
-
         const [appointments, timeBlocks, employees] = await Promise.all([
-            this.appointmentRepository.find({
-                where: whereConditions,
-                relations: ['client', 'employee', 'service'],
-                order: { startTime: 'ASC' },
-            }),
-            this.timeBlockRepository.find({
-                where: whereConditions,
-                relations: ['employee'],
-                order: { startTime: 'ASC' },
-            }),
+            this.findAppointmentsOverlappingRange(start, end, employeeIds),
+            this.findTimeBlocksOverlappingRange(start, end, employeeIds),
             this.getEmployees(employeeIds),
         ]);
 
@@ -115,24 +105,16 @@ export class CalendarService {
         to: Date,
         employeeId?: number,
     ): Promise<TimeBlock[]> {
-        const whereConditions: Record<string, unknown> = {
-            startTime: Between(from, to),
-        };
-
-        if (employeeId) {
-            whereConditions.employee = { id: employeeId };
-        }
-
-        return this.timeBlockRepository.find({
-            where: whereConditions,
-            relations: ['employee'],
-            order: { startTime: 'ASC' },
-        });
+        return this.findTimeBlocksOverlappingRange(
+            from,
+            to,
+            employeeId ? [employeeId] : undefined,
+        );
     }
 
     async createTimeBlock(
         dto: CreateTimeBlockDto,
-        createdBy: User,
+        _createdBy: User,
     ): Promise<TimeBlock> {
         const employee = await this.userRepository.findOne({
             where: { id: dto.employeeId },
@@ -144,10 +126,20 @@ export class CalendarService {
             );
         }
 
+        if (employee.role !== Role.Employee) {
+            throw new BadRequestException(
+                'Time blocks can only target employees',
+            );
+        }
+
+        const startTime = new Date(dto.startTime);
+        const endTime = new Date(dto.endTime);
+        await this.assertTimeBlockCanBeSaved(employee.id, startTime, endTime);
+
         const timeBlock = this.timeBlockRepository.create({
             employee,
-            startTime: new Date(dto.startTime),
-            endTime: new Date(dto.endTime),
+            startTime,
+            endTime,
             type: dto.type,
             title: dto.title,
             notes: dto.notes,
@@ -170,11 +162,24 @@ export class CalendarService {
             throw new NotFoundException(`TimeBlock with ID ${id} not found`);
         }
 
+        const startTime = dto.startTime
+            ? new Date(dto.startTime)
+            : new Date(timeBlock.startTime);
+        const endTime = dto.endTime
+            ? new Date(dto.endTime)
+            : new Date(timeBlock.endTime);
+        await this.assertTimeBlockCanBeSaved(
+            timeBlock.employee.id,
+            startTime,
+            endTime,
+            id,
+        );
+
         if (dto.startTime) {
-            timeBlock.startTime = new Date(dto.startTime);
+            timeBlock.startTime = startTime;
         }
         if (dto.endTime) {
-            timeBlock.endTime = new Date(dto.endTime);
+            timeBlock.endTime = endTime;
         }
         if (dto.type) {
             timeBlock.type = dto.type;
@@ -252,6 +257,105 @@ export class CalendarService {
         };
     }
 
+    private async findAppointmentsOverlappingRange(
+        start: Date,
+        end: Date,
+        employeeIds?: number[],
+    ): Promise<Appointment[]> {
+        let query = this.appointmentRepository
+            .createQueryBuilder('apt')
+            .leftJoinAndSelect('apt.employee', 'employee')
+            .leftJoinAndSelect('apt.client', 'client')
+            .leftJoinAndSelect('apt.service', 'service')
+            .where('apt.startTime < :end', { end })
+            .andWhere('apt.endTime > :start', { start })
+            .orderBy('apt.startTime', 'ASC');
+
+        if (employeeIds && employeeIds.length > 0) {
+            query = query.andWhere('employee.id IN (:...employeeIds)', {
+                employeeIds,
+            });
+        }
+
+        return query.getMany();
+    }
+
+    private async findTimeBlocksOverlappingRange(
+        start: Date,
+        end: Date,
+        employeeIds?: number[],
+    ): Promise<TimeBlock[]> {
+        let query = this.timeBlockRepository
+            .createQueryBuilder('tb')
+            .leftJoinAndSelect('tb.employee', 'employee')
+            .where('tb.startTime < :end', { end })
+            .andWhere('tb.endTime > :start', { start })
+            .orderBy('tb.startTime', 'ASC');
+
+        if (employeeIds && employeeIds.length > 0) {
+            query = query.andWhere('employee.id IN (:...employeeIds)', {
+                employeeIds,
+            });
+        }
+
+        return query.getMany();
+    }
+
+    private async assertTimeBlockCanBeSaved(
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        excludedTimeBlockId?: number,
+    ): Promise<void> {
+        if (
+            Number.isNaN(startTime.getTime()) ||
+            Number.isNaN(endTime.getTime())
+        ) {
+            throw new BadRequestException('Invalid time block date range');
+        }
+
+        if (endTime <= startTime) {
+            throw new BadRequestException('End time must be after start time');
+        }
+
+        const appointmentConflictCount = await this.appointmentRepository
+            .createQueryBuilder('apt')
+            .leftJoin('apt.employee', 'employee')
+            .where('employee.id = :employeeId', { employeeId })
+            .andWhere('apt.status != :cancelled', {
+                cancelled: AppointmentStatus.Cancelled,
+            })
+            .andWhere('apt.startTime < :endTime', { endTime })
+            .andWhere('apt.endTime > :startTime', { startTime })
+            .getCount();
+
+        if (appointmentConflictCount > 0) {
+            throw new ConflictException(
+                'Time block overlaps an existing appointment',
+            );
+        }
+
+        let timeBlockQuery = this.timeBlockRepository
+            .createQueryBuilder('tb')
+            .leftJoin('tb.employee', 'employee')
+            .where('employee.id = :employeeId', { employeeId })
+            .andWhere('tb.startTime < :endTime', { endTime })
+            .andWhere('tb.endTime > :startTime', { startTime });
+
+        if (excludedTimeBlockId) {
+            timeBlockQuery = timeBlockQuery.andWhere('tb.id != :excludedId', {
+                excludedId: excludedTimeBlockId,
+            });
+        }
+
+        const timeBlockConflictCount = await timeBlockQuery.getCount();
+        if (timeBlockConflictCount > 0) {
+            throw new ConflictException(
+                'Time block overlaps an existing time block',
+            );
+        }
+    }
+
     async getAvailableSlots(
         serviceId: number,
         date: string,
@@ -320,19 +424,16 @@ export class CalendarService {
             if (!emp) continue;
 
             const [appointments, timeBlocks] = await Promise.all([
-                this.appointmentRepository.find({
-                    where: {
-                        employeeId: emp.id,
-                        startTime: Between(startOfDay(dayStart), dayEnd),
-                    },
-                    select: ['startTime', 'endTime', 'status'],
-                }),
-                this.timeBlockRepository.find({
-                    where: {
-                        employee: { id: emp.id },
-                        startTime: Between(startOfDay(dayStart), dayEnd),
-                    },
-                }),
+                this.findAppointmentsOverlappingRange(
+                    startOfDay(dayStart),
+                    dayEnd,
+                    [emp.id],
+                ),
+                this.findTimeBlocksOverlappingRange(
+                    startOfDay(dayStart),
+                    dayEnd,
+                    [emp.id],
+                ),
             ]);
 
             const busyRanges = [
