@@ -1,5 +1,20 @@
 # Agent Status Dashboard
 
+_Last updated: 2026-06-09 (WAI-ARIA accessibility sprint complete)_
+
+**Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-06-09 — WAI-ARIA Accessibility Sprint
+
+- Completed systematic WAI-ARIA audit across panel pages and nav components
+- All paginated pages now use `<nav aria-label="Paginacja">` landmark
+- All nav components have `aria-current="page"` on active items
+- All unlabelled form controls have `aria-label` attributes
+- Advanced filters toggle converted from `<div>` to `<button aria-expanded>`
+- Merged to master `40800b93` from branch `claude/design-salon-landing-page-thY4G`
+- See IMPLEMENTATION_BACKLOG_STATUS.md for full file list and remaining a11y gaps
+- Production deploy status: needs manual redeploy (CI deploy stale)
+
 _Last updated: 2026-05-27 (role enum parity + SMTP/Instagram runtime sync)_
 
 Operational note (2026-05-27) — role enum parity for receptionist:

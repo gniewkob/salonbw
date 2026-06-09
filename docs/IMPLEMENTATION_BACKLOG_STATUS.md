@@ -4,7 +4,57 @@ _Last updated: 2026-06-09_
 
 This file tracks the current status of the AI-ready implementation backlog against the repository state.
 
+**Agent workflow rule:** Update this file after every commit. Add findings/blockers immediately, never at end-of-session.
+
 ## Closed in Code
+
+### WAI-ARIA Accessibility Sprint (2026-06-09)
+
+- Status: implemented, merged to master (`40800b93`)
+- Scope: panel frontend — no API changes
+- Files changed:
+  - `apps/panel/src/pages/appointments.tsx`
+  - `apps/panel/src/pages/customers/index.tsx`
+  - `apps/panel/src/pages/deliveries/history.tsx`
+  - `apps/panel/src/pages/deliveries/new.tsx`
+  - `apps/panel/src/pages/inventory/index.tsx`
+  - `apps/panel/src/pages/orders/history.tsx`
+  - `apps/panel/src/pages/orders/new.tsx`
+  - `apps/panel/src/pages/products/index.tsx`
+  - `apps/panel/src/pages/sales/history/index.tsx`
+  - `apps/panel/src/pages/sales/new.tsx`
+  - `apps/panel/src/pages/services/index.tsx`
+  - `apps/panel/src/pages/use/history/index.tsx`
+  - `apps/panel/src/pages/use/new.tsx`
+  - `apps/panel/src/pages/use/planned.tsx`
+  - `apps/panel/src/pages/settings/customers.tsx`
+  - `apps/panel/src/pages/settings/timetable/branch.tsx`
+  - `apps/panel/src/components/customers/CustomerSidebar.tsx`
+  - `apps/panel/src/components/salon/SalonMainNav.tsx`
+  - `apps/panel/src/components/salon/navs/ClientsNav.tsx`
+  - `apps/panel/src/components/salon/navs/CommunicationNav.tsx`
+  - `apps/panel/src/components/salon/navs/ServiceDetailNav.tsx`
+  - `apps/panel/src/components/salon/navs/SalonGroupedNav.tsx`
+  - `apps/panel/src/components/salon/navs/WarehouseNav.tsx`
+  - `apps/panel/src/components/settings/ActivityLogRoute.tsx`
+  - `apps/panel/src/components/settings/TimetableTemplatesPage.tsx`
+- What was done:
+  - Pagination `<div className="pagination_container">` → `<nav aria-label="Paginacja">` on all paginated pages; form-based pagination got `aria-label` attribute only (element cannot change)
+  - Non-interactive `<a className="pointer">` showing page totals: replaced with `<span>`
+  - Sidebar `<a onClick>` without href: added `role="button"` + `tabIndex={0}` + `onKeyDown Enter handler`
+  - Advanced filters toggle: `<div onClick>` → `<button type="button" aria-expanded={bool}>` + `aria-hidden` on caret icon
+  - `aria-current="page"` added to all active nav links: main nav, warehouse nav, clients nav, service detail tabs, communication nav, SalonGroupedNav
+  - `aria-label` on all unlabelled search inputs, category/status filter selects, supplier selects
+  - `aria-label` with row index on product/unit selects inside `<tr>` mapped rows (no visible label exists)
+  - `aria-label` on timetable time-range selects with day+range-index context
+  - `aria-label`/`title` on settings customer extra-field type selects and required checkboxes
+- Remaining a11y gaps (not done in this sprint):
+  - `scope="col"` on `<th>` elements (WCAG 1.3.1 — tables)
+  - Modal dialogs: `role="dialog"` + `aria-modal` + focus trap audit
+  - `aria-live` regions for toast/error messages
+  - Color contrast audit (axe-core / Lighthouse)
+  - Image alt text on landing
+  - Keyboard focus-ring CSS audit
 
 ### 2026-06-09. Route integrity + calendar time-block hardening
 
