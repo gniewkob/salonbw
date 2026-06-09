@@ -156,8 +156,10 @@ export default function CustomerSidebar({
 
                 {/* Filtry zaawansowane */}
                 <div className="salonbw-sidebar__section">
-                    <div
-                        className="salonbw-sidebar__header flex-between "
+                    <button
+                        type="button"
+                        className="salonbw-sidebar__header flex-between w-100 border-0 bg-transparent p-0 text-start"
+                        aria-expanded={showAdvancedFilters}
                         onClick={() =>
                             setShowAdvancedFilters(!showAdvancedFilters)
                         }
@@ -165,8 +167,9 @@ export default function CustomerSidebar({
                         <span>FILTRY ZAAWANSOWANE</span>
                         <i
                             className={`fa ${showAdvancedFilters ? 'fa-angle-down' : 'fa-angle-right'}`}
+                            aria-hidden="true"
                         ></i>
-                    </div>
+                    </button>
 
                     {showAdvancedFilters && (
                         <div className="salonbw-sidebar__filters">
