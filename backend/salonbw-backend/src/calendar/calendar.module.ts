@@ -5,6 +5,9 @@ import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Service } from '../services/service.entity';
 import { EmployeeService } from '../services/entities/employee-service.entity';
+import { Branch } from '../branches/entities/branch.entity';
+import { Timetable } from '../timetables/entities/timetable.entity';
+import { TimetableException } from '../timetables/entities/timetable-exception.entity';
 import { CalendarService } from './calendar.service';
 import { CalendarController } from './calendar.controller';
 
@@ -16,6 +19,9 @@ import { CalendarController } from './calendar.controller';
             User,
             Service,
             EmployeeService,
+            Branch,
+            Timetable,
+            TimetableException,
         ]),
     ],
     providers: [CalendarService],

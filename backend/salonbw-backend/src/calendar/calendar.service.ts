@@ -24,6 +24,13 @@ import {
 } from '../appointments/appointment.entity';
 import { Service } from '../services/service.entity';
 import { EmployeeService } from '../services/entities/employee-service.entity';
+import { Branch, BranchStatus } from '../branches/entities/branch.entity';
+import { Timetable } from '../timetables/entities/timetable.entity';
+import { DayOfWeek } from '../timetables/entities/timetable-slot.entity';
+import {
+    TimetableException,
+    ExceptionType,
+} from '../timetables/entities/timetable-exception.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import { CalendarView } from './dto/calendar-query.dto';
@@ -69,6 +76,12 @@ export class CalendarService {
         private readonly serviceRepository: Repository<Service>,
         @InjectRepository(EmployeeService)
         private readonly employeeServiceRepository: Repository<EmployeeService>,
+        @InjectRepository(Branch)
+        private readonly branchRepository: Repository<Branch>,
+        @InjectRepository(Timetable)
+        private readonly timetableRepository: Repository<Timetable>,
+        @InjectRepository(TimetableException)
+        private readonly timetableExceptionRepository: Repository<TimetableException>,
     ) {}
 
     async getCalendarData(
@@ -467,10 +480,8 @@ export class CalendarService {
         const dayStart = new Date(`${date}T00:00:00`);
         const dayEnd = endOfDay(dayStart);
 
-        // Business hours: 09:00–19:00, slots every 30 min
         const SLOT_STEP = 30;
-        const WORK_START = 9 * 60;
-        const WORK_END = 19 * 60;
+        const branchRanges = await this.getBranchDayRanges(dayStart);
 
         const slots: Array<{
             employeeId: number;
@@ -478,8 +489,26 @@ export class CalendarService {
             time: string;
         }> = [];
 
+        // Salon closed that day (e.g. Sunday) — no slots for anyone.
+        if (branchRanges.length === 0) {
+            return slots;
+        }
+
         for (const emp of candidateEmployees) {
             if (!emp) continue;
+
+            // Employee timetable (weekly slots + per-date exceptions)
+            // narrows the salon hours; an employee without a timetable
+            // falls back to full salon hours.
+            const employeeRanges = await this.getEmployeeDayRanges(
+                emp.id,
+                dayStart,
+            );
+            const workRanges =
+                employeeRanges === null
+                    ? branchRanges
+                    : this.intersectMinuteRanges(branchRanges, employeeRanges);
+            if (workRanges.length === 0) continue;
 
             const [appointments, timeBlocks] = await Promise.all([
                 this.findAppointmentsOverlappingRange(
@@ -507,34 +536,200 @@ export class CalendarService {
                 })),
             ];
 
-            let minuteOffset = WORK_START;
-            while (minuteOffset + duration <= WORK_END) {
-                const slotStart = addMinutes(
-                    startOfDay(dayStart),
-                    minuteOffset,
-                );
-                const slotEnd = addMinutes(slotStart, duration);
+            for (const range of workRanges) {
+                let minuteOffset = range.start;
+                while (minuteOffset + duration <= range.end) {
+                    const slotStart = addMinutes(
+                        startOfDay(dayStart),
+                        minuteOffset,
+                    );
+                    const slotEnd = addMinutes(slotStart, duration);
 
-                const isBusy = busyRanges.some(
-                    (r) =>
-                        slotStart.getTime() < r.end &&
-                        slotEnd.getTime() > r.start,
-                );
+                    const isBusy = busyRanges.some(
+                        (r) =>
+                            slotStart.getTime() < r.end &&
+                            slotEnd.getTime() > r.start,
+                    );
 
-                if (!isBusy) {
-                    slots.push({
-                        employeeId: emp.id,
-                        employeeName: emp.name,
-                        time: slotStart.toISOString(),
-                    });
+                    if (!isBusy) {
+                        slots.push({
+                            employeeId: emp.id,
+                            employeeName: emp.name,
+                            time: slotStart.toISOString(),
+                        });
+                    }
+
+                    minuteOffset += SLOT_STEP;
                 }
-
-                minuteOffset += SLOT_STEP;
             }
         }
 
         slots.sort((a, b) => a.time.localeCompare(b.time));
         return slots;
+    }
+
+    // ---- Working-hours resolution (branch ∩ employee timetable) ----
+
+    /** Minutes from local midnight; end exclusive. */
+    private static readonly DAY_KEYS = [
+        'mon',
+        'tue',
+        'wed',
+        'thu',
+        'fri',
+        'sat',
+        'sun',
+    ] as const;
+
+    private parseTimeToMinutes(value: string): number | null {
+        const match = /^(\d{1,2}):(\d{2})/.exec(value ?? '');
+        if (!match) return null;
+        const minutes = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+        return minutes >= 0 && minutes <= 24 * 60 ? minutes : null;
+    }
+
+    private toMinuteRanges(
+        raw: Array<{
+            start?: string;
+            end?: string;
+            open?: string;
+            close?: string;
+        }>,
+    ): Array<{ start: number; end: number }> {
+        const ranges: Array<{ start: number; end: number }> = [];
+        for (const item of raw) {
+            const start = this.parseTimeToMinutes(
+                item.open ?? item.start ?? '',
+            );
+            const end = this.parseTimeToMinutes(item.close ?? item.end ?? '');
+            if (start !== null && end !== null && end > start) {
+                ranges.push({ start, end });
+            }
+        }
+        return ranges.sort((a, b) => a.start - b.start);
+    }
+
+    /**
+     * Salon opening hours for the given local date. Empty array = closed.
+     * No branch configured at all → legacy fallback 09:00–19:00 Mon–Sat,
+     * closed Sunday, so a missing settings row degrades gracefully instead
+     * of offering Sunday slots (the original hardcoded-hours bug).
+     */
+    private async getBranchDayRanges(
+        day: Date,
+    ): Promise<Array<{ start: number; end: number }>> {
+        // ISO: Monday=0 … Sunday=6 (JS getDay: Sunday=0)
+        const isoIndex = (day.getDay() + 6) % 7;
+        const key = CalendarService.DAY_KEYS[isoIndex];
+
+        const branch = await this.branchRepository.findOne({
+            where: { status: BranchStatus.Active },
+            order: { id: 'ASC' },
+        });
+
+        const value = branch?.workingHours?.[key];
+        if (branch && branch.workingHours) {
+            if (!value) return [];
+            return this.toMinuteRanges(Array.isArray(value) ? value : [value]);
+        }
+
+        return isoIndex === 6 ? [] : [{ start: 9 * 60, end: 19 * 60 }];
+    }
+
+    /**
+     * Employee working ranges for the given local date from their active
+     * timetable. Returns null when no timetable applies (caller falls back
+     * to salon hours); [] when the timetable says "not working" (free day
+     * or a day-off/vacation exception).
+     */
+    private async getEmployeeDayRanges(
+        employeeId: number,
+        day: Date,
+    ): Promise<Array<{ start: number; end: number }> | null> {
+        const dateStr = format(day, 'yyyy-MM-dd');
+        const timetable = await this.timetableRepository
+            .createQueryBuilder('t')
+            .leftJoinAndSelect('t.slots', 'slot')
+            .where('t.employeeId = :employeeId', { employeeId })
+            .andWhere('t.isActive = true')
+            .andWhere('t.validFrom <= :date', { date: dateStr })
+            .andWhere('(t.validTo IS NULL OR t.validTo >= :date)', {
+                date: dateStr,
+            })
+            .orderBy('t.validFrom', 'DESC')
+            .getOne();
+
+        if (!timetable) return null;
+
+        const exception = await this.timetableExceptionRepository.findOne({
+            where: { timetableId: timetable.id, date: dateStr as never },
+        });
+        if (exception) {
+            if (
+                exception.type === ExceptionType.CustomHours &&
+                exception.customStartTime &&
+                exception.customEndTime
+            ) {
+                return this.toMinuteRanges([
+                    {
+                        start: exception.customStartTime,
+                        end: exception.customEndTime,
+                    },
+                ]);
+            }
+            // Day off / vacation / sick leave / training / other → not working.
+            return [];
+        }
+
+        const isoIndex = ((day.getDay() + 6) % 7) as DayOfWeek;
+        const working = (timetable.slots ?? []).filter(
+            (s) => s.dayOfWeek === isoIndex && !s.isBreak,
+        );
+        const breaks = (timetable.slots ?? []).filter(
+            (s) => s.dayOfWeek === isoIndex && s.isBreak,
+        );
+
+        let ranges = this.toMinuteRanges(
+            working.map((s) => ({ start: s.startTime, end: s.endTime })),
+        );
+        for (const brk of this.toMinuteRanges(
+            breaks.map((s) => ({ start: s.startTime, end: s.endTime })),
+        )) {
+            ranges = this.subtractMinuteRange(ranges, brk);
+        }
+        return ranges;
+    }
+
+    private intersectMinuteRanges(
+        a: Array<{ start: number; end: number }>,
+        b: Array<{ start: number; end: number }>,
+    ): Array<{ start: number; end: number }> {
+        const out: Array<{ start: number; end: number }> = [];
+        for (const x of a) {
+            for (const y of b) {
+                const start = Math.max(x.start, y.start);
+                const end = Math.min(x.end, y.end);
+                if (end > start) out.push({ start, end });
+            }
+        }
+        return out.sort((p, q) => p.start - q.start);
+    }
+
+    private subtractMinuteRange(
+        ranges: Array<{ start: number; end: number }>,
+        cut: { start: number; end: number },
+    ): Array<{ start: number; end: number }> {
+        const out: Array<{ start: number; end: number }> = [];
+        for (const r of ranges) {
+            if (cut.end <= r.start || cut.start >= r.end) {
+                out.push(r);
+                continue;
+            }
+            if (cut.start > r.start)
+                out.push({ start: r.start, end: cut.start });
+            if (cut.end < r.end) out.push({ start: cut.end, end: r.end });
+        }
+        return out;
     }
 
     private getDateRange(

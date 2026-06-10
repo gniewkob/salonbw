@@ -7,6 +7,12 @@ import { Role } from '../users/role.enum';
 import { User } from '../users/user.entity';
 import { CalendarService } from './calendar.service';
 import { TimeBlock, TimeBlockType } from './entities/time-block.entity';
+import { Branch } from '../branches/entities/branch.entity';
+import { Timetable } from '../timetables/entities/timetable.entity';
+import {
+    TimetableException,
+    ExceptionType,
+} from '../timetables/entities/timetable-exception.entity';
 
 function createCountQueryBuilder(count: number) {
     return {
@@ -42,6 +48,9 @@ describe('CalendarService time blocks', () => {
             userRepository,
             {} as Repository<Service>,
             {} as Repository<EmployeeService>,
+            {} as Repository<Branch>,
+            {} as Repository<Timetable>,
+            {} as Repository<TimetableException>,
         );
     });
 
@@ -134,6 +143,9 @@ describe('CalendarService nearest slot (public teaser)', () => {
             {} as Repository<User>,
             serviceRepository,
             {} as Repository<EmployeeService>,
+            {} as Repository<Branch>,
+            {} as Repository<Timetable>,
+            {} as Repository<TimetableException>,
         );
 
         jest.spyOn(calendarService, 'getAvailableSlots').mockResolvedValue(
@@ -172,5 +184,165 @@ describe('CalendarService nearest slot (public teaser)', () => {
         expect(
             (svc.getAvailableSlots as jest.Mock).mock.calls.length,
         ).toBe(1);
+    });
+});
+
+describe('CalendarService working hours in available slots (L1)', () => {
+    function emptyOverlapQueryBuilder() {
+        return {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            leftJoin: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue([]),
+        };
+    }
+
+    function buildHarness(options: {
+        branch?: Partial<Branch> | null;
+        timetable?: Partial<Timetable> | null;
+        exception?: Partial<TimetableException> | null;
+    }) {
+        const serviceRepository = {
+            findOne: jest
+                .fn()
+                .mockResolvedValue({ id: 1, duration: 60 } as Service),
+        } as unknown as Repository<Service>;
+
+        const employeeServiceRepository = {
+            createQueryBuilder: jest.fn(() => ({
+                leftJoinAndSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue([
+                    { employee: { id: 7, name: 'Aleksandra' } },
+                ]),
+            })),
+        } as unknown as Repository<EmployeeService>;
+
+        const appointmentRepository = {
+            createQueryBuilder: jest.fn(emptyOverlapQueryBuilder),
+        } as unknown as Repository<Appointment>;
+        const timeBlockRepository = {
+            createQueryBuilder: jest.fn(emptyOverlapQueryBuilder),
+        } as unknown as Repository<TimeBlock>;
+
+        const branchRepository = {
+            findOne: jest
+                .fn()
+                .mockResolvedValue(
+                    options.branch === null ? null : (options.branch as Branch),
+                ),
+        } as unknown as Repository<Branch>;
+
+        const timetableRepository = {
+            createQueryBuilder: jest.fn(() => ({
+                leftJoinAndSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getOne: jest
+                    .fn()
+                    .mockResolvedValue(options.timetable ?? null),
+            })),
+        } as unknown as Repository<Timetable>;
+
+        const timetableExceptionRepository = {
+            findOne: jest.fn().mockResolvedValue(options.exception ?? null),
+        } as unknown as Repository<TimetableException>;
+
+        return new CalendarService(
+            timeBlockRepository,
+            appointmentRepository,
+            {} as Repository<User>,
+            serviceRepository,
+            employeeServiceRepository,
+            branchRepository,
+            timetableRepository,
+            timetableExceptionRepository,
+        );
+    }
+
+    const branchMonSat = {
+        id: 1,
+        workingHours: {
+            mon: { open: '10:00', close: '19:00' },
+            tue: { open: '10:00', close: '19:00' },
+            wed: { open: '10:00', close: '19:00' },
+            thu: { open: '10:00', close: '19:00' },
+            fri: { open: '10:00', close: '19:00' },
+            sat: { open: '09:00', close: '15:00' },
+            sun: null,
+        },
+    } as unknown as Branch;
+
+    it('offers no slots on Sunday (salon closed)', async () => {
+        const svc = buildHarness({ branch: branchMonSat });
+        // 2026-06-14 is a Sunday
+        const slots = await svc.getAvailableSlots(1, '2026-06-14');
+        expect(slots).toEqual([]);
+    });
+
+    it('cuts Saturday to salon closing time', async () => {
+        const svc = buildHarness({ branch: branchMonSat });
+        // 2026-06-13 is a Saturday; hours 09:00-15:00, 60-min service
+        const slots = await svc.getAvailableSlots(1, '2026-06-13');
+        expect(slots.length).toBeGreaterThan(0);
+        const first = new Date(slots[0].time);
+        const last = new Date(slots[slots.length - 1].time);
+        expect(first.getHours()).toBe(9);
+        // last START must allow the service to END by 15:00
+        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
+            14 * 60,
+        );
+    });
+
+    it('offers no slots on a vacation exception day', async () => {
+        const svc = buildHarness({
+            branch: branchMonSat,
+            timetable: { id: 5, slots: [] } as unknown as Timetable,
+            exception: {
+                type: ExceptionType.Vacation,
+            } as TimetableException,
+        });
+        // 2026-06-12 is a Friday — salon open, employee on vacation
+        const slots = await svc.getAvailableSlots(1, '2026-06-12');
+        expect(slots).toEqual([]);
+    });
+
+    it('falls back to Mon-Sat 9-19 when no branch is configured (Sunday still closed)', async () => {
+        const svc = buildHarness({ branch: null });
+        const sunday = await svc.getAvailableSlots(1, '2026-06-14');
+        expect(sunday).toEqual([]);
+        const friday = await svc.getAvailableSlots(1, '2026-06-12');
+        expect(friday.length).toBeGreaterThan(0);
+        expect(new Date(friday[0].time).getHours()).toBe(9);
+    });
+
+    it('intersects employee timetable with salon hours', async () => {
+        const svc = buildHarness({
+            branch: branchMonSat,
+            timetable: {
+                id: 5,
+                slots: [
+                    {
+                        // Friday = ISO index 4; employee works 12:00-16:00
+                        dayOfWeek: 4,
+                        startTime: '12:00',
+                        endTime: '16:00',
+                        isBreak: false,
+                    },
+                ],
+            } as unknown as Timetable,
+        });
+        const slots = await svc.getAvailableSlots(1, '2026-06-12');
+        expect(slots.length).toBeGreaterThan(0);
+        const hours = slots.map((s) => new Date(s.time).getHours());
+        expect(Math.min(...hours)).toBeGreaterThanOrEqual(12);
+        const last = new Date(slots[slots.length - 1].time);
+        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
+            15 * 60,
+        );
     });
 });
