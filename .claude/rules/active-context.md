@@ -79,9 +79,11 @@
 
 ## In-progress work
 
-- Branch: master (latest commit `21efc2459`)
-- Panel production: `21efc2459` — DEPLOYED 2026-06-10 (push-triggered run `27266421553`, success; verified: strict CSP without unsafe-eval, login 200)
-- Landing production: `21efc2459` — DEPLOYED 2026-06-10 (same run; verified: silver-ink CSS + absolute canonical live)
+- Branch: master (latest commit `0fb490ec3` — Phase 0 landing simplification)
+- Panel production: `64abb87ad` content — DEPLOYED 2026-06-10 (strict CSP without unsafe-eval verified on prod)
+- Landing production: `0fb490ec3` — DEPLOYED 2026-06-10 (run `27282009631`, success; verified: ticker gone, stats strip + MapFacade + reveal-item live)
+- **Landing modernization plan (Fazy 0–4)**: Faza 0 DONE (home 10→8 sections, strips consolidated, CTAs reduced, content-visible reveals, map facade; Lighthouse mobile 100×4). Next: Faza 1 = Google Consent Mode v2 + cookie banner (gtag loads without consent — legal gap); Faza 2 = perf trace/CWV; Faza 3 = nearest-slot teaser (needs public slots endpoint) + AggregateRating/FAQPage schema; Faza 4 = view transitions, dark-mode var audit
+- **Project skill `.claude/skills/salonbw-brand/`** (versioned) — B&W design tokens, contrast table, motion/CTA rules; load for any UI work
 - API production: `3a6ad7d77` — DEPLOYED 2026-06-10 (dispatch run `27266949144`, success; migrations ran; verified: healthz ok, /calendar/available-slots returns 401 not 404)
 
 ---
