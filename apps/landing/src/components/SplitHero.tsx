@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal from '@/components/BookingModal';
+import NearestSlotTeaser from '@/components/NearestSlotTeaser';
 
 export default function SplitHero() {
     const { T } = useLanguage();
@@ -53,7 +54,10 @@ export default function SplitHero() {
 
                     <div className="split-hero__meta">
                         <span className="split-hero__meta-dot" />
-                        <span>{T.hero.trustPill}</span>
+                        <span>
+                            {T.hero.trustPill}
+                            <NearestSlotTeaser />
+                        </span>
                     </div>
                 </div>
 

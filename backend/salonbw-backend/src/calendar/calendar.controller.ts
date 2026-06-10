@@ -155,6 +155,21 @@ export class CalendarController {
         return { success: true };
     }
 
+    // Public on purpose (no auth guard): returns a single timestamp or
+    // null, nothing else — feeds the landing-page "nearest free slot"
+    // teaser. Rate-limited by the global ThrottlerGuard.
+    @Get('nearest-slot')
+    @ApiOperation({
+        summary: 'Nearest bookable slot (public, anonymized)',
+        description:
+            'Single ISO timestamp of the earliest available booking slot ' +
+            'within the next 14 days, or null. No employee or service data.',
+    })
+    @ApiResponse({ status: 200, description: '{ slot: string | null }' })
+    async getNearestSlot(): Promise<{ slot: string | null }> {
+        return this.calendarService.getNearestSlot();
+    }
+
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
     @Get('available-slots')

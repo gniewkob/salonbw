@@ -29,6 +29,7 @@ const t = {
             scroll: 'Przewiń',
             metaYears: 'lat z Bytomiem',
             trustPill: 'Bytom · zaufanie od 2011',
+            nearestSlot: 'Najbliższy wolny termin:',
         },
         trust: {
             label: 'Pracujemy na markach',
@@ -348,6 +349,7 @@ const t = {
             scroll: 'Scroll',
             metaYears: 'years in Bytom',
             trustPill: 'Bytom · trusted since 2011',
+            nearestSlot: 'Next free slot:',
         },
         trust: {
             label: 'We work with brands',
@@ -666,6 +668,7 @@ const t = {
             scroll: 'Scrollen',
             metaYears: 'Jahre in Bytom',
             trustPill: 'Bytom · Vertrauen seit 2011',
+            nearestSlot: 'Nächster freier Termin:',
         },
         trust: {
             label: 'Wir arbeiten mit Marken',

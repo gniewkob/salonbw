@@ -14,6 +14,8 @@ import {
     startOfMonth,
     endOfMonth,
     addMinutes,
+    addDays,
+    format,
 } from 'date-fns';
 import { TimeBlock } from './entities/time-block.entity';
 import {
@@ -354,6 +356,62 @@ export class CalendarService {
                 'Time block overlaps an existing time block',
             );
         }
+    }
+
+    /**
+     * Publicly exposable "nearest bookable slot" teaser. Returns a single
+     * timestamp (or null) — deliberately no employee/service detail, so the
+     * unauthenticated landing page can show "najbliższy wolny termin"
+     * without leaking schedule internals. Cached in-process for 2 minutes
+     * because the landing calls this on every visit.
+     */
+    private nearestSlotCache: {
+        value: string | null;
+        expiresAt: number;
+    } | null = null;
+
+    async getNearestSlot(): Promise<{ slot: string | null }> {
+        const now = Date.now();
+        if (this.nearestSlotCache && this.nearestSlotCache.expiresAt > now) {
+            return { slot: this.nearestSlotCache.value };
+        }
+
+        let result: string | null = null;
+        // Shortest active service is the most likely to fit a gap, which
+        // makes the teaser honest: if nothing fits this one, nothing fits.
+        const service = await this.serviceRepository.findOne({
+            where: { isActive: true },
+            order: { duration: 'ASC' },
+        });
+
+        if (service) {
+            // Don't advertise slots starting sooner than visitors could
+            // realistically arrive.
+            const minStart = now + 60 * 60 * 1000;
+            const SCAN_DAYS = 14;
+            for (let offset = 0; offset < SCAN_DAYS && !result; offset++) {
+                const date = format(
+                    addDays(new Date(now), offset),
+                    'yyyy-MM-dd',
+                );
+                let slots: Array<{ time: string }>;
+                try {
+                    slots = await this.getAvailableSlots(service.id, date);
+                } catch {
+                    break;
+                }
+                const earliest = slots
+                    .map((s) => new Date(s.time).getTime())
+                    .filter((t) => t >= minStart)
+                    .sort((a, b) => a - b)[0];
+                if (earliest) {
+                    result = new Date(earliest).toISOString();
+                }
+            }
+        }
+
+        this.nearestSlotCache = { value: result, expiresAt: now + 120_000 };
+        return { slot: result };
     }
 
     async getAvailableSlots(

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
+import translations from '@/i18n/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
 import TrustStrip from '@/components/TrustStrip';
@@ -97,6 +98,25 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                         longitude: BUSINESS_INFO.coordinates.lng,
                     },
                     telephone: BUSINESS_INFO.contact.phone,
+                    // Rating data sourced from the testimonials VISIBLE on
+                    // this page (Google requires on-page evidence); every
+                    // published review is 5-star.
+                    aggregateRating: {
+                        '@type': 'AggregateRating',
+                        ratingValue: '5.0',
+                        bestRating: '5',
+                        reviewCount: translations.pl.testimonials.items.length,
+                    },
+                    review: translations.pl.testimonials.items.map((r) => ({
+                        '@type': 'Review',
+                        author: { '@type': 'Person', name: r.name },
+                        reviewBody: r.text,
+                        reviewRating: {
+                            '@type': 'Rating',
+                            ratingValue: '5',
+                            bestRating: '5',
+                        },
+                    })),
                     openingHoursSpecification: [
                         {
                             '@type': 'OpeningHoursSpecification',

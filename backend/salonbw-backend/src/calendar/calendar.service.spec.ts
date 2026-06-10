@@ -114,3 +114,63 @@ describe('CalendarService time blocks', () => {
         expect(timeBlockRepository.save).not.toHaveBeenCalled();
     });
 });
+
+describe('CalendarService nearest slot (public teaser)', () => {
+    function buildService(overrides: {
+        service?: Partial<Service> | null;
+        slots?: Array<{ time: string }>;
+    }) {
+        const serviceRepository = {
+            findOne: jest.fn().mockResolvedValue(
+                overrides.service === null
+                    ? null
+                    : ({ id: 1, duration: 30, isActive: true, ...overrides.service } as Service),
+            ),
+        } as unknown as Repository<Service>;
+
+        const calendarService = new CalendarService(
+            {} as Repository<TimeBlock>,
+            {} as Repository<Appointment>,
+            {} as Repository<User>,
+            serviceRepository,
+            {} as Repository<EmployeeService>,
+        );
+
+        jest.spyOn(calendarService, 'getAvailableSlots').mockResolvedValue(
+            (overrides.slots ?? []).map((s) => ({
+                employeeId: 1,
+                employeeName: 'X',
+                time: s.time,
+            })),
+        );
+        return calendarService;
+    }
+
+    it('returns null when no active service exists', async () => {
+        const svc = buildService({ service: null, slots: [] });
+        await expect(svc.getNearestSlot()).resolves.toEqual({ slot: null });
+    });
+
+    it('returns the earliest slot at least 1h in the future', async () => {
+        const soon = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+        const later = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+        const evenLater = new Date(
+            Date.now() + 5 * 60 * 60 * 1000,
+        ).toISOString();
+        const svc = buildService({ slots: [{ time: evenLater }, { time: soon }, { time: later }] });
+
+        const result = await svc.getNearestSlot();
+        expect(result.slot).toBe(later);
+    });
+
+    it('caches the result between calls', async () => {
+        const later = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+        const svc = buildService({ slots: [{ time: later }] });
+
+        await svc.getNearestSlot();
+        await svc.getNearestSlot();
+        expect(
+            (svc.getAvailableSlots as jest.Mock).mock.calls.length,
+        ).toBe(1);
+    });
+});
