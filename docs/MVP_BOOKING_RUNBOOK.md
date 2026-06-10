@@ -77,6 +77,14 @@ przecięcie). `nearest-slot` dziedziczy fix automatycznie.
 UWAGA: na produkcji działa teraz fallback — realne godziny
 (pn–pt 10–19, sob 9–15) wpisuje Dzień 3 przez panel.
 
+### Dzień 1b (dev, bonus): godziny salonu = grafik pracownika — ✅ DONE 2026-06-10
+Precedencja zmieniona (grafik W PEŁNI definiuje bookowalne godziny,
+branch tylko fallbackiem) + publiczny `GET /calendar/opening-hours`
+(unia aktywnych grafików, cache 5 min, zero danych osobowych) +
+landing pokazuje godziny na żywo na 5 powierzchniach ze statycznym
+fallbackiem. Zweryfikowane na prod: hero „Pn–So 09:00 - 17:00"
+z realnego grafiku. Testy 230/230.
+
 ### Dzień 2 (dev): L2 + L3 — powiadomienia
 E-mail o nowym zgłoszeniu + polling badge'a. Deploy, test E2E:
 rezerwacja testowa → mail przychodzi → badge rośnie bez przeładowania.
@@ -90,9 +98,15 @@ To jest praca administratora i właścicielki, nie kod:
    mieszać ról na jednym koncie, bo statystyki prowizji się zaśmiecą).
 3. **Przypisanie usług do pracownika** — bez tego kandydatem na slot jest
    „każdy pracownik" (fallback w kodzie).
-4. **Godziny salonu** (`/settings/timetable/branch`): pn–pt 10–19,
-   sob 9–15 (uwaga: strona główna reklamuje pn–pt od 10:00 — slotom
-   z L1 podać te same godziny, dziś kod oferuje od 9:00).
+4. **Godziny salonu — JUŻ NIE TRZEBA** (decyzja 2026-06-10): godziny
+   otwarcia wynikają DYNAMICZNIE z grafiku Aleksandry (`4df90ca35`).
+   Jej grafik = okna rezerwacji = godziny na stronie (hero, stopka,
+   menu, kontakt ×2). Zaplanowana niedziela → bookowalna; urlop →
+   dzień znika. Godziny brancha to tylko fallback bez grafiku.
+   Na prod jest już aktywny grafik pn–sob 9–17 — jeśli realne godziny
+   są inne, Aleksandra poprawia GRAFIK, nie ustawienia salonu.
+   Znany dryf: JSON-LD na stronie ma statyczne 10–19/9–15 (SEO) —
+   do wyrównania, gdy grafik się ustabilizuje.
 5. **Grafik Aleksandry** (`/settings/timetable/employees`): tygodniowy
    + wyjątki (urlopy).
 6. **Dane klientek**: NIE importować hurtem na MVP. Baza zbuduje się
