@@ -24,9 +24,14 @@
 //   - google-analytics for gtag (only loaded when NEXT_PUBLIC_GA_ID is set)
 // - `object-src 'none'`, `base-uri 'self'`, `form-action 'self' …` shut
 //   down the highest-impact injection primitives.
+// `next dev` relies on eval() for source maps / fast-refresh, so the dev
+// server gets 'unsafe-eval' — production builds keep the strict directive
+// (hardening decision 2026-05: no unsafe-eval, no unsafe-inline in prod).
+const isDev = process.env.NODE_ENV === 'development';
+
 const csp = [
     "default-src 'self'",
-    "script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
+    `script-src 'self'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: blob: https:",

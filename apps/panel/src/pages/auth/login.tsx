@@ -175,7 +175,7 @@ export default function LoginPage() {
                     B&amp;W
                 </span>
 
-                <div
+                <main
                     style={{
                         position: 'relative',
                         zIndex: 1,
@@ -469,7 +469,7 @@ export default function LoginPage() {
                     >
                         Salon Black &amp; White · Bytom
                     </p>
-                </div>
+                </main>
             </div>
         </>
     );
