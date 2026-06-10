@@ -114,6 +114,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                             },
                         },
                         error: {
+                            // Errors must interrupt screen readers; default
+                            // role="status"/polite only queues announcements.
+                            ariaProps: {
+                                role: 'alert',
+                                'aria-live': 'assertive',
+                            },
                             style: {
                                 background: '#842029',
                                 border: '1px solid rgba(255, 255, 255, 0.12)',
