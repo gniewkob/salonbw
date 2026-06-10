@@ -65,9 +65,17 @@ wtedy rozważyć rezerwację gościa (duża praca: anty-spam, dedup klientów).
 
 ## 3. Plan — 4 dni robocze
 
-### Dzień 1 (dev): L1 — godziny pracy w slotach
-Rano implementacja + testy, po południu deploy API i smoke:
-niedziela pusta, sobota ucięta, dzień z wyjątkiem urlopowym pusty.
+### Dzień 1 (dev): L1 — godziny pracy w slotach — ✅ DONE 2026-06-10
+Wdrożone (`aa66337d4`, deploy `27308306709`): sloty = przecięcie godzin
+salonu (`branch.workingHours`, klucze mon..sun, null = zamknięte)
+z grafikiem pracownika (sloty tygodniowe minus przerwy, wyjątki:
+urlop/L4/szkolenie = brak pracy, custom_hours = dokładnie te godziny).
+Brak skonfigurowanego salonu → fallback pon–sob 9–19, niedziela
+ZAMKNIĘTA. Brak grafiku pracownika → pełne godziny salonu.
+5 testów jednostkowych (niedziela, sobota ucięta, urlop, fallback,
+przecięcie). `nearest-slot` dziedziczy fix automatycznie.
+UWAGA: na produkcji działa teraz fallback — realne godziny
+(pn–pt 10–19, sob 9–15) wpisuje Dzień 3 przez panel.
 
 ### Dzień 2 (dev): L2 + L3 — powiadomienia
 E-mail o nowym zgłoszeniu + polling badge'a. Deploy, test E2E:
