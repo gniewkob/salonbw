@@ -13,7 +13,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
         <div className={isLeft ? 'mb-14' : 'text-center mb-14'}>
             <p
                 className="text-xs uppercase mb-3"
-                style={{ color: '#b4b8be', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                style={{ color: dark ? '#b4b8be' : 'var(--brand-silver-ink)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
             >
                 {eyebrow}
             </p>

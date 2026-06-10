@@ -70,18 +70,27 @@ export default function Testimonials() {
                             onClick={() => { if (i !== active) setActive(i); }}
                             className="focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
                             style={{
-                                width: i === active ? '36px' : '8px',
-                                height: '6px',
-                                borderRadius: '3px',
-                                background: i === active ? '#b4b8be' : 'rgba(255,255,255,0.45)',
-                                transition: 'width 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.3s',
+                                // 24px min touch target; visual dot is the inner span
+                                padding: '9px 8px',
+                                background: 'transparent',
                                 border: 'none',
                                 cursor: 'pointer',
-                                padding: 0,
                             }}
                             aria-label={T.testimonials.reviewLabel.replace('{name}', t.name)}
                             aria-pressed={i === active}
-                        />
+                        >
+                            <span
+                                aria-hidden
+                                style={{
+                                    display: 'block',
+                                    width: i === active ? '36px' : '8px',
+                                    height: '6px',
+                                    borderRadius: '3px',
+                                    background: i === active ? '#b4b8be' : 'rgba(255,255,255,0.45)',
+                                    transition: 'width 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.3s',
+                                }}
+                            />
+                        </button>
                     ))}
                 </div>
             </div>

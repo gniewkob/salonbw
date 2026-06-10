@@ -119,7 +119,7 @@ export default function Navbar() {
                                                 style={
                                                     active
                                                         ? {
-                                                              color: '#b4b8be',
+                                                              color: 'var(--brand-silver-ink)',
                                                               borderBottom:
                                                                   '1px solid #b4b8be',
                                                               paddingBottom:
@@ -187,7 +187,7 @@ export default function Navbar() {
                                         style={{
                                             color:
                                                 lang === code
-                                                    ? '#b4b8be'
+                                                    ? 'var(--brand-silver-ink)'
                                                     : 'var(--brand-warm-muted)',
                                             borderBottom:
                                                 lang === code
@@ -302,7 +302,7 @@ export default function Navbar() {
                                                 className="block py-2.5 px-4 text-sm font-medium transition"
                                                 style={{
                                                     color: active
-                                                        ? '#b4b8be'
+                                                        ? 'var(--brand-silver-ink)'
                                                         : undefined,
                                                 }}
                                                 onClick={() =>
@@ -372,7 +372,7 @@ export default function Navbar() {
                                         style={{
                                             color:
                                                 lang === code
-                                                    ? '#b4b8be'
+                                                    ? 'var(--brand-silver-ink)'
                                                     : 'var(--brand-warm-muted)',
                                             borderBottom:
                                                 lang === code

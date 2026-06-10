@@ -255,19 +255,34 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                             key={slide.id}
                             type="button"
                             onClick={() => goToSlide(index)}
-                            className="transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be]"
+                            className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be]"
                             style={{
-                                width: index === currentSlide ? '28px' : '8px',
-                                height: '8px',
-                                borderRadius: '4px',
-                                background:
-                                    index === currentSlide
-                                        ? 'var(--brand-silver)'
-                                        : 'rgba(255,255,255,0.45)',
+                                // 24px min touch target; visual dot is the inner span
+                                padding: '8px',
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
                             }}
                             aria-label={`Slajd ${index + 1} z ${data.length}`}
                             aria-current={index === currentSlide}
-                        />
+                        >
+                            <span
+                                aria-hidden
+                                className="block transition-all duration-300"
+                                style={{
+                                    width:
+                                        index === currentSlide
+                                            ? '28px'
+                                            : '8px',
+                                    height: '8px',
+                                    borderRadius: '4px',
+                                    background:
+                                        index === currentSlide
+                                            ? 'var(--brand-silver)'
+                                            : 'rgba(255,255,255,0.45)',
+                                }}
+                            />
+                        </button>
                     ))}
                 </div>
                 <button
