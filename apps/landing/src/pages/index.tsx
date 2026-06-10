@@ -10,16 +10,14 @@ import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
 import TrustStrip from '@/components/TrustStrip';
-import ScrollReveal from '@/components/ScrollReveal';
 import AboutSpread from '@/components/AboutSpread';
 import SalonGallery from '@/components/SalonGallery';
 import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
 import SectionHeader from '@/components/SectionHeader';
 import BookingModal from '@/components/BookingModal';
-import StatsBar from '@/components/StatsBar';
 import BookingCta from '@/components/BookingCta';
-import GoldTickerStrip from '@/components/GoldTickerStrip';
+import MapFacade from '@/components/MapFacade';
 import { getFounderMessage, getSalonGallery } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
@@ -126,35 +124,27 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 {/* 1. Split hero */}
                 <SplitHero />
 
-                {/* 2. Stats numbers */}
-                <StatsBar />
-
-                {/* 3. Partner brands trust strip */}
+                {/* 2. Social proof: stats + partner brands (single strip) */}
                 <TrustStrip />
 
-                {/* 4. Services */}
+                {/* 3. Services */}
                 <ServicesTeaser />
 
-                {/* 5. Gold ticker separator */}
-                <GoldTickerStrip />
-
-                {/* 6. About — founder + 3 principles */}
-                <div id="about">
-                    <ScrollReveal direction="up">
-                        <AboutSpread founder={founder} />
-                    </ScrollReveal>
+                {/* 4. About — founder + 3 principles */}
+                <div id="about" className="reveal-item">
+                    <AboutSpread founder={founder} />
                 </div>
 
-                {/* 7. Gallery */}
+                {/* 5. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 8. Testimonials */}
+                {/* 6. Testimonials */}
                 <Testimonials />
 
-                {/* 9. Booking CTA */}
+                {/* 7. Booking CTA */}
                 <BookingCta />
 
-                {/* 10. Contact */}
+                {/* 8. Contact */}
                 <section
                     className="contact-section"
                     style={{ background: 'var(--brand-black)' }}
@@ -284,17 +274,9 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     </div>
                                 </div>
 
+                                {/* Booking entry lives in hero / CTA band / FAB —
+                                    contact section offers phone + form instead */}
                                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setBookingModalOpen(true)
-                                        }
-                                        className="split-hero__cta-primary text-xs font-semibold uppercase text-center px-8 py-3.5"
-                                        style={{ letterSpacing: '0.14em' }}
-                                    >
-                                        {T.nav.booking}
-                                    </button>
                                     <Link
                                         href="/contact"
                                         className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
@@ -316,21 +298,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         zIndex: 0,
                                     }}
                                 />
-                                <iframe
-                                    src={`https://maps.google.com/maps?q=${BUSINESS_INFO.coordinates.lat},${BUSINESS_INFO.coordinates.lng}&z=16&output=embed&hl=pl`}
-                                    className="relative w-full"
-                                    style={{
-                                        height: '380px',
-                                        borderRadius: '3px',
-                                        filter: 'grayscale(0.3) contrast(1.05)',
-                                        zIndex: 1,
-                                        display: 'block',
-                                    }}
-                                    allowFullScreen
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    title={`Mapa salonu ${BUSINESS_INFO.name} w ${BUSINESS_INFO.address.city}`}
-                                />
+                                <MapFacade height={380} grayscale={0.3} />
                             </div>
                         </div>
                     </div>

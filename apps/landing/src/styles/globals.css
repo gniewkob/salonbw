@@ -380,68 +380,6 @@ html {
     animation: scrollDown 2s ease-in-out infinite;
 }
 
-/* ── Stats Bar ────────────────────────────────────────── */
-.stats-bar {
-    background: var(--brand-black, #0d0d0d);
-    position: relative;
-    padding: 4rem 2rem;
-}
-.stats-bar::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size: 180px;
-    opacity: 0.03;
-    pointer-events: none;
-}
-.stats-bar__inner {
-    max-width: 900px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-}
-@media (max-width: 640px) {
-    .stats-bar__inner { grid-template-columns: repeat(2, 1fr); }
-}
-.stats-bar__item {
-    text-align: center;
-    padding: 1.5rem 1rem;
-    border-left: 1px solid rgba(180,184,190,0.15);
-}
-.stats-bar__item:first-child { border-left: none; }
-.stats-bar__number {
-    display: block;
-    font-family: var(--font-playfair), serif;
-    font-size: clamp(2.8rem, 5vw, 4.5rem);
-    color: var(--brand-silver);
-    line-height: 1;
-    margin-bottom: 0.4rem;
-}
-.stats-bar__label {
-    display: block;
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
-    font-family: var(--font-open-sans), sans-serif;
-}
-
-/* ── Scroll Reveal ────────────────────────────────────── */
-.sr-init {
-    opacity: 0;
-    transition: opacity 0.7s ease, transform 0.7s ease;
-}
-.sr-up    { transform: translateY(32px); }
-.sr-left  { transform: translateX(-28px); }
-.sr-right { transform: translateX(28px); }
-
-.sr-visible {
-    opacity: 1;
-    transform: none;
-}
-
 /* ── Gallery grayscale hover ──────────────────────────── */
 .gallery-item img {
     filter: grayscale(0%);
@@ -604,6 +542,12 @@ html {
 
 /* ── Section number decoration ────────────────────────── */
 .service-numeral {
+    /* Watermark numeral only on the dark featured card. On light cards
+       it sat at 1.05:1 — invisible to people, yet flagged by axe
+       color-contrast (axe checks rendered text even when aria-hidden).
+       Hidden there instead of darkened: a 3:1 watermark would stop
+       being a watermark. */
+    display: none;
     position: absolute;
     top: -0.3em;
     right: 0.15em;
@@ -618,6 +562,7 @@ html {
     z-index: 0;
 }
 .service-card-dark .service-numeral {
+    display: block;
     color: rgba(180,184,190,0.12);
 }
 
@@ -685,34 +630,6 @@ html {
     margin-bottom: 3rem;
     line-height: 1.8;
     letter-spacing: 0.04em;
-}
-
-/* ── Gold ticker strip ────────────────────────────────── */
-.gold-ticker-strip {
-    background: var(--brand-silver);
-    overflow: hidden;
-    padding: 0.9rem 0;
-    white-space: nowrap;
-}
-@keyframes tickerScroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-.gold-ticker-strip__track {
-    display: inline-flex;
-    animation: tickerScroll 28s linear infinite;
-}
-.gold-ticker-strip__item {
-    font-family: var(--font-open-sans), sans-serif;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: #0d0d0d;
-    padding: 0 2.5rem;
-}
-.gold-ticker-strip__dot {
-    color: rgba(0,0,0,0.35);
 }
 
 /* ── Services page ────────────────────────────────────── */
@@ -1336,27 +1253,39 @@ ol.legal-list { list-style: decimal; }
     opacity: 1;
 }
 
-/* ── StaggerReveal ────────────────────────────────────── */
-.sr-stagger > * {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.65s ease, transform 0.65s ease;
-}
-.sr-stagger.sr-stagger-visible > * {
-    opacity: 1;
-    transform: none;
-}
-
 /* ── Reduced motion support ───────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     .hero-img-zoom { animation: none; }
-    .gold-ticker-strip__track { animation-duration: 80s; }
-    .sr-init, .sr-init * { transition: none !important; animation: none !important; }
-    .sr-stagger > * { transition: none !important; }
-    .stats-bar__number, .stats-bar__label { transition: none !important; }
     .gallery-img { transition: none; }
     .gallery-caption { transition: none; }
     .gallery-blend { transition: none; }
     .photo-strip__item { transition: none; }
     .photo-strip__item img { transition: none; }
+}
+
+/* ── Reveal on scroll (content-visible) ───────────────── */
+/* Brand rule: content must never start at opacity 0 (the old JS
+   IntersectionObserver pattern shipped blank sections). Default =
+   fully visible, no animation. Browsers that support CSS scroll-
+   driven animations get a subtle entry animation instead — it only
+   runs while the element enters the viewport, so nothing is ever
+   hidden when JS is off or the API is unsupported. */
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        @keyframes reveal-up {
+            from {
+                opacity: 0.001;
+                transform: translateY(28px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        .reveal-item {
+            animation: reveal-up linear both;
+            animation-timeline: view();
+            animation-range: entry 0% entry 60%;
+        }
+    }
 }

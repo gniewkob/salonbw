@@ -5,6 +5,7 @@ import Head from 'next/head';
 import Script from 'next/script';
 import PublicLayout from '@/components/PublicLayout';
 import SectionHeader from '@/components/SectionHeader';
+import MapFacade from '@/components/MapFacade';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { jsonLd, absUrl } from '@/utils/seo';
@@ -251,21 +252,7 @@ export default function ContactPage() {
                                         zIndex: 0,
                                     }}
                                 />
-                                <iframe
-                                    src={`https://maps.google.com/maps?q=${BUSINESS_INFO.coordinates.lat},${BUSINESS_INFO.coordinates.lng}&z=16&output=embed&hl=pl`}
-                                    className="relative w-full"
-                                    style={{
-                                        height: '260px',
-                                        borderRadius: '3px',
-                                        filter: 'grayscale(0.4) contrast(1.05)',
-                                        zIndex: 1,
-                                        display: 'block',
-                                    }}
-                                    allowFullScreen
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    title={`Mapa salonu ${BUSINESS_INFO.name} w ${BUSINESS_INFO.address.city}`}
-                                />
+                                <MapFacade height={260} grayscale={0.4} />
                             </div>
                         </div>
 
