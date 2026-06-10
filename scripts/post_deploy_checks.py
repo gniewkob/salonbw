@@ -15,8 +15,12 @@ import urllib.request
 from typing import Any, Dict, Iterable, List, Optional
 
 
-DEFAULT_MAX_ATTEMPTS = int(os.environ.get("CHECK_MAX_ATTEMPTS", "4"))
-DEFAULT_INITIAL_BACKOFF = float(os.environ.get("CHECK_BACKOFF_INITIAL", "2"))
+DEFAULT_MAX_ATTEMPTS = int(os.environ.get("CHECK_MAX_ATTEMPTS", "8"))
+DEFAULT_INITIAL_BACKOFF = float(os.environ.get("CHECK_BACKOFF_INITIAL", "5"))
+# Passenger answers 403 for the whole warm-up window after a restart —
+# observed to exceed 30s. Cap the exponential backoff so 8 attempts cover
+# ~2.5 minutes instead of exploding.
+BACKOFF_CAP_SECONDS = float(os.environ.get("CHECK_BACKOFF_CAP", "30"))
 
 
 class CheckSpec(Dict[str, Any]):
@@ -184,7 +188,7 @@ def run_checks() -> int:
 
             if attempt < max_attempts:
                 time.sleep(backoff)
-                backoff *= 2
+                backoff = min(backoff * 2, BACKOFF_CAP_SECONDS)
 
         result = {
             "name": name,
