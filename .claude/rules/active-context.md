@@ -79,10 +79,10 @@
 
 ## In-progress work
 
-- Branch: master (latest commit `64abb87ad` — login main landmark + dev CSP)
-- Panel production: needs redeploy for all PRs since `d9e72660`
-- API production: `e56e39ff` | 2026-03-24 — **STALE**: missing online_pending migration, available-slots endpoint, formula fix
-- Landing production: `e74331ee` | Next.js 15.5.10 | 2026-02-26 — unchanged
+- Branch: master (latest commit `21efc2459`)
+- Panel production: `21efc2459` — DEPLOYED 2026-06-10 (push-triggered run `27266421553`, success; verified: strict CSP without unsafe-eval, login 200)
+- Landing production: `21efc2459` — DEPLOYED 2026-06-10 (same run; verified: silver-ink CSS + absolute canonical live)
+- API production: `e56e39ff` | 2026-03-24 — **STALE**: missing online_pending migration, available-slots endpoint, formula fix (push didn't touch backend, so API was not deployed)
 
 ---
 
@@ -94,7 +94,7 @@
   - `GET /calendar/available-slots` endpoint needed for booking wizard
   - Formula service fix (admin 403 / confirmed 400)
   - Deploy command: MyDevil → `passenger-config restart-app`
-- **Panel redeploy needed** — all commits since `d9e72660` not yet deployed to production
+- ~~Panel redeploy needed~~ — DONE 2026-06-10: push deploy `27266421553` shipped panel + landing at `21efc2459`
 
 ### P2 — Accessibility (remaining — all other a11y DONE in full-session sprint)
 - ~~Color contrast audit~~ — DONE 2026-06-10 (`2b57d0c12`, `64abb87ad`): Lighthouse run on landing (/, /services, /contact, /gallery, /services/balayage) + panel /auth/login — all now score a11y 100. Fixed: white-on-silver CTA → dark-on-silver; new `--brand-silver-ink` (#6e7278) for silver text on light bg; `--brand-warm-label` darkened; low-alpha white text on dark raised to 0.55; slider dots got 24px touch targets; login got `<main>` landmark. Panel authenticated pages NOT audited (needs logged-in Lighthouse run — follow-up if desired)
@@ -105,7 +105,7 @@
 ### P3 — Code quality
 - `data_protection.tsx`: `inner edit_branch_form` on a `<form>` — refactor deferred
 - `DashboardLayout` exists but used by no page — dead code; safe to remove
-- Push-triggered CI deploy runs failing (22595771187+) — workflow_dispatch works; root cause not investigated
+- ~~Push-triggered CI deploy runs failing~~ — stale: push deploy `27266421553` (2026-06-10) succeeded end-to-end
 - Dead CSS audit: `default.css` / `new-ui.css` chunks to remove — not yet started
 
 ---
