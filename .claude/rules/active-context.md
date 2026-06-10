@@ -79,7 +79,7 @@
 
 ## In-progress work
 
-- Branch: master (latest commit `4d016e554` — error-toast aria-live)
+- Branch: master (latest commit `64abb87ad` — login main landmark + dev CSP)
 - Panel production: needs redeploy for all PRs since `d9e72660`
 - API production: `e56e39ff` | 2026-03-24 — **STALE**: missing online_pending migration, available-slots endpoint, formula fix
 - Landing production: `e74331ee` | Next.js 15.5.10 | 2026-02-26 — unchanged
@@ -97,7 +97,7 @@
 - **Panel redeploy needed** — all commits since `d9e72660` not yet deployed to production
 
 ### P2 — Accessibility (remaining — all other a11y DONE in full-session sprint)
-- Color contrast audit — no tool run (axe-core / Lighthouse)
+- ~~Color contrast audit~~ — DONE 2026-06-10 (`2b57d0c12`, `64abb87ad`): Lighthouse run on landing (/, /services, /contact, /gallery, /services/balayage) + panel /auth/login — all now score a11y 100. Fixed: white-on-silver CTA → dark-on-silver; new `--brand-silver-ink` (#6e7278) for silver text on light bg; `--brand-warm-label` darkened; low-alpha white text on dark raised to 0.55; slider dots got 24px touch targets; login got `<main>` landmark. Panel authenticated pages NOT audited (needs logged-in Lighthouse run — follow-up if desired)
 - ~~Toast aria-live~~ — DONE 2026-06-10 (`4d016e554`): error toasts now `role=alert` + `aria-live=assertive`; success keeps react-hot-toast default polite status
 - ~~Landing image alt text~~ — AUDITED 2026-06-10, no gaps: all content images have descriptive Polish alts in `content.ts`; decorative bg images (BookingCta, ServicesTeaser) correctly use `alt=""` + `aria-hidden`
 - ~~Focus-ring CSS audit~~ — AUDITED 2026-06-10, no gaps: every `outline: none` in salon-shell.css pairs with border-color + box-shadow focus style; global `:focus-visible` rule (line ~8247) gives 2px accent outline to buttons/links/tabindex

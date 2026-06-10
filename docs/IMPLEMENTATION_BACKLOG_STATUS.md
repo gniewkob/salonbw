@@ -1,12 +1,30 @@
 # Implementation Backlog Status
 
-_Last updated: 2026-06-09_
+_Last updated: 2026-06-10_
 
 This file tracks the current status of the AI-ready implementation backlog against the repository state.
 
 **Agent workflow rule:** Update this file after every commit. Add findings/blockers immediately, never at end-of-session.
 
 ## Closed in Code
+
+### Contrast + remaining P2 a11y closure (2026-06-10)
+
+- Status: implemented, on master (`4d016e554`, `8f7606c9d`, `2b57d0c12`, `64abb87ad`)
+- What closed the four remaining P2 a11y items:
+  - **Toast aria-live** — `ToastContext.tsx`: error toasts now use `role=alert` + `aria-live=assertive`; success keeps react-hot-toast default (`role=status`, polite).
+  - **Focus-ring audit** — verified: every `outline: none` in `salon-shell.css` pairs with a border/box-shadow focus replacement; global `:focus-visible` rule provides a 2px accent outline. No change needed.
+  - **Landing alt text audit** — verified: all content images carry descriptive Polish alts from `content.ts`; decorative backgrounds correctly use `alt=""` + `aria-hidden`. No change needed.
+  - **Color contrast audit (Lighthouse)** — landing `/`, `/services`, `/contact`, `/gallery`, `/services/balayage` and panel `/auth/login` all score **a11y 100** after fixes:
+    - `.split-hero__cta-primary` white-on-silver (1.99:1) → dark `#0d0d0d` on silver (9.76:1) — same pattern as the panel booking fix
+    - new `--brand-silver-ink: #6e7278` (4.84:1 on white) for silver-toned text on light bg (navbar active links, lang switcher, SectionHeader eyebrow on light)
+    - `--brand-warm-label` `#b0a090` → `#7a6a58` (2.41 → 4.95:1 on cream)
+    - low-alpha white text on `--brand-black` raised to `0.55` alpha (6.25:1): services count/duration/desc, bottom-CTA sub, stats labels, contact form labels/placeholder, IG fallback/loading, hero meta/scroll hint
+    - HeroSlider + Testimonials dot buttons: visual dot moved into inner `<span>`, button padded to ≥24px touch target (was 8×6px)
+    - `absUrl()` falls back to `https://salon-bw.pl` so canonical/og stay absolute without env
+    - panel login: content wrapper → `<main>` (landmark-one-main)
+- Dev-experience fix uncovered by the audit: panel `next.config.mjs` now adds `'unsafe-eval'` to `script-src` **only** when `NODE_ENV=development` (next dev needs eval; every dev page rendered blank under the strict CSP). Production CSP unchanged from the 2026-05 hardening.
+- Not audited: authenticated panel pages (requires logged-in Lighthouse session) — follow-up candidate.
 
 ### WAI-ARIA Accessibility Sprint (2026-06-09)
 
