@@ -98,6 +98,45 @@ describe('AppointmentsService', () => {
         expect(result.status).toBe(AppointmentStatus.OnlinePending);
     });
 
+    it('sends an email alert to the salon on client self-booking', async () => {
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+                reservedOnline: true,
+            },
+            users[0],
+        );
+
+        expect(ctx.mockEmailsService.send).toHaveBeenCalledTimes(1);
+        const dto = ctx.mockEmailsService.send.mock.calls[0][0] as {
+            to: string;
+            subject: string;
+            data: Record<string, string>;
+        };
+        expect(dto.to).toBe('kontakt@salon-bw.pl');
+        expect(dto.subject).toContain('Nowa rezerwacja online');
+        expect(dto.data.panelUrl).toContain('panel.salon-bw.pl');
+    });
+
+    it('does not email the salon when staff books for a client', async () => {
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+
+        expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
+    });
+
     it('should keep scheduled status when reservedOnline is false', async () => {
         const start = new Date(Date.now() + 3 * 60 * 60 * 1000);
         const result = await service.create(

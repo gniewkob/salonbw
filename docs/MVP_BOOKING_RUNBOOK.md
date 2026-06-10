@@ -51,11 +51,10 @@ e-mail na adres salonu (SMTP już skonfigurowane i zdrowe na prod:
 (Mock `sendNewOnlineBookingAlert` już istnieje w test-context — realna
 implementacja nigdy nie powstała.)
 
-### L3 — ŚREDNIA: brak auto-odświeżania badge'a oczekujących
-Badge liczy `online_pending` przy załadowaniu. Przy otwartym panelu przez
-cały dzień nowe zgłoszenie nie podbije licznika.
-**Fix (dev, ~2 h):** polling co 60 s w hooku badge'a (bez websocketów —
-za duży koszt na MVP).
+### L3 — WYCOFANA (audyt 2026-06-11): badge JUŻ polluje
+`usePendingBookingsCount` ma `refetchInterval: 2 min` + `staleTime 90 s`
+od początku — diagnoza z runbooka była błędna. Zostawione bez zmian
+(2 min wystarcza dla salonu); żadnej pracy nie wykonano.
 
 ### L4 — NISKA (decyzja produktowa): rezerwacja wymaga konta
 `/booking` wymaga zalogowania. Dla MVP to jest OK (mniej spamu, klientka
@@ -85,9 +84,15 @@ landing pokazuje godziny na żywo na 5 powierzchniach ze statycznym
 fallbackiem. Zweryfikowane na prod: hero „Pn–So 09:00 - 17:00"
 z realnego grafiku. Testy 230/230.
 
-### Dzień 2 (dev): L2 + L3 — powiadomienia
-E-mail o nowym zgłoszeniu + polling badge'a. Deploy, test E2E:
-rezerwacja testowa → mail przychodzi → badge rośnie bez przeładowania.
+### Dzień 2 (dev): L2 — powiadomienia — ✅ DONE 2026-06-11
+E-mail do salonu przy każdej samodzielnej rezerwacji klientki
+(status `online_pending`): odbiorca `BOOKING_ALERT_EMAIL` (default
+kontakt@salon-bw.pl), treść PL (klientka+kontakt, usługa, pracownik,
+termin, link do panelu), wysyłka przez istniejący EmailsService
+(SMTP zdrowy na prod, wpis w email_logs), błąd wysyłki nie blokuje
+rezerwacji. Istniejący WhatsApp do pracownika zostaje jako drugi
+kanał. L3 wycofana — patrz wyżej (badge polluje od zawsze).
+Test E2E maila = Dzień 4 (rezerwacja testowa).
 
 ### Dzień 3 (WY — konfiguracja danych, ~2-3 h klikania w panelu)
 To jest praca administratora i właścicielki, nie kod:

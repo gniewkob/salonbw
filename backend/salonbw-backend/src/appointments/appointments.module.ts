@@ -13,6 +13,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { ObservabilityModule } from '../observability/observability.module';
 import { RetailModule } from '../retail/retail.module';
 import { LoyaltyModule } from '../loyalty/loyalty.module';
+import { EmailsModule } from '../emails/emails.module';
 
 @Module({
     imports: [
@@ -29,6 +30,7 @@ import { LoyaltyModule } from '../loyalty/loyalty.module';
         ObservabilityModule,
         forwardRef(() => RetailModule),
         LoyaltyModule,
+        EmailsModule,
     ],
     providers: [AppointmentsService],
     controllers: [AppointmentsController],

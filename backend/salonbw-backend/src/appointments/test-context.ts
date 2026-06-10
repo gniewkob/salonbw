@@ -22,6 +22,7 @@ export interface AppointmentsTestContext {
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     mockWhatsappService: jest.Mocked<WhatsappService>;
+    mockEmailsService: { send: jest.Mock };
     logActionSpy: jest.SpyInstance;
     sendFollowUpMock: jest.Mock;
     transactionMock: jest.Mock;
@@ -158,6 +159,10 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         'createSale',
     ) as jest.Mock;
 
+    const mockEmailsService = {
+        send: jest.fn<Promise<void>, [unknown]>(() => Promise.resolve()),
+    };
+
     const service = new AppointmentsService(
         mockAppointmentsRepo,
         mockServicesRepo,
@@ -170,11 +175,13 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         undefined,
         mockRetailService,
         undefined,
+        mockEmailsService as never,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
     return {
         service,
+        mockEmailsService,
         appointments,
         users,
         services,

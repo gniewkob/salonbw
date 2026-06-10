@@ -31,6 +31,7 @@ import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
+import { EmailsService } from '../emails/emails.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { MetricsService } from '../observability/metrics.service';
 import { Optional } from '@nestjs/common';
@@ -62,6 +63,8 @@ export class AppointmentsService {
         private readonly retailService?: RetailService,
         @Optional()
         private readonly loyaltyService?: LoyaltyService,
+        @Optional()
+        private readonly emailsService?: EmailsService,
     ) {}
 
     private async loadClientOrThrow(id: number): Promise<User> {
@@ -263,6 +266,40 @@ export class AppointmentsService {
             } catch (error) {
                 console.error(
                     'Failed to send new booking notification to employee',
+                    error,
+                );
+            }
+        }
+        // E-mail to the salon mailbox on every client self-booking — the
+        // reliable channel (WhatsApp above depends on the employee's phone,
+        // consent flag and WhatsApp API config). MVP L2.
+        if (isClientSelfBooking && this.emailsService) {
+            const alertTo =
+                process.env.BOOKING_ALERT_EMAIL || 'kontakt@salon-bw.pl';
+            try {
+                await this.emailsService.send({
+                    to: alertTo,
+                    subject: `Nowa rezerwacja online — ${date} ${time}`,
+                    template:
+                        'Nowa rezerwacja online czeka na potwierdzenie.\n\n' +
+                        'Klientka: {{clientName}} ({{clientContact}})\n' +
+                        'Usługa: {{serviceName}}\n' +
+                        'Pracownik: {{employeeName}}\n' +
+                        'Termin: {{date}} {{time}}\n\n' +
+                        'Potwierdź w panelu: {{panelUrl}}',
+                    data: {
+                        clientName: client.name ?? client.email ?? 'Klient',
+                        clientContact: client.phone ?? client.email ?? '—',
+                        serviceName: result.service?.name ?? '—',
+                        employeeName: employee.name ?? '—',
+                        date,
+                        time,
+                        panelUrl: 'https://panel.salon-bw.pl/calendar',
+                    },
+                });
+            } catch (error) {
+                console.error(
+                    'Failed to send new online booking email alert',
                     error,
                 );
             }
