@@ -125,8 +125,10 @@ data/
 # Local audit/login credentials
 .env
 
-# Claude AI
-.claude/
+# Claude AI (rules + skills are versioned; everything else local)
+.claude/*
+!.claude/rules/
+!.claude/skills/
 
 # Security: block local/browser capture artifacts that may contain PII/secrets
 .playwright-mcp/
