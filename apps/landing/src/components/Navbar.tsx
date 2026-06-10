@@ -8,12 +8,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { LANGUAGES } from '@/i18n/translations';
 import BookingModal from '@/components/BookingModal';
 
 export default function Navbar() {
     const { role, initialized, logout } = useAuth();
     const { lang, setLang, T } = useLanguage();
+    const { lines: openingHours } = useOpeningHours();
     const router = useRouter();
     const isHomePage = router.pathname === '/';
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -269,14 +271,11 @@ export default function Navbar() {
                                 className="px-4 py-2 text-xs text-gray-500 border-b mb-3"
                                 style={{ borderColor: 'rgba(0,0,0,0.06)' }}
                             >
-                                <div>
-                                    {T.hours.mondayFriday}:{' '}
-                                    {BUSINESS_INFO.hours.mondayFriday}
-                                </div>
-                                <div>
-                                    {T.hours.saturday}:{' '}
-                                    {BUSINESS_INFO.hours.saturday}
-                                </div>
+                                {openingHours.map((line) => (
+                                    <div key={line.label}>
+                                        {line.label}: {line.value}
+                                    </div>
+                                ))}
                             </div>
 
                             <ul className="space-y-1">

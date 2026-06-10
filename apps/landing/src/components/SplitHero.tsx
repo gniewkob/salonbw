@@ -5,9 +5,11 @@ import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal from '@/components/BookingModal';
 import NearestSlotTeaser from '@/components/NearestSlotTeaser';
+import { useOpeningHours } from '@/hooks/useOpeningHours';
 
 export default function SplitHero() {
     const { T } = useLanguage();
+    const { lines: openingHours } = useOpeningHours();
     const [modalOpen, setModalOpen] = useState(false);
 
     return (
@@ -82,14 +84,14 @@ export default function SplitHero() {
                     <p className="split-hero__float-label">
                         {T.hero.hoursLabel}
                     </p>
-                    <p className="split-hero__float-hours">
-                        {T.hours.mondayFriday}{' '}
-                        <strong>{BUSINESS_INFO.hours.mondayFriday}</strong>
-                    </p>
-                    <p className="split-hero__float-hours">
-                        {T.hours.saturday}{' '}
-                        <strong>{BUSINESS_INFO.hours.saturday}</strong>
-                    </p>
+                    {openingHours.map((line) => (
+                        <p
+                            key={line.label}
+                            className="split-hero__float-hours"
+                        >
+                            {line.label} <strong>{line.value}</strong>
+                        </p>
+                    ))}
                     <a
                         href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
                         className="split-hero__float-phone"

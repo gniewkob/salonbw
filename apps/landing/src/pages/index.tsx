@@ -19,6 +19,7 @@ import SectionHeader from '@/components/SectionHeader';
 import BookingModal from '@/components/BookingModal';
 import BookingCta from '@/components/BookingCta';
 import MapFacade from '@/components/MapFacade';
+import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { getFounderMessage, getSalonGallery } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
@@ -31,6 +32,7 @@ interface HomePageProps {
 
 export default function HomePage({ founder, galleryImages }: HomePageProps) {
     const { T } = useLanguage();
+    const { lines: openingHours } = useOpeningHours();
     const c = T.contact;
 
     useEffect(() => {
@@ -245,18 +247,11 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     </span>
                                     <div>
                                         {[
-                                            {
-                                                day: c.dayMonFri,
-                                                hours: BUSINESS_INFO.hours
-                                                    .mondayFriday,
-                                                closed: false,
-                                            },
-                                            {
-                                                day: c.daySat,
-                                                hours: BUSINESS_INFO.hours
-                                                    .saturday,
-                                                closed: false,
-                                            },
+                                            ...openingHours.map((line) => ({
+                                                day: line.label,
+                                                hours: line.value,
+                                                closed: !!line.closed,
+                                            })),
                                             {
                                                 day: c.daySun,
                                                 hours: T.footer.sunday,

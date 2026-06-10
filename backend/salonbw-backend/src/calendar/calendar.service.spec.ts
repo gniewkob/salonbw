@@ -320,7 +320,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(new Date(friday[0].time).getHours()).toBe(9);
     });
 
-    it('intersects employee timetable with salon hours', async () => {
+    it('employee timetable fully defines bookable hours (owner = salon)', async () => {
         const svc = buildHarness({
             branch: branchMonSat,
             timetable: {
@@ -344,5 +344,103 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
             15 * 60,
         );
+    });
+
+    it('a scheduled Sunday is bookable even though branch hours say closed', async () => {
+        const svc = buildHarness({
+            branch: branchMonSat,
+            timetable: {
+                id: 5,
+                slots: [
+                    {
+                        // Sunday = ISO index 6; owner decided to work 10-14
+                        dayOfWeek: 6,
+                        startTime: '10:00',
+                        endTime: '14:00',
+                        isBreak: false,
+                    },
+                ],
+            } as unknown as Timetable,
+        });
+        // 2026-06-14 is a Sunday
+        const slots = await svc.getAvailableSlots(1, '2026-06-14');
+        expect(slots.length).toBeGreaterThan(0);
+        expect(new Date(slots[0].time).getHours()).toBe(10);
+    });
+});
+
+describe('CalendarService public opening hours', () => {
+    function buildHarness(options: {
+        timetables: Array<Partial<Timetable>>;
+        branch?: Partial<Branch> | null;
+    }) {
+        const timetableRepository = {
+            createQueryBuilder: jest.fn(() => ({
+                leftJoinAndSelect: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue(options.timetables),
+                getOne: jest.fn().mockResolvedValue(null),
+            })),
+        } as unknown as Repository<Timetable>;
+        const branchRepository = {
+            findOne: jest
+                .fn()
+                .mockResolvedValue(
+                    options.branch === undefined || options.branch === null
+                        ? null
+                        : (options.branch as Branch),
+                ),
+        } as unknown as Repository<Branch>;
+
+        return new CalendarService(
+            {} as Repository<TimeBlock>,
+            {} as Repository<Appointment>,
+            {} as Repository<User>,
+            {} as Repository<Service>,
+            {} as Repository<EmployeeService>,
+            branchRepository,
+            timetableRepository,
+            {} as Repository<TimetableException>,
+        );
+    }
+
+    it('derives weekly hours from active timetables (union, breaks excluded)', async () => {
+        const svc = buildHarness({
+            timetables: [
+                {
+                    id: 1,
+                    slots: [
+                        { dayOfWeek: 0, startTime: '10:00', endTime: '14:00', isBreak: false },
+                        { dayOfWeek: 0, startTime: '13:00', endTime: '18:00', isBreak: false },
+                        { dayOfWeek: 0, startTime: '12:00', endTime: '12:30', isBreak: true },
+                        { dayOfWeek: 5, startTime: '09:00', endTime: '15:00', isBreak: false },
+                    ],
+                } as unknown as Timetable,
+            ],
+        });
+        const result = await svc.getOpeningHours();
+        expect(result.source).toBe('timetables');
+        // Monday: two overlapping work ranges merged 10-18; break ignored
+        expect(result.hours.mon).toEqual([{ open: '10:00', close: '18:00' }]);
+        expect(result.hours.sat).toEqual([{ open: '09:00', close: '15:00' }]);
+        expect(result.hours.sun).toEqual([]);
+    });
+
+    it('falls back to branch hours when no timetable has slots', async () => {
+        const svc = buildHarness({
+            timetables: [],
+            branch: {
+                workingHours: {
+                    mon: { open: '10:00', close: '19:00' },
+                    sun: null,
+                },
+            } as unknown as Branch,
+        });
+        const result = await svc.getOpeningHours();
+        expect(result.source).toBe('branch');
+        expect(result.hours.mon).toEqual([{ open: '10:00', close: '19:00' }]);
+        expect(result.hours.sun).toEqual([]);
     });
 });

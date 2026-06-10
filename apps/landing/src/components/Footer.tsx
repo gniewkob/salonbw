@@ -4,10 +4,12 @@ import Image from 'next/image';
 import type { Route } from 'next';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useOpeningHours } from '@/hooks/useOpeningHours';
 import BookingModal from '@/components/BookingModal';
 
 export default function Footer() {
     const { T } = useLanguage();
+    const { lines: openingHours } = useOpeningHours();
     const [bookingOpen, setBookingOpen] = useState(false);
 
     const navLinks = [
@@ -70,8 +72,9 @@ export default function Footer() {
                         <div>
                             <p className="text-xs uppercase mb-4" style={{ color: 'var(--brand-silver)', letterSpacing: '0.18em' }}>{T.footer.hours}</p>
                             <div className="space-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                <p>{T.footer.monFri} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.mondayFriday}</span></p>
-                                <p>{T.footer.sat} <span style={{ color: 'rgba(255,255,255,0.85)' }}>{BUSINESS_INFO.hours.saturday}</span></p>
+                                {openingHours.map((line) => (
+                                    <p key={line.label}>{line.label} <span style={{ color: line.closed ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.85)' }}>{line.value}</span></p>
+                                ))}
                                 <p>{T.footer.sun} <span style={{ color: 'rgba(255,255,255,0.55)' }}>{T.footer.sunday}</span></p>
                             </div>
                         </div>

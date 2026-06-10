@@ -155,6 +155,21 @@ export class CalendarController {
         return { success: true };
     }
 
+    // Public on purpose (no auth guard): weekly opening hours derived
+    // from employee timetables (owner decision: the employee's calendar
+    // IS the salon's calendar). No employee data in the response.
+    @Get('opening-hours')
+    @ApiOperation({
+        summary: 'Weekly opening hours (public)',
+        description:
+            'Derived from active employee timetables (union), falling back ' +
+            'to branch working hours. Keys mon..sun, ranges {open, close}.',
+    })
+    @ApiResponse({ status: 200, description: '{ source, hours }' })
+    async getOpeningHours() {
+        return this.calendarService.getOpeningHours();
+    }
+
     // Public on purpose (no auth guard): returns a single timestamp or
     // null, nothing else — feeds the landing-page "nearest free slot"
     // teaser. Rate-limited by the global ThrottlerGuard.

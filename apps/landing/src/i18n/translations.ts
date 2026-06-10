@@ -218,6 +218,8 @@ const t = {
         hours: {
             mondayFriday: 'Pn–Pt',
             saturday: 'Sob',
+            closed: 'Zamknięte',
+            dayShort: ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'],
         },
         bookingCta: {
             eyebrow: 'Umów się już dziś',
@@ -537,6 +539,8 @@ const t = {
         },
         hours: {
             mondayFriday: 'Mon–Fri',
+            closed: 'Closed',
+            dayShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             saturday: 'Sat',
         },
         bookingCta: {
@@ -856,6 +860,8 @@ const t = {
         },
         hours: {
             mondayFriday: 'Mo–Fr',
+            closed: 'Geschlossen',
+            dayShort: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
             saturday: 'Sa',
         },
         bookingCta: {

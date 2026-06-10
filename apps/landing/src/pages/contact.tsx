@@ -6,6 +6,7 @@ import Script from 'next/script';
 import PublicLayout from '@/components/PublicLayout';
 import SectionHeader from '@/components/SectionHeader';
 import MapFacade from '@/components/MapFacade';
+import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { jsonLd, absUrl } from '@/utils/seo';
@@ -13,6 +14,7 @@ import { jsonLd, absUrl } from '@/utils/seo';
 export default function ContactPage() {
     const [bookingOpen, setBookingOpen] = useState(false);
     const { T } = useLanguage();
+    const { lines: openingHours } = useOpeningHours();
     const c = T.contact;
 
     return (
@@ -191,16 +193,11 @@ export default function ContactPage() {
                                     {c.hoursTitle}
                                 </span>
                                 {[
-                                    {
-                                        day: c.dayMonFri,
-                                        hours: BUSINESS_INFO.hours.mondayFriday,
-                                        closed: false,
-                                    },
-                                    {
-                                        day: c.daySat,
-                                        hours: BUSINESS_INFO.hours.saturday,
-                                        closed: false,
-                                    },
+                                    ...openingHours.map((line) => ({
+                                        day: line.label,
+                                        hours: line.value,
+                                        closed: !!line.closed,
+                                    })),
                                     {
                                         day: c.daySun,
                                         hours: T.footer.sunday,

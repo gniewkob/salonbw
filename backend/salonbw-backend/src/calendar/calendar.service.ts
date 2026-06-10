@@ -489,25 +489,20 @@ export class CalendarService {
             time: string;
         }> = [];
 
-        // Salon closed that day (e.g. Sunday) — no slots for anyone.
-        if (branchRanges.length === 0) {
-            return slots;
-        }
-
         for (const emp of candidateEmployees) {
             if (!emp) continue;
 
-            // Employee timetable (weekly slots + per-date exceptions)
-            // narrows the salon hours; an employee without a timetable
-            // falls back to full salon hours.
+            // Owner decision (2026-06-10): the employee's calendar IS the
+            // salon's calendar. A timetable, when present, fully defines
+            // bookable hours (so a scheduled Sunday is bookable even though
+            // branch hours say closed). Branch hours apply only to
+            // employees without a timetable.
             const employeeRanges = await this.getEmployeeDayRanges(
                 emp.id,
                 dayStart,
             );
             const workRanges =
-                employeeRanges === null
-                    ? branchRanges
-                    : this.intersectMinuteRanges(branchRanges, employeeRanges);
+                employeeRanges === null ? branchRanges : employeeRanges;
             if (workRanges.length === 0) continue;
 
             const [appointments, timeBlocks] = await Promise.all([
@@ -700,19 +695,129 @@ export class CalendarService {
         return ranges;
     }
 
-    private intersectMinuteRanges(
-        a: Array<{ start: number; end: number }>,
-        b: Array<{ start: number; end: number }>,
+    /** Union of possibly-overlapping ranges, merged and sorted. */
+    private mergeMinuteRanges(
+        ranges: Array<{ start: number; end: number }>,
     ): Array<{ start: number; end: number }> {
+        const sorted = [...ranges].sort((a, b) => a.start - b.start);
         const out: Array<{ start: number; end: number }> = [];
-        for (const x of a) {
-            for (const y of b) {
-                const start = Math.max(x.start, y.start);
-                const end = Math.min(x.end, y.end);
-                if (end > start) out.push({ start, end });
+        for (const r of sorted) {
+            const last = out[out.length - 1];
+            if (last && r.start <= last.end) {
+                last.end = Math.max(last.end, r.end);
+            } else {
+                out.push({ ...r });
             }
         }
-        return out.sort((p, q) => p.start - q.start);
+        return out;
+    }
+
+    private minutesToTime(minutes: number): string {
+        const h = Math.floor(minutes / 60)
+            .toString()
+            .padStart(2, '0');
+        const m = (minutes % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+    }
+
+    private openingHoursCache: {
+        value: {
+            source: 'timetables' | 'branch' | 'default';
+            hours: Record<string, Array<{ open: string; close: string }>>;
+        };
+        expiresAt: number;
+    } | null = null;
+
+    /**
+     * Public weekly opening hours. Owner decision (2026-06-10): the salon's
+     * hours follow the employees' timetables — the owner-employee manages
+     * her own calendar and that IS when the salon is open. Union across all
+     * active timetables; branch.workingHours only when no timetable exists;
+     * hardcoded default as the last resort. No employee data in the output.
+     */
+    async getOpeningHours(): Promise<{
+        source: 'timetables' | 'branch' | 'default';
+        hours: Record<string, Array<{ open: string; close: string }>>;
+    }> {
+        const now = Date.now();
+        if (this.openingHoursCache && this.openingHoursCache.expiresAt > now) {
+            return this.openingHoursCache.value;
+        }
+
+        const today = format(new Date(now), 'yyyy-MM-dd');
+        const timetables = await this.timetableRepository
+            .createQueryBuilder('t')
+            .leftJoinAndSelect('t.slots', 'slot')
+            .where('t.isActive = true')
+            .andWhere('t.validFrom <= :date', { date: today })
+            .andWhere('(t.validTo IS NULL OR t.validTo >= :date)', {
+                date: today,
+            })
+            .getMany();
+
+        let source: 'timetables' | 'branch' | 'default' = 'default';
+        const hours: Record<
+            string,
+            Array<{ open: string; close: string }>
+        > = {};
+
+        const hasTimetableSlots = timetables.some((t) =>
+            (t.slots ?? []).some((sl) => !sl.isBreak),
+        );
+
+        if (hasTimetableSlots) {
+            source = 'timetables';
+            for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+                const key = CalendarService.DAY_KEYS[dayIdx];
+                const dayRanges = timetables.flatMap((t) =>
+                    this.toMinuteRanges(
+                        (t.slots ?? [])
+                            .filter(
+                                (sl) =>
+                                    sl.dayOfWeek === (dayIdx as DayOfWeek) &&
+                                    !sl.isBreak,
+                            )
+                            .map((sl) => ({
+                                start: sl.startTime,
+                                end: sl.endTime,
+                            })),
+                    ),
+                );
+                hours[key] = this.mergeMinuteRanges(dayRanges).map((r) => ({
+                    open: this.minutesToTime(r.start),
+                    close: this.minutesToTime(r.end),
+                }));
+            }
+        } else {
+            const branch = await this.branchRepository.findOne({
+                where: { status: BranchStatus.Active },
+                order: { id: 'ASC' },
+            });
+            if (branch?.workingHours) {
+                source = 'branch';
+                for (const key of CalendarService.DAY_KEYS) {
+                    const value = branch.workingHours[key];
+                    hours[key] = value
+                        ? this.toMinuteRanges(
+                              Array.isArray(value) ? value : [value],
+                          ).map((r) => ({
+                              open: this.minutesToTime(r.start),
+                              close: this.minutesToTime(r.end),
+                          }))
+                        : [];
+                }
+            } else {
+                for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+                    const key = CalendarService.DAY_KEYS[dayIdx];
+                    hours[key] =
+                        dayIdx === 6 ? [] : [{ open: '09:00', close: '19:00' }];
+                }
+            }
+        }
+
+        const value = { source, hours };
+        this.openingHoursCache = { value, expiresAt: now + 300_000 };
+        return value;
     }
 
     private subtractMinuteRange(
