@@ -11,6 +11,7 @@ import RouteProgress from '@/components/RouteProgress';
 import { playfair, openSans } from '@/lib/fonts';
 import { initSentry } from '@/sentry.client';
 import {
+    isAnalyticsConfigured,
     isAnalyticsEnabled,
     pageview,
     getGAId,
@@ -18,6 +19,8 @@ import {
     trackEvent,
 } from '@/utils/analytics';
 import BookNowFab from '@/components/BookNowFab';
+import CookieConsent from '@/components/CookieConsent';
+import { hasAnalyticsConsent } from '@/utils/consent';
 import { logClientError } from '@/utils/logClient';
 
 // Initialize Sentry once (no-op if DSN is not set)
@@ -25,6 +28,12 @@ initSentry();
 
 export default function MyApp({ Component, pageProps }: AppProps) {
     const router = useRouter();
+    // Consent Mode v2, basic mode: gtag.js is only ever loaded after the
+    // visitor grants analytics consent. null until read on the client.
+    const [analyticsConsent, setAnalyticsConsent] = useState(false);
+    useEffect(() => {
+        setAnalyticsConsent(hasAnalyticsConsent());
+    }, []);
     const [queryClient] = useState(
         () =>
             new QueryClient({
@@ -45,7 +54,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         return () => {
             router.events.off('routeChangeComplete', handleRouteChange);
         };
-    }, [router.events]);
+        // analyticsConsent: re-attach once the visitor accepts the banner
+    }, [router.events, analyticsConsent]);
 
     // Scroll-depth analytics (25/50/75/100) per route — run only in browser
     useEffect(() => {
@@ -55,8 +65,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         window.addEventListener('scroll', handler, { passive: true });
         handler();
         return cleanup;
-        // re-arm on route change
-    }, [router.asPath]);
+        // re-arm on route change or when consent is granted mid-visit
+    }, [router.asPath, analyticsConsent]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -99,9 +109,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <ToastProvider>
-                    {isAnalyticsEnabled() && (
+                    {isAnalyticsConfigured() && analyticsConsent && (
                         <>
-                            {/* GA4 loader */}
+                            {/* GA4 loader — mounts only after consent */}
                             <Script
                                 src={`https://www.googletagmanager.com/gtag/js?id=${getGAId()}`}
                                 strategy="afterInteractive"
@@ -110,11 +120,20 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                                 {`
                                     window.dataLayer = window.dataLayer || [];
                                     function gtag(){dataLayer.push(arguments);}
+                                    gtag('consent', 'default', {
+                                        ad_storage: 'denied',
+                                        ad_user_data: 'denied',
+                                        ad_personalization: 'denied',
+                                        analytics_storage: 'granted'
+                                    });
                                     gtag('js', new Date());
                                     gtag('config', '${getGAId()}', { send_page_view: false, anonymize_ip: true });
                                 `}
                             </Script>
                         </>
+                    )}
+                    {isAnalyticsConfigured() && (
+                        <CookieConsent onDecision={setAnalyticsConsent} />
                     )}
                     <RouteProgress />
                     <BookNowFab />

@@ -1,12 +1,25 @@
 import type { NextWebVitalsMetric } from 'next/app';
 import * as Sentry from '@sentry/nextjs';
+import { hasAnalyticsConsent } from '@/utils/consent';
 
-export function isAnalyticsEnabled(): boolean {
+/** GA env configuration alone — used to decide whether to ASK for consent.
+ * No `typeof window` guard: NEXT_PUBLIC_* values are inlined identically
+ * on server and client, and gating render on `window` causes an SSR/CSR
+ * hydration mismatch that drops the cookie banner subtree. */
+export function isAnalyticsConfigured(): boolean {
     return (
-        typeof window !== 'undefined' &&
         process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true' &&
         !!process.env.NEXT_PUBLIC_GA_ID
     );
+}
+
+/**
+ * True when GA is configured AND the visitor granted cookie consent
+ * (Consent Mode v2, basic mode). Every tracking helper checks this,
+ * so a declined banner means zero GA traffic.
+ */
+export function isAnalyticsEnabled(): boolean {
+    return isAnalyticsConfigured() && hasAnalyticsConsent();
 }
 
 export function getGAId(): string {

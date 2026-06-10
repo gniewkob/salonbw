@@ -13,6 +13,7 @@ describe('Analytics events on services', () => {
         // Enable analytics for client code
         process.env.NEXT_PUBLIC_ENABLE_ANALYTICS = 'true';
         process.env.NEXT_PUBLIC_GA_ID = 'G-TEST123';
+        window.localStorage.setItem('sbw-consent', JSON.stringify({ analytics: 'granted', decidedAt: new Date().toISOString() }));
         // @ts-expect-error jsdom window doesn't define gtag
         window.gtag = jest.fn();
         mockedUseAuth.mockReturnValue(createAuthValue());

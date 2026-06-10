@@ -317,6 +317,13 @@ const t = {
             openInMaps: 'Otwórz w Google Maps',
             formLink: 'Formularz kontaktowy',
         },
+        cookies: {
+            ariaLabel: 'Zgoda na pliki cookie',
+            message: 'Używamy plików cookie wyłącznie do anonimowych statystyk odwiedzin (Google Analytics). Bez Twojej zgody nie zapisujemy żadnych danych.',
+            policyLink: 'Polityka prywatności',
+            accept: 'Akceptuję',
+            decline: 'Tylko niezbędne',
+        },
     },
     en: {
         nav: {
@@ -627,6 +634,13 @@ const t = {
             showMap: 'Show map',
             openInMaps: 'Open in Google Maps',
             formLink: 'Contact form',
+        },
+        cookies: {
+            ariaLabel: 'Cookie consent',
+            message: 'We use cookies only for anonymous visit statistics (Google Analytics). Nothing is stored without your consent.',
+            policyLink: 'Privacy policy',
+            accept: 'Accept',
+            decline: 'Essential only',
         },
     },
     de: {
@@ -940,6 +954,13 @@ const t = {
             showMap: 'Karte anzeigen',
             openInMaps: 'In Google Maps öffnen',
             formLink: 'Kontaktformular',
+        },
+        cookies: {
+            ariaLabel: 'Cookie-Einwilligung',
+            message: 'Wir verwenden Cookies nur für anonyme Besuchsstatistiken (Google Analytics). Ohne Ihre Einwilligung wird nichts gespeichert.',
+            policyLink: 'Datenschutzerklärung',
+            accept: 'Akzeptieren',
+            decline: 'Nur notwendige',
         },
     },
 } as const;
