@@ -1434,12 +1434,28 @@ jobs:
               with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
                   return resp.status
           ok = True
-          try:
-              status = get('/')
-              print('GET / =>', status)
-              ok = ok and (200 <= status < 400)
-          except Exception as e:
-              print('ERR /', e); ok = False
+          # Passenger returns transient 403/503 while the app warms up
+          # after restart — retry instead of failing the deploy on the
+          # first shot (same policy as the warm-up gate).
+          import time
+          status = None
+          for attempt in range(1, 13):
+              try:
+                  status = get('/')
+                  print(f'GET / => {status} (attempt {attempt})')
+                  if 200 <= status < 400:
+                      break
+              except urllib.error.HTTPError as e:
+                  print(f'GET / => HTTP {e.code} (attempt {attempt})')
+                  if e.code not in (403, 503):
+                      status = e.code
+                      break
+                  status = e.code
+              except Exception as e:
+                  print(f'GET / transient error (attempt {attempt}):', e)
+                  status = None
+              time.sleep(10)
+          ok = ok and status is not None and 200 <= status < 400
           if build_id:
               try:
                   status = get(f"/_next/static/{build_id}/_buildManifest.js")
