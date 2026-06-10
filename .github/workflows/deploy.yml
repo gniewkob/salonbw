@@ -531,10 +531,14 @@ jobs:
              cp "$TARGET_APP/app.cjs" "$BUNDLE_DIR/"
           fi
 
-          # FIX STATIC ASSETS (Passenger 404s)
-          echo "Fixing Static Assets (Hard Copy)..."
-          mkdir -p "$BUNDLE_DIR/public/_next"
-          cp -r "$BUNDLE_DIR/.next/static" "$BUNDLE_DIR/public/_next/"
+          # NOTE: historically .next/static was hard-copied into public/_next
+          # so MyDevil's nginx served it directly (fix for Passenger 404s from
+          # before app.cjs created the static symlink). That bypass stripped
+          # Next's `Cache-Control: immutable` — every fingerprinted JS/CSS/font
+          # was re-downloaded on each visit (TTL 0). Node's standalone server
+          # handles /_next/static itself (verified: missing-file requests fall
+          # through nginx to Node), so the copy is gone and correct caching is
+          # back.
 
           # Copy source files (middleware needs src structure?)
           mkdir -p "$BUNDLE_DIR/src"
@@ -638,10 +642,14 @@ jobs:
              cp "$TARGET_APP/app.cjs" "$BUNDLE_DIR/"
           fi
 
-          # FIX STATIC ASSETS (Passenger 404s)
-          echo "Fixing Static Assets (Hard Copy)..."
-          mkdir -p "$BUNDLE_DIR/public/_next"
-          cp -r "$BUNDLE_DIR/.next/static" "$BUNDLE_DIR/public/_next/"
+          # NOTE: historically .next/static was hard-copied into public/_next
+          # so MyDevil's nginx served it directly (fix for Passenger 404s from
+          # before app.cjs created the static symlink). That bypass stripped
+          # Next's `Cache-Control: immutable` — every fingerprinted JS/CSS/font
+          # was re-downloaded on each visit (TTL 0). Node's standalone server
+          # handles /_next/static itself (verified: missing-file requests fall
+          # through nginx to Node), so the copy is gone and correct caching is
+          # back.
 
           # Copy source files (middleware needs src structure?)
           mkdir -p "$BUNDLE_DIR/src"
