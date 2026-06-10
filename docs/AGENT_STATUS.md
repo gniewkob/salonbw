@@ -1,8 +1,20 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-06-09 (WAI-ARIA accessibility sprint complete)_
+_Last updated: 2026-06-10 (P2 contrast a11y closure + full production deploy)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-06-10 — Contrast a11y closure + production deploy (panel + landing + API)
+
+- Closed all remaining P2 a11y backlog items (toast aria-live, focus-ring audit, landing alt audit, Lighthouse contrast audit) — details in IMPLEMENTATION_BACKLOG_STATUS.md
+- Lighthouse a11y 100 on landing `/`, `/services`, `/contact`, `/gallery`, `/services/balayage` and panel `/auth/login`
+- Dev-experience fix: panel CSP adds `'unsafe-eval'` only under `NODE_ENV=development` (next dev needs eval; prod CSP unchanged — verified post-deploy: prod header has no unsafe-eval)
+- Production rollout (all verified):
+  - panel + landing: push deploy `27266421553` (success) at `21efc2459`
+  - API: dispatch deploy `27266949144` (success) at `3a6ad7d77` — online_pending migration ran, `/calendar/available-slots` live (401 for unauthenticated, not 404), formula service fix live
+  - `https://api.salon-bw.pl/healthz` → ok (database/smtp/instagram)
+- Repo hygiene: merged remote branch `claude/design-salon-landing-page-thY4G` deleted; 6 stale stashes cleared
+- Next candidates: authenticated-panel Lighthouse audit, backend bulk-delete endpoints, dead CSS audit (`default.css`/`new-ui.css`), booking flow end-to-end smoke on prod (online_pending now live)
 
 ## 2026-06-09 — WAI-ARIA Accessibility Sprint
 

@@ -82,18 +82,15 @@
 - Branch: master (latest commit `21efc2459`)
 - Panel production: `21efc2459` — DEPLOYED 2026-06-10 (push-triggered run `27266421553`, success; verified: strict CSP without unsafe-eval, login 200)
 - Landing production: `21efc2459` — DEPLOYED 2026-06-10 (same run; verified: silver-ink CSS + absolute canonical live)
-- API production: `e56e39ff` | 2026-03-24 — **STALE**: missing online_pending migration, available-slots endpoint, formula fix (push didn't touch backend, so API was not deployed)
+- API production: `3a6ad7d77` — DEPLOYED 2026-06-10 (dispatch run `27266949144`, success; migrations ran; verified: healthz ok, /calendar/available-slots returns 401 not 404)
 
 ---
 
 ## Backlog — open findings / next tasks
 
 ### P1 — Blockers
-- **API deploy needed** — production API stuck at 2026-03-24; new features won't work until deployed:
-  - Migration `1760960000000-AddOnlinePendingAppointmentStatuses` must run
-  - `GET /calendar/available-slots` endpoint needed for booking wizard
-  - Formula service fix (admin 403 / confirmed 400)
-  - Deploy command: MyDevil → `passenger-config restart-app`
+- _(none open)_
+- ~~API deploy needed~~ — DONE 2026-06-10: dispatch run `27266949144` (success) shipped API at `3a6ad7d77` with online_pending migration, available-slots endpoint, formula fix; healthz verified ok
 - ~~Panel redeploy needed~~ — DONE 2026-06-10: push deploy `27266421553` shipped panel + landing at `21efc2459`
 
 ### P2 — Accessibility (remaining — all other a11y DONE in full-session sprint)
