@@ -413,9 +413,12 @@ export class SeedBooksyCatalogAndHours1760980000000
         for (let i = 0; i < CATEGORIES.length; i++) {
             const name = CATEGORIES[i];
             await queryRunner.query(
+                // Casts required: a bare $1 in the SELECT list + in WHERE makes
+                // Postgres deduce inconsistent types ("inconsistent types
+                // deduced for parameter $1"); pin them explicitly.
                 `INSERT INTO "service_categories" ("name", "sortOrder", "isActive", "createdAt", "updatedAt")
-                 SELECT $1, $2, true, now(), now()
-                 WHERE NOT EXISTS (SELECT 1 FROM "service_categories" WHERE "name" = $1)`,
+                 SELECT $1::text, $2::int, true, now(), now()
+                 WHERE NOT EXISTS (SELECT 1 FROM "service_categories" WHERE "name" = $1::text)`,
                 [name, i],
             );
             const row: Array<{ id: number }> = await queryRunner.query(
@@ -433,8 +436,8 @@ export class SeedBooksyCatalogAndHours1760980000000
                    ("name", "description", "duration", "price", "priceType",
                     "category", "categoryId", "isActive", "onlineBooking", "sortOrder",
                     "createdAt", "updatedAt")
-                 SELECT $1, '', $2, $3, 'fixed', $4, $5, true, true, $6, now(), now()
-                 WHERE NOT EXISTS (SELECT 1 FROM "services" WHERE "name" = $1)`,
+                 SELECT $1::text, '', $2::int, $3::numeric, 'fixed', $4::text, $5::int, true, true, $6::int, now(), now()
+                 WHERE NOT EXISTS (SELECT 1 FROM "services" WHERE "name" = $1::text)`,
                 [s.name, s.dur, s.price, s.cat, categoryId[s.cat], i],
             );
         }
@@ -454,12 +457,12 @@ export class SeedBooksyCatalogAndHours1760980000000
         for (const s of SERVICES) {
             await queryRunner.query(
                 `INSERT INTO "employee_services" ("employeeId", "serviceId", "isActive", "createdAt")
-                 SELECT $1, sv."id", true, now()
+                 SELECT $1::int, sv."id", true, now()
                  FROM "services" sv
-                 WHERE sv."name" = $2
+                 WHERE sv."name" = $2::text
                    AND NOT EXISTS (
                      SELECT 1 FROM "employee_services" es
-                     WHERE es."employeeId" = $1 AND es."serviceId" = sv."id"
+                     WHERE es."employeeId" = $1::int AND es."serviceId" = sv."id"
                        AND es."serviceVariantId" IS NULL
                    )`,
                 [employeeId, s.name],
