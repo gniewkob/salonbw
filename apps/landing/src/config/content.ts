@@ -21,9 +21,13 @@ export const BUSINESS_INFO = {
     phone: '+48 723 588 868',
     email: 'kontakt@salon-bw.pl',
   },
+  // Static fallback only — the live per-day schedule (which follows the
+  // owner-employee's timetable, incl. Wed closed) comes from
+  // /calendar/opening-hours via useOpeningHours. mondayFriday is the weekday
+  // open-envelope (earliest open 09:00 … latest close 19:00); Saturday is exact.
   hours: {
-    mondayFriday: '10:00 - 19:00',
-    saturday: '9:00 - 15:00',
+    mondayFriday: '09:00 - 19:00',
+    saturday: '09:00 - 13:00',
     sunday: 'Zamknięte',
   },
   social: {

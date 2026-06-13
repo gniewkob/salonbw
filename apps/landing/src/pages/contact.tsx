@@ -76,24 +76,27 @@ export default function ContactPage() {
                             latitude: BUSINESS_INFO.coordinates.lat,
                             longitude: BUSINESS_INFO.coordinates.lng,
                         },
+                        // Real schedule (follows the owner-employee's
+                        // timetable): Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13,
+                        // Wed+Sun closed.
                         openingHoursSpecification: [
                             {
                                 '@type': 'OpeningHoursSpecification',
-                                dayOfWeek: [
-                                    'Monday',
-                                    'Tuesday',
-                                    'Wednesday',
-                                    'Thursday',
-                                    'Friday',
-                                ],
-                                opens: '10:00',
+                                dayOfWeek: ['Monday', 'Friday'],
+                                opens: '09:00',
+                                closes: '16:00',
+                            },
+                            {
+                                '@type': 'OpeningHoursSpecification',
+                                dayOfWeek: ['Tuesday', 'Thursday'],
+                                opens: '12:00',
                                 closes: '19:00',
                             },
                             {
                                 '@type': 'OpeningHoursSpecification',
                                 dayOfWeek: 'Saturday',
                                 opens: '09:00',
-                                closes: '15:00',
+                                closes: '13:00',
                             },
                         ],
                     },
