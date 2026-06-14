@@ -7840,6 +7840,42 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     margin-bottom: 0.5rem;
 }
 
+/* Category filter chips (booking service step) */
+.booking-cat-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+.booking-cat-chip {
+    min-height: 36px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #1a1a1a;
+    background: #fff;
+    border: 1px solid #d3d6da;
+    border-radius: 2px;
+    cursor: pointer;
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+.booking-cat-chip:hover {
+    border-color: var(--salon-accent, #b4b8be);
+}
+.booking-cat-chip:focus-visible {
+    outline: 2px solid var(--salon-accent, #b4b8be);
+    outline-offset: 2px;
+}
+.booking-cat-chip.is-active {
+    background: var(--salon-accent, #b4b8be);
+    border-color: var(--salon-accent, #b4b8be);
+    color: #0d0d0d;
+}
+
 /* Success check circle */
 .booking-success-icon {
     width: 56px;

@@ -363,6 +363,7 @@ function ServiceStep({
     notice: string;
     onSelect: (svc: OnlineService) => void;
 }) {
+    const [activeCat, setActiveCat] = useState<string>('all');
     if (loading) {
         return (
             <div
@@ -404,7 +405,15 @@ function ServiceStep({
         );
     }
 
-    const byCategory = services.reduce<Record<string, OnlineService[]>>(
+    const categoryNames = Array.from(
+        new Set(services.map((s) => s.category ?? 'Inne')),
+    );
+    const hasFilter = categoryNames.length > 1;
+    const visible =
+        hasFilter && activeCat !== 'all'
+            ? services.filter((s) => (s.category ?? 'Inne') === activeCat)
+            : services;
+    const byCategory = visible.reduce<Record<string, OnlineService[]>>(
         (acc, svc) => {
             const cat = svc.category ?? 'Inne';
             if (!acc[cat]) acc[cat] = [];
@@ -419,6 +428,33 @@ function ServiceStep({
             {notice && (
                 <div className="booking-notice" role="status">
                     {notice}
+                </div>
+            )}
+            {hasFilter && (
+                <div
+                    className="booking-cat-filter"
+                    role="group"
+                    aria-label="Filtr kategorii"
+                >
+                    <button
+                        type="button"
+                        className={`booking-cat-chip${activeCat === 'all' ? ' is-active' : ''}`}
+                        aria-pressed={activeCat === 'all'}
+                        onClick={() => setActiveCat('all')}
+                    >
+                        Wszystkie
+                    </button>
+                    {categoryNames.map((cat) => (
+                        <button
+                            key={cat}
+                            type="button"
+                            className={`booking-cat-chip${activeCat === cat ? ' is-active' : ''}`}
+                            aria-pressed={activeCat === cat}
+                            onClick={() => setActiveCat(cat)}
+                        >
+                            {cat}
+                        </button>
+                    ))}
                 </div>
             )}
             {Object.entries(byCategory).map(([cat, svcs]) => (

@@ -103,6 +103,12 @@ function resolveServiceRoute(name: string): Route | undefined {
 export default function ServicesPage({ categories }: ServicesPageProps) {
     const { T } = useLanguage();
     const s = T.services;
+    const [activeCategory, setActiveCategory] = useState<string>('all');
+    const hasCategoryFilter = categories.length > 1;
+    const visibleCategories =
+        hasCategoryFilter && activeCategory !== 'all'
+            ? categories.filter((c) => c.name === activeCategory)
+            : categories;
     const items = useMemo(
         () =>
             categories.flatMap((cat) =>
@@ -216,7 +222,34 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
 
                 {/* Service categories */}
                 <div className="svcs-body">
-                    {categories.map((cat) => {
+                    {hasCategoryFilter && (
+                        <div
+                            className="svcs-cat-filter"
+                            role="group"
+                            aria-label="Filtr kategorii"
+                        >
+                            <button
+                                type="button"
+                                className={`svcs-cat-chip${activeCategory === 'all' ? ' is-active' : ''}`}
+                                aria-pressed={activeCategory === 'all'}
+                                onClick={() => setActiveCategory('all')}
+                            >
+                                Wszystkie
+                            </button>
+                            {categories.map((cat) => (
+                                <button
+                                    key={cat.id ?? cat.name}
+                                    type="button"
+                                    className={`svcs-cat-chip${activeCategory === cat.name ? ' is-active' : ''}`}
+                                    aria-pressed={activeCategory === cat.name}
+                                    onClick={() => setActiveCategory(cat.name)}
+                                >
+                                    {cat.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {visibleCategories.map((cat) => {
                         const groups = groupByConcept(cat.services, s.from);
                         return (
                         <div key={cat.id ?? cat.name} className="svcs-category">

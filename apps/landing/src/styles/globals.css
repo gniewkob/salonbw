@@ -673,6 +673,43 @@ html {
     margin: 0 auto;
     padding: 4rem 1.5rem 2rem;
 }
+.svcs-cat-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+}
+.svcs-cat-chip {
+    min-height: 36px;
+    padding: 0.45rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: var(--font-open-sans), sans-serif;
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    cursor: pointer;
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+.svcs-cat-chip:hover {
+    border-color: var(--brand-silver);
+    color: #fff;
+}
+.svcs-cat-chip:focus-visible {
+    outline: 2px solid var(--brand-silver);
+    outline-offset: 2px;
+}
+.svcs-cat-chip.is-active {
+    background: var(--brand-silver);
+    border-color: var(--brand-silver);
+    color: #0d0d0d;
+}
 .svcs-category {
     margin-bottom: 4rem;
 }
