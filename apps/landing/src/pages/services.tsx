@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
+import { SERVICE_FILTER } from '@/i18n/serviceDetail';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
@@ -101,8 +102,9 @@ function resolveServiceRoute(name: string): Route | undefined {
 }
 
 export default function ServicesPage({ categories }: ServicesPageProps) {
-    const { T } = useLanguage();
+    const { T, lang } = useLanguage();
     const s = T.services;
+    const filt = SERVICE_FILTER[lang];
     const [activeCategory, setActiveCategory] = useState<string>('all');
     const hasCategoryFilter = categories.length > 1;
     const visibleCategories =
@@ -226,7 +228,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <div
                             className="svcs-cat-filter"
                             role="group"
-                            aria-label="Filtr kategorii"
+                            aria-label={filt.group}
                         >
                             <button
                                 type="button"
@@ -234,7 +236,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 aria-pressed={activeCategory === 'all'}
                                 onClick={() => setActiveCategory('all')}
                             >
-                                Wszystkie
+                                {filt.all}
                             </button>
                             {categories.map((cat) => (
                                 <button

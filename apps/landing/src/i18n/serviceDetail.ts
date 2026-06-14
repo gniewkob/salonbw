@@ -35,6 +35,14 @@ export const OG_LOCALE: Record<Language, string> = {
     de: 'de_DE',
 };
 
+/** Labels for the /services category filter chips. */
+export const SERVICE_FILTER: Record<Language, { all: string; group: string }> =
+    {
+        pl: { all: 'Wszystkie', group: 'Filtr kategorii' },
+        en: { all: 'All', group: 'Category filter' },
+        de: { all: 'Alle', group: 'Kategoriefilter' },
+    };
+
 export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
     pl: {
         backToOffer: 'Pełna oferta i cennik',
