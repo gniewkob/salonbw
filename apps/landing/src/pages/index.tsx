@@ -10,7 +10,6 @@ import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import translations from '@/i18n/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
-import TrustStrip from '@/components/TrustStrip';
 import AboutSpread from '@/components/AboutSpread';
 import SalonGallery from '@/components/SalonGallery';
 import ServicesTeaser from '@/components/ServicesTeaser';
@@ -148,27 +147,24 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 {/* 1. Split hero */}
                 <SplitHero />
 
-                {/* 2. Social proof: stats + partner brands (single strip) */}
-                <TrustStrip />
-
-                {/* 3. Services */}
+                {/* 2. Services */}
                 <ServicesTeaser />
 
-                {/* 4. About — founder + 3 principles */}
+                {/* 3. About — short founder note */}
                 <div id="about" className="reveal-item">
                     <AboutSpread founder={founder} />
                 </div>
 
-                {/* 5. Gallery */}
+                {/* 4. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 6. Testimonials */}
+                {/* 5. Testimonials (client voice, paired with gallery) */}
                 <Testimonials />
 
-                {/* 7. Booking CTA */}
+                {/* 6. Booking CTA */}
                 <BookingCta />
 
-                {/* 8. Contact */}
+                {/* 7. Contact */}
                 <section
                     className="contact-section"
                     style={{ background: 'var(--brand-black)' }}

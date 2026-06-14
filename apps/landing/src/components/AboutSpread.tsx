@@ -1,24 +1,20 @@
 import Image from 'next/image';
 import { FOUNDER_MESSAGE } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Palette, Star, User, type LucideIcon } from 'lucide-react';
-
-const PRINCIPLE_ICONS: LucideIcon[] = [Palette, Star, User];
 
 type FounderData = { name: string; quote: string; photo?: string };
 
 export default function AboutSpread({ founder }: { founder?: FounderData }) {
     const { T } = useLanguage();
     const data = founder ?? (FOUNDER_MESSAGE as FounderData);
-    const principles = (T.values.items as unknown as { id: string; title: string; description: string }[]).slice(0, 3);
 
     return (
         <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <div className="max-w-5xl mx-auto">
 
-                    {/* Founder — quote + photo */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center mb-16 md:mb-20">
+                    {/* Founder — short note: quote + photo */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
                         <div>
                             <p
                                 className="text-xs uppercase mb-4"
@@ -119,37 +115,6 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* 3 Principles */}
-                    <div
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 md:pt-14"
-                        style={{ borderTop: '1px solid var(--brand-warm-border)' }}
-                    >
-                        {principles.map((p, idx) => {
-                            const Icon = PRINCIPLE_ICONS[idx]!;
-                            return (
-                                <div key={p.id} className="flex gap-4">
-                                    <div
-                                        className="shrink-0 w-9 h-9 flex items-center justify-center mt-1"
-                                        style={{ background: 'rgba(180,184,190,0.1)', borderRadius: '2px' }}
-                                    >
-                                        <Icon size={18} strokeWidth={1.5} style={{ color: '#b4b8be' }} />
-                                    </div>
-                                    <div>
-                                        <h3
-                                            className="font-semibold mb-2"
-                                            style={{ fontFamily: "var(--font-playfair), serif", color: '#0d0d0d', fontSize: '1rem' }}
-                                        >
-                                            {p.title}
-                                        </h3>
-                                        <p className="text-sm leading-relaxed" style={{ color: 'var(--brand-warm-soft)' }}>
-                                            {p.description.split('. ')[0]}.
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
                     </div>
                 </div>
             </div>
