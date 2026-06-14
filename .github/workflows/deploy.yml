@@ -1165,11 +1165,21 @@ jobs:
           set -euo pipefail
           REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
-          if command -v node22 >/dev/null 2>&1; then
-            node22 dist/src/migrate.js || node22 dist/migrate.js
+          if command -v node22 >/dev/null 2>&1; then NODE_BIN=node22; else NODE_BIN=node; fi
+          # Resolve the migrate entrypoint by FILE PRESENCE, not `A || B`.
+          # The old `node dist/src/migrate.js || node dist/migrate.js` ran the
+          # fallback whenever the primary EXITED NON-ZERO (i.e. a migration
+          # failure), and the stale fallback could exit 0 — masking the failure
+          # and reporting a green deploy with no data applied.
+          if [ -f dist/src/migrate.js ]; then
+            MIGRATE=dist/src/migrate.js
+          elif [ -f dist/migrate.js ]; then
+            MIGRATE=dist/migrate.js
           else
-            node dist/src/migrate.js || node dist/migrate.js
+            echo "migrate.js not found in dist/src or dist" >&2
+            exit 1
           fi
+          "$NODE_BIN" "$MIGRATE"
           REMOTE_CMDS
 
       - name: 🧪 Verify panel runtime bundle
