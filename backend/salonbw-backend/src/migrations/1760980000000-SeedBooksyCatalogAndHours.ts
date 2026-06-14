@@ -31,7 +31,11 @@ interface SeedService {
     price: number; // PLN
 }
 
-const CATEGORIES: Cat[] = [
+// Exported so the follow-up cleanup migration shares one source of truth for
+// the canonical Booksy catalog (it re-applies these values + hides everything
+// else from online booking). Adding `export` does not change this migration's
+// already-executed up().
+export const CATEGORIES: Cat[] = [
     'Fryzjerstwo',
     'Koloryzacja',
     'Pielęgnacja',
@@ -39,7 +43,7 @@ const CATEGORIES: Cat[] = [
 ];
 
 // Source: Booksy "USŁUGI" export. Duration in minutes, price in PLN (fixed).
-const SERVICES: SeedService[] = [
+export const SERVICES: SeedService[] = [
     // ---- Fryzjerstwo ----
     { name: 'Fryzura ślubna', cat: 'Fryzjerstwo', dur: 80, price: 280 },
     { name: 'Próbna fryzura ślubna', cat: 'Fryzjerstwo', dur: 60, price: 150 },
