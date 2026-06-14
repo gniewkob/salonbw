@@ -258,7 +258,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         ].map(({ day, hours, closed }) => (
                                             <div
                                                 key={day}
-                                                className="flex justify-between items-center py-2"
+                                                className="flex justify-between items-center py-1.5"
                                                 style={{
                                                     borderBottom:
                                                         '1px solid rgba(255,255,255,0.06)',
@@ -300,7 +300,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 </div>
                             </div>
 
-                            <div className="relative self-start">
+                            <div className="relative min-h-[380px]">
                                 <div
                                     className="absolute"
                                     style={{
@@ -311,7 +311,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         zIndex: 0,
                                     }}
                                 />
-                                <MapFacade height={380} grayscale={0.3} />
+                                <MapFacade height={380} grayscale={0.3} fill />
                             </div>
                         </div>
                     </div>

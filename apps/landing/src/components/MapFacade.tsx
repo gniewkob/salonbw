@@ -6,6 +6,9 @@ interface MapFacadeProps {
     height?: number;
     /** grayscale amount applied to the loaded map, brand rule: muted media */
     grayscale?: number;
+    /** Fill the parent's height (used to balance a tall sibling column);
+     *  `height` then acts as a minimum so the map never collapses. */
+    fill?: boolean;
 }
 
 /**
@@ -14,11 +17,18 @@ interface MapFacadeProps {
  * initial page light (Core Web Vitals) and avoids Google requests until
  * the visitor actually asks for the map.
  */
-export default function MapFacade({ height = 380, grayscale = 0.3 }: MapFacadeProps) {
+export default function MapFacade({
+    height = 380,
+    grayscale = 0.3,
+    fill = false,
+}: MapFacadeProps) {
     const [loaded, setLoaded] = useState(false);
     const { T } = useLanguage();
     const { lat, lng } = BUSINESS_INFO.coordinates;
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    const sizeStyle = fill
+        ? { height: '100%', minHeight: `${height}px` }
+        : { height: `${height}px` };
 
     if (loaded) {
         return (
@@ -26,7 +36,7 @@ export default function MapFacade({ height = 380, grayscale = 0.3 }: MapFacadePr
                 src={`https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed&hl=pl`}
                 className="relative w-full"
                 style={{
-                    height: `${height}px`,
+                    ...sizeStyle,
                     borderRadius: '3px',
                     filter: `grayscale(${grayscale}) contrast(1.05)`,
                     zIndex: 1,
@@ -44,7 +54,7 @@ export default function MapFacade({ height = 380, grayscale = 0.3 }: MapFacadePr
         <div
             className="relative w-full flex flex-col items-center justify-center gap-4"
             style={{
-                height: `${height}px`,
+                ...sizeStyle,
                 borderRadius: '3px',
                 background: '#161616',
                 border: '1px solid rgba(180,184,190,0.25)',
