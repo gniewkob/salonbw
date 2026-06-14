@@ -123,7 +123,7 @@ export default function ContactPage() {
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 max-w-5xl mx-auto">
-                        {/* Left: info + map */}
+                        {/* Left: contact info */}
                         <div>
                             <a
                                 href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
@@ -241,19 +241,6 @@ export default function ContactPage() {
                                 ))}
                             </div>
 
-                            <div className="relative">
-                                <div
-                                    className="absolute"
-                                    style={{
-                                        inset: 0,
-                                        border: '1px solid rgba(180,184,190,0.2)',
-                                        borderRadius: '3px',
-                                        transform: 'translate(6px, 6px)',
-                                        zIndex: 0,
-                                    }}
-                                />
-                                <MapFacade height={260} grayscale={0.4} />
-                            </div>
                         </div>
 
                         {/* Right: booking CTA + contact form */}
@@ -323,6 +310,21 @@ export default function ContactPage() {
                             </p>
                             <ContactForm />
                         </div>
+                    </div>
+
+                    {/* Full-width map below the info/form columns */}
+                    <div className="relative max-w-5xl mx-auto mt-16">
+                        <div
+                            className="absolute"
+                            style={{
+                                inset: 0,
+                                border: '1px solid rgba(180,184,190,0.2)',
+                                borderRadius: '3px',
+                                transform: 'translate(6px, 6px)',
+                                zIndex: 0,
+                            }}
+                        />
+                        <MapFacade height={360} grayscale={0.4} />
                     </div>
                 </div>
             </div>
