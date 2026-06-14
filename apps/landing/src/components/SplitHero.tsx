@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal from '@/components/BookingModal';
 import NearestSlotTeaser from '@/components/NearestSlotTeaser';
-import { useOpeningHours } from '@/hooks/useOpeningHours';
 
 export default function SplitHero() {
     const { T } = useLanguage();
-    const { lines: openingHours } = useOpeningHours();
     const [modalOpen, setModalOpen] = useState(false);
 
     return (
@@ -79,26 +76,6 @@ export default function SplitHero() {
                 />
                 <div className="split-hero__gold-tint" aria-hidden="true" />
                 <div className="split-hero__right-overlay" aria-hidden="true" />
-
-                <div className="split-hero__float-card">
-                    <p className="split-hero__float-label">
-                        {T.hero.hoursLabel}
-                    </p>
-                    {openingHours.map((line) => (
-                        <p
-                            key={line.label}
-                            className="split-hero__float-hours"
-                        >
-                            {line.label} <strong>{line.value}</strong>
-                        </p>
-                    ))}
-                    <a
-                        href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
-                        className="split-hero__float-phone"
-                    >
-                        {BUSINESS_INFO.contact.phone}
-                    </a>
-                </div>
             </div>
 
             <div className="split-hero__scroll-hint" aria-hidden="true">

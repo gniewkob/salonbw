@@ -26,35 +26,66 @@ function resolveCategoryName(service: Service): string {
     return service.categoryRelation?.name || service.category || 'Inne';
 }
 
-function getServicePrice(service: Service, fromLabel: string): string {
-    if (service.variants && service.variants.length > 0) {
-        const prices = service.variants.map((v) => v.price);
-        const min = Math.min(...prices);
-        const max = Math.max(...prices);
-        const fmt = (n: number) =>
-            new Intl.NumberFormat('pl-PL', {
-                style: 'currency',
-                currency: 'PLN',
-            }).format(n);
-        return max > min ? `${fromLabel} ${fmt(min)}` : fmt(min);
-    }
-    const formatted = new Intl.NumberFormat('pl-PL', {
-        style: 'currency',
-        currency: 'PLN',
-    }).format(service.price);
-    return service.priceType === 'from'
-        ? `${fromLabel} ${formatted}`
-        : formatted;
+interface ConceptGroup {
+    key: string;
+    name: string;
+    services: Service[];
+    priceLabel: string;
+    durationLabel: string;
 }
 
-function getServiceDuration(service: Service): string {
-    if (service.variants && service.variants.length > 0) {
-        const durations = service.variants.map((v) => v.duration);
-        const min = Math.min(...durations);
-        const max = Math.max(...durations);
-        return min === max ? `${min} min` : `${min}–${max} min`;
+/**
+ * Collapse the booking catalog into price-range concepts for the marketing
+ * list. Booksy variants were imported as separate flat services named
+ * "Koncept – długość włosów" (e.g. "Strzyżenie damskie – włosy długie"), so we
+ * regroup by the part before " – " and show "od {min} zł" instead of dozens of
+ * fixed-price rows. Premium audience wants "wiem co zapłacę", not a price list.
+ */
+function groupByConcept(services: Service[], fromLabel: string): ConceptGroup[] {
+    const fmt = (n: number) =>
+        new Intl.NumberFormat('pl-PL', {
+            style: 'currency',
+            currency: 'PLN',
+        }).format(n);
+    const order: string[] = [];
+    const map = new Map<string, Service[]>();
+    for (const svc of services) {
+        const concept = svc.name.split(' – ')[0]!.trim();
+        if (!map.has(concept)) {
+            map.set(concept, []);
+            order.push(concept);
+        }
+        map.get(concept)!.push(svc);
     }
-    return `${service.duration} min`;
+    return order.map((name) => {
+        const svcs = map.get(name)!;
+        const prices = svcs.flatMap((v) =>
+            v.variants && v.variants.length > 0
+                ? v.variants.map((x) => x.price)
+                : [v.price],
+        );
+        const durations = svcs.flatMap((v) =>
+            v.variants && v.variants.length > 0
+                ? v.variants.map((x) => x.duration)
+                : [v.duration],
+        );
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        const dMin = Math.min(...durations);
+        const dMax = Math.max(...durations);
+        const ranged =
+            svcs.length > 1 ||
+            min !== max ||
+            svcs.some((v) => v.priceType === 'from');
+        return {
+            key: `${name}-${svcs[0]!.id}`,
+            name,
+            services: svcs,
+            priceLabel: ranged ? `${fromLabel} ${fmt(min)}` : fmt(min),
+            durationLabel:
+                dMin === dMax ? `${dMin} min` : `${dMin}–${dMax} min`,
+        };
+    });
 }
 
 const SERVICE_ROUTES: Record<string, Route> = {
@@ -185,27 +216,34 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
 
                 {/* Service categories */}
                 <div className="svcs-body">
-                    {categories.map((cat) => (
+                    {categories.map((cat) => {
+                        const groups = groupByConcept(cat.services, s.from);
+                        return (
                         <div key={cat.id ?? cat.name} className="svcs-category">
                             <div className="svcs-category__header">
                                 <h2 className="svcs-category__title">
                                     {cat.name}
                                 </h2>
                                 <span className="svcs-category__count">
-                                    {cat.services.length}{' '}
-                                    {cat.services.length === 1
+                                    {groups.length}{' '}
+                                    {groups.length === 1
                                         ? s.serviceCount1
                                         : s.serviceCountMany}
                                 </span>
                             </div>
 
                             <div>
-                                {cat.services.map((svc) => {
-                                    const price = getServicePrice(svc, s.from);
-                                    const duration = getServiceDuration(svc);
-                                    const href = resolveServiceRoute(svc.name);
+                                {groups.map((group) => {
+                                    const href = resolveServiceRoute(group.name);
+                                    const single =
+                                        group.services.length === 1
+                                            ? group.services[0]!
+                                            : null;
                                     return (
-                                        <div key={svc.id} className="svcs-row">
+                                        <div
+                                            key={group.key}
+                                            className="svcs-row"
+                                        >
                                             <div className="svcs-row__info">
                                                 <div className="svcs-row__name">
                                                     {href ? (
@@ -220,9 +258,11 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                                         items: [
                                                                             {
                                                                                 item_id:
-                                                                                    svc.id,
+                                                                                    group
+                                                                                        .services[0]!
+                                                                                        .id,
                                                                                 item_name:
-                                                                                    svc.name,
+                                                                                    group.name,
                                                                                 item_category:
                                                                                     cat.name,
                                                                             },
@@ -231,37 +271,40 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                                 )
                                                             }
                                                         >
-                                                            {svc.name}
+                                                            {group.name}
                                                         </Link>
                                                     ) : (
-                                                        svc.name
+                                                        group.name
                                                     )}
                                                 </div>
-                                                {svc.description && (
-                                                    <p className="svcs-row__desc">
-                                                        {svc.description}
-                                                    </p>
-                                                )}
                                             </div>
                                             <div className="svcs-row__meta">
                                                 <span className="svcs-row__price">
-                                                    {price}
+                                                    {group.priceLabel}
                                                 </span>
                                                 <span className="svcs-row__duration">
-                                                    {duration}
+                                                    {group.durationLabel}
                                                 </span>
                                                 <button
                                                     type="button"
                                                     className="svcs-row__book"
                                                     onClick={() =>
-                                                        setBookingService({
-                                                            id: svc.id,
-                                                            name: svc.name,
-                                                            priceLabel: price,
-                                                            duration,
-                                                        })
+                                                        single
+                                                            ? setBookingService(
+                                                                  {
+                                                                      id: single.id,
+                                                                      name: single.name,
+                                                                      priceLabel:
+                                                                          group.priceLabel,
+                                                                      duration:
+                                                                          group.durationLabel,
+                                                                  },
+                                                              )
+                                                            : setGeneralBookingOpen(
+                                                                  true,
+                                                              )
                                                     }
-                                                    aria-label={`${s.bookBtn}: ${svc.name}`}
+                                                    aria-label={`${s.bookBtn}: ${group.name}`}
                                                 >
                                                     {s.bookBtn}
                                                 </button>
@@ -271,7 +314,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 })}
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
 
                     {/* Bottom CTA */}
                     <div className="svcs-bottom-cta">
