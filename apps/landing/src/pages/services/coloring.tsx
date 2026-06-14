@@ -9,18 +9,13 @@ import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const ITEMS = [
-    'Koloryzacja jednolita i wielotonowa',
-    'Korekta koloru (color correction)',
-    'Farbowanie korzeni i odrostów',
-    'Toning i gloss',
-    'Bezpieczna dla włosów – bez amoniaku dostępne',
-];
+import { SERVICE_DETAIL, OG_LOCALE } from '@/i18n/serviceDetail';
 
 export default function ColoringPage() {
     const [open, setOpen] = useState(false);
-    const { T } = useLanguage();
+    const { T, lang } = useLanguage();
+    const sd = SERVICE_DETAIL[lang];
+    const c = sd.coloring;
     const name = BUSINESS_INFO.name;
 
     useEffect(() => {
@@ -40,23 +35,11 @@ export default function ColoringPage() {
     return (
         <PublicLayout>
             <Head>
-                <title>Koloryzacja Bytom — Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Profesjonalna koloryzacja włosów w Bytomiu — farby Wella i Kerastase, color correction, toning. Salon Black & White, ul. Webera 1a/13."
-                />
-                <meta
-                    name="keywords"
-                    content="koloryzacja włosów bytom, color correction bytom, farbowanie włosów bytom, toning włosów, salon fryzjerski bytom"
-                />
-                <meta
-                    property="og:title"
-                    content="Koloryzacja włosów — Salon Black & White Bytom"
-                />
-                <meta
-                    property="og:description"
-                    content="Profesjonalna koloryzacja włosów w Bytomiu. Farby Wella i Kerastase, color correction, toning, farbowanie odrostów."
-                />
+                <title>{c.metaTitle}</title>
+                <meta name="description" content={c.metaDescription} />
+                <meta name="keywords" content={c.keywords} />
+                <meta property="og:title" content={c.ogTitle} />
+                <meta property="og:description" content={c.ogDescription} />
                 <meta
                     property="og:image"
                     content={absUrl('/images/hero/slider1.jpg')}
@@ -64,7 +47,7 @@ export default function ColoringPage() {
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
-                <meta property="og:locale" content="pl_PL" />
+                <meta property="og:locale" content={OG_LOCALE[lang]} />
                 <meta
                     property="og:url"
                     content={absUrl('/services/coloring')}
@@ -81,9 +64,8 @@ export default function ColoringPage() {
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
-                    name: 'Koloryzacja',
-                    description:
-                        'Pełna koloryzacja włosów z użyciem profesjonalnych farb Wella i Kerastase. Korekta koloru, toning, farbowanie odrostów.',
+                    name: c.ldName,
+                    description: c.ldDescription,
                     category: 'Usługi fryzjerskie',
                     provider: {
                         '@type': 'LocalBusiness',
@@ -129,7 +111,7 @@ export default function ColoringPage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Usługi fryzjerskie
+                        {c.eyebrow}
                     </p>
                     <h1
                         style={{
@@ -141,7 +123,7 @@ export default function ColoringPage() {
                             lineHeight: 1.1,
                         }}
                     >
-                        Koloryzacja
+                        {c.h1}
                     </h1>
                     <p
                         style={{
@@ -153,10 +135,7 @@ export default function ColoringPage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Pełna koloryzacja to kompletna zmiana lub odświeżenie
-                        koloru włosów. Używamy wyłącznie profesjonalnych farb
-                        Wella i Kerastase, które zapewniają intensywny kolor i
-                        pielęgnację jednocześnie.
+                        {c.lead}
                     </p>
                     <button
                         type="button"
@@ -201,7 +180,7 @@ export default function ColoringPage() {
             >
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {ITEMS.map((item) => (
+                        {c.items.map((item) => (
                             <li
                                 key={item}
                                 style={{
@@ -251,7 +230,7 @@ export default function ColoringPage() {
                                 aria-hidden="true"
                                 style={{ width: 14, height: 14 }}
                             />
-                            Pełna oferta i cennik
+                            {sd.backToOffer}
                         </Link>
                     </div>
                 </div>

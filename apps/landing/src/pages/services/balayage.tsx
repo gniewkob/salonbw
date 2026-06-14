@@ -9,18 +9,13 @@ import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const ITEMS = [
-    'Naturalny efekt bez widocznych odrostów',
-    'Ręczne nakładanie – precyzja na każdym paśmie',
-    'Idealny do włosów ciemnych i jasnych',
-    'Długotrwały efekt (3–5 miesięcy)',
-    'Możliwość łączenia z innymi technikami',
-];
+import { SERVICE_DETAIL, OG_LOCALE } from '@/i18n/serviceDetail';
 
 export default function BalayagePage() {
     const [open, setOpen] = useState(false);
-    const { T } = useLanguage();
+    const { T, lang } = useLanguage();
+    const sd = SERVICE_DETAIL[lang];
+    const c = sd.balayage;
     const name = BUSINESS_INFO.name;
 
     useEffect(() => {
@@ -40,23 +35,11 @@ export default function BalayagePage() {
     return (
         <PublicLayout>
             <Head>
-                <title>Balayage Bytom — Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Balayage w Bytomiu — ręczna technika rozjaśniania włosów dająca naturalny, słoneczny efekt bez widocznych odrostów. Salon Black & White, ul. Webera 1a/13."
-                />
-                <meta
-                    name="keywords"
-                    content="balayage bytom, rozjaśnianie włosów bytom, naturalne pasemka bytom, ombre bytom, salon fryzjerski bytom"
-                />
-                <meta
-                    property="og:title"
-                    content="Balayage — Salon Black & White Bytom"
-                />
-                <meta
-                    property="og:description"
-                    content="Balayage w Bytomiu — ręczna technika rozjaśniania włosów. Naturalny słoneczny efekt bez widocznych odrostów."
-                />
+                <title>{c.metaTitle}</title>
+                <meta name="description" content={c.metaDescription} />
+                <meta name="keywords" content={c.keywords} />
+                <meta property="og:title" content={c.ogTitle} />
+                <meta property="og:description" content={c.ogDescription} />
                 <meta
                     property="og:image"
                     content={absUrl('/images/hero/slider1.jpg')}
@@ -64,7 +47,7 @@ export default function BalayagePage() {
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
-                <meta property="og:locale" content="pl_PL" />
+                <meta property="og:locale" content={OG_LOCALE[lang]} />
                 <meta
                     property="og:url"
                     content={absUrl('/services/balayage')}
@@ -81,9 +64,8 @@ export default function BalayagePage() {
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
-                    name: 'Balayage',
-                    description:
-                        'Technika ręcznego rozjaśniania włosów dająca naturalny, słoneczny efekt bez widocznych odrostów. Indywidualnie dopasowany gradient.',
+                    name: c.ldName,
+                    description: c.ldDescription,
                     category: 'Koloryzacja',
                     provider: {
                         '@type': 'LocalBusiness',
@@ -129,7 +111,7 @@ export default function BalayagePage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Koloryzacja
+                        {c.eyebrow}
                     </p>
                     <h1
                         style={{
@@ -141,7 +123,7 @@ export default function BalayagePage() {
                             lineHeight: 1.1,
                         }}
                     >
-                        Balayage
+                        {c.h1}
                     </h1>
                     <p
                         style={{
@@ -153,11 +135,7 @@ export default function BalayagePage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Balayage to technika ręcznego rozjaśniania włosów, która
-                        daje naturalny, słoneczny efekt. Nasze stylistki tworzą
-                        indywidualnie dopasowany gradient – od korzeni po końce
-                        – bez widocznych odrostów. Efekt trwa kilka miesięcy bez
-                        potrzeby częstego odświeżania.
+                        {c.lead}
                     </p>
                     <button
                         type="button"
@@ -191,7 +169,7 @@ export default function BalayagePage() {
             >
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {ITEMS.map((item) => (
+                        {c.items.map((item) => (
                             <li
                                 key={item}
                                 style={{
@@ -241,7 +219,7 @@ export default function BalayagePage() {
                                 aria-hidden="true"
                                 style={{ width: 14, height: 14 }}
                             />
-                            Pełna oferta i cennik
+                            {sd.backToOffer}
                         </Link>
                     </div>
                 </div>

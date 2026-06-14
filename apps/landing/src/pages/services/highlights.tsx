@@ -9,18 +9,13 @@ import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const ITEMS = [
-    'Pasemka klasyczne i dynamiczne',
-    'Efekt rozświetlenia i głębi',
-    'Dostosowane do odcienia bazowego',
-    'Możliwość łączenia z balayage',
-    'Niska ingerencja w strukturę włosa',
-];
+import { SERVICE_DETAIL, OG_LOCALE } from '@/i18n/serviceDetail';
 
 export default function HighlightsPage() {
     const [open, setOpen] = useState(false);
-    const { T } = useLanguage();
+    const { T, lang } = useLanguage();
+    const sd = SERVICE_DETAIL[lang];
+    const c = sd.highlights;
     const name = BUSINESS_INFO.name;
 
     useEffect(() => {
@@ -40,23 +35,11 @@ export default function HighlightsPage() {
     return (
         <PublicLayout>
             <Head>
-                <title>Pasemka Bytom — Salon Black &amp; White</title>
-                <meta
-                    name="description"
-                    content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku. Salon Black & White, ul. Webera 1a/13."
-                />
-                <meta
-                    name="keywords"
-                    content="pasemka bytom, rozjaśnienia włosów bytom, highlights bytom, klasyczne pasemka bytom, salon fryzjerski bytom"
-                />
-                <meta
-                    property="og:title"
-                    content="Pasemka — Salon Black & White Bytom"
-                />
-                <meta
-                    property="og:description"
-                    content="Pasemka i rozjaśnienia w Bytomiu — klasyczne i dynamiczne efekty głębi i blasku dla Twoich włosów."
-                />
+                <title>{c.metaTitle}</title>
+                <meta name="description" content={c.metaDescription} />
+                <meta name="keywords" content={c.keywords} />
+                <meta property="og:title" content={c.ogTitle} />
+                <meta property="og:description" content={c.ogDescription} />
                 <meta
                     property="og:image"
                     content={absUrl('/images/hero/slider1.jpg')}
@@ -64,7 +47,7 @@ export default function HighlightsPage() {
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:type" content="website" />
-                <meta property="og:locale" content="pl_PL" />
+                <meta property="og:locale" content={OG_LOCALE[lang]} />
                 <meta
                     property="og:url"
                     content={absUrl('/services/highlights')}
@@ -81,9 +64,8 @@ export default function HighlightsPage() {
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
-                    name: 'Pasemka',
-                    description:
-                        'Klasyczne pasemka i rozjaśnienia dodające głębi i blasku. Delikatne naturalne akcenty lub wyraziste kontrastowe efekty.',
+                    name: c.ldName,
+                    description: c.ldDescription,
                     category: 'Koloryzacja',
                     provider: {
                         '@type': 'LocalBusiness',
@@ -129,7 +111,7 @@ export default function HighlightsPage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Koloryzacja
+                        {c.eyebrow}
                     </p>
                     <h1
                         style={{
@@ -141,7 +123,7 @@ export default function HighlightsPage() {
                             lineHeight: 1.1,
                         }}
                     >
-                        Pasemka
+                        {c.h1}
                     </h1>
                     <p
                         style={{
@@ -153,10 +135,7 @@ export default function HighlightsPage() {
                             fontFamily: 'var(--font-open-sans), sans-serif',
                         }}
                     >
-                        Klasyczne pasemka i rozjaśnienia to najszybszy sposób na
-                        dodanie głębi i blasku. Pracujemy zarówno z delikatnymi,
-                        naturalnymi akcentami, jak i wyrazistymi, kontrastowymi
-                        efektami.
+                        {c.lead}
                     </p>
                     <button
                         type="button"
@@ -190,7 +169,7 @@ export default function HighlightsPage() {
             >
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {ITEMS.map((item) => (
+                        {c.items.map((item) => (
                             <li
                                 key={item}
                                 style={{
@@ -240,7 +219,7 @@ export default function HighlightsPage() {
                                 aria-hidden="true"
                                 style={{ width: 14, height: 14 }}
                             />
-                            Pełna oferta i cennik
+                            {sd.backToOffer}
                         </Link>
                     </div>
                 </div>
