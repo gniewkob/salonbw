@@ -38,7 +38,7 @@ export class CreateE2eTestAccounts1761010000000 implements MigrationInterface {
                 `INSERT INTO "users"
                    ("email", "name", "password", "role", "gdprConsent",
                     "receiveNotifications", "createdAt", "updatedAt")
-                 SELECT $1::text, $2::text, $3::text, $4::text, true, true, now(), now()
+                 SELECT $1::text, $2::text, $3::text, $4::"users_role_enum", true, true, now(), now()
                  WHERE NOT EXISTS (SELECT 1 FROM "users" WHERE "email" = $1::text)`,
                 [u.email, u.name, u.hash, u.role],
             );
