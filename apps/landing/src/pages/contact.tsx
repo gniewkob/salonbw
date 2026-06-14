@@ -155,6 +155,36 @@ export default function ContactPage() {
                                 </span>
                             </a>
 
+                            <a
+                                href={`mailto:${BUSINESS_INFO.contact.email}`}
+                                className="block group mb-10"
+                            >
+                                <span
+                                    className="text-xs uppercase block mb-1"
+                                    style={{
+                                        color: 'rgba(255,255,255,0.6)',
+                                        letterSpacing: '0.12em',
+                                        fontFamily:
+                                            'var(--font-open-sans), sans-serif',
+                                    }}
+                                >
+                                    {c.emailLabel}
+                                </span>
+                                <span
+                                    className="block transition-opacity duration-200 group-hover:opacity-70"
+                                    style={{
+                                        color: '#ffffff',
+                                        fontSize: '1.05rem',
+                                        letterSpacing: '0.01em',
+                                        wordBreak: 'break-word',
+                                        fontFamily:
+                                            'var(--font-open-sans), sans-serif',
+                                    }}
+                                >
+                                    {BUSINESS_INFO.contact.email}
+                                </span>
+                            </a>
+
                             <div className="mb-10">
                                 <span
                                     className="text-xs uppercase block mb-2"
