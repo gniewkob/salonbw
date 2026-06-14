@@ -6,7 +6,6 @@ import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
-import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { LANGUAGES } from '@/i18n/translations';
@@ -298,10 +297,13 @@ export default function Navbar() {
                                         <li key={href}>
                                             <Link
                                                 href={href as Route}
-                                                className="block py-2.5 px-4 text-sm font-medium transition"
+                                                className="block py-2.5 px-4 text-sm font-medium transition text-gray-800 hover:text-[#b4b8be]"
                                                 style={{
                                                     color: active
                                                         ? 'var(--brand-silver-ink)'
+                                                        : undefined,
+                                                    fontWeight: active
+                                                        ? 600
                                                         : undefined,
                                                 }}
                                                 onClick={() =>
