@@ -467,7 +467,14 @@ export const getServerSideProps: GetServerSideProps<
             headers: { Accept: 'application/json' },
         });
         if (!res.ok) throw new Error('services_fetch_failed');
-        const data: Service[] = await res.json();
+        const raw: Service[] = await res.json();
+        // /services/public returns every active service (isActive only). Show
+        // only the curated public catalog — the same onlineBooking=true set the
+        // booking wizard uses — so pre-Booksy legacy/duplicate services stay off
+        // the marketing price list.
+        const data = Array.isArray(raw)
+            ? raw.filter((svc) => svc.onlineBooking !== false)
+            : raw;
         if (!Array.isArray(data) || data.length === 0) {
             return { props: { categories: fallbackCategories } };
         }
