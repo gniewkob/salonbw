@@ -21,7 +21,12 @@ export default function BookNowFab() {
 
     useEffect(() => {
         if (hidden || typeof IntersectionObserver === 'undefined') return;
-        const footer = document.querySelector('footer');
+        // Target the site footer specifically — NOT any <footer> (blockquote
+        // cites use <footer> too and appear earlier in the DOM).
+        const footers = document.querySelectorAll('footer');
+        const footer =
+            document.getElementById('site-footer') ??
+            footers[footers.length - 1];
         if (!footer) return;
         const observer = new IntersectionObserver(
             ([entry]) => setFooterVisible(entry?.isIntersecting ?? false),

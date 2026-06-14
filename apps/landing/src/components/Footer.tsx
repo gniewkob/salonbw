@@ -21,7 +21,7 @@ export default function Footer() {
     ];
 
     return (
-        <footer style={{ background: 'var(--brand-black)', color: 'rgba(255,255,255,0.75)' }}>
+        <footer id="site-footer" style={{ background: 'var(--brand-black)', color: 'rgba(255,255,255,0.75)' }}>
             <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--brand-silver), transparent)' }} />
 
             <div className="container mx-auto px-4 md:px-8" style={{ paddingTop: '4rem', paddingBottom: '2.5rem' }}>
