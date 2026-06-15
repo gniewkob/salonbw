@@ -92,12 +92,21 @@ const CONCEPT: Record<string, Pair> = {
     },
 };
 
-const MERGED: Record<string, Pair> = { ...CATEGORY, ...CONCEPT };
+// Category and concept can share a Polish name ("Koloryzacja" is both a
+// category and a full-colour service), so they need separate lookups —
+// otherwise the category heading would inherit the concept's wording.
 
-/** Translate a DB catalog label (category or concept) for display. PL stays PL. */
-export function translateCatalogName(name: string, lang: Language): string {
+/** Translate a service CATEGORY label (heading / filter chip). PL stays PL. */
+export function translateCategory(name: string, lang: Language): string {
     if (lang === 'pl') return name;
-    const hit = MERGED[name.trim()];
+    const hit = CATEGORY[name.trim()];
+    return hit ? hit[lang] : name;
+}
+
+/** Translate a service CONCEPT name (a row on /services). PL stays PL. */
+export function translateConcept(name: string, lang: Language): string {
+    if (lang === 'pl') return name;
+    const hit = CONCEPT[name.trim()] ?? CATEGORY[name.trim()];
     return hit ? hit[lang] : name;
 }
 
