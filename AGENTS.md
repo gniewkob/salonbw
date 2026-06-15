@@ -17,6 +17,22 @@ It defines how agents should operate in this repository: what is “production�
 
 ---
 
+## 0a) Design / brand (mandatory for UI work)
+
+Before designing, building, restyling, or reviewing ANY user-facing UI in
+`apps/landing` or `apps/panel` — sections, components, pages, CTAs, color
+choices, hover/focus states, animations — **READ
+`.claude/skills/salonbw-brand/SKILL.md` first.** It is the single source of
+truth for the Salon Black & White brand: approved color tokens, the
+pre-computed WCAG contrast table, typography (Playfair + Open Sans), button/CTA
+rules, surfaces/motion, and the hard anti-patterns (each caused a real shipped
+bug). Pick an approved token instead of an ad-hoc hex; keep landing and panel
+visually cohesive (shared `#b4b8be` silver, `#0d0d0d` black, silver-bg/dark-text
+primary buttons). The file is the same one Claude Code loads as a skill — Codex
+and other agents should read it directly.
+
+---
+
 ## 1) Production topology (authoritative)
 
 ### Domains (current reality)
