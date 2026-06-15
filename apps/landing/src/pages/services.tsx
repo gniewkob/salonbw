@@ -8,6 +8,7 @@ import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { SERVICE_FILTER } from '@/i18n/serviceDetail';
+import { translateCatalogName } from '@/i18n/catalogNames';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
@@ -246,7 +247,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                     aria-pressed={activeCategory === cat.name}
                                     onClick={() => setActiveCategory(cat.name)}
                                 >
-                                    {cat.name}
+                                    {translateCatalogName(cat.name, lang)}
                                 </button>
                             ))}
                         </div>
@@ -257,7 +258,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <div key={cat.id ?? cat.name} className="svcs-category">
                             <div className="svcs-category__header">
                                 <h2 className="svcs-category__title">
-                                    {cat.name}
+                                    {translateCatalogName(cat.name, lang)}
                                 </h2>
                                 <span className="svcs-category__count">
                                     {groups.length}{' '}
@@ -306,10 +307,16 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                                 )
                                                             }
                                                         >
-                                                            {group.name}
+                                                            {translateCatalogName(
+                                                                group.name,
+                                                                lang,
+                                                            )}
                                                         </Link>
                                                     ) : (
-                                                        group.name
+                                                        translateCatalogName(
+                                                            group.name,
+                                                            lang,
+                                                        )
                                                     )}
                                                 </div>
                                             </div>
@@ -339,7 +346,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                                   true,
                                                               )
                                                     }
-                                                    aria-label={`${s.bookBtn}: ${group.name}`}
+                                                    aria-label={`${s.bookBtn}: ${translateCatalogName(group.name, lang)}`}
                                                 >
                                                     {s.bookBtn}
                                                 </button>

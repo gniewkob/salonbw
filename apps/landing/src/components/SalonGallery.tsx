@@ -5,6 +5,7 @@ import { SALON_GALLERY } from '@/config/content';
 import ImageLightbox from './ImageLightbox';
 import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translateGalleryCaption } from '@/i18n/catalogNames';
 
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
 interface SalonGalleryProps { images?: GalleryImage[]; }
@@ -23,7 +24,7 @@ const GRID_SPANS = [
 
 export default function SalonGallery({ images }: SalonGalleryProps) {
     const data = images ?? (SALON_GALLERY as unknown as GalleryImage[]);
-    const { T } = useLanguage();
+    const { T, lang } = useLanguage();
     const g = T.salonGallery;
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -71,7 +72,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
                                 role="button"
                                 tabIndex={0}
-                                aria-label={`${g.open} ${image.caption}`}
+                                aria-label={`${g.open} ${translateGalleryCaption(image.caption, lang)}`}
                             >
                                 <Image
                                     src={image.image}
@@ -84,7 +85,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 <div className="gallery-blend" aria-hidden="true" />
                                 <div className="gallery-caption">
                                     <span className="gallery-caption__accent" />
-                                    <span className="gallery-caption__text">{image.caption}</span>
+                                    <span className="gallery-caption__text">{translateGalleryCaption(image.caption, lang)}</span>
                                 </div>
                             </div>
                         );
@@ -102,7 +103,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
                             role="button"
                             tabIndex={0}
-                            aria-label={`${g.open} ${image.caption}`}
+                            aria-label={`${g.open} ${translateGalleryCaption(image.caption, lang)}`}
                         >
                             <Image
                                 src={image.image}
