@@ -42,16 +42,24 @@ export class TimetablesController {
     constructor(private readonly timetablesService: TimetablesService) {}
 
     @Get()
-    @Roles(Role.Admin, Role.Receptionist)
-    @ApiOperation({ summary: 'Lista wszystkich grafików' })
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @ApiOperation({ summary: 'Lista grafików (pracownik widzi tylko swoje)' })
     @ApiQuery({ name: 'employeeId', required: false, type: Number })
     @ApiQuery({ name: 'isActive', required: false, type: Boolean })
     findAll(
+        @CurrentUser() user: User,
         @Query('employeeId') employeeId?: string,
         @Query('isActive') isActive?: string,
     ) {
+        // Employees may only ever see their own schedule.
+        const scopedEmployeeId =
+            user.role === Role.Employee
+                ? user.id
+                : employeeId
+                  ? parseInt(employeeId, 10)
+                  : undefined;
         return this.timetablesService.findAll({
-            employeeId: employeeId ? parseInt(employeeId, 10) : undefined,
+            employeeId: scopedEmployeeId,
             isActive: isActive !== undefined ? isActive === 'true' : undefined,
         });
     }
@@ -79,7 +87,7 @@ export class TimetablesController {
     }
 
     @Post()
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Utwórz nowy grafik' })
     create(
         @Body(new ValidationPipe({ transform: true })) dto: CreateTimetableDto,
@@ -89,7 +97,7 @@ export class TimetablesController {
     }
 
     @Patch(':id')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Aktualizuj grafik' })
     update(
         @Param('id', ParseIntPipe) id: number,
@@ -100,7 +108,7 @@ export class TimetablesController {
     }
 
     @Delete(':id')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Usuń grafik' })
     remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
         return this.timetablesService.remove(id, user);
@@ -138,7 +146,7 @@ export class TimetablesController {
     }
 
     @Patch('exceptions/:exceptionId')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Aktualizuj wyjątek' })
     updateException(
         @Param('exceptionId', ParseIntPipe) exceptionId: number,
@@ -149,7 +157,7 @@ export class TimetablesController {
     }
 
     @Delete('exceptions/:exceptionId')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Usuń wyjątek' })
     removeException(
         @Param('exceptionId', ParseIntPipe) exceptionId: number,

@@ -2,7 +2,9 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
+    ForbiddenException,
 } from '@nestjs/common';
+import { Role } from '../users/role.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Timetable } from './entities/timetable.entity';
@@ -81,7 +83,19 @@ export class TimetablesService {
         });
     }
 
+    /**
+     * Employees may manage only their OWN schedule; Admin/Receptionist any.
+     */
+    private assertCanManage(employeeId: number, actor: User): void {
+        if (actor.role === Role.Employee && employeeId !== actor.id) {
+            throw new ForbiddenException(
+                'Pracownik może zarządzać tylko własnym grafikiem.',
+            );
+        }
+    }
+
     async create(dto: CreateTimetableDto, actor: User): Promise<Timetable> {
+        this.assertCanManage(dto.employeeId, actor);
         // Deactivate other timetables for same employee if this one overlaps
         if (dto.validFrom) {
             await this.timetableRepository.update(
@@ -135,6 +149,7 @@ export class TimetablesService {
         actor: User,
     ): Promise<Timetable> {
         const timetable = await this.findOne(id);
+        this.assertCanManage(timetable.employeeId, actor);
 
         if (dto.name !== undefined) timetable.name = dto.name;
         if (dto.description !== undefined)
@@ -177,6 +192,7 @@ export class TimetablesService {
 
     async remove(id: number, actor: User): Promise<void> {
         const timetable = await this.findOne(id);
+        this.assertCanManage(timetable.employeeId, actor);
         await this.timetableRepository.remove(timetable);
 
         await this.logService.logAction(actor, LogAction.TIMETABLE_DELETED, {
@@ -221,6 +237,7 @@ export class TimetablesService {
         actor: User,
     ): Promise<TimetableException> {
         const timetable = await this.findOne(timetableId);
+        this.assertCanManage(timetable.employeeId, actor);
 
         // Check for existing exception on same date
         const existing = await this.exceptionRepository.findOne({
@@ -274,6 +291,10 @@ export class TimetablesService {
                 `Wyjątek o ID ${exceptionId} nie został znaleziony`,
             );
         }
+        this.assertCanManage(
+            (await this.findOne(exception.timetableId)).employeeId,
+            actor,
+        );
 
         if (dto.type !== undefined) exception.type = dto.type;
         if (dto.title !== undefined) exception.title = dto.title;
@@ -306,6 +327,10 @@ export class TimetablesService {
                 `Wyjątek o ID ${exceptionId} nie został znaleziony`,
             );
         }
+        this.assertCanManage(
+            (await this.findOne(exception.timetableId)).employeeId,
+            actor,
+        );
 
         await this.exceptionRepository.remove(exception);
 
