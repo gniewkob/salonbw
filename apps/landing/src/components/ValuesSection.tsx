@@ -63,7 +63,7 @@ export default function ValuesSection() {
                                 className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2"
                                 style={{
                                     background: isActive ? '#0d0d0d' : '#ffffff',
-                                    border: isActive ? '1px solid #0d0d0d' : '1px solid #ede9e3',
+                                    border: isActive ? '1px solid #0d0d0d' : '1px solid var(--brand-warm-border)',
                                     borderRadius: '3px',
                                 }}
                             >

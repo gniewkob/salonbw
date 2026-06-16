@@ -36,11 +36,13 @@ accent = silver. All tokens live in `apps/landing/src/styles/globals.css`
 | `--brand-silver-ink` | `#6e7278` | silver-toned TEXT on white/light (4.84:1) |
 | white | `#ffffff` | light backgrounds, text on dark |
 
-**Warm-cream sub-palette** (`--brand-warm-*`: ink/soft/muted/label on
-`#faf9f7` cream) exists on the landing for light editorial sections. It is
-legacy-approved: keep it where it already is, but for NEW sections prefer
-the neutral gray scale above — the owner's direction is black/white/gray to
-match the salon interior.
+**Light-surface sub-palette** (`--brand-warm-*`: ink/soft/muted/label/bg).
+The names are legacy (they used to be warm-brown text on `#faf9f7` cream) but
+the VALUES were migrated 2026-06-16 to a neutral cool-gray scale (bg
+`#f6f6f7`, text `#23252a`/`#5f6369`) to match the silver accent and the
+salon's B&W interior — no warm hue remains. Keep using these tokens for light
+editorial sections; do not reintroduce cream/brown. Contrast verified ≥5.5:1
+on the `#f6f6f7` background.
 
 ## Contrast — non-negotiable, pre-computed
 

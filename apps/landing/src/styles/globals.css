@@ -9,17 +9,20 @@
        light backgrounds. Raw --brand-silver (1.99:1) is decorative only. */
     --brand-silver-ink: #6e7278;
     --brand-black: #0d0d0d;
-    /* Warm-brown sub-palette — used on light/cream surfaces */
-    --brand-warm-ink: #3a3028;        /* primary text on warm bg */
-    --brand-warm-deep: #4a3f35;       /* emphasized warm text */
-    --brand-warm-soft: #6b5f52;       /* softer warm text */
-    --brand-warm-secondary: #7a6e65;  /* secondary warm */
-    --brand-warm-muted: #8a7060;      /* muted body text */
-    --brand-warm-label: #7a6a58;      /* eyebrow/label text — 4.95:1 on cream */
-    --brand-warm-bg: #faf9f7;         /* warm cream background — primary */
-    --brand-warm-bg-2: #f7f5f2;       /* warm cream — slightly darker (strips) */
-    --brand-warm-bg-3: #e8e2da;       /* warm cream — image placeholders */
-    --brand-warm-border: #ede9e3;     /* warm divider */
+    /* Light-surface sub-palette. Migrated 2026-06-16 from warm-brown/cream to a
+       neutral cool-gray scale (matches the silver accent + the salon's B&W
+       interior). Names kept for compatibility; values are now monochrome.
+       Contrast verified on the #f6f6f7 background (lowest pairing 5.5:1). */
+    --brand-warm-ink: #23252a;        /* primary text on light bg (~14:1) */
+    --brand-warm-deep: #31343a;       /* emphasized text */
+    --brand-warm-soft: #4d5158;       /* softer text */
+    --brand-warm-secondary: #595d64;  /* secondary text */
+    --brand-warm-muted: #5f6369;      /* muted body text — 5.5:1 on #f6f6f7 */
+    --brand-warm-label: #5f6369;      /* eyebrow/label text — 5.5:1 on #f6f6f7 */
+    --brand-warm-bg: #f6f6f7;         /* neutral off-white background — primary */
+    --brand-warm-bg-2: #eff0f1;       /* neutral light gray — slightly darker (strips) */
+    --brand-warm-bg-3: #e4e5e8;       /* neutral light gray — image placeholders */
+    --brand-warm-border: #e6e7ea;     /* neutral divider */
 }
 
 @media (prefers-color-scheme: dark) {
