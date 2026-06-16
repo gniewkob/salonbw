@@ -18,6 +18,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     validate(payload: { sub: number; role: string }) {
-        return { userId: payload.sub, role: payload.role };
+        // Expose both `userId` (legacy convention used across controllers) and
+        // `id` so guards/services that read `actor.id` (e.g. timetable
+        // self-management) resolve the current user correctly.
+        return { userId: payload.sub, id: payload.sub, role: payload.role };
     }
 }

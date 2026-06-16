@@ -93,7 +93,7 @@ export class EmployeesController {
     @ApiOperation({
         summary: 'List all staff users (employee, receptionist, admin)',
     })
-    async list(@CurrentUser() actor?: User) {
+    async list(@CurrentUser() actor?: { userId: number; role: Role }) {
         const users = await this.usersService.findAll();
         const staff = users.filter((u) => STAFF_ROLES.includes(u.role));
         // Non-admins (employee/receptionist) get a sanitized projection so the
@@ -133,10 +133,10 @@ export class EmployeesController {
     @ApiOperation({ summary: 'Get single staff user by id' })
     async getOne(
         @Param('id', ParseIntPipe) id: number,
-        @CurrentUser() actor?: User,
+        @CurrentUser() actor?: { userId: number; role: Role },
     ) {
         // Employees may only read their OWN record (self-service "Mój grafik").
-        if (actor?.role !== Role.Admin && actor?.id !== id) {
+        if (actor?.role !== Role.Admin && actor?.userId !== id) {
             throw new ForbiddenException(
                 'You may only access your own employee record',
             );
