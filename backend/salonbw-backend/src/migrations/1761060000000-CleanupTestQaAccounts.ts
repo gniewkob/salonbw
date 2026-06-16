@@ -45,6 +45,64 @@ export class CleanupTestQaAccounts1761060000000 implements MigrationInterface {
         // DO blocks cannot take bind parameters; inline the numeric id literals
         // (constants, no injection surface) into the array declarations.
         const targetsLiteral = `ARRAY[${REMOVE_IDS.join(', ')}]::int[]`;
+
+        // Recursive, schema-agnostic cascade delete. Walks the FK graph from a
+        // table to any depth: before deleting rows of `p_table` whose id is in
+        // `p_ids`, it removes every descendant row that references them. Skips
+        // the users self-reference (e.g. created_by) — that is a soft pointer
+        // handled by SET NULL below, NOT a cascade edge (it must not delete the
+        // *referencing* user, who may be a keeper).
+        await queryRunner.query(`
+            CREATE OR REPLACE FUNCTION pg_temp.cleanup_cascade_del(
+              p_table text, p_ids int[]
+            ) RETURNS void AS $fn$
+            DECLARE
+              fk record;
+              child_ids int[];
+              child_has_id boolean;
+            BEGIN
+              IF p_ids IS NULL OR array_length(p_ids, 1) IS NULL THEN
+                RETURN;
+              END IF;
+              FOR fk IN
+                SELECT tc.table_name AS child_table, kcu.column_name AS child_col
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                 AND tc.table_schema = kcu.table_schema
+                JOIN information_schema.constraint_column_usage ccu
+                  ON tc.constraint_name = ccu.constraint_name
+                 AND tc.table_schema = ccu.table_schema
+                WHERE tc.constraint_type = 'FOREIGN KEY'
+                  AND tc.table_schema = 'public'
+                  AND ccu.table_name = p_table
+                  AND ccu.column_name = 'id'
+                  AND tc.table_name <> p_table  -- skip self-ref (handled by SET NULL)
+              LOOP
+                SELECT EXISTS (
+                  SELECT 1 FROM information_schema.columns
+                  WHERE table_schema = 'public'
+                    AND table_name = fk.child_table
+                    AND column_name = 'id'
+                ) INTO child_has_id;
+
+                IF child_has_id THEN
+                  EXECUTE format(
+                    'SELECT array_agg(id) FROM %I WHERE %I = ANY($1)',
+                    fk.child_table, fk.child_col
+                  ) INTO child_ids USING p_ids;
+                  PERFORM pg_temp.cleanup_cascade_del(fk.child_table, child_ids);
+                END IF;
+
+                EXECUTE format(
+                  'DELETE FROM %I WHERE %I = ANY($1)',
+                  fk.child_table, fk.child_col
+                ) USING p_ids;
+              END LOOP;
+            END;
+            $fn$ LANGUAGE plpgsql;
+        `);
+
         await queryRunner.query(
             `
             DO $$
@@ -55,40 +113,10 @@ export class CleanupTestQaAccounts1761060000000 implements MigrationInterface {
               fk record;
             BEGIN
               -- 1) Merge duplicate Marzena: repoint every child FK column that
-              --    references users(id) from merge_from -> merge_to.
-              FOR fk IN
-                SELECT tc.table_name, kcu.column_name
-                FROM information_schema.table_constraints tc
-                JOIN information_schema.key_column_usage kcu
-                  ON tc.constraint_name = kcu.constraint_name
-                 AND tc.table_schema = kcu.table_schema
-                JOIN information_schema.constraint_column_usage ccu
-                  ON tc.constraint_name = ccu.constraint_name
-                 AND tc.table_schema = ccu.table_schema
-                WHERE tc.constraint_type = 'FOREIGN KEY'
-                  AND tc.table_schema = 'public'
-                  AND ccu.table_name = 'users'
-                  AND ccu.column_name = 'id'
-              LOOP
-                -- Junction/assignment tables can carry a unique constraint on
-                -- (otherKey, userId): repointing the duplicate would collide
-                -- with the survivor's twin row. On conflict, the survivor
-                -- already has the equivalent row, so just drop the dup's.
-                BEGIN
-                  EXECUTE format(
-                    'UPDATE %I SET %I = $1 WHERE %I = $2',
-                    fk.table_name, fk.column_name, fk.column_name
-                  ) USING merge_to, merge_from;
-                EXCEPTION WHEN unique_violation THEN
-                  EXECUTE format(
-                    'DELETE FROM %I WHERE %I = $1',
-                    fk.table_name, fk.column_name
-                  ) USING merge_from;
-                END;
-              END LOOP;
-
-              -- 2) Delete every child row that references any target user, across
-              --    all FK columns (order-independent, RESTRICT-safe).
+              --    references users(id) from merge_from -> merge_to, so her
+              --    visit history survives on the kept record. On a unique
+              --    collision (junction tables keyed on (otherKey, userId)) the
+              --    survivor already has the twin row, so drop the dup's.
               FOR fk IN
                 SELECT tc.table_name, kcu.column_name
                 FROM information_schema.table_constraints tc
@@ -104,13 +132,22 @@ export class CleanupTestQaAccounts1761060000000 implements MigrationInterface {
                   AND ccu.column_name = 'id'
                   AND tc.table_name <> 'users'
               LOOP
-                EXECUTE format(
-                  'DELETE FROM %I WHERE %I = ANY($1)',
-                  fk.table_name, fk.column_name
-                ) USING targets;
+                BEGIN
+                  EXECUTE format(
+                    'UPDATE %I SET %I = $1 WHERE %I = $2',
+                    fk.table_name, fk.column_name, fk.column_name
+                  ) USING merge_to, merge_from;
+                EXCEPTION WHEN unique_violation THEN
+                  EXECUTE format(
+                    'DELETE FROM %I WHERE %I = $1',
+                    fk.table_name, fk.column_name
+                  ) USING merge_from;
+                END;
               END LOOP;
 
-              -- 3) Handle any self-referencing FK on users (e.g. created_by).
+              -- 2) Null the users self-reference (created_by, …) wherever it
+              --    points at a target, so deleting the target cannot orphan a
+              --    keeper that it created.
               FOR fk IN
                 SELECT tc.table_name, kcu.column_name
                 FROM information_schema.table_constraints tc
@@ -132,7 +169,10 @@ export class CleanupTestQaAccounts1761060000000 implements MigrationInterface {
                 ) USING targets;
               END LOOP;
 
-              -- 4) Finally remove the target users themselves.
+              -- 3) Recursively delete every descendant of the target users
+              --    (appointments -> commissions/invoices/formulas/…), then the
+              --    users themselves.
+              PERFORM pg_temp.cleanup_cascade_del('users', targets);
               DELETE FROM users WHERE id = ANY(targets);
             END $$;
             `,
