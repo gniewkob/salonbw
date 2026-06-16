@@ -472,11 +472,13 @@ function ServiceStep({
                                     <strong className="d-block">
                                         {svc.name}
                                     </strong>
-                                    {svc.description && (
-                                        <span className="text-muted small">
-                                            {svc.description}
-                                        </span>
-                                    )}
+                                    {svc.description &&
+                                        svc.description.trim() !==
+                                            svc.name.trim() && (
+                                            <span className="text-muted small">
+                                                {svc.description}
+                                            </span>
+                                        )}
                                     <span className="text-muted small d-block">
                                         {svc.duration} min
                                     </span>

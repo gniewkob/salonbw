@@ -10,7 +10,8 @@ export type SalonModuleKey =
     | 'services'
     | 'settings'
     | 'extension'
-    | 'helps';
+    | 'helps'
+    | 'booking';
 
 export interface SalonShellProfile {
     bodyId: string;
@@ -187,6 +188,27 @@ export const SALON_MODULES: SalonModule[] = [
         pinBottom: true,
     },
 ];
+
+// Client-facing booking wizard: no staff sidebar (mini-calendar / PRACOWNICY
+// list are meaningless for a client picking a service), full-width content.
+const BOOKING_MODULE: SalonModule = {
+    key: 'booking',
+    href: '/booking',
+    label: 'rezerwacja',
+    iconId: 'svg-calendar-nav',
+    permission: 'nav:appointments',
+    shell: {
+        bodyId: 'physical_booking',
+        bodyClasses: ['no_sidenav'],
+        mainNavClass: 'calendar',
+        mainContentClass: 'booking',
+        secondaryNavVariant: 'none',
+        secondaryNavRootClass: null,
+        breadcrumbsIconClass: 'sprite-breadcrumbs_calendar',
+        contentFrameVariant: 'default',
+    },
+    secondaryNav: false,
+};
 
 const HELPS_MODULE: SalonModule = {
     key: 'helps',
@@ -423,6 +445,10 @@ export function resolveSalonModule(pathname: string): SalonModule {
         path.startsWith('/admin/gift-cards')
     ) {
         return SALON_MODULES[7];
+    }
+
+    if (path.startsWith('/booking')) {
+        return BOOKING_MODULE;
     }
 
     if (path.startsWith('/helps')) {

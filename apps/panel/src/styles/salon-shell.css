@@ -2827,6 +2827,45 @@ body.e2e-statistics .main-content .inner {
     color: var(--salon-accent);
 }
 
+/* ClientsNav / Versum filter sidebars render their items as <button> rather
+   than <a>; without a reset they show UA button chrome (bare outlined boxes).
+   Reset and align them with the sibling .tree/.simple-list anchor styling so
+   the GRUPY KLIENTÓW and WYBIERZ KRYTERIA lists read as clean filter rows. */
+#sidenav .tree li button,
+.sidenav .tree li button,
+#sidenav .list_container .simple-list li button,
+.sidenav .list_container .simple-list li button,
+#sidenav .customers_index button.filter_link,
+.sidenav .customers_index button.filter_link {
+    align-items: center;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: #616971;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-size: 12px;
+    gap: 8px;
+    padding: 3px 10px;
+    text-align: left;
+    width: 100%;
+}
+
+#sidenav .tree li.active > button,
+.sidenav .tree li.active > button,
+#sidenav .tree li button:hover,
+.sidenav .tree li button:hover,
+#sidenav .list_container .simple-list li button:hover,
+.sidenav .list_container .simple-list li button:hover,
+#sidenav .customers_index button.filter_link:hover,
+.sidenav .customers_index button.filter_link:hover {
+    background: #eef3f7;
+    color: var(--salon-accent);
+}
+
 #sidenav .tree_options,
 .sidenav .tree_options {
     margin-top: 10px;
