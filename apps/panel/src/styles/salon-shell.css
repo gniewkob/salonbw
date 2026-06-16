@@ -2827,6 +2827,16 @@ body.e2e-statistics .main-content .inner {
     color: var(--salon-accent);
 }
 
+/* The base .simple-list is display:flex;flex-wrap:nowrap for horizontal module
+   tabs; inside the sidebar (WYBIERZ KRYTERIA) that crams the filter rows into
+   columns. Force them to stack vertically. */
+#sidenav .list_container .simple-list,
+.sidenav .list_container .simple-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
 /* ClientsNav / Versum filter sidebars render their items as <button> rather
    than <a>; without a reset they show UA button chrome (bare outlined boxes).
    Reset and align them with the sibling .tree/.simple-list anchor styling so
