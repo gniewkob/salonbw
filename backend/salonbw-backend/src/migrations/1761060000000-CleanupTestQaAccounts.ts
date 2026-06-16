@@ -70,10 +70,21 @@ export class CleanupTestQaAccounts1761060000000 implements MigrationInterface {
                   AND ccu.table_name = 'users'
                   AND ccu.column_name = 'id'
               LOOP
-                EXECUTE format(
-                  'UPDATE %I SET %I = $1 WHERE %I = $2',
-                  fk.table_name, fk.column_name, fk.column_name
-                ) USING merge_to, merge_from;
+                -- Junction/assignment tables can carry a unique constraint on
+                -- (otherKey, userId): repointing the duplicate would collide
+                -- with the survivor's twin row. On conflict, the survivor
+                -- already has the equivalent row, so just drop the dup's.
+                BEGIN
+                  EXECUTE format(
+                    'UPDATE %I SET %I = $1 WHERE %I = $2',
+                    fk.table_name, fk.column_name, fk.column_name
+                  ) USING merge_to, merge_from;
+                EXCEPTION WHEN unique_violation THEN
+                  EXECUTE format(
+                    'DELETE FROM %I WHERE %I = $1',
+                    fk.table_name, fk.column_name
+                  ) USING merge_from;
+                END;
               END LOOP;
 
               -- 2) Delete every child row that references any target user, across
