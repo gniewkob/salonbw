@@ -2,6 +2,7 @@ import {
     Body,
     Controller,
     Delete,
+    ForbiddenException,
     Get,
     NotFoundException,
     Param,
@@ -86,26 +87,31 @@ export class EmployeesController {
     ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get()
     @ApiBearerAuth()
     @ApiOperation({
         summary: 'List all staff users (employee, receptionist, admin)',
     })
-    async list() {
+    async list(@CurrentUser() actor?: User) {
         const users = await this.usersService.findAll();
-        return users
-            .filter((u) => STAFF_ROLES.includes(u.role))
-            .map((u) => ({
-                ...u,
-                fullName: u.name,
-                firstName: u.name.split(' ')[0] ?? '',
-                lastName: u.name.split(' ').slice(1).join(' ') ?? '',
-            }));
+        const staff = users.filter((u) => STAFF_ROLES.includes(u.role));
+        // Non-admins (employee/receptionist) get a sanitized projection so the
+        // calendar/timetable filters can list colleagues without leaking PII
+        // (email, phone, commissionBase, …). Admins keep the full record.
+        if (actor?.role !== Role.Admin) {
+            return staff.map((u) => this.toStaffView(u));
+        }
+        return staff.map((u) => ({
+            ...u,
+            fullName: u.name,
+            firstName: u.name.split(' ')[0] ?? '',
+            lastName: u.name.split(' ').slice(1).join(' ') ?? '',
+        }));
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get('staff-options')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List all staff users for filters' })
@@ -121,17 +127,41 @@ export class EmployeesController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get single staff user by id' })
-    async getOne(@Param('id', ParseIntPipe) id: number) {
+    async getOne(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() actor?: User,
+    ) {
+        // Employees may only read their OWN record (self-service "Mój grafik").
+        if (actor?.role !== Role.Admin && actor?.id !== id) {
+            throw new ForbiddenException(
+                'You may only access your own employee record',
+            );
+        }
         const user = await this.usersService.findById(id);
         if (!user || !STAFF_ROLES.includes(user.role)) {
             return null;
         }
+        if (actor?.role !== Role.Admin) {
+            return this.toStaffView(user);
+        }
         return {
             ...user,
+            fullName: user.name,
+            firstName: user.name.split(' ')[0] ?? '',
+            lastName: user.name.split(' ').slice(1).join(' ') ?? '',
+        };
+    }
+
+    /** Minimal, PII-free staff projection for non-admin callers. */
+    private toStaffView(user: User) {
+        return {
+            id: user.id,
+            name: user.name,
+            role: user.role,
             fullName: user.name,
             firstName: user.name.split(' ')[0] ?? '',
             lastName: user.name.split(' ').slice(1).join(' ') ?? '',

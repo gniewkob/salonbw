@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
 import type { SalonModule } from './navigation';
 import ServicesNav from './navs/ServicesNav';
 import ServiceDetailNav from './navs/ServiceDetailNav';
@@ -36,8 +37,16 @@ function parseCustomerIdFromRoute(
 
 export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
     const router = useRouter();
+    const { role } = useAuth();
 
     if (!module.secondaryNav) {
+        return null;
+    }
+
+    // Employees/receptionists only reach /settings to edit their OWN schedule
+    // (via the "Mój grafik" entry). The full settings module nav (salon data,
+    // payments, RODO logs, …) is admin-only — don't expose dead links to it.
+    if (module.key === 'settings' && role !== 'admin') {
         return null;
     }
 
