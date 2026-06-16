@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -225,8 +225,16 @@ function renderSlotState(daySlots: TimetableSlot[], day: Date) {
 
 export default function SettingsTimetableEmployeeDetailPage() {
     const router = useRouter();
-    const { role } = useAuth();
+    const { role, user } = useAuth();
     const id = router.query.id ? Number(router.query.id) : null;
+    const isEmployee = role === 'employee';
+
+    // Employees may only ever view/edit their OWN schedule — clamp the URL.
+    useEffect(() => {
+        if (isEmployee && user?.id != null && id != null && id !== user.id) {
+            void router.replace(`/settings/timetable/employees/${user.id}`);
+        }
+    }, [isEmployee, user?.id, id, router]);
     const date = useMemo(
         () => parseDateParam(router.query.date),
         [router.query.date],
@@ -302,120 +310,128 @@ export default function SettingsTimetableEmployeeDetailPage() {
     }, [allTimetables]);
 
     const secondaryNav = useMemo(
-        () => (
-            <div className="sidenav" id="sidenav">
-                <div className="column_row">
-                    <h4>Grafiki pracowników</h4>
-                    <div className="tree users-list">
-                        <Link
-                            className="root"
-                            href={{
-                                pathname: '/settings/timetable/employees',
-                                query: { date: toIsoDate(date), kind: 'week' },
-                            }}
-                        >
-                            <div className="icon_box">
-                                <i
-                                    className="icon sprite-filter_handled_employees "
-                                    aria-hidden="true"
-                                />
-                            </div>
-                            Wszyscy pracownicy
-                        </Link>
-                        <ul>
-                            {(staffOptions ?? []).map((option) => {
-                                const timetable = timetableByEmployee.get(
-                                    option.id,
-                                );
-                                const expired = isExpired(timetable?.validTo);
+        () =>
+            isEmployee ? null : (
+                <div className="sidenav" id="sidenav">
+                    <div className="column_row">
+                        <h4>Grafiki pracowników</h4>
+                        <div className="tree users-list">
+                            <Link
+                                className="root"
+                                href={{
+                                    pathname: '/settings/timetable/employees',
+                                    query: {
+                                        date: toIsoDate(date),
+                                        kind: 'week',
+                                    },
+                                }}
+                            >
+                                <div className="icon_box">
+                                    <i
+                                        className="icon sprite-filter_handled_employees "
+                                        aria-hidden="true"
+                                    />
+                                </div>
+                                Wszyscy pracownicy
+                            </Link>
+                            <ul>
+                                {(staffOptions ?? []).map((option) => {
+                                    const timetable = timetableByEmployee.get(
+                                        option.id,
+                                    );
+                                    const expired = isExpired(
+                                        timetable?.validTo,
+                                    );
 
-                                return (
-                                    <li
-                                        key={option.id}
-                                        className={
-                                            option.id === id ? 'active' : ''
-                                        }
-                                    >
-                                        <Link
+                                    return (
+                                        <li
+                                            key={option.id}
                                             className={
                                                 option.id === id ? 'active' : ''
                                             }
-                                            href={{
-                                                pathname:
-                                                    '/settings/timetable/employees/[id]',
-                                                query: {
-                                                    id: option.id,
-                                                    date: toIsoDate(date),
-                                                },
-                                            }}
                                         >
-                                            <span className="employee-name">
-                                                {option.name}
-                                            </span>
-                                            <span
+                                            <Link
                                                 className={
-                                                    expired
-                                                        ? 'expired schedule-to'
-                                                        : 'schedule-to'
+                                                    option.id === id
+                                                        ? 'active'
+                                                        : ''
                                                 }
+                                                href={{
+                                                    pathname:
+                                                        '/settings/timetable/employees/[id]',
+                                                    query: {
+                                                        id: option.id,
+                                                        date: toIsoDate(date),
+                                                    },
+                                                }}
                                             >
-                                                {timetable?.validTo
-                                                    ? `Grafik do ${formatDate(
-                                                          new Date(
-                                                              `${timetable.validTo}T12:00:00`,
-                                                          ),
-                                                      )}`
-                                                    : 'Brak daty końcowej'}
-                                            </span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
+                                                <span className="employee-name">
+                                                    {option.name}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        expired
+                                                            ? 'expired schedule-to'
+                                                            : 'schedule-to'
+                                                    }
+                                                >
+                                                    {timetable?.validTo
+                                                        ? `Grafik do ${formatDate(
+                                                              new Date(
+                                                                  `${timetable.validTo}T12:00:00`,
+                                                              ),
+                                                          )}`
+                                                        : 'Brak daty końcowej'}
+                                                </span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
 
-                    <h4>Inne</h4>
-                    <div className="list_container">
-                        <ul className="simple-list">
-                            <li>
-                                <Link href="/statistics/worktime">
-                                    <div className="icon_box">
-                                        <i
-                                            className="icon sprite-schedule_report mr-xs "
-                                            aria-hidden="true"
-                                        />
-                                    </div>
-                                    Raport czasu pracy
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/settings/timetable/templates">
-                                    <div className="icon_box">
-                                        <i
-                                            className="icon sprite-schedule_template mr-xs "
-                                            aria-hidden="true"
-                                        />
-                                    </div>
-                                    Szablony
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/settings/timetable/employees/copy">
-                                    <div className="icon_box">
-                                        <i
-                                            className="icon sprite-schedule_copy mr-xs "
-                                            aria-hidden="true"
-                                        />
-                                    </div>
-                                    Kopiuj grafiki pracy
-                                </Link>
-                            </li>
-                        </ul>
+                        <h4>Inne</h4>
+                        <div className="list_container">
+                            <ul className="simple-list">
+                                <li>
+                                    <Link href="/statistics/worktime">
+                                        <div className="icon_box">
+                                            <i
+                                                className="icon sprite-schedule_report mr-xs "
+                                                aria-hidden="true"
+                                            />
+                                        </div>
+                                        Raport czasu pracy
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/settings/timetable/templates">
+                                        <div className="icon_box">
+                                            <i
+                                                className="icon sprite-schedule_template mr-xs "
+                                                aria-hidden="true"
+                                            />
+                                        </div>
+                                        Szablony
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/settings/timetable/employees/copy">
+                                        <div className="icon_box">
+                                            <i
+                                                className="icon sprite-schedule_copy mr-xs "
+                                                aria-hidden="true"
+                                            />
+                                        </div>
+                                        Kopiuj grafiki pracy
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-        ),
-        [date, id, staffOptions, timetableByEmployee],
+            ),
+        [date, id, staffOptions, timetableByEmployee, isEmployee],
     );
 
     useSetSecondaryNav(secondaryNav);
@@ -474,7 +490,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
 
     if (employeeLoading || timetablesLoading) {
         return (
-            <RouteGuard roles={['admin']} permission="nav:settings">
+            <RouteGuard roles={['admin', 'employee']}>
                 <SalonShell role={role}>
                     <div
                         className="settings-detail-layout"
@@ -496,7 +512,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
 
     if (timetablesError || !employee || !id) {
         return (
-            <RouteGuard roles={['admin']} permission="nav:settings">
+            <RouteGuard roles={['admin', 'employee']}>
                 <SalonShell role={role}>
                     <div
                         className="settings-detail-layout"
@@ -526,7 +542,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
     }
 
     return (
-        <RouteGuard roles={['admin']} permission="nav:settings">
+        <RouteGuard roles={['admin', 'employee']}>
             <Head>
                 <title>
                     {`Grafik: ${employee.name} — Ustawienia — Salon Black & White`}

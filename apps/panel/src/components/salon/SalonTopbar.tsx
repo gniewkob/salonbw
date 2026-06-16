@@ -303,6 +303,14 @@ export default function SalonTopbar() {
                             <li className="main-menu-li">
                                 <Link href="/account">Zmień hasło</Link>
                             </li>
+                            {user?.role === 'employee' ? (
+                                <>
+                                    <li className="divider"></li>
+                                    <li className="main-menu-li">
+                                        <Link href="/schedule">Mój grafik</Link>
+                                    </li>
+                                </>
+                            ) : null}
                             <li className="divider"></li>
                             <li className="main-menu-li">
                                 <button
