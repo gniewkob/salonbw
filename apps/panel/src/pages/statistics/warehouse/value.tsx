@@ -36,13 +36,13 @@ interface ValueStats {
 }
 
 const COLORS = [
-    '#008bb4',
-    '#5cb85c',
-    '#f0ad4e',
-    '#d9534f',
-    '#6f42c1',
-    '#20c997',
-    '#fd7e14',
+    '#0d0d0d',
+    '#6e7278',
+    '#9a9ea4',
+    '#3a3d42',
+    '#c4c8ce',
+    '#54585e',
+    '#87898f',
     '#6c757d',
 ];
 
@@ -268,7 +268,7 @@ export default function WarehouseValuePage() {
                                                     <Bar
                                                         dataKey="productCount"
                                                         name="Produkty"
-                                                        fill="#008bb4"
+                                                        fill="#0d0d0d"
                                                     />
                                                 </BarChart>
                                             </ResponsiveContainer>

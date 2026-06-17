@@ -37,8 +37,8 @@ const DATE_RANGES = [
 ];
 
 const COLORS = {
-    new: '#008bb4',
-    returning: '#11ce44',
+    new: '#0d0d0d',
+    returning: '#6e7278',
 };
 
 export default function CustomersReturning() {
@@ -155,7 +155,7 @@ export default function CustomersReturning() {
                                         </div>
                                         <div
                                             className="salonbw-tile__value"
-                                            style={{ color: '#11ce44' }}
+                                            style={{ color: '#6e7278' }}
                                         >
                                             {stats.returningClients}
                                             <span className="small ms-5">

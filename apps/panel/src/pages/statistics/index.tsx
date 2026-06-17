@@ -32,7 +32,10 @@ const VISUAL_FALLBACK_EMPLOYEES = [
     { id: -3, name: 'Aleksandra Bodora' },
 ];
 
-const EMPLOYEE_COLORS = ['#88ca2a', '#169ddd', '#d95431'];
+// Brand-aligned monochrome chart palette (Salon Black & White: B&W + silver).
+// Segments are distinguished by lightness — always pair with a legend/label,
+// never rely on hue alone.
+const EMPLOYEE_COLORS = ['#0d0d0d', '#6e7278', '#9a9ea4'];
 
 interface EmployeeReportRow {
     employeeId: number;
@@ -337,11 +340,11 @@ function StatisticsPageContent() {
     const paymentRows = useMemo(() => {
         const totalsData = registerSummary?.totals;
         const candidates = [
-            { key: 'cash', label: 'gotówka', color: '#88ca2a' },
-            { key: 'card', label: 'karta kredytowa', color: '#169ddd' },
-            { key: 'transfer', label: 'przelew', color: '#f0ad4e' },
-            { key: 'online', label: 'online', color: '#8e44ad' },
-            { key: 'voucher', label: 'voucher', color: '#7f8c8d' },
+            { key: 'cash', label: 'gotówka', color: '#0d0d0d' },
+            { key: 'card', label: 'karta kredytowa', color: '#6e7278' },
+            { key: 'transfer', label: 'przelew', color: '#9a9ea4' },
+            { key: 'online', label: 'online', color: '#3a3d42' },
+            { key: 'voucher', label: 'voucher', color: '#c4c8ce' },
         ] as const;
 
         const rows = candidates
@@ -356,7 +359,7 @@ function StatisticsPageContent() {
                 {
                     key: 'cash' as const,
                     label: 'gotówka',
-                    color: '#88ca2a',
+                    color: '#0d0d0d',
                     amount:
                         toNumber(totalsData?.total) ||
                         toNumber(totalsData?.cash),

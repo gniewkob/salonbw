@@ -86,13 +86,13 @@ export default function RevenueChart({
                     <Legend />
                     <Bar
                         dataKey="Przychód"
-                        fill="#25B4C1"
+                        fill="#0d0d0d"
                         radius={[4, 4, 0, 0]}
                     />
                     {showTips && (
                         <Bar
                             dataKey="Napiwki"
-                            fill="#10b981"
+                            fill="#6e7278"
                             radius={[4, 4, 0, 0]}
                         />
                     )}

@@ -53,16 +53,16 @@ const DATE_RANGES = [
     { id: 'last_year', label: 'Poprzedni rok' },
 ];
 
-const RETURNING_COLORS = { new: '#008bb4', returning: '#11ce44' };
+const RETURNING_COLORS = { new: '#0d0d0d', returning: '#6e7278' };
 
 const ORIGINS_COLORS = [
-    '#008bb4',
-    '#5cb85c',
-    '#f0ad4e',
-    '#d9534f',
-    '#6f42c1',
-    '#20c997',
-    '#f3c200',
+    '#0d0d0d',
+    '#6e7278',
+    '#9a9ea4',
+    '#3a3d42',
+    '#c4c8ce',
+    '#54585e',
+    '#87898f',
 ];
 
 // ─── Tab: Przegląd ────────────────────────────────────────────────────────────
@@ -322,7 +322,7 @@ function ReturningTab() {
                                 </div>
                                 <div
                                     className="salonbw-tile__value"
-                                    style={{ color: '#11ce44' }}
+                                    style={{ color: '#6e7278' }}
                                 >
                                     {stats.returningClients}
                                     <span className="small ms-2">
@@ -610,7 +610,7 @@ function OriginsTab() {
                                             <Bar
                                                 dataKey="count"
                                                 name="Liczba"
-                                                fill="#008bb4"
+                                                fill="#0d0d0d"
                                             />
                                         </BarChart>
                                     </ResponsiveContainer>

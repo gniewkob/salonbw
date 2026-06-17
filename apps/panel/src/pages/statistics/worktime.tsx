@@ -357,7 +357,7 @@ export default function WorkTimeReportPage() {
                                                             <Bar
                                                                 dataKey="workTime"
                                                                 name="Godziny"
-                                                                fill="#008bb4"
+                                                                fill="#0d0d0d"
                                                             />
                                                         </BarChart>
                                                     </ResponsiveContainer>

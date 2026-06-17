@@ -49,13 +49,13 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-    delivery: '#5cb85c',
-    sale: '#008bb4',
-    usage: '#f0ad4e',
-    adjustment: '#6f42c1',
+    delivery: '#6e7278',
+    sale: '#0d0d0d',
+    usage: '#9a9ea4',
+    adjustment: '#c4c8ce',
     stocktaking: '#6c757d',
-    return: '#20c997',
-    loss: '#d9534f',
+    return: '#54585e',
+    loss: '#3a3d42',
 };
 
 export default function WarehouseChangesPage() {
@@ -191,7 +191,7 @@ export default function WarehouseChangesPage() {
                                             <Bar
                                                 dataKey="count"
                                                 name="Liczba operacji"
-                                                fill="#008bb4"
+                                                fill="#0d0d0d"
                                             />
                                         </BarChart>
                                     </ResponsiveContainer>

@@ -33,13 +33,13 @@ const DATE_RANGES = [
 ];
 
 const COLORS = [
-    '#008bb4',
-    '#5cb85c',
-    '#f0ad4e',
-    '#d9534f',
-    '#6f42c1',
-    '#20c997',
-    { name: 'Portal', color: '#f3c200' },
+    '#0d0d0d',
+    '#6e7278',
+    '#9a9ea4',
+    '#3a3d42',
+    '#c4c8ce',
+    '#54585e',
+    { name: 'Portal', color: '#87898f' },
 ];
 
 export default function ClientOriginsPage() {
@@ -270,7 +270,7 @@ export default function ClientOriginsPage() {
                                                     <Bar
                                                         dataKey="count"
                                                         name="Liczba"
-                                                        fill="#008bb4"
+                                                        fill="#0d0d0d"
                                                     />
                                                 </BarChart>
                                             </ResponsiveContainer>
