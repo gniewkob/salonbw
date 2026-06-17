@@ -131,6 +131,15 @@ export default function AppointmentDrawer({
         () => services.find((s) => s.id === Number(serviceId)),
         [serviceId, services],
     );
+    // Only offer active services in the picker (legacy/duplicate services are
+    // deactivated), but always keep the appointment's current service visible
+    // so editing an existing visit on a now-inactive service still works.
+    const bookableServices = useMemo<Service[]>(() => {
+        const selectedId = Number(serviceId);
+        return services.filter(
+            (s) => s.isActive !== false || s.id === selectedId,
+        );
+    }, [services, serviceId]);
     const canCreateInlineCustomer =
         newCustomerFirstName.trim().length > 0 ||
         newCustomerLastName.trim().length > 0;
@@ -522,7 +531,7 @@ export default function AppointmentDrawer({
                                     disabled={isEditMode}
                                 >
                                     <option value="">Wybierz usługę</option>
-                                    {services.map((svc: Service) => (
+                                    {bookableServices.map((svc: Service) => (
                                         <option key={svc.id} value={svc.id}>
                                             {svc.name}
                                         </option>

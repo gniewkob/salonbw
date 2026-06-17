@@ -6,7 +6,7 @@ export default function Forbidden() {
         >
             <p className="fs-1 fw-bold text-dark">403</p>
             <p className="fs-5 text-muted">
-                You don&apos;t have permission to access this area.
+                Nie masz uprawnień, aby wyświetlić tę sekcję.
             </p>
         </div>
     );

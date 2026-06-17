@@ -83,7 +83,7 @@ describe('RouteGuard', () => {
         );
         expect(replace).not.toHaveBeenCalled();
         expect(
-            screen.getByText("You don't have permission to access this area."),
+            screen.getByText('Nie masz uprawnień, aby wyświetlić tę sekcję.'),
         ).toBeInTheDocument();
     });
 });
