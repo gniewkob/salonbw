@@ -220,7 +220,7 @@ export default function SettingsCategoriesPage() {
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <Head>
-                <title>Kategorie usług — Salon Black &amp; White</title>
+                <title>Kategorie produktów — Salon Black &amp; White</title>
             </Head>
             <SalonShell role={role}>
                 <div
