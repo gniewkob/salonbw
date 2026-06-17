@@ -65,10 +65,11 @@ export default function FinalizationModal({
         enabled: open && !!appointment?.service?.id,
     });
 
-    // Fetch products for upselling
+    // Fetch products for upselling. Pickers only offer active products
+    // (filtered server-side); deactivated stock must not be sellable/usable.
     const { data: productsResponse } = useQuery<ProductsResponse>({
-        queryKey: ['products'],
-        queryFn: () => apiFetch<ProductsResponse>('/products'),
+        queryKey: ['products', { isActive: true }],
+        queryFn: () => apiFetch<ProductsResponse>('/products?isActive=true'),
         enabled: open && (showProductPicker || showUsagePicker),
     });
     const products = useMemo<Product[]>(
