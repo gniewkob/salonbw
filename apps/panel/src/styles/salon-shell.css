@@ -1648,7 +1648,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .customer-stats-value--all {
-    color: #2aa0cf;
+    color: #0d0d0d;
 }
 .customer-stats-value--ok {
     color: #56b060;
@@ -1990,11 +1990,11 @@ tr.customer-row:hover .customers-drag-handle {
     margin-top: 2px;
     font-size: 20px;
     line-height: 1.1;
-    color: #2aa0cf;
+    color: #0d0d0d;
 }
 
 .customer-stats-share__amount--red {
-    color: #e36b5d;
+    color: #6e7278;
 }
 
 .customer-stats-share__bar {
