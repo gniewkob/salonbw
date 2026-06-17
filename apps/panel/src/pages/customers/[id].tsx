@@ -628,9 +628,20 @@ function CustomerSummaryView({
                     <div className="col-sm-6">
                         <div className="info-box">
                             <p className="box-title">
-                                zrealizowane wizyty:{' '}
-                                {stats?.completedVisits || 0}
+                                ostatnie wizyty: {stats?.totalVisits || 0}
                             </p>
+                            {(stats?.completedVisits ?? 0) > 0 && (
+                                <p
+                                    className="light_text"
+                                    style={{
+                                        marginTop: -6,
+                                        marginBottom: 8,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    zrealizowanych: {stats?.completedVisits}
+                                </p>
+                            )}
                             <div className="box-rows">
                                 {historyItems.length > 0 ? (
                                     <>
@@ -688,9 +699,7 @@ function CustomerSummaryView({
                                         </Link>
                                     </>
                                 ) : (
-                                    <p className="light_text">
-                                        Brak zrealizowanych wizyt
-                                    </p>
+                                    <p className="light_text">Brak wizyt</p>
                                 )}
                             </div>
                         </div>
@@ -712,6 +721,7 @@ type CustomerUpcomingVisit = {
 };
 
 type CustomerSummaryStats = {
+    totalVisits?: number;
     completedVisits?: number;
     upcomingVisits?: CustomerUpcomingVisit[];
 };
