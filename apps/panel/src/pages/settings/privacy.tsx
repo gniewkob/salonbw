@@ -224,10 +224,10 @@ function ConsentTab() {
                                     W celu realizacji powyższych praw skontaktuj
                                     się z nami:{' '}
                                     <a
-                                        href="mailto:salon@example.pl"
+                                        href="mailto:kontakt@salon-bw.pl"
                                         className="text-decoration-underline"
                                     >
-                                        salon@example.pl
+                                        kontakt@salon-bw.pl
                                     </a>
                                 </p>
                             </div>
