@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -21,6 +21,36 @@ export default function AccountPage() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+
+    const [smsConsent, setSmsConsent] = useState(false);
+    const [emailConsent, setEmailConsent] = useState(false);
+    const [consentSaving, setConsentSaving] = useState(false);
+    const [consentSaved, setConsentSaved] = useState(false);
+    const [consentError, setConsentError] = useState('');
+
+    useEffect(() => {
+        if (!user) return;
+        setSmsConsent(Boolean(user.smsConsent));
+        setEmailConsent(Boolean(user.emailConsent));
+    }, [user]);
+
+    const handleConsentSave = async () => {
+        setConsentSaving(true);
+        setConsentError('');
+        setConsentSaved(false);
+        try {
+            await apiFetch('/users/profile/consent', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ smsConsent, emailConsent }),
+            });
+            setConsentSaved(true);
+        } catch {
+            setConsentError('Nie udało się zapisać zgód. Spróbuj ponownie.');
+        } finally {
+            setConsentSaving(false);
+        }
+    };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -83,6 +113,81 @@ export default function AccountPage() {
                         ) : (
                             <p className="text-muted">Ładowanie...</p>
                         )}
+                    </PanelSection>
+
+                    <PanelSection title="Zgody marketingowe i kontaktowe">
+                        <p className="text-muted" style={{ marginTop: -4 }}>
+                            Zdecyduj, jak salon może się z Tobą kontaktować.
+                            Zgody możesz w każdej chwili zmienić.
+                        </p>
+                        <div style={{ maxWidth: 480 }}>
+                            <div className="form-check mb-2">
+                                <input
+                                    id="acc-consent-email"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={emailConsent}
+                                    disabled={consentSaving}
+                                    onChange={(e) => {
+                                        setEmailConsent(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-consent-email"
+                                    className="form-check-label"
+                                >
+                                    Zgoda na kontakt e-mail (potwierdzenia,
+                                    przypomnienia, informacje marketingowe)
+                                </label>
+                            </div>
+                            <div className="form-check mb-3">
+                                <input
+                                    id="acc-consent-sms"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={smsConsent}
+                                    disabled={consentSaving}
+                                    onChange={(e) => {
+                                        setSmsConsent(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-consent-sms"
+                                    className="form-check-label"
+                                >
+                                    Zgoda na kontakt SMS / WhatsApp
+                                    (potwierdzenia, przypomnienia)
+                                </label>
+                            </div>
+                            {consentError && (
+                                <div
+                                    role="alert"
+                                    className="alert alert-danger py-2 small mb-3"
+                                >
+                                    {consentError}
+                                </div>
+                            )}
+                            {consentSaved && (
+                                <div
+                                    role="status"
+                                    className="alert alert-success py-2 small mb-3"
+                                >
+                                    Zgody zostały zapisane.
+                                </div>
+                            )}
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={consentSaving}
+                                onClick={() => void handleConsentSave()}
+                            >
+                                {consentSaving
+                                    ? 'Zapisywanie…'
+                                    : 'Zapisz zgody'}
+                            </button>
+                        </div>
                     </PanelSection>
 
                     <PanelSection title="Zmień hasło">

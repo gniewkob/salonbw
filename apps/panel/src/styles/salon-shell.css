@@ -2347,27 +2347,34 @@ tr.customer-row:hover .customers-drag-handle {
 
 .navbar .notification_center .notifications_unread::after,
 .navbar .tasks_tooltip .assigned_tasks::after {
-    color: white;
-    border: 1px solid #ffffff;
+    color: #0d0d0d;
+    background: #b4b8be;
+    border: 2px solid #0a0a0a;
     position: absolute;
-    top: 7px;
-    line-height: 100%;
-    font-size: 11px;
-    padding: 1px 4px;
+    top: 4px;
+    min-width: 16px;
+    line-height: 1;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 4px;
     text-align: center;
-    border-radius: 7px;
+    border-radius: 9px;
 }
 
 .navbar .notification_center .notifications_unread::after {
-    background: #f72f6d;
     content: attr(data-unread_notifications);
-    left: 10px;
+    left: 12px;
 }
 
 .navbar .tasks_tooltip .assigned_tasks::after {
-    background: #00c6a3;
     content: attr(data-assigned_tasks);
-    left: 11px;
+    left: 13px;
+}
+
+/* Don't show a count badge when there is nothing pending (no '0' badge). */
+.navbar .tasks_tooltip .assigned_tasks[data-assigned_tasks='0']::after,
+.navbar .notification_center_icon[data-unread_notifications='0']::after {
+    display: none;
 }
 
 .navbar .dropdown-menu-tasks .main-menu-li > a {
@@ -2381,8 +2388,8 @@ tr.customer-row:hover .customers-drag-handle {
     min-width: 22px;
     padding: 1px 6px;
     border-radius: 10px;
-    background: #f6b425;
-    color: #2b2b2b;
+    background: #0d0d0d;
+    color: #ffffff;
     font-size: 11px;
     font-weight: 700;
     text-align: center;
@@ -2401,19 +2408,90 @@ tr.customer-row:hover .customers-drag-handle {
     align-items: center;
 }
 
+/* Circular silver avatar with the user's initials (brand: dark-on-silver). */
 .navbar .color1 {
-    min-width: 22px;
-    height: 22px;
-    border-radius: 3px;
-    border: 1px solid #9ec4e6;
-    background: #eff7ff;
-    color: #3b7eb6;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 0;
+    background: #b4b8be;
+    color: #0d0d0d;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 0 4px;
+    letter-spacing: 0.02em;
+    transition:
+        background 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.navbar .dropdown-toggle:hover .color1,
+.navbar .right-menu.open .color1 {
+    background: #c8ccd2;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+/* User-menu identity card (in the dropdown) */
+.navbar .topbar-user-menu .topbar-user-head {
+    padding: 0;
+}
+
+.topbar-user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: default;
+}
+
+.topbar-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0d0d0d;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.topbar-user-avatar--img {
+    object-fit: cover;
+}
+
+.topbar-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.topbar-user-meta strong {
+    font-size: 14px;
+    color: #1a1a1a;
+    line-height: 1.2;
+}
+
+.topbar-user-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6e7278;
+    margin-top: 2px;
+}
+
+.topbar-user-email {
+    font-size: 12px;
+    color: #6e7278;
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .navbar .caret {

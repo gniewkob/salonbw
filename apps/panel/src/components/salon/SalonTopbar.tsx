@@ -281,35 +281,63 @@ export default function SalonTopbar() {
                                 </div>
                             </div>
                         </button>
-                        <ul className="dropdown-menu larger-dropdown-menu">
-                            <li className="main-menu-li">
-                                <a
-                                    className="profil"
-                                    href={topbar.user.profileHref}
-                                >
+                        <ul className="dropdown-menu larger-dropdown-menu topbar-user-menu">
+                            <li className="main-menu-li topbar-user-head">
+                                <div className="topbar-user-card">
                                     {topbar.user.avatarUrl ? (
                                         /* eslint-disable-next-line @next/next/no-img-element */
                                         <img
-                                            alt="Avatar"
-                                            className="avatar"
+                                            alt=""
+                                            className="topbar-user-avatar topbar-user-avatar--img"
                                             src={topbar.user.avatarUrl}
                                         />
-                                    ) : null}
-                                    <strong>{topbar.user.fullName}</strong>
-                                    {topbar.user.roleLabel}
-                                </a>
+                                    ) : (
+                                        <span
+                                            className="topbar-user-avatar"
+                                            aria-hidden="true"
+                                        >
+                                            {topbar.user.initials}
+                                        </span>
+                                    )}
+                                    <span className="topbar-user-meta">
+                                        <strong>{topbar.user.fullName}</strong>
+                                        <span className="topbar-user-role">
+                                            {topbar.user.roleLabel}
+                                        </span>
+                                        {user?.email ? (
+                                            <span className="topbar-user-email">
+                                                {user.email}
+                                            </span>
+                                        ) : null}
+                                    </span>
+                                </div>
                             </li>
                             <li className="divider"></li>
                             <li className="main-menu-li">
-                                <Link href="/account">Zmień hasło</Link>
+                                <Link
+                                    href="/account"
+                                    onClick={() => setUserMenuOpen(false)}
+                                >
+                                    Edytuj profil i zgody
+                                </Link>
+                            </li>
+                            <li className="main-menu-li">
+                                <Link
+                                    href="/account"
+                                    onClick={() => setUserMenuOpen(false)}
+                                >
+                                    Zmień hasło
+                                </Link>
                             </li>
                             {user?.role === 'employee' ? (
-                                <>
-                                    <li className="divider"></li>
-                                    <li className="main-menu-li">
-                                        <Link href="/schedule">Mój grafik</Link>
-                                    </li>
-                                </>
+                                <li className="main-menu-li">
+                                    <Link
+                                        href="/schedule"
+                                        onClick={() => setUserMenuOpen(false)}
+                                    >
+                                        Mój grafik
+                                    </Link>
+                                </li>
                             ) : null}
                             <li className="divider"></li>
                             <li className="main-menu-li">
