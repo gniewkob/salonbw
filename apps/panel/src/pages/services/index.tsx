@@ -42,6 +42,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
     const router = useRouter();
     const toast = useToast();
     const [search, setSearch] = useState('');
+    const [showInactive, setShowInactive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [bulkDeletePending, setBulkDeletePending] = useState(false);
     const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
@@ -127,10 +128,16 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         });
     }, [services, popularityByServiceId, role]);
 
+    const inactiveCount = useMemo(
+        () => processedServices.filter((s) => s.isActive === false).length,
+        [processedServices],
+    );
+
     const filtered = useMemo(() => {
         const query = search.trim().toLowerCase();
-        if (!query) return processedServices;
         return processedServices.filter((service) => {
+            if (!showInactive && service.isActive === false) return false;
+            if (!query) return true;
             return (
                 service.name.toLowerCase().includes(query) ||
                 (service.categoryRelation?.name || '')
@@ -138,7 +145,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                     .includes(query)
             );
         });
-    }, [search, processedServices]);
+    }, [search, processedServices, showInactive]);
 
     // Pagination
     const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -297,7 +304,23 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                         ))}
                     </select>
                 </div>
-                <div className="col-sm-4 text-end mt-1">
+                <div className="col-sm-4 text-end mt-1 d-flex align-items-center justify-content-end gap-3">
+                    {inactiveCount > 0 && (
+                        <label
+                            className="d-inline-flex align-items-center gap-2 text-muted small mb-0"
+                            style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={showInactive}
+                                onChange={(e) => {
+                                    setShowInactive(e.target.checked);
+                                    setCurrentPage(1);
+                                }}
+                            />
+                            pokaż nieaktywne ({inactiveCount})
+                        </label>
+                    )}
                     <Link href="/services/new" className="btn btn-primary">
                         dodaj usługę
                     </Link>
@@ -403,6 +426,19 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                                 >
                                                     {service.name}
                                                 </Link>
+                                                {service.isActive === false && (
+                                                    <span
+                                                        className="badge ms-2"
+                                                        style={{
+                                                            background:
+                                                                '#e9ecef',
+                                                            color: '#6e7278',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    >
+                                                        nieaktywna
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="wrap">
                                                 {service.categoryRelation
