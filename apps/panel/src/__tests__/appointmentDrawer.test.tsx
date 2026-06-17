@@ -18,21 +18,23 @@ jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ apiFetch: apiFetchMock }),
 }));
 
+const MOCK_SERVICES = {
+    data: [
+        {
+            id: 10,
+            name: 'Strzyżenie',
+            duration: 45,
+            price: 120,
+            priceType: 'fixed',
+            isActive: true,
+            onlineBooking: true,
+            sortOrder: 0,
+        },
+    ],
+};
 jest.mock('@/hooks/useServices', () => ({
-    useServices: () => ({
-        data: [
-            {
-                id: 10,
-                name: 'Strzyżenie',
-                duration: 45,
-                price: 120,
-                priceType: 'fixed',
-                isActive: true,
-                onlineBooking: true,
-                sortOrder: 0,
-            },
-        ],
-    }),
+    useServices: () => MOCK_SERVICES,
+    useActiveServices: () => MOCK_SERVICES,
 }));
 
 jest.mock('@/hooks/useEmployees', () => ({

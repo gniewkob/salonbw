@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Employee, Service } from '@/types';
-import { useServices } from '@/hooks/useServices';
+import { useActiveServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
 import {
     useCreateCustomer,
@@ -94,7 +94,9 @@ export default function AppointmentDrawer({
 }: AppointmentDrawerProps) {
     const { apiFetch } = useAuth();
     const isMobile = useIsMobile();
-    const services = useServices().data ?? EMPTY_SERVICES;
+    // Active services come pre-filtered from the DB (?isActive=true) so the
+    // picker never lists deactivated/legacy services.
+    const services = useActiveServices().data ?? EMPTY_SERVICES;
     const employees = useEmployees().data ?? EMPTY_EMPLOYEES;
 
     const [customerSearch, setCustomerSearch] = useState('');
@@ -127,19 +129,20 @@ export default function AppointmentDrawer({
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
 
-    const selectedService = useMemo<Service | undefined>(
-        () => services.find((s) => s.id === Number(serviceId)),
-        [serviceId, services],
-    );
-    // Only offer active services in the picker (legacy/duplicate services are
-    // deactivated), but always keep the appointment's current service visible
-    // so editing an existing visit on a now-inactive service still works.
+    // `services` is the active set (DB-filtered). When editing a visit whose
+    // service was since deactivated, keep that service in the list so it still
+    // displays/selects correctly.
     const bookableServices = useMemo<Service[]>(() => {
-        const selectedId = Number(serviceId);
-        return services.filter(
-            (s) => s.isActive !== false || s.id === selectedId,
-        );
-    }, [services, serviceId]);
+        const current = appointment?.service;
+        if (current && !services.some((s) => s.id === current.id)) {
+            return [current, ...services];
+        }
+        return services;
+    }, [services, appointment?.service]);
+    const selectedService = useMemo<Service | undefined>(
+        () => bookableServices.find((s) => s.id === Number(serviceId)),
+        [serviceId, bookableServices],
+    );
     const canCreateInlineCustomer =
         newCustomerFirstName.trim().length > 0 ||
         newCustomerLastName.trim().length > 0;

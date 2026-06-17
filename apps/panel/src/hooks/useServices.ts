@@ -15,6 +15,15 @@ export function useServices() {
     return useList<Service>('/services');
 }
 
+/**
+ * Active services only, filtered server-side (DB query via ?isActive=true),
+ * for pickers that must not offer deactivated/legacy services (e.g. the
+ * calendar "Nowa wizyta" service dropdown).
+ */
+export function useActiveServices() {
+    return useList<Service>('/services?isActive=true');
+}
+
 export function useServiceCategories() {
     const { apiFetch } = useAuth();
     return useQuery<ServiceCategory[]>({
