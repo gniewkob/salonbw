@@ -2647,6 +2647,11 @@ body.e2e-extension .main-content .inner {
     margin: 0;
     padding: 0;
     list-style: none;
+    /* These lists also carry Bootstrap's .nav (display:flex row) — force a
+       vertical sidebar stack so multi-item groups (e.g. KAMPANIE: Wiadomości
+       masowe / Newslettery) don't render side-by-side and run together. */
+    display: flex;
+    flex-direction: column;
 }
 
 #sidenav .nav-list li a,
