@@ -130,7 +130,7 @@ export default function CustomerSidebar({
                             const tagStyle = {
                                 '--dynamic-color':
                                     filters.tagId === tag.id
-                                        ? '#008bb4'
+                                        ? '#0d0d0d'
                                         : tag.color || '#999',
                             } as React.CSSProperties;
                             return (

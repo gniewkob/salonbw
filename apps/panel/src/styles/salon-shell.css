@@ -1827,7 +1827,7 @@ tr.customer-row:hover .customers-drag-handle {
 
 .customer-bar-chart__bar {
     width: 100%;
-    background: #2aa0cf;
+    background: #0d0d0d;
     opacity: 0.85;
 }
 
@@ -2008,12 +2008,12 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .customer-stats-share__bar-services {
-    background: #2aa0cf;
+    background: #0d0d0d;
     min-width: 0;
 }
 
 .customer-stats-share__bar-products {
-    background: #e36b5d;
+    background: #9a9ea4;
     min-width: 0;
 }
 
