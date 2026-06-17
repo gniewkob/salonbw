@@ -4248,8 +4248,14 @@ body.settings-dashboard-landing .main-content > .inner {
     vertical-align: middle;
 }
 
+/* Desaturate the colourful Versum settings illustrations to match the salon's
+   monochrome B&W brand (keeps the recognisable shapes, drops the colour). */
+.setting-box a .ico-container svg {
+    filter: grayscale(1) contrast(1.04);
+}
+
 .setting-box a:hover {
-    background: #f3ffff;
+    background: #f5f5f6;
     text-decoration: none;
 }
 

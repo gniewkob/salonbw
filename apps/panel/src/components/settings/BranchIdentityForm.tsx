@@ -77,13 +77,7 @@ function buildPayload(draft: BranchIdentityDraft): UpdateBranchSettingsRequest {
 }
 
 export default function BranchIdentityForm() {
-    const {
-        data: settings,
-        isLoading,
-        isError,
-        error,
-        refetch,
-    } = useBranchSettings();
+    const { data: settings, isLoading, isError, refetch } = useBranchSettings();
     const { updateBranchSettings } = useSettingsMutations();
     const toast = useToast();
     const [draft, setDraft] = useState<BranchIdentityDraft>(EMPTY_DRAFT);
@@ -185,11 +179,7 @@ export default function BranchIdentityForm() {
     if (isError) {
         return (
             <div className="settings-detail-state settings-detail-state--error">
-                <p>
-                    {error instanceof Error
-                        ? error.message
-                        : 'Nie udało się pobrać danych salonu.'}
-                </p>
+                <p>Nie udało się pobrać danych salonu.</p>
                 <button
                     type="button"
                     className="btn btn-outline-secondary"

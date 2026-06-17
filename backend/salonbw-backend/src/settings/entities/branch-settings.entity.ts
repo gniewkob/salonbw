@@ -34,7 +34,7 @@ export class BranchSettings {
     @Column({ name: 'apartment_number', length: 20, nullable: true })
     apartmentNumber: string;
 
-    @Column({ length: 10, nullable: true })
+    @Column({ name: 'postal_code', length: 10, nullable: true })
     postalCode: string;
 
     @Column({ length: 100, nullable: true })
