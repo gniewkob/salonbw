@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import {
     useCustomerGroups,
     useCreateCustomerGroup,
@@ -341,6 +342,42 @@ export default function ClientsNav() {
                                             </button>
                                         </div>
                                     ))}
+                            </div>
+                        </div>
+
+                        <div className="column_row" id="loyalty_tools">
+                            <div className="nav-header">NARZĘDZIA</div>
+                            <div className="list_container">
+                                <ul className="simple-list">
+                                    <li
+                                        className={
+                                            router.pathname.startsWith(
+                                                '/loyalty',
+                                            )
+                                                ? 'active'
+                                                : undefined
+                                        }
+                                    >
+                                        <Link
+                                            href="/loyalty"
+                                            aria-current={
+                                                router.pathname.startsWith(
+                                                    '/loyalty',
+                                                )
+                                                    ? 'page'
+                                                    : undefined
+                                            }
+                                        >
+                                            <div className="icon_box">
+                                                <i
+                                                    className="icon sprite-user_group"
+                                                    aria-hidden="true"
+                                                />
+                                            </div>
+                                            Program lojalnościowy
+                                        </Link>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
 

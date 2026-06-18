@@ -175,6 +175,7 @@ export default function WarehouseNav() {
         return renderModuleNav('SPRZEDAŻ', [
             { label: 'dodaj sprzedaż', href: '/sales/new' },
             { label: 'historia sprzedaży', href: '/sales/history' },
+            { label: 'bony i karnety', href: '/sales/gift-cards' },
         ]);
     }
 

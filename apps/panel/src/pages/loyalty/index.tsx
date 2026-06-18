@@ -183,15 +183,15 @@ export default function LoyaltyManagementPage() {
     ];
 
     return (
-        <RouteGuard roles={['admin']} permission="nav:extension">
+        <RouteGuard roles={['admin']} permission="nav:customers">
             <Head>
-                <title>Karty lojalnościowe — Salon Black &amp; White</title>
+                <title>Program lojalnościowy — Salon Black &amp; White</title>
             </Head>
             <SalonShell role={role}>
                 <SalonBreadcrumbs
-                    iconClass="sprite-breadcrumbs_extensions"
+                    iconClass="sprite-breadcrumbs_customers"
                     items={[
-                        { label: 'Dodatki', href: '/extension' },
+                        { label: 'Klienci', href: '/customers' },
                         { label: 'Program lojalnościowy' },
                     ]}
                 />

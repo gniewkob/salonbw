@@ -51,12 +51,12 @@ const links: { href: Route; label: string; testId: string }[] = [
         testId: 'nav-settings-calendar',
     },
     {
-        href: '/admin/gift-cards' as Route,
-        label: 'Karty podarunkowe',
+        href: '/sales/gift-cards' as Route,
+        label: 'Bony i karnety',
         testId: 'nav-gift-cards',
     },
     {
-        href: '/admin/loyalty' as Route,
+        href: '/loyalty' as Route,
         label: 'Program lojalnościowy',
         testId: 'nav-loyalty',
     },

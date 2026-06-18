@@ -9,7 +9,6 @@ export type SalonModuleKey =
     | 'communication'
     | 'services'
     | 'settings'
-    | 'extension'
     | 'helps'
     | 'booking';
 
@@ -167,25 +166,6 @@ export const SALON_MODULES: SalonModule[] = [
             contentFrameVariant: 'default',
         },
         secondaryNav: true,
-    },
-    {
-        key: 'extension',
-        href: '/extension',
-        label: 'dodatki',
-        iconId: 'svg-extensions-nav',
-        permission: 'nav:extension',
-        shell: {
-            bodyId: 'extensions',
-            bodyClasses: [],
-            mainNavClass: 'extensions',
-            mainContentClass: 'extensions',
-            secondaryNavVariant: 'list',
-            secondaryNavRootClass: 'column_row',
-            breadcrumbsIconClass: 'sprite-breadcrumbs_extensions',
-            contentFrameVariant: 'default',
-        },
-        secondaryNav: true,
-        pinBottom: true,
     },
 ];
 
@@ -396,6 +376,17 @@ export function resolveSalonModule(pathname: string): SalonModule {
         return SALON_MODULES[1];
     }
 
+    // Program lojalnościowy: a customer-relationship tool, so it lives under
+    // the Klienci module (nav icon stays active) but renders full-width — the
+    // customer-list filter sidebar (groups/criteria) is meaningless here.
+    if (path.startsWith('/loyalty')) {
+        return withShellOverride(SALON_MODULES[1], {
+            secondaryNavVariant: 'none',
+            secondaryNavRootClass: null,
+            bodyClasses: ['no_sidenav'],
+        });
+    }
+
     if (
         path.startsWith('/products') ||
         path.startsWith('/inventory') ||
@@ -437,14 +428,6 @@ export function resolveSalonModule(pathname: string): SalonModule {
         }
 
         return SALON_MODULES[6];
-    }
-
-    if (
-        path.startsWith('/extension') ||
-        path.startsWith('/admin/loyalty') ||
-        path.startsWith('/admin/gift-cards')
-    ) {
-        return SALON_MODULES[7];
     }
 
     if (path.startsWith('/booking')) {

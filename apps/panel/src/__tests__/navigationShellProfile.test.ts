@@ -11,9 +11,6 @@ describe('SalonBW shell profile', () => {
         const statistics = SALON_MODULES.find(
             (module) => module.key === 'statistics',
         );
-        const extension = SALON_MODULES.find(
-            (module) => module.key === 'extension',
-        );
 
         expect(products?.shell.bodyId).toBe('physical_products');
         expect(products?.shell.mainNavClass).toBe('stock');
@@ -22,8 +19,6 @@ describe('SalonBW shell profile', () => {
         expect(statistics?.shell.bodyId).toBe('logical_statistics');
         expect(statistics?.shell.secondaryNavVariant).toBe('tree');
         expect(statistics?.shell.secondaryNavRootClass).toBe('column_row tree');
-
-        expect(extension?.shell.mainNavClass).toBe('extensions');
     });
 
     it('resolves physical and logical panel modules to shared shell profiles', () => {
@@ -33,8 +28,11 @@ describe('SalonBW shell profile', () => {
         expect(resolveSalonModule('/statistics').shell.bodyId).toBe(
             'logical_statistics',
         );
-        expect(resolveSalonModule('/admin/gift-cards').shell.mainNavClass).toBe(
-            'extensions',
+        expect(resolveSalonModule('/sales/gift-cards').shell.mainNavClass).toBe(
+            'stock',
+        );
+        expect(resolveSalonModule('/loyalty').shell.mainNavClass).toBe(
+            'customers',
         );
     });
 });

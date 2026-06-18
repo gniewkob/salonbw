@@ -17,8 +17,7 @@ export type Permission =
     | 'nav:emails'
     | 'nav:statistics'
     | 'nav:communication'
-    | 'nav:settings'
-    | 'nav:extension';
+    | 'nav:settings';
 
 const rolePermissions: Record<Role, Set<Permission>> = {
     client: new Set([
@@ -52,7 +51,6 @@ const rolePermissions: Record<Role, Set<Permission>> = {
         'nav:statistics',
         'nav:communication',
         'nav:settings',
-        'nav:extension',
         'nav:invoices',
         'nav:reviews',
     ]),

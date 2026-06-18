@@ -149,16 +149,22 @@ const GROUPS: SettingsGroup[] = [
 
 const addonTiles: SettingsTile[] = [
     {
-        href: '/extension/tools/4',
-        label: 'Marketing Automatyczny',
+        href: '/communication/automatic',
+        label: 'Marketing automatyczny',
         boxClass: 'automatic_marketing',
         iconId: 'svg-automatic_marketing',
     },
     {
-        href: '/extension',
-        label: 'Premium',
-        boxClass: 'moment_power',
-        iconId: 'svg-moment_power',
+        href: '/loyalty',
+        label: 'Program lojalnościowy',
+        boxClass: 'customers',
+        iconId: 'svg-customers',
+    },
+    {
+        href: '/sales/gift-cards',
+        label: 'Bony i karnety',
+        boxClass: 'extra_settings',
+        iconId: 'svg-extra_settings',
     },
     {
         href: '/settings/categories',
@@ -222,7 +228,7 @@ export default function SettingsPage() {
                                     className="icon sprite-extension_star_black settings-addon-title-icon"
                                     aria-hidden="true"
                                 />
-                                Ustawienia dodatków
+                                Narzędzia
                             </li>
                         </ul>
                     </div>

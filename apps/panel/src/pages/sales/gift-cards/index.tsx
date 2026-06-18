@@ -214,20 +214,17 @@ export default function GiftCardsManagementPage() {
     };
 
     return (
-        <RouteGuard
-            roles={['admin', 'receptionist']}
-            permission="nav:extension"
-        >
+        <RouteGuard roles={['admin', 'receptionist']} permission="nav:products">
             <Head>
-                <title>Karty podarunkowe — Salon Black &amp; White</title>
+                <title>Bony i karnety — Salon Black &amp; White</title>
             </Head>
             <SalonShell role={role}>
                 <div className="salonbw-page" data-testid="gift-cards-page">
                     <SalonBreadcrumbs
-                        iconClass="sprite-breadcrumbs_extensions"
+                        iconClass="sprite-breadcrumbs_stock"
                         items={[
-                            { label: 'Dodatki', href: '/extension' },
-                            { label: 'Bony i Karnety' },
+                            { label: 'Sprzedaż', href: '/sales/new' },
+                            { label: 'Bony i karnety' },
                         ]}
                     />
                     <div className="bg-light">
