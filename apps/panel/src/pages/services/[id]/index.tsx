@@ -61,6 +61,15 @@ const formatCurrency = (value: number) =>
         currency: 'PLN',
     }).format(value);
 
+const REVIEW_SOURCE_LABELS: Record<string, string> = {
+    booksy: 'Booksy',
+    moment: 'Moment',
+    internal: 'Wewnętrzny',
+};
+
+const formatReviewSource = (source: string) =>
+    REVIEW_SOURCE_LABELS[source] ?? source;
+
 const formatDuration = (minutes: number) => {
     if (minutes < 60) return `${minutes} minut`;
     const hours = Math.floor(minutes / 60);
@@ -823,9 +832,9 @@ export default function ServiceDetailsPage() {
                                                                         : '—'}
                                                                 </td>
                                                                 <td>
-                                                                    {
-                                                                        comment.source
-                                                                    }
+                                                                    {formatReviewSource(
+                                                                        comment.source,
+                                                                    )}
                                                                 </td>
                                                                 <td>
                                                                     {comment.authorName ||
