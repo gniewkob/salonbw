@@ -1148,8 +1148,6 @@ jobs:
           mv .env.new .env
           rm -f .env.generated
           chmod 600 .env
-          # Diagnostic (POS_ENABLED is not a secret): confirm the flag landed.
-          echo "DIAG POS_ENABLED: $(grep '^POS_ENABLED=' .env || echo MISSING)"
           REMOTE_CMDS
 
       - name: Validate DB connectivity (api)
