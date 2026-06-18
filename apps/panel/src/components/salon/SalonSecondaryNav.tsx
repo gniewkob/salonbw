@@ -55,7 +55,11 @@ export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
     if (module.key === 'calendar') {
         content = <CalendarNav />;
     } else if (module.key === 'customers') {
-        if (router.pathname === '/customers/[id]') {
+        if (router.pathname.startsWith('/loyalty')) {
+            // Loyalty is a full-width Klienci tool — the customer-list filter
+            // sidebar (groups/criteria) is meaningless here; render no sidenav.
+            content = null;
+        } else if (router.pathname === '/customers/[id]') {
             const customerId = parseCustomerIdFromRoute(
                 router.query.id,
                 router.asPath,
