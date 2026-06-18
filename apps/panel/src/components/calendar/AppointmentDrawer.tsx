@@ -19,6 +19,7 @@ import {
 } from './receptionTelemetry';
 import FinalizationModal from './FinalizationModal';
 import ClientSection from './appointment-drawer/ClientSection';
+import ClientNoteSection from './appointment-drawer/ClientNoteSection';
 import FormulaSection from './appointment-drawer/FormulaSection';
 import ActionsSection from './appointment-drawer/ActionsSection';
 
@@ -649,6 +650,12 @@ export default function AppointmentDrawer({
                             createCustomerPending={createCustomer.isPending}
                             canCreateInlineCustomer={canCreateInlineCustomer}
                         />
+
+                        {/* Client-visible visit note (any status, so staff can
+                            read the client's booking note + reply to it). */}
+                        {isEditMode && (
+                            <ClientNoteSection appointment={appointment} />
+                        )}
 
                         {/* Formula + history (edit mode, confirmed+ only) */}
                         {canShowFormulaSection && (

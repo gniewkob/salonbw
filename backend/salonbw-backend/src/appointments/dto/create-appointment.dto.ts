@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsDateString, IsOptional, IsBoolean } from 'class-validator';
+import {
+    IsInt,
+    IsDateString,
+    IsOptional,
+    IsBoolean,
+    IsString,
+    MaxLength,
+} from 'class-validator';
 
 export class CreateAppointmentDto {
     @ApiProperty()
@@ -35,4 +42,14 @@ export class CreateAppointmentDto {
     @IsBoolean()
     @IsOptional()
     reservedOnline?: boolean;
+
+    @ApiProperty({
+        required: false,
+        description:
+            'Client-visible visit note (e.g. preferences/remarks the client adds when booking; staff can read and extend it).',
+    })
+    @IsString()
+    @IsOptional()
+    @MaxLength(1000)
+    notes?: string;
 }

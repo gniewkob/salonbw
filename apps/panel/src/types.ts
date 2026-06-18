@@ -333,6 +333,7 @@ export interface ClientDashboardResponse {
         startTime: string;
         status: string;
         employeeName?: string;
+        notes?: string | null;
     }[];
 }
 

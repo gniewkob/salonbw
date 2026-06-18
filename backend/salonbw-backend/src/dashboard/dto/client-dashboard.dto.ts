@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsArray, IsOptional, ValidateNested } from 'class-validator';
+import {
+    IsNumber,
+    IsArray,
+    IsOptional,
+    IsString,
+    ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpcomingAppointmentDto {
@@ -50,6 +56,15 @@ export class RecentAppointmentDto {
     @ApiProperty({ description: 'Employee name', required: false })
     @IsOptional()
     employeeName?: string;
+
+    @ApiProperty({
+        description: 'Client-visible visit note added by staff',
+        required: false,
+        nullable: true,
+    })
+    @IsOptional()
+    @IsString()
+    notes?: string | null;
 }
 
 export class ClientDashboardDto {

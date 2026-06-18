@@ -1147,6 +1147,21 @@ export class AppointmentsService {
         return this.appointmentsRepository.save(appointment);
     }
 
+    async updateClientNote(
+        id: number,
+        notes: string | null,
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
+        if (!appointment) {
+            throw new BadRequestException('Appointment not found');
+        }
+        const trimmed = notes?.trim();
+        appointment.notes = trimmed ? trimmed : undefined;
+        return this.appointmentsRepository.save(appointment);
+    }
+
     async countOnlinePending(employeeId?: number): Promise<number> {
         const where: FindOptionsWhere<Appointment> = {
             status: AppointmentStatus.OnlinePending,

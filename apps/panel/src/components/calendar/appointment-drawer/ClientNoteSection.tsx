@@ -1,0 +1,77 @@
+import { useEffect, useRef, useState } from 'react';
+import type { Appointment } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface Props {
+    appointment: Appointment | null | undefined;
+}
+
+// Shared, client-visible visit note. The client can write it when booking
+// (read here by staff) and staff can extend it — the client sees the result
+// on their dashboard ("Ostatnie wizyty"). This is distinct from the
+// staff-only "Notatka wewnętrzna" (appointment.internalNote).
+export default function ClientNoteSection({ appointment }: Props) {
+    const { apiFetch } = useAuth();
+    const [note, setNote] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        setNote(appointment?.notes ?? '');
+        setSaved(false);
+        return () => {
+            if (savedTimer.current) clearTimeout(savedTimer.current);
+        };
+    }, [appointment]);
+
+    const handleSave = async () => {
+        if (!appointment?.id) return;
+        setSaving(true);
+        try {
+            await apiFetch(`/appointments/${appointment.id}/client-note`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: note || null }),
+            });
+            if (savedTimer.current) clearTimeout(savedTimer.current);
+            setSaved(true);
+            savedTimer.current = setTimeout(() => setSaved(false), 2000);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (!appointment?.id) return null;
+
+    return (
+        <div className="rounded border p-2 mb-2">
+            <label
+                className="form-label form-label-sm mb-1"
+                htmlFor="appointment-client-note"
+            >
+                Notatka klienta / widoczna dla klienta
+            </label>
+            <textarea
+                id="appointment-client-note"
+                className="form-control form-control-sm"
+                rows={2}
+                maxLength={1000}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Uwagi od klienta przy rezerwacji; dopisana tu notatka jest widoczna dla klienta przy jego wizytach…"
+            />
+            <div className="d-flex align-items-center gap-2 mt-1">
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => void handleSave()}
+                    disabled={saving}
+                >
+                    {saving ? 'Zapisywanie…' : 'Zapisz notatkę klienta'}
+                </button>
+                {saved && <span className="small text-success">Zapisano</span>}
+            </div>
+        </div>
+    );
+}

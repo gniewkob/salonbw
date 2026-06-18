@@ -83,6 +83,7 @@ export default function BookingPage() {
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [note, setNote] = useState('');
     const [createdAppointmentId, setCreatedAppointmentId] = useState<
         number | null
     >(null);
@@ -174,6 +175,7 @@ export default function BookingPage() {
                     employeeId: selectedSlot.employeeId,
                     startTime: selectedSlot.time,
                     reservedOnline: role === 'client',
+                    ...(note.trim() ? { notes: note.trim() } : {}),
                 }),
             });
             setCreatedAppointmentId(result.id);
@@ -259,6 +261,8 @@ export default function BookingPage() {
                                                 slot={selectedSlot}
                                                 submitting={submitting}
                                                 error={submitError}
+                                                note={note}
+                                                onNoteChange={setNote}
                                                 onConfirm={() => {
                                                     void handleConfirm();
                                                 }}
@@ -663,6 +667,8 @@ function ConfirmStep({
     slot,
     submitting,
     error,
+    note,
+    onNoteChange,
     onConfirm,
     onBack,
 }: {
@@ -670,6 +676,8 @@ function ConfirmStep({
     slot: AvailableSlot;
     submitting: boolean;
     error: string;
+    note: string;
+    onNoteChange: (value: string) => void;
     onConfirm: () => void;
     onBack: () => void;
 }) {
@@ -712,6 +720,25 @@ function ConfirmStep({
                     </dt>
                     <dd className="col-7 mb-0">{slot.employeeName}</dd>
                 </dl>
+            </div>
+
+            <div className="mb-4">
+                <label
+                    htmlFor="booking-note"
+                    className="form-label text-muted small fw-normal"
+                >
+                    Uwagi do wizyty (opcjonalnie)
+                </label>
+                <textarea
+                    id="booking-note"
+                    className="form-control"
+                    rows={3}
+                    maxLength={1000}
+                    placeholder="Np. preferencje, alergie, informacje dla fryzjera…"
+                    value={note}
+                    onChange={(e) => onNoteChange(e.target.value)}
+                    disabled={submitting}
+                />
             </div>
 
             {error && (

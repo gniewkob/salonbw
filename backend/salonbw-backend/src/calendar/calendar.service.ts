@@ -481,6 +481,12 @@ export class CalendarService {
         const dayEnd = endOfDay(dayStart);
 
         const SLOT_STEP = 30;
+        // Don't offer slots in the past for the current day. The appointment
+        // POST rejects past startTimes ("must be in the future"), so a slot
+        // the wizard shows but the API refuses is a broken UX. Mirror the
+        // nearest-slot +1h lead so a client can't pick something starting in
+        // a few minutes either.
+        const minStartMs = Date.now() + 60 * 60 * 1000;
         const branchRanges = await this.getBranchDayRanges(dayStart);
 
         const slots: Array<{
@@ -546,7 +552,7 @@ export class CalendarService {
                             slotEnd.getTime() > r.start,
                     );
 
-                    if (!isBusy) {
+                    if (!isBusy && slotStart.getTime() >= minStartMs) {
                         slots.push({
                             employeeId: emp.id,
                             employeeName: emp.name,

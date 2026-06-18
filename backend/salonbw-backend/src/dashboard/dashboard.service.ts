@@ -207,6 +207,7 @@ export class DashboardService {
                 status: apt.status,
                 employeeName:
                     apt.employee?.name ?? apt.employee?.email ?? undefined,
+                notes: apt.notes ?? null,
             })),
         };
     }

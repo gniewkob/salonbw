@@ -131,6 +131,7 @@ export class AppointmentsController {
                 serviceVariantId: body.serviceVariantId,
                 startTime: new Date(body.startTime),
                 reservedOnline: !isStaff ? true : undefined,
+                notes: body.notes?.trim() ? body.notes.trim() : undefined,
             },
             { id: user.userId } as User,
         );
@@ -547,6 +548,22 @@ export class AppointmentsController {
         @Body() body: { internalNote: string | null },
     ): Promise<Appointment> {
         return this.appointmentsService.updateNotes(id, body.internalNote);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Patch(':id/client-note')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Update the client-visible visit note (read by the client on their dashboard)',
+    })
+    @ApiResponse({ status: 200, type: Appointment })
+    async updateClientNote(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: { notes: string | null },
+    ): Promise<Appointment> {
+        return this.appointmentsService.updateClientNote(id, body.notes);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -322,6 +322,14 @@ export default function ClientDashboard() {
                                             {apt.employeeName}
                                         </div>
                                     )}
+                                    {apt.notes && (
+                                        <div className="salonbw-appointment-item__note small mt-1">
+                                            <span className="fw-medium">
+                                                Notatka:
+                                            </span>{' '}
+                                            {apt.notes}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="d-flex align-items-center gap-2 flex-wrap">
                                     <span className={statusClass(apt.status)}>
