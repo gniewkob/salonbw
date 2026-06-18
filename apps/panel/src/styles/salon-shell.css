@@ -2450,6 +2450,14 @@ tr.customer-row:hover .customers-drag-handle {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
+/* The user dropdown sits on a light (#efefef) topbar surface, unlike the
+   other (dark-navbar) toggles. Its inherited #7a7068 text only fails WCAG as
+   a phantom — the visible initials are repainted dark-on-silver by .color1 —
+   but darken it so the node-level contrast check also passes (a11y 100). */
+.navbar .dropdown-toggle.e2e-nav-user-dropdown {
+    color: #1a1a1a;
+}
+
 /* User-menu identity card (in the dropdown) */
 .navbar .topbar-user-menu .topbar-user-head {
     padding: 0;
