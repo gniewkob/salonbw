@@ -1344,7 +1344,7 @@ body {
 }
 
 .salonbw-stat-card__change.positive {
-    color: #22c55e;
+    color: #0d0d0d;
 }
 
 .salonbw-stat-card__chart {
@@ -1367,11 +1367,11 @@ body {
 }
 
 .salonbw-mini-chart__bar--blue {
-    background: #3b82f6;
+    background: #0d0d0d;
 }
 
 .salonbw-mini-chart__bar--green {
-    background: #22c55e;
+    background: #6e7278;
 }
 
 /* Dashboard bottom grid */
