@@ -82,6 +82,34 @@ export class RetailService {
         return this.config.get<string>('POS_ENABLED', 'false') === 'true';
     }
 
+    /**
+     * Pre-flight check used by appointment finalize: verify the materials to
+     * be deducted exist and have enough tracked stock, BEFORE the visit is
+     * marked completed. Throws a clear error so the failure is never silent
+     * (the actual deduction runs post-commit). No-op when POS is disabled.
+     */
+    async assertUsageStockAvailable(
+        items: Array<{ productId: number; quantity: number }>,
+    ): Promise<void> {
+        if (!this.isEnabled() || items.length === 0) return;
+        const ids = Array.from(new Set(items.map((i) => i.productId)));
+        const products = await this.products.find({ where: { id: In(ids) } });
+        const byId = new Map(products.map((p) => [p.id, p]));
+        for (const item of items) {
+            const product = byId.get(item.productId);
+            if (!product) {
+                throw new NotFoundException(
+                    `Materiał (produkt ${item.productId}) nie istnieje`,
+                );
+            }
+            if (product.trackStock !== false && product.stock < item.quantity) {
+                throw new BadRequestException(
+                    `Za mało na stanie: „${product.name}" (dostępne ${product.stock}, potrzebne ${item.quantity})`,
+                );
+            }
+        }
+    }
+
     private roundMoney(value: number): number {
         return Number(value.toFixed(2));
     }

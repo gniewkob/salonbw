@@ -953,6 +953,19 @@ export class AppointmentsService {
             );
         }
 
+        // Pre-flight stock check BEFORE completing the visit, so an
+        // insufficient-stock error fails loudly and atomically instead of
+        // leaving a completed visit with materials never deducted (the actual
+        // deduction runs post-commit). No-op when POS is disabled.
+        if (dto.usageItems && dto.usageItems.length > 0 && this.retailService) {
+            await this.retailService.assertUsageStockAvailable(
+                dto.usageItems.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                })),
+            );
+        }
+
         // Convert cents to decimal for storage
         const paidAmount = dto.paidAmountCents / 100;
         const tipAmount = dto.tipAmountCents ? dto.tipAmountCents / 100 : 0;
@@ -1053,10 +1066,13 @@ export class AppointmentsService {
                     user,
                 );
             } catch (err) {
-                // Non-fatal: usage deduction failure does not roll back finalization
-                console.error(
-                    `[finalize] usage deduction failed for appointment ${id}:`,
-                    err,
+                // Safety net: stock was already pre-validated
+                // (assertUsageStockAvailable) before completing the visit, so
+                // this only fires on a rare post-commit race. Non-fatal (the
+                // visit is already completed) but logged loudly, not swallowed.
+                this.logger.error(
+                    `[finalize] post-commit usage deduction failed for appointment ${id} (stock may need manual adjustment)`,
+                    err instanceof Error ? err.stack : String(err),
                 );
             }
         }
