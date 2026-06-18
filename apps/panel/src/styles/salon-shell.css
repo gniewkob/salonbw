@@ -778,7 +778,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .products-table .col-name a {
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
     font-weight: 600;
 }
@@ -810,7 +810,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .products-link {
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
 }
 
@@ -914,13 +914,13 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .products-detail-tabs a:hover {
-    color: #2b7bbd;
+    color: #1a1a1a;
 }
 
 .products-detail-tabs a.active {
     border-color: #d7dde3;
     background: #fff;
-    color: #2b7bbd;
+    color: #1a1a1a;
 }
 
 .products-card-actions {
@@ -1307,7 +1307,7 @@ tr.customer-row:hover .customers-drag-handle {
 
 .customer-advanced-hint {
     margin-left: 8px;
-    color: #2b7bbd;
+    color: #1a1a1a;
     font-size: 11px;
     font-weight: 600;
 }
@@ -1405,7 +1405,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .visit-service a {
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
     font-weight: 600;
     font-size: 12px;
@@ -1450,12 +1450,25 @@ tr.customer-row:hover .customers-drag-handle {
     display: block;
     margin-top: 8px;
     font-size: 11px;
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
     float: right;
 }
 
 .link-more:hover {
+    text-decoration: underline;
+}
+
+/* Brand link treatment (panel-wide, 2026-06): content links are dark
+   (#1a1a1a) — never Versum/Bootstrap blue — with underline-on-hover as
+   the affordance. Covers bare tel:/mailto: links (no class) that would
+   otherwise fall back to Bootstrap's blue, and gives recoloured content
+   links a consistent hover. Button-styled links are excluded. */
+.main-content a[href^="tel:"],
+.main-content a[href^="mailto:"] {
+    color: #1a1a1a;
+}
+.main-content .inner a:not(.btn):not([class*='salonbw-btn']):not(.versum-phone-button):hover {
     text-decoration: underline;
 }
 
@@ -1513,7 +1526,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .customer-communication-contact__value a {
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
 }
 
@@ -1870,7 +1883,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .customer-history-row__service a {
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
     font-weight: 600;
     font-size: 12px;
@@ -2044,7 +2057,7 @@ tr.customer-row:hover .customers-drag-handle {
 .customer-stats-lists__tabs .btn.active {
     background: #f7fbff;
     border-color: #8dcaf0;
-    color: #2b7bbd;
+    color: #1a1a1a;
 }
 
 .customer-stats-rows {
@@ -2066,7 +2079,7 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .customer-stats-row__title a {
-    color: #2b7bbd;
+    color: #1a1a1a;
     text-decoration: none;
 }
 
