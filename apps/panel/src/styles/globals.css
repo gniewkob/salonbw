@@ -2051,8 +2051,10 @@ h3 {
     box-shadow: none;
 }
 
+/* Topbar toggles (Pomoc, user avatar) sit on light #efefef pills, so the
+   text must be dark — #7a7068 was only 4.2:1 (WCAG fail). #1a1a1a = ~11:1. */
 .navbar .dropdown-toggle {
-    color: #7a7068;
+    color: #1a1a1a;
 }
 
 .navbar .dropdown-menu {
