@@ -318,7 +318,7 @@ export default function SalonTopbar() {
                                     href="/account"
                                     onClick={() => setUserMenuOpen(false)}
                                 >
-                                    Edytuj profil i zgody
+                                    Edytuj profil
                                 </Link>
                             </li>
                             <li className="main-menu-li">
