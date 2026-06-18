@@ -27,6 +27,7 @@ interface AuthContextValue {
     register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
     refresh: () => Promise<void>;
+    refreshProfile: () => Promise<void>;
     apiFetch: <T>(endpoint: string, init?: RequestInit) => Promise<T>;
 }
 
@@ -208,6 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout: handleLogout,
         refresh,
+        refreshProfile: fetchProfile,
         apiFetch: client.request.bind(client),
     };
 

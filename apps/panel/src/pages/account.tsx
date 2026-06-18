@@ -14,13 +14,19 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default function AccountPage() {
-    const { role, user, apiFetch } = useAuth();
+    const { role, user, apiFetch, refreshProfile } = useAuth();
     const [current, setCurrent] = useState('');
     const [next, setNext] = useState('');
     const [confirm, setConfirm] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [profileSaved, setProfileSaved] = useState(false);
+    const [profileError, setProfileError] = useState('');
 
     const [smsConsent, setSmsConsent] = useState(false);
     const [emailConsent, setEmailConsent] = useState(false);
@@ -30,9 +36,37 @@ export default function AccountPage() {
 
     useEffect(() => {
         if (!user) return;
+        setName(user.name ?? '');
+        setPhone(user.phone ?? '');
         setSmsConsent(Boolean(user.smsConsent));
         setEmailConsent(Boolean(user.emailConsent));
     }, [user]);
+
+    const handleProfileSave = async () => {
+        if (!name.trim()) {
+            setProfileError('Imię i nazwisko nie może być puste.');
+            return;
+        }
+        setProfileSaving(true);
+        setProfileError('');
+        setProfileSaved(false);
+        try {
+            await apiFetch('/users/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name.trim(),
+                    phone: phone.trim(),
+                }),
+            });
+            await refreshProfile();
+            setProfileSaved(true);
+        } catch {
+            setProfileError('Nie udało się zapisać profilu. Spróbuj ponownie.');
+        } finally {
+            setProfileSaving(false);
+        }
+    };
 
     const handleConsentSave = async () => {
         setConsentSaving(true);
@@ -100,16 +134,99 @@ export default function AccountPage() {
                         items={[{ label: 'Moje konto' }]}
                     />
 
-                    <PanelSection title="Informacje o koncie">
+                    <PanelSection title="Dane profilu">
                         {user ? (
-                            <dl className="dl-horizontal">
-                                <dt>Imię i nazwisko</dt>
-                                <dd>{user.name}</dd>
-                                <dt>Adres email</dt>
-                                <dd>{user.email}</dd>
-                                <dt>Rola</dt>
-                                <dd>{ROLE_LABELS[user.role] ?? user.role}</dd>
-                            </dl>
+                            <div style={{ maxWidth: 480 }}>
+                                <div className="mb-3">
+                                    <label
+                                        htmlFor="acc-name"
+                                        className="form-label"
+                                    >
+                                        Imię i nazwisko
+                                    </label>
+                                    <input
+                                        id="acc-name"
+                                        type="text"
+                                        className="form-control"
+                                        value={name}
+                                        maxLength={255}
+                                        disabled={profileSaving}
+                                        autoComplete="name"
+                                        onChange={(e) => {
+                                            setName(e.target.value);
+                                            setProfileSaved(false);
+                                        }}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label
+                                        htmlFor="acc-phone"
+                                        className="form-label"
+                                    >
+                                        Numer telefonu
+                                    </label>
+                                    <input
+                                        id="acc-phone"
+                                        type="tel"
+                                        className="form-control"
+                                        value={phone}
+                                        maxLength={20}
+                                        disabled={profileSaving}
+                                        autoComplete="tel"
+                                        onChange={(e) => {
+                                            setPhone(e.target.value);
+                                            setProfileSaved(false);
+                                        }}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label
+                                        htmlFor="acc-email"
+                                        className="form-label"
+                                    >
+                                        Adres email
+                                    </label>
+                                    <input
+                                        id="acc-email"
+                                        type="email"
+                                        className="form-control"
+                                        value={user.email}
+                                        readOnly
+                                        disabled
+                                    />
+                                    <div className="form-text">
+                                        Adres email i rola (
+                                        {ROLE_LABELS[user.role] ?? user.role})
+                                        zmienia administrator.
+                                    </div>
+                                </div>
+                                {profileError && (
+                                    <div
+                                        role="alert"
+                                        className="alert alert-danger py-2 small mb-3"
+                                    >
+                                        {profileError}
+                                    </div>
+                                )}
+                                {profileSaved && (
+                                    <div
+                                        role="status"
+                                        className="alert alert-success py-2 small mb-3"
+                                    >
+                                        Dane profilu zostały zapisane.
+                                    </div>
+                                )}
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    disabled={profileSaving || !name.trim()}
+                                    onClick={() => void handleProfileSave()}
+                                >
+                                    {profileSaving
+                                        ? 'Zapisywanie…'
+                                        : 'Zapisz dane'}
+                                </button>
+                            </div>
                         ) : (
                             <p className="text-muted">Ładowanie...</p>
                         )}

@@ -32,6 +32,10 @@ export const createAuthValue = (
         Parameters<AuthValue['refresh']>,
         Awaited<ReturnType<AuthValue['refresh']>>
     >(),
+    refreshProfile: asyncMock<
+        Parameters<AuthValue['refreshProfile']>,
+        Awaited<ReturnType<AuthValue['refreshProfile']>>
+    >(),
     apiFetch: jest.fn(async (...args: Parameters<AuthValue['apiFetch']>) => {
         void args;
         return undefined as Awaited<ReturnType<AuthValue['apiFetch']>>;

@@ -23,6 +23,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateConsentDto } from './dto/update-consent.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserDto } from './dto/user.dto';
 import { Role } from './role.enum';
 import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
@@ -60,6 +61,26 @@ export class UsersController {
         }
 
         const { password: _password, ...safeProfile } = profile;
+        void _password;
+        return safeProfile;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
+    @SkipThrottle()
+    @Patch('profile')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update current user profile (name, phone)' })
+    @ApiResponse({ status: 200 })
+    async updateProfile(
+        @CurrentUser() user: { userId: number },
+        @Body() dto: UpdateProfileDto,
+    ) {
+        const updated = await this.usersService.updateProfile(user.userId, dto);
+        if (!updated) {
+            return user;
+        }
+        const { password: _password, ...safeProfile } = updated;
         void _password;
         return safeProfile;
     }

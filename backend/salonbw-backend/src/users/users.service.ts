@@ -6,6 +6,7 @@ import { User } from './user.entity';
 import { Role } from './role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateConsentDto } from './dto/update-consent.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -131,6 +132,19 @@ export class UsersService {
 
     async updateName(id: number, name: string): Promise<User | null> {
         await this.usersRepository.update(id, { name });
+        return this.findById(id);
+    }
+
+    async updateProfile(
+        id: number,
+        dto: UpdateProfileDto,
+    ): Promise<User | null> {
+        const update: Partial<User> = {};
+        if (dto.name !== undefined) update.name = dto.name.trim();
+        if (dto.phone !== undefined) update.phone = dto.phone.trim() || null;
+        if (Object.keys(update).length > 0) {
+            await this.usersRepository.update(id, update);
+        }
         return this.findById(id);
     }
 
