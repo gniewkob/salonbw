@@ -974,6 +974,14 @@ export class AppointmentsService {
                             ? `${appointment.internalNote}\n${dto.note}`
                             : dto.note
                         : appointment.internalNote,
+                    // Client-visible recommendations are appended to the shared
+                    // notes field (the client sees it under their completed
+                    // visit on the dashboard).
+                    notes: dto.clientNote?.trim()
+                        ? appointment.notes
+                            ? `${appointment.notes}\n${dto.clientNote.trim()}`
+                            : dto.clientNote.trim()
+                        : appointment.notes,
                 });
 
                 // Create commission for the service

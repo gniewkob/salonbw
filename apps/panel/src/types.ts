@@ -996,6 +996,7 @@ export interface FinalizeAppointmentRequest {
     products?: ProductSaleItem[];
     usageMaterials?: UsageMaterialItem[];
     note?: string;
+    clientNote?: string;
     usageItems?: { productId: number; quantity: number; unit?: string }[];
 }
 

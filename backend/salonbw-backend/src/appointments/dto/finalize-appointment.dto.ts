@@ -154,4 +154,13 @@ export class FinalizeAppointmentDto {
     @Type(() => UsageItemDto)
     @IsOptional()
     usageItems?: UsageItemDto[];
+
+    @ApiProperty({
+        description:
+            'Client-visible recommendations shown to the client under the completed visit (appended to appointment.notes).',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    clientNote?: string;
 }

@@ -44,6 +44,7 @@ export default function FinalizationModal({
     const [discountPln, setDiscountPln] = useState<string>('');
     const [tipPln, setTipPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
+    const [clientNote, setClientNote] = useState<string>('');
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
     const [usageMaterials, setUsageMaterials] = useState<UsageMaterialItem[]>(
         [],
@@ -156,6 +157,7 @@ export default function FinalizationModal({
         setDiscountPln('');
         setTipPln('');
         setNote('');
+        setClientNote('');
         setProductSales([]);
         setUsageMaterials([]);
         setShowProductPicker(false);
@@ -220,6 +222,7 @@ export default function FinalizationModal({
             usageMaterials:
                 usageMaterials.length > 0 ? usageMaterials : undefined,
             note: note || undefined,
+            clientNote: clientNote || undefined,
             usageItems:
                 usageItems.length > 0
                     ? usageItems.map((item) => ({
@@ -770,13 +773,13 @@ export default function FinalizationModal({
                     )}
                 </div>
 
-                {/* Note */}
+                {/* Internal note (staff-only) */}
                 <div className="mb-3">
                     <label
                         htmlFor="fin-note"
                         className="d-block small fw-medium text-body mb-1"
                     >
-                        Notatka (opcjonalnie)
+                        Notatka wewnętrzna (tylko personel)
                     </label>
                     <textarea
                         id="fin-note"
@@ -784,7 +787,26 @@ export default function FinalizationModal({
                         onChange={(e) => setNote(e.target.value)}
                         className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                         rows={2}
-                        placeholder="Dodatkowe uwagi..."
+                        placeholder="Stan włosów, proporcje farb, uwagi dla zespołu..."
+                    />
+                </div>
+
+                {/* Client-visible recommendations */}
+                <div className="mb-3">
+                    <label
+                        htmlFor="fin-client-note"
+                        className="d-block small fw-medium text-body mb-1"
+                    >
+                        Zalecenia dla klienta (widoczne dla klienta)
+                    </label>
+                    <textarea
+                        id="fin-client-note"
+                        value={clientNote}
+                        onChange={(e) => setClientNote(e.target.value)}
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                        rows={2}
+                        maxLength={1000}
+                        placeholder="Np. pielęgnacja w domu, kiedy umyć włosy, polecane produkty..."
                     />
                 </div>
 
