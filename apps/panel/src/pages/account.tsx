@@ -120,10 +120,7 @@ export default function AccountPage() {
     };
 
     return (
-        <RouteGuard
-            roles={['admin', 'employee', 'receptionist', 'client']}
-            permission="nav:calendar"
-        >
+        <RouteGuard roles={['admin', 'employee', 'receptionist', 'client']}>
             <Head>
                 <title>Moje konto — Salon Black &amp; White</title>
             </Head>

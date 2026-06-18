@@ -22,7 +22,7 @@ export default function SalonShell({ role, children }: SalonShellProps) {
     const isMobile = useIsMobile();
     const secondaryNavContext = useSecondaryNavContext();
     const routeForModuleResolution = router.asPath || router.pathname;
-    const activeModule = resolveSalonModule(routeForModuleResolution);
+    const activeModule = resolveSalonModule(routeForModuleResolution, role);
     const modules = visibleSalonModules(role);
     const secondNavRenderKey = `${activeModule.key}:${router.pathname}:${router.asPath}`;
     const resolvedSecondaryNav = secondaryNavContext?.secondaryNav ?? null;

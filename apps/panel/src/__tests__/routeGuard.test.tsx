@@ -68,7 +68,7 @@ describe('RouteGuard', () => {
                 <div>Secret</div>
             </RouteGuard>,
         );
-        expect(replace).toHaveBeenCalledWith('/booking');
+        expect(replace).toHaveBeenCalledWith('/dashboard');
         expect(screen.queryByText('Secret')).toBeNull();
     });
 

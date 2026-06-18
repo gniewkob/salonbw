@@ -10,7 +10,8 @@ export type SalonModuleKey =
     | 'services'
     | 'settings'
     | 'helps'
-    | 'booking';
+    | 'booking'
+    | 'clientHome';
 
 export interface SalonShellProfile {
     bodyId: string;
@@ -190,6 +191,41 @@ const BOOKING_MODULE: SalonModule = {
     secondaryNav: false,
 };
 
+// Clients are not staff: they get a minimal, full-width panel (no module
+// sidebar) with just their own data. Both client rail entries gate on the
+// client-exclusive `dashboard:client` permission so they never show for staff.
+const CLIENT_SHELL: SalonShellProfile = {
+    bodyId: 'client_panel',
+    bodyClasses: ['no_sidenav'],
+    mainNavClass: 'client',
+    mainContentClass: 'client',
+    secondaryNavVariant: 'none',
+    secondaryNavRootClass: null,
+    breadcrumbsIconClass: null,
+    contentFrameVariant: 'default',
+};
+
+const CLIENT_MODULES: SalonModule[] = [
+    {
+        key: 'clientHome',
+        href: '/dashboard',
+        label: 'moje wizyty',
+        iconId: 'svg-calendar-nav',
+        permission: 'dashboard:client',
+        shell: CLIENT_SHELL,
+        secondaryNav: false,
+    },
+    {
+        key: 'booking',
+        href: '/booking',
+        label: 'rezerwacja',
+        iconId: 'svg-services-nav',
+        permission: 'dashboard:client',
+        shell: CLIENT_SHELL,
+        secondaryNav: false,
+    },
+];
+
 const HELPS_MODULE: SalonModule = {
     key: 'helps',
     href: '/helps/new',
@@ -359,9 +395,22 @@ function resolveSettingsShellOverride(path: string) {
     return null;
 }
 
-export function resolveSalonModule(pathname: string): SalonModule {
+export function resolveSalonModule(
+    pathname: string,
+    role?: Role | null,
+): SalonModule {
     // Normalize path
     const path = pathname.toLowerCase();
+
+    // Clients never get a staff module shell (calendar mini + PRACOWNICY
+    // sidebar leaked onto /dashboard and /account). Resolve everything they
+    // can reach to the clean full-width client shell.
+    if (role === 'client') {
+        if (path.startsWith('/booking')) {
+            return CLIENT_MODULES[1];
+        }
+        return CLIENT_MODULES[0];
+    }
 
     if (
         path.startsWith('/calendar') ||
@@ -445,5 +494,8 @@ export function visibleSalonModules(
     role: Role | null | undefined,
 ): SalonModule[] {
     if (!role) return [];
+    if (role === 'client') {
+        return CLIENT_MODULES.filter((item) => can(role, item.permission));
+    }
     return SALON_MODULES.filter((item) => can(role, item.permission));
 }

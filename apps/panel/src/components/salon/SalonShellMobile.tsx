@@ -17,7 +17,7 @@ export default function SalonShellMobile({
 }: SalonShellMobileProps) {
     const router = useRouter();
     const routeForModuleResolution = router.asPath || router.pathname;
-    const activeModule = resolveSalonModule(routeForModuleResolution);
+    const activeModule = resolveSalonModule(routeForModuleResolution, role);
     const modules = visibleSalonModules(role);
 
     const [drawerOpen, setDrawerOpen] = useState(false);

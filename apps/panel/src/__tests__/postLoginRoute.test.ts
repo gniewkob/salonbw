@@ -10,8 +10,8 @@ describe('getPostLoginRoute', () => {
         expect(getPostLoginRoute('employee')).toBe('/calendar');
     });
 
-    it('routes client to booking wizard', () => {
-        expect(getPostLoginRoute('client')).toBe('/booking');
+    it('routes client to their visits panel', () => {
+        expect(getPostLoginRoute('client')).toBe('/dashboard');
     });
 
     it('returns dashboard for unknown role', () => {
