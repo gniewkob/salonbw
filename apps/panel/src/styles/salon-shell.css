@@ -1437,12 +1437,12 @@ tr.customer-row:hover .customers-drag-handle {
     min-width: 28px;
     height: 28px;
     padding: 0 4px;
-    background: #fde8e8;
-    border: 1px solid #f5c0c0;
+    background: #e8e9eb;
+    border: 1px solid #d3d6da;
     border-radius: 3px;
     font-size: 10px;
     font-weight: 700;
-    color: #c54b4b;
+    color: #1a1a1a;
     text-decoration: none;
 }
 
