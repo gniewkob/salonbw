@@ -616,14 +616,18 @@ textarea.form-control {
     white-space: normal;
 }
 
-.list-table a.row-title {
+.list-table a.row-title,
+.customers_index a.row-title {
     font-size: 15px;
     white-space: normal;
-    color: #2b7bbd;
+    color: #1a1a1a;
+    font-weight: 600;
     text-decoration: none;
 }
 
-.list-table a.row-title:hover {
+.list-table a.row-title:hover,
+.customers_index a.row-title:hover {
+    color: #0d0d0d;
     text-decoration: underline;
 }
 
@@ -2864,21 +2868,30 @@ body.e2e-statistics .main-content .inner {
 #sidenav .tree > .root,
 .sidenav .tree > .root {
     align-items: center;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
     color: #4d565e;
+    cursor: pointer;
     display: flex;
+    font: inherit;
     font-size: 13px;
     font-weight: 600;
     gap: 8px;
     padding: 4px 10px;
+    text-align: left;
     text-decoration: none;
+    width: 100%;
 }
 
 #sidenav .tree > .root.active,
 .sidenav .tree > .root.active,
 #sidenav .tree > .root:hover,
 .sidenav .tree > .root:hover {
-    background: #eef3f7;
-    color: var(--salon-accent);
+    background: #f0f0f1;
+    color: #0d0d0d;
 }
 
 #sidenav .tree ul,
@@ -2907,8 +2920,8 @@ body.e2e-statistics .main-content .inner {
 #statistics_menu_list a:hover,
 .sidenav .tree li.active > a,
 .sidenav .tree li a:hover {
-    background: #eef3f7;
-    color: var(--salon-accent);
+    background: #f0f0f1;
+    color: #0d0d0d;
 }
 
 /* The base .simple-list is display:flex;flex-wrap:nowrap for horizontal module
@@ -2956,8 +2969,8 @@ body.e2e-statistics .main-content .inner {
 .sidenav .list_container .simple-list li button:hover,
 #sidenav .customers_index button.filter_link:hover,
 .sidenav .customers_index button.filter_link:hover {
-    background: #eef3f7;
-    color: var(--salon-accent);
+    background: #f0f0f1;
+    color: #0d0d0d;
 }
 
 #sidenav .tree_options,
@@ -2983,7 +2996,7 @@ body.e2e-statistics .main-content .inner {
 #sidenav .tree_options button:hover,
 .sidenav .tree_options a:hover,
 .sidenav .tree_options button:hover {
-    color: var(--salon-accent);
+    color: #0d0d0d;
     text-decoration: underline;
 }
 
@@ -7784,25 +7797,32 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 .customers-quick-filter-chip {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 4px 12px;
     font-size: 12px;
-    border: 1px solid #c2d9f0;
-    border-radius: 20px;
-    background: #f8fbff;
-    color: #2b7bbd;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid #d3d6da;
+    border-radius: 2px;
+    background: #fff;
+    color: #1a1a1a;
     cursor: pointer;
     transition:
-        background 0.12s,
-        color 0.12s;
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
     white-space: nowrap;
 }
 .customers-quick-filter-chip:hover {
-    background: #ddeeff;
+    border-color: var(--salon-accent, #b4b8be);
+}
+.customers-quick-filter-chip:focus-visible {
+    outline: 2px solid var(--salon-accent, #b4b8be);
+    outline-offset: 2px;
 }
 .customers-quick-filter-chip.active {
-    background: #2b7bbd;
-    color: #fff;
-    border-color: #2b7bbd;
+    background: var(--salon-accent, #b4b8be);
+    color: #0d0d0d;
+    border-color: var(--salon-accent, #b4b8be);
 }
 
 /* Sortable column headers */
