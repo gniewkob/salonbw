@@ -13,6 +13,14 @@
     --salon-brand-hover: #8e9298;
     --salon-bg: #ffffff;
     --salon-fg: #1a1a1a;
+    /* Bootstrap's primary was left at default blue (#0d6efd), so every
+       text-primary / bg-primary / border-primary / text-bg-primary leaked
+       blue panel-wide (loyalty/gift-cards KPI values, badges, active tabs).
+       The brand is monochrome — retheme primary to brand black. `.btn-primary`
+       is unaffected (it sets its own --bs-btn-* to silver). White-on-primary
+       stays high-contrast (white on #0d0d0d); text-primary becomes AA dark. */
+    --bs-primary: #0d0d0d;
+    --bs-primary-rgb: 13, 13, 13;
 }
 
 /* --- Body defaults --- */
