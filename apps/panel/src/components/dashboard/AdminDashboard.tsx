@@ -236,7 +236,7 @@ export default function AdminDashboard() {
                     style={{
                         background: '#ffffff',
                         border: '1px solid #e5e7eb',
-                        borderLeft: '4px solid #0d6efd',
+                        borderLeft: '4px solid #0d0d0d',
                         borderRadius: 8,
                         marginBottom: '1rem',
                         overflow: 'hidden',
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
                                 fontWeight: 600,
                                 letterSpacing: '0.14em',
                                 textTransform: 'uppercase',
-                                color: '#0d6efd',
+                                color: '#6e7278',
                             }}
                         >
                             W salonie teraz

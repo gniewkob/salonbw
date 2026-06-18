@@ -6686,10 +6686,10 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 .salonbw-stat-card__change {
     font-size: 11px;
-    color: #e36b5d;
+    color: #9a9ea4;
 }
 .salonbw-stat-card__change.positive {
-    color: #27ae60;
+    color: #0d0d0d;
 }
 .salonbw-stat-card__chart {
     margin-top: 8px;
@@ -7166,10 +7166,10 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     background: #dee2e6;
 }
 .salonbw-mini-chart__bar--blue {
-    background: var(--salon-brand);
+    background: #0d0d0d;
 }
 .salonbw-mini-chart__bar--green {
-    background: #198754;
+    background: #6e7278;
 }
 
 /* ══════════════════════════════════════════════════════════════════
