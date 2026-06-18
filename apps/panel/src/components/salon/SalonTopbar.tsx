@@ -275,7 +275,7 @@ export default function SalonTopbar() {
                             aria-expanded={userMenuOpen}
                             onClick={() => setUserMenuOpen((value) => !value)}
                         >
-                            <div className="border-color">
+                            <div className="border-color" aria-hidden="true">
                                 <div className="color1">
                                     {topbar.user.initials}
                                 </div>

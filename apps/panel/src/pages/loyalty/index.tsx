@@ -208,7 +208,7 @@ export default function LoyaltyManagementPage() {
                         <button
                             type="button"
                             onClick={() => setModalType('useCoupon')}
-                            className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
+                            className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-dark rounded-3 fw-medium bg-opacity-10"
                         >
                             <svg
                                 className="w-5 h-5"
@@ -382,7 +382,7 @@ export default function LoyaltyManagementPage() {
                                 <button
                                     type="button"
                                     onClick={handleOpenCreateReward}
-                                    className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 fw-medium bg-opacity-10"
+                                    className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-dark rounded-3 fw-medium bg-opacity-10"
                                 >
                                     <svg
                                         className="w-5 h-5"
@@ -874,7 +874,7 @@ export default function LoyaltyManagementPage() {
                                     <button
                                         type="submit"
                                         disabled={updateProgram.isPending}
-                                        className="px-4 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
+                                        className="px-4 py-2 bg-primary bg-opacity-10 text-dark rounded-3 bg-opacity-10"
                                     >
                                         {updateProgram.isPending
                                             ? 'Zapisywanie...'
@@ -1143,7 +1143,7 @@ export default function LoyaltyManagementPage() {
                                             createReward.isPending ||
                                             updateReward.isPending
                                         }
-                                        className="px-3 py-2 bg-primary bg-opacity-10 text-white rounded-3 bg-opacity-10"
+                                        className="px-3 py-2 bg-primary bg-opacity-10 text-dark rounded-3 bg-opacity-10"
                                     >
                                         {createReward.isPending ||
                                         updateReward.isPending
@@ -1202,7 +1202,7 @@ export default function LoyaltyManagementPage() {
                                     <button
                                         type="submit"
                                         disabled={useCoupon.isPending}
-                                        className="px-3 py-2 bg-success bg-opacity-10 text-white rounded-3 bg-opacity-10"
+                                        className="px-3 py-2 bg-success bg-opacity-10 text-dark rounded-3 bg-opacity-10"
                                     >
                                         {useCoupon.isPending
                                             ? 'Realizowanie...'
