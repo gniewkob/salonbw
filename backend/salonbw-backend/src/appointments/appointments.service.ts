@@ -16,6 +16,7 @@ import {
     Between,
     FindOptionsWhere,
     ILike,
+    In,
 } from 'typeorm';
 import {
     Appointment,
@@ -966,6 +967,60 @@ export class AppointmentsService {
             );
         }
 
+        // Resolve additional services (line-items beyond the primary service)
+        // — denormalize name + price so history is stable, and accumulate their
+        // net value for the combined commission base.
+        let extraServices:
+            | Array<{
+                  serviceId: number;
+                  name: string;
+                  priceCents: number;
+                  discountCents: number;
+              }>
+            | undefined;
+        let additionalServicesNetCents = 0;
+        if (dto.additionalServices && dto.additionalServices.length > 0) {
+            const ids = Array.from(
+                new Set(dto.additionalServices.map((s) => s.serviceId)),
+            );
+            const services = await this.servicesRepository.find({
+                where: { id: In(ids) },
+            });
+            const byId = new Map(services.map((s) => [s.id, s]));
+            extraServices = dto.additionalServices.map((item) => {
+                const svc = byId.get(item.serviceId);
+                if (!svc) {
+                    throw new BadRequestException(
+                        `Usługa ${item.serviceId} nie istnieje`,
+                    );
+                }
+                const priceCents =
+                    item.priceCents ?? Math.round(Number(svc.price) * 100);
+                const discountCents = item.discountCents ?? 0;
+                additionalServicesNetCents += Math.max(
+                    0,
+                    priceCents - discountCents,
+                );
+                return {
+                    serviceId: svc.id,
+                    name: svc.name,
+                    priceCents,
+                    discountCents,
+                };
+            });
+        }
+
+        // Combined commission base: primary service (variant price if any) +
+        // additional services net. Only override when extras exist, so the
+        // single-service case keeps its existing base.
+        const primaryPrice = Number(
+            appointment.serviceVariant?.price ?? appointment.service.price ?? 0,
+        );
+        const commissionBaseOverride =
+            additionalServicesNetCents > 0
+                ? primaryPrice + additionalServicesNetCents / 100
+                : undefined;
+
         // Convert cents to decimal for storage
         const paidAmount = dto.paidAmountCents / 100;
         const tipAmount = dto.tipAmountCents ? dto.tipAmountCents / 100 : 0;
@@ -995,13 +1050,16 @@ export class AppointmentsService {
                             ? `${appointment.notes}\n${dto.clientNote.trim()}`
                             : dto.clientNote.trim()
                         : appointment.notes,
+                    extraServices: extraServices ?? appointment.extraServices,
                 });
 
-                // Create commission for the service
+                // Single combined commission covering the primary service +
+                // any additional services (base override when extras exist).
                 await this.commissionsService.createFromAppointment(
                     appointment,
                     user,
                     manager,
+                    commissionBaseOverride,
                 );
             },
         );

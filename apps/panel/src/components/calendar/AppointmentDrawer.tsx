@@ -701,6 +701,31 @@ export default function AppointmentDrawer({
                                         </Link>
                                     </div>
                                     <div className="mt-1">
+                                        {appointment.extraServices &&
+                                            appointment.extraServices.length >
+                                                0 && (
+                                                <div className="mb-1">
+                                                    Dodatkowe usługi:
+                                                    <ul className="list-unstyled mb-0 ms-2">
+                                                        {appointment.extraServices.map(
+                                                            (s, i) => (
+                                                                <li
+                                                                    key={`${s.serviceId}-${i}`}
+                                                                >
+                                                                    {s.name} —{' '}
+                                                                    {formatCurrency(
+                                                                        Math.max(
+                                                                            0,
+                                                                            s.priceCents -
+                                                                                s.discountCents,
+                                                                        ) / 100,
+                                                                    )}
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                </div>
+                                            )}
                                         <div>
                                             Metoda:{' '}
                                             {appointment.paymentMethod ??

@@ -91,6 +91,19 @@ export class Appointment {
     @Column({ nullable: true, type: 'text' })
     internalNote?: string;
 
+    // Additional services billed at finalization (beyond the primary service),
+    // e.g. an extra care/treatment added during the visit. Line-items with
+    // their own per-item discount; they contribute to the visit total and the
+    // (single, combined) commission. Stored denormalized so history is stable
+    // even if the catalog price later changes.
+    @Column({ type: 'jsonb', nullable: true })
+    extraServices?: Array<{
+        serviceId: number;
+        name: string;
+        priceCents: number;
+        discountCents: number;
+    }>;
+
     @Column({ default: false })
     reservedOnline: boolean;
 

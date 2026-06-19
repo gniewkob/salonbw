@@ -75,6 +75,31 @@ export class UsageMaterialItemDto {
     unit?: string;
 }
 
+export class AdditionalServiceDto {
+    @ApiProperty({ description: 'Service ID from the catalog' })
+    @IsInt()
+    serviceId: number;
+
+    @ApiProperty({
+        description:
+            'Price in cents (optional — defaults to the catalog price)',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    priceCents?: number;
+
+    @ApiProperty({
+        description: 'Per-item discount in cents',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    discountCents?: number;
+}
+
 export class FinalizeAppointmentDto {
     @ApiProperty({
         description: 'Payment method used',
@@ -163,4 +188,16 @@ export class FinalizeAppointmentDto {
     @IsString()
     @IsOptional()
     clientNote?: string;
+
+    @ApiProperty({
+        description:
+            'Extra services added during the visit (line-items beyond the primary service); each contributes to the total and the combined commission.',
+        required: false,
+        type: [AdditionalServiceDto],
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => AdditionalServiceDto)
+    @IsOptional()
+    additionalServices?: AdditionalServiceDto[];
 }

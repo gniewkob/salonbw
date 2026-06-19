@@ -12,7 +12,15 @@ import type {
     Product,
     UsageMaterialItem,
     ServiceRecipeItem,
+    Service,
 } from '@/types';
+
+interface ExtraServiceDraft {
+    serviceId: number;
+    name: string;
+    priceCents: number;
+    discountCents: number;
+}
 
 interface Props {
     appointment: Appointment | null;
@@ -52,6 +60,10 @@ export default function FinalizationModal({
     const [showProductPicker, setShowProductPicker] = useState(false);
     const [usageItems, setUsageItems] = useState<UsageMaterialItem[]>([]);
     const [showUsagePicker, setShowUsagePicker] = useState(false);
+    const [additionalServices, setAdditionalServices] = useState<
+        ExtraServiceDraft[]
+    >([]);
+    const [showServicePicker, setShowServicePicker] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,6 +93,25 @@ export default function FinalizationModal({
         [productsResponse],
     );
 
+    // Active services for the "additional services" picker.
+    const { data: servicesResponse } = useQuery<
+        Service[] | { items: Service[] }
+    >({
+        queryKey: ['services', { isActive: true }],
+        queryFn: () =>
+            apiFetch<Service[] | { items: Service[] }>(
+                '/services?isActive=true',
+            ),
+        enabled: open && showServicePicker,
+    });
+    const services = useMemo<Service[]>(
+        () =>
+            Array.isArray(servicesResponse)
+                ? servicesResponse
+                : (servicesResponse?.items ?? []),
+        [servicesResponse],
+    );
+
     // Calculate totals
     const summary = useMemo(() => {
         const servicePrice = appointment?.service?.price ?? 0;
@@ -96,17 +127,38 @@ export default function FinalizationModal({
                 : 0;
             return sum + (price * item.quantity - itemDiscount);
         }, 0);
-        const grandTotal = servicePrice - discount + tip + productsTotal;
+        const additionalServicesTotal = additionalServices.reduce(
+            (sum, item) =>
+                sum + Math.max(0, item.priceCents - item.discountCents) / 100,
+            0,
+        );
+        const grandTotal =
+            servicePrice -
+            discount +
+            tip +
+            productsTotal +
+            additionalServicesTotal;
 
         return {
             servicePrice,
             discount,
             tip,
             productsTotal,
+            additionalServicesTotal,
             grandTotal: Math.max(0, grandTotal),
         };
-    }, [appointment, discountPln, tipPln, productSales, products]);
-    const maxDiscount = summary.servicePrice + summary.productsTotal;
+    }, [
+        appointment,
+        discountPln,
+        tipPln,
+        productSales,
+        products,
+        additionalServices,
+    ]);
+    const maxDiscount =
+        summary.servicePrice +
+        summary.productsTotal +
+        summary.additionalServicesTotal;
     const isDiscountInvalid = summary.discount > maxDiscount;
 
     // Finalize mutation
@@ -158,6 +210,8 @@ export default function FinalizationModal({
         setTipPln('');
         setNote('');
         setClientNote('');
+        setAdditionalServices([]);
+        setShowServicePicker(false);
         setProductSales([]);
         setUsageMaterials([]);
         setShowProductPicker(false);
@@ -223,6 +277,14 @@ export default function FinalizationModal({
                 usageMaterials.length > 0 ? usageMaterials : undefined,
             note: note || undefined,
             clientNote: clientNote || undefined,
+            additionalServices:
+                additionalServices.length > 0
+                    ? additionalServices.map((s) => ({
+                          serviceId: s.serviceId,
+                          priceCents: s.priceCents,
+                          discountCents: s.discountCents,
+                      }))
+                    : undefined,
             usageItems:
                 usageItems.length > 0
                     ? usageItems.map((item) => ({
@@ -269,6 +331,42 @@ export default function FinalizationModal({
 
     const removeProduct = (productId: number) => {
         setProductSales(productSales.filter((p) => p.productId !== productId));
+    };
+
+    const addAdditionalService = (serviceId: number) => {
+        const svc = services.find((s) => s.id === serviceId);
+        if (!svc) return;
+        setAdditionalServices((prev) => [
+            ...prev,
+            {
+                serviceId: svc.id,
+                name: svc.name,
+                priceCents: Math.round(Number(svc.price ?? 0) * 100),
+                discountCents: 0,
+            },
+        ]);
+        setShowServicePicker(false);
+    };
+
+    const updateAdditionalServiceDiscount = (index: number, pln: string) => {
+        const discountCents = Math.max(
+            0,
+            Math.round((parseFloat(pln) || 0) * 100),
+        );
+        setAdditionalServices((prev) =>
+            prev.map((s, i) =>
+                i === index
+                    ? {
+                          ...s,
+                          discountCents: Math.min(discountCents, s.priceCents),
+                      }
+                    : s,
+            ),
+        );
+    };
+
+    const removeAdditionalService = (index: number) => {
+        setAdditionalServices((prev) => prev.filter((_, i) => i !== index));
     };
 
     const addUsageMaterial = (productId: number) => {
@@ -518,6 +616,102 @@ export default function FinalizationModal({
                         </div>
                     </div>
                 )}
+
+                {/* Additional services */}
+                <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="d-block small fw-medium text-body">
+                            Dodatkowe usługi
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowServicePicker(!showServicePicker)
+                            }
+                            className="small text-primary"
+                        >
+                            {showServicePicker ? 'Ukryj' : '+ Dodaj usługę'}
+                        </button>
+                    </div>
+
+                    {showServicePicker && (
+                        <div
+                            className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 overflow-y-auto"
+                            style={{ maxHeight: '220px' }}
+                        >
+                            {services.length === 0 ? (
+                                <p className="small text-muted mb-0">
+                                    Ładowanie usług…
+                                </p>
+                            ) : (
+                                services.map((svc) => (
+                                    <button
+                                        type="button"
+                                        key={svc.id}
+                                        onClick={() =>
+                                            addAdditionalService(svc.id)
+                                        }
+                                        className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
+                                    >
+                                        <span>{svc.name}</span>
+                                        <span className="text-muted">
+                                            {Number(svc.price ?? 0).toFixed(2)}{' '}
+                                            zł
+                                        </span>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {additionalServices.length > 0 && (
+                        <ul className="list-unstyled mb-0">
+                            {additionalServices.map((s, index) => (
+                                <li
+                                    key={`${s.serviceId}-${index}`}
+                                    className="d-flex align-items-center gap-2 small mb-1"
+                                >
+                                    <span className="flex-grow-1">
+                                        {s.name}
+                                    </span>
+                                    <span className="text-muted">
+                                        {(s.priceCents / 100).toFixed(2)} zł
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="0.01"
+                                        aria-label={`Rabat dla ${s.name}`}
+                                        placeholder="rabat zł"
+                                        value={
+                                            s.discountCents
+                                                ? s.discountCents / 100
+                                                : ''
+                                        }
+                                        onChange={(e) =>
+                                            updateAdditionalServiceDiscount(
+                                                index,
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="form-control form-control-sm"
+                                        style={{ width: '90px' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        aria-label={`Usuń ${s.name}`}
+                                        onClick={() =>
+                                            removeAdditionalService(index)
+                                        }
+                                        className="btn btn-sm btn-link text-danger p-0"
+                                    >
+                                        ✕
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
 
                 {/* Product Upselling */}
                 <div className="mb-3">
@@ -817,6 +1011,15 @@ export default function FinalizationModal({
                             <span>Usługa:</span>
                             <span>{summary.servicePrice.toFixed(2)} PLN</span>
                         </div>
+                        {summary.additionalServicesTotal > 0 && (
+                            <div className="d-flex justify-content-between">
+                                <span>Dodatkowe usługi:</span>
+                                <span>
+                                    {summary.additionalServicesTotal.toFixed(2)}{' '}
+                                    PLN
+                                </span>
+                            </div>
+                        )}
                         {summary.productsTotal > 0 && (
                             <div className="d-flex justify-content-between">
                                 <span>Produkty:</span>

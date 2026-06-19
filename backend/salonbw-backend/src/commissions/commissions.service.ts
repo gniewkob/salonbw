@@ -99,6 +99,7 @@ export class CommissionsService {
         appointment: Appointment | null,
         user: User,
         manager?: EntityManager,
+        baseAmountOverride?: number,
     ): Promise<Commission> {
         const repo = manager
             ? manager.getRepository(Commission)
@@ -111,13 +112,19 @@ export class CommissionsService {
                 return existing;
             }
         }
-        const price = appointment
-            ? Number(
-                  appointment.paidAmount ??
-                      appointment.serviceVariant?.price ??
-                      service.price,
-              )
-            : Number(service.price);
+        // baseAmountOverride lets finalize set a combined base (primary service
+        // + additional services net of per-item discount) for a single
+        // commission covering the whole visit.
+        const price =
+            baseAmountOverride !== undefined
+                ? Number(baseAmountOverride)
+                : appointment
+                  ? Number(
+                        appointment.paidAmount ??
+                            appointment.serviceVariant?.price ??
+                            service.price,
+                    )
+                  : Number(service.price);
         const percent = await this.resolveCommissionPercent(employee, service);
         const priceCents = this.toCents(price);
         const amountCents = Math.floor((priceCents * percent) / 100);
@@ -138,6 +145,7 @@ export class CommissionsService {
         appointment: Appointment,
         user: User,
         manager?: EntityManager,
+        baseAmountOverride?: number,
     ): Promise<Commission> {
         return this.calculateAndSaveCommission(
             appointment.employee,
@@ -145,6 +153,7 @@ export class CommissionsService {
             appointment,
             user,
             manager,
+            baseAmountOverride,
         );
     }
 

@@ -51,6 +51,12 @@ export interface Appointment {
     finalizedBy?: { id: number; name: string };
     notes?: string;
     internalNote?: string;
+    extraServices?: {
+        serviceId: number;
+        name: string;
+        priceCents: number;
+        discountCents: number;
+    }[];
 }
 
 export interface Formula {
@@ -998,6 +1004,11 @@ export interface FinalizeAppointmentRequest {
     note?: string;
     clientNote?: string;
     usageItems?: { productId: number; quantity: number; unit?: string }[];
+    additionalServices?: {
+        serviceId: number;
+        priceCents?: number;
+        discountCents?: number;
+    }[];
 }
 
 export interface FinalizationSummary {
