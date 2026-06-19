@@ -21,14 +21,25 @@ export const BUSINESS_INFO = {
     phone: '+48 723 588 868',
     email: 'kontakt@salon-bw.pl',
   },
-  // Static fallback only — the live per-day schedule (which follows the
-  // owner-employee's timetable, incl. Wed closed) comes from
-  // /calendar/opening-hours via useOpeningHours. mondayFriday is the weekday
-  // open-envelope (earliest open 09:00 … latest close 19:00); Saturday is exact.
+  // Static fallback only — the live per-day schedule comes from
+  // /calendar/opening-hours via useOpeningHours. `weeklyHours` mirrors the
+  // owner-employee's real timetable (incl. Wed closed) so the no-JS /
+  // pre-hydration / crawler render matches the live one (no layout shift, no
+  // misleading "open Wednesday"). `mondayFriday` is the compact weekday
+  // open-envelope kept for inline marketing copy (e.g. /services CTA).
   hours: {
     mondayFriday: '09:00 - 19:00',
     saturday: '09:00 - 13:00',
     sunday: 'Zamknięte',
+  },
+  weeklyHours: {
+    mon: [{ open: '09:00', close: '16:00' }],
+    tue: [{ open: '12:00', close: '19:00' }],
+    wed: [] as Array<{ open: string; close: string }>,
+    thu: [{ open: '12:00', close: '19:00' }],
+    fri: [{ open: '09:00', close: '16:00' }],
+    sat: [{ open: '09:00', close: '13:00' }],
+    sun: [] as Array<{ open: string; close: string }>,
   },
   social: {
     facebook: 'https://www.facebook.com/Salon.Fryzjerski.Black.And.White',

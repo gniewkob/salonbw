@@ -7,8 +7,8 @@ const API_BASE_URL =
 
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
-type Range = { open: string; close: string };
-type WeeklyHours = Record<string, Range[]>;
+type Range = { readonly open: string; readonly close: string };
+type WeeklyHours = Record<string, readonly Range[]>;
 
 export interface OpeningHoursLine {
     label: string;
@@ -16,7 +16,7 @@ export interface OpeningHoursLine {
     closed?: boolean;
 }
 
-function formatRanges(ranges: Range[], closedLabel: string): string {
+function formatRanges(ranges: readonly Range[], closedLabel: string): string {
     if (!ranges.length) return closedLabel;
     return ranges.map((r) => `${r.open} - ${r.close}`).join(', ');
 }
@@ -87,12 +87,15 @@ export function useOpeningHours(): { lines: OpeningHoursLine[] } {
     }, []);
 
     const lines = useMemo(() => {
-        if (live) {
-            const built = buildLines(live, T.hours.dayShort, T.hours.closed);
-            if (built.length > 0 && built.some((l) => !l.closed)) {
-                return built;
-            }
+        // Live hours when available, otherwise the static weekly fallback —
+        // both go through buildLines so the no-JS / pre-hydration render shows
+        // the real per-day schedule (incl. Wed closed), matching live exactly.
+        const source: WeeklyHours = live ?? BUSINESS_INFO.weeklyHours;
+        const built = buildLines(source, T.hours.dayShort, T.hours.closed);
+        if (built.length > 0 && built.some((l) => !l.closed)) {
+            return built;
         }
+        // Last resort (no open day at all): compact envelope.
         return [
             {
                 label: T.hours.mondayFriday,
