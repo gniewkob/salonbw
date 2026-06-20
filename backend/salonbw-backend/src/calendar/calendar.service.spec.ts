@@ -264,6 +264,18 @@ describe('CalendarService working hours in available slots (L1)', () => {
         );
     }
 
+    // Next future occurrence (>= tomorrow) of a JS weekday (Sun=0..Sat=6),
+    // so these tests don't rot against hardcoded dates and the now+1h slot
+    // floor never truncates a full future day.
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const nextDow = (targetDow: number): string => {
+        const d = new Date();
+        do {
+            d.setDate(d.getDate() + 1);
+        } while (d.getDay() !== targetDow);
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
+
     const branchMonSat = {
         id: 1,
         workingHours: {
@@ -280,14 +292,14 @@ describe('CalendarService working hours in available slots (L1)', () => {
     it('offers no slots on Sunday (salon closed)', async () => {
         const svc = buildHarness({ branch: branchMonSat });
         // 2026-06-14 is a Sunday
-        const slots = await svc.getAvailableSlots(1, '2026-06-14');
+        const slots = await svc.getAvailableSlots(1, nextDow(0));
         expect(slots).toEqual([]);
     });
 
     it('cuts Saturday to salon closing time', async () => {
         const svc = buildHarness({ branch: branchMonSat });
         // 2026-06-13 is a Saturday; hours 09:00-15:00, 60-min service
-        const slots = await svc.getAvailableSlots(1, '2026-06-13');
+        const slots = await svc.getAvailableSlots(1, nextDow(6));
         expect(slots.length).toBeGreaterThan(0);
         const first = new Date(slots[0].time);
         const last = new Date(slots[slots.length - 1].time);
@@ -307,15 +319,15 @@ describe('CalendarService working hours in available slots (L1)', () => {
             } as TimetableException,
         });
         // 2026-06-12 is a Friday — salon open, employee on vacation
-        const slots = await svc.getAvailableSlots(1, '2026-06-12');
+        const slots = await svc.getAvailableSlots(1, nextDow(5));
         expect(slots).toEqual([]);
     });
 
     it('falls back to Mon-Sat 9-19 when no branch is configured (Sunday still closed)', async () => {
         const svc = buildHarness({ branch: null });
-        const sunday = await svc.getAvailableSlots(1, '2026-06-14');
+        const sunday = await svc.getAvailableSlots(1, nextDow(0));
         expect(sunday).toEqual([]);
-        const friday = await svc.getAvailableSlots(1, '2026-06-12');
+        const friday = await svc.getAvailableSlots(1, nextDow(5));
         expect(friday.length).toBeGreaterThan(0);
         expect(new Date(friday[0].time).getHours()).toBe(9);
     });
@@ -336,7 +348,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
                 ],
             } as unknown as Timetable,
         });
-        const slots = await svc.getAvailableSlots(1, '2026-06-12');
+        const slots = await svc.getAvailableSlots(1, nextDow(5));
         expect(slots.length).toBeGreaterThan(0);
         const hours = slots.map((s) => new Date(s.time).getHours());
         expect(Math.min(...hours)).toBeGreaterThanOrEqual(12);
@@ -363,7 +375,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
             } as unknown as Timetable,
         });
         // 2026-06-14 is a Sunday
-        const slots = await svc.getAvailableSlots(1, '2026-06-14');
+        const slots = await svc.getAvailableSlots(1, nextDow(0));
         expect(slots.length).toBeGreaterThan(0);
         expect(new Date(slots[0].time).getHours()).toBe(10);
     });

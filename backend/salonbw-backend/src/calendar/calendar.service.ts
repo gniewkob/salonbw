@@ -759,6 +759,21 @@ export class CalendarService {
             .andWhere('(t.validTo IS NULL OR t.validTo >= :date)', {
                 date: today,
             })
+            // Only count the schedules of staff who actually take online
+            // bookings (have an active service with onlineBooking=true), so a
+            // non-bookable / test employee's timetable can't widen the public
+            // hours. If nobody qualifies the result is empty and we fall back
+            // to branch/default hours below.
+            .andWhere(
+                `t."employeeId" IN (
+                    SELECT es."employeeId"
+                    FROM "employee_services" es
+                    JOIN "services" s ON s."id" = es."serviceId"
+                    WHERE es."isActive" = true
+                      AND s."isActive" = true
+                      AND s."onlineBooking" = true
+                )`,
+            )
             .getMany();
 
         let source: 'timetables' | 'branch' | 'default' = 'default';
