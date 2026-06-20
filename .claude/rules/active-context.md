@@ -119,10 +119,11 @@
 - ~~Focus-ring CSS audit~~ — AUDITED 2026-06-10, no gaps: every `outline: none` in salon-shell.css pairs with border-color + box-shadow focus style; global `:focus-visible` rule (line ~8247) gives 2px accent outline to buttons/links/tabindex
 
 ### P3 — Code quality
-- `data_protection.tsx`: `inner edit_branch_form` on a `<form>` — refactor deferred
-- `DashboardLayout` exists but used by no page — dead code; safe to remove
+- ~~`data_protection.tsx` inner `edit_branch_form` nested form~~ — STALE (2026-06-20): page has a single well-formed `<form>` (81-181), "Logi i audyt" is outside it; no nested form, no `edit_branch_form`. Nothing to fix.
+- ~~`DashboardLayout` dead code~~ — STALE (2026-06-20): file + all references already gone from the repo.
 - ~~Push-triggered CI deploy runs failing~~ — stale: push deploy `27266421553` (2026-06-10) succeeded end-to-end
-- Dead CSS audit: `default.css` / `new-ui.css` chunks to remove — not yet started
+- ~~Dead CSS audit: `default.css` / `new-ui.css`~~ — STALE (2026-06-20): neither file exists anywhere in the repo; no references.
+- Opening-hours hardening DONE 2026-06-20 (`8e4c5e760`): `getOpeningHours` unions only timetables of staff with an active onlineBooking service (test/non-bookable employee can't widen public hours); calendar L1 spec dates made dynamic (`nextDow`). Verified live: wed=[], source=timetables.
 
 ---
 
