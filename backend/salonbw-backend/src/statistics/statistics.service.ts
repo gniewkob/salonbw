@@ -541,7 +541,9 @@ export class StatisticsService {
             .groupBy('service.id')
             .addGroupBy('service.name')
             .addGroupBy('category.name')
-            .orderBy('bookingCount', 'DESC')
+            // Quote the camelCase alias — unquoted, Postgres folds it to
+            // lowercase and the ORDER BY can't resolve it (raised a 500).
+            .orderBy('"bookingCount"', 'DESC')
             .getRawMany();
 
         return result.map((r) => ({
@@ -688,7 +690,9 @@ export class StatisticsService {
             .addSelect('AVG(appointment.tipAmount)', 'averageTip')
             .groupBy('employee.id')
             .addGroupBy('employee.name')
-            .orderBy('tipsTotal', 'DESC')
+            // Quote the camelCase alias (see getServiceRanking) — unquoted it
+            // folds to lowercase and ORDER BY can't resolve it (500).
+            .orderBy('"tipsTotal"', 'DESC')
             .getRawMany();
 
         return result.map((r) => ({
