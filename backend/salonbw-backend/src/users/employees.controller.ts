@@ -27,6 +27,9 @@ import {
     IsOptional,
     IsEmail,
     IsEnum,
+    IsNumber,
+    Min,
+    Max,
 } from 'class-validator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -73,6 +76,13 @@ class ResetPasswordDto {
 }
 
 class UpdateCommissionBaseDto {
+    // Needs a class-validator decorator: with the global ValidationPipe's
+    // forbidNonWhitelisted, an undecorated property is rejected as
+    // non-whitelisted → 400 "property commissionBase should not exist"
+    // (broke the panel's commission-base editor).
+    @IsNumber()
+    @Min(0)
+    @Max(100)
     commissionBase!: number;
 }
 
