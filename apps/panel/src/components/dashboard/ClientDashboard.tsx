@@ -390,6 +390,22 @@ export default function ClientDashboard() {
                     </div>
                 )}
             </div>
+            <div className="mt-3 d-flex flex-wrap align-items-center justify-content-between gap-2 p-3 border rounded bg-white">
+                <div>
+                    <div className="fw-semibold">Potrzebujesz pomocy?</div>
+                    <div className="text-muted small">
+                        Problem techniczny lub pytanie o konto — napisz do
+                        administratora. Sprawy dotyczące samej wizyty omów z
+                        fryzjerką w komentarzu przy wizycie.
+                    </div>
+                </div>
+                <Link
+                    href="/helps/new"
+                    className="btn btn-outline-dark btn-sm flex-shrink-0"
+                >
+                    Kontakt z administratorem
+                </Link>
+            </div>
             <ConfirmModal
                 open={confirmCancelId !== null}
                 title="Anuluj wizytę"
