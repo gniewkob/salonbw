@@ -13,6 +13,10 @@ export class UpcomingAppointmentDto {
     @IsNumber()
     id: number;
 
+    @ApiProperty({ description: 'Service ID (for "book again" deep link)' })
+    @IsNumber()
+    serviceId: number;
+
     @ApiProperty({ description: 'Service name' })
     serviceName: string;
 
@@ -43,6 +47,10 @@ export class RecentAppointmentDto {
     @ApiProperty({ description: 'Appointment ID' })
     @IsNumber()
     id: number;
+
+    @ApiProperty({ description: 'Service ID (for "book again" deep link)' })
+    @IsNumber()
+    serviceId: number;
 
     @ApiProperty({ description: 'Service name' })
     serviceName: string;

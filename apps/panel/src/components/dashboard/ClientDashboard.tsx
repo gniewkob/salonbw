@@ -335,6 +335,17 @@ export default function ClientDashboard() {
                                     <span className={statusClass(apt.status)}>
                                         {statusLabel(apt.status)}
                                     </span>
+                                    {(apt.status === 'completed' ||
+                                        apt.status === 'cancelled' ||
+                                        apt.status === 'no_show') &&
+                                        apt.serviceId > 0 && (
+                                            <Link
+                                                href={`/booking?serviceId=${apt.serviceId}`}
+                                                className="btn btn-sm btn-outline-dark"
+                                            >
+                                                Umów ponownie
+                                            </Link>
+                                        )}
                                     {apt.status === 'rescheduled_pending' &&
                                         new Date(apt.startTime) >
                                             new Date() && (

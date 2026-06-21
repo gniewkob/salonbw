@@ -326,6 +326,7 @@ export interface DashboardResponse {
 export interface ClientDashboardResponse {
     upcomingAppointment: {
         id: number;
+        serviceId: number;
         serviceName: string;
         startTime: string;
         employeeName: string;
@@ -335,6 +336,7 @@ export interface ClientDashboardResponse {
     serviceHistory: { id: number; name: string; count: number }[];
     recentAppointments: {
         id: number;
+        serviceId: number;
         serviceName: string;
         startTime: string;
         status: string;

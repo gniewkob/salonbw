@@ -189,6 +189,7 @@ export class DashboardService {
             upcomingAppointment: upcomingAppointment
                 ? {
                       id: upcomingAppointment.id,
+                      serviceId: upcomingAppointment.service?.id ?? 0,
                       serviceName: upcomingAppointment.service?.name ?? '',
                       startTime: upcomingAppointment.startTime,
                       status: upcomingAppointment.status,
@@ -202,6 +203,7 @@ export class DashboardService {
             serviceHistory,
             recentAppointments: recentAppointments.map((apt) => ({
                 id: apt.id,
+                serviceId: apt.service?.id ?? 0,
                 serviceName: apt.service?.name ?? '',
                 startTime: apt.startTime,
                 status: apt.status,
