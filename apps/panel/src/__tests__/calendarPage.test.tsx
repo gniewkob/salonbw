@@ -260,7 +260,14 @@ describe('CalendarPage', () => {
     });
 
     it('shows warning when appointment deep link fetch fails', async () => {
-        apiFetchMock.mockRejectedValueOnce(new Error('Deep link failed'));
+        // Endpoint-specific so the opening-hours fetch (also via apiFetch)
+        // doesn't consume a positional `…Once` rejection.
+        apiFetchMock.mockImplementation(async (endpoint: string) => {
+            if (endpoint === '/appointments/42') {
+                throw new Error('Deep link failed');
+            }
+            return { hours: {} };
+        });
 
         render(<CalendarPage />);
 
