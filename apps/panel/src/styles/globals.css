@@ -2051,10 +2051,20 @@ h3 {
     box-shadow: none;
 }
 
-/* Topbar toggles (Pomoc, user avatar) sit on light #efefef pills, so the
-   text must be dark — #7a7068 was only 4.2:1 (WCAG fail). #1a1a1a = ~11:1. */
-.navbar .dropdown-toggle {
-    color: #1a1a1a;
+/* Topbar controls blend into the dark bar. They were bare <button>s showing
+   the browser's light "button-face" — reading as white rectangles on the
+   dark topbar. Make them transparent with light icons/text (Heroicons use
+   currentColor) + a subtle hover. */
+.navbar .navbar-right .link,
+.navbar .navbar-right .dropdown-toggle {
+    background: transparent;
+    border: none;
+    color: #c7cbd1;
+}
+.navbar .navbar-right .link:hover,
+.navbar .navbar-right .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
 }
 
 .navbar .dropdown-menu {

@@ -8393,11 +8393,17 @@ th.checkbox_container input[type='checkbox'] {
 }
 .salonbw-datepicker .react-datepicker__day--selected,
 .salonbw-datepicker .react-datepicker__day--keyboard-selected {
-    background-color: #25b4c1;
+    background-color: #0d0d0d;
     color: #fff;
 }
 .salonbw-datepicker .react-datepicker__day:hover {
-    background-color: #e6f7f8;
+    background-color: #f0f0f0;
+}
+/* Hide next/previous-month filler days — only the current month's days
+   show, so no stray "1 2 3 4" from the following month. */
+.salonbw-datepicker .react-datepicker__day--outside-month {
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* ========================================
