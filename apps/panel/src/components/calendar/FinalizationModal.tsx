@@ -78,6 +78,43 @@ export default function FinalizationModal({
         enabled: open && !!appointment?.service?.id,
     });
 
+    // Client's standing discount (own percent, else from their group) — used
+    // to pre-fill the discount field at finalization. Staff can still edit it.
+    const clientId = appointment?.client?.id;
+    const { data: clientRecord } = useQuery<{
+        resolvedDiscountPercent: number | null;
+    }>({
+        queryKey: ['customer-discount', clientId],
+        queryFn: () =>
+            apiFetch<{ resolvedDiscountPercent: number | null }>(
+                `/customers/${clientId}`,
+            ),
+        enabled: open && !!clientId,
+    });
+    const standingDiscountPercent =
+        clientRecord?.resolvedDiscountPercent ?? null;
+    const [discountPrefilled, setDiscountPrefilled] = useState(false);
+    useEffect(() => {
+        if (!open) {
+            setDiscountPrefilled(false);
+            return;
+        }
+        if (discountPrefilled || discountPln !== '') return;
+        if (standingDiscountPercent == null || standingDiscountPercent <= 0)
+            return;
+        const basePrice = appointment?.service?.price ?? 0;
+        if (basePrice <= 0) return;
+        const amount = Math.round(basePrice * standingDiscountPercent) / 100;
+        setDiscountPln(amount.toFixed(2));
+        setDiscountPrefilled(true);
+    }, [
+        open,
+        standingDiscountPercent,
+        appointment,
+        discountPrefilled,
+        discountPln,
+    ]);
+
     // Fetch products for upselling. Pickers only offer active products
     // (filtered server-side); deactivated stock must not be sellable/usable.
     const { data: productsResponse } = useQuery<ProductsResponse>({
@@ -501,6 +538,13 @@ export default function FinalizationModal({
                             className="d-block small fw-medium text-body mb-1"
                         >
                             Rabat (PLN)
+                            {standingDiscountPercent != null &&
+                                standingDiscountPercent > 0 && (
+                                    <span className="ms-2 fw-normal text-muted">
+                                        · rabat stały klientki{' '}
+                                        {standingDiscountPercent}%
+                                    </span>
+                                )}
                         </label>
                         <input
                             id="fin-discount"

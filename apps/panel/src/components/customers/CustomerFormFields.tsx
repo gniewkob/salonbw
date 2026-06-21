@@ -23,6 +23,8 @@ export type CustomerFormDraft = {
     description: string;
     emailConsent: boolean;
     smsConsent: boolean;
+    /** Standing discount percent (0–100) as a string; '' = none. Admin-set. */
+    discountPercent?: string;
 };
 
 export type CustomerFormOnChange = <K extends keyof CustomerFormDraft>(
@@ -331,6 +333,33 @@ export default function CustomerFormFields({
                     Zaawansowane{' '}
                     <span className="customer-advanced-hint">Pokaż</span>
                 </h4>
+                <div className="customer-new-row">
+                    <label htmlFor={`${fieldIdPrefix}-discount`}>
+                        Stały rabat (%)
+                    </label>
+                    <input
+                        id={`${fieldIdPrefix}-discount`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="0.5"
+                        className="form-control"
+                        value={values.discountPercent ?? ''}
+                        onChange={(e) =>
+                            onChange('discountPercent', e.target.value)
+                        }
+                        disabled={disabled}
+                        placeholder="np. 10"
+                        aria-describedby={`${fieldIdPrefix}-discount-hint`}
+                    />
+                    <small
+                        id={`${fieldIdPrefix}-discount-hint`}
+                        className="text-muted d-block mt-1"
+                    >
+                        Auto-podpowiada się przy finalizacji. Puste = rabat z
+                        grupy klienta lub brak.
+                    </small>
+                </div>
                 <div className="customer-new-row customer-new-row--checkbox">
                     <label htmlFor={`${fieldIdPrefix}-email-consent`}>
                         Zgoda na kontakt email

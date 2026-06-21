@@ -345,6 +345,17 @@ export class CustomersService {
         if (!customer) {
             throw new NotFoundException('Customer not found');
         }
+        // Resolve the standing discount: the client's own percent, else the
+        // highest among their groups. Attached (not a column) for the API.
+        const groupDiscounts = (customer.groups ?? [])
+            .map((g) => g.discountPercent)
+            .filter((v): v is number => v !== null && v !== undefined);
+        const resolved =
+            customer.discountPercent ??
+            (groupDiscounts.length > 0 ? Math.max(...groupDiscounts) : null);
+        (
+            customer as unknown as { resolvedDiscountPercent: number | null }
+        ).resolvedDiscountPercent = resolved;
         return customer;
     }
 
@@ -433,6 +444,7 @@ export class CustomersService {
             name: dto.name,
             description: dto.description,
             color: dto.color,
+            discountPercent: dto.discountPercent ?? null,
             parentId: dto.parentId ?? null,
             sortOrder,
         });
@@ -453,6 +465,8 @@ export class CustomersService {
         if (dto.name !== undefined) group.name = dto.name;
         if (dto.description !== undefined) group.description = dto.description;
         if (dto.color !== undefined) group.color = dto.color;
+        if (dto.discountPercent !== undefined)
+            group.discountPercent = dto.discountPercent;
         if (dto.parentId !== undefined) {
             group.parentId = dto.parentId;
         }

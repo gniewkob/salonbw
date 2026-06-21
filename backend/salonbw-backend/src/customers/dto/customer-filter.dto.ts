@@ -216,6 +216,15 @@ export class CreateCustomerDto {
     @IsOptional()
     @IsBoolean()
     emailConsent?: boolean;
+
+    @ApiPropertyOptional({
+        description: 'Standing discount percent (0–100); null clears it',
+    })
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    @Max(100)
+    discountPercent?: number | null;
 }
 
 export class UpdateCustomerDto extends CreateCustomerDto {}

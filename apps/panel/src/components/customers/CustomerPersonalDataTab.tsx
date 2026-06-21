@@ -34,6 +34,10 @@ function toDraft(customer: Customer): Draft {
         description: customer.description || '',
         emailConsent: customer.emailConsent,
         smsConsent: customer.smsConsent,
+        discountPercent:
+            customer.discountPercent != null
+                ? String(customer.discountPercent)
+                : '',
     };
 }
 
@@ -71,6 +75,10 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 description: draft.description || undefined,
                 emailConsent: draft.emailConsent,
                 smsConsent: draft.smsConsent,
+                discountPercent:
+                    draft.discountPercent && draft.discountPercent.trim() !== ''
+                        ? Number(draft.discountPercent)
+                        : null,
             });
             setIsDirty(false);
         } catch {

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsArray, IsNumber } from 'class-validator';
+import {
+    IsString,
+    IsOptional,
+    IsArray,
+    IsNumber,
+    Min,
+    Max,
+} from 'class-validator';
 
 export class CreateCustomerGroupDto {
     @ApiProperty()
@@ -26,6 +33,15 @@ export class CreateCustomerGroupDto {
     @IsOptional()
     @IsNumber()
     parentId?: number | null;
+
+    @ApiPropertyOptional({
+        description: 'Standing discount percent for members (0–100)',
+    })
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    @Max(100)
+    discountPercent?: number | null;
 }
 
 export class UpdateCustomerGroupDto extends CreateCustomerGroupDto {}

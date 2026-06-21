@@ -467,6 +467,10 @@ export interface Customer {
     lastVisitDate?: string | null;
     groups?: CustomerGroup[];
     tags?: CustomerTag[];
+    /** Standing discount percent set on this client (null = none). */
+    discountPercent?: number | null;
+    /** Resolved standing discount (own, else from group) — read-only. */
+    resolvedDiscountPercent?: number | null;
 }
 
 export interface CustomerGroup {

@@ -11,6 +11,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
+import { ColumnNumericTransformer } from '../../column-numeric.transformer';
 
 @Entity('customer_groups')
 export class CustomerGroup {
@@ -25,6 +26,16 @@ export class CustomerGroup {
 
     @Column({ nullable: true })
     color?: string;
+
+    // Standing discount for members of this group (percent, 0–100). Applies
+    // when a client has no own discountPercent.
+    @Column({
+        name: 'discount_percent',
+        type: 'decimal',
+        nullable: true,
+        transformer: new ColumnNumericTransformer(),
+    })
+    discountPercent?: number | null;
 
     @Column({ nullable: true, type: 'int' })
     parentId?: number | null;

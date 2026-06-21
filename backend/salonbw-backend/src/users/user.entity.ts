@@ -54,6 +54,15 @@ export class User {
     })
     commissionBase: number;
 
+    // Standing discount for this client (percent, 0–100). When null the
+    // client's group discount applies. Auto-suggested at finalization.
+    @Column('decimal', {
+        name: 'discount_percent',
+        nullable: true,
+        transformer: new ColumnNumericTransformer(),
+    })
+    discountPercent?: number | null;
+
     // CRM fields for clients
     @Column({ nullable: true })
     firstName?: string;
