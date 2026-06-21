@@ -30,12 +30,26 @@ export default function CalendarHeader({
     extraAction,
 }: CalendarHeaderProps) {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    // Bootstrap's `.d-sm-block` loses the cascade to `.d-none` in the panel
+    // bundle, which hid the desktop date label entirely (only the clock
+    // showed). Drive the responsive label from matchMedia instead so it
+    // never depends on that ordering.
+    const [compact, setCompact] = useState(false);
     const viewingToday = isToday(date);
 
     useEffect(() => {
         setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000 * 60);
         return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return;
+        const mq = window.matchMedia('(max-width: 575px)');
+        const update = () => setCompact(mq.matches);
+        update();
+        mq.addEventListener('change', update);
+        return () => mq.removeEventListener('change', update);
     }, []);
 
     const handlePrev = () => {
@@ -137,29 +151,22 @@ export default function CalendarHeader({
                         aria-label="Wróć do dziś"
                     >
                         <span
-                            className="d-none d-sm-block fw-semibold text-capitalize"
+                            className="fw-semibold text-capitalize"
                             style={{
-                                fontSize: '1.05rem',
+                                display: 'block',
+                                fontSize: compact ? '0.95rem' : '1.05rem',
                                 color: viewingToday ? '#0d0d0d' : '#6e7278',
                                 whiteSpace: 'nowrap',
                             }}
                         >
-                            {formatDateLabel()}
+                            {compact
+                                ? formatDateLabelShort()
+                                : formatDateLabel()}
                         </span>
-                        <span
-                            className="d-block d-sm-none fw-semibold text-capitalize"
-                            style={{
-                                fontSize: '0.95rem',
-                                color: viewingToday ? '#0d0d0d' : '#6e7278',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            {formatDateLabelShort()}
-                        </span>
-                        {!viewingToday && (
+                        {!viewingToday && !compact && (
                             <span
-                                className="d-none d-sm-block"
                                 style={{
+                                    display: 'block',
                                     fontSize: '0.72rem',
                                     marginTop: 1,
                                     color: '#6e7278',
