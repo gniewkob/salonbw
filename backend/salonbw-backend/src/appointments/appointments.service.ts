@@ -39,6 +39,7 @@ import { Optional } from '@nestjs/common';
 import { RetailService } from '../retail/retail.service';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { Log } from '../logs/log.entity';
+import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -55,6 +56,8 @@ export class AppointmentsService {
         private readonly recipeItemsRepository: Repository<ServiceRecipeItem>,
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
+        @InjectRepository(CalendarSettings)
+        private readonly calendarSettingsRepository: Repository<CalendarSettings>,
         private readonly commissionsService: CommissionsService,
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
@@ -121,12 +124,29 @@ export class AppointmentsService {
         return new Date(start.getTime() + durationMinutes * 60 * 1000);
     }
 
+    /**
+     * Whether staff may book overlapping appointments (a one-person salon
+     * deliberately double-books, e.g. a second client while colour develops).
+     * Controlled by the existing `allow_overlapping_appointments` calendar
+     * setting; defaults to false if the singleton row is missing.
+     */
+    private async isOverlapAllowed(): Promise<boolean> {
+        const settings = await this.calendarSettingsRepository.find({
+            take: 1,
+        });
+        return settings[0]?.allowOverlappingAppointments ?? false;
+    }
+
     private async assertNoConflict(
         employeeId: number,
         startTime: Date,
         endTime: Date,
         excludeId?: number,
+        allowOverlap = false,
     ): Promise<void> {
+        // Online self-booking always respects availability; staff overlap is
+        // gated by the calendar setting (passed in as allowOverlap).
+        if (allowOverlap) return;
         const where: FindOptionsWhere<Appointment> = {
             employee: { id: employeeId },
             status: Not(AppointmentStatus.Cancelled),
@@ -211,8 +231,18 @@ export class AppointmentsService {
         } else {
             data.endTime = this.computeEnd(data.startTime, service.duration);
         }
-        await this.assertNoConflict(employee.id, data.startTime, data.endTime);
         const isClientSelfBooking = user.id === client.id;
+        // Staff may overlap (if the setting allows); online self-booking
+        // always respects availability.
+        const allowOverlap =
+            !isClientSelfBooking && (await this.isOverlapAllowed());
+        await this.assertNoConflict(
+            employee.id,
+            data.startTime,
+            data.endTime,
+            undefined,
+            allowOverlap,
+        );
         if (isClientSelfBooking) {
             data.status = AppointmentStatus.OnlinePending;
         }
@@ -618,6 +648,7 @@ export class AppointmentsService {
             startTime,
             newEnd,
             id,
+            await this.isOverlapAllowed(),
         );
         // When staff reschedules a confirmed appointment, flag it so the
         // client can accept the new time before it moves back to confirmed.
@@ -708,6 +739,7 @@ export class AppointmentsService {
                 startTime,
                 newEnd,
                 id,
+                await this.isOverlapAllowed(),
             );
         }
 

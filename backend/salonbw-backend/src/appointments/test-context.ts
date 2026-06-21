@@ -21,6 +21,7 @@ export interface AppointmentsTestContext {
     services: SalonService[];
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
+    mockCalendarSettingsRepo: { find: jest.Mock };
     mockWhatsappService: jest.Mocked<WhatsappService>;
     mockEmailsService: { send: jest.Mock };
     logActionSpy: jest.SpyInstance;
@@ -163,12 +164,19 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         send: jest.fn<Promise<void>, [unknown]>(() => Promise.resolve()),
     };
 
+    // Calendar settings repo: by default no rows -> overlap disallowed, so
+    // existing conflict tests keep their behaviour.
+    const mockCalendarSettingsRepo = {
+        find: jest.fn(() => Promise.resolve([])),
+    };
+
     const service = new AppointmentsService(
         mockAppointmentsRepo,
         mockServicesRepo,
         mockServiceVariantsRepo,
         mockRecipeItemsRepo,
         mockUsersRepo,
+        mockCalendarSettingsRepo as never,
         mockCommissionsService,
         mockLogService,
         mockWhatsappService,
@@ -187,6 +195,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         services,
         mockAppointmentsRepo,
         mockServicesRepo,
+        mockCalendarSettingsRepo,
         mockWhatsappService,
         logActionSpy,
         sendFollowUpMock,

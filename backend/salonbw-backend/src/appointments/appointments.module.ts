@@ -8,6 +8,7 @@ import { Service as SalonService } from '../services/service.entity';
 import { ServiceVariant } from '../services/entities/service-variant.entity';
 import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 import { User } from '../users/user.entity';
+import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
 import { LogsModule } from '../logs/logs.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ObservabilityModule } from '../observability/observability.module';
@@ -23,6 +24,7 @@ import { EmailsModule } from '../emails/emails.module';
             ServiceVariant,
             ServiceRecipeItem,
             User,
+            CalendarSettings,
         ]),
         CommissionsModule,
         LogsModule,

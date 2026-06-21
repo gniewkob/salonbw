@@ -248,6 +248,63 @@ describe('AppointmentsService', () => {
         ).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it('allows staff to overlap when the calendar setting is enabled', async () => {
+        ctx.mockCalendarSettingsRepo.find.mockResolvedValue([
+            { allowOverlappingAppointments: true },
+        ]);
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        // Staff actor (employee) booking for a client -> not self-booking.
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        const overlap = new Date(start.getTime() + 15 * 60 * 1000);
+        const second = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: overlap,
+            },
+            users[1],
+        );
+        expect(second.id).toBeDefined();
+    });
+
+    it('still blocks online self-booking overlap even when overlap is enabled', async () => {
+        ctx.mockCalendarSettingsRepo.find.mockResolvedValue([
+            { allowOverlappingAppointments: true },
+        ]);
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        const overlap = new Date(start.getTime() + 15 * 60 * 1000);
+        // Client self-booking (actor === client) must still respect availability.
+        await expect(
+            service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: overlap,
+                },
+                users[0],
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+    });
+
     it('should cancel a scheduled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
