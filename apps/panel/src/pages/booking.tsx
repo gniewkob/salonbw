@@ -88,6 +88,30 @@ export default function BookingPage() {
         number | null
     >(null);
 
+    // Weekdays (0=Sun..6=Sat) the salon is closed — disables them in the
+    // calendar day-picker so the client can't land on a closed day.
+    const [closedWeekdays, setClosedWeekdays] = useState<Set<number>>(
+        new Set(),
+    );
+    useEffect(() => {
+        apiFetch<{ hours?: Record<string, unknown[]> }>(
+            '/calendar/opening-hours',
+        )
+            .then((payload) => {
+                const hours = payload?.hours;
+                if (!hours) return;
+                const order = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                const closed = new Set<number>();
+                order.forEach((key, dow) => {
+                    if ((hours[key]?.length ?? 0) === 0) closed.add(dow);
+                });
+                setClosedWeekdays(closed);
+            })
+            .catch(() => {
+                /* non-fatal: all days remain selectable */
+            });
+    }, [apiFetch]);
+
     // Pre-select service from query param
     const { serviceId: serviceIdParam } = router.query;
 
@@ -248,6 +272,7 @@ export default function BookingPage() {
                                             slots={slots}
                                             loading={slotsLoading}
                                             error={slotsError}
+                                            closedWeekdays={closedWeekdays}
                                             onDateChange={handleDateChange}
                                             onSelect={handleSelectSlot}
                                         />
@@ -505,6 +530,7 @@ function SlotStep({
     slots,
     loading,
     error,
+    closedWeekdays,
     onDateChange,
     onSelect,
 }: {
@@ -513,9 +539,11 @@ function SlotStep({
     slots: AvailableSlot[];
     loading: boolean;
     error: string;
+    closedWeekdays: Set<number>;
     onDateChange: (date: string) => void;
     onSelect: (slot: AvailableSlot) => void;
 }) {
+    const [dateView, setDateView] = useState<'list' | 'calendar'>('list');
     const slotsByEmployee = slots.reduce<Record<string, AvailableSlot[]>>(
         (acc, slot) => {
             if (!acc[slot.employeeName]) acc[slot.employeeName] = [];
@@ -536,21 +564,55 @@ function SlotStep({
             </div>
 
             <div className="mb-3">
-                <label
-                    className="form-label form-label-sm"
-                    htmlFor="booking-date"
-                >
-                    Wybierz datę
-                </label>
-                <input
-                    id="booking-date"
-                    type="date"
-                    className="form-control"
-                    value={date}
-                    min={todayISODate()}
-                    onChange={(e) => onDateChange(e.target.value)}
-                    aria-describedby={date ? 'booking-date-hint' : undefined}
-                />
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                    <label
+                        className="form-label form-label-sm mb-0"
+                        htmlFor="booking-date"
+                    >
+                        Wybierz datę
+                    </label>
+                    <div
+                        className="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="Widok wyboru daty"
+                    >
+                        <button
+                            type="button"
+                            className={`btn ${dateView === 'list' ? 'btn-dark' : 'btn-outline-dark'}`}
+                            aria-pressed={dateView === 'list'}
+                            onClick={() => setDateView('list')}
+                        >
+                            Lista
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn ${dateView === 'calendar' ? 'btn-dark' : 'btn-outline-dark'}`}
+                            aria-pressed={dateView === 'calendar'}
+                            onClick={() => setDateView('calendar')}
+                        >
+                            Kalendarz
+                        </button>
+                    </div>
+                </div>
+                {dateView === 'list' ? (
+                    <input
+                        id="booking-date"
+                        type="date"
+                        className="form-control"
+                        value={date}
+                        min={todayISODate()}
+                        onChange={(e) => onDateChange(e.target.value)}
+                        aria-describedby={
+                            date ? 'booking-date-hint' : undefined
+                        }
+                    />
+                ) : (
+                    <MonthCalendarPicker
+                        selectedDate={date}
+                        closedWeekdays={closedWeekdays}
+                        onPick={onDateChange}
+                    />
+                )}
                 {date && (
                     <p id="booking-date-hint" className="text-muted small mt-1">
                         {formatDate(date)}
@@ -658,6 +720,133 @@ function DayStepper({
                     style={{ width: 16, height: 16 }}
                 />
             </button>
+        </div>
+    );
+}
+
+const WEEKDAY_LABELS = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+
+function MonthCalendarPicker({
+    selectedDate,
+    closedWeekdays,
+    onPick,
+}: {
+    selectedDate: string;
+    closedWeekdays: Set<number>;
+    onPick: (iso: string) => void;
+}) {
+    const today = todayISODate();
+    const [viewMonth, setViewMonth] = useState(() => {
+        const base = new Date(`${selectedDate || today}T00:00:00`);
+        return new Date(base.getFullYear(), base.getMonth(), 1);
+    });
+
+    const year = viewMonth.getFullYear();
+    const month = viewMonth.getMonth();
+    const monthLabel = viewMonth.toLocaleDateString('pl-PL', {
+        month: 'long',
+        year: 'numeric',
+    });
+
+    // Monday-first grid: leading blanks before the 1st, then each day.
+    const firstDow = new Date(year, month, 1).getDay(); // 0=Sun..6=Sat
+    const leading = (firstDow + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const cells: (string | null)[] = [];
+    for (let i = 0; i < leading; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+        const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+            d,
+        ).padStart(2, '0')}`;
+        cells.push(iso);
+    }
+
+    return (
+        <div className="border rounded p-2 bg-white">
+            <div className="d-flex align-items-center justify-content-between mb-2">
+                <button
+                    type="button"
+                    className="btn btn-sm btn-outline-dark"
+                    aria-label="Poprzedni miesiąc"
+                    onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+                >
+                    ‹
+                </button>
+                <strong
+                    className="text-capitalize"
+                    style={{ fontSize: '0.95rem' }}
+                >
+                    {monthLabel}
+                </strong>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-outline-dark"
+                    aria-label="Następny miesiąc"
+                    onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+                >
+                    ›
+                </button>
+            </div>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(7, 1fr)',
+                    gap: 4,
+                    textAlign: 'center',
+                }}
+            >
+                {WEEKDAY_LABELS.map((w) => (
+                    <div
+                        key={w}
+                        className="text-muted"
+                        style={{ fontSize: '0.7rem', fontWeight: 600 }}
+                    >
+                        {w}
+                    </div>
+                ))}
+                {cells.map((iso, i) => {
+                    if (!iso) return <div key={`empty-${i}`} />;
+                    const dow = new Date(`${iso}T00:00:00`).getDay();
+                    const isPast = iso < today;
+                    const isClosed = closedWeekdays.has(dow);
+                    const disabled = isPast || isClosed;
+                    const isSelected = iso === selectedDate;
+                    return (
+                        <button
+                            key={iso}
+                            type="button"
+                            disabled={disabled}
+                            aria-pressed={isSelected}
+                            aria-label={`${Number(iso.slice(8, 10))} ${monthLabel}${isClosed ? ' (zamknięte)' : ''}`}
+                            onClick={() => onPick(iso)}
+                            className="btn btn-sm p-0"
+                            style={{
+                                minHeight: 36,
+                                borderRadius: 4,
+                                background: isSelected
+                                    ? '#0d0d0d'
+                                    : 'transparent',
+                                color: isSelected
+                                    ? '#fff'
+                                    : disabled
+                                      ? '#c4c8ce'
+                                      : '#1a1a1a',
+                                border: `1px solid ${isSelected ? '#0d0d0d' : 'transparent'}`,
+                                cursor: disabled ? 'not-allowed' : 'pointer',
+                                textDecoration:
+                                    isClosed && !isPast
+                                        ? 'line-through'
+                                        : undefined,
+                            }}
+                        >
+                            {Number(iso.slice(8, 10))}
+                        </button>
+                    );
+                })}
+            </div>
+            <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.7rem' }}>
+                Dni wyszarzone / przekreślone są niedostępne.
+            </p>
         </div>
     );
 }
