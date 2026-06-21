@@ -1045,27 +1045,31 @@ export default function CalendarPage() {
                                     </div>
                                 ) : null}
                                 {isMobile ? (
-                                    <MobileReceptionListView
-                                        appointments={receptionAppointments}
-                                        loading={loading}
-                                        customerAlertSeverityByCustomerId={
-                                            customerAlertSeverityById
-                                        }
-                                        onActionTracked={(params) => {
-                                            if (!params.customerAlertSeverity)
-                                                return;
-                                            incrementReceptionActionsOnAlerts();
-                                        }}
-                                        onChanged={() => {
-                                            void refetch();
-                                        }}
-                                        onOpenFinalizeAppointment={(id) => {
-                                            openAppointmentDeepLink(id);
-                                        }}
-                                        onOpenAppointment={(id) => {
-                                            openAppointmentDeepLink(id);
-                                        }}
-                                    />
+                                    <div className="reception-mobile-agenda">
+                                        <MobileReceptionListView
+                                            appointments={receptionAppointments}
+                                            loading={loading}
+                                            customerAlertSeverityByCustomerId={
+                                                customerAlertSeverityById
+                                            }
+                                            onActionTracked={(params) => {
+                                                if (
+                                                    !params.customerAlertSeverity
+                                                )
+                                                    return;
+                                                incrementReceptionActionsOnAlerts();
+                                            }}
+                                            onChanged={() => {
+                                                void refetch();
+                                            }}
+                                            onOpenFinalizeAppointment={(id) => {
+                                                openAppointmentDeepLink(id);
+                                            }}
+                                            onOpenAppointment={(id) => {
+                                                openAppointmentDeepLink(id);
+                                            }}
+                                        />
+                                    </div>
                                 ) : (
                                     <ReceptionView
                                         appointments={receptionAppointments}

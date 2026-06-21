@@ -2572,6 +2572,30 @@ h3 {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2) !important;
 }
 
+/* Mobile calendar: lead with the day's appointment agenda, push the CRM
+   insight widgets below it. They were rendered first (KPIs / follow-up /
+   audit / cancel-requests), burying "what's booked today" under
+   mostly-zero analytics. order:-1 lifts the agenda to the top of the
+   reception flex column without moving any JSX; the ::after labels the
+   analytics that follow. */
+@media (max-width: 768px) {
+    .reception-mobile-agenda {
+        order: -1;
+    }
+    .reception-mobile-agenda::after {
+        content: 'Wgląd operacyjny';
+        display: block;
+        margin-top: 16px;
+        padding-top: 10px;
+        border-top: 1px solid #e9ecef;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6e7278;
+    }
+}
+
 /* --- Mobile: tables scrollable --- */
 @media (max-width: 768px) {
     .salonbw-reception-view,
