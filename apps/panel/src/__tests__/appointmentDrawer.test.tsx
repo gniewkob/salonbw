@@ -71,6 +71,14 @@ jest.mock('@/hooks/useWarehouseViews', () => ({
     useWarehouseSales: (...args: unknown[]) => useWarehouseSalesMock(...args),
 }));
 
+jest.mock('@/hooks/useCalendar', () => ({
+    useCalendarMutations: () => ({
+        checkConflicts: jest.fn(() =>
+            Promise.resolve({ hasConflict: false, conflictingEvents: [] }),
+        ),
+    }),
+}));
+
 jest.mock('@/hooks/useCustomerAlerts', () => ({
     useCustomerAlerts: (...args: unknown[]) => useCustomerAlertsMock(...args),
 }));

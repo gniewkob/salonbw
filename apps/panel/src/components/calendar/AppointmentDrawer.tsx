@@ -11,6 +11,7 @@ import {
 import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
+import { useCalendarMutations } from '@/hooks/useCalendar';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import {
@@ -118,6 +119,7 @@ export default function AppointmentDrawer({
     const createCustomer = useCreateCustomer();
     const { cancelAppointment, updateAppointmentStatus } =
         useAppointmentMutations();
+    const { checkConflicts } = useCalendarMutations();
 
     const [startTime, setStartTime] = useState('');
     const [employeeId, setEmployeeId] = useState<number | ''>('');
@@ -125,7 +127,17 @@ export default function AppointmentDrawer({
     const [clientId, setClientId] = useState<number | ''>('');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Soft double-booking warning: staff may overlap (backend allows it), but
+    // we surface a one-tap confirm so accidental overlaps aren't silent.
+    const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
+    const [overlapAck, setOverlapAck] = useState(false);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
+
+    // A fresh time/employee/service means the previous overlap check is stale.
+    useEffect(() => {
+        setOverlapWarning(null);
+        setOverlapAck(false);
+    }, [startTime, employeeId, serviceId]);
 
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
@@ -259,6 +271,32 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            // Best-effort overlap check; first time it conflicts we warn and
+            // require a second click rather than blocking (staff may overlap).
+            if (!overlapAck && selectedService) {
+                const startIso = fromLocalDateTimeInput(startTime);
+                const endIso = new Date(
+                    new Date(startIso).getTime() +
+                        selectedService.duration * 60000,
+                ).toISOString();
+                try {
+                    const conflict = await checkConflicts(
+                        Number(employeeId),
+                        startIso,
+                        endIso,
+                    );
+                    if (conflict.hasConflict) {
+                        setOverlapWarning(
+                            'Masz już wizytę w tym czasie. Kliknij „Dodaj mimo to”, aby nałożyć wizyty.',
+                        );
+                        setOverlapAck(true);
+                        setSaving(false);
+                        return;
+                    }
+                } catch {
+                    /* conflict check is best-effort; proceed to create */
+                }
+            }
             await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -764,6 +802,15 @@ export default function AppointmentDrawer({
                                 </div>
                             )}
 
+                        {overlapWarning && (
+                            <div
+                                className="alert alert-warning py-2 mb-0"
+                                role="alert"
+                            >
+                                {overlapWarning}
+                            </div>
+                        )}
+
                         {error && (
                             <div className="alert alert-danger py-2 mb-0">
                                 {error}
@@ -775,6 +822,9 @@ export default function AppointmentDrawer({
                             mode={mode}
                             saving={saving}
                             canSaveCreate={canSaveCreate}
+                            createLabel={
+                                overlapAck ? 'Dodaj mimo to' : undefined
+                            }
                             startTime={startTime}
                             appointment={appointment}
                             isOnlinePending={isOnlinePending}
