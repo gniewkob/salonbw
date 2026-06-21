@@ -302,12 +302,14 @@ function StatisticsPageContent() {
                     acc.serviceRevenue += toNumber(point.revenue);
                     acc.productRevenue += toNumber(point.products);
                     acc.tips += toNumber(point.tips);
+                    acc.discount += toNumber(point.discount);
                     return acc;
                 },
                 {
                     serviceRevenue: 0,
                     productRevenue: 0,
                     tips: 0,
+                    discount: 0,
                 },
             );
 
@@ -329,8 +331,11 @@ function StatisticsPageContent() {
             dayProductRevenue: day.productRevenue,
             dayTips: day.tips,
             dayRevenue,
+            dayDiscount: day.discount,
             weekRevenue: week.serviceRevenue + week.productRevenue,
+            weekDiscount: week.discount,
             monthRevenue: month.serviceRevenue + month.productRevenue,
+            monthDiscount: month.discount,
             totalVisits,
             totalWorkMinutes,
             avgVisitValue: totalVisits > 0 ? dayRevenue / totalVisits : 0,
@@ -393,6 +398,13 @@ function StatisticsPageContent() {
     const formatMoney = (value: unknown): string =>
         `${toNumber(value).toFixed(2).replace('.', ',')} zł`;
 
+    // Share of the potential take (revenue + discount) that was given away as
+    // discounts — the owner's "ile kosztują mnie rabaty" view.
+    const discountPct = (discount: number, revenue: number): number => {
+        const potential = discount + revenue;
+        return potential > 0 ? Math.round((discount / potential) * 100) : 0;
+    };
+
     const navigateDate = (direction: 'prev' | 'next') => {
         const nextDate =
             direction === 'prev'
@@ -420,6 +432,14 @@ function StatisticsPageContent() {
             `${reportTotals.dayProductRevenue.toFixed(2)}`,
         ]);
         lines.push(['Napiwki', `${reportTotals.dayTips.toFixed(2)}`]);
+        lines.push([
+            'Rabaty udzielone (dzien)',
+            `${reportTotals.dayDiscount.toFixed(2)}`,
+        ]);
+        lines.push([
+            'Rabaty udzielone (tydzien)',
+            `${reportTotals.weekDiscount.toFixed(2)}`,
+        ]);
         lines.push([
             'Utarg za ten tydzien',
             `${reportTotals.weekRevenue.toFixed(2)}`,
@@ -549,6 +569,142 @@ function StatisticsPageContent() {
                             {formatDuration(reportTotals.totalWorkMinutes)}
                         </strong>
                     </p>
+
+                    {/* Snapshot solo: utarg + wpływ rabatów (firma jednoosobowa,
+                        bez prowizji) — szybki podgląd dziś / ten tydzień. */}
+                    <div className="row g-3 mb-4">
+                        <div className="col-6 col-lg-3">
+                            <div className="p-3 rounded border h-100 bg-white">
+                                <div
+                                    className="text-uppercase fw-semibold"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        letterSpacing: '0.08em',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    Utarg dziś
+                                </div>
+                                <div
+                                    className="fw-bold"
+                                    style={{
+                                        fontSize: '1.4rem',
+                                        color: '#0d0d0d',
+                                    }}
+                                >
+                                    {formatMoney(reportTotals.dayRevenue)}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.78rem',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    {reportTotals.totalVisits} wizyt · śr.{' '}
+                                    {formatMoney(reportTotals.avgVisitValue)}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-6 col-lg-3">
+                            <div
+                                className="p-3 rounded border h-100 bg-white"
+                                style={{ borderColor: '#0d0d0d' }}
+                            >
+                                <div
+                                    className="text-uppercase fw-semibold"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        letterSpacing: '0.08em',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    Rabaty dziś
+                                </div>
+                                <div
+                                    className="fw-bold"
+                                    style={{
+                                        fontSize: '1.4rem',
+                                        color: '#0d0d0d',
+                                    }}
+                                >
+                                    −{formatMoney(reportTotals.dayDiscount)}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.78rem',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    {discountPct(
+                                        reportTotals.dayDiscount,
+                                        reportTotals.dayRevenue,
+                                    )}
+                                    % potencjalnego utargu
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-6 col-lg-3">
+                            <div className="p-3 rounded border h-100 bg-white">
+                                <div
+                                    className="text-uppercase fw-semibold"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        letterSpacing: '0.08em',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    Utarg ten tydzień
+                                </div>
+                                <div
+                                    className="fw-bold"
+                                    style={{
+                                        fontSize: '1.4rem',
+                                        color: '#0d0d0d',
+                                    }}
+                                >
+                                    {formatMoney(reportTotals.weekRevenue)}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-6 col-lg-3">
+                            <div
+                                className="p-3 rounded border h-100 bg-white"
+                                style={{ borderColor: '#0d0d0d' }}
+                            >
+                                <div
+                                    className="text-uppercase fw-semibold"
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        letterSpacing: '0.08em',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    Rabaty ten tydzień
+                                </div>
+                                <div
+                                    className="fw-bold"
+                                    style={{
+                                        fontSize: '1.4rem',
+                                        color: '#0d0d0d',
+                                    }}
+                                >
+                                    −{formatMoney(reportTotals.weekDiscount)}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.78rem',
+                                        color: '#6e7278',
+                                    }}
+                                >
+                                    {discountPct(
+                                        reportTotals.weekDiscount,
+                                        reportTotals.weekRevenue,
+                                    )}
+                                    % potencjalnego utargu
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <br />
 
                     <div className="row">

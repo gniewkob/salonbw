@@ -395,6 +395,10 @@ export class StatisticsService {
                 (sum, a) => sum + (a.tipAmount ?? 0),
                 0,
             );
+            const discount = periodAppointments.reduce(
+                (sum, a) => sum + (a.discount ?? 0),
+                0,
+            );
 
             return {
                 date: format(date, 'yyyy-MM-dd'),
@@ -406,6 +410,7 @@ export class StatisticsService {
                     productSalesByBucket.get(
                         format(rangeStart, 'yyyy-MM-dd'),
                     ) ?? 0,
+                discount,
             };
         });
 

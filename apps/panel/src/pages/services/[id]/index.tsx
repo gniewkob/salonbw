@@ -155,6 +155,7 @@ export default function ServiceDetailsPage() {
             appointments: point.appointments,
             tips: 0,
             products: 0,
+            discount: 0,
         }));
     }, [stats.data]);
 

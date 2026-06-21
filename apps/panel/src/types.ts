@@ -1237,6 +1237,8 @@ export interface RevenueDataPoint {
     appointments: number;
     tips: number;
     products: number;
+    /** Total discounts granted on visits in this bucket (impact of rabaty). */
+    discount: number;
 }
 
 export interface EmployeeStats {
