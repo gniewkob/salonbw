@@ -54,6 +54,15 @@ interface CalendarViewProps {
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
     hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
+    businessHours?: Array<{
+        daysOfWeek: number[];
+        startTime: string;
+        endTime: string;
+    }>;
+    slotMinTime?: string;
+    slotMaxTime?: string;
+    /** When set (day view on a closed day), shown as a banner above the grid. */
+    closedDayLabel?: string | null;
 }
 
 const VIEW_MAP: Record<CalendarViewType, string> = {
@@ -85,6 +94,10 @@ export default function CalendarView({
     currentView,
     selectedEmployeeIds,
     hideSidebar = false,
+    businessHours,
+    slotMinTime = '07:00:00',
+    slotMaxTime = '21:00:00',
+    closedDayLabel = null,
 }: CalendarViewProps) {
     const CALENDAR_MIN_HEIGHT = 560;
     const calendarRef = useRef<FullCalendarComponent | null>(null);
@@ -266,6 +279,22 @@ export default function CalendarView({
                     </div>
                 ) : calendarPlugins ? (
                     <div style={{ minHeight: CALENDAR_MIN_HEIGHT }}>
+                        {closedDayLabel && (
+                            <div
+                                className="d-flex align-items-center gap-2 rounded mb-2 px-3 py-2"
+                                role="status"
+                                style={{
+                                    background: '#f3f4f6',
+                                    border: '1px solid #e5e7eb',
+                                    color: '#6e7278',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                <span aria-hidden="true">🔒</span>
+                                {closedDayLabel}
+                            </div>
+                        )}
                         <FullCalendar
                             ref={calendarRef}
                             plugins={calendarPlugins}
@@ -310,8 +339,9 @@ export default function CalendarView({
                             eventResizableFromStart
                             locale="pl"
                             firstDay={1}
-                            slotMinTime="07:00:00"
-                            slotMaxTime="21:00:00" // source UI usually ends late
+                            businessHours={businessHours ?? false}
+                            slotMinTime={slotMinTime}
+                            slotMaxTime={slotMaxTime}
                             slotDuration="00:15:00"
                             slotLabelInterval="01:00:00"
                             scrollTime="08:00:00"

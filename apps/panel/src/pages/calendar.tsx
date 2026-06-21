@@ -33,6 +33,14 @@ import type {
     TimeBlock,
 } from '@/types';
 import { toDateParam } from '@/utils/calendarQueryState';
+import {
+    computeSlotBounds,
+    toBusinessHours,
+    isDayClosed,
+    type WeeklyHours,
+} from '@/utils/openingHoursCalendar';
+import { format as formatDate } from 'date-fns';
+import { pl as plLocale } from 'date-fns/locale';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
 import { useReceptionFilters } from '@/hooks/calendar/useReceptionFilters';
@@ -186,6 +194,41 @@ export default function CalendarPage() {
             selectedEmployeeIds.length > 0 ? selectedEmployeeIds : undefined,
         enabled: queryStateReady,
     });
+
+    // Salon opening hours → grid bounds + business-hours shading + closed-day
+    // banner, so the calendar matches Aleksandra's real schedule.
+    const [openingHours, setOpeningHours] = useState<WeeklyHours | null>(null);
+    useEffect(() => {
+        let cancelled = false;
+        void apiFetch<{ hours?: WeeklyHours }>('/calendar/opening-hours')
+            .then((payload) => {
+                if (!cancelled && payload?.hours)
+                    setOpeningHours(payload.hours);
+            })
+            .catch(() => {
+                /* non-fatal: grid falls back to default 07–21 bounds */
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch]);
+
+    const calendarHours = useMemo(() => {
+        if (!openingHours) return null;
+        const { slotMinTime, slotMaxTime } = computeSlotBounds(openingHours);
+        return {
+            slotMinTime,
+            slotMaxTime,
+            businessHours: toBusinessHours(openingHours),
+        };
+    }, [openingHours]);
+
+    const closedDayLabel = useMemo(() => {
+        if (!openingHours || currentView !== 'day') return null;
+        if (!isDayClosed(openingHours, currentDate)) return null;
+        const dayName = formatDate(currentDate, 'EEEE', { locale: plLocale });
+        return `Salon zamknięty w tym dniu (${dayName}).`;
+    }, [openingHours, currentView, currentDate]);
     const visibleCustomerIds = useMemo(
         () =>
             Array.from(
@@ -1249,6 +1292,10 @@ export default function CalendarPage() {
                                 currentDate={currentDate}
                                 currentView={currentView}
                                 selectedEmployeeIds={selectedEmployeeIds}
+                                businessHours={calendarHours?.businessHours}
+                                slotMinTime={calendarHours?.slotMinTime}
+                                slotMaxTime={calendarHours?.slotMaxTime}
+                                closedDayLabel={closedDayLabel}
                             />
                         )}
                     </div>
