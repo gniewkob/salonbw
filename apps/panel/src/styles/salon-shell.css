@@ -893,6 +893,18 @@ tr.customer-row:hover .customers-drag-handle {
     margin-top: 8px;
 }
 
+/* AA contrast for the CSV/export buttons: Bootstrap's outline-secondary
+   (#6c757d) sat at 4.39:1 on the #f5f8fa toolbar surface. Darken to an
+   AA gray via the button vars so base + hover states both stay ≥4.5:1. */
+.products-export .btn-outline-secondary {
+    --bs-btn-color: #5a6470;
+    --bs-btn-border-color: #5a6470;
+    --bs-btn-hover-bg: #5a6470;
+    --bs-btn-hover-border-color: #5a6470;
+    --bs-btn-active-bg: #5a6470;
+    --bs-btn-active-border-color: #5a6470;
+}
+
 .products-detail-tabs {
     display: flex;
     align-items: center;
@@ -7862,6 +7874,18 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 1rem;
+}
+
+/* Row/header select checkboxes in list tables: native 13px boxes fail the
+   24px touch-target minimum. Scope to table cells only (filter-sidebar
+   checkboxes in .checkbox_container divs are untouched). */
+td .checkbox_container input[type='checkbox'],
+th.checkbox_container input[type='checkbox'] {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+    accent-color: #6e7278;
+    cursor: pointer;
 }
 
 /* Results info row (customers list) */
