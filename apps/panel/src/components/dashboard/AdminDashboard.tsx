@@ -369,7 +369,7 @@ export default function AdminDashboard() {
 
             <div className="salonbw-dashboard__stats">
                 <div className="salonbw-stat-card">
-                    <h3 className="salonbw-stat-card__title">liczba wizyt</h3>
+                    <h2 className="salonbw-stat-card__title">liczba wizyt</h2>
                     <div className="salonbw-stat-card__value">
                         {stats.todayAppointments}
                         <span
@@ -387,9 +387,9 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="salonbw-stat-card">
-                    <h3 className="salonbw-stat-card__title">
+                    <h2 className="salonbw-stat-card__title">
                         nowych klientów
-                    </h3>
+                    </h2>
                     <div className="salonbw-stat-card__value">
                         {stats.todayNewClients}
                         <span
@@ -408,7 +408,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="salonbw-stat-card">
-                    <h3 className="salonbw-stat-card__title">obroty salonu</h3>
+                    <h2 className="salonbw-stat-card__title">obroty salonu</h2>
                     <div className="salonbw-stat-card__value">
                         {formatMoney(stats.todayRevenue)}
                         <span

@@ -1413,7 +1413,7 @@ body {
     display: block;
     text-align: center;
     font-size: 0.75rem;
-    color: var(--salon-accent);
+    color: #6e7278; /* silver-ink: AA on light (var(--salon-accent) #b4b8be was 1.92:1) */
     padding: 8px 0;
     border-top: 1px solid #252525;
     text-decoration: none;
@@ -1492,7 +1492,7 @@ body {
 .salonbw-appointment-item__time {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #b4b8be;
+    color: #6e7278; /* silver-ink: AA on white (#b4b8be was 1.99:1) */
     width: 48px;
     flex-shrink: 0;
 }
@@ -2090,7 +2090,7 @@ h3 {
 
 #sidenav .nav-header,
 .sidenav .nav-header {
-    color: #7d848c;
+    color: #6e7278; /* silver-ink: AA (11px #7d848c was 3.78:1) */
 }
 
 #sidenav .nav-list li a,
