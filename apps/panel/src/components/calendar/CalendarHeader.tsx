@@ -140,7 +140,7 @@ export default function CalendarHeader({
                             className="d-none d-sm-block fw-semibold text-capitalize"
                             style={{
                                 fontSize: '1.05rem',
-                                color: viewingToday ? '#212529' : '#0d6efd',
+                                color: viewingToday ? '#0d0d0d' : '#6e7278',
                                 whiteSpace: 'nowrap',
                             }}
                         >
@@ -150,7 +150,7 @@ export default function CalendarHeader({
                             className="d-block d-sm-none fw-semibold text-capitalize"
                             style={{
                                 fontSize: '0.95rem',
-                                color: viewingToday ? '#212529' : '#0d6efd',
+                                color: viewingToday ? '#0d0d0d' : '#6e7278',
                                 whiteSpace: 'nowrap',
                             }}
                         >
@@ -158,8 +158,12 @@ export default function CalendarHeader({
                         </span>
                         {!viewingToday && (
                             <span
-                                className="d-none d-sm-block text-primary"
-                                style={{ fontSize: '0.72rem', marginTop: 1 }}
+                                className="d-none d-sm-block"
+                                style={{
+                                    fontSize: '0.72rem',
+                                    marginTop: 1,
+                                    color: '#6e7278',
+                                }}
                             >
                                 Kliknij, by wrócić do dziś
                             </span>

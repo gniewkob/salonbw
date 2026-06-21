@@ -8,7 +8,6 @@ import type {
 
 interface EventCardProps {
     event: CalendarEvent;
-    employeeColor?: string;
     onClick: (event: CalendarEvent) => void;
     onDragStart?: (event: CalendarEvent) => void;
 }
@@ -25,16 +24,50 @@ const TIME_BLOCK_COLORS: Record<
 };
 
 const STATUS_RING: Record<string, string | undefined> = {
-    in_progress: '0 0 0 2px #007bff',
-    online_pending: '0 0 0 2px #ffc107',
-    rescheduled_pending: '0 0 0 2px #fd7e14',
+    in_progress: '0 0 0 2px #0d0d0d',
+    online_pending: '0 0 0 2px #b45309',
+    rescheduled_pending: '0 0 0 2px #b45309',
 };
 
 const STATUS_OPACITY: Record<string, number> = {
-    completed: 0.55,
-    cancelled: 0.35,
-    no_show: 0.35,
+    completed: 0.6,
+    cancelled: 0.4,
+    no_show: 0.4,
 };
+
+/**
+ * Brand B&W palette driven by appointment STATUS (employee colour is
+ * meaningless for a one-person salon). `strip` is the dark/silver header
+ * band, `stripText` keeps WCAG contrast on it, `body` is the light fill.
+ * Semantic amber is reserved for states that need the owner's attention
+ * (online/rescheduled pending) — the only allowed non-grey accent.
+ */
+export interface EventStatusVisual {
+    strip: string;
+    stripText: string;
+    body: string;
+}
+
+const STATUS_VISUAL: Record<string, EventStatusVisual> = {
+    scheduled: { strip: '#5b626b', stripText: '#ffffff', body: '#f3f4f6' },
+    confirmed: { strip: '#0d0d0d', stripText: '#ffffff', body: '#f1f1f2' },
+    in_progress: { strip: '#0d0d0d', stripText: '#ffffff', body: '#ececed' },
+    completed: { strip: '#9a9ea4', stripText: '#0d0d0d', body: '#f5f6f7' },
+    cancelled: { strip: '#c4c8ce', stripText: '#0d0d0d', body: '#f7f8f9' },
+    no_show: { strip: '#c4c8ce', stripText: '#0d0d0d', body: '#f7f8f9' },
+    online_pending: { strip: '#b45309', stripText: '#ffffff', body: '#fdf6ee' },
+    rescheduled_pending: {
+        strip: '#b45309',
+        stripText: '#ffffff',
+        body: '#fdf6ee',
+    },
+};
+
+const DEFAULT_VISUAL: EventStatusVisual = STATUS_VISUAL.scheduled;
+
+export function getEventStatusVisual(status?: string): EventStatusVisual {
+    return (status && STATUS_VISUAL[status]) || DEFAULT_VISUAL;
+}
 
 const STATUS_LABELS: Record<string, string> = {
     confirmed: 'Potwierdzona',
@@ -60,7 +93,6 @@ const ALERT_COLOR: Record<ReceptionAlertSeverity, string> = {
 
 export default function EventCard({
     event,
-    employeeColor = '#d48cb0',
     onClick,
     onDragStart,
 }: EventCardProps) {
@@ -86,6 +118,8 @@ export default function EventCard({
     const statusLabel = event.status
         ? (STATUS_LABELS[event.status] ?? null)
         : null;
+
+    const visual = getEventStatusVisual(event.status);
 
     const wrapperStyle: CSSProperties = {
         cursor: 'pointer',
@@ -154,14 +188,14 @@ export default function EventCard({
             onDragStart={() => onDragStart?.(event)}
             style={wrapperStyle}
         >
-            {/* Versum-style: darker header strip with time */}
+            {/* Versum-style: darker header strip with time (B&W by status) */}
             <div
                 style={{
-                    backgroundColor: employeeColor,
+                    backgroundColor: visual.strip,
                     padding: '2px 7px',
                     fontSize: 11,
                     fontWeight: 500,
-                    color: 'white',
+                    color: visual.stripText,
                     lineHeight: 1.4,
                     display: 'flex',
                     alignItems: 'center',
@@ -185,7 +219,7 @@ export default function EventCard({
             {/* Light-fill body: client + service */}
             <div
                 style={{
-                    backgroundColor: `${employeeColor}22`,
+                    backgroundColor: visual.body,
                     padding: '2px 7px 3px',
                     fontSize: 12,
                     lineHeight: 1.35,
@@ -194,7 +228,7 @@ export default function EventCard({
                 {event.clientName && (
                     <div
                         className="text-truncate"
-                        style={{ fontWeight: 600, color: '#1a1a2e' }}
+                        style={{ fontWeight: 600, color: '#0d0d0d' }}
                     >
                         {event.clientName}
                     </div>
@@ -202,7 +236,7 @@ export default function EventCard({
                 <div
                     className="text-truncate"
                     style={{
-                        color: '#444',
+                        color: '#3a3d42',
                         fontWeight: event.clientName ? 400 : 600,
                         fontSize: 11.5,
                     }}
@@ -213,7 +247,7 @@ export default function EventCard({
                     <div
                         style={{
                             fontSize: 10,
-                            color: employeeColor,
+                            color: '#6e7278',
                             fontWeight: 600,
                             marginTop: 1,
                         }}

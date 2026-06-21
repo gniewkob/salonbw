@@ -5,7 +5,7 @@ import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
-import EventCard from './EventCard';
+import EventCard, { getEventStatusVisual } from './EventCard';
 import type {
     CalendarEvent,
     CalendarView as CalendarViewType,
@@ -127,13 +127,11 @@ export default function CalendarView({
                 backgroundColor:
                     event.type === 'time_block'
                         ? '#e5e7eb'
-                        : employees.find((e) => e.id === event.employeeId)
-                              ?.color || '#3b82f6',
+                        : getEventStatusVisual(event.status).strip,
                 borderColor:
                     event.type === 'time_block'
                         ? '#9ca3af'
-                        : employees.find((e) => e.id === event.employeeId)
-                              ?.color || '#3b82f6',
+                        : getEventStatusVisual(event.status).strip,
                 extendedProps: {
                     originalEvent: event,
                     clientName: event.clientName,
@@ -141,7 +139,7 @@ export default function CalendarView({
                 },
                 editable: event.type === 'appointment',
             })),
-        [events, employees],
+        [events],
     );
 
     const handleEventDrop = useCallback(
@@ -288,18 +286,9 @@ export default function CalendarView({
                                     customerAlertSeverity: alertSeverity,
                                     hasCustomerAlerts: Boolean(alertSeverity),
                                 };
-                                const employeeColor =
-                                    original.employeeId !== undefined
-                                        ? employees.find(
-                                              (employee) =>
-                                                  employee.id ===
-                                                  original.employeeId,
-                                          )?.color
-                                        : undefined;
                                 return (
                                     <EventCard
                                         event={enrichedEvent}
-                                        employeeColor={employeeColor}
                                         onClick={onEventClick}
                                     />
                                 );
@@ -324,11 +313,17 @@ export default function CalendarView({
                             slotMinTime="07:00:00"
                             slotMaxTime="21:00:00" // source UI usually ends late
                             slotDuration="00:15:00"
+                            slotLabelInterval="01:00:00"
+                            scrollTime="08:00:00"
+                            dayHeaderFormat={{
+                                weekday: 'short',
+                                day: 'numeric',
+                            }}
+                            nowIndicator
                             allDaySlot={false}
                             headerToolbar={false}
                             height="auto"
                             contentHeight="auto"
-                            nowIndicator
                         />
                     </div>
                 ) : (

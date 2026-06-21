@@ -1265,7 +1265,7 @@ export default function CalendarPage() {
                             width: 52,
                             height: 52,
                             borderRadius: '50%',
-                            background: '#1a1a2e',
+                            background: '#0d0d0d',
                             color: 'white',
                             border: 'none',
                             fontSize: 26,

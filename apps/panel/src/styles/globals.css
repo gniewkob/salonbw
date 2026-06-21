@@ -2525,6 +2525,53 @@ h3 {
     color: #ffffff !important;
 }
 
+/* --- Versum-feel refinements (monochrome, 2026-06-21) ---
+   Polishes the light grid: cleaner day headers, B&W today emphasis,
+   softer event shadow, subtle now-line + out-of-hours shading. */
+.fc-col-header-cell-cushion {
+    text-transform: capitalize !important;
+    letter-spacing: 0.01em !important;
+    color: #1a1a1a !important;
+    padding: 6px 4px !important;
+}
+.fc-day-today .fc-col-header-cell-cushion {
+    color: #0d0d0d !important;
+    font-weight: 700 !important;
+}
+.fc-timegrid-col.fc-day-today,
+.fc-timegrid-axis.fc-day-today {
+    background: rgba(13, 13, 13, 0.025) !important;
+}
+.fc-timegrid-slot-label-cushion {
+    font-size: 11px !important;
+    color: #6e7278 !important;
+}
+/* Full-hour lines a touch stronger than half-hour, for scanability */
+.fc-timegrid-slot.fc-timegrid-slot-lane.fc-timegrid-slot-minor {
+    border-bottom-style: dotted !important;
+    border-bottom-color: #f3f5f7 !important;
+}
+.fc-timegrid-now-indicator-line {
+    border-color: #dc3545 !important;
+    border-width: 2px !important;
+}
+.fc-timegrid-now-indicator-arrow {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+/* Out-of-business-hours shading (when businessHours is set) */
+.fc-non-business {
+    background: rgba(13, 13, 13, 0.035) !important;
+}
+/* Events: lighter resting shadow + hover lift */
+.fc-event {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+    transition: box-shadow 0.12s ease !important;
+}
+.fc-event:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2) !important;
+}
+
 /* --- Mobile: tables scrollable --- */
 @media (max-width: 768px) {
     .salonbw-reception-view,
