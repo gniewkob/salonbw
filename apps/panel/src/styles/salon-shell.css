@@ -7883,7 +7883,7 @@ td .checkbox_container input[type='checkbox'],
 th.checkbox_container input[type='checkbox'] {
     width: 1.5rem;
     height: 1.5rem;
-    margin: 0;
+    margin: 2px 0;
     accent-color: #6e7278;
     cursor: pointer;
 }
