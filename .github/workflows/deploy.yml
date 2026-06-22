@@ -472,6 +472,9 @@ jobs:
           # the next panel build bakes it in and Sentry activates (sentry.client
           # no-ops on an empty DSN). Set NEXT_PUBLIC_SENTRY_DSN as a GitHub var.
           NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          # Social login: set to "true" once GOOGLE_CLIENT_ID/SECRET are on the
+          # API .env, so the "Continue with Google" button only shows when it works.
+          NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED }}
 
       - name: Ensure remote directories exist (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}

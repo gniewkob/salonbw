@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -432,6 +433,8 @@ export default function LoginPage() {
                             </p>
                         )}
                     </form>
+
+                    <GoogleAuthButton label="Zaloguj się przez Google" />
 
                     <p
                         style={{

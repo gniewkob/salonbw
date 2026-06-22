@@ -16,7 +16,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         super({
             clientID,
             clientSecret,
-            callbackURL: '/auth/social/google/callback',
+            // Must be an ABSOLUTE https URL matching the redirect URI registered
+            // in Google Cloud Console (Google rejects relative URIs).
+            callbackURL:
+                config.get<string>('GOOGLE_CALLBACK_URL') ||
+                'https://api.salon-bw.pl/auth/social/google/callback',
             scope: ['email', 'profile'],
             passReqToCallback: true,
         });

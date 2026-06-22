@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -536,6 +537,8 @@ export default function RegisterPage() {
                             </p>
                         )}
                     </form>
+
+                    <GoogleAuthButton label="Zarejestruj się przez Google" />
 
                     <p
                         style={{
