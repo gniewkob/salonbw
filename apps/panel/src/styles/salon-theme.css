@@ -21,6 +21,13 @@
        stays high-contrast (white on #0d0d0d); text-primary becomes AA dark. */
     --bs-primary: #0d0d0d;
     --bs-primary-rgb: 13, 13, 13;
+    /* Links: Bootstrap default was blue (#0d6efd) — every <a> / .btn-link
+       (dashboard 'kalendarz'/'szczegóły', table links) leaked blue. The brand
+       is monochrome; links are dark + underline-on-hover (see panel-link-color
+       memory). #1a1a1a = AA on white. */
+    --bs-link-color: #1a1a1a;
+    --bs-link-color-rgb: 26, 26, 26;
+    --bs-link-hover-color: #0d0d0d;
 }
 
 /* --- Body defaults --- */
