@@ -103,7 +103,8 @@ describe('CommissionsService', () => {
             appointment.service,
             appointment,
             user,
-            undefined,
+            undefined, // manager
+            undefined, // baseAmountOverride (G2 extra-services)
         );
     });
 
