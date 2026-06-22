@@ -468,6 +468,10 @@ jobs:
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
           NEXT_PANEL_HTML_NOSTORE: "true"
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Error monitoring: empty until the owner sets the repo/Env var, then
+          # the next panel build bakes it in and Sentry activates (sentry.client
+          # no-ops on an empty DSN). Set NEXT_PUBLIC_SENTRY_DSN as a GitHub var.
+          NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
 
       - name: Ensure remote directories exist (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
