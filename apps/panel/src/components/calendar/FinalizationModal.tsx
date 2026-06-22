@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import {
+    BanknotesIcon,
+    CreditCardIcon,
+    BuildingLibraryIcon,
+    DevicePhoneMobileIcon,
+    GiftIcon,
+} from '@heroicons/react/24/outline';
+import type { ComponentType, SVGProps } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Modal from '@/components/Modal';
 import { CALENDAR_QUERY_KEY } from '@/hooks/useCalendar';
@@ -29,14 +37,17 @@ interface Props {
     onSuccess?: () => void;
 }
 
-const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] =
-    [
-        { value: 'cash', label: 'Gotówka', icon: '💵' },
-        { value: 'card', label: 'Karta', icon: '💳' },
-        { value: 'transfer', label: 'Przelew', icon: '🏦' },
-        { value: 'online', label: 'Online', icon: '📱' },
-        { value: 'voucher', label: 'Voucher', icon: '🎁' },
-    ];
+const PAYMENT_METHODS: {
+    value: PaymentMethod;
+    label: string;
+    Icon: ComponentType<SVGProps<SVGSVGElement>>;
+}[] = [
+    { value: 'cash', label: 'Gotówka', Icon: BanknotesIcon },
+    { value: 'card', label: 'Karta', Icon: CreditCardIcon },
+    { value: 'transfer', label: 'Przelew', Icon: BuildingLibraryIcon },
+    { value: 'online', label: 'Online', Icon: DevicePhoneMobileIcon },
+    { value: 'voucher', label: 'Voucher', Icon: GiftIcon },
+];
 
 export default function FinalizationModal({
     appointment,
@@ -497,33 +508,50 @@ export default function FinalizationModal({
                 </div>
 
                 {/* Payment Method */}
-                <div className="mb-3">
+                <div className="mb-4">
                     <span className="d-block small fw-medium text-body mb-2">
                         Metoda płatności
                     </span>
                     <div
-                        className="d-grid gap-2 mb-2"
+                        className="d-grid gap-2"
                         style={{
                             gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
                         }}
                     >
-                        {PAYMENT_METHODS.map((method) => (
-                            <button
-                                key={method.value}
-                                type="button"
-                                onClick={() => setPaymentMethod(method.value)}
-                                className={`d-flex flex-column align-items-center p-2 rounded-3 border border-2 ${
-                                    paymentMethod === method.value
-                                        ? 'border-primary bg-primary bg-opacity-10'
-                                        : 'border-secondary border-opacity-25 border-opacity-50'
-                                }`}
-                            >
-                                <span className="fs-5">{method.icon}</span>
-                                <span className="small mt-1">
-                                    {method.label}
-                                </span>
-                            </button>
-                        ))}
+                        {PAYMENT_METHODS.map((method) => {
+                            const active = paymentMethod === method.value;
+                            return (
+                                <button
+                                    key={method.value}
+                                    type="button"
+                                    onClick={() =>
+                                        setPaymentMethod(method.value)
+                                    }
+                                    className="d-flex flex-column align-items-center justify-content-center gap-1 rounded-3 border"
+                                    style={{
+                                        padding: '0.75rem 0.5rem',
+                                        borderColor: active
+                                            ? '#0d0d0d'
+                                            : '#e2e4e7',
+                                        borderWidth: active ? 2 : 1,
+                                        background: active
+                                            ? '#0d0d0d'
+                                            : '#ffffff',
+                                        color: active ? '#ffffff' : '#1a1a1a',
+                                        transition:
+                                            'background 0.12s, border-color 0.12s',
+                                    }}
+                                >
+                                    <method.Icon
+                                        aria-hidden="true"
+                                        style={{ width: 22, height: 22 }}
+                                    />
+                                    <span style={{ fontSize: '0.78rem' }}>
+                                        {method.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
