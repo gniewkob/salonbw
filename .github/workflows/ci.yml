@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
         with:
           fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
     needs: secret-scan
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
 
       - name: Run ops workflow static guard checks
         run: bash scripts/check-ops-workflows.sh
@@ -48,7 +48,7 @@ jobs:
     needs: secret-scan
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
 
       - name: Validate batch telemetry evidence fixtures
         run: bash scripts/validate-batch-telemetry-fixtures.sh
@@ -59,7 +59,7 @@ jobs:
     needs: secret-scan
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
 
       - name: Validate ops workflow docs consistency
         run: bash scripts/check-ops-workflow-docs-consistency.sh
@@ -76,7 +76,7 @@ jobs:
       CI: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
 
       - name: Detect changed paths
         id: paths
@@ -219,7 +219,7 @@ jobs:
       CI: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6 # v4
@@ -257,7 +257,7 @@ jobs:
     needs: secret-scan
     steps:
       - name: Checkout
-        uses: actions/checkout@v5 # v4
+        uses: actions/checkout@v7 # v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6 # v4
