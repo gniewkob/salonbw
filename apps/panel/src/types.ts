@@ -419,6 +419,7 @@ export interface CalendarEvent {
     status?: string;
     paymentStatus?: string;
     paymentMethod?: PaymentMethod;
+    paidAmount?: number;
     customerAlertSeverity?: ReceptionAlertSeverity;
     hasCustomerAlerts?: boolean;
     blockType?: TimeBlockType;

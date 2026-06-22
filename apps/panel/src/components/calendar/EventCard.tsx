@@ -79,6 +79,14 @@ const STATUS_LABELS: Record<string, string> = {
     rescheduled_pending: 'Nowy termin',
 };
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    cash: 'gotówka',
+    card: 'karta',
+    transfer: 'przelew',
+    online: 'online',
+    voucher: 'voucher',
+};
+
 const ALERT_ICON: Record<ReceptionAlertSeverity, string> = {
     info: '●',
     warning: '●',
@@ -118,6 +126,16 @@ export default function EventCard({
     const statusLabel = event.status
         ? (STATUS_LABELS[event.status] ?? null)
         : null;
+
+    // Versum-style: show what was paid on settled visits, at a glance.
+    const paymentLabel =
+        event.paidAmount != null && event.paidAmount > 0
+            ? `Zapłacono ${event.paidAmount.toFixed(0)} zł${
+                  event.paymentMethod
+                      ? ` · ${PAYMENT_METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod}`
+                      : ''
+              }`
+            : null;
 
     const visual = getEventStatusVisual(event.status);
 
@@ -253,6 +271,19 @@ export default function EventCard({
                         }}
                     >
                         {statusLabel}
+                    </div>
+                )}
+                {paymentLabel && (
+                    <div
+                        className="text-truncate"
+                        style={{
+                            fontSize: 10,
+                            color: '#0d0d0d',
+                            fontWeight: 600,
+                            marginTop: 1,
+                        }}
+                    >
+                        {paymentLabel}
                     </div>
                 )}
             </div>

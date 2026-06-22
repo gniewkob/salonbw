@@ -52,6 +52,8 @@ export interface CalendarEvent {
     serviceId?: number;
     serviceName?: string;
     status?: string;
+    paidAmount?: number;
+    paymentMethod?: string;
     blockType?: string;
     notes?: string;
     allDay?: boolean;
@@ -914,6 +916,8 @@ export class CalendarService {
             serviceId: apt.service?.id,
             serviceName: apt.service?.name,
             status: apt.status,
+            paidAmount: apt.paidAmount,
+            paymentMethod: apt.paymentMethod,
             notes: apt.notes,
         };
     }
