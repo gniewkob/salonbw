@@ -1,8 +1,12 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import type { EventDropArg } from '@fullcalendar/core';
+import type {
+    EventDropArg,
+    PluginDef,
+    DayHeaderContentArg,
+    DayCellContentArg,
+} from '@fullcalendar/core';
 import type { EventResizeDoneArg } from '@fullcalendar/interaction';
-import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
 import EventCard, { getEventStatusVisual } from './EventCard';
@@ -79,6 +83,17 @@ function toDateKey(value: Date): string {
     return `${year}-${month}-${day}`;
 }
 
+/** Polish plural for "rezerwacja" (1) / "rezerwacje" (2–4) / "rezerwacji". */
+function rezerwacjeLabel(n: number): string {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (n === 1) return 'rezerwacja';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return 'rezerwacje';
+    }
+    return 'rezerwacji';
+}
+
 export default function CalendarView({
     events,
     employees,
@@ -153,6 +168,89 @@ export default function CalendarView({
                 editable: event.type === 'appointment',
             })),
         [events],
+    );
+
+    // Reservations per day (appointments only — not time blocks) for the
+    // Booksy-style per-day counters in the week header and month cells.
+    const countByDay = useMemo(() => {
+        const map: Record<string, number> = {};
+        for (const event of events) {
+            if (event.type !== 'appointment') continue;
+            const key = toDateKey(new Date(event.startTime));
+            map[key] = (map[key] ?? 0) + 1;
+        }
+        return map;
+    }, [events]);
+
+    const renderDayHeader = useCallback(
+        (arg: DayHeaderContentArg) => {
+            // Month header is a weekday name spanning many dates — no count.
+            if (arg.view.type === 'dayGridMonth') return arg.text;
+            const count = countByDay[toDateKey(arg.date)] ?? 0;
+            return (
+                <span
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        lineHeight: 1.25,
+                    }}
+                >
+                    <span>{arg.text}</span>
+                    {count > 0 && (
+                        <span
+                            style={{
+                                fontSize: '0.62rem',
+                                fontWeight: 600,
+                                color: '#6e7278',
+                                marginTop: 2,
+                                letterSpacing: 0,
+                                textTransform: 'none',
+                            }}
+                        >
+                            {count} {rezerwacjeLabel(count)}
+                        </span>
+                    )}
+                </span>
+            );
+        },
+        [countByDay],
+    );
+
+    const renderDayCell = useCallback(
+        (arg: DayCellContentArg) => {
+            const count = countByDay[toDateKey(arg.date)] ?? 0;
+            return (
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                    }}
+                >
+                    <span>{arg.dayNumberText}</span>
+                    {count > 0 && (
+                        <span
+                            aria-label={`${count} ${rezerwacjeLabel(count)}`}
+                            style={{
+                                fontSize: '0.6rem',
+                                fontWeight: 700,
+                                color: '#ffffff',
+                                background: '#0d0d0d',
+                                borderRadius: 10,
+                                padding: '0 6px',
+                                lineHeight: '16px',
+                                minWidth: 18,
+                                textAlign: 'center',
+                            }}
+                        >
+                            {count}
+                        </span>
+                    )}
+                </span>
+            );
+        },
+        [countByDay],
     );
 
     const handleEventDrop = useCallback(
@@ -349,6 +447,8 @@ export default function CalendarView({
                                 weekday: 'short',
                                 day: 'numeric',
                             }}
+                            dayHeaderContent={renderDayHeader}
+                            dayCellContent={renderDayCell}
                             views={{
                                 // Month columns are weekdays only — the date
                                 // belongs in each cell, not the header (the
