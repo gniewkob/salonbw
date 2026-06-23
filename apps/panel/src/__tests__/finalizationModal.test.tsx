@@ -67,7 +67,7 @@ describe('FinalizationModal', () => {
             />,
         );
 
-        fireEvent.change(screen.getAllByPlaceholderText('0.00')[0], {
+        fireEvent.change(document.querySelector('#fin-discount')!, {
             target: { value: '200' },
         });
         expect(
@@ -105,14 +105,19 @@ describe('FinalizationModal', () => {
             />,
         );
 
-        const amountInputs = screen.getAllByPlaceholderText('0.00');
-        fireEvent.change(amountInputs[0], { target: { value: '10' } }); // discount
-        fireEvent.change(amountInputs[1], { target: { value: '5' } }); // tip
+        // Service price pre-fills from the appointment's price-list value (120).
+        fireEvent.change(document.querySelector('#fin-discount')!, {
+            target: { value: '10' },
+        });
+        fireEvent.change(document.querySelector('#fin-tip')!, {
+            target: { value: '5' },
+        });
         fireEvent.click(screen.getByRole('button', { name: 'Zakończ wizytę' }));
 
         expect(mutateMock).toHaveBeenCalledWith(
             expect.objectContaining({
                 paymentMethod: 'card',
+                servicePriceCents: 12000,
                 paidAmountCents: 11500,
                 tipAmountCents: 500,
                 discountCents: 1000,

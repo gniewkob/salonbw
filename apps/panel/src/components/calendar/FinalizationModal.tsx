@@ -60,6 +60,10 @@ export default function FinalizationModal({
 
     // Form state
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+    // Editable service price — pre-filled from the price list (cennik), staff
+    // can override it per visit.
+    const [servicePricePln, setServicePricePln] = useState<string>('');
+    const [servicePrefilled, setServicePrefilled] = useState(false);
     const [discountPln, setDiscountPln] = useState<string>('');
     const [tipPln, setTipPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
@@ -89,6 +93,34 @@ export default function FinalizationModal({
         enabled: open && !!appointment?.service?.id,
     });
 
+    // Authoritative price from the cennik. The appointment object from the
+    // calendar carries the service name but not its price, so the suggested
+    // price is fetched from /services/:id (falls back to whatever the
+    // appointment carries).
+    const { data: cennikService } = useQuery<Service>({
+        queryKey: ['service-detail', appointment?.service?.id],
+        queryFn: () =>
+            apiFetch<Service>(`/services/${appointment?.service?.id}`),
+        enabled: open && !!appointment?.service?.id,
+    });
+    const suggestedServicePrice =
+        Number(cennikService?.price ?? appointment?.service?.price ?? 0) || 0;
+
+    // Pre-fill the editable price once the cennik price is known; reset on close
+    // so a fresh open re-suggests.
+    useEffect(() => {
+        if (!open) {
+            setServicePricePln('');
+            setServicePrefilled(false);
+            return;
+        }
+        if (servicePrefilled) return;
+        if (suggestedServicePrice > 0) {
+            setServicePricePln(suggestedServicePrice.toFixed(2));
+            setServicePrefilled(true);
+        }
+    }, [open, suggestedServicePrice, servicePrefilled]);
+
     // Client's standing discount (own percent, else from their group) — used
     // to pre-fill the discount field at finalization. Staff can still edit it.
     const clientId = appointment?.client?.id;
@@ -113,7 +145,8 @@ export default function FinalizationModal({
         if (discountPrefilled || discountPln !== '') return;
         if (standingDiscountPercent == null || standingDiscountPercent <= 0)
             return;
-        const basePrice = appointment?.service?.price ?? 0;
+        const basePrice =
+            parseFloat(servicePricePln) || 0 || suggestedServicePrice;
         if (basePrice <= 0) return;
         const amount = Math.round(basePrice * standingDiscountPercent) / 100;
         setDiscountPln(amount.toFixed(2));
@@ -124,6 +157,8 @@ export default function FinalizationModal({
         appointment,
         discountPrefilled,
         discountPln,
+        servicePricePln,
+        suggestedServicePrice,
     ]);
 
     // Fetch products for upselling. Pickers only offer active products
@@ -162,7 +197,7 @@ export default function FinalizationModal({
 
     // Calculate totals
     const summary = useMemo(() => {
-        const servicePrice = appointment?.service?.price ?? 0;
+        const servicePrice = parseFloat(servicePricePln) || 0;
         const discount = parseFloat(discountPln) || 0;
         const tip = parseFloat(tipPln) || 0;
         const productsTotal = productSales.reduce((sum, item) => {
@@ -196,7 +231,7 @@ export default function FinalizationModal({
             grandTotal: Math.max(0, grandTotal),
         };
     }, [
-        appointment,
+        servicePricePln,
         discountPln,
         tipPln,
         productSales,
@@ -317,6 +352,7 @@ export default function FinalizationModal({
 
         const data: FinalizeAppointmentRequest = {
             paymentMethod,
+            servicePriceCents: Math.round(summary.servicePrice * 100),
             paidAmountCents: Math.round(summary.grandTotal * 100),
             tipAmountCents: Math.round(summary.tip * 100),
             discountCents: Math.round(summary.discount * 100),
@@ -502,8 +538,30 @@ export default function FinalizationModal({
                         <span className="mx-2">•</span>
                         <span>{appointment.service?.name}</span>
                     </div>
-                    <div className="fs-5 fw-semibold mt-1">
-                        {summary.servicePrice.toFixed(2)} PLN
+                    <div className="mt-2">
+                        <label
+                            htmlFor="fin-service-price"
+                            className="d-block small fw-medium text-body mb-1"
+                        >
+                            Cena usługi (PLN)
+                            {suggestedServicePrice > 0 && (
+                                <span className="ms-2 fw-normal text-muted">
+                                    · z cennika{' '}
+                                    {suggestedServicePrice.toFixed(2)} zł
+                                </span>
+                            )}
+                        </label>
+                        <input
+                            id="fin-service-price"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            inputMode="decimal"
+                            className="form-control"
+                            placeholder="0.00"
+                            value={servicePricePln}
+                            onChange={(e) => setServicePricePln(e.target.value)}
+                        />
                     </div>
                 </div>
 

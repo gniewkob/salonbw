@@ -1003,6 +1003,7 @@ export interface UsageMaterialItem {
 
 export interface FinalizeAppointmentRequest {
     paymentMethod: PaymentMethod;
+    servicePriceCents?: number;
     paidAmountCents: number;
     tipAmountCents?: number;
     discountCents?: number;

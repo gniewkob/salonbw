@@ -1047,14 +1047,21 @@ export class AppointmentsService {
             });
         }
 
-        // Combined commission base: primary service (variant price if any) +
-        // additional services net. Only override when extras exist, so the
-        // single-service case keeps its existing base.
-        const primaryPrice = Number(
-            appointment.serviceVariant?.price ?? appointment.service.price ?? 0,
-        );
+        // Combined commission base: primary service + additional services net.
+        // The primary price prefers the staff-entered service price (override of
+        // the price-list value); otherwise it falls back to the variant/service
+        // price. Override the commission base whenever a price was entered or
+        // extras exist, so the single untouched-service case keeps its old base.
+        const primaryPrice =
+            dto.servicePriceCents != null
+                ? dto.servicePriceCents / 100
+                : Number(
+                      appointment.serviceVariant?.price ??
+                          appointment.service.price ??
+                          0,
+                  );
         const commissionBaseOverride =
-            additionalServicesNetCents > 0
+            additionalServicesNetCents > 0 || dto.servicePriceCents != null
                 ? primaryPrice + additionalServicesNetCents / 100
                 : undefined;
 

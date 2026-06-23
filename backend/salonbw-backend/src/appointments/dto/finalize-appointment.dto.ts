@@ -110,6 +110,18 @@ export class FinalizeAppointmentDto {
     paymentMethod: PaymentMethod;
 
     @ApiProperty({
+        description:
+            'Service price in cents (staff override of the price-list value). ' +
+            'When provided it becomes the commission base for the primary service.',
+        required: false,
+        example: 12000,
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    servicePriceCents?: number;
+
+    @ApiProperty({
         description: 'Amount paid in cents',
         example: 15000,
     })
