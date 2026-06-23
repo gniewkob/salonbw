@@ -84,9 +84,14 @@ export class AppointmentsService {
     private async loadEmployeeOrThrow(id: number): Promise<User> {
         const employee = await this.usersRepository.findOne({ where: { id } });
         if (!employee) throw new BadRequestException('Invalid employeeId');
-        if (employee.role !== Role.Employee)
+        // Any staff member can be the service provider on an appointment, not
+        // only role=employee. The owner-stylist runs as an admin (a one-person
+        // salon), so restricting to Employee made the only bookable person
+        // unbookable — clients saw her slots but the booking POST 400'd.
+        // Bookability is gated elsewhere by employee_services, not by role.
+        if (employee.role === Role.Client)
             throw new BadRequestException(
-                'Provided employeeId does not belong to an employee',
+                'Provided employeeId does not belong to a staff member',
             );
         return employee;
     }
