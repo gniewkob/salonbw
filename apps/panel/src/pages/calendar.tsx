@@ -17,6 +17,7 @@ import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     hasCustomerAlert,
     isPriorityAppointment,
@@ -186,6 +187,18 @@ export default function CalendarPage() {
         initialEndTime?: Date;
         initialEmployeeId?: number;
     }>({ open: false, existingBlock: null });
+
+    // Drag-onto-occupied: when a drop overlaps another visit we don't snap back
+    // silently — we keep the event where it was dropped and ask the user to
+    // confirm the overlap (backend honours force=true to commit it).
+    const [overlapConfirm, setOverlapConfirm] = useState<{
+        eventId: number;
+        startTime: string;
+        endTime: string;
+        employeeId: number;
+        conflictTitles: string[];
+        revert?: () => void;
+    } | null>(null);
 
     const { data, loading, refetch } = useCalendar({
         date: toDateParam(currentDate),
@@ -594,8 +607,18 @@ export default function CalendarPage() {
         );
 
         if (conflictCheck.hasConflict) {
-            revert?.();
-            await refetch();
+            // Keep the event visually where it was dropped and ask the user to
+            // confirm the overlap. Reverting happens only if they cancel.
+            setOverlapConfirm({
+                eventId,
+                startTime: newStart.toISOString(),
+                endTime: newEnd.toISOString(),
+                employeeId: targetEmployeeId,
+                conflictTitles: conflictCheck.conflictingEvents.map(
+                    (c) => c.title,
+                ),
+                revert,
+            });
             return;
         }
 
@@ -609,6 +632,32 @@ export default function CalendarPage() {
         } catch {
             revert?.();
         }
+    };
+
+    const confirmOverlapReschedule = async () => {
+        if (!overlapConfirm) return;
+        const pending = overlapConfirm;
+        setOverlapConfirm(null);
+        try {
+            await rescheduleAppointment.mutateAsync({
+                id: pending.eventId,
+                startTime: pending.startTime,
+                endTime: pending.endTime,
+                employeeId: pending.employeeId,
+                force: true,
+            });
+        } catch {
+            pending.revert?.();
+            await refetch();
+        }
+    };
+
+    const cancelOverlapReschedule = () => {
+        if (!overlapConfirm) return;
+        const pending = overlapConfirm;
+        setOverlapConfirm(null);
+        pending.revert?.();
+        void refetch();
     };
 
     return (
@@ -1371,6 +1420,24 @@ export default function CalendarPage() {
                     onSaved={() => {
                         void refetch();
                     }}
+                />
+
+                <ConfirmModal
+                    open={!!overlapConfirm}
+                    title="Wizyty się nakładają"
+                    message={
+                        overlapConfirm
+                            ? `Ten termin nakłada się na: ${
+                                  overlapConfirm.conflictTitles.length > 0
+                                      ? overlapConfirm.conflictTitles.join(', ')
+                                      : 'inną wizytę'
+                              }. Czy na pewno przenieść wizytę mimo nakładania?`
+                            : undefined
+                    }
+                    confirmLabel="Przenieś mimo to"
+                    confirmVariant="warning"
+                    onConfirm={() => void confirmOverlapReschedule()}
+                    onCancel={cancelOverlapReschedule}
                 />
             </SalonShell>
         </RouteGuard>
