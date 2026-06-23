@@ -64,14 +64,23 @@ export default function AppointmentsPage() {
     const queryClient = useQueryClient();
     const toast = useToast();
 
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
-
-    const defaultFrom = isoDate(thirtyDaysAgo);
-    const defaultTo = isoDate(today);
-
     const initialStatus = (router.query.status as AppointmentStatus) || '';
+    // Pending bookings (online_pending / rescheduled_pending) are in the
+    // FUTURE — a [past..today] window hid them, so opening "wizyty oczekujące"
+    // showed nothing even though the topbar badge counted them. For pending
+    // statuses look forward (today..+90d); otherwise keep the recent window.
+    const isPendingStatus =
+        initialStatus === 'online_pending' ||
+        initialStatus === 'rescheduled_pending';
+
+    const today = new Date();
+    const windowStart = new Date(today);
+    windowStart.setDate(today.getDate() + (isPendingStatus ? 0 : -30));
+    const windowEnd = new Date(today);
+    windowEnd.setDate(today.getDate() + (isPendingStatus ? 90 : 0));
+
+    const defaultFrom = isoDate(windowStart);
+    const defaultTo = isoDate(windowEnd);
     const [from, setFrom] = useState(defaultFrom);
     const [to, setTo] = useState(defaultTo);
     const [status, setStatus] = useState<AppointmentStatus | ''>(initialStatus);
