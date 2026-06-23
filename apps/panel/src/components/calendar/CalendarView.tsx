@@ -349,6 +349,14 @@ export default function CalendarView({
                                 weekday: 'short',
                                 day: 'numeric',
                             }}
+                            views={{
+                                // Month columns are weekdays only — the date
+                                // belongs in each cell, not the header (the
+                                // global weekday+day format is for day/week).
+                                dayGridMonth: {
+                                    dayHeaderFormat: { weekday: 'long' },
+                                },
+                            }}
                             nowIndicator
                             allDaySlot={false}
                             headerToolbar={false}
