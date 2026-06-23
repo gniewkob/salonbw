@@ -76,6 +76,7 @@ export class UsersService {
         const hashedPassword = await bcrypt.hash(dto.password, 10);
 
         const gdprConsent = dto.gdprConsent ?? false;
+        const termsConsent = dto.termsConsent ?? false;
         const user = this.usersRepository.create({
             email: dto.email,
             name: dto.name,
@@ -86,6 +87,8 @@ export class UsersService {
             receiveNotifications: dto.receiveNotifications ?? true,
             gdprConsent,
             gdprConsentDate: gdprConsent ? new Date() : undefined,
+            termsConsent,
+            termsConsentDate: termsConsent ? new Date() : undefined,
             smsConsent: dto.smsConsent ?? false,
             emailConsent: dto.emailConsent ?? false,
         });

@@ -107,6 +107,8 @@ describe('UsersService', () => {
                 receiveNotifications: dto.receiveNotifications,
                 gdprConsent: false,
                 gdprConsentDate: undefined,
+                termsConsent: false,
+                termsConsentDate: undefined,
                 smsConsent: false,
                 emailConsent: false,
             });
@@ -157,6 +159,8 @@ describe('UsersService', () => {
                 receiveNotifications: true,
                 gdprConsent: false,
                 gdprConsentDate: undefined,
+                termsConsent: false,
+                termsConsentDate: undefined,
                 smsConsent: false,
                 emailConsent: false,
             });

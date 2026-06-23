@@ -100,6 +100,12 @@ export class User {
     @Column({ nullable: true })
     gdprConsentDate?: Date;
 
+    @Column({ default: false })
+    termsConsent: boolean;
+
+    @Column({ nullable: true })
+    termsConsentDate?: Date;
+
     // Social authentication
     @Column({ nullable: true, unique: true })
     googleId?: string;

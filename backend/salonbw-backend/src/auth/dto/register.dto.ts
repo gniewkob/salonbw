@@ -52,6 +52,15 @@ export class RegisterDto {
     })
     gdprConsent: true;
 
+    @Equals(true, {
+        message: 'Akceptacja regulaminu jest wymagana',
+    })
+    @ApiProperty({
+        description: 'Terms of service (regulamin) consent — must be true',
+        example: true,
+    })
+    termsConsent: true;
+
     @IsBoolean()
     @IsOptional()
     @ApiProperty({

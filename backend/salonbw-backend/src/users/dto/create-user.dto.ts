@@ -69,6 +69,15 @@ export class CreateUserDto {
     @IsBoolean()
     @IsOptional()
     @ApiProperty({
+        description: 'Terms of service (regulamin) consent',
+        required: false,
+        example: false,
+    })
+    termsConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
         description: 'SMS marketing consent',
         required: false,
         example: false,

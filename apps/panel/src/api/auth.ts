@@ -41,6 +41,7 @@ export interface RegisterData {
     phone: string;
     password: string;
     gdprConsent: boolean;
+    termsConsent: boolean;
     smsConsent?: boolean;
     emailConsent?: boolean;
 }

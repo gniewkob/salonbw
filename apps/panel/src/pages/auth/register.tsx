@@ -15,6 +15,7 @@ type RegisterFormValues = {
     phone: string;
     password: string;
     gdprConsent: boolean;
+    termsConsent: boolean;
     smsConsent: boolean;
     emailConsent: boolean;
 };
@@ -38,6 +39,9 @@ const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
         errors.gdprConsent =
             'Zgoda na przetwarzanie danych osobowych jest wymagana';
     }
+    if (!values.termsConsent) {
+        errors.termsConsent = 'Akceptacja regulaminu jest wymagana';
+    }
     return errors;
 };
 
@@ -52,6 +56,7 @@ export default function RegisterPage() {
         phone: '',
         password: '',
         gdprConsent: false,
+        termsConsent: false,
         smsConsent: false,
         emailConsent: false,
     });
@@ -76,7 +81,7 @@ export default function RegisterPage() {
     };
 
     const handleCheckbox = (
-        field: 'gdprConsent' | 'smsConsent' | 'emailConsent',
+        field: 'gdprConsent' | 'termsConsent' | 'smsConsent' | 'emailConsent',
         checked: boolean,
     ) => {
         const nextForm = { ...form, [field]: checked };
@@ -101,6 +106,7 @@ export default function RegisterPage() {
                 phone: true,
                 password: true,
                 gdprConsent: true,
+                termsConsent: true,
             });
             return;
         }
@@ -415,6 +421,66 @@ export default function RegisterPage() {
                             {touched.gdprConsent && errors.gdprConsent && (
                                 <p role="alert" style={errorStyle}>
                                     {errors.gdprConsent}
+                                </p>
+                            )}
+
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    gap: '0.65rem',
+                                    cursor: 'pointer',
+                                    alignItems: 'flex-start',
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    id="termsConsent"
+                                    checked={form.termsConsent}
+                                    onChange={(e) =>
+                                        handleCheckbox(
+                                            'termsConsent',
+                                            e.target.checked,
+                                        )
+                                    }
+                                    onBlur={() =>
+                                        setTouched((prev) => ({
+                                            ...prev,
+                                            termsConsent: true,
+                                        }))
+                                    }
+                                    style={{ marginTop: '2px', flexShrink: 0 }}
+                                />
+                                <span
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'rgba(255,255,255,0.65)',
+                                        fontFamily: "'Open Sans', sans-serif",
+                                        lineHeight: 1.5,
+                                    }}
+                                >
+                                    <span
+                                        style={{ color: 'rgba(220,80,80,0.9)' }}
+                                    >
+                                        *{' '}
+                                    </span>
+                                    Akceptuję{' '}
+                                    <a
+                                        href="https://dev.salon-bw.pl/policy"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            color: '#b4b8be',
+                                            textDecoration: 'underline',
+                                        }}
+                                    >
+                                        Regulamin
+                                    </a>{' '}
+                                    Salonu Black &amp; White.
+                                </span>
+                            </label>
+                            {touched.termsConsent && errors.termsConsent && (
+                                <p role="alert" style={errorStyle}>
+                                    {errors.termsConsent}
                                 </p>
                             )}
 
