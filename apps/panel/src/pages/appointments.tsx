@@ -64,26 +64,35 @@ export default function AppointmentsPage() {
     const queryClient = useQueryClient();
     const toast = useToast();
 
-    const initialStatus = (router.query.status as AppointmentStatus) || '';
-    // Pending bookings (online_pending / rescheduled_pending) are in the
-    // FUTURE — a [past..today] window hid them, so opening "wizyty oczekujące"
-    // showed nothing even though the topbar badge counted them. For pending
-    // statuses look forward (today..+90d); otherwise keep the recent window.
-    const isPendingStatus =
-        initialStatus === 'online_pending' ||
-        initialStatus === 'rescheduled_pending';
-
     const today = new Date();
-    const windowStart = new Date(today);
-    windowStart.setDate(today.getDate() + (isPendingStatus ? 0 : -30));
-    const windowEnd = new Date(today);
-    windowEnd.setDate(today.getDate() + (isPendingStatus ? 90 : 0));
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    const defaultFrom = isoDate(windowStart);
-    const defaultTo = isoDate(windowEnd);
+    const defaultFrom = isoDate(thirtyDaysAgo);
+    const defaultTo = isoDate(today);
+
+    const initialStatus = (router.query.status as AppointmentStatus) || '';
     const [from, setFrom] = useState(defaultFrom);
     const [to, setTo] = useState(defaultTo);
     const [status, setStatus] = useState<AppointmentStatus | ''>(initialStatus);
+
+    // router.query isn't populated on the first render of a hard load, so the
+    // status from the URL (e.g. ?status=online_pending) could be missed. Once
+    // ready, sync it — and for PENDING bookings (which are in the FUTURE) look
+    // forward (today..+90d) instead of the default recent window, otherwise
+    // "wizyty oczekujące" shows nothing while the topbar badge counts them.
+    useEffect(() => {
+        if (!router.isReady) return;
+        const qStatus = (router.query.status as AppointmentStatus) || '';
+        setStatus(qStatus);
+        if (qStatus === 'online_pending' || qStatus === 'rescheduled_pending') {
+            const ahead = new Date();
+            ahead.setDate(ahead.getDate() + 90);
+            setFrom(isoDate(new Date()));
+            setTo(isoDate(ahead));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router.isReady, router.query.status]);
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [page, setPage] = useState(1);
