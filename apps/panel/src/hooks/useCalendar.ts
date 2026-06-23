@@ -70,11 +70,15 @@ export function useCalendar(options: UseCalendarOptions) {
         queryKey,
         queryFn: async () => {
             const dateOnly = normalizedDate.slice(0, 10);
+            // Lead with the ACTUAL view so week/month fetch their full range.
+            // The previous order put view:'day' first, which always returned
+            // 200 → week/month silently only ever loaded a single day's events.
+            // The 'day' combos remain as a 400-only compatibility fallback.
             const attempts: Array<{ date: string; view: CalendarView }> = [
-                { date: dateOnly, view: 'day' },
-                { date: normalizedDate, view: 'day' },
                 { date: dateOnly, view: backendView },
                 { date: normalizedDate, view: backendView },
+                { date: dateOnly, view: 'day' },
+                { date: normalizedDate, view: 'day' },
             ];
 
             let lastError: unknown = null;
