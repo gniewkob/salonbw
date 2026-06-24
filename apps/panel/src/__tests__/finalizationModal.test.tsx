@@ -105,12 +105,13 @@ describe('FinalizationModal', () => {
             />,
         );
 
-        // Service price pre-fills from the appointment's price-list value (120).
+        // Service price pre-fills from the price-list value (120); discount 10
+        // → amount due 110. Paying 115 makes the 5 surplus an automatic tip.
         fireEvent.change(document.querySelector('#fin-discount')!, {
             target: { value: '10' },
         });
-        fireEvent.change(document.querySelector('#fin-tip')!, {
-            target: { value: '5' },
+        fireEvent.change(document.querySelector('#fin-paid')!, {
+            target: { value: '115' },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Zakończ wizytę' }));
 

@@ -102,7 +102,9 @@ export default function FinalizationModal({
     const [servicePricePln, setServicePricePln] = useState<string>('');
     const [servicePrefilled, setServicePrefilled] = useState(false);
     const [discountPln, setDiscountPln] = useState<string>('');
-    const [tipPln, setTipPln] = useState<string>('');
+    // Amount the client actually leaves. Blank = pays exactly the amount due;
+    // anything above the amount due is automatically the tip.
+    const [paidPln, setPaidPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
     const [showNote, setShowNote] = useState(false);
     const [clientNote, setClientNote] = useState<string>('');
@@ -272,7 +274,6 @@ export default function FinalizationModal({
     const summary = useMemo(() => {
         const servicePrice = parseFloat(servicePricePln) || 0;
         const discount = parseFloat(discountPln) || 0;
-        const tip = parseFloat(tipPln) || 0;
         const productsTotal = productSales.reduce((sum, item) => {
             const product = products.find((p) => p.id === item.productId);
             const price = item.unitPriceCents
@@ -288,25 +289,35 @@ export default function FinalizationModal({
                 sum + Math.max(0, item.priceCents - item.discountCents) / 100,
             0,
         );
-        const grandTotal =
-            servicePrice -
-            discount +
-            tip +
-            productsTotal +
-            additionalServicesTotal;
+        // Amount the client owes for the visit.
+        const amountDue = Math.max(
+            0,
+            servicePrice - discount + productsTotal + additionalServicesTotal,
+        );
+        // What the client actually leaves. Blank field = pays exactly the
+        // amount due; anything above it is the tip, anything below is an
+        // underpayment (warned, not blocked).
+        const paid =
+            paidPln.trim() === ''
+                ? amountDue
+                : Math.max(0, parseFloat(paidPln) || 0);
+        const tip = Math.max(0, paid - amountDue);
+        const underpaid = Math.max(0, amountDue - paid);
 
         return {
             servicePrice,
             discount,
-            tip,
             productsTotal,
             additionalServicesTotal,
-            grandTotal: Math.max(0, grandTotal),
+            amountDue,
+            paid,
+            tip,
+            underpaid,
         };
     }, [
         servicePricePln,
         discountPln,
-        tipPln,
+        paidPln,
         productSales,
         products,
         additionalServices,
@@ -363,7 +374,7 @@ export default function FinalizationModal({
         }
         setPaymentMethod('card');
         setDiscountPln('');
-        setTipPln('');
+        setPaidPln('');
         setNote('');
         setShowNote(false);
         setClientNote('');
@@ -433,7 +444,7 @@ export default function FinalizationModal({
         const data: FinalizeAppointmentRequest = {
             paymentMethod,
             servicePriceCents: Math.round(summary.servicePrice * 100),
-            paidAmountCents: Math.round(summary.grandTotal * 100),
+            paidAmountCents: Math.round(summary.paid * 100),
             tipAmountCents: Math.round(summary.tip * 100),
             discountCents: Math.round(summary.discount * 100),
             products: productSales.length > 0 ? productSales : undefined,
@@ -687,60 +698,37 @@ export default function FinalizationModal({
                     </div>
                 </div>
 
-                {/* Discount & Tip */}
-                <div
-                    className="d-grid gap-3 mb-3"
-                    style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}
-                >
-                    <div>
-                        <label
-                            htmlFor="fin-discount"
-                            className="d-block small fw-medium text-body mb-1"
-                        >
-                            Rabat (PLN)
-                            {standingDiscountPercent != null &&
-                                standingDiscountPercent > 0 && (
-                                    <span className="ms-2 fw-normal text-muted">
-                                        · rabat stały klientki{' '}
-                                        {standingDiscountPercent}%
-                                    </span>
-                                )}
-                        </label>
-                        <input
-                            id="fin-discount"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={discountPln}
-                            onChange={(e) => setDiscountPln(e.target.value)}
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                            placeholder="0.00"
-                        />
-                        {isDiscountInvalid && (
-                            <div className="small text-danger mt-1">
-                                Maksymalny rabat dla tej finalizacji to{' '}
-                                {maxDiscount.toFixed(2)} PLN.
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        <label
-                            htmlFor="fin-tip"
-                            className="d-block small fw-medium text-body mb-1"
-                        >
-                            Napiwek (PLN)
-                        </label>
-                        <input
-                            id="fin-tip"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={tipPln}
-                            onChange={(e) => setTipPln(e.target.value)}
-                            className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                            placeholder="0.00"
-                        />
-                    </div>
+                {/* Discount */}
+                <div className="mb-3">
+                    <label
+                        htmlFor="fin-discount"
+                        className="d-block small fw-medium text-body mb-1"
+                    >
+                        Rabat (PLN)
+                        {standingDiscountPercent != null &&
+                            standingDiscountPercent > 0 && (
+                                <span className="ms-2 fw-normal text-muted">
+                                    · rabat stały klientki{' '}
+                                    {standingDiscountPercent}%
+                                </span>
+                            )}
+                    </label>
+                    <input
+                        id="fin-discount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={discountPln}
+                        onChange={(e) => setDiscountPln(e.target.value)}
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                        placeholder="0.00"
+                    />
+                    {isDiscountInvalid && (
+                        <div className="small text-danger mt-1">
+                            Maksymalny rabat dla tej finalizacji to{' '}
+                            {maxDiscount.toFixed(2)} PLN.
+                        </div>
+                    )}
                 </div>
 
                 {/* Usage Materials (from service recipe) */}
@@ -1341,18 +1329,56 @@ export default function FinalizationModal({
                                 <span>-{summary.discount.toFixed(2)} PLN</span>
                             </div>
                         )}
-                        {summary.tip > 0 && (
-                            <div className="d-flex justify-content-between text-primary">
-                                <span>Napiwek:</span>
-                                <span>+{summary.tip.toFixed(2)} PLN</span>
-                            </div>
-                        )}
                         <div className="border-top pt-1 mt-1">
                             <div className="d-flex justify-content-between fw-semibold fs-5">
                                 <span>Do zapłaty:</span>
-                                <span>{summary.grandTotal.toFixed(2)} PLN</span>
+                                <span>{summary.amountDue.toFixed(2)} PLN</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Amount paid → tip is the surplus over the amount due */}
+                <div className="mb-3">
+                    <label
+                        htmlFor="fin-paid"
+                        className="d-block small fw-medium text-body mb-1"
+                    >
+                        Kwota zapłacona (PLN)
+                    </label>
+                    <input
+                        id="fin-paid"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={paidPln}
+                        onChange={(e) => setPaidPln(e.target.value)}
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                        placeholder={summary.amountDue.toFixed(2)}
+                    />
+                    {summary.tip > 0 && (
+                        <div
+                            className="small mt-1 d-flex justify-content-between"
+                            role="status"
+                        >
+                            <span className="text-muted">
+                                → Napiwek (nadwyżka):
+                            </span>
+                            <span className="fw-medium">
+                                +{summary.tip.toFixed(2)} PLN
+                            </span>
+                        </div>
+                    )}
+                    {summary.underpaid > 0 && (
+                        <div className="small text-danger mt-1" role="alert">
+                            ⚠ Niedopłata — brakuje{' '}
+                            {summary.underpaid.toFixed(2)} PLN do kwoty
+                            należnej.
+                        </div>
+                    )}
+                    <div className="form-text">
+                        Zostaw puste, jeśli klient płaci dokładnie. Nadwyżka
+                        jest liczona jako napiwek.
                     </div>
                 </div>
 
