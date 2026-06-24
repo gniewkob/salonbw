@@ -916,7 +916,10 @@ export class CalendarService {
             serviceId: apt.service?.id,
             serviceName: apt.service?.name,
             status: apt.status,
-            paidAmount: apt.paidAmount,
+            // Decimal columns come back from the driver as strings — coerce so
+            // the event carries a real number (the panel calls .toFixed on it).
+            paidAmount:
+                apt.paidAmount != null ? Number(apt.paidAmount) : undefined,
             paymentMethod: apt.paymentMethod,
             notes: apt.notes,
         };

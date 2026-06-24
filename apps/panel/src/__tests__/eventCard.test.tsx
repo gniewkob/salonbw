@@ -48,4 +48,22 @@ describe('EventCard', () => {
         // Alert shown inline as a coloured dot (●) in the time strip
         expect(screen.getByText('●')).toBeInTheDocument();
     });
+
+    it('renders paid amount even when it arrives as a string (decimal/JSON)', () => {
+        render(
+            <EventCard
+                event={{
+                    ...appointmentEvent,
+                    status: 'completed',
+                    // Decimal columns can deserialize as strings — must not crash
+                    // (regression: paidAmount.toFixed broke the whole calendar).
+                    paidAmount: '3000.00' as unknown as number,
+                    paymentMethod: 'cash',
+                }}
+                onClick={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText(/Zapłacono 3000 zł/)).toBeInTheDocument();
+    });
 });

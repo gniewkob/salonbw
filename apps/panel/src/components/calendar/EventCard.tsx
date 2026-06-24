@@ -128,9 +128,12 @@ export default function EventCard({
         : null;
 
     // Versum-style: show what was paid on settled visits, at a glance.
+    // Decimal amounts can arrive as strings (TypeORM/JSON), so coerce before
+    // formatting — calling .toFixed on a string crashed the whole calendar.
+    const paidAmountNumber = Number(event.paidAmount);
     const paymentLabel =
-        event.paidAmount != null && event.paidAmount > 0
-            ? `Zapłacono ${event.paidAmount.toFixed(0)} zł${
+        Number.isFinite(paidAmountNumber) && paidAmountNumber > 0
+            ? `Zapłacono ${paidAmountNumber.toFixed(0)} zł${
                   event.paymentMethod
                       ? ` · ${PAYMENT_METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod}`
                       : ''
