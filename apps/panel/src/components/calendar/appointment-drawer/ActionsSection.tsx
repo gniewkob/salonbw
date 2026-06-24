@@ -121,16 +121,6 @@ export default function ActionsSection({
                                     Odrzuć rezerwację
                                 </button>
                             )}
-                            {isRescheduledPending && (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-danger"
-                                    onClick={handleCancel}
-                                    disabled={saving}
-                                >
-                                    Anuluj wizytę
-                                </button>
-                            )}
                             {canStart && (
                                 <button
                                     type="button"

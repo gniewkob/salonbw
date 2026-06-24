@@ -164,8 +164,11 @@ export default function FinalizationModal({
     // Fetch products for upselling. Pickers only offer active products
     // (filtered server-side); deactivated stock must not be sellable/usable.
     const { data: productsResponse } = useQuery<ProductsResponse>({
-        queryKey: ['products', { isActive: true }],
-        queryFn: () => apiFetch<ProductsResponse>('/products?isActive=true'),
+        // The products list endpoint filters to active by default
+        // (includeInactive=false). It does NOT accept `isActive` — passing it
+        // triggers a 400 (forbidNonWhitelisted), which left the picker empty.
+        queryKey: ['products', { includeInactive: false }],
+        queryFn: () => apiFetch<ProductsResponse>('/products'),
         enabled: open && (showProductPicker || showUsagePicker),
     });
     const products = useMemo<Product[]>(
@@ -432,20 +435,13 @@ export default function FinalizationModal({
         setShowServicePicker(false);
     };
 
-    const updateAdditionalServiceDiscount = (index: number, pln: string) => {
-        const discountCents = Math.max(
+    const updateAdditionalServicePrice = (index: number, pln: string) => {
+        const priceCents = Math.max(
             0,
             Math.round((parseFloat(pln) || 0) * 100),
         );
         setAdditionalServices((prev) =>
-            prev.map((s, i) =>
-                i === index
-                    ? {
-                          ...s,
-                          discountCents: Math.min(discountCents, s.priceCents),
-                      }
-                    : s,
-            ),
+            prev.map((s, i) => (i === index ? { ...s, priceCents } : s)),
         );
     };
 
@@ -804,29 +800,24 @@ export default function FinalizationModal({
                                     <span className="flex-grow-1">
                                         {s.name}
                                     </span>
-                                    <span className="text-muted">
-                                        {(s.priceCents / 100).toFixed(2)} zł
-                                    </span>
                                     <input
                                         type="number"
                                         min={0}
                                         step="0.01"
-                                        aria-label={`Rabat dla ${s.name}`}
-                                        placeholder="rabat zł"
-                                        value={
-                                            s.discountCents
-                                                ? s.discountCents / 100
-                                                : ''
-                                        }
+                                        inputMode="decimal"
+                                        aria-label={`Cena dla ${s.name}`}
+                                        placeholder="cena zł"
+                                        value={s.priceCents / 100}
                                         onChange={(e) =>
-                                            updateAdditionalServiceDiscount(
+                                            updateAdditionalServicePrice(
                                                 index,
                                                 e.target.value,
                                             )
                                         }
                                         className="form-control form-control-sm"
-                                        style={{ width: '90px' }}
+                                        style={{ width: '100px' }}
                                     />
+                                    <span className="text-muted">zł</span>
                                     <button
                                         type="button"
                                         aria-label={`Usuń ${s.name}`}
