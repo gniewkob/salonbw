@@ -104,7 +104,9 @@ export default function FinalizationModal({
     const [discountPln, setDiscountPln] = useState<string>('');
     const [tipPln, setTipPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
+    const [showNote, setShowNote] = useState(false);
     const [clientNote, setClientNote] = useState<string>('');
+    const [showClientNote, setShowClientNote] = useState(false);
     const [formula, setFormula] = useState<string>('');
     const [showFormula, setShowFormula] = useState(false);
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
@@ -363,7 +365,9 @@ export default function FinalizationModal({
         setDiscountPln('');
         setTipPln('');
         setNote('');
+        setShowNote(false);
         setClientNote('');
+        setShowClientNote(false);
         setFormula('');
         setShowFormula(false);
         setAdditionalServices([]);
@@ -1212,41 +1216,65 @@ export default function FinalizationModal({
                     )}
                 </div>
 
-                {/* Internal note (staff-only) */}
+                {/* Internal note (staff-only) — optional, collapsed by default */}
                 <div className="mb-3">
-                    <label
-                        htmlFor="fin-note"
-                        className="d-block small fw-medium text-body mb-1"
-                    >
-                        Notatka wewnętrzna (tylko personel)
-                    </label>
-                    <textarea
-                        id="fin-note"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                        rows={2}
-                        placeholder="Stan włosów, proporcje farb, uwagi dla zespołu..."
-                    />
+                    {!showNote ? (
+                        <button
+                            type="button"
+                            className="btn btn-link btn-sm p-0 text-decoration-none"
+                            onClick={() => setShowNote(true)}
+                        >
+                            + Dodaj notatkę wewnętrzną
+                        </button>
+                    ) : (
+                        <>
+                            <label
+                                htmlFor="fin-note"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
+                                Notatka wewnętrzna (tylko personel)
+                            </label>
+                            <textarea
+                                id="fin-note"
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                                rows={2}
+                                placeholder="Stan włosów, proporcje farb, uwagi dla zespołu..."
+                            />
+                        </>
+                    )}
                 </div>
 
-                {/* Client-visible recommendations */}
+                {/* Client-visible recommendations — optional, collapsed by default */}
                 <div className="mb-3">
-                    <label
-                        htmlFor="fin-client-note"
-                        className="d-block small fw-medium text-body mb-1"
-                    >
-                        Zalecenia dla klienta (widoczne dla klienta)
-                    </label>
-                    <textarea
-                        id="fin-client-note"
-                        value={clientNote}
-                        onChange={(e) => setClientNote(e.target.value)}
-                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                        rows={2}
-                        maxLength={1000}
-                        placeholder="Np. pielęgnacja w domu, kiedy umyć włosy, polecane produkty..."
-                    />
+                    {!showClientNote ? (
+                        <button
+                            type="button"
+                            className="btn btn-link btn-sm p-0 text-decoration-none"
+                            onClick={() => setShowClientNote(true)}
+                        >
+                            + Dodaj zalecenia dla klienta
+                        </button>
+                    ) : (
+                        <>
+                            <label
+                                htmlFor="fin-client-note"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
+                                Zalecenia dla klienta (widoczne dla klienta)
+                            </label>
+                            <textarea
+                                id="fin-client-note"
+                                value={clientNote}
+                                onChange={(e) => setClientNote(e.target.value)}
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                                rows={2}
+                                maxLength={1000}
+                                placeholder="Np. pielęgnacja w domu, kiedy umyć włosy, polecane produkty..."
+                            />
+                        </>
+                    )}
                 </div>
 
                 {/* Treatment formula — optional, collapsed by default */}
