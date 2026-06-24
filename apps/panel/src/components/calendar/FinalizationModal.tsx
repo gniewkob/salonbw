@@ -6,6 +6,7 @@ import {
     BuildingLibraryIcon,
     DevicePhoneMobileIcon,
     GiftIcon,
+    MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,6 +50,42 @@ const PAYMENT_METHODS: {
     { value: 'voucher', label: 'Voucher', Icon: GiftIcon },
 ];
 
+function PickerSearch({
+    value,
+    onChange,
+    placeholder,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+    placeholder: string;
+}) {
+    return (
+        <div className="position-relative mb-2">
+            <MagnifyingGlassIcon
+                aria-hidden="true"
+                style={{
+                    width: 16,
+                    height: 16,
+                    position: 'absolute',
+                    left: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#6e7278',
+                    pointerEvents: 'none',
+                }}
+            />
+            <input
+                type="search"
+                className="form-control form-control-sm"
+                style={{ paddingLeft: 32 }}
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+            />
+        </div>
+    );
+}
+
 export default function FinalizationModal({
     appointment,
     open,
@@ -73,12 +110,15 @@ export default function FinalizationModal({
         [],
     );
     const [showProductPicker, setShowProductPicker] = useState(false);
+    const [productSearch, setProductSearch] = useState('');
     const [usageItems, setUsageItems] = useState<UsageMaterialItem[]>([]);
     const [showUsagePicker, setShowUsagePicker] = useState(false);
+    const [usageSearch, setUsageSearch] = useState('');
     const [additionalServices, setAdditionalServices] = useState<
         ExtraServiceDraft[]
     >([]);
     const [showServicePicker, setShowServicePicker] = useState(false);
+    const [serviceSearch, setServiceSearch] = useState('');
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -198,6 +238,32 @@ export default function FinalizationModal({
         [servicesResponse],
     );
 
+    // Searchable filtering of the (long) pickers.
+    const matchProduct = (p: Product, q: string) =>
+        [p.name, p.brand, p.sku, p.barcode].some((f) =>
+            String(f ?? '')
+                .toLowerCase()
+                .includes(q),
+        );
+    const filteredProducts = useMemo(() => {
+        const q = productSearch.trim().toLowerCase();
+        return q ? products.filter((p) => matchProduct(p, q)) : products;
+    }, [products, productSearch]);
+    const filteredUsageProducts = useMemo(() => {
+        const q = usageSearch.trim().toLowerCase();
+        return q ? products.filter((p) => matchProduct(p, q)) : products;
+    }, [products, usageSearch]);
+    const filteredServices = useMemo(() => {
+        const q = serviceSearch.trim().toLowerCase();
+        return q
+            ? services.filter((s) =>
+                  String(s.name ?? '')
+                      .toLowerCase()
+                      .includes(q),
+              )
+            : services;
+    }, [services, serviceSearch]);
+
     // Calculate totals
     const summary = useMemo(() => {
         const servicePrice = parseFloat(servicePricePln) || 0;
@@ -298,10 +364,13 @@ export default function FinalizationModal({
         setClientNote('');
         setAdditionalServices([]);
         setShowServicePicker(false);
+        setServiceSearch('');
         setProductSales([]);
         setUsageMaterials([]);
         setShowProductPicker(false);
         setShowUsagePicker(false);
+        setProductSearch('');
+        setUsageSearch('');
         setUiError(null);
         setSuccessMessage(null);
         onClose();
@@ -761,32 +830,45 @@ export default function FinalizationModal({
                     </div>
 
                     {showServicePicker && (
-                        <div
-                            className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 overflow-y-auto"
-                            style={{ maxHeight: '220px' }}
-                        >
-                            {services.length === 0 ? (
-                                <p className="small text-muted mb-0">
-                                    Ładowanie usług…
-                                </p>
-                            ) : (
-                                services.map((svc) => (
-                                    <button
-                                        type="button"
-                                        key={svc.id}
-                                        onClick={() =>
-                                            addAdditionalService(svc.id)
-                                        }
-                                        className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
-                                    >
-                                        <span>{svc.name}</span>
-                                        <span className="text-muted">
-                                            {Number(svc.price ?? 0).toFixed(2)}{' '}
-                                            zł
-                                        </span>
-                                    </button>
-                                ))
-                            )}
+                        <div className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2">
+                            <PickerSearch
+                                value={serviceSearch}
+                                onChange={setServiceSearch}
+                                placeholder="Szukaj usługi…"
+                            />
+                            <div
+                                className="overflow-y-auto"
+                                style={{ maxHeight: '220px' }}
+                            >
+                                {services.length === 0 ? (
+                                    <p className="small text-muted mb-0">
+                                        Ładowanie usług…
+                                    </p>
+                                ) : filteredServices.length === 0 ? (
+                                    <p className="small text-muted mb-0">
+                                        Brak usług dla „{serviceSearch}”.
+                                    </p>
+                                ) : (
+                                    filteredServices.map((svc) => (
+                                        <button
+                                            type="button"
+                                            key={svc.id}
+                                            onClick={() =>
+                                                addAdditionalService(svc.id)
+                                            }
+                                            className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
+                                        >
+                                            <span>{svc.name}</span>
+                                            <span className="text-muted">
+                                                {Number(svc.price ?? 0).toFixed(
+                                                    2,
+                                                )}{' '}
+                                                zł
+                                            </span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -852,39 +934,52 @@ export default function FinalizationModal({
                     </div>
 
                     {showProductPicker && (
-                        <div
-                            className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 overflow-y-auto"
-                            style={{ maxHeight: '220px' }}
-                        >
-                            {products.length === 0 ? (
-                                <p className="small text-muted text-center py-2">
-                                    Brak produktów
-                                </p>
-                            ) : (
-                                <div className="d-flex flex-column gap-1">
-                                    {products.map((product) => (
-                                        <button
-                                            key={product.id}
-                                            type="button"
-                                            onClick={() =>
-                                                addProduct(product.id)
-                                            }
-                                            className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
-                                        >
-                                            <span>
-                                                {product.name}
-                                                <span className="text-muted ms-2">
-                                                    stan: {product.stock}
+                        <div className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2">
+                            <PickerSearch
+                                value={productSearch}
+                                onChange={setProductSearch}
+                                placeholder="Szukaj produktu (nazwa, marka, SKU)…"
+                            />
+                            <div
+                                className="overflow-y-auto"
+                                style={{ maxHeight: '220px' }}
+                            >
+                                {products.length === 0 ? (
+                                    <p className="small text-muted text-center py-2">
+                                        Brak produktów
+                                    </p>
+                                ) : filteredProducts.length === 0 ? (
+                                    <p className="small text-muted text-center py-2">
+                                        Brak produktów dla „{productSearch}”.
+                                    </p>
+                                ) : (
+                                    <div className="d-flex flex-column gap-1">
+                                        {filteredProducts.map((product) => (
+                                            <button
+                                                key={product.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    addProduct(product.id)
+                                                }
+                                                className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
+                                            >
+                                                <span>
+                                                    {product.name}
+                                                    <span className="text-muted ms-2">
+                                                        stan: {product.stock}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                            <span className="text-muted">
-                                                {product.unitPrice.toFixed(2)}{' '}
-                                                PLN
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                                                <span className="text-muted">
+                                                    {product.unitPrice.toFixed(
+                                                        2,
+                                                    )}{' '}
+                                                    PLN
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -989,40 +1084,64 @@ export default function FinalizationModal({
                     </div>
 
                     {showUsagePicker && (
-                        <div
-                            className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2 overflow-y-auto"
-                            style={{ maxHeight: '200px' }}
-                        >
-                            {products.length === 0 ? (
-                                <p className="small text-muted text-center py-2">
-                                    Brak produktów
-                                </p>
-                            ) : (
-                                <div className="d-flex flex-column gap-1">
-                                    {products
-                                        .filter(
+                        <div className="border border-secondary border-opacity-25 rounded-3 p-2 mb-2">
+                            <PickerSearch
+                                value={usageSearch}
+                                onChange={setUsageSearch}
+                                placeholder="Szukaj materiału (nazwa, marka, SKU)…"
+                            />
+                            <div
+                                className="overflow-y-auto"
+                                style={{ maxHeight: '200px' }}
+                            >
+                                {(() => {
+                                    const available =
+                                        filteredUsageProducts.filter(
                                             (p) =>
                                                 !usageItems.some(
                                                     (u) => u.productId === p.id,
                                                 ),
-                                        )
-                                        .map((product) => (
-                                            <button
-                                                key={product.id}
-                                                type="button"
-                                                onClick={() =>
-                                                    addUsageMaterial(product.id)
-                                                }
-                                                className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
-                                            >
-                                                <span>{product.name}</span>
-                                                <span className="text-muted">
-                                                    stan: {product.stock ?? '–'}
-                                                </span>
-                                            </button>
-                                        ))}
-                                </div>
-                            )}
+                                        );
+                                    if (products.length === 0) {
+                                        return (
+                                            <p className="small text-muted text-center py-2">
+                                                Brak produktów
+                                            </p>
+                                        );
+                                    }
+                                    if (available.length === 0) {
+                                        return (
+                                            <p className="small text-muted text-center py-2">
+                                                {usageSearch
+                                                    ? `Brak materiałów dla „${usageSearch}”.`
+                                                    : 'Brak materiałów.'}
+                                            </p>
+                                        );
+                                    }
+                                    return (
+                                        <div className="d-flex flex-column gap-1">
+                                            {available.map((product) => (
+                                                <button
+                                                    key={product.id}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        addUsageMaterial(
+                                                            product.id,
+                                                        )
+                                                    }
+                                                    className="w-100 text-start px-2 py-1 small rounded d-flex justify-content-between"
+                                                >
+                                                    <span>{product.name}</span>
+                                                    <span className="text-muted">
+                                                        stan:{' '}
+                                                        {product.stock ?? '–'}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                         </div>
                     )}
 
