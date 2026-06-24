@@ -203,6 +203,15 @@ export class FinalizeAppointmentDto {
 
     @ApiProperty({
         description:
+            'Treatment formula / recipe (e.g. colour mix) recorded for the visit. When present, a Formula record is created for the client in the same transaction.',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    formula?: string;
+
+    @ApiProperty({
+        description:
             'Extra services added during the visit (line-items beyond the primary service); each contributes to the total and the combined commission.',
         required: false,
         type: [AdditionalServiceDto],

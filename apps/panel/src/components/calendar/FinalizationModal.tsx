@@ -105,6 +105,8 @@ export default function FinalizationModal({
     const [tipPln, setTipPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
     const [clientNote, setClientNote] = useState<string>('');
+    const [formula, setFormula] = useState<string>('');
+    const [showFormula, setShowFormula] = useState(false);
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
     const [usageMaterials, setUsageMaterials] = useState<UsageMaterialItem[]>(
         [],
@@ -362,6 +364,8 @@ export default function FinalizationModal({
         setTipPln('');
         setNote('');
         setClientNote('');
+        setFormula('');
+        setShowFormula(false);
         setAdditionalServices([]);
         setShowServicePicker(false);
         setServiceSearch('');
@@ -433,6 +437,7 @@ export default function FinalizationModal({
                 usageMaterials.length > 0 ? usageMaterials : undefined,
             note: note || undefined,
             clientNote: clientNote || undefined,
+            formula: formula.trim() || undefined,
             additionalServices:
                 additionalServices.length > 0
                     ? additionalServices.map((s) => ({
@@ -1242,6 +1247,40 @@ export default function FinalizationModal({
                         maxLength={1000}
                         placeholder="Np. pielęgnacja w domu, kiedy umyć włosy, polecane produkty..."
                     />
+                </div>
+
+                {/* Treatment formula — optional, collapsed by default */}
+                <div className="mb-3">
+                    {!showFormula ? (
+                        <button
+                            type="button"
+                            className="btn btn-link btn-sm p-0 text-decoration-none"
+                            onClick={() => setShowFormula(true)}
+                        >
+                            + Dodaj recepturę / formułę koloru
+                        </button>
+                    ) : (
+                        <>
+                            <label
+                                htmlFor="fin-formula"
+                                className="d-block small fw-medium text-body mb-1"
+                            >
+                                Receptura / formuła koloru (opcjonalna)
+                            </label>
+                            <textarea
+                                id="fin-formula"
+                                value={formula}
+                                onChange={(e) => setFormula(e.target.value)}
+                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                                rows={2}
+                                maxLength={1000}
+                                placeholder="Np. kolor 7.1 + 8 vol, 40 min..."
+                            />
+                            <div className="form-text">
+                                Zapisze się w historii klienta razem z wizytą.
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Summary */}

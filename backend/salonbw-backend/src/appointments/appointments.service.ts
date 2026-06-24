@@ -39,6 +39,7 @@ import { Optional } from '@nestjs/common';
 import { RetailService } from '../retail/retail.service';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { Log } from '../logs/log.entity';
+import { Formula } from '../formulas/formula.entity';
 import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
 
 @Injectable()
@@ -1105,6 +1106,20 @@ export class AppointmentsService {
                     manager,
                     commissionBaseOverride,
                 );
+
+                // Treatment formula (colour mix, etc.) entered at finalization —
+                // persisted as a client Formula in the same transaction so it
+                // can't be lost after the visit is marked completed.
+                if (dto.formula?.trim()) {
+                    await manager.getRepository(Formula).save(
+                        manager.getRepository(Formula).create({
+                            description: dto.formula.trim(),
+                            date: new Date(),
+                            client: appointment.client,
+                            appointment,
+                        }),
+                    );
+                }
             },
         );
 
