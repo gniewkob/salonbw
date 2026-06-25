@@ -256,7 +256,13 @@ export default function ClientSection({
                                 </div>
                                 <div>
                                     Łączne wydatki:{' '}
-                                    {customerStats.totalSpent.toFixed(2)} PLN
+                                    {/* totalSpent (SUM of decimal paidAmount) can
+                                        arrive as a string — coerce before toFixed
+                                        or it crashes the whole drawer. */}
+                                    {(
+                                        Number(customerStats.totalSpent) || 0
+                                    ).toFixed(2)}{' '}
+                                    PLN
                                 </div>
                                 <div>
                                     Ostatnia wizyta:{' '}

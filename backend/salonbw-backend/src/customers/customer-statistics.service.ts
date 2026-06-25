@@ -140,8 +140,12 @@ export class CustomerStatisticsService {
             (a) => a.status === AppointmentStatus.NoShow,
         );
 
+        // paidAmount/price are decimal columns → strings from the driver.
+        // Without Number() the reduce does string concatenation and totalSpent
+        // ends up a string, which crashes the panel's .toFixed.
         const serviceSpent = completed.reduce(
-            (sum, a) => sum + (a.paidAmount || a.service?.price || 0),
+            (sum, a) =>
+                sum + (Number(a.paidAmount) || Number(a.service?.price) || 0),
             0,
         );
 
@@ -202,7 +206,7 @@ export class CustomerStatisticsService {
             const date = new Date(a.startTime);
             const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             const existing = monthlyData.get(monthKey);
-            const spent = a.paidAmount || a.service?.price || 0;
+            const spent = Number(a.paidAmount) || Number(a.service?.price) || 0;
             if (existing) {
                 existing.count++;
                 existing.spent += spent;
