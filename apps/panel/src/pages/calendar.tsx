@@ -40,7 +40,7 @@ import {
     isDayClosed,
     type WeeklyHours,
 } from '@/utils/openingHoursCalendar';
-import { format as formatDate } from 'date-fns';
+import { format as formatDate, isSameMonth, isSameISOWeek } from 'date-fns';
 import { pl as plLocale } from 'date-fns/locale';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useReceptionNowTick } from '@/hooks/calendar/useReceptionNowTick';
@@ -683,8 +683,35 @@ export default function CalendarPage() {
                                 });
                             }}
                             onViewChange={(view) => {
+                                // Month view's anchor date is the 1st of the
+                                // month, so switching to a narrower view kept
+                                // landing on the (often empty) 1st and the
+                                // visits "disappeared". When narrowing to
+                                // day/week and today falls inside the period
+                                // currently shown, jump to today so the user
+                                // lands on a populated day.
+                                let targetDate = currentDate;
+                                if (view === 'day' || view === 'week') {
+                                    const today = new Date();
+                                    const todayInCurrentPeriod =
+                                        currentView === 'month'
+                                            ? isSameMonth(currentDate, today)
+                                            : currentView === 'week'
+                                              ? isSameISOWeek(
+                                                    currentDate,
+                                                    today,
+                                                )
+                                              : false;
+                                    if (todayInCurrentPeriod) {
+                                        targetDate = today;
+                                    }
+                                }
                                 setCurrentView(view);
-                                updateCalendarQuery({ view });
+                                setCurrentDate(targetDate);
+                                updateCalendarQuery({
+                                    view,
+                                    date: toDateParam(targetDate),
+                                });
                             }}
                             onTodayClick={() => {
                                 const today = new Date();
