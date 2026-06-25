@@ -668,8 +668,15 @@ function CustomerSummaryView({
                                                         </div>
                                                     </div>
                                                     <div className="visit-employee">
-                                                        <Link
-                                                            href={`/employees/${visit.employee?.id}`}
+                                                        {/* No /employees/[id] page exists — the
+                                                            stylist initials are a label, not a link
+                                                            (a Link here prefetched a 404 route). */}
+                                                        <span
+                                                            title={
+                                                                visit.employee
+                                                                    ?.name ??
+                                                                undefined
+                                                            }
                                                         >
                                                             {visit.employee
                                                                 ?.initials ||
@@ -682,7 +689,7 @@ function CustomerSummaryView({
                                                                             n[0],
                                                                     )
                                                                     .join('')}
-                                                        </Link>
+                                                        </span>
                                                     </div>
                                                     <div className="visit-price">
                                                         {formatCurrency(

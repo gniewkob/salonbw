@@ -1442,7 +1442,8 @@ tr.customer-row:hover .customers-drag-handle {
     align-items: flex-start;
 }
 
-.visit-employee a {
+.visit-employee a,
+.visit-employee span {
     display: inline-flex;
     align-items: center;
     justify-content: center;
