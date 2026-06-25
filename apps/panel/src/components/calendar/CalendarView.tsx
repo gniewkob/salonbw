@@ -474,6 +474,12 @@ export default function CalendarView({
                                 // global weekday+day format is for day/week).
                                 dayGridMonth: {
                                     dayHeaderFormat: { weekday: 'long' },
+                                    // Booksy-style: show only the current
+                                    // month's days. Hide adjacent-month filler
+                                    // (no grey "1 2 … 12" from next month) and
+                                    // don't pad to a fixed 6 weeks.
+                                    showNonCurrentDates: false,
+                                    fixedWeekCount: false,
                                 },
                             }}
                             nowIndicator

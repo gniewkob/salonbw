@@ -2571,7 +2571,10 @@ h3 {
 }
 /* Out-of-business-hours shading (when businessHours is set) */
 .fc-non-business {
-    background: rgba(13, 13, 13, 0.035) !important;
+    /* Booksy-style: clearly grey out time outside the salon's opening hours.
+       0.035 was barely visible; 0.06 reads as a distinct band without being
+       heavy. */
+    background: rgba(13, 13, 13, 0.06) !important;
 }
 /* Events: lighter resting shadow + hover lift */
 .fc-event {
