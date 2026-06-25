@@ -405,6 +405,14 @@ export default function CalendarView({
                             </div>
                         )}
                         <FullCalendar
+                            // Remount on view change: switching view via
+                            // changeView() raced with the datesSet → onViewChange
+                            // echo and left the grid stuck (e.g. month grid while
+                            // the URL said day). Keying by view forces a clean
+                            // mount with the right initialView, no race. Date-only
+                            // navigation keeps the same key (no remount) and is
+                            // handled by gotoDate in the effect below.
+                            key={currentView}
                             ref={calendarRef}
                             plugins={calendarPlugins}
                             initialView={VIEW_MAP[currentView]}
