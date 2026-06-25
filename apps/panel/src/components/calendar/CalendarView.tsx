@@ -288,17 +288,28 @@ export default function CalendarView({
     const handleDatesSet = useCallback(
         (arg: { view: { type: string; currentStart: Date } }) => {
             const viewType = arg.view.type;
-            // Map FullCalendar view IDs to our canonical view enum.
-            if (viewType === 'timeGridDay') onViewChange('day');
-            else if (viewType === 'timeGridWeek') onViewChange('week');
-            else if (viewType === 'dayGridMonth') onViewChange('month');
+            // Map FullCalendar view IDs to our canonical view enum. Only report
+            // a change when FullCalendar genuinely differs from our state (e.g.
+            // an FC-initiated change) — echoing back the view we just applied
+            // raced with our own state updates and reverted the selection.
+            const mapped: CalendarViewType | null =
+                viewType === 'timeGridDay'
+                    ? 'day'
+                    : viewType === 'timeGridWeek'
+                      ? 'week'
+                      : viewType === 'dayGridMonth'
+                        ? 'month'
+                        : null;
+            if (mapped && mapped !== currentView) {
+                onViewChange(mapped);
+            }
 
             const nextDate = arg.view.currentStart;
             if (toDateKey(nextDate) !== toDateKey(currentDate)) {
                 onDateChange(nextDate);
             }
         },
-        [onViewChange, onDateChange, currentDate],
+        [onViewChange, onDateChange, currentDate, currentView],
     );
 
     // Sidebar handlers
@@ -312,14 +323,12 @@ export default function CalendarView({
         [selectedEmployeeIds, onEmployeeFilterChange],
     );
 
-    useEffect(() => {
-        const instance = calendarRef.current;
-        if (!instance || typeof instance.getApi !== 'function') return;
-        const api = instance.getApi();
-        if (!api) return;
-        api.gotoDate(currentDate);
-    }, [currentDate]);
-
+    // Keep FullCalendar's view + date in sync with our state in ONE effect.
+    // Two separate effects raced: gotoDate fired `datesSet` while still in the
+    // old view, and handleDatesSet mapped that back to onViewChange(old view),
+    // reverting the view the user just picked (month→day/week looked stuck on
+    // month). changeView(view, date) switches view AND navigates atomically, so
+    // datesSet fires once with the correct view + date.
     useEffect(() => {
         const instance = calendarRef.current;
         if (!instance || typeof instance.getApi !== 'function') return;
@@ -327,9 +336,11 @@ export default function CalendarView({
         if (!api) return;
         const targetView = VIEW_MAP[currentView];
         if (api.view.type !== targetView) {
-            api.changeView(targetView);
+            api.changeView(targetView, currentDate);
+        } else if (toDateKey(api.getDate()) !== toDateKey(currentDate)) {
+            api.gotoDate(currentDate);
         }
-    }, [currentView]);
+    }, [currentView, currentDate]);
 
     return (
         <div className="d-flex h-100">
