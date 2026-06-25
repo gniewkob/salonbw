@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
@@ -556,6 +556,18 @@ export default function CalendarPage() {
         void router.replace({ query: rest }, undefined, { shallow: true });
     }, [router.query.newClient, isRouterReady, router, openDrawerForCreate]);
 
+    // router.query lags behind shallow router.push calls, so two updates fired
+    // in the same tick (e.g. a view switch immediately followed by FullCalendar's
+    // datesSet date-sync) both read the OLD query and the second clobbers the
+    // first — the view switch was being reverted (month/day grid stuck). Merge
+    // against a ref that holds the latest intended query synchronously instead.
+    const pendingQueryRef = useRef<Record<string, string>>(
+        router.query as Record<string, string>,
+    );
+    useEffect(() => {
+        pendingQueryRef.current = router.query as Record<string, string>;
+    }, [router.query]);
+
     const updateCalendarQuery = (
         next: Partial<{
             date: string;
@@ -563,7 +575,7 @@ export default function CalendarPage() {
             employeeIds: number[];
         }>,
     ) => {
-        const query = { ...router.query } as Record<string, string>;
+        const query = { ...pendingQueryRef.current } as Record<string, string>;
         if (next.date !== undefined) query.date = next.date;
         if (next.view !== undefined) query.view = next.view;
         if (next.employeeIds !== undefined) {
@@ -573,6 +585,7 @@ export default function CalendarPage() {
                 delete query.employeeIds;
             }
         }
+        pendingQueryRef.current = query;
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,
         });
