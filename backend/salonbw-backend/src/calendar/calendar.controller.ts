@@ -19,6 +19,7 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -158,6 +159,10 @@ export class CalendarController {
     // Public on purpose (no auth guard): weekly opening hours derived
     // from employee timetables (owner decision: the employee's calendar
     // IS the salon's calendar). No employee data in the response.
+    // SkipThrottle: cheap, 5-min-cached, PII-free read used by BOTH the
+    // landing (every visitor) and the panel — the global 10/min limit gave
+    // legitimate users false 429s. nearest-slot stays throttled (it scans).
+    @SkipThrottle()
     @Get('opening-hours')
     @ApiOperation({
         summary: 'Weekly opening hours (public)',
