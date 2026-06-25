@@ -86,6 +86,58 @@ function PickerSearch({
     );
 }
 
+// Optional descriptive field that can be both expanded ("+ Dodaj …") and
+// collapsed again ("Ukryj") so it doesn't take up space when unused. Collapsing
+// only hides the field — any text typed stays in state and is still submitted.
+function CollapsibleField({
+    open,
+    onToggle,
+    addLabel,
+    label,
+    htmlFor,
+    children,
+}: {
+    open: boolean;
+    onToggle: () => void;
+    addLabel: string;
+    label: string;
+    htmlFor: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="mb-3">
+            {!open ? (
+                <button
+                    type="button"
+                    className="btn btn-link btn-sm p-0 text-decoration-none"
+                    onClick={onToggle}
+                >
+                    {addLabel}
+                </button>
+            ) : (
+                <>
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                        <label
+                            htmlFor={htmlFor}
+                            className="small fw-medium text-body mb-0"
+                        >
+                            {label}
+                        </label>
+                        <button
+                            type="button"
+                            className="btn btn-link btn-sm p-0 text-decoration-none text-muted"
+                            onClick={onToggle}
+                        >
+                            Ukryj
+                        </button>
+                    </div>
+                    {children}
+                </>
+            )}
+        </div>
+    );
+}
+
 export default function FinalizationModal({
     appointment,
     open,
@@ -1204,100 +1256,64 @@ export default function FinalizationModal({
                     )}
                 </div>
 
-                {/* Internal note (staff-only) — optional, collapsed by default */}
-                <div className="mb-3">
-                    {!showNote ? (
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm p-0 text-decoration-none"
-                            onClick={() => setShowNote(true)}
-                        >
-                            + Dodaj notatkę wewnętrzną
-                        </button>
-                    ) : (
-                        <>
-                            <label
-                                htmlFor="fin-note"
-                                className="d-block small fw-medium text-body mb-1"
-                            >
-                                Notatka wewnętrzna (tylko personel)
-                            </label>
-                            <textarea
-                                id="fin-note"
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                                rows={2}
-                                placeholder="Stan włosów, proporcje farb, uwagi dla zespołu..."
-                            />
-                        </>
-                    )}
-                </div>
+                {/* Internal note (staff-only) — optional, expand/collapse */}
+                <CollapsibleField
+                    open={showNote}
+                    onToggle={() => setShowNote((v) => !v)}
+                    addLabel="+ Dodaj notatkę wewnętrzną"
+                    label="Notatka wewnętrzna (tylko personel)"
+                    htmlFor="fin-note"
+                >
+                    <textarea
+                        id="fin-note"
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                        rows={2}
+                        placeholder="Stan włosów, proporcje farb, uwagi dla zespołu..."
+                    />
+                </CollapsibleField>
 
-                {/* Client-visible recommendations — optional, collapsed by default */}
-                <div className="mb-3">
-                    {!showClientNote ? (
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm p-0 text-decoration-none"
-                            onClick={() => setShowClientNote(true)}
-                        >
-                            + Dodaj zalecenia dla klienta
-                        </button>
-                    ) : (
-                        <>
-                            <label
-                                htmlFor="fin-client-note"
-                                className="d-block small fw-medium text-body mb-1"
-                            >
-                                Zalecenia dla klienta (widoczne dla klienta)
-                            </label>
-                            <textarea
-                                id="fin-client-note"
-                                value={clientNote}
-                                onChange={(e) => setClientNote(e.target.value)}
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                                rows={2}
-                                maxLength={1000}
-                                placeholder="Np. pielęgnacja w domu, kiedy umyć włosy, polecane produkty..."
-                            />
-                        </>
-                    )}
-                </div>
+                {/* Client-visible recommendations — optional, expand/collapse */}
+                <CollapsibleField
+                    open={showClientNote}
+                    onToggle={() => setShowClientNote((v) => !v)}
+                    addLabel="+ Dodaj zalecenia dla klienta"
+                    label="Zalecenia dla klienta (widoczne dla klienta)"
+                    htmlFor="fin-client-note"
+                >
+                    <textarea
+                        id="fin-client-note"
+                        value={clientNote}
+                        onChange={(e) => setClientNote(e.target.value)}
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                        rows={2}
+                        maxLength={1000}
+                        placeholder="Np. pielęgnacja w domu, kiedy umyć włosy, polecane produkty..."
+                    />
+                </CollapsibleField>
 
-                {/* Treatment formula — optional, collapsed by default */}
-                <div className="mb-3">
-                    {!showFormula ? (
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm p-0 text-decoration-none"
-                            onClick={() => setShowFormula(true)}
-                        >
-                            + Dodaj recepturę / formułę koloru
-                        </button>
-                    ) : (
-                        <>
-                            <label
-                                htmlFor="fin-formula"
-                                className="d-block small fw-medium text-body mb-1"
-                            >
-                                Receptura / formuła koloru (opcjonalna)
-                            </label>
-                            <textarea
-                                id="fin-formula"
-                                value={formula}
-                                onChange={(e) => setFormula(e.target.value)}
-                                className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
-                                rows={2}
-                                maxLength={1000}
-                                placeholder="Np. kolor 7.1 + 8 vol, 40 min..."
-                            />
-                            <div className="form-text">
-                                Zapisze się w historii klienta razem z wizytą.
-                            </div>
-                        </>
-                    )}
-                </div>
+                {/* Treatment formula — optional, expand/collapse */}
+                <CollapsibleField
+                    open={showFormula}
+                    onToggle={() => setShowFormula((v) => !v)}
+                    addLabel="+ Dodaj recepturę / formułę koloru"
+                    label="Receptura / formuła koloru (opcjonalna)"
+                    htmlFor="fin-formula"
+                >
+                    <textarea
+                        id="fin-formula"
+                        value={formula}
+                        onChange={(e) => setFormula(e.target.value)}
+                        className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
+                        rows={2}
+                        maxLength={1000}
+                        placeholder="Np. kolor 7.1 + 8 vol, 40 min..."
+                    />
+                    <div className="form-text">
+                        Zapisze się w historii klienta razem z wizytą.
+                    </div>
+                </CollapsibleField>
 
                 {/* Summary */}
                 <div className="bg-light rounded-3 p-2 mb-3">
