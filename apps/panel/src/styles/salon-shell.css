@@ -8384,60 +8384,71 @@ th.checkbox_container input[type='checkbox'] {
 .salonbw-datepicker-container {
     padding: 8px 0;
 }
+/* ── Mini-calendar rebuilt from scratch ───────────────────────────────
+   react-datepicker's defaults (inline-block root, floated month-container,
+   fixed 1.7rem day widths + margins) made the day-NUMBER row render wider
+   than the day-NAME row, so the columns drifted and the 7th (Sunday)
+   overflowed/clipped. Force the whole tree to plain full-width blocks and
+   drive BOTH the header row and the week rows off the SAME 7-column grid,
+   with flex-centered cells that fill their column. Now every weekday name
+   sits exactly above its number. */
 .salonbw-datepicker {
     border: none !important;
     font-size: 13px;
-    width: 100%;
 }
-/* react-datepicker's default fixed day widths + margins are wider than the
-   sidebar, so the 7th column (Sunday) overflowed and got clipped — June
-   21/28 etc. vanished off the right edge. Use a 7-column CSS grid for BOTH the
-   day-name header row and the week rows so every column lines up exactly and
-   nothing overflows. (Flex space-between drifted: the header and the weeks live
-   in different containers, so the numbers crept right and the 7th overflowed.)
-   The header container and the month container must be full width with no
-   horizontal padding so the two grids share the same track positions. */
 .salonbw-datepicker,
 .salonbw-datepicker .react-datepicker__month-container,
 .salonbw-datepicker .react-datepicker__header,
-.salonbw-datepicker .react-datepicker__month,
-.salonbw-datepicker .react-datepicker__day-names,
-.salonbw-datepicker .react-datepicker__week {
-    width: 100%;
+.salonbw-datepicker .react-datepicker__month {
+    display: block !important;
+    width: 100% !important;
+    float: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
     box-sizing: border-box;
-    float: none;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
 }
 .salonbw-datepicker .react-datepicker__month {
-    margin-top: 0.4rem;
+    margin-top: 4px !important;
 }
-/* Both rows share an identical 7-column grid on identical-width, zero-inset
-   containers, so every weekday header sits exactly above its number. */
 .salonbw-datepicker .react-datepicker__day-names,
 .salonbw-datepicker .react-datepicker__week {
-    display: grid;
+    display: grid !important;
     grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 .salonbw-datepicker .react-datepicker__day,
 .salonbw-datepicker .react-datepicker__day-name {
-    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
     min-width: 0;
-    margin: 2px 0;
+    height: 26px;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1;
+    box-sizing: border-box;
 }
 .salonbw-datepicker .react-datepicker__header {
     background: #fff;
     border-bottom: 1px solid #f0f3f6;
+    padding-bottom: 4px !important;
+}
+.salonbw-datepicker .react-datepicker__current-month {
+    padding-bottom: 4px;
 }
 .salonbw-datepicker .react-datepicker__day--selected,
 .salonbw-datepicker .react-datepicker__day--keyboard-selected {
     background-color: #0d0d0d;
     color: #fff;
+    border-radius: 4px;
 }
 .salonbw-datepicker .react-datepicker__day:hover {
     background-color: #f0f0f0;
+    border-radius: 4px;
 }
 /* Hide next/previous-month filler days — only the current month's days
    show, so no stray "1 2 3 4" from the following month. Belt-and-suspenders:
