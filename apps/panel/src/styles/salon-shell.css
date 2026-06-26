@@ -8391,23 +8391,31 @@ th.checkbox_container input[type='checkbox'] {
 }
 /* react-datepicker's default fixed day widths + margins are wider than the
    sidebar, so the 7th column (Sunday) overflowed and got clipped — June
-   21/28 etc. vanished off the right edge. Lay the weeks out as flex so all
-   seven columns always fit the container. */
+   21/28 etc. vanished off the right edge. Use a 7-column CSS grid for BOTH the
+   day-name header row and the week rows so every column lines up exactly and
+   nothing overflows. (Flex space-between drifted: the header and the weeks live
+   in different containers, so the numbers crept right and the 7th overflowed.)
+   The header container and the month container must be full width with no
+   horizontal padding so the two grids share the same track positions. */
 .salonbw-datepicker .react-datepicker__month-container {
     width: 100%;
     float: none;
 }
+.salonbw-datepicker .react-datepicker__header {
+    padding-left: 0;
+    padding-right: 0;
+}
 .salonbw-datepicker .react-datepicker__month {
-    margin: 0.4rem 0;
+    margin: 0.4rem 0 0;
+    padding: 0;
 }
 .salonbw-datepicker .react-datepicker__day-names,
 .salonbw-datepicker .react-datepicker__week {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
 }
 .salonbw-datepicker .react-datepicker__day,
 .salonbw-datepicker .react-datepicker__day-name {
-    flex: 1 1 0;
     width: auto;
     min-width: 0;
     margin: 2px 0;
