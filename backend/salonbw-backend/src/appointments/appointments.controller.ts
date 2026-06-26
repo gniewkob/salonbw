@@ -13,6 +13,7 @@ import {
     Query,
     ValidationPipe,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -429,6 +430,9 @@ export class AppointmentsController {
         return updated;
     }
 
+    // Polled by the topbar badge every couple of minutes from every open panel
+    // tab — a cheap authenticated COUNT that must not eat the rate-limit budget.
+    @SkipThrottle()
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get('online-pending-count')

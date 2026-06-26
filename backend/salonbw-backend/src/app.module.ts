@@ -185,8 +185,14 @@ function createThrottlerConfig(config: ConfigService) {
         config.get<string>('THROTTLE_TTL', '60000'),
         'THROTTLE_TTL',
     );
+    // 10/min was far too low for an authenticated SPA — a single calendar page
+    // load fires ~10 calls (profile, events, online-pending-count, alerts…) plus
+    // per-view-switch refetches and the badge poll, so legit users hit 429 and
+    // the calendar silently lost its visits. 120/min gives comfortable headroom;
+    // sensitive endpoints (login 5/min, register 3/min) keep their own stricter
+    // per-route @Throttle overrides regardless of this default.
     const limit = asPositiveNumber(
-        config.get<string>('THROTTLE_LIMIT', '10'),
+        config.get<string>('THROTTLE_LIMIT', '120'),
         'THROTTLE_LIMIT',
     );
     return [{ ttl, limit }];

@@ -13,7 +13,7 @@ Use this guide to configure local, staging, and production environments for Salo
 | `JWT_REFRESH_SECRET` | ✅ | `example_refresh_secret` | Secret for signing refresh tokens. Must differ from `JWT_SECRET`. |
 | `ENABLE_SWAGGER` | ➖ | `false` | Set to `true` to expose Swagger at `/api/docs`. Defaults to disabled; enabling in production logs a warning. |
 | `THROTTLE_TTL` | ➖ | `60000` | Global rate-limit window in milliseconds. Used by the `ThrottlerModule`. |
-| `THROTTLE_LIMIT` | ➖ | `10` | Requests allowed per `THROTTLE_TTL` window. Global default; per-route overrides still apply. |
+| `THROTTLE_LIMIT` | ➖ | `120` | Requests allowed per `THROTTLE_TTL` window. Global default; per-route overrides still apply. |
 | `LOKI_URL` | ➖ | `https://loki.example.com/api/prom/push` | When set, production logs are streamed to Grafana Loki via `pino` transport. |
 | `LOKI_BASIC_AUTH` | ➖ | `username:password` | Optional basic-auth credentials for Loki ingestion. |
 | `CLIENT_LOG_TOKEN` | ➖ | *(unset)* | Shared secret that browser clients must send via `x-log-token` when POSTing to `/logs/client`. Prevents log spam. |
