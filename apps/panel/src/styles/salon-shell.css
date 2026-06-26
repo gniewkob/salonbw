@@ -8413,7 +8413,13 @@ th.checkbox_container input[type='checkbox'] {
 .salonbw-datepicker .react-datepicker__day-names,
 .salonbw-datepicker .react-datepicker__week {
     display: grid !important;
-    grid-template-columns: repeat(7, 1fr);
+    /* minmax(0, 1fr), NOT 1fr: plain `1fr` is minmax(auto, 1fr), so each
+       column can't shrink below its content's min-content width. The day
+       NUMBERS are <button>s (default border/padding/button-font) with a bigger
+       min-content than the <span> day NAMES, so the number columns grew wider
+       and the rows drifted out of alignment. minmax(0, …) forces strictly
+       equal columns regardless of cell type. */
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     width: 100%;
     margin: 0;
     padding: 0;
@@ -8421,6 +8427,15 @@ th.checkbox_container input[type='checkbox'] {
 }
 .salonbw-datepicker .react-datepicker__day,
 .salonbw-datepicker .react-datepicker__day-name {
+    /* Reset the <button> day cells so they size and render exactly like the
+       <span> day-name cells (no UA border/background/font/appearance). */
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
