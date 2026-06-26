@@ -8397,18 +8397,25 @@ th.checkbox_container input[type='checkbox'] {
    in different containers, so the numbers crept right and the 7th overflowed.)
    The header container and the month container must be full width with no
    horizontal padding so the two grids share the same track positions. */
-.salonbw-datepicker .react-datepicker__month-container {
+.salonbw-datepicker,
+.salonbw-datepicker .react-datepicker__month-container,
+.salonbw-datepicker .react-datepicker__header,
+.salonbw-datepicker .react-datepicker__month,
+.salonbw-datepicker .react-datepicker__day-names,
+.salonbw-datepicker .react-datepicker__week {
     width: 100%;
+    box-sizing: border-box;
     float: none;
-}
-.salonbw-datepicker .react-datepicker__header {
+    margin-left: 0;
+    margin-right: 0;
     padding-left: 0;
     padding-right: 0;
 }
 .salonbw-datepicker .react-datepicker__month {
-    margin: 0.4rem 0 0;
-    padding: 0;
+    margin-top: 0.4rem;
 }
+/* Both rows share an identical 7-column grid on identical-width, zero-inset
+   containers, so every weekday header sits exactly above its number. */
 .salonbw-datepicker .react-datepicker__day-names,
 .salonbw-datepicker .react-datepicker__week {
     display: grid;
