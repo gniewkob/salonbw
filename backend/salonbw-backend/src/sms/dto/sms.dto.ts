@@ -8,6 +8,7 @@ import {
     MinLength,
     MaxLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
     TemplateType,
     MessageChannel,
@@ -159,10 +160,14 @@ export class SmsHistoryFilterDto {
     @IsOptional()
     status?: string;
 
+    // Query params arrive as strings — @Type coerces to number before
+    // @IsNumber runs, otherwise these fail validation with a 400.
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     recipientId?: number;
 
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     appointmentId?: number;
@@ -175,10 +180,12 @@ export class SmsHistoryFilterDto {
     @IsOptional()
     to?: string;
 
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     page?: number;
 
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     limit?: number;
