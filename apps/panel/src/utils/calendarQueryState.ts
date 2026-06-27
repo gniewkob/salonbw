@@ -36,21 +36,11 @@ export function deriveCalendarQueryState(
             : new Date();
 
     const viewParam = getFirstQueryValue(query.view);
-    if (viewParam === 'client') {
-        return {
-            currentDate,
-            currentView: 'month',
-            employeeMode: false,
-            clientMode: true,
-            selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
-        };
-    }
     if (viewParam === 'employee' || viewParam === 'staff') {
         return {
             currentDate,
             currentView: 'day',
             employeeMode: true,
-            clientMode: false,
             selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
         };
     }
@@ -64,7 +54,6 @@ export function deriveCalendarQueryState(
             currentDate,
             currentView: viewParam,
             employeeMode: false,
-            clientMode: false,
             selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
         };
     }
@@ -73,7 +62,6 @@ export function deriveCalendarQueryState(
         currentDate,
         currentView: 'day',
         employeeMode: false,
-        clientMode: false,
         selectedEmployeeIds: parseEmployeeIdsParam(query.employeeIds),
     };
 }

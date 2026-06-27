@@ -11,7 +11,6 @@ export interface CalendarViewState {
     currentDate: Date;
     currentView: CalendarViewType;
     employeeMode: boolean;
-    clientMode: boolean;
     employeeArchiveMode: boolean;
     selectedEmployeeIds: number[];
     queryStateReady: boolean;
@@ -21,7 +20,6 @@ export interface CalendarViewActions {
     setCurrentDate: React.Dispatch<React.SetStateAction<Date>>;
     setCurrentView: React.Dispatch<React.SetStateAction<CalendarViewType>>;
     setEmployeeMode: React.Dispatch<React.SetStateAction<boolean>>;
-    setClientMode: React.Dispatch<React.SetStateAction<boolean>>;
     setEmployeeArchiveMode: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedEmployeeIds: React.Dispatch<React.SetStateAction<number[]>>;
 }
@@ -42,7 +40,6 @@ export function useCalendarUrlSync(): CalendarUrlSyncHook {
     const [employeeMode, setEmployeeMode] = useState(
         initialQueryState.employeeMode,
     );
-    const [clientMode, setClientMode] = useState(initialQueryState.clientMode);
     const [employeeArchiveMode, setEmployeeArchiveMode] = useState(false);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
         initialQueryState.selectedEmployeeIds,
@@ -63,9 +60,6 @@ export function useCalendarUrlSync(): CalendarUrlSyncHook {
         setEmployeeMode((current) =>
             current === next.employeeMode ? current : next.employeeMode,
         );
-        setClientMode((current) =>
-            current === next.clientMode ? current : next.clientMode,
-        );
         setSelectedEmployeeIds((current) =>
             areIdsEqual(current, next.selectedEmployeeIds)
                 ? current
@@ -84,14 +78,12 @@ export function useCalendarUrlSync(): CalendarUrlSyncHook {
         currentDate,
         currentView,
         employeeMode,
-        clientMode,
         employeeArchiveMode,
         selectedEmployeeIds,
         queryStateReady,
         setCurrentDate,
         setCurrentView,
         setEmployeeMode,
-        setClientMode,
         setEmployeeArchiveMode,
         setSelectedEmployeeIds,
     };

@@ -12,7 +12,6 @@ import ReceptionView from '@/components/calendar/ReceptionView';
 import MobileReceptionListView from '@/components/calendar/MobileReceptionListView';
 import MobileReceptionFiltersSheet from '@/components/calendar/MobileReceptionFiltersSheet';
 import StaffAppointmentCalendarView from '@/components/calendar/StaffAppointmentCalendarView';
-import ClientAppointmentHistoryView from '@/components/calendar/ClientAppointmentHistoryView';
 import ReceptionInsightsPanel from '@/components/calendar/ReceptionInsightsPanel';
 import ReceptionFollowUpPanel from '@/components/calendar/ReceptionFollowUpPanel';
 import ReceptionFollowUpAuditPanel from '@/components/calendar/ReceptionFollowUpAuditPanel';
@@ -104,7 +103,6 @@ export default function CalendarPage() {
         currentDate,
         currentView,
         employeeMode,
-        clientMode,
         employeeArchiveMode,
         selectedEmployeeIds,
         queryStateReady,
@@ -262,7 +260,7 @@ export default function CalendarPage() {
         statsError: customerAlertStatsError,
         retry: retryCustomerAlertStats,
     } = useCustomerAlerts({
-        enabled: currentView === 'reception' && !clientMode,
+        enabled: currentView === 'reception',
         visibleCustomerIds,
         apiFetch,
     });
@@ -452,46 +450,6 @@ export default function CalendarPage() {
         });
     }, [appointmentsById, employeeArchiveMode, role, user?.id]);
 
-    const clientAppointments = useMemo(() => {
-        const list = Array.from(appointmentsById.values());
-        if (role !== 'client' || !user?.id) {
-            return [];
-        }
-        return list.filter((appointment) => appointment.client?.id === user.id);
-    }, [appointmentsById, role, user?.id]);
-
-    const clientFutureAppointments = useMemo(() => {
-        const now = Date.now();
-        const archiveStatuses = new Set(['completed', 'cancelled', 'no_show']);
-        return clientAppointments
-            .filter((appointment) => {
-                const status = appointment.status ?? 'scheduled';
-                const startTs = new Date(appointment.startTime).getTime();
-                return !archiveStatuses.has(status) && startTs >= now;
-            })
-            .sort(
-                (left, right) =>
-                    new Date(left.startTime).getTime() -
-                    new Date(right.startTime).getTime(),
-            );
-    }, [clientAppointments]);
-
-    const clientArchivedAppointments = useMemo(() => {
-        const now = Date.now();
-        const archiveStatuses = new Set(['completed', 'cancelled', 'no_show']);
-        return clientAppointments
-            .filter((appointment) => {
-                const status = appointment.status ?? 'scheduled';
-                const startTs = new Date(appointment.startTime).getTime();
-                return archiveStatuses.has(status) || startTs < now;
-            })
-            .sort(
-                (left, right) =>
-                    new Date(right.startTime).getTime() -
-                    new Date(left.startTime).getTime(),
-            );
-    }, [clientAppointments]);
-
     const receptionDailySummary = useMemo(() => {
         const allAppointments = Array.from(appointmentsById.values());
         const toFinalize = allAppointments.filter(
@@ -571,7 +529,7 @@ export default function CalendarPage() {
     const updateCalendarQuery = (
         next: Partial<{
             date: string;
-            view: CalendarViewType | 'employee' | 'staff' | 'client';
+            view: CalendarViewType | 'employee' | 'staff';
             employeeIds: number[];
         }>,
     ) => {
@@ -685,7 +643,7 @@ export default function CalendarPage() {
                         items={[{ label: 'Kalendarz' }]}
                     />
 
-                    {!employeeMode && !clientMode && (
+                    {!employeeMode && (
                         <CalendarHeader
                             date={currentDate}
                             view={currentView}
@@ -742,8 +700,7 @@ export default function CalendarPage() {
                                 {deepLinkError}
                             </div>
                         ) : null}
-                        {(currentView === 'reception' ||
-                            (isMobile && !clientMode)) &&
+                        {(currentView === 'reception' || isMobile) &&
                         !employeeMode ? (
                             <div className="d-flex flex-column gap-3">
                                 {isMobile && currentView !== 'reception' ? (
@@ -1301,52 +1258,6 @@ export default function CalendarPage() {
                                     }}
                                 />
                             </div>
-                        ) : clientMode ? (
-                            <ClientAppointmentHistoryView
-                                currentDateParam={toDateParam(currentDate)}
-                                futureAppointments={clientFutureAppointments}
-                                archivedAppointments={
-                                    clientArchivedAppointments
-                                }
-                                onDateChange={(nextDate) => {
-                                    setCurrentDate(nextDate);
-                                    updateCalendarQuery({
-                                        date: toDateParam(nextDate),
-                                        view: 'client',
-                                    });
-                                }}
-                                onRequestCancellation={async (
-                                    appointmentId,
-                                ) => {
-                                    await apiFetch(
-                                        `/appointments/${appointmentId}/cancellation-request`,
-                                        {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type':
-                                                    'application/json',
-                                            },
-                                            body: JSON.stringify({}),
-                                        },
-                                    );
-                                }}
-                                onAcceptReschedule={async (appointmentId) => {
-                                    await apiFetch(
-                                        `/appointments/${appointmentId}/status`,
-                                        {
-                                            method: 'PATCH',
-                                            headers: {
-                                                'Content-Type':
-                                                    'application/json',
-                                            },
-                                            body: JSON.stringify({
-                                                status: 'confirmed',
-                                            }),
-                                        },
-                                    );
-                                    void refetch();
-                                }}
-                            />
                         ) : (
                             <CalendarView
                                 events={data?.events ?? []}
@@ -1391,7 +1302,7 @@ export default function CalendarPage() {
                 </div>
 
                 {/* FAB: floating action button for new appointment (Versum/Booksy style) */}
-                {!employeeMode && !clientMode && (
+                {!employeeMode && (
                     <button
                         type="button"
                         aria-label="Nowa wizyta"

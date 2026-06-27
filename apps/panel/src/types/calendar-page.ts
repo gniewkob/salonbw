@@ -137,6 +137,5 @@ export type CalendarQueryState = {
     currentDate: Date;
     currentView: import('@/types').CalendarView;
     employeeMode: boolean;
-    clientMode: boolean;
     selectedEmployeeIds: number[];
 };
