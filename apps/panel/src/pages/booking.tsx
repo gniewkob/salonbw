@@ -237,9 +237,10 @@ export default function BookingPage() {
                                         setCreatedAppointmentId(null);
                                     }}
                                     onHistory={() =>
-                                        void router.push(
-                                            '/calendar?view=client',
-                                        )
+                                        // Clients can't access /calendar (staff-only,
+                                        // RouteGuard nav:calendar → 403). Their visit
+                                        // history lives on the client dashboard.
+                                        void router.push('/dashboard')
                                     }
                                 />
                             ) : (
