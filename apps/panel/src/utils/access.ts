@@ -20,12 +20,13 @@ export type Permission =
     | 'nav:settings';
 
 const rolePermissions: Record<Role, Set<Permission>> = {
-    client: new Set([
-        'dashboard:client',
-        'nav:appointments',
-        'nav:invoices',
-        'nav:reviews',
-    ]),
+    // Clients reach their modules via `dashboard:client` (dashboard + booking
+    // rail) and role-based RouteGuards (booking.tsx is roles={['client']}).
+    // nav:appointments/invoices/reviews were vestigial — the staff pages they
+    // map to are role-blocked anyway, except /reviews which guards only on the
+    // permission, so a client could load the (empty, 403-data) staff reviews
+    // manager. Least privilege: dashboard:client only.
+    client: new Set(['dashboard:client']),
     employee: new Set([
         'dashboard:employee',
         'nav:appointments',
