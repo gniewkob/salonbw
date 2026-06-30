@@ -3,3 +3,68 @@ packages:
   - "apps/*"
   - "packages/*"
   - "backend/*"
+
+onlyBuiltDependencies:
+  - cypress
+
+overrides:
+  axios: ^1.18.1
+  next: 15.5.18
+  qs: ">=6.15.2"
+  validator: ^13.15.20
+  tar-fs: ^3.0.5
+  tar: ">=7.5.16"
+  glob: ^10.5.0
+  cross-spawn: ^7.0.6
+  micromatch: ^4.0.8
+  nanoid: ^3.3.8
+  path-to-regexp: ^0.1.13
+  body-parser: ^1.20.3
+  express: ^4.21.2
+  cookie: ^0.7.2
+  rand-token: workspace:rand-token@1.0.1
+  fast-xml-parser: ">=5.7.0"
+  fast-xml-builder: ">=1.1.7"
+  flatted: ">=3.4.0"
+  socket.io-parser: ">=4.2.6"
+  minimatch: ^3.1.5
+  systeminformation: ^5.31.6
+  rollup: ^4.59.0
+  serialize-javascript: ^7.0.5
+  handlebars: ^4.7.9
+  fast-uri: ^3.1.2
+  lodash: ^4.18.1
+  ip-address: ^10.2.0
+  follow-redirects: ^1.16.0
+  ws: ^8.21.0
+  multer: ^2.2.0
+  ajv: ^8.20.0
+  eslint>ajv: 6.14.0
+  "@eslint/eslintrc>ajv": 6.14.0
+  js-cookie: ">=3.0.7"
+  yaml: ">=2.8.3"
+  uuid: ^11.1.1
+  postcss: ^8.5.14
+  min-document: ^2.19.1
+  typeorm>uuid: ^11.1.1
+  micromatch>picomatch: ^2.3.2
+  anymatch>picomatch: ^2.3.2
+  tinyglobby>picomatch: ^4.0.4
+  "@angular-devkit/core>picomatch": ^4.0.4
+  jest-util>picomatch: ^4.0.4
+  "@rollup/pluginutils>picomatch": ^4.0.4
+  "@rollup/plugin-commonjs>picomatch": ^4.0.4
+  "http-proxy-agent>@tootallnate/once": ^3.0.1
+  tmp: ^0.2.7
+  form-data: ^4.0.6
+  joi: ^18.2.1
+  "@opentelemetry/core": ^2.8.0
+  "@nestjs/mapped-types": ^2.1.1
+  "@babel/core": ^7.29.7
+  js-yaml: ^4.2.0
+  "@istanbuljs/load-nyc-config>js-yaml": ^3.15.0
+
+auditConfig:
+  ignoreCves:
+    - CVE-2023-30533
+    - CVE-2024-22363

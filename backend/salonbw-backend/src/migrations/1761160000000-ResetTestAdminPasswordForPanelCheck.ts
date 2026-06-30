@@ -12,7 +12,10 @@ export class ResetTestAdminPasswordForPanelCheck1761160000000
         await queryRunner.query(
             `UPDATE "users" SET "password" = $2::text, "updatedAt" = now()
              WHERE "email" = $1::text`,
-            ['test.admin@salon-bw.pl', '$2b$10$OAE1qrIe34/vJRw0dcbXseuAXPNMjB1p8131FhDKcrpJS3PeBO05C'],
+            [
+                'test.admin@salon-bw.pl',
+                '$2b$10$OAE1qrIe34/vJRw0dcbXseuAXPNMjB1p8131FhDKcrpJS3PeBO05C',
+            ],
         );
     }
 
