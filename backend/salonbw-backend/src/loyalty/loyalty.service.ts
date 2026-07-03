@@ -261,10 +261,14 @@ export class LoyaltyService {
                 );
             }
 
-            balance.currentBalance = newBalance;
             if (dto.points > 0) {
+                balance.currentBalance = newBalance;
                 balance.totalPointsEarned += dto.points;
             } else {
+                // deductPoints decrements currentBalance/totalPointsSpent
+                // itself — pre-assigning newBalance here made it validate
+                // against the already-reduced balance (every negative adjust
+                // failed with "Dostępne: 0") and would double-deduct.
                 await this.deductPoints(balance, Math.abs(dto.points), manager);
             }
             await manager.getRepository(LoyaltyBalance).save(balance);
