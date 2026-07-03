@@ -216,17 +216,31 @@ export class StocktakingService {
             where: { isActive: true, trackStock: true },
         });
 
-        const items = products.map((product) =>
-            this.stocktakingItemRepository.create({
-                stocktakingId: id,
-                productId: product.id,
-                systemQuantity: product.stock,
-                countedQuantity: null,
-                difference: null,
-            }),
-        );
+        // Idempotent re-start: a previously interrupted start may have left
+        // item rows behind (item insert and status change are separate
+        // statements) — only insert products that don't have a row yet,
+        // otherwise the unique (stocktakingId, productId) key 500s.
+        const existing = await this.stocktakingItemRepository.find({
+            where: { stocktakingId: id },
+            select: ['productId'],
+        });
+        const alreadyAdded = new Set(existing.map((item) => item.productId));
 
-        await this.stocktakingItemRepository.save(items);
+        const items = products
+            .filter((product) => !alreadyAdded.has(product.id))
+            .map((product) =>
+                this.stocktakingItemRepository.create({
+                    stocktakingId: id,
+                    productId: product.id,
+                    systemQuantity: product.stock,
+                    countedQuantity: null,
+                    difference: null,
+                }),
+            );
+
+        if (items.length > 0) {
+            await this.stocktakingItemRepository.save(items);
+        }
 
         // Targeted update, NOT a full-entity save: findOne loaded the (then
         // empty) items relation, so save() would "reconcile" it by nulling
