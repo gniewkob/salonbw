@@ -2788,7 +2788,9 @@ body.e2e-extension .main-content .inner {
 .sidenav .nav-list li button:hover,
 .sidenav .nav-list li.active a,
 .sidenav .nav-list li.active button {
-    color: var(--salon-accent);
+    /* Silver --salon-accent as TEXT on this light bg is ~2:1 (WCAG fail) —
+       active/hover sidenav items read in brand black like the .tree sidebar. */
+    color: #0d0d0d;
     background: #eef3f7;
 }
 
