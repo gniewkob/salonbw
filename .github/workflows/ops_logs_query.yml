@@ -1,0 +1,66 @@
+name: Ops — Loki log query
+
+# Ad-hoc production log inspection without SSH: runs a LogQL query against
+# Loki (same credentials as ops_batch_stats_alerts) and prints matching
+# lines in the job log. Use for debugging 500s when you need the stack trace.
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'LogQL query, e.g. {service="salonbw-backend"} |= "deliveries"'
+        required: true
+        default: '{service="salonbw-backend"} | json | level="error"'
+      minutes:
+        description: 'How many minutes back to search'
+        required: false
+        default: '60'
+      limit:
+        description: 'Max log lines'
+        required: false
+        default: '50'
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query Loki
+        env:
+          LOKI_QUERY_URL: ${{ secrets.LOKI_QUERY_URL }}
+          LOKI_BASIC_AUTH: ${{ secrets.LOKI_BASIC_AUTH }}
+          QUERY: ${{ inputs.query }}
+          MINUTES: ${{ inputs.minutes }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          set -euo pipefail
+          BASE="${LOKI_QUERY_URL:-https://observability.salon-bw.pl/loki}"
+          BASE="${BASE%/}"
+          # Accept either .../loki or a full query_range URL in the secret.
+          case "$BASE" in
+            *query_range) URL="$BASE" ;;
+            *) URL="$BASE/api/v1/query_range" ;;
+          esac
+          END=$(date +%s)
+          START=$((END - MINUTES * 60))
+          echo "Query: $QUERY (last ${MINUTES}m, limit ${LIMIT})"
+          curl -sS -G "$URL" \
+            ${LOKI_BASIC_AUTH:+-u "$LOKI_BASIC_AUTH"} \
+            --data-urlencode "query=$QUERY" \
+            --data-urlencode "start=${START}000000000" \
+            --data-urlencode "end=${END}000000000" \
+            --data-urlencode "limit=$LIMIT" \
+            --data-urlencode "direction=backward" \
+            -o /tmp/loki.json -w 'HTTP %{http_code}\n'
+          python3 - <<'PY'
+          import json
+          d = json.load(open('/tmp/loki.json'))
+          streams = d.get('data', {}).get('result', [])
+          n = 0
+          for s in streams:
+              for ts, line in s.get('values', []):
+                  n += 1
+                  print('—' * 80)
+                  print(line[:4000])
+          print('—' * 80)
+          print(f'{n} line(s) matched')
+          PY
