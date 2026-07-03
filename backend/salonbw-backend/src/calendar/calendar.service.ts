@@ -143,9 +143,13 @@ export class CalendarService {
             );
         }
 
-        if (employee.role !== Role.Employee) {
+        // Role ≠ bookability (see appointment-employee-role-vs-bookability):
+        // the owner-stylist is role=admin, so requiring role===Employee made
+        // it impossible to add her own breaks/vacations. Only clients are
+        // invalid targets for time blocks.
+        if (employee.role === Role.Client) {
             throw new BadRequestException(
-                'Time blocks can only target employees',
+                'Time blocks can only target staff members',
             );
         }
 

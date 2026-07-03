@@ -428,9 +428,13 @@ export class SettingsService {
 
     // Reminder Settings
     async getReminderSettings(): Promise<ReminderSettings> {
-        let settings = await this.reminderSettingsRepo.findOne({
+        // findOne without `where` throws in TypeORM 0.3 ("You must provide
+        // selection conditions...") — singleton row fetched via find+take.
+        const [first] = await this.reminderSettingsRepo.find({
             order: { id: 'ASC' },
+            take: 1,
         });
+        let settings = first ?? null;
 
         if (!settings) {
             settings = this.reminderSettingsRepo.create({});
