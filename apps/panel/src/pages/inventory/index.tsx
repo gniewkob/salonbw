@@ -192,6 +192,7 @@ export default function InventoryHistoryPage() {
                     <div className="form_pagination">
                         <input
                             type="text"
+                            aria-label="strona"
                             value={safePage}
                             onChange={(event) => {
                                 const next = Number(event.target.value);

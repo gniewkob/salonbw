@@ -566,6 +566,7 @@ export default function TimetableTemplatesPage() {
                                                     type="text"
                                                     name="page"
                                                     id="page"
+                                                    aria-label="strona"
                                                     value="1"
                                                     readOnly
                                                     className="pagination-page-input"
