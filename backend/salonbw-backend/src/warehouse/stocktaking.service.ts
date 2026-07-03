@@ -228,8 +228,12 @@ export class StocktakingService {
 
         await this.stocktakingItemRepository.save(items);
 
-        stocktaking.status = StocktakingStatus.InProgress;
-        await this.stocktakingRepository.save(stocktaking);
+        // Targeted update, NOT a full-entity save: findOne loaded the (then
+        // empty) items relation, so save() would "reconcile" it by nulling
+        // stocktakingId on the rows we just inserted (500 on the FK).
+        await this.stocktakingRepository.update(id, {
+            status: StocktakingStatus.InProgress,
+        });
 
         await this.logService.logAction(actor, LogAction.STOCKTAKING_CREATED, {
             entity: 'stocktaking',
