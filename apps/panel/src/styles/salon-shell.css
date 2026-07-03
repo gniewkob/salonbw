@@ -3368,7 +3368,7 @@ body.e2e-statistics .main-content .inner {
 .stats-tab-link {
     display: block;
     padding: 8px 20px;
-    color: #3795de;
+    color: #6e7278;
     text-decoration: none;
     font-size: 13px;
     font-weight: 400;
@@ -3577,12 +3577,12 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
 .column_row.secondary_menu .simple-list li.active a {
     font-size: 11px;
     font-weight: 700;
-    color: #3795de;
-    border-bottom: 4px solid #3795de;
+    color: #0d0d0d;
+    border-bottom: 4px solid #0d0d0d;
     padding-top: 8px;
 }
 .column_row.secondary_menu .simple-list li.active a .icon {
-    color: #3795de;
+    color: #0d0d0d;
 }
 
 /* .icon_link — warehouse action icons (.icon_link.stockroom_sell etc.) */
@@ -4020,7 +4020,7 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     height: 28px;
     padding: 5px;
     font-size: 13px;
-    border: 1px solid #8bcafb;
+    border: 1px solid #bfbfbf;
     background: #fff;
     color: #313140;
     margin-right: 5px;
@@ -4586,7 +4586,7 @@ body.settings-dashboard-landing .main-content > .inner {
     .simple_form.edit_branch
     .add_phone_number
     button:hover {
-    color: #3795de;
+    color: #1a1a1a;
 }
 
 .settings-branch-form__remove-phone {
@@ -5071,7 +5071,7 @@ body.settings-dashboard-landing .main-content > .inner {
 .settings-employee-activity-page__details-link {
     background: transparent;
     border: 0;
-    color: #3795de;
+    color: #1a1a1a;
     padding: 0;
 }
 
@@ -5154,7 +5154,7 @@ body.settings-dashboard-landing .main-content > .inner {
 .settings-payment-page__learn-more {
     background: transparent;
     border: 0;
-    color: #3795de;
+    color: #1a1a1a;
     cursor: pointer;
     font-size: 14px;
     padding: 0;
@@ -5359,7 +5359,7 @@ body.settings-dashboard-landing .main-content > .inner {
 .sms-settings-page__link-button {
     background: transparent;
     border: 0;
-    color: #3795de;
+    color: #1a1a1a;
     cursor: pointer;
     padding: 0;
 }
@@ -5489,7 +5489,7 @@ body.settings-dashboard-landing .main-content > .inner {
 .timetable-employees-page__link-button {
     background: transparent;
     border: 0;
-    color: #3795de;
+    color: #1a1a1a;
     cursor: pointer;
     padding: 0;
 }
@@ -5890,7 +5890,7 @@ body.e2e-extension .main-content .inner.extension_info {
 
 .ext_info .more {
     float: left;
-    color: #3795de;
+    color: #1a1a1a;
     font-size: 13px;
     margin-top: 10px;
 }
@@ -7754,11 +7754,16 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 /* ─── Missing semantic classes: warehouse, customer, product modules ──────── */
 
-/* Table cell text wrap */
+/* Table cell text wrap. NOTE: the old max-width: 0 collapsed the column to
+   min-content in auto table layout (sales history "Nazwa" rendered one
+   character per line). Plain .wrap just wraps; name/link cells get a
+   minimum so the first column keeps readable width. */
 .wrap {
     word-wrap: break-word;
     word-break: break-word;
-    max-width: 0;
+}
+td.wrap.link_body {
+    min-width: 180px;
 }
 
 /* Colored text */
