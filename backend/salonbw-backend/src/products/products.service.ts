@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import { Product, ProductType } from './product.entity';
@@ -538,7 +542,23 @@ export class ProductsService {
 
     async remove(id: number, user: User): Promise<void> {
         const product = await this.findOne(id);
-        await this.productsRepository.delete(id);
+        try {
+            await this.productsRepository.delete(id);
+        } catch (error) {
+            // Postgres FK violation (23503): the product is referenced by
+            // sales/usage/recipe history — hard delete would orphan records.
+            const code =
+                (error as { code?: string; driverError?: { code?: string } })
+                    ?.code ??
+                (error as { driverError?: { code?: string } })?.driverError
+                    ?.code;
+            if (code === '23503') {
+                throw new BadRequestException(
+                    'Produkt ma powiązaną historię (sprzedaż, zużycie lub receptury) — oznacz go jako nieaktywny zamiast usuwać.',
+                );
+            }
+            throw error;
+        }
         try {
             await this.logService.logAction(user, LogAction.PRODUCT_DELETED, {
                 productId: product.id,
