@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Customer } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { trackReceptionAction } from '../receptionTelemetry';
 
 function formatDateTime(value: string | null | undefined): string {
@@ -10,6 +12,80 @@ function formatDateTime(value: string | null | undefined): string {
         dateStyle: 'medium',
         timeStyle: 'short',
     });
+}
+
+interface RecentVisit {
+    id: number;
+    date: string;
+    service: { id: number; name: string } | null;
+    notes: string | null;
+}
+
+/**
+ * Quick "what was done recently" — the answer Aleksandra needs the moment a
+ * client is picked or a visit opened, without leaving the calendar. Last 3
+ * completed visits with the client-visible note (recommendations).
+ */
+function RecentVisits({ customerId }: { customerId: number }) {
+    const { apiFetch } = useAuth();
+    const [visits, setVisits] = useState<RecentVisit[] | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        setVisits(null);
+        apiFetch<{ items: RecentVisit[] }>(
+            `/customers/${customerId}/events-history?limit=3&status=completed`,
+        )
+            .then((data) => {
+                if (!cancelled) setVisits(data.items ?? []);
+            })
+            .catch(() => {
+                if (!cancelled) setVisits([]);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch, customerId]);
+
+    return (
+        <div className="mt-2 pt-2 border-top small">
+            <strong className="d-block mb-1">Ostatnie wizyty</strong>
+            {visits === null ? (
+                <div className="text-muted">Ładowanie…</div>
+            ) : visits.length === 0 ? (
+                <div className="text-muted">Brak odbytych wizyt.</div>
+            ) : (
+                <div className="d-flex flex-column gap-1">
+                    {visits.map((visit) => (
+                        <div key={visit.id}>
+                            <span className="text-muted">
+                                {new Date(visit.date).toLocaleDateString(
+                                    'pl-PL',
+                                    { day: 'numeric', month: 'short' },
+                                )}
+                            </span>{' '}
+                            <strong>
+                                {visit.service?.name ?? 'Usługa usunięta'}
+                            </strong>
+                            {visit.notes && (
+                                <div
+                                    className="text-muted"
+                                    style={{
+                                        overflow: 'hidden',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                    }}
+                                >
+                                    {visit.notes}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }
 
 interface CustomerStats {
@@ -278,6 +354,15 @@ export default function ClientSection({
                         )}
                     </div>
                 )}
+
+                {(() => {
+                    const selectedCustomerId =
+                        appointment?.client?.id ??
+                        (typeof clientId === 'number' ? clientId : null);
+                    return selectedCustomerId ? (
+                        <RecentVisits customerId={selectedCustomerId} />
+                    ) : null;
+                })()}
             </div>
 
             {appointment &&

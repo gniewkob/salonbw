@@ -6,8 +6,23 @@ import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
 import { usePendingBookingsCount } from '@/hooks/useAppointments';
 
+interface OmniboxCustomer {
+    id: number;
+    name?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+}
+
+function customerLabel(customer: OmniboxCustomer): string {
+    const composed = [customer.firstName, customer.lastName]
+        .filter(Boolean)
+        .join(' ');
+    return customer.name || composed || `Klient #${customer.id}`;
+}
+
 export default function SalonTopbar() {
-    const { user, logout } = useAuth();
+    const { user, logout, apiFetch } = useAuth();
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
@@ -18,6 +33,78 @@ export default function SalonTopbar() {
     const tasksMenuRef = useRef<HTMLLIElement>(null);
     const topbar = buildTopbarViewModel(user);
     const tasksCount = Math.max(topbar.tasks.count ?? 0, pendingCount);
+
+    // ── Global client search (omnibox) ─────────────────────────────────
+    const isStaff = user?.role !== 'client';
+    const searchRef = useRef<HTMLLIElement>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<OmniboxCustomer[]>([]);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [searchActive, setSearchActive] = useState(-1);
+
+    useEffect(() => {
+        if (!isStaff) return;
+        const query = searchQuery.trim();
+        if (query.length < 2) {
+            setSearchResults([]);
+            setSearchOpen(false);
+            return;
+        }
+        let cancelled = false;
+        const timer = setTimeout(() => {
+            apiFetch<{ items?: OmniboxCustomer[] } | OmniboxCustomer[]>(
+                `/customers?search=${encodeURIComponent(query)}&limit=8`,
+            )
+                .then((data) => {
+                    if (cancelled) return;
+                    const items = Array.isArray(data)
+                        ? data
+                        : (data.items ?? []);
+                    setSearchResults(items.slice(0, 8));
+                    setSearchOpen(true);
+                    setSearchActive(-1);
+                })
+                .catch(() => {
+                    if (!cancelled) setSearchResults([]);
+                });
+        }, 250);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [searchQuery, apiFetch, isStaff]);
+
+    const goToCustomer = (customer: OmniboxCustomer) => {
+        setSearchOpen(false);
+        setSearchQuery('');
+        void router.push(`/customers/${customer.id}`);
+    };
+
+    const handleSearchKeyDown = (
+        event: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
+        if (!searchOpen || searchResults.length === 0) {
+            if (event.key === 'Escape') {
+                setSearchQuery('');
+                setSearchOpen(false);
+            }
+            return;
+        }
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            setSearchActive((i) => (i + 1) % searchResults.length);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            setSearchActive(
+                (i) => (i - 1 + searchResults.length) % searchResults.length,
+            );
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            goToCustomer(searchResults[Math.max(searchActive, 0)]);
+        } else if (event.key === 'Escape') {
+            setSearchOpen(false);
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (
@@ -40,6 +127,12 @@ export default function SalonTopbar() {
                 !tasksMenuRef.current.contains(event.target as Node)
             ) {
                 setTasksMenuOpen(false);
+            }
+            if (
+                searchRef.current &&
+                !searchRef.current.contains(event.target as Node)
+            ) {
+                setSearchOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -107,20 +200,80 @@ export default function SalonTopbar() {
             </div>
             <div className="ms-auto">
                 <ul className="navbar-right simple-list d-flex">
-                    <li className="d-flex">
-                        <div className="omnibox-wrapper">
-                            <input
-                                className="omnibox"
-                                data-search-url={topbar.search.searchUrl}
-                                id="omnibox"
-                                placeholder={topbar.search.placeholder}
-                            />
-                            <div
-                                className="dropdown-menu"
-                                id="omnibox-results"
-                            ></div>
-                        </div>
-                    </li>
+                    {isStaff && (
+                        <li className="d-flex" ref={searchRef}>
+                            <div className="omnibox-wrapper position-relative">
+                                <input
+                                    className="omnibox"
+                                    id="omnibox"
+                                    type="search"
+                                    autoComplete="off"
+                                    placeholder="Szukaj klientki..."
+                                    aria-label="Szukaj klientki po imieniu, nazwisku lub telefonie"
+                                    value={searchQuery}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
+                                    onFocus={() => {
+                                        if (searchResults.length > 0) {
+                                            setSearchOpen(true);
+                                        }
+                                    }}
+                                    onKeyDown={handleSearchKeyDown}
+                                />
+                                {searchOpen && (
+                                    <div
+                                        className="dropdown-menu show"
+                                        id="omnibox-results"
+                                        style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            right: 0,
+                                            minWidth: 280,
+                                            maxHeight: 320,
+                                            overflowY: 'auto',
+                                        }}
+                                    >
+                                        {searchResults.length === 0 ? (
+                                            <div className="dropdown-item-text text-muted small">
+                                                Brak wyników dla „
+                                                {searchQuery.trim()}&rdquo;
+                                            </div>
+                                        ) : (
+                                            searchResults.map(
+                                                (customer, index) => (
+                                                    <button
+                                                        key={customer.id}
+                                                        type="button"
+                                                        className={`dropdown-item${index === searchActive ? ' active' : ''}`}
+                                                        onClick={() =>
+                                                            goToCustomer(
+                                                                customer,
+                                                            )
+                                                        }
+                                                        onMouseEnter={() =>
+                                                            setSearchActive(
+                                                                index,
+                                                            )
+                                                        }
+                                                    >
+                                                        {customerLabel(
+                                                            customer,
+                                                        )}
+                                                        {customer.phone && (
+                                                            <span className="text-muted small ms-2">
+                                                                {customer.phone}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                ),
+                                            )
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </li>
+                    )}
                     {topbar.notifications.enabled ? (
                         <li
                             className="notification_center"

@@ -625,6 +625,10 @@ export class CustomerStatisticsService {
                     : null,
                 status: a.status,
                 price: a.paidAmount || a.service?.price || 0,
+                // Client-visible visit note (incl. salon recommendations) —
+                // powers the quick "what was done recently" preview in the
+                // appointment drawer.
+                notes: a.notes ?? null,
             })),
             ...(counts ? { counts } : {}),
             total,
