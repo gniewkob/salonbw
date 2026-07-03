@@ -94,6 +94,7 @@ export class DeliveriesService {
             invoiceNumber: dto.invoiceNumber,
             notes: dto.notes,
             status: DeliveryStatus.Draft,
+            totalCost: 0,
         });
 
         const saved = await this.deliveryRepository.save(delivery);
