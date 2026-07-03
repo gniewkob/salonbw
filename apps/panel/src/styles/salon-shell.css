@@ -461,13 +461,14 @@ textarea.form-control {
 }
 
 .form-control:focus {
-    border-color: #9ccdf2;
-    box-shadow: 0 0 0 3px rgba(82, 168, 232, 0.18);
+    border-color: #8e9298;
+    box-shadow: 0 0 0 3px rgba(13, 13, 13, 0.12);
 }
 
 .btn-danger {
-    background: #e74c3c;
-    border: 1px solid #d64233;
+    /* #e74c3c gave 3.82:1 with white text (WCAG fail) — #c0392b is 5.44:1. */
+    background: #c0392b;
+    border: 1px solid #a93226;
     color: #fff;
 }
 
@@ -1627,7 +1628,8 @@ tr.customer-row:hover .customers-drag-handle {
 }
 
 .customer-communication-consent__no {
-    color: #e74c3c;
+    /* #e74c3c on white is 3.82:1 — #c0392b passes AA for small text. */
+    color: #c0392b;
 }
 
 .customer-communication-consent__text {
