@@ -2117,7 +2117,10 @@ h3 {
 .sidenav .nav-list li a:hover,
 .sidenav .nav-list li.active a {
     background: #f0f4f8;
-    color: #b4b8be;
+    /* Silver #b4b8be on this light bg is 1.8:1 (WCAG fail) — brand black.
+       This rule DUPLICATES salon-shell.css and wins the cascade; keep both
+       in sync (see panel-dashboard-css-duplicate). */
+    color: #0d0d0d;
 }
 
 .sidenav .btn-link {
