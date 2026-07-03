@@ -143,9 +143,23 @@ export class AppointmentsController {
     @Get('me')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get appointments for current user' })
-    @ApiResponse({ status: 200, type: Appointment, isArray: true })
-    findMine(@CurrentUser() user: { userId: number }): Promise<Appointment[]> {
-        return this.appointmentsService.findForUser(user.userId);
+    @ApiResponse({ status: 200 })
+    async findMine(@CurrentUser() user: { userId: number }) {
+        // Raw entities would serialize staff-private internalNote and money
+        // fields (paidAmount/tipAmount/discount) to clients — map explicitly.
+        const appointments = await this.appointmentsService.findForUser(
+            user.userId,
+        );
+        return appointments.map((apt) => ({
+            id: apt.id,
+            clientId: apt.clientId,
+            employeeId: apt.employeeId,
+            serviceId: apt.serviceId,
+            startTime: apt.startTime,
+            endTime: apt.endTime,
+            status: apt.status,
+            notes: apt.notes ?? null,
+        }));
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

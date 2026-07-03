@@ -14,6 +14,7 @@ import { User } from '../users/user.entity';
 import { DashboardService } from './dashboard.service';
 import { DashboardSummaryDto } from './dto/dashboard-summary.dto';
 import { ClientDashboardDto } from './dto/client-dashboard.dto';
+import { ClientVisitDto } from './dto/client-visits.dto';
 
 @ApiTags('dashboard')
 @Controller('dashboard')
@@ -38,5 +39,17 @@ export class DashboardController {
     @ApiResponse({ status: 200, type: ClientDashboardDto })
     getClientSummary(@CurrentUser() user: User): Promise<ClientDashboardDto> {
         return this.dashboardService.getClientSummary(user.id);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client)
+    @Get('client/visits')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Full client visit history (client-safe fields + own reviews)',
+    })
+    @ApiResponse({ status: 200, type: ClientVisitDto, isArray: true })
+    getClientVisits(@CurrentUser() user: User): Promise<ClientVisitDto[]> {
+        return this.dashboardService.getClientVisits(user.id);
     }
 }

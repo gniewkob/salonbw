@@ -7,8 +7,10 @@ import {
     Appointment,
     AppointmentStatus,
 } from '../appointments/appointment.entity';
+import { Review } from '../reviews/review.entity';
 import { DashboardSummaryDto } from './dto/dashboard-summary.dto';
 import { ClientDashboardDto } from './dto/client-dashboard.dto';
+import { ClientVisitDto } from './dto/client-visits.dto';
 
 @Injectable()
 export class DashboardService {
@@ -17,7 +19,54 @@ export class DashboardService {
         private readonly usersRepository: Repository<User>,
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
+        @InjectRepository(Review)
+        private readonly reviewsRepository: Repository<Review>,
     ) {}
+
+    /**
+     * Full visit history for the client's "Moje wizyty" view — explicit
+     * client-safe mapping (no money fields, no internalNote), newest first,
+     * with the client's own review stitched onto each visit.
+     */
+    async getClientVisits(userId: number): Promise<ClientVisitDto[]> {
+        const [appointments, reviews] = await Promise.all([
+            this.appointmentsRepository.find({
+                where: { client: { id: userId } },
+                relations: ['service', 'employee'],
+                order: { startTime: 'DESC' },
+            }),
+            this.reviewsRepository.find({
+                where: { client: { id: userId } },
+                relations: ['appointment'],
+            }),
+        ]);
+
+        const reviewByAppointment = new Map<
+            number,
+            { id: number; rating: number; comment: string | null }
+        >();
+        for (const review of reviews) {
+            if (review.appointment) {
+                reviewByAppointment.set(review.appointment.id, {
+                    id: review.id,
+                    rating: review.rating,
+                    comment: review.comment ?? null,
+                });
+            }
+        }
+
+        return appointments.map((apt) => ({
+            id: apt.id,
+            startTime: apt.startTime,
+            endTime: apt.endTime,
+            status: apt.status,
+            serviceId: apt.service?.id ?? 0,
+            serviceName: apt.service?.name ?? '',
+            employeeName: apt.employee?.name ?? apt.employee?.email ?? '',
+            notes: apt.notes ?? null,
+            review: reviewByAppointment.get(apt.id) ?? null,
+        }));
+    }
 
     async getSummary(): Promise<DashboardSummaryDto> {
         const [clientCount, employeeCount] = await Promise.all([

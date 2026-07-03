@@ -11,7 +11,8 @@ export type SalonModuleKey =
     | 'settings'
     | 'helps'
     | 'booking'
-    | 'clientHome';
+    | 'clientHome'
+    | 'clientVisits';
 
 export interface SalonShellProfile {
     bodyId: string;
@@ -209,6 +210,15 @@ const CLIENT_MODULES: SalonModule[] = [
     {
         key: 'clientHome',
         href: '/dashboard',
+        label: 'pulpit',
+        iconId: 'svg-salon',
+        permission: 'dashboard:client',
+        shell: CLIENT_SHELL,
+        secondaryNav: false,
+    },
+    {
+        key: 'clientVisits',
+        href: '/visits',
         label: 'moje wizyty',
         iconId: 'svg-calendar-nav',
         permission: 'dashboard:client',
@@ -406,10 +416,15 @@ export function resolveSalonModule(
     // sidebar leaked onto /dashboard and /account). Resolve everything they
     // can reach to the clean full-width client shell.
     if (role === 'client') {
+        const byKey = (key: string) =>
+            CLIENT_MODULES.find((m) => m.key === key) ?? CLIENT_MODULES[0];
         if (path.startsWith('/booking')) {
-            return CLIENT_MODULES[1];
+            return byKey('booking');
         }
-        return CLIENT_MODULES[0];
+        if (path.startsWith('/visits')) {
+            return byKey('clientVisits');
+        }
+        return byKey('clientHome');
     }
 
     if (

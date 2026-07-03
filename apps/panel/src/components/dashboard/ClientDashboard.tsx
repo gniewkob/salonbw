@@ -389,6 +389,12 @@ export default function ClientDashboard() {
                         </div>
                     </div>
                 )}
+                <Link
+                    href="/visits"
+                    className="salonbw-dashboard__section-footer"
+                >
+                    zobacz wszystkie wizyty i oceń odbyte
+                </Link>
             </div>
             <div className="mt-3 d-flex flex-wrap align-items-center justify-content-between gap-2 p-3 border rounded bg-white">
                 <div>

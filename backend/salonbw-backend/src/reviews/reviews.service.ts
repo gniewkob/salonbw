@@ -1,9 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import {
+    Injectable,
+    BadRequestException,
+    ForbiddenException,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './review.entity';
 import { User } from '../users/user.entity';
-import { Appointment } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 
 interface CreateReviewData {
     client: User;
@@ -25,7 +33,58 @@ export class ReviewsService {
     constructor(
         @InjectRepository(Review)
         private readonly reviewRepository: Repository<Review>,
+        @InjectRepository(Appointment)
+        private readonly appointmentRepository: Repository<Appointment>,
     ) {}
+
+    /**
+     * Client rates a visit: the appointment must belong to the client, be
+     * completed, and not be reviewed yet. The reviewed employee is derived
+     * from the appointment (never trusted from the request body).
+     */
+    async createForAppointment(
+        clientId: number,
+        appointmentId: number,
+        rating: number,
+        comment?: string,
+    ): Promise<Review> {
+        const appointment = await this.appointmentRepository.findOne({
+            where: { id: appointmentId },
+            relations: ['client', 'employee'],
+        });
+        if (!appointment) {
+            throw new NotFoundException('Appointment not found');
+        }
+        if (appointment.client?.id !== clientId) {
+            throw new ForbiddenException(
+                'You can only review your own appointments',
+            );
+        }
+        if (appointment.status !== AppointmentStatus.Completed) {
+            throw new BadRequestException(
+                'Only completed appointments can be reviewed',
+            );
+        }
+        const existing = await this.reviewRepository.findOne({
+            where: {
+                appointment: { id: appointmentId },
+                client: { id: clientId },
+            },
+        });
+        if (existing) {
+            throw new BadRequestException(
+                'This appointment has already been reviewed',
+            );
+        }
+        const review = this.reviewRepository.create({
+            client: { id: clientId } as User,
+            employee: { id: appointment.employee.id } as User,
+            appointment,
+            rating,
+            comment,
+        });
+        return this.reviewRepository.save(review);
+    }
 
     async findAll(page = 1, limit = 10): Promise<PaginatedResult<Review>> {
         const [data, total] = await this.reviewRepository.findAndCount({

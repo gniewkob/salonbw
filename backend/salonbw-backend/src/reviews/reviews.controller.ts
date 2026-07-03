@@ -30,8 +30,15 @@ import { Review } from './review.entity';
 import { User } from '../users/user.entity';
 
 class CreateReviewDto {
+    // Rate a specific completed visit — the reviewed employee is derived from
+    // the appointment. Either appointmentId or employeeId must be provided.
     @IsInt()
-    employeeId: number;
+    @IsOptional()
+    appointmentId?: number;
+
+    @IsInt()
+    @IsOptional()
+    employeeId?: number;
 
     @IsInt()
     @Min(1)
@@ -138,6 +145,19 @@ export class ReviewsController {
     ): Promise<Review> {
         if (dto.rating < 1 || dto.rating > 5) {
             throw new BadRequestException('Rating must be between 1 and 5');
+        }
+        if (dto.appointmentId) {
+            return this.reviewsService.createForAppointment(
+                user.userId,
+                dto.appointmentId,
+                dto.rating,
+                dto.comment,
+            );
+        }
+        if (!dto.employeeId) {
+            throw new BadRequestException(
+                'Either appointmentId or employeeId is required',
+            );
         }
         return this.reviewsService.create({
             client: { id: user.userId } as User,
