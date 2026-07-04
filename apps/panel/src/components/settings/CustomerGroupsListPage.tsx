@@ -70,6 +70,7 @@ export default function CustomerGroupsListPage() {
     );
     const [editName, setEditName] = useState('');
     const [editParentId, setEditParentId] = useState<string>('');
+    const [editDiscountPercent, setEditDiscountPercent] = useState<string>('');
     const [actionError, setActionError] = useState<string | null>(null);
     const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<
         number | null
@@ -90,6 +91,9 @@ export default function CustomerGroupsListPage() {
         setEditingGroup(group);
         setEditName(group.name);
         setEditParentId(group.parentId ? String(group.parentId) : '');
+        setEditDiscountPercent(
+            group.discountPercent != null ? String(group.discountPercent) : '',
+        );
     };
 
     const moveNode = (groupId: number, direction: 'up' | 'down') => {
@@ -314,6 +318,10 @@ export default function CustomerGroupsListPage() {
                             className="modal-content"
                             onSubmit={(event) => {
                                 event.preventDefault();
+                                const parsedDiscount =
+                                    editDiscountPercent.trim() !== ''
+                                        ? Number(editDiscountPercent)
+                                        : null;
                                 void update
                                     .mutateAsync({
                                         id: editingGroup.id,
@@ -322,6 +330,7 @@ export default function CustomerGroupsListPage() {
                                             parentId: editParentId
                                                 ? Number(editParentId)
                                                 : null,
+                                            discountPercent: parsedDiscount,
                                         },
                                     })
                                     .then(() => setEditingGroup(null))
@@ -391,6 +400,39 @@ export default function CustomerGroupsListPage() {
                                                 </option>
                                             ))}
                                     </select>
+                                </div>
+                                <div className="mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="customer-group-edit-discount"
+                                    >
+                                        Stały rabat (%)
+                                    </label>
+                                    <input
+                                        id="customer-group-edit-discount"
+                                        className="form-control"
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        value={editDiscountPercent}
+                                        onChange={(event) =>
+                                            setEditDiscountPercent(
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="np. 10"
+                                        aria-describedby="customer-group-edit-discount-hint"
+                                    />
+                                    <div
+                                        id="customer-group-edit-discount-hint"
+                                        className="form-text text-muted"
+                                    >
+                                        Klientki z tej grupy otrzymają
+                                        podpowiedź rabatu przy finalizacji
+                                        wizyty (chyba że mają wyższy rabat
+                                        indywidualny).
+                                    </div>
                                 </div>
                             </div>
                             <div className="modal-footer">

@@ -31,7 +31,9 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_BADGE: Record<string, string> = {
     scheduled: 'bg-secondary bg-opacity-10 text-body',
     confirmed: 'badge text-bg-primary',
-    in_progress: 'badge text-bg-info',
+    // in_progress: brand dark — NOT text-bg-info (cyan); consistent with
+    // EventCard.getEventStatusVisual which uses the dark/slate scale.
+    in_progress: 'badge text-bg-dark',
     completed: 'badge text-bg-success',
     cancelled: 'badge text-bg-danger',
     no_show: 'badge text-bg-warning',

@@ -21,6 +21,7 @@ export default function NewCustomerGroupPage() {
             ? router.query.parent_id
             : '',
     );
+    const [discountPercent, setDiscountPercent] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     useSetSecondaryNav(CUSTOMER_SETTINGS_NAV);
@@ -49,10 +50,15 @@ export default function NewCustomerGroupPage() {
                 onSubmit={(event) => {
                     event.preventDefault();
                     setSubmitError(null);
+                    const parsedDiscount =
+                        discountPercent.trim() !== ''
+                            ? Number(discountPercent)
+                            : null;
                     void createGroup
                         .mutateAsync({
                             name: name.trim(),
                             parentId: parentId ? Number(parentId) : null,
+                            discountPercent: parsedDiscount,
                         })
                         .then(() => router.push('/settings/customer-groups'))
                         .catch(() =>
@@ -106,6 +112,38 @@ export default function NewCustomerGroupPage() {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+                    </li>
+                    <li className="control-group">
+                        <label
+                            className="numeric optional form-label"
+                            htmlFor="physical-customers-group-discount"
+                        >
+                            Stały rabat (%)
+                        </label>
+                        <div className="controls">
+                            <input
+                                id="physical-customers-group-discount"
+                                className="numeric optional"
+                                type="number"
+                                min={0}
+                                max={100}
+                                step={1}
+                                value={discountPercent}
+                                onChange={(event) =>
+                                    setDiscountPercent(event.target.value)
+                                }
+                                placeholder="np. 10"
+                                aria-describedby="physical-customers-group-discount-hint"
+                            />
+                            <span
+                                id="physical-customers-group-discount-hint"
+                                className="form-text text-muted"
+                            >
+                                Klientki z tej grupy otrzymają podpowiedź rabatu
+                                przy finalizacji wizyty (chyba że mają wyższy
+                                rabat indywidualny).
+                            </span>
                         </div>
                     </li>
                 </ol>

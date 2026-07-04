@@ -513,6 +513,7 @@ export function useCreateCustomerGroup() {
             color?: string;
             memberIds?: number[];
             parentId?: number | null;
+            discountPercent?: number | null;
         }) =>
             apiFetch<CustomerGroup>('/customer-groups', {
                 method: 'POST',
@@ -543,6 +544,7 @@ export function useUpdateCustomerGroup() {
                 description?: string;
                 color?: string;
                 parentId?: number | null;
+                discountPercent?: number | null;
             };
         }) =>
             apiFetch<CustomerGroup>(`/customer-groups/${id}`, {

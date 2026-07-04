@@ -165,9 +165,9 @@ describe('AppointmentDrawer', () => {
         fireEvent.change(screen.getByLabelText('Klient'), {
             target: { value: '5' },
         });
-        fireEvent.change(screen.getByLabelText('Usługa'), {
-            target: { value: '10' },
-        });
+        // ServiceCombobox: focus opens dropdown, then click the service option.
+        fireEvent.focus(screen.getByLabelText('Usługa'));
+        fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
 

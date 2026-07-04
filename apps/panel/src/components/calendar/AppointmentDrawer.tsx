@@ -23,6 +23,7 @@ import ClientSection from './appointment-drawer/ClientSection';
 import ClientNoteSection from './appointment-drawer/ClientNoteSection';
 import FormulaSection from './appointment-drawer/FormulaSection';
 import ActionsSection from './appointment-drawer/ActionsSection';
+import ServiceCombobox from './appointment-drawer/ServiceCombobox';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -563,29 +564,13 @@ export default function AppointmentDrawer({
                                 >
                                     Usługa
                                 </label>
-                                <select
+                                <ServiceCombobox
                                     id="appointment-service"
-                                    className="form-select"
+                                    services={bookableServices}
                                     value={serviceId}
-                                    onChange={(e) =>
-                                        setServiceId(Number(e.target.value))
-                                    }
+                                    onChange={setServiceId}
                                     disabled={isEditMode}
-                                >
-                                    <option value="">Wybierz usługę</option>
-                                    {bookableServices.map((svc: Service) => (
-                                        <option key={svc.id} value={svc.id}>
-                                            {svc.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {selectedService && (
-                                    <div className="form-text">
-                                        Czas: {selectedService.duration} min,
-                                        cena: {selectedService.price.toFixed(2)}{' '}
-                                        PLN
-                                    </div>
-                                )}
+                                />
                             </div>
                             {appointment && (
                                 <div className="mt-2 pt-2 border-top small">

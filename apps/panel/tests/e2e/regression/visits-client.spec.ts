@@ -1,0 +1,61 @@
+/**
+ * visits-client.spec.ts — client visits page regression
+ *
+ * Verifies: client login → /visits shows h1 "Moje wizyty" and the
+ * "Nadchodzące wizyty" section (either with appointments or empty state).
+ * Read-only: no writes to DB.
+ * Credentials: E2E_CLIENT_EMAIL / E2E_CLIENT_PASSWORD (env).
+ */
+
+import { test, expect } from '@playwright/test';
+import { loginAsClient } from '../helpers/auth';
+
+function credentialsPresent(): boolean {
+    return Boolean(
+        process.env.E2E_CLIENT_EMAIL && process.env.E2E_CLIENT_PASSWORD,
+    );
+}
+
+test.describe('Client visits page', () => {
+    test.beforeEach(async ({ page }) => {
+        if (!credentialsPresent()) {
+            test.skip(
+                true,
+                'Missing E2E_CLIENT_EMAIL or E2E_CLIENT_PASSWORD',
+            );
+            return;
+        }
+        await loginAsClient(page);
+    });
+
+    test('h1 "Moje wizyty" is visible', async ({ page }) => {
+        await page.goto('/visits', { waitUntil: 'domcontentloaded' });
+
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'Moje wizyty' }),
+        ).toBeVisible({ timeout: 20_000 });
+    });
+
+    test('"Nadchodzące wizyty" section is rendered', async ({ page }) => {
+        await page.goto('/visits', { waitUntil: 'domcontentloaded' });
+
+        // The section heading is an h2 — it always renders even when the list
+        // is empty (shows "Brak zaplanowanych wizyt.")
+        await expect(
+            page.getByRole('heading', {
+                name: /Nadchodzące wizyty/,
+            }),
+        ).toBeVisible({ timeout: 20_000 });
+    });
+
+    test('page is accessible to client role (no 403 Forbidden)', async ({
+        page,
+    }) => {
+        await page.goto('/visits', { waitUntil: 'domcontentloaded' });
+
+        // RouteGuard must NOT show the Forbidden component
+        await expect(
+            page.getByText('Nie masz uprawnień'),
+        ).not.toBeVisible({ timeout: 10_000 });
+    });
+});

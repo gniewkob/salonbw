@@ -483,6 +483,7 @@ export interface CustomerGroup {
     sortOrder?: number;
     members?: Customer[];
     memberCount?: number;
+    discountPercent?: number | null;
     createdAt: string;
 }
 
