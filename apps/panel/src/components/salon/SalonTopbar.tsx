@@ -274,7 +274,7 @@ export default function SalonTopbar() {
                             </div>
                         </li>
                     )}
-                    {topbar.notifications.enabled ? (
+                    {isStaff && topbar.notifications.enabled ? (
                         <li
                             className="notification_center"
                             id="notification_center_navbar"
@@ -299,7 +299,7 @@ export default function SalonTopbar() {
                             </Link>
                         </li>
                     ) : null}
-                    {topbar.tasks.enabled ? (
+                    {isStaff && topbar.tasks.enabled ? (
                         <li
                             ref={tasksMenuRef}
                             className={`all_complete tasks_tooltip dropdown right-menu${tasksMenuOpen ? ' open' : ''}`}

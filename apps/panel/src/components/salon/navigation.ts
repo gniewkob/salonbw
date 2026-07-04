@@ -12,7 +12,8 @@ export type SalonModuleKey =
     | 'helps'
     | 'booking'
     | 'clientHome'
-    | 'clientVisits';
+    | 'clientVisits'
+    | 'clientAccount';
 
 export interface SalonShellProfile {
     bodyId: string;
@@ -234,6 +235,18 @@ const CLIENT_MODULES: SalonModule[] = [
         shell: CLIENT_SHELL,
         secondaryNav: false,
     },
+    {
+        // Profile / consents / password. Was reachable only via the tiny
+        // avatar dropdown — a fresh client couldn't find it. First-class
+        // rail entry.
+        key: 'clientAccount',
+        href: '/account',
+        label: 'moje konto',
+        iconId: 'svg-settings-nav',
+        permission: 'dashboard:client',
+        shell: CLIENT_SHELL,
+        secondaryNav: false,
+    },
 ];
 
 const HELPS_MODULE: SalonModule = {
@@ -423,6 +436,9 @@ export function resolveSalonModule(
         }
         if (path.startsWith('/visits')) {
             return byKey('clientVisits');
+        }
+        if (path.startsWith('/account')) {
+            return byKey('clientAccount');
         }
         return byKey('clientHome');
     }
