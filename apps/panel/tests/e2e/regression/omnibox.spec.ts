@@ -9,7 +9,6 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin } from '../helpers/auth';
 
 function credentialsPresent(): boolean {
     return Boolean(
@@ -20,6 +19,8 @@ function credentialsPresent(): boolean {
 }
 
 test.describe('Omnibox (global customer search)', () => {
+    test.use({ storageState: 'playwright/.auth/admin.json' });
+
     test.beforeEach(async ({ page }) => {
         if (!credentialsPresent()) {
             test.skip(
@@ -28,7 +29,6 @@ test.describe('Omnibox (global customer search)', () => {
             );
             return;
         }
-        await loginAsAdmin(page);
         // Navigate to a staff page so the topbar (with omnibox) is mounted
         await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     });
@@ -38,8 +38,17 @@ test.describe('Omnibox (global customer search)', () => {
         await omnibox.waitFor({ state: 'visible', timeout: 20_000 });
 
         // Trigger search with a generic query likely to return results or the
-        // empty-state message (both are valid — we test the dropdown appears)
-        await omnibox.fill('mar');
+        // empty-state message (both are valid — we test the dropdown appears).
+        // pressSequentially fires real input events (fill can outrun the
+        // 250ms debounce); wait for the actual search response so CI latency
+        // doesn't flake the visibility assertion.
+        const searchResponse = page.waitForResponse(
+            (response) => response.url().includes('/customers?search='),
+            { timeout: 20_000 },
+        );
+        await omnibox.click();
+        await omnibox.pressSequentially('mar', { delay: 80 });
+        await searchResponse.catch(() => null);
 
         // Wait for the results dropdown
         const results = page.locator('#omnibox-results');

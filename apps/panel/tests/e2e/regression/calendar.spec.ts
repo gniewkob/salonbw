@@ -8,7 +8,6 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin } from '../helpers/auth';
 
 function credentialsPresent(): boolean {
     return Boolean(
@@ -19,7 +18,9 @@ function credentialsPresent(): boolean {
 }
 
 test.describe('Calendar view switching', () => {
-    test.beforeEach(async ({ page }) => {
+    test.use({ storageState: 'playwright/.auth/admin.json' });
+
+    test.beforeEach(async () => {
         if (!credentialsPresent()) {
             test.skip(
                 true,
@@ -27,7 +28,6 @@ test.describe('Calendar view switching', () => {
             );
             return;
         }
-        await loginAsAdmin(page);
     });
 
     test('FullCalendar grid is visible on /calendar', async ({ page }) => {

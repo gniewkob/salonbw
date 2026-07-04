@@ -8,7 +8,6 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { loginAsClient } from '../helpers/auth';
 
 function credentialsPresent(): boolean {
     return Boolean(
@@ -17,7 +16,9 @@ function credentialsPresent(): boolean {
 }
 
 test.describe('Client visits page', () => {
-    test.beforeEach(async ({ page }) => {
+    test.use({ storageState: 'playwright/.auth/client.json' });
+
+    test.beforeEach(async () => {
         if (!credentialsPresent()) {
             test.skip(
                 true,
@@ -25,7 +26,6 @@ test.describe('Client visits page', () => {
             );
             return;
         }
-        await loginAsClient(page);
     });
 
     test('h1 "Moje wizyty" is visible', async ({ page }) => {
