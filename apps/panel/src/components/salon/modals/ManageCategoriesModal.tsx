@@ -217,9 +217,9 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
 
                     <div className="modal-body modal-body-scroll">
                         <form onSubmit={(e) => void handleCreate(e)}>
-                            <div className="form-">
+                            <div className="mb-2">
                                 <label
-                                    className="form-label"
+                                    className="loyalty-kpi-label"
                                     htmlFor="new_category_name"
                                 >
                                     Dodaj kategorię
@@ -233,9 +233,9 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                                     disabled={isBusy}
                                 />
                             </div>
-                            <div className="form-">
+                            <div className="mb-2">
                                 <label
-                                    className="form-label"
+                                    className="loyalty-kpi-label"
                                     htmlFor="new_category_parent"
                                 >
                                     Kategoria nadrzędna
@@ -382,151 +382,211 @@ function CategoryEditorRow({
     onDelete: (id: number, name: string) => void | Promise<void>;
 }) {
     const [state, setState] = useState<CategoryDraft>(draft);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         setState(draft);
     }, [draft]);
 
-    return (
-        <div
-            className="border rounded p-2 mb-2"
-            style={{ borderColor: '#e6eaee' }}
-        >
-            <div className="form-">
-                <label className="form-label" htmlFor={`cat_name_${draft.id}`}>
-                    Nazwa
-                </label>
-                <input
-                    id={`cat_name_${draft.id}`}
-                    className="form-control"
-                    value={state.name}
-                    onChange={(e) =>
-                        setState((prev) => ({ ...prev, name: e.target.value }))
-                    }
-                    disabled={isBusy}
-                />
-            </div>
-            <div className="form-">
-                <label
-                    className="form-label"
-                    htmlFor={`cat_parent_${draft.id}`}
-                >
-                    Kategoria nadrzędna
-                </label>
-                <select
-                    id={`cat_parent_${draft.id}`}
-                    className="form-control"
-                    value={state.parentId ?? ''}
-                    onChange={(e) =>
-                        setState((prev) => ({
-                            ...prev,
-                            parentId: e.target.value
-                                ? Number(e.target.value)
-                                : undefined,
-                        }))
-                    }
-                    disabled={isBusy}
-                >
-                    <option value="">(główna)</option>
-                    {tree
-                        .filter((item) => item.id !== state.id)
-                        .map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {'\u00A0'.repeat(item.depth * 2)}
-                                {item.name}
-                            </option>
-                        ))}
-                </select>
-            </div>
-            <div className="row row-cols-1 row-cols-sm-2 g-2">
-                <div className="form-">
-                    <label
-                        className="form-label"
-                        htmlFor={`cat_sort_order_${draft.id}`}
-                    >
-                        Kolejność
-                    </label>
-                    <input
-                        id={`cat_sort_order_${draft.id}`}
-                        type="number"
-                        className="form-control"
-                        value={state.sortOrder}
-                        onChange={(e) =>
-                            setState((prev) => ({
-                                ...prev,
-                                sortOrder: Number(e.target.value || 0),
-                            }))
-                        }
-                        disabled={isBusy}
-                    />
-                </div>
-                <div className="form-">
-                    <label
-                        className="form-label"
-                        htmlFor={`cat_active_${draft.id}`}
-                    >
-                        Aktywna
-                    </label>
-                    <select
-                        id={`cat_active_${draft.id}`}
-                        className="form-control"
-                        value={state.isActive ? '1' : '0'}
-                        onChange={(e) =>
-                            setState((prev) => ({
-                                ...prev,
-                                isActive: e.target.value === '1',
-                            }))
-                        }
-                        disabled={isBusy}
-                    >
-                        <option value="1">tak</option>
-                        <option value="0">nie</option>
-                    </select>
-                </div>
-            </div>
+    const depth = tree.find((t) => t.id === draft.id)?.depth ?? 0;
 
-            <div className="d-flex gap-2">
-                {(canMoveUp || canMoveDown) && (
-                    <div className="btn-group">
+    const handleSave = async () => {
+        await onSave(state);
+        setIsEditing(false);
+    };
+
+    return (
+        <div className="salonbw-cat-row">
+            <div className="d-flex align-items-center justify-content-between px-3 py-2 gap-2">
+                <span
+                    className="d-flex align-items-center gap-2 text-truncate"
+                    style={{ paddingLeft: depth * 16 }}
+                >
+                    <span className="fw-medium text-truncate">
+                        {draft.name}
+                    </span>
+                    {!draft.isActive && (
+                        <span className="badge text-bg-light text-muted fw-normal">
+                            nieaktywna
+                        </span>
+                    )}
+                </span>
+                <div className="btn-group flex-shrink-0">
+                    {(canMoveUp || canMoveDown) && (
+                        <>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={onMoveUp}
+                                disabled={isBusy || !canMoveUp}
+                                title="Przesuń wyżej"
+                                aria-label="Przesuń kategorię wyżej"
+                            >
+                                <i className="fa fa-arrow-up"></i>
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={onMoveDown}
+                                disabled={isBusy || !canMoveDown}
+                                title="Przesuń niżej"
+                                aria-label="Przesuń kategorię niżej"
+                            >
+                                <i className="fa fa-arrow-down"></i>
+                            </button>
+                        </>
+                    )}
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={() => setIsEditing((v) => !v)}
+                        disabled={isBusy}
+                        aria-expanded={isEditing}
+                        title="Edytuj kategorię"
+                        aria-label="Edytuj kategorię"
+                    >
+                        <i className="fa fa-pencil"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={() => void onDelete(state.id, state.name)}
+                        disabled={isBusy}
+                        title="Usuń kategorię"
+                        aria-label="Usuń kategorię"
+                    >
+                        {isDeleting ? (
+                            <span className="spinner-border spinner-border-sm" />
+                        ) : (
+                            <i className="fa fa-trash text-danger"></i>
+                        )}
+                    </button>
+                </div>
+            </div>
+            {isEditing && (
+                <div className="px-3 pb-3 pt-3 border-top">
+                    <div className="mb-2">
+                        <label
+                            className="loyalty-kpi-label"
+                            htmlFor={`cat_name_${draft.id}`}
+                        >
+                            Nazwa
+                        </label>
+                        <input
+                            id={`cat_name_${draft.id}`}
+                            className="form-control"
+                            value={state.name}
+                            onChange={(e) =>
+                                setState((prev) => ({
+                                    ...prev,
+                                    name: e.target.value,
+                                }))
+                            }
+                            disabled={isBusy}
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label
+                            className="loyalty-kpi-label"
+                            htmlFor={`cat_parent_${draft.id}`}
+                        >
+                            Kategoria nadrzędna
+                        </label>
+                        <select
+                            id={`cat_parent_${draft.id}`}
+                            className="form-control"
+                            value={state.parentId ?? ''}
+                            onChange={(e) =>
+                                setState((prev) => ({
+                                    ...prev,
+                                    parentId: e.target.value
+                                        ? Number(e.target.value)
+                                        : undefined,
+                                }))
+                            }
+                            disabled={isBusy}
+                        >
+                            <option value="">(główna)</option>
+                            {tree
+                                .filter((item) => item.id !== state.id)
+                                .map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {'\u00A0'.repeat(item.depth * 2)}
+                                        {item.name}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+                    <div className="row row-cols-1 row-cols-sm-2 g-2">
+                        <div className="mb-2">
+                            <label
+                                className="loyalty-kpi-label"
+                                htmlFor={`cat_sort_order_${draft.id}`}
+                            >
+                                Kolejność
+                            </label>
+                            <input
+                                id={`cat_sort_order_${draft.id}`}
+                                type="number"
+                                className="form-control"
+                                value={state.sortOrder}
+                                onChange={(e) =>
+                                    setState((prev) => ({
+                                        ...prev,
+                                        sortOrder: Number(e.target.value || 0),
+                                    }))
+                                }
+                                disabled={isBusy}
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <label
+                                className="loyalty-kpi-label"
+                                htmlFor={`cat_active_${draft.id}`}
+                            >
+                                Aktywna
+                            </label>
+                            <select
+                                id={`cat_active_${draft.id}`}
+                                className="form-control"
+                                value={state.isActive ? '1' : '0'}
+                                onChange={(e) =>
+                                    setState((prev) => ({
+                                        ...prev,
+                                        isActive: e.target.value === '1',
+                                    }))
+                                }
+                                disabled={isBusy}
+                            >
+                                <option value="1">tak</option>
+                                <option value="0">nie</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="d-flex gap-2">
                         <button
                             type="button"
-                            className="btn btn-outline-secondary btn-sm"
-                            onClick={onMoveUp}
-                            disabled={isBusy || !canMoveUp}
-                            title="Przesuń wyżej"
-                            aria-label="Przesuń kategorię wyżej"
+                            className="btn btn-dark btn-sm"
+                            onClick={() => void handleSave()}
+                            disabled={isBusy || !state.name.trim()}
                         >
-                            <i className="fa fa-arrow-up"></i>
+                            {isSaving ? 'zapisywanie...' : 'zapisz'}
                         </button>
                         <button
                             type="button"
                             className="btn btn-outline-secondary btn-sm"
-                            onClick={onMoveDown}
-                            disabled={isBusy || !canMoveDown}
-                            title="Przesuń niżej"
-                            aria-label="Przesuń kategorię niżej"
+                            onClick={() => {
+                                setState(draft);
+                                setIsEditing(false);
+                            }}
+                            disabled={isBusy}
                         >
-                            <i className="fa fa-arrow-down"></i>
+                            anuluj
                         </button>
                     </div>
-                )}
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => void onSave(state)}
-                    disabled={isBusy || !state.name.trim()}
-                >
-                    {isSaving ? 'zapisywanie...' : 'zapisz'}
-                </button>
-                <button
-                    type="button"
-                    className="btn btn-danger btn-sm"
-                    onClick={() => void onDelete(state.id, state.name)}
-                    disabled={isBusy}
-                >
-                    {isDeleting ? 'usuwanie...' : 'usuń'}
-                </button>
-            </div>
+                </div>
+            )}
         </div>
     );
 }

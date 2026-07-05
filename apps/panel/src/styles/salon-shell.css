@@ -8920,3 +8920,15 @@ summary:focus-visible {
     outline-offset: 2px;
     border-radius: 2px;
 }
+
+/* Category manager rows — clean bordered list, hover affordance. */
+.salonbw-cat-row {
+    border: 1px solid #e6eaee;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #fff;
+    transition: border-color 0.15s ease;
+}
+.salonbw-cat-row:hover {
+    border-color: #cfd5db;
+}
