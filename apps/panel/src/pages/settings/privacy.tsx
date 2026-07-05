@@ -27,6 +27,7 @@ function ConsentTab() {
     const [saveError, setSaveError] = useState('');
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [smsConsent, setSmsConsent] = useState(false);
+    const [whatsappConsent, setWhatsappConsent] = useState(false);
     const [emailConsent, setEmailConsent] = useState(false);
 
     const loadProfile = useCallback(() => {
@@ -36,6 +37,7 @@ function ConsentTab() {
             .then((data) => {
                 setProfile(data);
                 setSmsConsent(data.smsConsent ?? false);
+                setWhatsappConsent(data.whatsappConsent ?? false);
                 setEmailConsent(data.emailConsent ?? false);
             })
             .catch(() => {
@@ -59,7 +61,11 @@ function ConsentTab() {
             await apiFetch('/users/profile/consent', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ smsConsent, emailConsent }),
+                body: JSON.stringify({
+                    smsConsent,
+                    whatsappConsent,
+                    emailConsent,
+                }),
             });
             setSaveSuccess(true);
         } catch {
@@ -142,12 +148,31 @@ function ConsentTab() {
                                         />
                                         <span className="small">
                                             <strong className="d-block">
-                                                SMS / WhatsApp
+                                                SMS (na telefon)
                                             </strong>
                                             Wyrażam zgodę na otrzymywanie
-                                            informacji marketingowych oraz
-                                            przypomnień o wizytach drogą SMS i
-                                            WhatsApp.
+                                            przypomnień o wizytach oraz
+                                            informacji drogą SMS.
+                                        </span>
+                                    </label>
+                                    <label className="d-flex gap-2 align-items-start">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input mt-1"
+                                            checked={whatsappConsent}
+                                            onChange={(e) =>
+                                                setWhatsappConsent(
+                                                    e.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <span className="small">
+                                            <strong className="d-block">
+                                                WhatsApp
+                                            </strong>
+                                            Wyrażam zgodę na otrzymywanie
+                                            przypomnień o wizytach oraz
+                                            informacji przez WhatsApp.
                                         </span>
                                     </label>
                                     <label className="d-flex gap-2 align-items-start">

@@ -33,7 +33,10 @@ export default function RevenueChart({
 
     if (loading) {
         return (
-            <div className="d-flex align-items-center justify-content-center h-64 bg-light rounded-3">
+            <div
+                className="d-flex align-items-center justify-content-center bg-light rounded-3"
+                style={{ height: 256 }}
+            >
                 <div className="spinner-border text-primary"></div>
             </div>
         );
@@ -41,14 +44,17 @@ export default function RevenueChart({
 
     if (data.length === 0) {
         return (
-            <div className="d-flex align-items-center justify-content-center h-64 bg-light rounded-3 text-muted">
+            <div
+                className="d-flex align-items-center justify-content-center bg-light rounded-3 text-muted"
+                style={{ height: 256 }}
+            >
                 Brak danych dla wybranego okresu
             </div>
         );
     }
 
     return (
-        <div className="h-64">
+        <div style={{ height: 256 }}>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={chartData}

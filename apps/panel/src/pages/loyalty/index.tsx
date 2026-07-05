@@ -890,7 +890,10 @@ export default function LoyaltyManagementPage() {
                 {(modalType === 'createReward' ||
                     modalType === 'editReward') && (
                     <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
-                        <div className="bg-white rounded-4 shadow-lg w-100 mx-4 overflow-y-auto">
+                        <div
+                            className="bg-white rounded-4 shadow-lg w-100 mx-4 overflow-y-auto"
+                            style={{ maxWidth: 560, maxHeight: '90vh' }}
+                        >
                             <form
                                 onSubmit={(event) => {
                                     void handleSaveReward(event);
@@ -1159,7 +1162,10 @@ export default function LoyaltyManagementPage() {
                 {/* Use Coupon Modal */}
                 {modalType === 'useCoupon' && (
                     <div className="position-fixed top-0 start-0 bottom-0 end-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
-                        <div className="bg-white rounded-4 shadow-lg w-100 mx-4">
+                        <div
+                            className="bg-white rounded-4 shadow-lg w-100 mx-4"
+                            style={{ maxWidth: 460 }}
+                        >
                             <form
                                 onSubmit={(event) => {
                                     void handleUseCoupon(event);

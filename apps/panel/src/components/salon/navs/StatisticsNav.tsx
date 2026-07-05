@@ -72,8 +72,8 @@ const GROUPS: Array<{ heading: string; items: NavItem[] }> = [
             },
             {
                 id: 'comments',
-                label: 'Komentarze',
-                href: '/statistics/comments',
+                label: 'Opinie klientów',
+                href: '/reviews',
             },
         ],
     },
