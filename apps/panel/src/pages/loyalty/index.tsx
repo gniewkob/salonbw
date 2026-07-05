@@ -208,13 +208,15 @@ export default function LoyaltyManagementPage() {
                         <button
                             type="button"
                             onClick={() => setModalType('useCoupon')}
-                            className="d-flex align-items-center gap-2 px-3 py-2 bg-primary bg-opacity-10 text-dark rounded-3 fw-medium bg-opacity-10"
+                            className="btn btn-dark d-inline-flex align-items-center gap-2"
                         >
                             <svg
-                                className="w-5 h-5"
+                                width="18"
+                                height="18"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -228,27 +230,26 @@ export default function LoyaltyManagementPage() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="border-bottom border-secondary border-opacity-25 mb-4">
-                        <nav
-                            className="d-flex"
-                            aria-label="Zakładki programu lojalnościowego"
-                        >
-                            {TABS.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    type="button"
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`py-3 px-1 border-bottom border-2 fw-medium small ${
-                                        activeTab === tab.id
-                                            ? 'border-primary text-primary'
-                                            : 'border-transparent text-muted border-opacity-50'
-                                    }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
+                    <nav
+                        className="loyalty-tabs"
+                        aria-label="Zakładki programu lojalnościowego"
+                    >
+                        {TABS.map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                aria-current={
+                                    activeTab === tab.id ? 'page' : undefined
+                                }
+                                className={`loyalty-tab${
+                                    activeTab === tab.id ? ' active' : ''
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
 
                     {/* Overview Tab */}
                     {activeTab === 'overview' && (

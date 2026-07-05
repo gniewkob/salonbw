@@ -8880,3 +8880,43 @@ summary:focus-visible {
     color: #6e7278;
     margin-bottom: 0.35rem;
 }
+
+/* Loyalty tabs — minimal underline tabs (raw <button> gets clunky UA chrome;
+   .btn only resets .btn-classed buttons). Brand nav micro-type + active
+   underline indicator, not boxed fills. */
+.loyalty-tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+}
+.loyalty-tab {
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 0.75rem 0.25rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6e7278;
+    cursor: pointer;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+}
+.loyalty-tab:hover {
+    color: #1a1a1a;
+}
+.loyalty-tab.active {
+    color: #0d0d0d;
+    border-bottom-color: #0d0d0d;
+}
+.loyalty-tab:focus-visible {
+    outline: 2px solid #0d0d0d;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
