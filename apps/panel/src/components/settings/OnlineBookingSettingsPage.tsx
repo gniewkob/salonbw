@@ -13,14 +13,6 @@ const NAV_ITEMS = [
         href: '/settings/online-booking',
         active: true,
     },
-    {
-        label: 'Widoczność usług',
-        iconClass: 'sprite-settings_services',
-    },
-    {
-        label: 'Widget',
-        iconClass: 'sprite-settings_cut_logo',
-    },
 ] as const;
 
 export default function OnlineBookingSettingsPage() {

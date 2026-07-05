@@ -13,12 +13,9 @@ const branchNavItems = [
         active: true,
     },
     {
-        label: 'Adres i język',
-        iconClass: 'sprite-settings_i18n',
-    },
-    {
-        label: 'Zgody',
+        label: 'Zgody i prywatność',
         iconClass: 'sprite-stock_stocktaking',
+        href: '/settings/privacy',
     },
 ] as const;
 

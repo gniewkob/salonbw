@@ -14,17 +14,9 @@ const paymentNavItems = [
         active: true,
     },
     {
-        label: 'Przedpłaty',
-        iconClass: 'sprite-settings_prepay',
-    },
-    {
         label: 'Napiwki',
         iconClass: 'sprite-tips',
         href: '/statistics/tips',
-    },
-    {
-        label: 'Metody płatności',
-        iconClass: 'sprite-settings_payment_methods',
     },
 ] as const;
 

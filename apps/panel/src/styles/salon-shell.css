@@ -8386,6 +8386,9 @@ th.checkbox_container input[type='checkbox'] {
 .salonbw-list-item:last-child {
     border-bottom: none;
 }
+.salonbw-list-item:hover {
+    background: #f7f9fb;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    salonbw-datepicker — CalendarSidebar react-datepicker wrapper
