@@ -120,15 +120,25 @@ export class UsersService {
     async updateConsent(
         id: number,
         dto: UpdateConsentDto,
-    ): Promise<Pick<User, 'smsConsent' | 'emailConsent'>> {
+    ): Promise<
+        Pick<
+            User,
+            'notifyPanel' | 'smsConsent' | 'whatsappConsent' | 'emailConsent'
+        >
+    > {
         const update: Partial<User> = {};
+        if (dto.notifyPanel !== undefined) update.notifyPanel = dto.notifyPanel;
         if (dto.smsConsent !== undefined) update.smsConsent = dto.smsConsent;
+        if (dto.whatsappConsent !== undefined)
+            update.whatsappConsent = dto.whatsappConsent;
         if (dto.emailConsent !== undefined)
             update.emailConsent = dto.emailConsent;
         await this.usersRepository.update(id, update);
         const updated = await this.findById(id);
         return {
+            notifyPanel: updated?.notifyPanel ?? true,
             smsConsent: updated?.smsConsent ?? false,
+            whatsappConsent: updated?.whatsappConsent ?? false,
             emailConsent: updated?.emailConsent ?? false,
         };
     }

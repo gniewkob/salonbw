@@ -88,8 +88,17 @@ export class User {
     @Column({ nullable: true, type: 'text' })
     description?: string;
 
+    // Per-channel notification preferences. receiveNotifications above is the
+    // master switch; these pick WHICH channels are used. Panel (in-app banner)
+    // defaults on (free, no external delivery); the rest are opt-in.
+    @Column({ default: true })
+    notifyPanel: boolean;
+
     @Column({ default: false })
     smsConsent: boolean;
+
+    @Column({ default: false })
+    whatsappConsent: boolean;
 
     @Column({ default: false })
     emailConsent: boolean;

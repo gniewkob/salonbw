@@ -272,7 +272,11 @@ export class AppointmentsService {
             id: result.id,
         });
         const { date, time } = this.formatDate(result.startTime);
-        if (client.phone && client.receiveNotifications) {
+        if (
+            client.phone &&
+            client.receiveNotifications &&
+            client.whatsappConsent
+        ) {
             try {
                 await this.whatsappService.sendBookingConfirmation(
                     client.phone,
@@ -586,7 +590,11 @@ export class AppointmentsService {
                 appointmentId: updated.id,
                 status: AppointmentStatus.Completed,
             });
-            if (updated.client.phone && updated.client.receiveNotifications) {
+            if (
+                updated.client.phone &&
+                updated.client.receiveNotifications &&
+                updated.client.whatsappConsent
+            ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
                     await this.whatsappService.sendFollowUp(
@@ -683,7 +691,11 @@ export class AppointmentsService {
             // Notify client about rescheduled appointment
             if (newStatus === AppointmentStatus.RescheduledPending) {
                 const client = updated.client;
-                if (client?.phone && client.receiveNotifications) {
+                if (
+                    client?.phone &&
+                    client.receiveNotifications &&
+                    client.whatsappConsent
+                ) {
                     const { date, time } = this.formatDate(updated.startTime);
                     try {
                         await this.whatsappService.sendRescheduleNotification(
@@ -775,7 +787,11 @@ export class AppointmentsService {
                 previousEmployeeId: appointment.employee.id,
             });
 
-            if (updated.client.phone && updated.client.receiveNotifications) {
+            if (
+                updated.client.phone &&
+                updated.client.receiveNotifications &&
+                updated.client.whatsappConsent
+            ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
                     await this.whatsappService.sendRescheduleNotification(
@@ -907,7 +923,11 @@ export class AppointmentsService {
                 targetStatus === AppointmentStatus.Confirmed
             ) {
                 const client = updated.client;
-                if (client?.phone && client.receiveNotifications) {
+                if (
+                    client?.phone &&
+                    client.receiveNotifications &&
+                    client.whatsappConsent
+                ) {
                     const { date, time } = this.formatDate(updated.startTime);
                     try {
                         await this.whatsappService.sendBookingConfirmation(
@@ -926,7 +946,11 @@ export class AppointmentsService {
             // Notify client when their appointment is rescheduled by staff
             if (targetStatus === AppointmentStatus.RescheduledPending) {
                 const client = updated.client;
-                if (client?.phone && client.receiveNotifications) {
+                if (
+                    client?.phone &&
+                    client.receiveNotifications &&
+                    client.whatsappConsent
+                ) {
                     const { date, time } = this.formatDate(updated.startTime);
                     try {
                         await this.whatsappService.sendRescheduleNotification(
@@ -1213,7 +1237,11 @@ export class AppointmentsService {
             });
 
             // Send follow-up notification
-            if (updated.client.phone && updated.client.receiveNotifications) {
+            if (
+                updated.client.phone &&
+                updated.client.receiveNotifications &&
+                updated.client.whatsappConsent
+            ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
                     await this.whatsappService.sendFollowUp(
