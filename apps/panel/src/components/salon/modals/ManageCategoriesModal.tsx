@@ -4,6 +4,7 @@ import {
     useDeleteProductCategory,
     useProductCategories,
     useUpdateProductCategory,
+    useReorderProductCategories,
 } from '@/hooks/useWarehouseViews';
 import type { ProductCategory } from '@/types';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -110,6 +111,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
     const createCategory = useCreateProductCategory();
     const updateCategory = useUpdateProductCategory();
     const deleteCategory = useDeleteProductCategory();
+    const reorderCategories = useReorderProductCategories();
 
     const [newName, setNewName] = useState('');
     const [newParentId, setNewParentId] = useState<number | undefined>(
@@ -122,10 +124,26 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
 
     const flatTree = useMemo(() => flattenCategories(tree), [tree]);
     const drafts = useMemo(() => toDrafts(tree), [tree]);
+    // Top-level (root) categories in display order — the ones we let the user
+    // reorder with up/down (parent categories = "position in menu").
+    const topLevelIds = useMemo(() => tree.map((c) => c.id), [tree]);
     const isBusy =
         createCategory.isPending ||
         updateCategory.isPending ||
-        deleteCategory.isPending;
+        deleteCategory.isPending ||
+        reorderCategories.isPending;
+
+    const moveTopLevel = (id: number, direction: -1 | 1) => {
+        const index = topLevelIds.indexOf(id);
+        const target = index + direction;
+        if (index < 0 || target < 0 || target >= topLevelIds.length) return;
+        const ordered = [...topLevelIds];
+        [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+        const items = ordered.map((cid, i) => ({ id: cid, sortOrder: i }));
+        void reorderCategories.mutateAsync(items).catch(() => {
+            // error handled by hook
+        });
+    };
 
     const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -263,26 +281,46 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                             <p className="text-muted">Brak kategorii.</p>
                         ) : (
                             <div>
-                                {drafts.map((draft) => (
-                                    <CategoryEditorRow
-                                        key={draft.id}
-                                        draft={draft}
-                                        tree={flatTree}
-                                        isBusy={isBusy}
-                                        isSaving={
-                                            updateCategory.isPending &&
-                                            updateCategory.variables?.id ===
-                                                draft.id
-                                        }
-                                        isDeleting={
-                                            deleteCategory.isPending &&
-                                            deleteCategory.variables ===
-                                                draft.id
-                                        }
-                                        onSave={handleUpdate}
-                                        onDelete={handleDelete}
-                                    />
-                                ))}
+                                {drafts.map((draft) => {
+                                    const topIndex = topLevelIds.indexOf(
+                                        draft.id,
+                                    );
+                                    const isTopLevel = topIndex >= 0;
+                                    return (
+                                        <CategoryEditorRow
+                                            key={draft.id}
+                                            draft={draft}
+                                            tree={flatTree}
+                                            isBusy={isBusy}
+                                            isSaving={
+                                                updateCategory.isPending &&
+                                                updateCategory.variables?.id ===
+                                                    draft.id
+                                            }
+                                            isDeleting={
+                                                deleteCategory.isPending &&
+                                                deleteCategory.variables ===
+                                                    draft.id
+                                            }
+                                            canMoveUp={
+                                                isTopLevel && topIndex > 0
+                                            }
+                                            canMoveDown={
+                                                isTopLevel &&
+                                                topIndex <
+                                                    topLevelIds.length - 1
+                                            }
+                                            onMoveUp={() =>
+                                                moveTopLevel(draft.id, -1)
+                                            }
+                                            onMoveDown={() =>
+                                                moveTopLevel(draft.id, 1)
+                                            }
+                                            onSave={handleUpdate}
+                                            onDelete={handleDelete}
+                                        />
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -324,6 +362,10 @@ function CategoryEditorRow({
     isBusy,
     isSaving,
     isDeleting,
+    canMoveUp,
+    canMoveDown,
+    onMoveUp,
+    onMoveDown,
     onSave,
     onDelete,
 }: {
@@ -332,6 +374,10 @@ function CategoryEditorRow({
     isBusy: boolean;
     isSaving: boolean;
     isDeleting: boolean;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
     onSave: (draft: CategoryDraft) => Promise<void>;
     onDelete: (id: number, name: string) => void | Promise<void>;
 }) {
@@ -440,6 +486,30 @@ function CategoryEditorRow({
             </div>
 
             <div className="d-flex gap-2">
+                {(canMoveUp || canMoveDown) && (
+                    <div className="btn-group">
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={onMoveUp}
+                            disabled={isBusy || !canMoveUp}
+                            title="Przesuń wyżej"
+                            aria-label="Przesuń kategorię wyżej"
+                        >
+                            <i className="fa fa-arrow-up"></i>
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={onMoveDown}
+                            disabled={isBusy || !canMoveDown}
+                            title="Przesuń niżej"
+                            aria-label="Przesuń kategorię niżej"
+                        >
+                            <i className="fa fa-arrow-down"></i>
+                        </button>
+                    </div>
+                )}
                 <button
                     type="button"
                     className="btn btn-outline-secondary btn-sm"
