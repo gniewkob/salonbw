@@ -255,123 +255,142 @@ export default function LoyaltyManagementPage() {
                         <div className="gap-3">
                             {/* Stats Cards */}
                             {stats && (
-                                <div className="d-flex flex-column gap-3">
-                                    <div className="bg-white rounded-4 shadow-sm p-4">
-                                        <p className="small text-muted">
-                                            Członkowie programu
-                                        </p>
-                                        <p className="fs-3 fw-bold text-dark">
-                                            {stats.totalMembers}
-                                        </p>
-                                        <p className="small text-success">
-                                            {stats.activeMembers} aktywnych
-                                        </p>
-                                    </div>
-                                    <div className="bg-white rounded-4 shadow-sm p-4">
-                                        <p className="small text-muted">
-                                            Wydane punkty
-                                        </p>
-                                        <p className="fs-3 fw-bold text-dark">
-                                            {stats.totalPointsIssued.toLocaleString(
-                                                'pl-PL',
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="bg-white rounded-4 shadow-sm p-4">
-                                        <p className="small text-muted">
-                                            Wykorzystane punkty
-                                        </p>
-                                        <p className="fs-3 fw-bold text-primary">
-                                            {stats.totalPointsRedeemed.toLocaleString(
-                                                'pl-PL',
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="bg-white rounded-4 shadow-sm p-4">
-                                        <p className="small text-muted">
-                                            Zaległe zobowiązanie
-                                        </p>
-                                        <p className="fs-3 fw-bold text-primary">
-                                            {formatCurrency(
-                                                stats.outstandingValue,
-                                            )}
-                                        </p>
-                                        <p className="small text-muted">
-                                            {stats.outstandingPoints.toLocaleString(
-                                                'pl-PL',
-                                            )}{' '}
-                                            pkt
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Program Info */}
-                            {program && (
-                                <div className="bg-white rounded-4 shadow-sm p-4">
-                                    <h2 className="fs-5 fw-semibold mb-3">
-                                        Zasady programu
-                                    </h2>
-                                    <div className="row row-cols-1 row-cols-sm-2 g-3">
-                                        <div>
-                                            <p className="small text-muted">
-                                                Punkty za 1 PLN
+                                <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3">
+                                    <div className="col">
+                                        <div className="bg-white rounded-4 shadow-sm border p-4 h-100">
+                                            <p className="loyalty-kpi-label">
+                                                Członkowie programu
                                             </p>
-                                            <p className="fw-medium">
-                                                {program.pointsPerCurrency} pkt
+                                            <p className="fs-2 fw-bold text-dark mb-1">
+                                                {stats.totalMembers}
+                                            </p>
+                                            <p className="small text-success mb-0">
+                                                {stats.activeMembers} aktywnych
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="small text-muted">
-                                                Wartość 1 punktu
+                                    </div>
+                                    <div className="col">
+                                        <div className="bg-white rounded-4 shadow-sm border p-4 h-100">
+                                            <p className="loyalty-kpi-label">
+                                                Wydane punkty
                                             </p>
-                                            <p className="fw-medium">
-                                                {(
-                                                    Number(
-                                                        program.pointsValueCurrency,
-                                                    ) * 100
-                                                ).toFixed(0)}{' '}
-                                                gr
+                                            <p className="fs-2 fw-bold text-dark mb-0">
+                                                {stats.totalPointsIssued.toLocaleString(
+                                                    'pl-PL',
+                                                )}
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="small text-muted">
-                                                Min. do wymiany
+                                    </div>
+                                    <div className="col">
+                                        <div className="bg-white rounded-4 shadow-sm border p-4 h-100">
+                                            <p className="loyalty-kpi-label">
+                                                Wykorzystane punkty
                                             </p>
-                                            <p className="fw-medium">
-                                                {program.minPointsRedemption}{' '}
+                                            <p className="fs-2 fw-bold text-dark mb-0">
+                                                {stats.totalPointsRedeemed.toLocaleString(
+                                                    'pl-PL',
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="col">
+                                        <div className="bg-white rounded-4 shadow-sm border p-4 h-100">
+                                            <p className="loyalty-kpi-label">
+                                                Zaległe zobowiązanie
+                                            </p>
+                                            <p className="fs-2 fw-bold text-dark mb-1">
+                                                {formatCurrency(
+                                                    stats.outstandingValue,
+                                                )}
+                                            </p>
+                                            <p className="small text-muted mb-0">
+                                                {stats.outstandingPoints.toLocaleString(
+                                                    'pl-PL',
+                                                )}{' '}
                                                 pkt
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="small text-muted">
-                                                Wygasanie punktów
-                                            </p>
-                                            <p className="fw-medium">
-                                                {program.pointsExpireMonths
-                                                    ? `${program.pointsExpireMonths} mies.`
-                                                    : 'Nie wygasają'}
-                                            </p>
-                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Quick Stats */}
-                            {stats && (
-                                <div className="bg-white rounded-4 shadow-sm p-4">
-                                    <h2 className="fs-5 fw-semibold mb-3">
-                                        Nagrody
-                                    </h2>
-                                    <p className="text-muted">
-                                        Zrealizowano{' '}
-                                        <span className="fw-bold">
-                                            {stats.totalRewardsRedeemed}
-                                        </span>{' '}
-                                        nagród
-                                    </p>
-                                </div>
-                            )}
+                            <div className="row row-cols-1 row-cols-lg-2 g-3 mt-0">
+                                {/* Program Info */}
+                                {program && (
+                                    <div className="col">
+                                        <div className="bg-white rounded-4 shadow-sm border p-4 h-100">
+                                            <h2 className="fs-5 fw-semibold mb-3">
+                                                Zasady programu
+                                            </h2>
+                                            <div className="row row-cols-1 row-cols-sm-2 g-3">
+                                                <div>
+                                                    <p className="loyalty-kpi-label">
+                                                        Punkty za 1 PLN
+                                                    </p>
+                                                    <p className="fw-medium mb-0">
+                                                        {
+                                                            program.pointsPerCurrency
+                                                        }{' '}
+                                                        pkt
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="loyalty-kpi-label">
+                                                        Wartość 1 punktu
+                                                    </p>
+                                                    <p className="fw-medium mb-0">
+                                                        {(
+                                                            Number(
+                                                                program.pointsValueCurrency,
+                                                            ) * 100
+                                                        ).toFixed(0)}{' '}
+                                                        gr
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="loyalty-kpi-label">
+                                                        Min. do wymiany
+                                                    </p>
+                                                    <p className="fw-medium mb-0">
+                                                        {
+                                                            program.minPointsRedemption
+                                                        }{' '}
+                                                        pkt
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="loyalty-kpi-label">
+                                                        Wygasanie punktów
+                                                    </p>
+                                                    <p className="fw-medium mb-0">
+                                                        {program.pointsExpireMonths
+                                                            ? `${program.pointsExpireMonths} mies.`
+                                                            : 'Nie wygasają'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Quick Stats */}
+                                {stats && (
+                                    <div className="col">
+                                        <div className="bg-white rounded-4 shadow-sm border p-4 h-100">
+                                            <h2 className="fs-5 fw-semibold mb-3">
+                                                Nagrody
+                                            </h2>
+                                            <p className="text-muted mb-0">
+                                                Zrealizowano{' '}
+                                                <span className="fw-bold text-dark">
+                                                    {stats.totalRewardsRedeemed}
+                                                </span>{' '}
+                                                nagród
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 

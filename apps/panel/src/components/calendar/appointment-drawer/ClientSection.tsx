@@ -305,7 +305,7 @@ export default function ClientSection({
                             {appointment.client?.id && (
                                 <Link
                                     href={`/customers/${appointment.client.id}`}
-                                    className="btn btn-sm btn-outline-primary"
+                                    className="btn btn-sm btn-outline-dark"
                                     onClick={() =>
                                         trackReceptionAction({
                                             action: 'open_customer_profile',

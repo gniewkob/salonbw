@@ -8870,3 +8870,13 @@ summary:focus-visible {
     font-size: 13px;
     color: #1a1a1a;
 }
+
+/* Loyalty KPI labels — brand micro-type: uppercase, tracked, silver-ink (AA). */
+.loyalty-kpi-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6e7278;
+    margin-bottom: 0.35rem;
+}
