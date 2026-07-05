@@ -107,4 +107,16 @@ export class ClientDashboardDto {
     @ValidateNested({ each: true })
     @Type(() => RecentAppointmentDto)
     recentAppointments: RecentAppointmentDto[];
+
+    @ApiProperty({
+        description: 'Appointments where the salon proposed a new time',
+    })
+    @IsNumber()
+    pendingRescheduleCount: number;
+
+    @ApiProperty({
+        description: 'Threads where the salon wrote last (awaiting reply)',
+    })
+    @IsNumber()
+    newSalonMessageCount: number;
 }

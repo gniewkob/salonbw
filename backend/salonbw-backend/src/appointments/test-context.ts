@@ -172,6 +172,13 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         find: jest.fn(() => Promise.resolve([])),
     };
 
+    const mockAppointmentMessagesRepo = {
+        find: jest.fn(() => Promise.resolve([])),
+        create: jest.fn((data: unknown) => data),
+        save: jest.fn((entity: unknown) => Promise.resolve(entity)),
+        createQueryBuilder: jest.fn(),
+    };
+
     const service = new AppointmentsService(
         mockAppointmentsRepo,
         mockServicesRepo,
@@ -179,6 +186,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockRecipeItemsRepo,
         mockUsersRepo,
         mockCalendarSettingsRepo as never,
+        mockAppointmentMessagesRepo as never,
         mockCommissionsService,
         mockLogService,
         mockWhatsappService,

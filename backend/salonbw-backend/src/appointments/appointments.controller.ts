@@ -30,6 +30,7 @@ import { Appointment } from './appointment.entity';
 import { User } from '../users/user.entity';
 import { Service as SalonService } from '../services/service.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { AppointmentMessageDto } from './dto/appointment-message.dto';
 import { GetAppointmentsDto } from './dto/get-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
@@ -582,6 +583,33 @@ export class AppointmentsController {
         @Body() body: { notes: string | null },
     ): Promise<Appointment> {
         return this.appointmentsService.updateClientNote(id, body.notes);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
+    @Get(':id/messages')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'List the two-way message thread for an appointment',
+    })
+    async listMessages(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number; role: Role },
+    ) {
+        return this.appointmentsService.listMessages(id, user);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
+    @Post(':id/messages')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Add a message to the appointment thread' })
+    async addMessage(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: AppointmentMessageDto,
+        @CurrentUser() user: { userId: number; role: Role },
+    ) {
+        return this.appointmentsService.addMessage(id, user, body.body);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

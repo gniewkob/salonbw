@@ -7,6 +7,7 @@ import {
     Appointment,
     AppointmentStatus,
 } from '../appointments/appointment.entity';
+import { AppointmentMessage } from '../appointments/appointment-message.entity';
 import { Review } from '../reviews/review.entity';
 import { DashboardSummaryDto } from './dto/dashboard-summary.dto';
 import { ClientDashboardDto } from './dto/client-dashboard.dto';
@@ -19,6 +20,8 @@ export class DashboardService {
         private readonly usersRepository: Repository<User>,
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
+        @InjectRepository(AppointmentMessage)
+        private readonly appointmentMessagesRepository: Repository<AppointmentMessage>,
         @InjectRepository(Review)
         private readonly reviewsRepository: Repository<Review>,
     ) {}
@@ -174,6 +177,48 @@ export class DashboardService {
         };
     }
 
+    /**
+     * "You have something waiting" banner signals for the client dashboard:
+     * appointments where the salon proposed a new time (needs acceptance)
+     * and threads where the salon wrote last (client hasn't replied).
+     */
+    private async getClientActionSignals(userId: number): Promise<{
+        pendingRescheduleCount: number;
+        newSalonMessageCount: number;
+    }> {
+        const [pendingRescheduleCount, newSalonMessageCount] =
+            await Promise.all([
+                this.appointmentsRepository.count({
+                    where: {
+                        client: { id: userId },
+                        status: AppointmentStatus.RescheduledPending,
+                    },
+                }),
+                this.appointmentMessagesRepository
+                    .createQueryBuilder('m')
+                    .innerJoin(Appointment, 'a', 'a.id = m.appointmentId')
+                    .where('a.clientId = :userId', { userId })
+                    .andWhere('a.status NOT IN (:...done)', {
+                        done: [
+                            AppointmentStatus.Cancelled,
+                            AppointmentStatus.NoShow,
+                        ],
+                    })
+                    .andWhere((qb) => {
+                        const sub = qb
+                            .subQuery()
+                            .select('MAX(m2.createdAt)')
+                            .from(AppointmentMessage, 'm2')
+                            .where('m2.appointmentId = m.appointmentId')
+                            .getQuery();
+                        return `m.createdAt = ${sub}`;
+                    })
+                    .andWhere("m.authorRole <> 'client'")
+                    .getCount(),
+            ]);
+        return { pendingRescheduleCount, newSalonMessageCount };
+    }
+
     async getClientSummary(userId: number): Promise<ClientDashboardDto> {
         const now = new Date();
 
@@ -191,6 +236,8 @@ export class DashboardService {
             relations: ['service', 'employee'],
             order: { startTime: 'ASC' },
         });
+
+        const actionSignals = await this.getClientActionSignals(userId);
 
         const [completedCount, allAppointments, recentAppointments] =
             await Promise.all([
@@ -260,6 +307,8 @@ export class DashboardService {
                     apt.employee?.name ?? apt.employee?.email ?? undefined,
                 notes: apt.notes ?? null,
             })),
+            pendingRescheduleCount: actionSignals.pendingRescheduleCount,
+            newSalonMessageCount: actionSignals.newSalonMessageCount,
         };
     }
 }

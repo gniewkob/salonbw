@@ -23,6 +23,7 @@ import {
     AppointmentStatus,
     PaymentMethod,
 } from './appointment.entity';
+import { AppointmentMessage } from './appointment-message.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
@@ -59,6 +60,8 @@ export class AppointmentsService {
         private readonly usersRepository: Repository<User>,
         @InjectRepository(CalendarSettings)
         private readonly calendarSettingsRepository: Repository<CalendarSettings>,
+        @InjectRepository(AppointmentMessage)
+        private readonly appointmentMessagesRepository: Repository<AppointmentMessage>,
         private readonly commissionsService: CommissionsService,
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
@@ -1301,6 +1304,87 @@ export class AppointmentsService {
         const trimmed = notes?.trim();
         appointment.notes = trimmed ? trimmed : undefined;
         return this.appointmentsRepository.save(appointment);
+    }
+
+    // ── Two-way message thread (client ↔ salon) ────────────────────────
+    private async loadAppointmentForThread(
+        id: number,
+        actor: { userId: number; role: Role },
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+            relations: ['client'],
+        });
+        if (!appointment) {
+            throw new BadRequestException('Appointment not found');
+        }
+        // Clients may only touch their own thread; staff see all.
+        if (
+            actor.role === Role.Client &&
+            appointment.client?.id !== actor.userId
+        ) {
+            throw new ForbiddenException(
+                'You can only access your own appointment messages',
+            );
+        }
+        return appointment;
+    }
+
+    async listMessages(
+        id: number,
+        actor: { userId: number; role: Role },
+    ): Promise<AppointmentMessage[]> {
+        await this.loadAppointmentForThread(id, actor);
+        return this.appointmentMessagesRepository.find({
+            where: { appointmentId: id },
+            order: { createdAt: 'ASC' },
+        });
+    }
+
+    async addMessage(
+        id: number,
+        actor: { userId: number; role: Role },
+        body: string,
+    ): Promise<AppointmentMessage> {
+        await this.loadAppointmentForThread(id, actor);
+        const trimmed = body?.trim();
+        if (!trimmed) {
+            throw new BadRequestException('Message body is required');
+        }
+        const message = this.appointmentMessagesRepository.create({
+            appointmentId: id,
+            authorId: actor.userId,
+            authorRole: actor.role,
+            body: trimmed.slice(0, 2000),
+        });
+        return this.appointmentMessagesRepository.save(message);
+    }
+
+    /**
+     * Client-facing "you have something to respond to" signal: appointments
+     * (not cancelled/no_show) whose thread's LAST message came from the salon,
+     * i.e. the client hasn't replied yet.
+     */
+    async countUnrepliedSalonMessages(clientId: number): Promise<number> {
+        const rows = await this.appointmentMessagesRepository
+            .createQueryBuilder('m')
+            .innerJoin(Appointment, 'a', 'a.id = m.appointmentId')
+            .where('a.clientId = :clientId', { clientId })
+            .andWhere('a.status NOT IN (:...done)', {
+                done: [AppointmentStatus.Cancelled, AppointmentStatus.NoShow],
+            })
+            .andWhere((qb) => {
+                const sub = qb
+                    .subQuery()
+                    .select('MAX(m2.createdAt)')
+                    .from(AppointmentMessage, 'm2')
+                    .where('m2.appointmentId = m.appointmentId')
+                    .getQuery();
+                return `m.createdAt = ${sub}`;
+            })
+            .andWhere("m.authorRole <> 'client'")
+            .getCount();
+        return rows;
     }
 
     async countOnlinePending(employeeId?: number): Promise<number> {
