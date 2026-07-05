@@ -598,6 +598,7 @@ describe('AppointmentDrawer', () => {
         expect(sectionHeadings).toEqual([
             'Wizyta',
             'Klient',
+            'Wiadomości z klientką',
             'Formularz zabiegu',
             'Sprzedaż',
             'Akcje',

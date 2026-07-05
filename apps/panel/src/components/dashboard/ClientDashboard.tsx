@@ -134,6 +134,36 @@ export default function ClientDashboard() {
                 </Link>
             </div>
 
+            {/* Notification banner — pending reschedule or new messages */}
+            {(data.pendingRescheduleCount > 0 ||
+                data.newSalonMessageCount > 0) && (
+                <div
+                    className="client-dashboard-banner"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <div className="client-dashboard-banner__messages">
+                        {data.pendingRescheduleCount > 0 && (
+                            <span className="client-dashboard-banner__msg">
+                                Salon zaproponował nowy termin — zaakceptuj lub
+                                odrzuć.
+                            </span>
+                        )}
+                        {data.newSalonMessageCount > 0 && (
+                            <span className="client-dashboard-banner__msg">
+                                Masz nową wiadomość od salonu.
+                            </span>
+                        )}
+                    </div>
+                    <Link
+                        href="/visits"
+                        className="btn btn-sm btn-outline-dark flex-shrink-0"
+                    >
+                        Zobacz
+                    </Link>
+                </div>
+            )}
+
             {/* Nearest appointment */}
             <div className="salonbw-dashboard__grid">
                 <div className="salonbw-dashboard__section">

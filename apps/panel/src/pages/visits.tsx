@@ -5,6 +5,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
 import StarRating from '@/components/StarRating';
+import MessageThread from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 
@@ -153,6 +154,7 @@ function VisitRow({
     const { apiFetch } = useAuth();
     const toast = useToast();
     const [changingReview, setChangingReview] = useState(false);
+    const [messagesOpen, setMessagesOpen] = useState(false);
 
     const removeReview = async () => {
         if (!visit.review) return;
@@ -251,6 +253,29 @@ function VisitRow({
                     >
                         Umów ponownie
                     </Link>
+                )}
+            </div>
+
+            {/* Expandable message thread */}
+            <div className="mt-2 w-100">
+                <button
+                    type="button"
+                    className="btn btn-link btn-sm p-0 text-muted"
+                    aria-expanded={messagesOpen}
+                    aria-controls={`messages-panel-${visit.id}`}
+                    onClick={() => setMessagesOpen((v) => !v)}
+                >
+                    {messagesOpen
+                        ? '▲ Ukryj wiadomości z salonem'
+                        : '▼ Wiadomości z salonem'}
+                </button>
+                {messagesOpen && (
+                    <div
+                        id={`messages-panel-${visit.id}`}
+                        className="mt-2 p-2 rounded border"
+                    >
+                        <MessageThread appointmentId={visit.id} />
+                    </div>
                 )}
             </div>
         </div>

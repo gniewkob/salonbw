@@ -8765,3 +8765,108 @@ summary:focus-visible {
 .online-booking-settings__notice--err {
     color: #c0392b;
 }
+
+/* ─── message-thread ────────────────────────────────────────────────────── */
+
+.message-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.message-thread__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.message-thread__row {
+    display: flex;
+}
+
+.message-thread__row--own {
+    justify-content: flex-end;
+}
+
+.message-thread__row--other {
+    justify-content: flex-start;
+}
+
+.message-thread__bubble-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.message-thread__row--own .message-thread__bubble-wrap {
+    align-items: flex-end;
+}
+
+.message-thread__row--other .message-thread__bubble-wrap {
+    align-items: flex-start;
+}
+
+.message-thread__sender {
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.message-thread__bubble {
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 8px 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.message-thread__bubble--own {
+    background-color: #0d0d0d;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.message-thread__bubble--other {
+    background-color: #f0f0f0;
+    color: #1a1a1a;
+    border-bottom-left-radius: 4px;
+}
+
+.message-thread__time {
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.message-thread__loading,
+.message-thread__empty {
+    text-align: center;
+    padding: 12px 0;
+}
+
+/* notification banner on client dashboard */
+.client-dashboard-banner {
+    border-left: 3px solid #0d0d0d;
+    background: #f8f8f8;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.client-dashboard-banner__messages {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.client-dashboard-banner__msg {
+    font-size: 13px;
+    color: #1a1a1a;
+}

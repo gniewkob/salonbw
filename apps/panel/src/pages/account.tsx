@@ -28,7 +28,9 @@ export default function AccountPage() {
     const [profileSaved, setProfileSaved] = useState(false);
     const [profileError, setProfileError] = useState('');
 
+    const [notifyPanel, setNotifyPanel] = useState(true);
     const [smsConsent, setSmsConsent] = useState(false);
+    const [whatsappConsent, setWhatsappConsent] = useState(false);
     const [emailConsent, setEmailConsent] = useState(false);
     const [consentSaving, setConsentSaving] = useState(false);
     const [consentSaved, setConsentSaved] = useState(false);
@@ -38,7 +40,9 @@ export default function AccountPage() {
         if (!user) return;
         setName(user.name ?? '');
         setPhone(user.phone ?? '');
+        setNotifyPanel(user.notifyPanel ?? true);
         setSmsConsent(Boolean(user.smsConsent));
+        setWhatsappConsent(Boolean(user.whatsappConsent));
         setEmailConsent(Boolean(user.emailConsent));
     }, [user]);
 
@@ -76,8 +80,14 @@ export default function AccountPage() {
             await apiFetch('/users/profile/consent', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ smsConsent, emailConsent }),
+                body: JSON.stringify({
+                    notifyPanel,
+                    smsConsent,
+                    whatsappConsent,
+                    emailConsent,
+                }),
             });
+            await refreshProfile();
             setConsentSaved(true);
         } catch {
             setConsentError('Nie udało się zapisać zgód. Spróbuj ponownie.');
@@ -229,33 +239,35 @@ export default function AccountPage() {
                         )}
                     </PanelSection>
 
-                    <PanelSection title="Zgody marketingowe i kontaktowe">
+                    <PanelSection title="Powiadomienia i zgody kontaktowe">
                         <p className="text-muted" style={{ marginTop: -4 }}>
-                            Zdecyduj, jak salon może się z Tobą kontaktować.
-                            Zgody możesz w każdej chwili zmienić.
+                            Wybierz, którymi kanałami salon ma Cię powiadamiać o
+                            wizytach (potwierdzenia, przypomnienia, zmiany
+                            terminu, wiadomości). Możesz to zmienić w każdej
+                            chwili.
                         </p>
                         <div style={{ maxWidth: 480 }}>
                             <div className="form-check mb-2">
                                 <input
-                                    id="acc-consent-email"
+                                    id="acc-notify-panel"
                                     type="checkbox"
                                     className="form-check-input"
-                                    checked={emailConsent}
+                                    checked={notifyPanel}
                                     disabled={consentSaving}
                                     onChange={(e) => {
-                                        setEmailConsent(e.target.checked);
+                                        setNotifyPanel(e.target.checked);
                                         setConsentSaved(false);
                                     }}
                                 />
                                 <label
-                                    htmlFor="acc-consent-email"
+                                    htmlFor="acc-notify-panel"
                                     className="form-check-label"
                                 >
-                                    Zgoda na kontakt e-mail (potwierdzenia,
-                                    przypomnienia, informacje marketingowe)
+                                    Panel (w aplikacji) — powiadomienia na
+                                    pulpicie po zalogowaniu
                                 </label>
                             </div>
-                            <div className="form-check mb-3">
+                            <div className="form-check mb-2">
                                 <input
                                     id="acc-consent-sms"
                                     type="checkbox"
@@ -271,8 +283,46 @@ export default function AccountPage() {
                                     htmlFor="acc-consent-sms"
                                     className="form-check-label"
                                 >
-                                    Zgoda na kontakt SMS / WhatsApp
-                                    (potwierdzenia, przypomnienia)
+                                    SMS (na telefon)
+                                </label>
+                            </div>
+                            <div className="form-check mb-2">
+                                <input
+                                    id="acc-consent-whatsapp"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={whatsappConsent}
+                                    disabled={consentSaving}
+                                    onChange={(e) => {
+                                        setWhatsappConsent(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-consent-whatsapp"
+                                    className="form-check-label"
+                                >
+                                    WhatsApp
+                                </label>
+                            </div>
+                            <div className="form-check mb-3">
+                                <input
+                                    id="acc-consent-email"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={emailConsent}
+                                    disabled={consentSaving}
+                                    onChange={(e) => {
+                                        setEmailConsent(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-consent-email"
+                                    className="form-check-label"
+                                >
+                                    E-mail (potwierdzenia, przypomnienia,
+                                    informacje)
                                 </label>
                             </div>
                             {consentError && (

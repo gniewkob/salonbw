@@ -74,6 +74,9 @@ global.BroadcastChannel = class {
     }
 };
 
+// jsdom doesn't implement scrollIntoView — stub it for all tests
+window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
 // polyfill window.matchMedia used by react-hot-toast
 global.matchMedia = ((query: string) => ({
     media: query,

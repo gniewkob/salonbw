@@ -19,7 +19,9 @@ export interface User {
     avatarUrl?: string;
     gdprConsent?: boolean;
     gdprConsentDate?: string;
+    notifyPanel?: boolean;
     smsConsent?: boolean;
+    whatsappConsent?: boolean;
     emailConsent?: boolean;
 }
 
@@ -343,6 +345,8 @@ export interface ClientDashboardResponse {
         employeeName?: string;
         notes?: string | null;
     }[];
+    pendingRescheduleCount: number;
+    newSalonMessageCount: number;
 }
 
 export interface Notification {

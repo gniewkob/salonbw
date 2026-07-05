@@ -24,6 +24,7 @@ import ClientNoteSection from './appointment-drawer/ClientNoteSection';
 import FormulaSection from './appointment-drawer/FormulaSection';
 import ActionsSection from './appointment-drawer/ActionsSection';
 import ServiceCombobox from './appointment-drawer/ServiceCombobox';
+import MessageThread from '@/components/messages/MessageThread';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -678,6 +679,16 @@ export default function AppointmentDrawer({
                             read the client's booking note + reply to it). */}
                         {isEditMode && (
                             <ClientNoteSection appointment={appointment} />
+                        )}
+
+                        {/* Messaging thread with client (edit mode only) */}
+                        {isEditMode && appointment?.id && (
+                            <div className="rounded border p-2 mb-2">
+                                <strong className="d-block small mb-2">
+                                    Wiadomości z klientką
+                                </strong>
+                                <MessageThread appointmentId={appointment.id} />
+                            </div>
                         )}
 
                         {/* Formula + history (edit mode, confirmed+ only) */}
