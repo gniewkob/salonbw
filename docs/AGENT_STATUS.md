@@ -296,6 +296,7 @@ Operational note (2026-05-09):
 - Standardized workflow mutation audit trail markers/metadata across incident automation comments and issue body (`workflow`, `workflow_run_id`, `source_event`, `dry_run`, plus dedup/source run context where applicable).
 - Extended Node 24 actions runtime opt-in (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`) across all ops incident workflows to reduce deprecation warning noise and keep runtime behavior consistent.
 - Added workflow `.github/workflows/ops_workflow_noise_guard.yml` for post-run warning/deprecation scanning with strict-by-default allowlist (`.github/ops-noise-allowlist.txt`) and noise report artifact output.
+- Added workflow `.github/workflows/ops_logs_query.yml` as a manual Loki query helper for bounded production log inspection without SSH.
 - Recorded first successful manual noise-guard run: `Ops Workflow Noise Guard` run `25655043815` (source run `25653746343`, `unexpectedMatches=0`, `totalMatches=0`), artifact `ops-workflow-noise-report-25655043815`.
 - Added static ops workflow regression guard script `scripts/check-ops-workflows.sh` and wired it into `CI` as `Ops Workflow Regression Checks` to fail on critical workflow guard regressions (permissions/concurrency/dry-run/evidence/allowlist/docs matrix).
 - Added fixture schema regression guard script `scripts/validate-batch-telemetry-fixtures.sh` and wired it into `CI` as `Ops Fixture Schema Regression Checks` to fail on broken synthetic evidence fixtures (`status/action/reason/config.lookbackWindow/counts/queries/exitCode`).

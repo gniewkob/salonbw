@@ -353,6 +353,7 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
 | `ops_batch_stats_incident_closure_guard.yml` | `read` | `none` | `write` | Reads closed incident issues and reopens/comments when closure evidence is missing. |
 | `ops_batch_stats_drill.yml` | `read` | `none` | `none` | Validates fixtures/guards and publishes drill report artifact only. |
 | `ops_workflow_noise_guard.yml` | `read` | `read` | `none` | Reads source workflow logs via Actions API and uploads noise report artifact. |
+| `ops_logs_query.yml` | `none` | `none` | `none` | Manual Loki query helper; reads only supplied secrets and does not mutate repo, Actions, or issues. |
 | `ops_probe_panel.yml` | `n/a` | `n/a` | `n/a` | Manual SSH probe workflow (legacy operational diagnostics); no issue mutation. |
 | `ops_maintenance.yml` | `n/a` | `n/a` | `n/a` | Manual SSH maintenance/probe workflow (legacy operational diagnostics); no issue mutation. |
 
