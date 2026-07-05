@@ -12,6 +12,12 @@
 
 ## Current focus
 
+- **AUDYT ADMINA (live, bez fixów) 2026-07-05** — owner sfrustrowany: „bez przejścia wszystkich ścieżek nie wydajemy". Przeszedłem panel admina na prod. WYNIK (priorytety):
+  - 🔴 **BUGI FUNKCJONALNE:** (1) `/statistics/comments` = martwa atrapa „Wymagana integracja z API Booksy" — bez sensu (odchodzą od Booksy, mamy natywne oceny gwiazdkowe); do usunięcia/redirect na natywne opinie. (2) Program lojalnościowy: modal „Zrealizuj kupon" renderuje się POZA EKRANEM (CSS pozycjonowanie) — nie da się zrealizować kuponu. (3) Kategorie usług+produktów: backend 100% (POST/reorder/DELETE = 201/200/200 zweryfikowane live), ale UI NIE MA kontrolki reorder mimo wsparcia backendu; produkty bez zaseedowanych kategorii („Brak kategorii"); UX = modal-w-modalu; brak kryteriów/filtrów definiowalnych (owner chce „definiować, nazywać, dawać kryteria" jak segmenty klientów). (4) Recharts `width(-1) height(-1)` w konsoli — wykres w kontenerze zerowego rozmiaru (ukryta zakładka/brak min-height). (5) `/settings/privacy` wciąż pokazuje STARY zlepiony „SMS/WhatsApp" — niespójne z nowym 4-kanałowym /account.
+  - 🟡 **DESIGN „atrapa":** lojalność (przygaszone karty), modale kategorii brzydkie, ustawienia surowe.
+  - 🟢 **DZIAŁA wbrew wrażeniu ownera:** usługi „edytuj" + „zarządzaj wariantami" DZIAŁAJĄ (oba otwierają modal); Dane salonu (wypełnione), Funkcje (dwubooking/same-day/reschedule toggles), Godziny, Prywatność (zgody), Grafik pracy (tydzień, Aleksandra, Edytuj/Szablony/Kopiuj) — renderują się z treścią.
+  - 🧹 **DŁUG TESTOWY (Faza 5):** „Pracownik (test)" w grafiku, „Test Klient"/„Test tesr"/„E2E Klient Zmieniony" na liście klientów, moje wiadomości audytowe na #101.
+  - **Decyzja ownera:** najpierw sam audyt (zrobione), Versum jako wzorzec dla designu kategorii/lojalności (dostęp obieca dać). Fixy = następny sprint, kolejność od bugów funkcjonalnych.
 - **Full-session sprint — COMPLETE (2026-06-08/09)** (commits `ea63309b`–`9c875628`, master `3b1d03f5`)
   See `docs/IMPLEMENTATION_BACKLOG_STATUS.md` for full per-phase details. Summary:
 
