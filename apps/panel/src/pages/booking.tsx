@@ -47,14 +47,25 @@ function formatPrice(price: number, priceType: string): string {
     return priceType === 'from' ? `od ${price} zł` : `${price} zł`;
 }
 
+// Format a Date as YYYY-MM-DD in LOCAL time. Using toISOString() here is a
+// bug: it converts local midnight to UTC, so in a UTC+ timezone (e.g. Poland
+// in summer) it yields the previous calendar day — which made "today" wrong
+// after midnight and cancelled the day-stepper's +1/-1.
+function toISODateLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 function todayISODate(): string {
-    return new Date().toISOString().slice(0, 10);
+    return toISODateLocal(new Date());
 }
 
 function addDaysISO(dateStr: string, days: number): string {
     const d = new Date(`${dateStr}T00:00:00`);
     d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
+    return toISODateLocal(d);
 }
 
 type Step = 'service' | 'slot' | 'confirm';
