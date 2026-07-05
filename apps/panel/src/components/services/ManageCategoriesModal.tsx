@@ -7,6 +7,7 @@ import {
     useCreateServiceCategory,
     useUpdateServiceCategory,
     useDeleteServiceCategory,
+    useReorderCategories,
 } from '@/hooks/useServicesAdmin';
 
 interface Props {
@@ -32,6 +33,19 @@ export default function ManageCategoriesModal({
     const createCategory = useCreateServiceCategory();
     const updateCategory = useUpdateServiceCategory();
     const deleteCategory = useDeleteServiceCategory();
+    const reorderCategories = useReorderCategories();
+
+    // Move a top-level category up/down and persist the new order. Backend
+    // reorder sets sortOrder by array position (verified live: 200).
+    const moveCategory = (index: number, direction: -1 | 1) => {
+        const target = index + direction;
+        if (target < 0 || target >= categories.length) return;
+        const ordered = categories.map((c) => c.id);
+        [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+        void reorderCategories.mutateAsync(ordered).catch(() => {
+            // error handled by hook
+        });
+    };
 
     const handleEdit = (category: ServiceCategory) => {
         setEditingCategory(category);
@@ -65,13 +79,19 @@ export default function ManageCategoriesModal({
         setConfirmDeleteCategory({ id, name });
     };
 
-    const renderCategoryRow = (category: ServiceCategory, level = 0) => {
+    const renderCategoryRow = (
+        category: ServiceCategory,
+        level = 0,
+        index = 0,
+        siblingsCount = 1,
+    ) => {
         const rowStyle = {
             '--dynamic-padding': `${20 + level * 20}px`,
         } as React.CSSProperties;
         const dotStyle = {
             '--dynamic-color': category.color,
         } as React.CSSProperties;
+        const isTopLevel = level === 0;
 
         return (
             <div key={category.id}>
@@ -86,11 +106,48 @@ export default function ManageCategoriesModal({
                                 style={dotStyle}
                             />
                         )}
-                        <span className={level === 0 ? 'fw-600' : ''}>
-                            {category.name}
-                        </span>
+                        <div>
+                            <span className={isTopLevel ? 'fw-600' : ''}>
+                                {category.name}
+                            </span>
+                            {category.description && (
+                                <div className="text-muted small">
+                                    {category.description}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div className="btn-group">
+                        {isTopLevel && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={() => moveCategory(index, -1)}
+                                    disabled={
+                                        index === 0 ||
+                                        reorderCategories.isPending
+                                    }
+                                    title="Przesuń wyżej"
+                                    aria-label="Przesuń kategorię wyżej"
+                                >
+                                    <i className="fa fa-arrow-up"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={() => moveCategory(index, 1)}
+                                    disabled={
+                                        index === siblingsCount - 1 ||
+                                        reorderCategories.isPending
+                                    }
+                                    title="Przesuń niżej"
+                                    aria-label="Przesuń kategorię niżej"
+                                >
+                                    <i className="fa fa-arrow-down"></i>
+                                </button>
+                            </>
+                        )}
                         <button
                             type="button"
                             className="btn btn-outline-secondary btn-sm"
@@ -163,8 +220,13 @@ export default function ManageCategoriesModal({
                                 style={{ maxHeight: 400 }}
                             >
                                 {categories.length > 0 ? (
-                                    categories.map((cat) =>
-                                        renderCategoryRow(cat),
+                                    categories.map((cat, i) =>
+                                        renderCategoryRow(
+                                            cat,
+                                            0,
+                                            i,
+                                            categories.length,
+                                        ),
                                     )
                                 ) : (
                                     <div className="p-4 text-center text-muted">
