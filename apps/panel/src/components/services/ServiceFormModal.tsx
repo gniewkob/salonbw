@@ -570,8 +570,8 @@ export default function ServiceFormModal({
 
     return (
         <div
-            className="modal fade in block bg-modal-overlay"
-            style={{ display: 'block' }}
+            className="modal bg-modal-overlay"
+            style={{ display: 'block', opacity: 1 }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="service-form-modal-title"
