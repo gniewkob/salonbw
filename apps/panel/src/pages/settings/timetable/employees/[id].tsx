@@ -493,16 +493,11 @@ export default function SettingsTimetableEmployeeDetailPage() {
             <RouteGuard roles={['admin', 'employee']}>
                 <SalonShell role={role}>
                     <div
-                        className="settings-detail-layout"
+                        className="settings-detail-layout__main"
                         data-testid="settings-detail"
                     >
-                        <aside className="settings-detail-layout__sidebar">
-                            {secondaryNav}
-                        </aside>
-                        <div className="settings-detail-layout__main">
-                            <div className="settings-detail-state">
-                                Ładowanie grafiku...
-                            </div>
+                        <div className="settings-detail-state">
+                            Ładowanie grafiku...
                         </div>
                     </div>
                 </SalonShell>
@@ -515,25 +510,18 @@ export default function SettingsTimetableEmployeeDetailPage() {
             <RouteGuard roles={['admin', 'employee']}>
                 <SalonShell role={role}>
                     <div
-                        className="settings-detail-layout"
+                        className="settings-detail-layout__main"
                         data-testid="settings-detail"
                     >
-                        <aside className="settings-detail-layout__sidebar">
-                            {secondaryNav}
-                        </aside>
-                        <div className="settings-detail-layout__main">
-                            <div className="settings-detail-state settings-detail-state--error">
-                                <div>
-                                    Nie udało się pobrać grafiku pracownika.
-                                </div>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() => void refetch()}
-                                >
-                                    odśwież
-                                </button>
-                            </div>
+                        <div className="settings-detail-state settings-detail-state--error">
+                            <div>Nie udało się pobrać grafiku pracownika.</div>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary"
+                                onClick={() => void refetch()}
+                            >
+                                odśwież
+                            </button>
                         </div>
                     </div>
                 </SalonShell>

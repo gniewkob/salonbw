@@ -387,7 +387,7 @@ export default function ActivityLogRoute({
                                     </div>
                                 ) : (
                                     <>
-                                        <table className="table data_table no_hover table-bordered">
+                                        <table className="table no_hover table-bordered">
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Data</th>

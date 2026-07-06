@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import PrivacySettingsPage from '@/pages/settings/privacy';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,9 +28,8 @@ jest.mock('@/components/salon/SalonShell', () => ({
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('PrivacySettingsPage', () => {
-    it('shows load error and retry when profile fetch fails', async () => {
-        const apiFetch = jest.fn().mockRejectedValue(new Error('network'));
-
+    it('renders informational RODO tab pointing personal consents to /account', () => {
+        const apiFetch = jest.fn();
         mockedUseAuth.mockReturnValue(
             createAuthValue({
                 role: 'client',
@@ -43,94 +42,23 @@ describe('PrivacySettingsPage', () => {
 
         render(<PrivacySettingsPage />);
 
+        // The salon settings page no longer edits the logged-in user's own
+        // marketing consent (that lives on /account) — it is informational.
         expect(
-            await screen.findByText(/Nie udało się załadować aktualnych zgód/i),
+            screen.getByRole('heading', { name: /Twoje prawa \(RODO/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Spróbuj ponownie' }),
-        ).toBeInTheDocument();
-    });
+            screen.getByRole('link', { name: /Moim koncie/i }),
+        ).toHaveAttribute('href', '/account');
 
-    it('does not call consent PATCH while load error is active', async () => {
-        const apiFetch = jest.fn().mockRejectedValue(new Error('network'));
-
-        mockedUseAuth.mockReturnValue(
-            createAuthValue({
-                role: 'client',
-                isAuthenticated: true,
-                apiFetch: apiFetch as ReturnType<
-                    typeof createAuthValue
-                >['apiFetch'],
-            }),
-        );
-
-        render(<PrivacySettingsPage />);
-
-        await screen.findByText(/Nie udało się załadować aktualnych zgód/i);
-
+        // No personal-consent save button, and no consent PATCH is issued.
         expect(
             screen.queryByRole('button', { name: 'Zapisz ustawienia' }),
         ).not.toBeInTheDocument();
-
         expect(
             apiFetch.mock.calls.some(
-                ([path, init]) =>
-                    path === '/users/profile/consent' &&
-                    (init as { method?: string } | undefined)?.method ===
-                        'PATCH',
+                ([path]) => path === '/users/profile/consent',
             ),
         ).toBe(false);
-    });
-
-    it('allows save after successful retry', async () => {
-        const apiFetch = jest
-            .fn()
-            .mockRejectedValueOnce(new Error('network'))
-            .mockResolvedValueOnce({
-                id: 1,
-                role: 'client',
-                gdprConsent: true,
-                smsConsent: false,
-                emailConsent: false,
-                gdprConsentDate: '2026-05-01T00:00:00.000Z',
-            })
-            .mockResolvedValueOnce({ smsConsent: true, emailConsent: false });
-
-        mockedUseAuth.mockReturnValue(
-            createAuthValue({
-                role: 'client',
-                isAuthenticated: true,
-                apiFetch: apiFetch as ReturnType<
-                    typeof createAuthValue
-                >['apiFetch'],
-            }),
-        );
-
-        render(<PrivacySettingsPage />);
-
-        const retryButton = await screen.findByRole('button', {
-            name: 'Spróbuj ponownie',
-        });
-        fireEvent.click(retryButton);
-
-        const saveButton = await screen.findByRole('button', {
-            name: 'Zapisz ustawienia',
-        });
-        fireEvent.click(saveButton);
-
-        await waitFor(() => {
-            expect(
-                apiFetch.mock.calls.some(
-                    ([path, init]) =>
-                        path === '/users/profile/consent' &&
-                        (init as { method?: string } | undefined)?.method ===
-                            'PATCH',
-                ),
-            ).toBe(true);
-        });
-
-        expect(
-            await screen.findByText('Ustawienia zostały zapisane.'),
-        ).toBeInTheDocument();
     });
 });

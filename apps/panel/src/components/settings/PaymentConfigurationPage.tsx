@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import SettingsDetailLayout from '@/components/settings/SettingsDetailLayout';
-import PanelActionBar from '@/components/ui/PanelActionBar';
 import {
     usePaymentConfigurationSettings,
     useSettingsMutations,
@@ -8,15 +7,10 @@ import {
 
 const paymentNavItems = [
     {
-        label: 'Moment Pay',
+        label: 'Płatności online',
         iconClass: 'sprite-settings_product_purchase_prices',
         href: '/settings/payment-configuration',
         active: true,
-    },
-    {
-        label: 'Napiwki',
-        iconClass: 'sprite-tips',
-        href: '/statistics/tips',
     },
 ] as const;
 
@@ -26,16 +20,12 @@ export default function PaymentConfigurationPage() {
     const { data, isLoading, error, refetch } =
         usePaymentConfigurationSettings();
     const { updatePaymentConfiguration } = useSettingsMutations();
-    const [learnMoreVisible, setLearnMoreVisible] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [requirePrepayment, setRequirePrepayment] = useState(false);
     const [prepaymentPercentage, setPrepaymentPercentage] = useState(100);
 
     useEffect(() => {
-        if (!data) {
-            return;
-        }
-
+        if (!data) return;
         setRequirePrepayment(data.requirePrepayment);
         setPrepaymentPercentage(data.prepaymentPercentage);
     }, [data]);
@@ -48,7 +38,6 @@ export default function PaymentConfigurationPage() {
         prepaymentPercentage?: number;
     }) => {
         setNotice(null);
-
         try {
             await updatePaymentConfiguration.mutateAsync(payload);
             setNotice('Ustawienia płatności zostały zapisane.');
@@ -61,7 +50,7 @@ export default function PaymentConfigurationPage() {
         return (
             <SettingsDetailLayout
                 sectionTitle="Płatności"
-                breadcrumbLabel="Moment Pay"
+                breadcrumbLabel="Płatności online"
                 navItems={[...paymentNavItems]}
             >
                 <div className="settings-detail-state">
@@ -75,7 +64,7 @@ export default function PaymentConfigurationPage() {
         return (
             <SettingsDetailLayout
                 sectionTitle="Płatności"
-                breadcrumbLabel="Moment Pay"
+                breadcrumbLabel="Płatności online"
                 navItems={[...paymentNavItems]}
             >
                 <div className="settings-detail-state settings-detail-state--error">
@@ -95,123 +84,77 @@ export default function PaymentConfigurationPage() {
     return (
         <SettingsDetailLayout
             sectionTitle="Płatności"
-            breadcrumbLabel="Moment Pay"
+            breadcrumbLabel="Płatności online"
             navItems={[...paymentNavItems]}
         >
-            <div className="settings-payment-page">
-                <PanelActionBar
-                    className="mt-0 border-top-0 pt-0"
-                    primary={
-                        <button
-                            type="button"
-                            className={`btn ${isEnabled ? 'btn-outline-secondary' : 'btn-primary'}`}
+            <div style={{ maxWidth: 720 }}>
+                <h2 className="fs-4 fw-bold mb-1">Płatności online</h2>
+                <p className="text-muted">Przedpłaty przy rezerwacji online.</p>
+
+                <div className="alert alert-warning" role="status">
+                    <strong>
+                        Pobieranie płatności online wymaga integracji z
+                        operatorem płatności.
+                    </strong>{' '}
+                    Ta integracja nie jest jeszcze podłączona. Poniższe
+                    ustawienia przedpłat zapisują się i zadziałają, gdy operator
+                    zostanie skonfigurowany.
+                </div>
+
+                <div className="bg-white rounded-4 border shadow-sm p-4">
+                    <div className="form-check form-switch mb-3">
+                        <input
+                            id="accept-online"
+                            className="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            checked={isEnabled}
                             disabled={updatePaymentConfiguration.isPending}
-                            onClick={() =>
+                            onChange={() =>
                                 void saveConfiguration({
                                     acceptOnlinePayments: !isEnabled,
                                 })
                             }
+                        />
+                        <label
+                            className="form-check-label fw-medium"
+                            htmlFor="accept-online"
                         >
-                            {updatePaymentConfiguration.isPending
-                                ? 'zapisywanie...'
-                                : isEnabled
-                                  ? 'wyłącz Moment Pay'
-                                  : 'aktywuj Moment Pay'}
-                        </button>
-                    }
-                />
-
-                <section
-                    className="settings-payment-page__blank d-flex flex-column align-items-center"
-                    aria-label="Moment Pay activation"
-                >
-                    <div
-                        className="settings-payment-page__art d-flex align-items-center justify-content-center"
-                        aria-hidden="true"
-                    >
-                        <div className="settings-payment-page__art-shadow" />
-                        <div className="settings-payment-page__art-badge">
-                            m
-                        </div>
+                            Włącz przedpłaty online
+                        </label>
                     </div>
 
-                    <h2 className="settings-payment-page__title text-center">
-                        Moment Pay
-                    </h2>
-
-                    <p className="settings-payment-page__description text-center">
-                        Aktywuj system płatności online Moment Pay, aby
-                        zmniejszyć ilość zapomnianych wizyt i usprawnić proces
-                        rezerwacji usług. Dzięki niemu zyskasz możliwość
-                        przyjmowania przedpłat w procesie rezerwacji przez
-                        portal Moment.pl, a także umożliwisz klientom opłacenie
-                        przedpłat dla wizyt dodanych przez Ciebie w kalendarzu,
-                        w dogodnym dla nich czasie i miejscu. Co więcej, Moment
-                        Pay pozwoli Ci zaoferować klientom dodatkowe metody
-                        płatności, a co za tym idzie, zwiększyć ich komfort.
-                    </p>
-
-                    <button
-                        type="button"
-                        className="settings-payment-page__learn-more"
-                        onClick={() =>
-                            setLearnMoreVisible((current) => !current)
-                        }
-                    >
-                        Dowiedz się więcej
-                    </button>
-                </section>
-
-                <div
-                    className={`settings-payment-page__notice ${isEnabled ? 'settings-payment-page__notice--success' : ''}`}
-                    role="status"
-                >
-                    {isEnabled
-                        ? 'Moment Pay jest aktywny i zapisuje ustawienia przez backend salonbw.'
-                        : 'Moment Pay jest obecnie wyłączony.'}
-                </div>
-
-                {learnMoreVisible ? (
-                    <div
-                        className="settings-payment-page__notice"
-                        role="status"
-                    >
-                        Aktywacja wykorzystuje istniejący backendowy endpoint
-                        ustawień płatności. Po włączeniu możesz od razu zapisać
-                        ustawienia przedpłat poniżej.
-                    </div>
-                ) : null}
-
-                <section className="settings-payment-page__card">
-                    <div className="settings-payment-page__card-title">
-                        Ustawienia przedpłat
-                    </div>
-                    <label className="settings-payment-page__toggle">
+                    <div className="form-check mb-2">
                         <input
+                            id="require-prepayment"
+                            className="form-check-input"
                             type="checkbox"
                             checked={requirePrepayment}
                             disabled={
                                 !isEnabled ||
                                 updatePaymentConfiguration.isPending
                             }
-                            onChange={(event) =>
-                                setRequirePrepayment(event.target.checked)
+                            onChange={(e) =>
+                                setRequirePrepayment(e.target.checked)
                             }
                         />
-                        <span>Wymagaj przedpłaty dla rezerwacji online</span>
-                    </label>
-
-                    <div className="settings-payment-page__subcopy">
-                        Wybierz część wartości wizyty, którą klient ma opłacić z
-                        góry.
+                        <label
+                            className="form-check-label"
+                            htmlFor="require-prepayment"
+                        >
+                            Wymagaj przedpłaty dla rezerwacji online
+                        </label>
                     </div>
 
-                    <div className="settings-payment-page__percentages">
+                    <p className="text-muted small mb-2">
+                        Część wartości wizyty, którą klient opłaca z góry:
+                    </p>
+                    <div className="btn-group mb-3" role="group">
                         {PREPAYMENT_OPTIONS.map((value) => (
                             <button
                                 key={value}
                                 type="button"
-                                className={`settings-payment-page__percentage ${prepaymentPercentage === value ? 'settings-payment-page__percentage--active' : ''}`}
+                                className={`btn btn-sm ${prepaymentPercentage === value ? 'btn-dark' : 'btn-outline-secondary'}`}
                                 disabled={
                                     !isEnabled ||
                                     !requirePrepayment ||
@@ -224,37 +167,33 @@ export default function PaymentConfigurationPage() {
                         ))}
                     </div>
 
-                    <div className="settings-payment-page__summary">
+                    <div className="text-muted small mb-3">
                         {isEnabled && requirePrepayment
                             ? `Aktywna przedpłata: ${prepaymentPercentage}%`
                             : 'Przedpłaty są wyłączone.'}
                     </div>
 
-                    <div className="settings-payment-page__actions">
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            disabled={
-                                !isEnabled ||
-                                updatePaymentConfiguration.isPending
-                            }
-                            onClick={() =>
-                                void saveConfiguration({
-                                    requirePrepayment,
-                                    prepaymentPercentage,
-                                })
-                            }
-                        >
-                            zapisz ustawienia
-                        </button>
-                    </div>
-                </section>
+                    <button
+                        type="button"
+                        className="btn btn-dark"
+                        disabled={
+                            !isEnabled || updatePaymentConfiguration.isPending
+                        }
+                        onClick={() =>
+                            void saveConfiguration({
+                                requirePrepayment,
+                                prepaymentPercentage,
+                            })
+                        }
+                    >
+                        {updatePaymentConfiguration.isPending
+                            ? 'zapisywanie...'
+                            : 'Zapisz ustawienia'}
+                    </button>
+                </div>
 
                 {notice ? (
-                    <div
-                        className="settings-payment-page__notice"
-                        role="status"
-                    >
+                    <div className="alert alert-info mt-3" role="status">
                         {notice}
                     </div>
                 ) : null}
