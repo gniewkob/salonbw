@@ -538,363 +538,347 @@ export default function SettingsTimetableEmployeeDetailPage() {
             </Head>
             <SalonShell role={role}>
                 <div
-                    className="settings-detail-layout"
+                    className="settings-detail-layout__main"
                     data-testid="settings-detail"
                 >
-                    <aside className="settings-detail-layout__sidebar">
-                        {secondaryNav}
-                    </aside>
-                    <div className="settings-detail-layout__main">
-                        <SalonBreadcrumbs
-                            iconClass="sprite-breadcrumbs_settings"
-                            items={[
-                                { label: 'Ustawienia', href: '/settings' },
-                                {
-                                    label: 'Grafiki pracowników',
-                                    href: '/settings/timetable/employees',
-                                },
-                                { label: employee.name },
-                            ]}
-                        />
+                    <SalonBreadcrumbs
+                        iconClass="sprite-breadcrumbs_settings"
+                        items={[
+                            { label: 'Ustawienia', href: '/settings' },
+                            {
+                                label: 'Grafiki pracowników',
+                                href: '/settings/timetable/employees',
+                            },
+                            { label: employee.name },
+                        ]}
+                    />
 
-                        <div>
-                            <div className="column_row top_row timetable-employee-detail__top">
-                                <div className="date">
-                                    <div className="button-group">
-                                        <Link
-                                            className="btn btn-outline-secondary"
-                                            href={{
-                                                pathname:
-                                                    '/settings/timetable/employees/[id]',
-                                                query: {
-                                                    id,
-                                                    date: toIsoDate(
-                                                        previousMonth,
-                                                    ),
-                                                },
-                                            }}
-                                        >
-                                            <span className="fc-icon fc-icon-left-single-arrow" />
-                                        </Link>
-                                        <Link
-                                            className="btn btn-outline-secondary"
-                                            href={{
-                                                pathname:
-                                                    '/settings/timetable/employees/[id]',
-                                                query: {
-                                                    id,
-                                                    date: toIsoDate(nextMonth),
-                                                },
-                                            }}
-                                        >
-                                            <span className="fc-icon fc-icon-right-single-arrow" />
-                                        </Link>
-                                    </div>
-                                    <div className="dropdown inline_block">
-                                        <div className="date_range_box">
-                                            <input
-                                                type="text"
-                                                value={formatMonthLabel(date)}
-                                                readOnly
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="inline_block">
-                                        <Link
-                                            className={
-                                                todayActive
-                                                    ? 'button disabled'
-                                                    : 'button'
-                                            }
-                                            href={{
-                                                pathname:
-                                                    '/settings/timetable/employees/[id]',
-                                                query: {
-                                                    id,
-                                                    date: toIsoDate(today),
-                                                },
-                                            }}
-                                        >
-                                            Dzisiaj
-                                        </Link>
-                                    </div>
-                                </div>
-
-                                <div className="buttons">
+                    <div>
+                        <div className="column_row top_row timetable-employee-detail__top">
+                            <div className="date">
+                                <div className="button-group">
                                     <Link
-                                        href={`/settings/employees/${id}`}
                                         className="btn btn-outline-secondary"
+                                        href={{
+                                            pathname:
+                                                '/settings/timetable/employees/[id]',
+                                            query: {
+                                                id,
+                                                date: toIsoDate(previousMonth),
+                                            },
+                                        }}
                                     >
-                                        powrót do pracownika
+                                        <span className="fc-icon fc-icon-left-single-arrow" />
+                                    </Link>
+                                    <Link
+                                        className="btn btn-outline-secondary"
+                                        href={{
+                                            pathname:
+                                                '/settings/timetable/employees/[id]',
+                                            query: {
+                                                id,
+                                                date: toIsoDate(nextMonth),
+                                            },
+                                        }}
+                                    >
+                                        <span className="fc-icon fc-icon-right-single-arrow" />
                                     </Link>
                                 </div>
-                                <div className="c" />
+                                <div className="dropdown inline_block">
+                                    <div className="date_range_box">
+                                        <input
+                                            type="text"
+                                            value={formatMonthLabel(date)}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+                                <div className="inline_block">
+                                    <Link
+                                        className={
+                                            todayActive
+                                                ? 'button disabled'
+                                                : 'button'
+                                        }
+                                        href={{
+                                            pathname:
+                                                '/settings/timetable/employees/[id]',
+                                            query: {
+                                                id,
+                                                date: toIsoDate(today),
+                                            },
+                                        }}
+                                    >
+                                        Dzisiaj
+                                    </Link>
+                                </div>
                             </div>
 
-                            <div className="column_row calendar-body">
-                                <table className="month-table timetable-employee-detail__table">
-                                    <thead>
-                                        <tr>
-                                            <th />
-                                            {DAY_LABELS.map((label) => (
-                                                <th key={label}>{label}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {visibleWeeks.map((week) => {
-                                            const weekStart = week[0]!;
-                                            const totalMinutes = week.reduce(
-                                                (sum, day) => {
+                            <div className="buttons">
+                                <Link
+                                    href={`/settings/employees/${id}`}
+                                    className="btn btn-outline-secondary"
+                                >
+                                    powrót do pracownika
+                                </Link>
+                            </div>
+                            <div className="c" />
+                        </div>
+
+                        <div className="column_row calendar-body">
+                            <table className="month-table timetable-employee-detail__table">
+                                <thead>
+                                    <tr>
+                                        <th />
+                                        {DAY_LABELS.map((label) => (
+                                            <th key={label}>{label}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {visibleWeeks.map((week) => {
+                                        const weekStart = week[0]!;
+                                        const totalMinutes = week.reduce(
+                                            (sum, day) => {
+                                                const timetable =
+                                                    getApplicableTimetable(
+                                                        employeeTimetables,
+                                                        day,
+                                                    );
+                                                if (!timetable) {
+                                                    return sum;
+                                                }
+
+                                                const dayOfWeek =
+                                                    ((day.getDay() + 6) %
+                                                        7) as DayOfWeek;
+                                                return (
+                                                    sum +
+                                                    getDailyMinutes(
+                                                        timetable.slots,
+                                                        dayOfWeek,
+                                                    )
+                                                );
+                                            },
+                                            0,
+                                        );
+
+                                        return (
+                                            <tr
+                                                key={toIsoDate(weekStart)}
+                                                className="schedule-row"
+                                            >
+                                                <td className="timetable-employee-detail__week">
+                                                    <ul className="schedule-settings">
+                                                        <li
+                                                            className="name"
+                                                            title={
+                                                                employee.name
+                                                            }
+                                                        >
+                                                            <Link
+                                                                className="inverse_decoration blue_text"
+                                                                href={{
+                                                                    pathname:
+                                                                        '/settings/timetable/employees',
+                                                                    query: {
+                                                                        date: toIsoDate(
+                                                                            weekStart,
+                                                                        ),
+                                                                        kind: 'week',
+                                                                    },
+                                                                }}
+                                                            >
+                                                                {getIsoWeek(
+                                                                    weekStart,
+                                                                )}{' '}
+                                                                tydzień
+                                                            </Link>
+                                                        </li>
+                                                        <li>
+                                                            <span className="counter counter-slim">
+                                                                {formatHours(
+                                                                    totalMinutes,
+                                                                )}
+                                                            </span>
+                                                        </li>
+                                                        <li className="schedule-edit">
+                                                            <button
+                                                                type="button"
+                                                                className="timetable-employees-page__link-button"
+                                                                onClick={() =>
+                                                                    setEditorOpen(
+                                                                        true,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Edytuj
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </td>
+
+                                                {week.map((day) => {
                                                     const timetable =
                                                         getApplicableTimetable(
                                                             employeeTimetables,
                                                             day,
                                                         );
-                                                    if (!timetable) {
-                                                        return sum;
-                                                    }
-
                                                     const dayOfWeek =
                                                         ((day.getDay() + 6) %
                                                             7) as DayOfWeek;
+                                                    const daySlots = timetable
+                                                        ? getWorkingSlots(
+                                                              timetable.slots,
+                                                              dayOfWeek,
+                                                          )
+                                                        : [];
+
                                                     return (
-                                                        sum +
-                                                        getDailyMinutes(
-                                                            timetable.slots,
-                                                            dayOfWeek,
-                                                        )
-                                                    );
-                                                },
-                                                0,
-                                            );
-
-                                            return (
-                                                <tr
-                                                    key={toIsoDate(weekStart)}
-                                                    className="schedule-row"
-                                                >
-                                                    <td className="timetable-employee-detail__week">
-                                                        <ul className="schedule-settings">
-                                                            <li
-                                                                className="name"
-                                                                title={
-                                                                    employee.name
-                                                                }
-                                                            >
-                                                                <Link
-                                                                    className="inverse_decoration blue_text"
-                                                                    href={{
-                                                                        pathname:
-                                                                            '/settings/timetable/employees',
-                                                                        query: {
-                                                                            date: toIsoDate(
-                                                                                weekStart,
-                                                                            ),
-                                                                            kind: 'week',
-                                                                        },
-                                                                    }}
-                                                                >
-                                                                    {getIsoWeek(
-                                                                        weekStart,
-                                                                    )}{' '}
-                                                                    tydzień
-                                                                </Link>
-                                                            </li>
-                                                            <li>
-                                                                <span className="counter counter-slim">
-                                                                    {formatHours(
-                                                                        totalMinutes,
-                                                                    )}
-                                                                </span>
-                                                            </li>
-                                                            <li className="schedule-edit">
-                                                                <button
-                                                                    type="button"
-                                                                    className="timetable-employees-page__link-button"
-                                                                    onClick={() =>
-                                                                        setEditorOpen(
-                                                                            true,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Edytuj
-                                                                </button>
-                                                            </li>
-                                                        </ul>
-                                                    </td>
-
-                                                    {week.map((day) => {
-                                                        const timetable =
-                                                            getApplicableTimetable(
-                                                                employeeTimetables,
-                                                                day,
-                                                            );
-                                                        const dayOfWeek =
-                                                            ((day.getDay() +
-                                                                6) %
-                                                                7) as DayOfWeek;
-                                                        const daySlots =
-                                                            timetable
-                                                                ? getWorkingSlots(
-                                                                      timetable.slots,
-                                                                      dayOfWeek,
-                                                                  )
-                                                                : [];
-
-                                                        return (
-                                                            <td
-                                                                key={toIsoDate(
-                                                                    day,
-                                                                )}
-                                                                className="days timetable-employee-detail__day"
-                                                            >
-                                                                <div className="schedule-cell">
-                                                                    <span className="date">
-                                                                        {formatDate(
-                                                                            day,
-                                                                        )}
-                                                                    </span>
-                                                                    {renderSlotState(
-                                                                        daySlots,
+                                                        <td
+                                                            key={toIsoDate(day)}
+                                                            className="days timetable-employee-detail__day"
+                                                        >
+                                                            <div className="schedule-cell">
+                                                                <span className="date">
+                                                                    {formatDate(
                                                                         day,
                                                                     )}
-                                                                </div>
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                                                                </span>
+                                                                {renderSlotState(
+                                                                    daySlots,
+                                                                    day,
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="timetable-employee-detail__workspace">
+                            <div className="timetable-employee-detail__workspace-main">
+                                <div className="timetable-employee-detail__card">
+                                    <div className="timetable-employee-detail__card-head">
+                                        <div>
+                                            <h3>Grafik tygodniowy</h3>
+                                            <p>
+                                                Zapis dotyczy powtarzalnego
+                                                grafiku pracownika dla aktywnego
+                                                okresu.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={() =>
+                                                setEditorOpen(
+                                                    (current) => !current,
+                                                )
+                                            }
+                                        >
+                                            {editorOpen
+                                                ? 'ukryj edytor'
+                                                : 'edytuj grafik'}
+                                        </button>
+                                    </div>
+
+                                    {scheduleError && (
+                                        <div className="alert alert-danger mt-2">
+                                            {scheduleError}
+                                        </div>
+                                    )}
+                                    {editorOpen ? (
+                                        <TimetableEditor
+                                            timetable={activeTimetable}
+                                            onSave={handleSaveSchedule}
+                                            saving={
+                                                createTimetable.isPending ||
+                                                updateTimetable.isPending
+                                            }
+                                        />
+                                    ) : (
+                                        <div className="timetable-employee-detail__card-placeholder">
+                                            Widok miesięczny odwzorowuje grafik
+                                            z dumpa, a edycję możesz otworzyć
+                                            przyciskiem powyżej.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="timetable-employee-detail__workspace">
-                                <div className="timetable-employee-detail__workspace-main">
-                                    <div className="timetable-employee-detail__card">
-                                        <div className="timetable-employee-detail__card-head">
-                                            <div>
-                                                <h3>Grafik tygodniowy</h3>
-                                                <p>
-                                                    Zapis dotyczy powtarzalnego
-                                                    grafiku pracownika dla
-                                                    aktywnego okresu.
-                                                </p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-primary"
-                                                onClick={() =>
-                                                    setEditorOpen(
-                                                        (current) => !current,
-                                                    )
-                                                }
-                                            >
-                                                {editorOpen
-                                                    ? 'ukryj edytor'
-                                                    : 'edytuj grafik'}
-                                            </button>
+                            <div className="timetable-employee-detail__workspace-side">
+                                <div className="timetable-employee-detail__card">
+                                    <div className="timetable-employee-detail__card-head">
+                                        <div>
+                                            <h3>Wyjątki i nieobecności</h3>
+                                            <p>
+                                                Urlopy, dni wolne i zmienione
+                                                godziny dla aktywnego grafiku.
+                                            </p>
                                         </div>
-
-                                        {scheduleError && (
-                                            <div className="alert alert-danger mt-2">
-                                                {scheduleError}
-                                            </div>
-                                        )}
-                                        {editorOpen ? (
-                                            <TimetableEditor
-                                                timetable={activeTimetable}
-                                                onSave={handleSaveSchedule}
-                                                saving={
-                                                    createTimetable.isPending ||
-                                                    updateTimetable.isPending
-                                                }
-                                            />
-                                        ) : (
-                                            <div className="timetable-employee-detail__card-placeholder">
-                                                Widok miesięczny odwzorowuje
-                                                grafik z dumpa, a edycję możesz
-                                                otworzyć przyciskiem powyżej.
-                                            </div>
-                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            disabled={!activeTimetable}
+                                            onClick={() => {
+                                                setEditingException(null);
+                                                setExceptionModalOpen(true);
+                                            }}
+                                        >
+                                            dodaj wyjątek
+                                        </button>
                                     </div>
-                                </div>
 
-                                <div className="timetable-employee-detail__workspace-side">
-                                    <div className="timetable-employee-detail__card">
-                                        <div className="timetable-employee-detail__card-head">
-                                            <div>
-                                                <h3>Wyjątki i nieobecności</h3>
-                                                <p>
-                                                    Urlopy, dni wolne i
-                                                    zmienione godziny dla
-                                                    aktywnego grafiku.
-                                                </p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary"
-                                                disabled={!activeTimetable}
-                                                onClick={() => {
-                                                    setEditingException(null);
-                                                    setExceptionModalOpen(true);
-                                                }}
-                                            >
-                                                dodaj wyjątek
-                                            </button>
+                                    {exceptionError && (
+                                        <div className="alert alert-danger mb-2">
+                                            {exceptionError}
                                         </div>
-
-                                        {exceptionError && (
-                                            <div className="alert alert-danger mb-2">
-                                                {exceptionError}
-                                            </div>
-                                        )}
-                                        {!activeTimetable ? (
-                                            <div className="timetable-employee-detail__card-placeholder">
-                                                Zapisz najpierw grafik
-                                                tygodniowy, aby dodać wyjątki.
-                                            </div>
-                                        ) : (
-                                            <ExceptionsList
-                                                exceptions={exceptions}
-                                                onEdit={(exception) => {
-                                                    setEditingException(
-                                                        exception,
+                                    )}
+                                    {!activeTimetable ? (
+                                        <div className="timetable-employee-detail__card-placeholder">
+                                            Zapisz najpierw grafik tygodniowy,
+                                            aby dodać wyjątki.
+                                        </div>
+                                    ) : (
+                                        <ExceptionsList
+                                            exceptions={exceptions}
+                                            onEdit={(exception) => {
+                                                setEditingException(exception);
+                                                setExceptionModalOpen(true);
+                                            }}
+                                            onDelete={handleDeleteException}
+                                            onApprove={(exceptionId) => {
+                                                void approveException
+                                                    .mutateAsync(exceptionId)
+                                                    .catch(() =>
+                                                        setExceptionError(
+                                                            'Nie udało się zatwierdzić wyjątku.',
+                                                        ),
                                                     );
-                                                    setExceptionModalOpen(true);
-                                                }}
-                                                onDelete={handleDeleteException}
-                                                onApprove={(exceptionId) => {
-                                                    void approveException
-                                                        .mutateAsync(
-                                                            exceptionId,
-                                                        )
-                                                        .catch(() =>
-                                                            setExceptionError(
-                                                                'Nie udało się zatwierdzić wyjątku.',
-                                                            ),
-                                                        );
-                                                }}
-                                                canApprove
-                                            />
-                                        )}
-                                    </div>
+                                            }}
+                                            canApprove
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <ExceptionModal
-                        isOpen={exceptionModalOpen}
-                        exception={editingException}
-                        onClose={() => {
-                            setExceptionModalOpen(false);
-                            setEditingException(null);
-                        }}
-                        onSave={handleSaveException}
-                    />
                 </div>
+
+                <ExceptionModal
+                    isOpen={exceptionModalOpen}
+                    exception={editingException}
+                    onClose={() => {
+                        setExceptionModalOpen(false);
+                        setEditingException(null);
+                    }}
+                    onSave={handleSaveException}
+                />
                 <ConfirmModal
                     open={confirmDeleteExceptionId !== null}
                     title="Usuń wyjątek"
