@@ -1264,6 +1264,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
     margin-bottom: 16px;
 }
 
@@ -1483,7 +1485,8 @@ body {
 /* Appointments list */
 .salonbw-appointment-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 12px;
     padding: 12px 16px;
     border-bottom: 1px solid #1e1e1e;
@@ -1502,6 +1505,45 @@ body {
     min-width: 0;
 }
 
+.salonbw-appointment-item__actions {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.salonbw-appointment-item__messages {
+    flex: 0 0 100%;
+    min-width: 0;
+}
+
+.salonbw-appointment-item__message-toggle {
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    font-size: 0.875rem;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.salonbw-appointment-item__message-toggle::before {
+    content: '▼ ';
+}
+
+.salonbw-appointment-item__message-toggle[aria-expanded='true']::before {
+    content: '▲ ';
+}
+
+.salonbw-appointment-item__message-panel {
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
 .salonbw-appointment-item__client {
     font-size: 0.875rem;
     color: #e8e0d5;
@@ -1516,6 +1558,68 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    input,
+    textarea,
+    select,
+    .form-control,
+    .form-control-sm,
+    .input-sm {
+        font-size: 16px !important;
+    }
+
+    .salonbw-dashboard__header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .salonbw-dashboard__header .btn {
+        min-height: 44px;
+        width: 100%;
+    }
+
+    .salonbw-appointment-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .salonbw-appointment-item__details,
+    .salonbw-appointment-item__actions,
+    .salonbw-appointment-item__messages {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .salonbw-appointment-item__actions {
+        justify-content: flex-start;
+    }
+
+    .salonbw-appointment-item__actions .btn {
+        min-height: 44px;
+        white-space: normal;
+    }
+
+    .salonbw-appointment-item__client,
+    .salonbw-appointment-item__service {
+        white-space: normal;
+    }
+
+    .salonbw-appointment-item__message-panel {
+        padding: 12px;
+    }
+
+    .message-thread__bubble-wrap {
+        max-width: 100%;
+    }
+
+    .message-thread__compose .btn {
+        min-height: 44px;
+        min-width: 96px;
+    }
 }
 
 /* ============================================

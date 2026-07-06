@@ -101,7 +101,7 @@ function ReviewForm({ visit, onSaved }: ReviewFormProps) {
 
     return (
         <div className="mt-2">
-            <div className="d-flex align-items-center gap-2 flex-wrap">
+            <div className="salonbw-appointment-item__actions">
                 <span className="small text-muted">Oceń wizytę:</span>
                 <StarRating value={rating} onChange={setRating} />
             </div>
@@ -256,23 +256,22 @@ function VisitRow({
                 )}
             </div>
 
-            {/* Expandable message thread */}
-            <div className="mt-2 w-100">
+            <div className="salonbw-appointment-item__messages">
                 <button
                     type="button"
-                    className="btn btn-link btn-sm p-0 text-muted"
+                    className="salonbw-appointment-item__message-toggle"
                     aria-expanded={messagesOpen}
                     aria-controls={`messages-panel-${visit.id}`}
                     onClick={() => setMessagesOpen((v) => !v)}
                 >
                     {messagesOpen
-                        ? '▲ Ukryj wiadomości z salonem'
-                        : '▼ Wiadomości z salonem'}
+                        ? 'Ukryj wiadomości z salonem'
+                        : 'Wiadomości z salonem'}
                 </button>
                 {messagesOpen && (
                     <div
                         id={`messages-panel-${visit.id}`}
-                        className="mt-2 p-2 rounded border"
+                        className="salonbw-appointment-item__message-panel"
                     >
                         <MessageThread appointmentId={visit.id} />
                     </div>

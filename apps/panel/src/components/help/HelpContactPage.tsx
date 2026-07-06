@@ -6,12 +6,7 @@ import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useMyPrimaryBranch } from '@/hooks/useBranches';
 
 const EMPTY_SECONDARY_NAV = <></>;
-const SALONBW_CLIENT_NUMBER = '19581';
-const SALONBW_KNOWLEDGE_BASE_URL = 'http://pomoc.versum.pl';
-const SUPPORT_PHONE = '(33) 482 49 49';
-const ANYDESK_MAC_URL = 'https://anydesk.com/pl/downloads/thank-you?dv=mac_dmg';
-const ANYDESK_WINDOWS_URL =
-    'https://anydesk.com/pl/downloads/thank-you?dv=win_exe';
+const DEFAULT_SUPPORT_EMAIL = 'kontakt@salon-bw.pl';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -124,6 +119,14 @@ export default function HelpContactPage() {
 
     const trimmedQuery = useMemo(() => query.trim(), [query]);
     const trimmedEmail = useMemo(() => email.trim(), [email]);
+    const branchName = primaryBranch?.name || 'Salon Black & White';
+    const branchContact =
+        primaryBranch?.phone || primaryBranch?.email || DEFAULT_SUPPORT_EMAIL;
+    const supportEmail =
+        process.env.NEXT_PUBLIC_CONTACT_RECIPIENT ||
+        primaryBranch?.email ||
+        DEFAULT_SUPPORT_EMAIL;
+    const accountLabel = user?.id ? `Konto #${user.id}` : 'Zalogowane konto';
 
     const isValid =
         trimmedQuery.length > 0 &&
@@ -149,19 +152,15 @@ export default function HelpContactPage() {
         setIsSubmitting(true);
 
         try {
-            const recipient =
-                process.env.NEXT_PUBLIC_CONTACT_RECIPIENT ||
-                'kontakt@salon-bw.pl';
-            const branchName = primaryBranch?.name || 'Salon Black & White';
             const attachmentValue = attachmentName || 'brak';
 
             await apiFetch<{ status: string }>('/emails/send-auth', {
                 method: 'POST',
                 body: JSON.stringify({
-                    to: recipient,
-                    subject: `Panel pomoc: ${branchName} (${SALONBW_CLIENT_NUMBER})`,
+                    to: supportEmail,
+                    subject: `Panel pomoc: ${branchName} (${accountLabel})`,
                     template:
-                        '<p><strong>Numer klienta:</strong> {{clientNumber}}</p>' +
+                        '<p><strong>Konto:</strong> {{accountLabel}}</p>' +
                         '<p><strong>Salon:</strong> {{branchName}}</p>' +
                         '<p><strong>Użytkownik:</strong> {{userName}}</p>' +
                         '<p><strong>Email do odpowiedzi:</strong> {{replyEmail}}</p>' +
@@ -171,7 +170,8 @@ export default function HelpContactPage() {
                         '<p><strong>Pytanie:</strong></p>' +
                         '<p>{{query}}</p>',
                     data: {
-                        clientNumber: SALONBW_CLIENT_NUMBER,
+                        accountLabel,
+                        accountId: user?.id ?? null,
                         branchName,
                         userName: user?.name || 'Nieznany użytkownik',
                         replyEmail: trimmedEmail,
@@ -207,55 +207,23 @@ export default function HelpContactPage() {
                 items={[
                     { label: 'Pomoc', href: '/helps/new' },
                     {
-                        label: `Twój numer klienta: ${SALONBW_CLIENT_NUMBER}`,
+                        label: accountLabel,
                     },
                 ]}
             />
 
             <div className="helps-page__inner">
-                <h2>Baza wiedzy</h2>
+                <h2>Centrum pomocy Salon Black &amp; White</h2>
                 <p>
-                    Aby ułatwić korzystanie z systemu SalonBW przygotowaliśmy{' '}
-                    <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={SALONBW_KNOWLEDGE_BASE_URL}
-                    >
-                        Bazę Wiedzy
-                    </a>
-                    , która zawiera szczegółową dokumentację,
-                    <br />
-                    odpowiedzi na pytania oraz poradniki dotyczące wdrożenia
-                    systemu.
-                    <br />
-                    Wygodna wyszukiwarka umożliwia szybkie odnalezienie
-                    odpowiedzi na Twoje pytanie.
-                </p>
-                <p>
-                    <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={SALONBW_KNOWLEDGE_BASE_URL}
-                        className="btn btn-primary"
-                    >
-                        Przejdź do Bazy Wiedzy »
-                    </a>
+                    Opisz problem w formularzu poniżej. Do zgłoszenia dołączymy
+                    dane konta, salonu, przeglądarki i systemu, żeby obsługa
+                    mogła szybciej odtworzyć sytuację.
                 </p>
                 <h2>Formularz kontaktowy</h2>
                 <p>
-                    Jeśli w{' '}
-                    <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={SALONBW_KNOWLEDGE_BASE_URL}
-                    >
-                        Bazie Wiedzy
-                    </a>{' '}
-                    nie ma odpowiedzi na Twoje pytanie, skontaktuj się z naszym
-                    działem obsługi klienta.
-                    <br />
                     Dane identyfikacyjne Twojego konta zostaną dołączone
-                    automatycznie.
+                    automatycznie. Wpisz adres email, na który mamy wysłać
+                    odpowiedź.
                 </p>
                 <form
                     className="simple_form new_physical_help helps-page__form"
@@ -384,40 +352,20 @@ export default function HelpContactPage() {
                         </p>
                     ) : null}
                 </form>
-                <h2>Kontakt telefoniczny</h2>
-                Możesz uzyskać pomoc dzwoniąc pod numer telefonu{' '}
-                <strong>{SUPPORT_PHONE}</strong>
-                <br />
-                Godziny pracy działu obsługi klienta: pon. - pt. 9:00 - 17:00
-                <br />
+                <h2>Kontakt</h2>
+                <p>
+                    W pilnych sprawach skontaktuj się z salonem:{' '}
+                    <strong>{branchContact}</strong>
+                </p>
                 <div className="bold_spans helps-page__diagnostics">
-                    Twój numer klienta: <span>{SALONBW_CLIENT_NUMBER}</span>
+                    Konto: <span>{accountLabel}</span>
+                    <br />
+                    Salon: <span>{branchName}</span>
                     <br />
                     Przeglądarka: <span>{environment.browser}</span>
                     <br />
                     System operacyjny:{' '}
                     <span>{environment.operatingSystem}</span>
-                    <br />
-                    <br />
-                    Program do zdalnego połączenia:
-                    <b>
-                        {' '}
-                        <a
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            href={ANYDESK_MAC_URL}
-                        >
-                            Wersja dla systemu Mac OS
-                        </a>
-                    </b>
-                    &nbsp; &nbsp;
-                    <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={ANYDESK_WINDOWS_URL}
-                    >
-                        Wersja dla systemu Windows
-                    </a>
                 </div>
             </div>
         </div>

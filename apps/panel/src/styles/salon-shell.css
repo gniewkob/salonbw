@@ -6310,12 +6310,17 @@ body.e2e-extension .main-content .inner.extension_info {
 
 .helps-page__inner {
     max-width: 760px;
+    padding: 0 0 40px;
 }
 
 .helps-page h2 {
-    margin: 0 0 12px;
+    margin: 24px 0 12px;
     font-size: 24px;
     line-height: 1.2;
+}
+
+.helps-page h2:first-child {
+    margin-top: 0;
 }
 
 .helps-page p {
@@ -6332,10 +6337,12 @@ body.e2e-extension .main-content .inner.extension_info {
     width: 410px;
     min-height: 140px;
     resize: vertical;
+    font-size: 16px;
 }
 
 .helps-page__email {
     width: 410px;
+    font-size: 16px;
 }
 
 .helps-page__attachment-name {
@@ -6368,8 +6375,36 @@ body.e2e-extension .main-content .inner.extension_info {
 }
 
 @media (max-width: 767px) {
+    .helps-page {
+        overflow-x: hidden;
+    }
+
+    .helps-page__inner {
+        max-width: 100%;
+        padding: 16px 16px 40px;
+    }
+
+    .helps-page h2 {
+        font-size: 22px;
+    }
+
+    .helps-page__form ol {
+        padding-left: 20px;
+    }
+
     .helps-page__textarea,
     .helps-page__email {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .helps-page input[type='file'] {
+        max-width: 100%;
+        font-size: 16px;
+    }
+
+    .helps-page .form-actions .btn {
+        min-height: 44px;
         width: 100%;
     }
 }
