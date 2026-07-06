@@ -190,7 +190,10 @@ export default function ManageCategoriesModal({
     if (!isOpen) return null;
 
     return (
-        <div className="modal fade in block bg-modal-overlay">
+        <div
+            className="modal fade in block bg-modal-overlay"
+            style={{ display: 'block' }}
+        >
             <div
                 className="modal-dialog"
                 role="dialog"
