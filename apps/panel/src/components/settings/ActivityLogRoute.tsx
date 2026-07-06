@@ -420,7 +420,7 @@ export default function ActivityLogRoute({
                                                     items.map((item, index) => (
                                                         <Fragment key={item.id}>
                                                             <tr
-                                                                className={`${index % 2 === 0 ? 'odd' : 'even'} no_hover row`}
+                                                                className={`${index % 2 === 0 ? 'odd' : 'even'} no_hover`}
                                                             >
                                                                 <td>
                                                                     {format(
