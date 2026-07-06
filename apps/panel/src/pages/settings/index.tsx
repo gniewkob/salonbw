@@ -58,12 +58,6 @@ const GROUPS: SettingsGroup[] = [
         heading: 'Usługi i wizyty',
         tiles: [
             {
-                href: '/settings/categories',
-                label: 'kategorie usług',
-                boxClass: 'extra_settings',
-                iconId: 'svg-extra_settings',
-            },
-            {
                 href: '/settings/calendar',
                 label: 'kalendarz',
                 boxClass: 'calendar',
@@ -163,12 +157,6 @@ const addonTiles: SettingsTile[] = [
     {
         href: '/sales/gift-cards',
         label: 'Bony i karnety',
-        boxClass: 'extra_settings',
-        iconId: 'svg-extra_settings',
-    },
-    {
-        href: '/settings/categories',
-        label: 'kategorie usług',
         boxClass: 'extra_settings',
         iconId: 'svg-extra_settings',
     },

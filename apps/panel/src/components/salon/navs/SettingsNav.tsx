@@ -45,19 +45,6 @@ const SETTINGS_GROUPS: NavGroup[] = [
                 label: 'Funkcje',
                 iconClass: 'sprite-settings_calendar',
             },
-            {
-                id: 'settings-service-categories',
-                href: '/settings/service-categories',
-                label: 'Kategorie usług',
-                iconClass: 'sprite-settings_services',
-                matchPrefix: '/settings/service-categories',
-            },
-            {
-                id: 'settings-categories',
-                href: '/settings/categories',
-                label: 'Kategorie produktów',
-                iconClass: 'sprite-settings_blue',
-            },
         ],
     },
     {
