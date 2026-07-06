@@ -20,7 +20,7 @@ export default function CreateCustomerGroupModal({
     const [form, setForm] = useState<GroupDraft>({
         name: '',
         description: '',
-        color: '#06b6d4',
+        color: '#6e7278',
     });
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -29,14 +29,14 @@ export default function CreateCustomerGroupModal({
     };
 
     const colorOptions = [
-        '#06b6d4', // cyan
-        '#10b981', // green
-        '#f59e0b', // amber
-        '#ef4444', // red
-        '#8b5cf6', // purple
-        '#ec4899', // pink
-        '#6366f1', // indigo
-        '#64748b', // slate
+        '#0d0d0d',
+        '#23252a',
+        '#5f6369',
+        '#6e7278',
+        '#8e9298',
+        '#b4b8be',
+        '#d1d5db',
+        '#f6f6f7',
     ];
 
     return (

@@ -18,14 +18,14 @@ type Draft = {
 };
 
 const colorOptions = [
-    '#06b6d4', // cyan
-    '#10b981', // green
-    '#f59e0b', // amber
-    '#ef4444', // red
-    '#8b5cf6', // purple
-    '#ec4899', // pink
-    '#6366f1', // indigo
-    '#64748b', // slate
+    '#0d0d0d',
+    '#23252a',
+    '#5f6369',
+    '#6e7278',
+    '#8e9298',
+    '#b4b8be',
+    '#d1d5db',
+    '#f6f6f7',
 ];
 
 export default function ManageCustomerGroupsModal({ onClose }: Props) {
@@ -37,7 +37,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
     const [newGroup, setNewGroup] = useState<Draft>({
         name: '',
         description: '',
-        color: '#06b6d4',
+        color: '#6e7278',
     });
 
     const [drafts, setDrafts] = useState<Record<number, Draft>>({});
@@ -54,7 +54,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                     next[g.id] = {
                         name: g.name ?? '',
                         description: g.description ?? '',
-                        color: g.color ?? '#06b6d4',
+                        color: g.color ?? '#6e7278',
                     };
                 }
             }
@@ -85,7 +85,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
         if (!payload.name) return;
         try {
             await create.mutateAsync(payload);
-            setNewGroup({ name: '', description: '', color: '#06b6d4' });
+            setNewGroup({ name: '', description: '', color: '#6e7278' });
         } catch {
             // error handled by hook
         }
@@ -222,7 +222,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                         setNewGroup({
                                             name: '',
                                             description: '',
-                                            color: '#06b6d4',
+                                            color: '#6e7278',
                                         })
                                     }
                                     disabled={isBusy}
@@ -246,7 +246,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                     const d = drafts[g.id] ?? {
                                         name: g.name ?? '',
                                         description: g.description ?? '',
-                                        color: g.color ?? '#06b6d4',
+                                        color: g.color ?? '#6e7278',
                                     };
                                     return (
                                         <div
@@ -264,7 +264,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                                 borderRadius: 999,
                                                                 background:
                                                                     d.color ||
-                                                                    '#06b6d4',
+                                                                    '#6e7278',
                                                                 display:
                                                                     'inline-block',
                                                                 boxShadow:

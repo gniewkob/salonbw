@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -8,6 +7,12 @@ import StarRating from '@/components/StarRating';
 import MessageThread from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import PanelButton from '@/components/ui/PanelButton';
+import StatusBadge from '@/components/ui/StatusBadge';
+import {
+    appointmentStatusLabel,
+    appointmentStatusTone,
+} from '@/lib/appointmentStatus';
 
 interface ClientVisit {
     id: number;
@@ -20,28 +25,6 @@ interface ClientVisit {
     notes: string | null;
     review: { id: number; rating: number; comment: string | null } | null;
 }
-
-const STATUS_LABELS: Record<string, string> = {
-    scheduled: 'Zaplanowana',
-    confirmed: 'Potwierdzona',
-    in_progress: 'W trakcie',
-    completed: 'Zrealizowana',
-    cancelled: 'Anulowana',
-    no_show: 'Nieobecność',
-    online_pending: 'Oczekuje',
-    rescheduled_pending: 'Zmiana terminu',
-};
-
-const STATUS_CLASS: Record<string, string> = {
-    scheduled: 'badge bg-secondary',
-    confirmed: 'badge bg-primary',
-    in_progress: 'badge bg-warning text-dark',
-    completed: 'badge bg-success',
-    cancelled: 'badge bg-danger',
-    no_show: 'badge bg-dark',
-    online_pending: 'badge bg-warning text-dark',
-    rescheduled_pending: 'badge bg-info text-dark',
-};
 
 const CANCELLABLE = new Set([
     'scheduled',
@@ -114,23 +97,23 @@ function ReviewForm({ visit, onSaved }: ReviewFormProps) {
                 </label>
                 <textarea
                     id={`review-comment-${visit.id}`}
-                    className="form-control form-control-sm"
-                    style={{ maxWidth: 420 }}
+                    className="form-control form-control-sm visits-review__comment"
                     rows={2}
                     maxLength={1000}
                     placeholder="Komentarz (opcjonalnie)"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                 />
-                <button
+                <PanelButton
                     type="button"
-                    className="btn btn-sm btn-primary"
+                    size="sm"
+                    variant="primary"
                     disabled={saving || rating < 1}
                     aria-busy={saving}
                     onClick={() => void submit()}
                 >
                     {saving ? 'Zapisywanie…' : 'Zapisz ocenę'}
-                </button>
+                </PanelButton>
             </div>
         </div>
     );
@@ -219,40 +202,39 @@ function VisitRow({
                 )}
             </div>
             <div className="d-flex align-items-center gap-2 flex-wrap">
-                <span
-                    className={
-                        STATUS_CLASS[visit.status] ?? 'badge bg-secondary'
-                    }
-                >
-                    {STATUS_LABELS[visit.status] ?? visit.status}
-                </span>
+                <StatusBadge tone={appointmentStatusTone(visit.status)}>
+                    {appointmentStatusLabel(visit.status)}
+                </StatusBadge>
                 {visit.status === 'rescheduled_pending' && (
-                    <button
+                    <PanelButton
                         type="button"
-                        className="btn btn-sm btn-success"
+                        size="sm"
+                        variant="primary"
                         disabled={accepting}
                         onClick={() => onAccept(visit.id)}
                     >
                         Akceptuj nowy termin
-                    </button>
+                    </PanelButton>
                 )}
                 {CANCELLABLE.has(visit.status) && (
-                    <button
+                    <PanelButton
                         type="button"
-                        className="btn btn-sm btn-outline-danger"
+                        size="sm"
+                        variant="danger"
                         disabled={cancelling}
                         onClick={() => onCancel(visit.id)}
                     >
                         Anuluj
-                    </button>
+                    </PanelButton>
                 )}
                 {ARCHIVE_STATUSES.has(visit.status) && (
-                    <Link
+                    <PanelButton
                         href={`/booking?serviceId=${visit.serviceId}`}
-                        className="btn btn-sm btn-outline-dark"
+                        size="sm"
+                        variant="secondary"
                     >
                         Umów ponownie
-                    </Link>
+                    </PanelButton>
                 )}
             </div>
 
@@ -395,9 +377,9 @@ export default function VisitsPage() {
                         <h1 className="salonbw-dashboard__title">
                             Moje wizyty
                         </h1>
-                        <Link href="/booking" className="btn btn-primary">
+                        <PanelButton href="/booking" variant="primary">
                             Zarezerwuj wizytę
-                        </Link>
+                        </PanelButton>
                     </div>
 
                     {error && (

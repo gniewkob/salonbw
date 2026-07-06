@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { ServiceCategory } from '@/types';
 import ConfirmModal from '@/components/ConfirmModal';
+import PanelButton from '@/components/ui/PanelButton';
 
 interface Props {
     categories: ServiceCategory[];
@@ -20,7 +21,6 @@ export default function ServiceCategoryTree({
     onAddCategory,
 }: Props) {
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
-    const [hoveredId, setHoveredId] = useState<number | null>(null);
     const [confirmDeleteCategory, setConfirmDeleteCategory] =
         useState<ServiceCategory | null>(null);
 
@@ -40,29 +40,19 @@ export default function ServiceCategoryTree({
         const hasChildren = category.children && category.children.length > 0;
         const isExpanded = expandedIds.has(category.id);
         const isSelected = selectedCategoryId === category.id;
-        const isHovered = hoveredId === category.id;
-        const rowStyle = { paddingLeft: `${12 + level * 16}px` };
-        const colorStyle = category.color
-            ? { backgroundColor: category.color }
-            : undefined;
+        const rowStyle = {
+            '--category-level': level,
+        } as CSSProperties;
+        const colorStyle = {
+            '--category-color': category.color ?? '#6e7278',
+        } as CSSProperties;
 
         return (
             <div key={category.id}>
                 <div
-                    className={`d-flex align-items-center gap-2 rounded-3 px-3 py-2 ${
-                        isSelected
-                            ? 'bg-primary bg-opacity-10 text-primary'
-                            : 'text-body'
-                    }`}
-                    style={{
-                        ...rowStyle,
-                        cursor: 'pointer',
-                        backgroundColor:
-                            !isSelected && isHovered ? '#f3f4f6' : undefined,
-                    }}
+                    className={`service-category-tree__row${isSelected ? ' is-selected' : ''}`}
+                    style={rowStyle}
                     onClick={() => onSelectCategory(category.id)}
-                    onMouseEnter={() => setHoveredId(category.id)}
-                    onMouseLeave={() => setHoveredId(null)}
                 >
                     {hasChildren && (
                         <button
@@ -71,18 +61,16 @@ export default function ServiceCategoryTree({
                                 e.stopPropagation();
                                 toggleExpanded(category.id);
                             }}
-                            className="p-1 rounded"
+                            className="service-category-tree__expand"
                             aria-label={isExpanded ? 'Zwiń' : 'Rozwiń'}
+                            aria-expanded={isExpanded}
                         >
                             <svg
-                                style={{
-                                    width: 16,
-                                    height: 16,
-                                    transition: 'transform 0.15s',
-                                    transform: isExpanded
-                                        ? 'rotate(90deg)'
-                                        : 'none',
-                                }}
+                                className={
+                                    isExpanded
+                                        ? 'service-category-tree__chevron is-expanded'
+                                        : 'service-category-tree__chevron'
+                                }
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -96,45 +84,43 @@ export default function ServiceCategoryTree({
                             </svg>
                         </button>
                     )}
-                    {!hasChildren && <div style={{ width: 24 }} />}
-
-                    {category.color && (
+                    {!hasChildren && (
                         <span
-                            className="rounded-circle flex-shrink-0"
-                            style={{
-                                ...colorStyle,
-                                width: 12,
-                                height: 12,
-                                display: 'inline-block',
-                            }}
+                            className="service-category-tree__expand-placeholder"
+                            aria-hidden
                         />
                     )}
 
-                    <span className="flex-fill text-truncate fw-medium">
+                    {category.color && (
+                        <span
+                            className="service-category-tree__dot"
+                            style={colorStyle}
+                        />
+                    )}
+
+                    <span className="service-category-tree__name">
                         {category.name}
                     </span>
 
                     {category.services && (
-                        <span className="small text-muted">
+                        <span className="service-category-tree__count">
                             ({category.services.length})
                         </span>
                     )}
 
-                    <div
-                        className={`d-flex align-items-center gap-1 ${isHovered ? '' : 'd-none'}`}
-                    >
+                    <div className="service-category-tree__actions">
                         <button
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 void onEditCategory(category);
                             }}
-                            className="p-1 rounded text-muted"
+                            className="service-category-tree__action"
                             title="Edytuj kategorię"
                             aria-label="Edytuj kategorię"
                         >
                             <svg
-                                style={{ width: 16, height: 16 }}
+                                aria-hidden
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -153,12 +139,12 @@ export default function ServiceCategoryTree({
                                 e.stopPropagation();
                                 onAddCategory(category.id);
                             }}
-                            className="p-1 rounded text-muted"
+                            className="service-category-tree__action"
                             title="Dodaj podkategorię"
                             aria-label="Dodaj podkategorię"
                         >
                             <svg
-                                style={{ width: 16, height: 16 }}
+                                aria-hidden
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -177,12 +163,12 @@ export default function ServiceCategoryTree({
                                 e.stopPropagation();
                                 setConfirmDeleteCategory(category);
                             }}
-                            className="p-1 rounded text-muted"
+                            className="service-category-tree__action"
                             title="Usuń kategorię"
                             aria-label="Usuń kategorię"
                         >
                             <svg
-                                style={{ width: 16, height: 16 }}
+                                aria-hidden
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -210,30 +196,27 @@ export default function ServiceCategoryTree({
     };
 
     return (
-        <div className="bg-white rounded-3 shadow-sm border p-4">
-            <div className="d-flex align-items-center justify-content-between mb-4">
-                <h3 className="fw-semibold text-dark mb-0">Kategorie</h3>
-                <button
+        <div className="service-category-tree">
+            <div className="service-category-tree__header">
+                <h3>Kategorie</h3>
+                <PanelButton
                     type="button"
                     onClick={() => onAddCategory()}
-                    className="small text-primary fw-medium btn btn-link p-0"
+                    size="sm"
+                    variant="secondary"
                 >
-                    + Dodaj
-                </button>
+                    Dodaj
+                </PanelButton>
             </div>
 
             <div>
                 <div
-                    className={`d-flex align-items-center gap-2 rounded-3 px-3 py-2 ${
-                        selectedCategoryId === null
-                            ? 'bg-primary bg-opacity-10 text-primary'
-                            : 'text-body'
-                    }`}
-                    style={{ cursor: 'pointer' }}
+                    className={`service-category-tree__row service-category-tree__row--system${selectedCategoryId === null ? ' is-selected' : ''}`}
                     onClick={() => onSelectCategory(null)}
                 >
                     <svg
-                        style={{ width: 20, height: 20 }}
+                        className="service-category-tree__system-icon"
+                        aria-hidden
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -245,22 +228,20 @@ export default function ServiceCategoryTree({
                             d="M4 6h16M4 10h16M4 14h16M4 18h16"
                         />
                     </svg>
-                    <span className="fw-medium">Wszystkie usługi</span>
+                    <span className="service-category-tree__name">
+                        Wszystkie usługi
+                    </span>
                 </div>
 
                 {categories.map((category) => renderCategory(category))}
 
                 <div
-                    className={`d-flex align-items-center gap-2 rounded-3 px-3 py-2 ${
-                        selectedCategoryId === -1
-                            ? 'bg-primary bg-opacity-10 text-primary'
-                            : 'text-muted'
-                    }`}
-                    style={{ cursor: 'pointer' }}
+                    className={`service-category-tree__row service-category-tree__row--system${selectedCategoryId === -1 ? ' is-selected' : ''}`}
                     onClick={() => onSelectCategory(-1)}
                 >
                     <svg
-                        style={{ width: 20, height: 20 }}
+                        className="service-category-tree__system-icon"
+                        aria-hidden
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -272,7 +253,9 @@ export default function ServiceCategoryTree({
                             d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
                         />
                     </svg>
-                    <span className="fw-medium">Bez kategorii</span>
+                    <span className="service-category-tree__name">
+                        Bez kategorii
+                    </span>
                 </div>
             </div>
             <ConfirmModal

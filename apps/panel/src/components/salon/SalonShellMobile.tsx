@@ -9,8 +9,6 @@ interface SalonShellMobileProps {
     children: ReactNode;
 }
 
-const TOPBAR_HEIGHT = 56;
-
 export default function SalonShellMobile({
     role,
     children,
@@ -35,95 +33,27 @@ export default function SalonShellMobile({
             <a href="#main-content-mobile" className="salonbw-skip-link">
                 Przejdź do treści
             </a>
-            <header
-                style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: TOPBAR_HEIGHT,
-                    background: '#0d0d0d',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0 0.5rem 0 0',
-                    zIndex: 1040,
-                    paddingTop: 'env(safe-area-inset-top)',
-                    boxShadow: '0 1px 0 rgba(255,255,255,0.06)',
-                }}
-            >
+            <header className="salonbw-mobile-shell__topbar">
                 <button
                     type="button"
                     aria-label="Otwórz menu"
                     aria-expanded={drawerOpen}
                     onClick={() => setDrawerOpen(true)}
-                    style={{
-                        width: 56,
-                        height: TOPBAR_HEIGHT,
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#ffffff',
-                        cursor: 'pointer',
-                        padding: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
+                    className="salonbw-mobile-shell__menu-button"
                 >
                     <span
+                        className="salonbw-mobile-shell__hamburger"
                         aria-hidden
-                        style={{
-                            display: 'inline-block',
-                            width: 20,
-                            height: 14,
-                            position: 'relative',
-                        }}
                     >
-                        <span
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                right: 0,
-                                top: 0,
-                                height: 2,
-                                background: '#ffffff',
-                            }}
-                        />
-                        <span
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                right: 0,
-                                top: 6,
-                                height: 2,
-                                background: '#ffffff',
-                            }}
-                        />
-                        <span
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                right: 0,
-                                top: 12,
-                                height: 2,
-                                background: '#ffffff',
-                            }}
-                        />
+                        <span />
+                        <span />
+                        <span />
                     </span>
                 </button>
-                <span
-                    style={{
-                        fontFamily: "'Playfair Display', serif",
-                        fontSize: '1rem',
-                        letterSpacing: '0.04em',
-                        flex: 1,
-                        textAlign: 'center',
-                    }}
-                >
+                <span className="salonbw-mobile-shell__title">
                     {activeModule.label}
                 </span>
-                <span style={{ width: 56 }} aria-hidden />
+                <span className="salonbw-mobile-shell__spacer" aria-hidden />
             </header>
 
             <MobileNavDrawer
@@ -136,11 +66,7 @@ export default function SalonShellMobile({
             <main
                 id="main-content-mobile"
                 role="main"
-                style={{
-                    paddingTop: `calc(${TOPBAR_HEIGHT}px + env(safe-area-inset-top))`,
-                    minHeight: '100dvh',
-                    background: '#ffffff',
-                }}
+                className="salonbw-mobile-shell__main"
             >
                 {children}
             </main>

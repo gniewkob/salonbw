@@ -1,11 +1,17 @@
 import { FormEvent, useMemo, useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
+import {
+    AuthField,
+    AuthPageShell,
+    AuthStatus,
+    AuthSubmitButton,
+    AuthTextInput,
+} from '@/components/auth/AuthPageShell';
 import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,8 +53,6 @@ export const loginValidationSchema = {
     },
 };
 
-const grain = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
-
 export default function LoginPage() {
     const { login, apiFetch } = useAuth();
     const router = useRouter();
@@ -60,7 +64,6 @@ export default function LoginPage() {
     const [errors, setErrors] = useState<LoginErrors>({});
     const [status, setStatus] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [focusedField, setFocusedField] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
     const trimmedEmail = useMemo(() => form.email.trim(), [form.email]);
@@ -108,372 +111,124 @@ export default function LoginPage() {
     };
 
     const handleBlur = (field: 'email' | 'password') => {
-        setFocusedField(null);
         setTouched((prev) => ({ ...prev, [field]: true }));
         runValidation();
     };
-
-    const inputStyle = (field: 'email' | 'password'): React.CSSProperties => ({
-        display: 'block',
-        width: '100%',
-        padding: '0.85rem 1rem',
-        background: 'rgba(255,255,255,0.05)',
-        border: `1px solid ${focusedField === field ? '#b4b8be' : touched[field] && errors[field] ? 'rgba(220,60,60,0.7)' : 'rgba(255,255,255,0.12)'}`,
-        borderRadius: '2px',
-        color: '#ffffff',
-        fontSize: '0.875rem',
-        fontFamily: "'Open Sans', sans-serif",
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        boxSizing: 'border-box',
-    });
 
     return (
         <>
             <Head>
                 <title>Logowanie — Salon Black &amp; White</title>
             </Head>
-            <div
-                style={{
-                    minHeight: '100vh',
-                    background: '#080808',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    padding: '2rem 1.5rem',
-                }}
+            <AuthPageShell
+                title="Zaloguj się"
+                footerPrompt="Nie masz konta?"
+                footerHref="/auth/register"
+                footerLabel="Zarejestruj się"
             >
-                {/* Grain overlay */}
-                <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundImage: grain,
-                        backgroundSize: '180px',
-                        opacity: 0.04,
-                        pointerEvents: 'none',
-                        zIndex: 0,
+                <form
+                    onSubmit={(e) => {
+                        void handleSubmit(e);
                     }}
-                />
-
-                {/* B&W watermark */}
-                <span
-                    style={{
-                        position: 'fixed',
-                        bottom: '-0.1em',
-                        left: '-0.05em',
-                        fontFamily: "'Playfair Display', serif",
-                        fontSize: 'clamp(6rem,20vw,14rem)',
-                        fontWeight: 700,
-                        color: 'rgba(255,255,255,0.04)',
-                        lineHeight: 1,
-                        pointerEvents: 'none',
-                        userSelect: 'none',
-                        zIndex: 0,
-                    }}
+                    noValidate
                 >
-                    B&amp;W
-                </span>
-
-                <main
-                    style={{
-                        position: 'relative',
-                        zIndex: 1,
-                        width: '100%',
-                        maxWidth: '400px',
-                    }}
-                >
-                    {/* Brand */}
-                    <div
-                        style={{ textAlign: 'center', marginBottom: '2.5rem' }}
+                    <AuthField
+                        id="email"
+                        label="Email"
+                        error={touched.email ? errors.email : undefined}
                     >
-                        <p
-                            style={{
-                                fontFamily: "'Open Sans', sans-serif",
-                                fontSize: '0.6rem',
-                                letterSpacing: '0.2em',
-                                textTransform: 'uppercase',
-                                color: '#b4b8be',
-                                marginBottom: '0.75rem',
+                        <AuthTextInput
+                            id="email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            placeholder="twoj@email.pl"
+                            value={form.email}
+                            invalid={Boolean(touched.email && errors.email)}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setForm((prev) => ({ ...prev, email: value }));
+                                if (touched.email) {
+                                    const fieldErrors = validateLoginForm({
+                                        email: value,
+                                        password: form.password,
+                                    });
+                                    setErrors((prev) => ({
+                                        ...prev,
+                                        email: fieldErrors.email,
+                                    }));
+                                }
                             }}
-                        >
-                            Akademia Zdrowych Włosów
-                        </p>
-                        <h1
-                            style={{
-                                fontFamily: "'Playfair Display', serif",
-                                fontSize: '2rem',
-                                fontWeight: 700,
-                                color: '#ffffff',
-                                margin: 0,
-                                lineHeight: 1.15,
-                            }}
-                        >
-                            Zaloguj się
-                        </h1>
-                        <div
-                            style={{
-                                width: '32px',
-                                height: '2px',
-                                background: '#b4b8be',
-                                margin: '1rem auto 0',
-                            }}
+                            onBlur={() => handleBlur('email')}
                         />
-                    </div>
+                    </AuthField>
 
-                    {/* Form */}
-                    <form
-                        onSubmit={(e) => {
-                            void handleSubmit(e);
-                        }}
-                        noValidate
+                    <AuthField
+                        id="password"
+                        label="Hasło"
+                        spacious
+                        error={touched.password ? errors.password : undefined}
                     >
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label
-                                htmlFor="email"
-                                style={{
-                                    display: 'block',
-                                    fontSize: '0.7rem',
-                                    letterSpacing: '0.1em',
-                                    textTransform: 'uppercase',
-                                    color: 'rgba(255,255,255,0.45)',
-                                    marginBottom: '0.5rem',
-                                    fontFamily: "'Open Sans', sans-serif",
-                                }}
-                            >
-                                Email
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
+                        <div className="auth-password">
+                            <AuthTextInput
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="current-password"
                                 required
-                                style={inputStyle('email')}
-                                placeholder="twoj@email.pl"
-                                value={form.email}
+                                placeholder={
+                                    showPassword ? 'Twoje hasło' : '••••••••'
+                                }
+                                value={form.password}
+                                invalid={Boolean(
+                                    touched.password && errors.password,
+                                )}
                                 onChange={(e) => {
                                     const value = e.target.value;
                                     setForm((prev) => ({
                                         ...prev,
-                                        email: value,
+                                        password: value,
                                     }));
-                                    if (touched.email) {
+                                    if (touched.password) {
                                         const fieldErrors = validateLoginForm({
-                                            email: value,
-                                            password: form.password,
+                                            email: form.email,
+                                            password: value,
                                         });
                                         setErrors((prev) => ({
                                             ...prev,
-                                            email: fieldErrors.email,
+                                            password: fieldErrors.password,
                                         }));
                                     }
                                 }}
-                                onFocus={() => setFocusedField('email')}
-                                onBlur={() => handleBlur('email')}
+                                onBlur={() => handleBlur('password')}
                             />
-                            {touched.email && errors.email && (
-                                <p
-                                    role="alert"
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        color: 'rgba(220,80,80,0.9)',
-                                        marginTop: '0.35rem',
-                                        fontFamily: "'Open Sans', sans-serif",
-                                    }}
-                                >
-                                    {errors.email}
-                                </p>
-                            )}
-                        </div>
-
-                        <div style={{ marginBottom: '1.75rem' }}>
-                            <label
-                                htmlFor="password"
-                                style={{
-                                    display: 'block',
-                                    fontSize: '0.7rem',
-                                    letterSpacing: '0.1em',
-                                    textTransform: 'uppercase',
-                                    color: 'rgba(255,255,255,0.45)',
-                                    marginBottom: '0.5rem',
-                                    fontFamily: "'Open Sans', sans-serif",
-                                }}
+                            <button
+                                type="button"
+                                aria-label={
+                                    showPassword
+                                        ? 'Ukryj wpisane znaki'
+                                        : 'Pokaż wpisane znaki'
+                                }
+                                aria-controls="password"
+                                aria-pressed={showPassword}
+                                className="auth-password__toggle"
+                                onClick={() => setShowPassword((prev) => !prev)}
                             >
-                                Hasło
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    autoComplete="current-password"
-                                    required
-                                    style={{
-                                        ...inputStyle('password'),
-                                        paddingRight: '3rem',
-                                    }}
-                                    placeholder={
-                                        showPassword
-                                            ? 'Twoje hasło'
-                                            : '••••••••'
-                                    }
-                                    value={form.password}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            password: value,
-                                        }));
-                                        if (touched.password) {
-                                            const fieldErrors =
-                                                validateLoginForm({
-                                                    email: form.email,
-                                                    password: value,
-                                                });
-                                            setErrors((prev) => ({
-                                                ...prev,
-                                                password: fieldErrors.password,
-                                            }));
-                                        }
-                                    }}
-                                    onFocus={() => setFocusedField('password')}
-                                    onBlur={() => handleBlur('password')}
-                                />
-                                <button
-                                    type="button"
-                                    aria-label={
-                                        showPassword
-                                            ? 'Ukryj wpisane znaki'
-                                            : 'Pokaż wpisane znaki'
-                                    }
-                                    aria-controls="password"
-                                    aria-pressed={showPassword}
-                                    onClick={() =>
-                                        setShowPassword((prev) => !prev)
-                                    }
-                                    style={{
-                                        position: 'absolute',
-                                        right: 0,
-                                        top: 0,
-                                        bottom: 0,
-                                        width: 44,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: 'rgba(255, 255, 255, 0.55)',
-                                        cursor: 'pointer',
-                                        padding: 0,
-                                    }}
-                                >
-                                    {showPassword ? (
-                                        <EyeSlashIcon
-                                            style={{ width: 18, height: 18 }}
-                                        />
-                                    ) : (
-                                        <EyeIcon
-                                            style={{ width: 18, height: 18 }}
-                                        />
-                                    )}
-                                </button>
-                            </div>
-                            {touched.password && errors.password && (
-                                <p
-                                    role="alert"
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        color: 'rgba(220,80,80,0.9)',
-                                        marginTop: '0.35rem',
-                                        fontFamily: "'Open Sans', sans-serif",
-                                    }}
-                                >
-                                    {errors.password}
-                                </p>
-                            )}
+                                {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+                            </button>
                         </div>
+                    </AuthField>
 
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            style={{
-                                display: 'block',
-                                width: '100%',
-                                padding: '0.9rem 1.5rem',
-                                background: submitting ? '#8e9298' : '#b4b8be',
-                                color: '#0d0d0d',
-                                border: 'none',
-                                borderRadius: '2px',
-                                fontSize: '0.72rem',
-                                fontWeight: 700,
-                                letterSpacing: '0.18em',
-                                textTransform: 'uppercase',
-                                fontFamily: "'Open Sans', sans-serif",
-                                cursor: submitting ? 'not-allowed' : 'pointer',
-                                transition: 'background 0.2s',
-                            }}
-                        >
-                            {submitting ? 'Logowanie…' : 'Zaloguj się'}
-                        </button>
+                    <AuthSubmitButton disabled={submitting}>
+                        {submitting ? 'Logowanie…' : 'Zaloguj się'}
+                    </AuthSubmitButton>
 
-                        {status && (
-                            <p
-                                role="alert"
-                                style={{
-                                    textAlign: 'center',
-                                    marginTop: '1rem',
-                                    fontSize: '0.8rem',
-                                    color: 'rgba(220,80,80,0.9)',
-                                    fontFamily: "'Open Sans', sans-serif",
-                                }}
-                            >
-                                {status}
-                            </p>
-                        )}
-                    </form>
+                    <AuthStatus>{status}</AuthStatus>
+                </form>
 
-                    <GoogleAuthButton label="Zaloguj się przez Google" />
-
-                    <p
-                        style={{
-                            textAlign: 'center',
-                            marginTop: '2rem',
-                            fontSize: '0.8rem',
-                            color: 'rgba(255,255,255,0.35)',
-                            fontFamily: "'Open Sans', sans-serif",
-                        }}
-                    >
-                        Nie masz konta?{' '}
-                        <Link
-                            href="/auth/register"
-                            prefetch={false}
-                            style={{
-                                color: '#b4b8be',
-                                textDecoration: 'none',
-                                fontWeight: 600,
-                            }}
-                        >
-                            Zarejestruj się
-                        </Link>
-                    </p>
-
-                    <p
-                        style={{
-                            textAlign: 'center',
-                            marginTop: '2.5rem',
-                            fontSize: '0.6rem',
-                            letterSpacing: '0.14em',
-                            textTransform: 'uppercase',
-                            color: 'rgba(255,255,255,0.15)',
-                            fontFamily: "'Open Sans', sans-serif",
-                        }}
-                    >
-                        Salon Black &amp; White · Bytom
-                    </p>
-                </main>
-            </div>
+                <GoogleAuthButton label="Zaloguj się przez Google" />
+            </AuthPageShell>
         </>
     );
 }

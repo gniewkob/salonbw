@@ -4,35 +4,12 @@ import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import ConfirmModal from '@/components/ConfirmModal';
-const STATUS_LABELS: Record<string, string> = {
-    scheduled: 'Zaplanowana',
-    confirmed: 'Potwierdzona',
-    in_progress: 'W trakcie',
-    completed: 'Zrealizowana',
-    cancelled: 'Anulowana',
-    no_show: 'Nieobecność',
-    online_pending: 'Oczekuje',
-    rescheduled_pending: 'Zmiana terminu',
-};
-
-const STATUS_CLASS: Record<string, string> = {
-    scheduled: 'badge bg-secondary',
-    confirmed: 'badge bg-primary',
-    in_progress: 'badge bg-warning text-dark',
-    completed: 'badge bg-success',
-    cancelled: 'badge bg-danger',
-    no_show: 'badge bg-dark',
-    online_pending: 'badge bg-warning text-dark',
-    rescheduled_pending: 'badge bg-info text-dark',
-};
-
-function statusLabel(status: string) {
-    return STATUS_LABELS[status] ?? status;
-}
-
-function statusClass(status: string) {
-    return STATUS_CLASS[status] ?? 'badge bg-secondary';
-}
+import PanelButton from '@/components/ui/PanelButton';
+import StatusBadge from '@/components/ui/StatusBadge';
+import {
+    appointmentStatusLabel,
+    appointmentStatusTone,
+} from '@/lib/appointmentStatus';
 
 const CANCELLABLE = new Set([
     'scheduled',
@@ -129,9 +106,9 @@ export default function ClientDashboard() {
         <div className="salonbw-dashboard">
             <div className="salonbw-dashboard__header">
                 <h1 className="salonbw-dashboard__title">Mój panel</h1>
-                <Link href="/booking" className="btn btn-primary">
+                <PanelButton href="/booking" variant="primary">
                     Zarezerwuj wizytę
-                </Link>
+                </PanelButton>
             </div>
 
             {/* Notification banner — pending reschedule or new messages */}
@@ -155,12 +132,14 @@ export default function ClientDashboard() {
                             </span>
                         )}
                     </div>
-                    <Link
+                    <PanelButton
                         href="/visits"
-                        className="btn btn-sm btn-outline-dark flex-shrink-0"
+                        size="sm"
+                        variant="secondary"
+                        className="flex-shrink-0"
                     >
                         Zobacz
-                    </Link>
+                    </PanelButton>
                 </div>
             )}
 
@@ -194,23 +173,23 @@ export default function ClientDashboard() {
                                 </div>
                                 <div className="d-flex align-items-center gap-2 flex-wrap">
                                     {data.upcomingAppointment.status && (
-                                        <span
-                                            className={statusClass(
-                                                data.upcomingAppointment
-                                                    .status ?? '',
+                                        <StatusBadge
+                                            tone={appointmentStatusTone(
+                                                data.upcomingAppointment.status,
                                             )}
                                         >
-                                            {statusLabel(
+                                            {appointmentStatusLabel(
                                                 data.upcomingAppointment
                                                     .status ?? '',
                                             )}
-                                        </span>
+                                        </StatusBadge>
                                     )}
                                     {data.upcomingAppointment.status ===
                                         'rescheduled_pending' && (
-                                        <button
+                                        <PanelButton
                                             type="button"
-                                            className="btn btn-sm btn-success"
+                                            size="sm"
+                                            variant="primary"
                                             disabled={accepting.has(
                                                 data.upcomingAppointment.id,
                                             )}
@@ -222,15 +201,16 @@ export default function ClientDashboard() {
                                             }}
                                         >
                                             Akceptuj nowy termin
-                                        </button>
+                                        </PanelButton>
                                     )}
                                     {data.upcomingAppointment.status &&
                                         CANCELLABLE.has(
                                             data.upcomingAppointment.status,
                                         ) && (
-                                            <button
+                                            <PanelButton
                                                 type="button"
-                                                className="btn btn-sm btn-outline-danger"
+                                                size="sm"
+                                                variant="danger"
                                                 disabled={cancelling.has(
                                                     data.upcomingAppointment.id,
                                                 )}
@@ -243,7 +223,7 @@ export default function ClientDashboard() {
                                                 }
                                             >
                                                 Anuluj
-                                            </button>
+                                            </PanelButton>
                                         )}
                                 </div>
                             </div>
@@ -362,26 +342,30 @@ export default function ClientDashboard() {
                                     )}
                                 </div>
                                 <div className="d-flex align-items-center gap-2 flex-wrap">
-                                    <span className={statusClass(apt.status)}>
-                                        {statusLabel(apt.status)}
-                                    </span>
+                                    <StatusBadge
+                                        tone={appointmentStatusTone(apt.status)}
+                                    >
+                                        {appointmentStatusLabel(apt.status)}
+                                    </StatusBadge>
                                     {(apt.status === 'completed' ||
                                         apt.status === 'cancelled' ||
                                         apt.status === 'no_show') &&
                                         apt.serviceId > 0 && (
-                                            <Link
+                                            <PanelButton
                                                 href={`/booking?serviceId=${apt.serviceId}`}
-                                                className="btn btn-sm btn-outline-dark"
+                                                size="sm"
+                                                variant="secondary"
                                             >
                                                 Umów ponownie
-                                            </Link>
+                                            </PanelButton>
                                         )}
                                     {apt.status === 'rescheduled_pending' &&
                                         new Date(apt.startTime) >
                                             new Date() && (
-                                            <button
+                                            <PanelButton
                                                 type="button"
-                                                className="btn btn-sm btn-success"
+                                                size="sm"
+                                                variant="primary"
                                                 disabled={accepting.has(apt.id)}
                                                 onClick={() => {
                                                     void acceptReschedule(
@@ -390,14 +374,15 @@ export default function ClientDashboard() {
                                                 }}
                                             >
                                                 Akceptuj
-                                            </button>
+                                            </PanelButton>
                                         )}
                                     {CANCELLABLE.has(apt.status) &&
                                         new Date(apt.startTime) >
                                             new Date() && (
-                                            <button
+                                            <PanelButton
                                                 type="button"
-                                                className="btn btn-sm btn-outline-danger"
+                                                size="sm"
+                                                variant="danger"
                                                 disabled={cancelling.has(
                                                     apt.id,
                                                 )}
@@ -406,7 +391,7 @@ export default function ClientDashboard() {
                                                 }
                                             >
                                                 Anuluj
-                                            </button>
+                                            </PanelButton>
                                         )}
                                 </div>
                             </div>
@@ -435,12 +420,14 @@ export default function ClientDashboard() {
                         fryzjerką w komentarzu przy wizycie.
                     </div>
                 </div>
-                <Link
+                <PanelButton
                     href="/helps/new"
-                    className="btn btn-outline-dark btn-sm flex-shrink-0"
+                    size="sm"
+                    variant="secondary"
+                    className="flex-shrink-0"
                 >
                     Kontakt z administratorem
-                </Link>
+                </PanelButton>
             </div>
             <ConfirmModal
                 open={confirmCancelId !== null}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { ServiceCategory } from '@/types';
+import PanelButton from '@/components/ui/PanelButton';
 
 interface Props {
     isOpen: boolean;
@@ -19,16 +20,24 @@ export interface CategoryFormData {
 }
 
 const COLOR_OPTIONS = [
-    '#25B4C1', // Primary teal
-    '#3B82F6', // Blue
-    '#8B5CF6', // Purple
-    '#EC4899', // Pink
-    '#EF4444', // Red
-    '#F97316', // Orange
-    '#EAB308', // Yellow
-    '#22C55E', // Green
-    '#6B7280', // Gray
+    { label: 'Czerń', value: '#0d0d0d' },
+    { label: 'Grafit', value: '#23252a' },
+    { label: 'Szary ciemny', value: '#5f6369' },
+    { label: 'Szary', value: '#6e7278' },
+    { label: 'Srebrny ciemny', value: '#8e9298' },
+    { label: 'Srebrny', value: '#b4b8be' },
+    { label: 'Szary jasny', value: '#d1d5db' },
 ];
+const DEFAULT_CATEGORY_COLOR = '#6e7278';
+const APPROVED_CATEGORY_COLORS = new Set(
+    COLOR_OPTIONS.map((option) => option.value),
+);
+
+function normalizeCategoryColor(color?: string | null) {
+    return color && APPROVED_CATEGORY_COLORS.has(color)
+        ? color
+        : DEFAULT_CATEGORY_COLOR;
+}
 
 export default function CategoryFormModal({
     isOpen,
@@ -41,7 +50,7 @@ export default function CategoryFormModal({
     const [formData, setFormData] = useState<CategoryFormData>({
         name: '',
         description: '',
-        color: COLOR_OPTIONS[0],
+        color: DEFAULT_CATEGORY_COLOR,
         parentId: undefined,
         isActive: true,
     });
@@ -51,7 +60,7 @@ export default function CategoryFormModal({
             setFormData({
                 name: category.name,
                 description: category.description || '',
-                color: category.color || COLOR_OPTIONS[0],
+                color: normalizeCategoryColor(category.color),
                 parentId: category.parentId,
                 isActive: category.isActive,
             });
@@ -59,7 +68,7 @@ export default function CategoryFormModal({
             setFormData({
                 name: '',
                 description: '',
-                color: COLOR_OPTIONS[0],
+                color: DEFAULT_CATEGORY_COLOR,
                 parentId: parentId || undefined,
                 isActive: true,
             });
@@ -213,52 +222,30 @@ export default function CategoryFormModal({
                                 </span>
                                 <div className="col-sm-9">
                                     <div className="d-flex align-items-center gap-5 flex-wrap mt-5">
-                                        {COLOR_OPTIONS.map((color) => {
+                                        {COLOR_OPTIONS.map((option) => {
                                             const dotStyle = {
-                                                '--dynamic-color': color,
-                                                border:
-                                                    formData.color === color
-                                                        ? '2px solid #000'
-                                                        : '1px solid #ddd',
+                                                '--category-color':
+                                                    option.value,
                                             } as React.CSSProperties;
+                                            const isSelected =
+                                                formData.color === option.value;
                                             return (
                                                 <button
-                                                    key={color}
+                                                    key={option.value}
                                                     type="button"
                                                     onClick={() =>
                                                         setFormData({
                                                             ...formData,
-                                                            color,
+                                                            color: option.value,
                                                         })
                                                     }
-                                                    className="status-dot w-24 h-24 bg-dynamic"
+                                                    className={`category-color-swatch${isSelected ? ' is-selected' : ''}`}
                                                     style={dotStyle}
-                                                    aria-label={`Wybierz kolor ${color}`}
+                                                    aria-label={`Wybierz kolor: ${option.label}`}
+                                                    aria-pressed={isSelected}
                                                 />
                                             );
                                         })}
-                                        {(() => {
-                                            const transparentStyle = {
-                                                '--dynamic-color':
-                                                    'transparent',
-                                            } as React.CSSProperties;
-                                            return (
-                                                <input
-                                                    type="color"
-                                                    value={formData.color}
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            color: e.target
-                                                                .value,
-                                                        })
-                                                    }
-                                                    className="bg-dynamic"
-                                                    style={transparentStyle}
-                                                    title="Wybierz własny kolor"
-                                                />
-                                            );
-                                        })()}
                                     </div>
                                 </div>
                             </div>
@@ -286,16 +273,16 @@ export default function CategoryFormModal({
                         </div>
 
                         <div className="modal-footer">
-                            <button
+                            <PanelButton
                                 type="button"
                                 onClick={onClose}
-                                className="btn btn-outline-secondary"
+                                variant="secondary"
                             >
                                 Anuluj
-                            </button>
-                            <button type="submit" className="btn btn-primary">
+                            </PanelButton>
+                            <PanelButton type="submit" variant="primary">
                                 {category ? 'Zapisz zmiany' : 'Dodaj kategorię'}
-                            </button>
+                            </PanelButton>
                         </div>
                     </form>
                 </div>

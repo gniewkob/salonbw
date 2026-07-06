@@ -2,9 +2,16 @@ import { FormEvent, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
-import Link from 'next/link';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
+import {
+    AuthConsentLabel,
+    AuthField,
+    AuthPageShell,
+    AuthStatus,
+    AuthSubmitButton,
+    AuthTextInput,
+} from '@/components/auth/AuthPageShell';
 import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,8 +52,6 @@ const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
     return errors;
 };
 
-const grain = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
-
 export default function RegisterPage() {
     const { register, apiFetch } = useAuth();
     const router = useRouter();
@@ -66,7 +71,6 @@ export default function RegisterPage() {
     const [errors, setErrors] = useState<RegisterErrors>({});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [focusedField, setFocusedField] = useState<string | null>(null);
 
     const runValidation = (currentForm: RegisterFormValues) => {
         const nextErrors = validateRegisterForm(currentForm);
@@ -90,7 +94,6 @@ export default function RegisterPage() {
     };
 
     const handleBlur = (field: keyof RegisterFormValues) => {
-        setFocusedField(null);
         setTouched((prev) => ({ ...prev, [field]: true }));
         runValidation(form);
     };
@@ -124,525 +127,228 @@ export default function RegisterPage() {
         }
     };
 
-    const inputStyle = (
-        field: keyof RegisterFormValues,
-    ): React.CSSProperties => ({
-        display: 'block',
-        width: '100%',
-        padding: '0.85rem 1rem',
-        background: 'rgba(255,255,255,0.05)',
-        border: `1px solid ${focusedField === field ? '#b4b8be' : touched[field] && errors[field] ? 'rgba(220,60,60,0.7)' : 'rgba(255,255,255,0.12)'}`,
-        borderRadius: '2px',
-        color: '#ffffff',
-        fontSize: '0.875rem',
-        fontFamily: "'Open Sans', sans-serif",
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        boxSizing: 'border-box',
-    });
-
-    const labelStyle: React.CSSProperties = {
-        display: 'block',
-        fontSize: '0.7rem',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: 'rgba(255,255,255,0.45)',
-        marginBottom: '0.5rem',
-        fontFamily: "'Open Sans', sans-serif",
-    };
-
-    const errorStyle: React.CSSProperties = {
-        fontSize: '0.75rem',
-        color: 'rgba(220,80,80,0.9)',
-        marginTop: '0.35rem',
-        fontFamily: "'Open Sans', sans-serif",
-    };
-
     return (
         <>
             <Head>
                 <title>Rejestracja — Salon Black &amp; White</title>
             </Head>
-            <div
-                style={{
-                    minHeight: '100vh',
-                    background: '#080808',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    padding: '2rem 1.5rem',
-                }}
+            <AuthPageShell
+                title="Zarejestruj się"
+                footerPrompt="Masz już konto?"
+                footerHref="/auth/login"
+                footerLabel="Zaloguj się"
             >
-                {/* Grain overlay */}
-                <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundImage: grain,
-                        backgroundSize: '180px',
-                        opacity: 0.04,
-                        pointerEvents: 'none',
-                        zIndex: 0,
+                <form
+                    onSubmit={(e) => {
+                        void handleSubmit(e);
                     }}
-                />
-
-                {/* B&W watermark */}
-                <span
-                    style={{
-                        position: 'fixed',
-                        bottom: '-0.1em',
-                        left: '-0.05em',
-                        fontFamily: "'Playfair Display', serif",
-                        fontSize: 'clamp(6rem,20vw,14rem)',
-                        fontWeight: 700,
-                        color: 'rgba(255,255,255,0.04)',
-                        lineHeight: 1,
-                        pointerEvents: 'none',
-                        userSelect: 'none',
-                        zIndex: 0,
-                    }}
+                    noValidate
                 >
-                    B&amp;W
-                </span>
-
-                <div
-                    style={{
-                        position: 'relative',
-                        zIndex: 1,
-                        width: '100%',
-                        maxWidth: '400px',
-                    }}
-                >
-                    {/* Brand */}
-                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                        <p
-                            style={{
-                                fontFamily: "'Open Sans', sans-serif",
-                                fontSize: '0.6rem',
-                                letterSpacing: '0.2em',
-                                textTransform: 'uppercase',
-                                color: '#b4b8be',
-                                marginBottom: '0.75rem',
-                            }}
-                        >
-                            Akademia Zdrowych Włosów
-                        </p>
-                        <h1
-                            style={{
-                                fontFamily: "'Playfair Display', serif",
-                                fontSize: '2rem',
-                                fontWeight: 700,
-                                color: '#ffffff',
-                                margin: 0,
-                                lineHeight: 1.15,
-                            }}
-                        >
-                            Zarejestruj się
-                        </h1>
-                        <div
-                            style={{
-                                width: '32px',
-                                height: '2px',
-                                background: '#b4b8be',
-                                margin: '1rem auto 0',
-                            }}
-                        />
-                    </div>
-
-                    {/* Form */}
-                    <form
-                        onSubmit={(e) => {
-                            void handleSubmit(e);
-                        }}
-                        noValidate
+                    <AuthField
+                        id="name"
+                        label="Imię i nazwisko"
+                        error={touched.name ? errors.name : undefined}
                     >
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="name" style={labelStyle}>
-                                Imię i nazwisko
-                            </label>
+                        <AuthTextInput
+                            id="name"
+                            placeholder="Jan Kowalski"
+                            autoComplete="name"
+                            value={form.name}
+                            invalid={Boolean(touched.name && errors.name)}
+                            onChange={(e) =>
+                                handleChange('name', e.target.value)
+                            }
+                            onBlur={() => handleBlur('name')}
+                        />
+                    </AuthField>
+
+                    <AuthField
+                        id="email"
+                        label="Adres e-mail"
+                        error={touched.email ? errors.email : undefined}
+                    >
+                        <AuthTextInput
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            placeholder="twoj@email.pl"
+                            value={form.email}
+                            invalid={Boolean(touched.email && errors.email)}
+                            onChange={(e) =>
+                                handleChange('email', e.target.value)
+                            }
+                            onBlur={() => handleBlur('email')}
+                        />
+                    </AuthField>
+
+                    <AuthField id="phone" label="Telefon" optional>
+                        <AuthTextInput
+                            id="phone"
+                            type="tel"
+                            autoComplete="tel"
+                            placeholder="+48 000 000 000"
+                            value={form.phone}
+                            onChange={(e) =>
+                                handleChange('phone', e.target.value)
+                            }
+                        />
+                    </AuthField>
+
+                    <AuthField
+                        id="password"
+                        label="Hasło"
+                        spacious
+                        error={touched.password ? errors.password : undefined}
+                    >
+                        <AuthTextInput
+                            id="password"
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="Min. 6 znaków"
+                            value={form.password}
+                            invalid={Boolean(
+                                touched.password && errors.password,
+                            )}
+                            onChange={(e) =>
+                                handleChange('password', e.target.value)
+                            }
+                            onBlur={() => handleBlur('password')}
+                        />
+                    </AuthField>
+
+                    <div className="auth-consents">
+                        <AuthConsentLabel>
                             <input
-                                id="name"
-                                style={inputStyle('name')}
-                                placeholder="Jan Kowalski"
-                                autoComplete="name"
-                                value={form.name}
+                                type="checkbox"
+                                id="gdprConsent"
+                                checked={form.gdprConsent}
                                 onChange={(e) =>
-                                    handleChange('name', e.target.value)
+                                    handleCheckbox(
+                                        'gdprConsent',
+                                        e.target.checked,
+                                    )
                                 }
-                                onFocus={() => setFocusedField('name')}
-                                onBlur={() => handleBlur('name')}
-                            />
-                            {touched.name && errors.name && (
-                                <p role="alert" style={errorStyle}>
-                                    {errors.name}
-                                </p>
-                            )}
-                        </div>
-
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="email" style={labelStyle}>
-                                Adres e-mail
-                            </label>
-                            <input
-                                id="email"
-                                type="email"
-                                autoComplete="email"
-                                style={inputStyle('email')}
-                                placeholder="twoj@email.pl"
-                                value={form.email}
-                                onChange={(e) =>
-                                    handleChange('email', e.target.value)
+                                onBlur={() =>
+                                    setTouched((prev) => ({
+                                        ...prev,
+                                        gdprConsent: true,
+                                    }))
                                 }
-                                onFocus={() => setFocusedField('email')}
-                                onBlur={() => handleBlur('email')}
                             />
-                            {touched.email && errors.email && (
-                                <p role="alert" style={errorStyle}>
-                                    {errors.email}
-                                </p>
-                            )}
-                        </div>
-
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label htmlFor="phone" style={labelStyle}>
-                                Telefon{' '}
-                                <span
-                                    style={{ color: 'rgba(255,255,255,0.55)' }}
-                                >
-                                    (opcjonalnie)
+                            <span>
+                                <span className="auth-consent__required">
+                                    *{' '}
                                 </span>
-                            </label>
-                            <input
-                                id="phone"
-                                type="tel"
-                                autoComplete="tel"
-                                style={inputStyle('phone')}
-                                placeholder="+48 000 000 000"
-                                value={form.phone}
-                                onChange={(e) =>
-                                    handleChange('phone', e.target.value)
-                                }
-                                onFocus={() => setFocusedField('phone')}
-                                onBlur={() => setFocusedField(null)}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: '1.75rem' }}>
-                            <label htmlFor="password" style={labelStyle}>
-                                Hasło
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                autoComplete="new-password"
-                                style={inputStyle('password')}
-                                placeholder="Min. 6 znaków"
-                                value={form.password}
-                                onChange={(e) =>
-                                    handleChange('password', e.target.value)
-                                }
-                                onFocus={() => setFocusedField('password')}
-                                onBlur={() => handleBlur('password')}
-                            />
-                            {touched.password && errors.password && (
-                                <p role="alert" style={errorStyle}>
-                                    {errors.password}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Consent checkboxes */}
-                        <div
-                            style={{
-                                marginBottom: '1.5rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.75rem',
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    gap: '0.65rem',
-                                    cursor: 'pointer',
-                                    alignItems: 'flex-start',
-                                }}
-                            >
-                                <input
-                                    type="checkbox"
-                                    id="gdprConsent"
-                                    checked={form.gdprConsent}
-                                    onChange={(e) =>
-                                        handleCheckbox(
-                                            'gdprConsent',
-                                            e.target.checked,
-                                        )
-                                    }
-                                    onBlur={() =>
-                                        setTouched((prev) => ({
-                                            ...prev,
-                                            gdprConsent: true,
-                                        }))
-                                    }
-                                    style={{ marginTop: '2px', flexShrink: 0 }}
-                                />
-                                <span
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        color: 'rgba(255,255,255,0.65)',
-                                        fontFamily: "'Open Sans', sans-serif",
-                                        lineHeight: 1.5,
-                                    }}
+                                Wyrażam zgodę na przetwarzanie moich danych
+                                osobowych przez Salon Black &amp; White w celu
+                                realizacji usług oraz obsługi konta zgodnie z{' '}
+                                <a
+                                    href="https://dev.salon-bw.pl/privacy"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
-                                    <span
-                                        style={{ color: 'rgba(220,80,80,0.9)' }}
-                                    >
-                                        *{' '}
-                                    </span>
-                                    Wyrażam zgodę na przetwarzanie moich danych
-                                    osobowych przez Salon Black &amp; White w
-                                    celu realizacji usług oraz obsługi konta
-                                    zgodnie z{' '}
-                                    <a
-                                        href="https://dev.salon-bw.pl/privacy"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            color: '#b4b8be',
-                                            textDecoration: 'underline',
-                                        }}
-                                    >
-                                        Polityką prywatności
-                                    </a>
-                                    .
-                                </span>
-                            </label>
-                            {touched.gdprConsent && errors.gdprConsent && (
-                                <p role="alert" style={errorStyle}>
-                                    {errors.gdprConsent}
-                                </p>
-                            )}
-
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    gap: '0.65rem',
-                                    cursor: 'pointer',
-                                    alignItems: 'flex-start',
-                                }}
-                            >
-                                <input
-                                    type="checkbox"
-                                    id="termsConsent"
-                                    checked={form.termsConsent}
-                                    onChange={(e) =>
-                                        handleCheckbox(
-                                            'termsConsent',
-                                            e.target.checked,
-                                        )
-                                    }
-                                    onBlur={() =>
-                                        setTouched((prev) => ({
-                                            ...prev,
-                                            termsConsent: true,
-                                        }))
-                                    }
-                                    style={{ marginTop: '2px', flexShrink: 0 }}
-                                />
-                                <span
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        color: 'rgba(255,255,255,0.65)',
-                                        fontFamily: "'Open Sans', sans-serif",
-                                        lineHeight: 1.5,
-                                    }}
-                                >
-                                    <span
-                                        style={{ color: 'rgba(220,80,80,0.9)' }}
-                                    >
-                                        *{' '}
-                                    </span>
-                                    Akceptuję{' '}
-                                    <a
-                                        href="https://dev.salon-bw.pl/policy"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            color: '#b4b8be',
-                                            textDecoration: 'underline',
-                                        }}
-                                    >
-                                        Regulamin
-                                    </a>{' '}
-                                    Salonu Black &amp; White.
-                                </span>
-                            </label>
-                            {touched.termsConsent && errors.termsConsent && (
-                                <p role="alert" style={errorStyle}>
-                                    {errors.termsConsent}
-                                </p>
-                            )}
-
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    gap: '0.65rem',
-                                    cursor: 'pointer',
-                                    alignItems: 'flex-start',
-                                }}
-                            >
-                                <input
-                                    type="checkbox"
-                                    id="smsConsent"
-                                    checked={form.smsConsent}
-                                    onChange={(e) =>
-                                        handleCheckbox(
-                                            'smsConsent',
-                                            e.target.checked,
-                                        )
-                                    }
-                                    style={{ marginTop: '2px', flexShrink: 0 }}
-                                />
-                                <span
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        color: 'rgba(255,255,255,0.45)',
-                                        fontFamily: "'Open Sans', sans-serif",
-                                        lineHeight: 1.5,
-                                    }}
-                                >
-                                    Wyrażam zgodę na otrzymywanie informacji
-                                    marketingowych drogą SMS / WhatsApp.{' '}
-                                    <span
-                                        style={{
-                                            color: 'rgba(255,255,255,0.25)',
-                                        }}
-                                    >
-                                        (opcjonalne)
-                                    </span>
-                                </span>
-                            </label>
-
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    gap: '0.65rem',
-                                    cursor: 'pointer',
-                                    alignItems: 'flex-start',
-                                }}
-                            >
-                                <input
-                                    type="checkbox"
-                                    id="emailConsent"
-                                    checked={form.emailConsent}
-                                    onChange={(e) =>
-                                        handleCheckbox(
-                                            'emailConsent',
-                                            e.target.checked,
-                                        )
-                                    }
-                                    style={{ marginTop: '2px', flexShrink: 0 }}
-                                />
-                                <span
-                                    style={{
-                                        fontSize: '0.75rem',
-                                        color: 'rgba(255,255,255,0.45)',
-                                        fontFamily: "'Open Sans', sans-serif",
-                                        lineHeight: 1.5,
-                                    }}
-                                >
-                                    Wyrażam zgodę na otrzymywanie informacji
-                                    marketingowych drogą e-mail.{' '}
-                                    <span
-                                        style={{
-                                            color: 'rgba(255,255,255,0.25)',
-                                        }}
-                                    >
-                                        (opcjonalne)
-                                    </span>
-                                </span>
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            style={{
-                                display: 'block',
-                                width: '100%',
-                                padding: '0.9rem 1.5rem',
-                                background: submitting ? '#8e9298' : '#b4b8be',
-                                color: '#0d0d0d',
-                                border: 'none',
-                                borderRadius: '2px',
-                                fontSize: '0.72rem',
-                                fontWeight: 700,
-                                letterSpacing: '0.18em',
-                                textTransform: 'uppercase',
-                                fontFamily: "'Open Sans', sans-serif",
-                                cursor: submitting ? 'not-allowed' : 'pointer',
-                                transition: 'background 0.2s',
-                            }}
-                        >
-                            {submitting ? 'Rejestracja…' : 'Zarejestruj się'}
-                        </button>
-
-                        {error && (
-                            <p
-                                role="alert"
-                                style={{
-                                    textAlign: 'center',
-                                    marginTop: '1rem',
-                                    fontSize: '0.8rem',
-                                    color: 'rgba(220,80,80,0.9)',
-                                    fontFamily: "'Open Sans', sans-serif",
-                                }}
-                            >
-                                {error}
+                                    Polityką prywatności
+                                </a>
+                                .
+                            </span>
+                        </AuthConsentLabel>
+                        {touched.gdprConsent && errors.gdprConsent && (
+                            <p role="alert" className="auth-field__error">
+                                {errors.gdprConsent}
                             </p>
                         )}
-                    </form>
 
-                    <GoogleAuthButton label="Zarejestruj się przez Google" />
+                        <AuthConsentLabel>
+                            <input
+                                type="checkbox"
+                                id="termsConsent"
+                                checked={form.termsConsent}
+                                onChange={(e) =>
+                                    handleCheckbox(
+                                        'termsConsent',
+                                        e.target.checked,
+                                    )
+                                }
+                                onBlur={() =>
+                                    setTouched((prev) => ({
+                                        ...prev,
+                                        termsConsent: true,
+                                    }))
+                                }
+                            />
+                            <span>
+                                <span className="auth-consent__required">
+                                    *{' '}
+                                </span>
+                                Akceptuję{' '}
+                                <a
+                                    href="https://dev.salon-bw.pl/policy"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Regulamin
+                                </a>{' '}
+                                Salonu Black &amp; White.
+                            </span>
+                        </AuthConsentLabel>
+                        {touched.termsConsent && errors.termsConsent && (
+                            <p role="alert" className="auth-field__error">
+                                {errors.termsConsent}
+                            </p>
+                        )}
 
-                    <p
-                        style={{
-                            textAlign: 'center',
-                            marginTop: '2rem',
-                            fontSize: '0.8rem',
-                            color: 'rgba(255,255,255,0.35)',
-                            fontFamily: "'Open Sans', sans-serif",
-                        }}
-                    >
-                        Masz już konto?{' '}
-                        <Link
-                            href="/auth/login"
-                            style={{
-                                color: '#b4b8be',
-                                textDecoration: 'none',
-                                fontWeight: 600,
-                            }}
-                        >
-                            Zaloguj się
-                        </Link>
-                    </p>
+                        <AuthConsentLabel muted>
+                            <input
+                                type="checkbox"
+                                id="smsConsent"
+                                checked={form.smsConsent}
+                                onChange={(e) =>
+                                    handleCheckbox(
+                                        'smsConsent',
+                                        e.target.checked,
+                                    )
+                                }
+                            />
+                            <span>
+                                Wyrażam zgodę na otrzymywanie informacji
+                                marketingowych drogą SMS / WhatsApp.{' '}
+                                <span className="auth-consent__optional">
+                                    (opcjonalne)
+                                </span>
+                            </span>
+                        </AuthConsentLabel>
 
-                    <p
-                        style={{
-                            textAlign: 'center',
-                            marginTop: '2.5rem',
-                            fontSize: '0.6rem',
-                            letterSpacing: '0.14em',
-                            textTransform: 'uppercase',
-                            color: 'rgba(255,255,255,0.15)',
-                            fontFamily: "'Open Sans', sans-serif",
-                        }}
-                    >
-                        Salon Black &amp; White · Bytom
-                    </p>
-                </div>
-            </div>
+                        <AuthConsentLabel muted>
+                            <input
+                                type="checkbox"
+                                id="emailConsent"
+                                checked={form.emailConsent}
+                                onChange={(e) =>
+                                    handleCheckbox(
+                                        'emailConsent',
+                                        e.target.checked,
+                                    )
+                                }
+                            />
+                            <span>
+                                Wyrażam zgodę na otrzymywanie informacji
+                                marketingowych drogą e-mail.{' '}
+                                <span className="auth-consent__optional">
+                                    (opcjonalne)
+                                </span>
+                            </span>
+                        </AuthConsentLabel>
+                    </div>
+
+                    <AuthSubmitButton disabled={submitting}>
+                        {submitting ? 'Rejestracja…' : 'Zarejestruj się'}
+                    </AuthSubmitButton>
+
+                    <AuthStatus>{error}</AuthStatus>
+                </form>
+
+                <GoogleAuthButton label="Zarejestruj się przez Google" />
+            </AuthPageShell>
         </>
     );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ServiceCategory } from '@/types';
 import CategoryFormModal from './CategoryFormModal';
 import ConfirmModal from '@/components/ConfirmModal';
+import PanelButton from '@/components/ui/PanelButton';
 import {
     type CreateServiceCategoryDto,
     useCreateServiceCategory,
@@ -117,12 +118,12 @@ export default function ManageCategoriesModal({
                             )}
                         </div>
                     </div>
-                    <div className="btn-group">
+                    <div className="manage-categories-modal__actions">
                         {isTopLevel && (
                             <>
                                 <button
                                     type="button"
-                                    className="btn btn-outline-secondary btn-sm"
+                                    className="category-action-button"
                                     onClick={() => moveCategory(index, -1)}
                                     disabled={
                                         index === 0 ||
@@ -131,11 +132,11 @@ export default function ManageCategoriesModal({
                                     title="Przesuń wyżej"
                                     aria-label="Przesuń kategorię wyżej"
                                 >
-                                    <i className="fa fa-arrow-up"></i>
+                                    <i className="fa fa-arrow-up" aria-hidden />
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-outline-secondary btn-sm"
+                                    className="category-action-button"
                                     onClick={() => moveCategory(index, 1)}
                                     disabled={
                                         index === siblingsCount - 1 ||
@@ -144,38 +145,41 @@ export default function ManageCategoriesModal({
                                     title="Przesuń niżej"
                                     aria-label="Przesuń kategorię niżej"
                                 >
-                                    <i className="fa fa-arrow-down"></i>
+                                    <i
+                                        className="fa fa-arrow-down"
+                                        aria-hidden
+                                    />
                                 </button>
                             </>
                         )}
                         <button
                             type="button"
-                            className="btn btn-outline-secondary btn-sm"
+                            className="category-action-button"
                             onClick={() => handleEdit(category)}
                             title="Edytuj kategorię"
                             aria-label="Edytuj kategorię"
                         >
-                            <i className="fa fa-pencil"></i>
+                            <i className="fa fa-pencil" aria-hidden />
                         </button>
                         <button
                             type="button"
-                            className="btn btn-outline-secondary btn-sm"
+                            className="category-action-button"
                             onClick={() => handleAdd(category.id)}
                             title="Dodaj podkategorię"
                             aria-label="Dodaj podkategorię"
                         >
-                            <i className="fa fa-plus"></i>
+                            <i className="fa fa-plus" aria-hidden />
                         </button>
                         <button
                             type="button"
-                            className="btn btn-outline-secondary btn-sm"
+                            className="category-action-button category-action-button--danger"
                             onClick={() => {
                                 void handleDelete(category.id, category.name);
                             }}
                             title="Usuń kategorię"
                             aria-label="Usuń kategorię"
                         >
-                            <i className="fa fa-trash text-danger"></i>
+                            <i className="fa fa-trash" aria-hidden />
                         </button>
                     </div>
                 </div>
@@ -218,10 +222,7 @@ export default function ManageCategoriesModal({
                                 <span>Nazwa kategorii</span>
                                 <span>Akcje</span>
                             </div>
-                            <div
-                                className="overflow-auto"
-                                style={{ maxHeight: 400 }}
-                            >
+                            <div className="manage-categories-modal__list">
                                 {categories.length > 0 ? (
                                     categories.map((cat, i) =>
                                         renderCategoryRow(
@@ -240,21 +241,20 @@ export default function ManageCategoriesModal({
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button
+                        <PanelButton
                             type="button"
-                            className="btn btn-outline-secondary float-start"
+                            variant="secondary"
                             onClick={() => handleAdd(null)}
                         >
-                            <i className="fa fa-plus me-2"></i>
                             Dodaj kategorię główną
-                        </button>
-                        <button
+                        </PanelButton>
+                        <PanelButton
                             type="button"
-                            className="btn btn-primary"
+                            variant="primary"
                             onClick={onClose}
                         >
                             Gotowe
-                        </button>
+                        </PanelButton>
                     </div>
                 </div>
             </div>
