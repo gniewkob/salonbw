@@ -106,6 +106,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <QueryClientProvider client={queryClient}>
             <Head>
                 <title>Panel — Salon Black &amp; White</title>
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1"
+                />
             </Head>
             <AuthProvider>
                 <ToastProvider>

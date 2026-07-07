@@ -62,7 +62,7 @@ export default function CalendarSidebar({
     };
 
     return (
-        <div className="d-flex flex-column gap-2 p-2 overflow-auto">
+        <aside className="salonbw-calendar-filter-panel">
             <div className="salonbw-datepicker-container">
                 <DatePicker
                     selected={selectedDate}
@@ -75,49 +75,33 @@ export default function CalendarSidebar({
 
             {/* Employee filter — only shown when multiple employees */}
             {employees.length > 1 && (
-                <div
-                    className="pt-2 border-top"
-                    style={{ borderColor: '#f0f0f0' }}
-                >
-                    <div className="d-flex align-items-center justify-content-between mb-2 px-1">
-                        <span
-                            className="fw-bold text-muted text-uppercase"
-                            style={{
-                                fontSize: '0.7rem',
-                                letterSpacing: '0.05em',
-                            }}
-                        >
+                <div className="salonbw-calendar-filter-section">
+                    <div className="salonbw-calendar-filter-section__header">
+                        <span className="salonbw-calendar-filter-section__title">
                             Pracownicy
                         </span>
-                        <div className="d-flex gap-2">
+                        <div className="salonbw-calendar-filter-section__actions">
                             <button
                                 type="button"
                                 onClick={onSelectAll}
-                                className="border-0 bg-transparent text-primary p-0"
-                                style={{ fontSize: '0.75rem' }}
+                                className="salonbw-calendar-filter-link"
                             >
                                 Wszyscy
                             </button>
-                            <span className="text-muted">|</span>
                             <button
                                 type="button"
                                 onClick={onClearAll}
-                                className="border-0 bg-transparent text-muted p-0"
-                                style={{ fontSize: '0.75rem' }}
+                                className="salonbw-calendar-filter-link"
                             >
                                 Wyczyść
                             </button>
                         </div>
                     </div>
-                    <div className="d-flex flex-column gap-1">
+                    <div className="salonbw-calendar-employee-list">
                         {employees.map((emp) => (
                             <label
                                 key={emp.id}
-                                className="d-flex align-items-center gap-2 px-1 py-1 rounded"
-                                style={{
-                                    cursor: 'pointer',
-                                    fontSize: '0.82rem',
-                                }}
+                                className="salonbw-calendar-employee-option"
                             >
                                 <input
                                     type="checkbox"
@@ -144,6 +128,6 @@ export default function CalendarSidebar({
                     </div>
                 </div>
             )}
-        </div>
+        </aside>
     );
 }

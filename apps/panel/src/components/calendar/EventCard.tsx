@@ -145,10 +145,15 @@ export default function EventCard({
     const wrapperStyle: CSSProperties = {
         cursor: 'pointer',
         opacity,
-        borderRadius: 4,
+        borderRadius: 3,
         overflow: 'hidden',
-        boxShadow: ring ?? '0 1px 2px rgba(0,0,0,0.08)',
-        transition: 'box-shadow 0.1s',
+        backgroundColor: visual.body,
+        border: '1px solid rgba(13, 13, 13, 0.08)',
+        borderLeft: `3px solid ${visual.strip}`,
+        boxShadow: ring ?? 'none',
+        height: '100%',
+        padding: '4px 7px',
+        transition: 'box-shadow 0.12s, border-color 0.12s',
         textDecoration:
             event.status === 'cancelled' ? 'line-through' : undefined,
     };
@@ -156,6 +161,7 @@ export default function EventCard({
     if (isTimeBlock && blockColors) {
         return (
             <div
+                className="salonbw-event-card salonbw-event-card--block"
                 role="button"
                 tabIndex={0}
                 onClick={() => onClick(event)}
@@ -196,6 +202,7 @@ export default function EventCard({
 
     return (
         <div
+            className="salonbw-event-card"
             role="button"
             tabIndex={0}
             draggable
@@ -209,20 +216,7 @@ export default function EventCard({
             onDragStart={() => onDragStart?.(event)}
             style={wrapperStyle}
         >
-            {/* Versum-style: darker header strip with time (B&W by status) */}
-            <div
-                style={{
-                    backgroundColor: visual.strip,
-                    padding: '2px 7px',
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: visual.stripText,
-                    lineHeight: 1.4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                }}
-            >
+            <div className="salonbw-event-card__time">
                 <span>{event.allDay ? 'Cały dzień' : timeStr}</span>
                 {alertSeverity && (
                     <span
@@ -237,55 +231,28 @@ export default function EventCard({
                 )}
             </div>
 
-            {/* Light-fill body: client + service */}
-            <div
-                style={{
-                    backgroundColor: visual.body,
-                    padding: '2px 7px 3px',
-                    fontSize: 12,
-                    lineHeight: 1.35,
-                }}
-            >
+            <div className="salonbw-event-card__body">
                 {event.clientName && (
-                    <div
-                        className="text-truncate"
-                        style={{ fontWeight: 600, color: '#0d0d0d' }}
-                    >
+                    <div className="salonbw-event-card__client text-truncate">
                         {event.clientName}
                     </div>
                 )}
                 <div
-                    className="text-truncate"
-                    style={{
-                        color: '#3a3d42',
-                        fontWeight: event.clientName ? 400 : 600,
-                        fontSize: 11.5,
-                    }}
+                    className={
+                        event.clientName
+                            ? 'salonbw-event-card__service text-truncate'
+                            : 'salonbw-event-card__service salonbw-event-card__service--primary text-truncate'
+                    }
                 >
                     {event.title}
                 </div>
                 {statusLabel && (
-                    <div
-                        style={{
-                            fontSize: 10,
-                            color: '#6e7278',
-                            fontWeight: 600,
-                            marginTop: 1,
-                        }}
-                    >
+                    <div className="salonbw-event-card__meta">
                         {statusLabel}
                     </div>
                 )}
                 {paymentLabel && (
-                    <div
-                        className="text-truncate"
-                        style={{
-                            fontSize: 10,
-                            color: '#0d0d0d',
-                            fontWeight: 600,
-                            marginTop: 1,
-                        }}
-                    >
+                    <div className="salonbw-event-card__payment text-truncate">
                         {paymentLabel}
                     </div>
                 )}

@@ -112,143 +112,104 @@ export default function CalendarHeader({
         { key: 'month', label: 'Miesiąc' },
     ];
 
+    const dateLabel = compact ? formatDateLabelShort() : formatDateLabel();
+
     return (
-        <div
-            className="bg-white border-bottom"
-            style={{ borderColor: '#e9ecef' }}
-        >
-            <div className="d-flex align-items-center justify-content-between px-3 py-2 gap-2">
-                {/* Left: nav arrows + date label */}
-                <div className="d-flex align-items-center gap-1 min-w-0">
-                    <button
-                        type="button"
-                        onClick={handlePrev}
-                        className="btn btn-sm btn-light border-0 text-secondary p-2 flex-shrink-0"
-                        aria-label="Poprzedni"
-                        style={{ lineHeight: 1, borderRadius: 8 }}
-                    >
-                        <svg
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+        <div className="salonbw-calendar-toolbar">
+            <div className="salonbw-calendar-toolbar__left">
+                <div
+                    className="salonbw-calendar-view-toggle"
+                    role="group"
+                    aria-label="Widok kalendarza"
+                >
+                    {views.map(({ key, label }) => (
+                        <button
+                            key={key}
+                            type="button"
+                            onClick={() => onViewChange(key)}
+                            className={
+                                view === key
+                                    ? 'salonbw-calendar-view-toggle__button is-active'
+                                    : 'salonbw-calendar-view-toggle__button'
+                            }
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2.5}
-                                d="M15 19l-7-7 7-7"
-                            />
-                        </svg>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={onTodayClick}
-                        className="btn btn-sm border-0 px-2 py-1 text-start flex-shrink-0"
-                        style={{ background: 'none', lineHeight: 1.2 }}
-                        aria-label="Wróć do dziś"
-                    >
-                        <span
-                            className="fw-semibold text-capitalize"
-                            style={{
-                                display: 'block',
-                                fontSize: compact ? '0.95rem' : '1.05rem',
-                                color: viewingToday ? '#0d0d0d' : '#6e7278',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            {compact
-                                ? formatDateLabelShort()
-                                : formatDateLabel()}
-                        </span>
-                        {!viewingToday && !compact && (
-                            <span
-                                style={{
-                                    display: 'block',
-                                    fontSize: '0.72rem',
-                                    marginTop: 1,
-                                    color: '#6e7278',
-                                }}
-                            >
-                                Kliknij, by wrócić do dziś
-                            </span>
-                        )}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={handleNext}
-                        className="btn btn-sm btn-light border-0 text-secondary p-2 flex-shrink-0"
-                        aria-label="Następny"
-                        style={{ lineHeight: 1, borderRadius: 8 }}
-                    >
-                        <svg
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2.5}
-                                d="M9 5l7 7-7 7"
-                            />
-                        </svg>
-                    </button>
-
-                    {currentTime && (
-                        <span
-                            className="d-none d-md-inline text-secondary ms-1"
-                            style={{ fontSize: '0.82rem' }}
-                        >
-                            {format(currentTime, 'HH:mm')}
-                        </span>
-                    )}
+                            {label}
+                        </button>
+                    ))}
                 </div>
 
-                {/* Right: view toggle + extra action */}
-                <div className="d-flex align-items-center gap-2 flex-shrink-0">
-                    {extraAction}
-
-                    <div
-                        className="d-flex align-items-center gap-1"
-                        style={{
-                            background: '#f1f3f5',
-                            borderRadius: 10,
-                            padding: '3px',
-                        }}
-                        role="group"
-                        aria-label="Widok kalendarza"
-                    >
-                        {views.map(({ key, label }) => (
-                            <button
-                                key={key}
-                                type="button"
-                                onClick={() => onViewChange(key)}
-                                className={`btn btn-sm border-0 px-2 py-1${view === key ? ' shadow-sm' : ''}`}
-                                style={{
-                                    fontSize: '0.8rem',
-                                    fontWeight: view === key ? 600 : 400,
-                                    borderRadius: 7,
-                                    background:
-                                        view === key
-                                            ? '#ffffff'
-                                            : 'transparent',
-                                    color: view === key ? '#212529' : '#6c757d',
-                                    transition: 'background 0.15s, color 0.15s',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <button
+                    type="button"
+                    onClick={onTodayClick}
+                    className="salonbw-calendar-today-button"
+                >
+                    Dzisiaj
+                </button>
             </div>
+
+            <div className="salonbw-calendar-toolbar__center">
+                <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="salonbw-calendar-nav-button"
+                    aria-label="Poprzedni"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M15 19l-7-7 7-7"
+                        />
+                    </svg>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={onTodayClick}
+                    className={
+                        viewingToday
+                            ? 'salonbw-calendar-date-pill is-today'
+                            : 'salonbw-calendar-date-pill'
+                    }
+                    aria-label="Wróć do dziś"
+                >
+                    <span>{dateLabel}</span>
+                    {currentTime && (
+                        <small>{format(currentTime, 'HH:mm')}</small>
+                    )}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={handleNext}
+                    className="salonbw-calendar-nav-button"
+                    aria-label="Następny"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M9 5l7 7-7 7"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            <div className="salonbw-calendar-toolbar__right">{extraAction}</div>
         </div>
     );
 }

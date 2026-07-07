@@ -116,6 +116,7 @@ export default function CalendarView({
 }: CalendarViewProps) {
     const CALENDAR_MIN_HEIGHT = 560;
     const calendarRef = useRef<FullCalendarComponent | null>(null);
+    const showSidebar = !hideSidebar && employees.length > 1;
     const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
         null,
     );
@@ -343,12 +344,18 @@ export default function CalendarView({
     }, [currentView, currentDate]);
 
     return (
-        <div className="d-flex h-100">
+        <div
+            className={
+                showSidebar
+                    ? 'salonbw-calendar-workspace'
+                    : 'salonbw-calendar-workspace salonbw-calendar-workspace--no-sidebar'
+            }
+        >
             {/* Sidebar: hidden on mobile, shown on desktop (md+) */}
-            {!hideSidebar && (
+            {showSidebar && (
                 <div
-                    className="d-none d-md-flex flex-column flex-shrink-0 border-end border-secondary border-opacity-25 bg-white"
-                    style={{ width: 220 }}
+                    className="salonbw-calendar-sidebar"
+                    aria-label="Filtry kalendarza"
                 >
                     <CalendarSidebar
                         employees={employees}
@@ -365,7 +372,7 @@ export default function CalendarView({
             )}
 
             {/* Main Calendar Area */}
-            <div className="flex-fill overflow-auto bg-white p-2">
+            <div className="salonbw-calendar-main">
                 {/* Custom Header matching source top bar usually goes here or in Layout */}
 
                 {pluginLoadError ? (
@@ -387,7 +394,41 @@ export default function CalendarView({
                         </div>
                     </div>
                 ) : calendarPlugins ? (
-                    <div style={{ minHeight: CALENDAR_MIN_HEIGHT }}>
+                    <div
+                        className={`salonbw-calendar-frame salonbw-calendar-frame--${currentView}`}
+                        style={{ minHeight: CALENDAR_MIN_HEIGHT }}
+                    >
+                        {currentView === 'day' && employees.length > 1 && (
+                            <div className="salonbw-calendar-staff-strip">
+                                {employees
+                                    .filter(
+                                        (employee) =>
+                                            selectedEmployeeIds.length === 0 ||
+                                            selectedEmployeeIds.includes(
+                                                employee.id,
+                                            ),
+                                    )
+                                    .slice(0, 3)
+                                    .map((employee) => (
+                                        <div
+                                            key={employee.id}
+                                            className="salonbw-calendar-staff-strip__person"
+                                        >
+                                            <span
+                                                className="salonbw-calendar-staff-strip__dot"
+                                                style={{
+                                                    background:
+                                                        employee.color ??
+                                                        '#b4b8be',
+                                                }}
+                                            />
+                                            <span className="text-truncate">
+                                                {employee.name}
+                                            </span>
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
                         {closedDayLabel && (
                             <div
                                 className="d-flex align-items-center gap-2 rounded mb-2 px-3 py-2"

@@ -11,10 +11,6 @@ export default function Document(props: CustomDocumentProps) {
     return (
         <Html lang="pl">
             <Head nonce={props.nonce}>
-                <meta
-                    name="viewport"
-                    content="width=device-width, initial-scale=1"
-                />
                 <link rel="manifest" href="/manifest.json" />
                 <meta name="theme-color" content="#0d0d0d" />
                 <meta name="application-name" content="Salon B&amp;W" />
