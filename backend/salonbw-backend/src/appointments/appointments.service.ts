@@ -728,12 +728,16 @@ export class AppointmentsService {
             id,
             await this.isOverlapAllowed(),
         );
-        // When staff reschedules a confirmed appointment, flag it so the
-        // client can accept the new time before it moves back to confirmed.
-        const newStatus =
-            appointment.status === AppointmentStatus.Confirmed
-                ? AppointmentStatus.RescheduledPending
-                : appointment.status;
+        // Staff-proposed time changes must be acknowledged by the client
+        // before the appointment returns to confirmed.
+        const requiresClientAcceptance = [
+            AppointmentStatus.Scheduled,
+            AppointmentStatus.Confirmed,
+            AppointmentStatus.OnlinePending,
+        ].includes(appointment.status);
+        const newStatus = requiresClientAcceptance
+            ? AppointmentStatus.RescheduledPending
+            : appointment.status;
 
         await this.appointmentsRepository.update(id, {
             startTime,
@@ -951,7 +955,6 @@ export class AppointmentsService {
             ],
             [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
             [AppointmentStatus.RescheduledPending]: [
-                AppointmentStatus.Confirmed,
                 AppointmentStatus.Cancelled,
             ],
             [AppointmentStatus.InProgress]: [],

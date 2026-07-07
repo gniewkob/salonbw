@@ -92,7 +92,8 @@ export default function ActionsSection({
                             {isRescheduledPending && (
                                 <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
                                     <strong>Zmiana terminu</strong> — czeka na
-                                    akceptację klienta
+                                    akceptację klienta. Po akceptacji status
+                                    wróci do „Potwierdzona”.
                                 </div>
                             )}
                             {canConfirm && (
@@ -106,9 +107,7 @@ export default function ActionsSection({
                                 >
                                     {isOnlinePending
                                         ? 'Potwierdź rezerwację'
-                                        : isRescheduledPending
-                                          ? 'Zaakceptuj nowy termin'
-                                          : 'Potwierdź'}
+                                        : 'Potwierdź'}
                                 </button>
                             )}
                             {isOnlinePending && (

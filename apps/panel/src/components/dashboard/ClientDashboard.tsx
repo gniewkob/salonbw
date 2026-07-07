@@ -1,23 +1,15 @@
 import { useState } from 'react';
-import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import ConfirmModal from '@/components/ConfirmModal';
+import ClientAppointmentActions, {
+    CLIENT_ARCHIVE_STATUSES,
+    CLIENT_CANCELLABLE_STATUSES,
+} from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
+import ClientPanelSection from '@/components/client/ClientPanelSection';
 import PanelButton from '@/components/ui/PanelButton';
-import StatusBadge from '@/components/ui/StatusBadge';
-import {
-    appointmentStatusLabel,
-    appointmentStatusTone,
-} from '@/lib/appointmentStatus';
-
-const CANCELLABLE = new Set([
-    'scheduled',
-    'confirmed',
-    'online_pending',
-    'rescheduled_pending',
-]);
 
 export default function ClientDashboard() {
     const { data, loading, error, refetch } = useClientDashboard();
@@ -141,10 +133,11 @@ export default function ClientDashboard() {
 
             {/* Nearest appointment */}
             <div className="salonbw-dashboard__grid">
-                <div className="salonbw-dashboard__section">
-                    <div className="salonbw-dashboard__section-header">
-                        <h2>Nadchodząca wizyta</h2>
-                    </div>
+                <ClientPanelSection
+                    title="Nadchodząca wizyta"
+                    footerHref="/booking"
+                    footerLabel="zarezerwuj nową wizytę"
+                >
                     {data.upcomingAppointment ? (
                         <div className="salonbw-appointments-list">
                             <div className="salonbw-appointment-item salonbw-appointment-item--upcoming">
@@ -167,61 +160,25 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                    {data.upcomingAppointment.status && (
-                                        <StatusBadge
-                                            tone={appointmentStatusTone(
-                                                data.upcomingAppointment.status,
-                                            )}
-                                        >
-                                            {appointmentStatusLabel(
-                                                data.upcomingAppointment
-                                                    .status ?? '',
-                                            )}
-                                        </StatusBadge>
+                                <ClientAppointmentActions
+                                    status={data.upcomingAppointment.status}
+                                    accepting={accepting.has(
+                                        data.upcomingAppointment.id,
                                     )}
-                                    {data.upcomingAppointment.status ===
-                                        'rescheduled_pending' && (
-                                        <PanelButton
-                                            type="button"
-                                            size="sm"
-                                            variant="primary"
-                                            disabled={accepting.has(
-                                                data.upcomingAppointment.id,
-                                            )}
-                                            onClick={() => {
-                                                void acceptReschedule(
-                                                    data.upcomingAppointment!
-                                                        .id,
-                                                );
-                                            }}
-                                        >
-                                            Akceptuj nowy termin
-                                        </PanelButton>
+                                    cancelling={cancelling.has(
+                                        data.upcomingAppointment.id,
                                     )}
-                                    {data.upcomingAppointment.status &&
-                                        CANCELLABLE.has(
-                                            data.upcomingAppointment.status,
-                                        ) && (
-                                            <PanelButton
-                                                type="button"
-                                                size="sm"
-                                                variant="danger"
-                                                disabled={cancelling.has(
-                                                    data.upcomingAppointment.id,
-                                                )}
-                                                onClick={() =>
-                                                    setConfirmCancelId(
-                                                        data
-                                                            .upcomingAppointment!
-                                                            .id,
-                                                    )
-                                                }
-                                            >
-                                                Anuluj
-                                            </PanelButton>
-                                        )}
-                                </div>
+                                    onAccept={() => {
+                                        void acceptReschedule(
+                                            data.upcomingAppointment!.id,
+                                        );
+                                    }}
+                                    onCancel={() =>
+                                        setConfirmCancelId(
+                                            data.upcomingAppointment!.id,
+                                        )
+                                    }
+                                />
                             </div>
                         </div>
                     ) : (
@@ -231,19 +188,10 @@ export default function ClientDashboard() {
                             </div>
                         </div>
                     )}
-                    <Link
-                        href="/booking"
-                        className="salonbw-dashboard__section-footer"
-                    >
-                        zarezerwuj nową wizytę
-                    </Link>
-                </div>
+                </ClientPanelSection>
 
                 {/* Monthly summary */}
-                <div className="salonbw-dashboard__section">
-                    <div className="salonbw-dashboard__section-header">
-                        <h2>Moje statystyki</h2>
-                    </div>
+                <ClientPanelSection title="Moje statystyki">
                     <div className="salonbw-appointments-list">
                         <div className="salonbw-appointment-item">
                             <div className="salonbw-appointment-item__details">
@@ -264,15 +212,12 @@ export default function ClientDashboard() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </ClientPanelSection>
             </div>
 
             {/* Favourite services */}
             {data.serviceHistory.length > 0 && (
-                <div className="salonbw-dashboard__section mt-3">
-                    <div className="salonbw-dashboard__section-header">
-                        <h2>Ulubione usługi</h2>
-                    </div>
+                <ClientPanelSection title="Ulubione usługi" className="mt-3">
                     <div className="salonbw-appointments-list">
                         {data.serviceHistory.slice(0, 5).map((service) => (
                             <div
@@ -295,14 +240,16 @@ export default function ClientDashboard() {
                             </div>
                         ))}
                     </div>
-                </div>
+                </ClientPanelSection>
             )}
 
             {/* Recent appointments */}
-            <div className="salonbw-dashboard__section mt-3">
-                <div className="salonbw-dashboard__section-header">
-                    <h2>Ostatnie wizyty</h2>
-                </div>
+            <ClientPanelSection
+                title="Ostatnie wizyty"
+                className="mt-3"
+                footerHref="/visits"
+                footerLabel="zobacz wszystkie wizyty i oceń odbyte"
+            >
                 {data.recentAppointments.length > 0 ? (
                     <div className="salonbw-appointments-list">
                         {data.recentAppointments.map((apt) => (
@@ -337,59 +284,32 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                    <StatusBadge
-                                        tone={appointmentStatusTone(apt.status)}
-                                    >
-                                        {appointmentStatusLabel(apt.status)}
-                                    </StatusBadge>
-                                    {(apt.status === 'completed' ||
-                                        apt.status === 'cancelled' ||
-                                        apt.status === 'no_show') &&
-                                        apt.serviceId > 0 && (
-                                            <PanelButton
-                                                href={`/booking?serviceId=${apt.serviceId}`}
-                                                size="sm"
-                                                variant="secondary"
-                                            >
-                                                Umów ponownie
-                                            </PanelButton>
-                                        )}
-                                    {apt.status === 'rescheduled_pending' &&
-                                        new Date(apt.startTime) >
-                                            new Date() && (
-                                            <PanelButton
-                                                type="button"
-                                                size="sm"
-                                                variant="primary"
-                                                disabled={accepting.has(apt.id)}
-                                                onClick={() => {
-                                                    void acceptReschedule(
-                                                        apt.id,
-                                                    );
-                                                }}
-                                            >
-                                                Akceptuj
-                                            </PanelButton>
-                                        )}
-                                    {CANCELLABLE.has(apt.status) &&
-                                        new Date(apt.startTime) >
-                                            new Date() && (
-                                            <PanelButton
-                                                type="button"
-                                                size="sm"
-                                                variant="danger"
-                                                disabled={cancelling.has(
-                                                    apt.id,
-                                                )}
-                                                onClick={() =>
-                                                    setConfirmCancelId(apt.id)
-                                                }
-                                            >
-                                                Anuluj
-                                            </PanelButton>
-                                        )}
-                                </div>
+                                <ClientAppointmentActions
+                                    status={apt.status}
+                                    serviceId={apt.serviceId}
+                                    acceptLabel="Akceptuj"
+                                    accepting={accepting.has(apt.id)}
+                                    cancelling={cancelling.has(apt.id)}
+                                    canAccept={
+                                        apt.status === 'rescheduled_pending' &&
+                                        new Date(apt.startTime) > new Date()
+                                    }
+                                    canCancel={
+                                        CLIENT_CANCELLABLE_STATUSES.has(
+                                            apt.status,
+                                        ) &&
+                                        new Date(apt.startTime) > new Date()
+                                    }
+                                    showRebook={
+                                        CLIENT_ARCHIVE_STATUSES.has(
+                                            apt.status,
+                                        ) && apt.serviceId > 0
+                                    }
+                                    onAccept={() => {
+                                        void acceptReschedule(apt.id);
+                                    }}
+                                    onCancel={() => setConfirmCancelId(apt.id)}
+                                />
                             </div>
                         ))}
                     </div>
@@ -400,13 +320,7 @@ export default function ClientDashboard() {
                         </div>
                     </div>
                 )}
-                <Link
-                    href="/visits"
-                    className="salonbw-dashboard__section-footer"
-                >
-                    zobacz wszystkie wizyty i oceń odbyte
-                </Link>
-            </div>
+            </ClientPanelSection>
             <div className="mt-3 d-flex flex-wrap align-items-center justify-content-between gap-2 p-3 border rounded bg-white">
                 <div>
                     <div className="fw-semibold">Potrzebujesz pomocy?</div>

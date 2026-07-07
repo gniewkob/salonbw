@@ -64,7 +64,7 @@ const ACTION_CONFIG: Record<ActionKey, ActionConfig> = {
 
 const STATUS_ACTIONS: Record<AppointmentStatus | string, ActionKey[]> = {
     online_pending: ['confirm', 'reject'],
-    rescheduled_pending: ['confirm', 'reject'],
+    rescheduled_pending: ['reject'],
     scheduled: ['confirm', 'cancel', 'no_show'],
     confirmed: ['start', 'cancel', 'no_show'],
     in_progress: ['finalize', 'cancel'],
@@ -75,7 +75,7 @@ const STATUS_ACTIONS: Record<AppointmentStatus | string, ActionKey[]> = {
 
 const STATUS_LABELS: Record<AppointmentStatus | string, string> = {
     online_pending: 'Oczekuje',
-    rescheduled_pending: 'Zmiana terminu',
+    rescheduled_pending: 'Czeka na akceptację klienta',
     scheduled: 'Zaplanowana',
     confirmed: 'Potwierdzona',
     in_progress: 'W trakcie',

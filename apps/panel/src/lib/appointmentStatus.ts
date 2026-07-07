@@ -13,7 +13,7 @@ export const APPOINTMENT_STATUS_LABELS: Record<string, string> = {
     cancelled: 'Anulowana',
     no_show: 'Nieobecność',
     online_pending: 'Oczekuje',
-    rescheduled_pending: 'Zmiana terminu',
+    rescheduled_pending: 'Czeka na akceptację klienta',
 };
 
 const APPOINTMENT_STATUS_TONES: Record<string, AppointmentStatusTone> = {

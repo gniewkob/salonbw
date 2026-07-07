@@ -25,7 +25,7 @@ const STATUS_LABELS: Record<string, string> = {
     cancelled: 'Anulowana',
     no_show: 'No-show',
     online_pending: 'Oczekuje online',
-    rescheduled_pending: 'Zmiana terminu',
+    rescheduled_pending: 'Czeka na akceptację klienta',
 };
 
 const STATUS_BADGE: Record<string, string> = {

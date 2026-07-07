@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
     completed: 'Zakończona',
     no_show: 'Nieobecność',
     online_pending: 'Oczekuje',
-    rescheduled_pending: 'Przeniesiona',
+    rescheduled_pending: 'Czeka na akceptację klienta',
 };
 
 const STATUS_BADGE: Record<AppointmentStatus, string> = {

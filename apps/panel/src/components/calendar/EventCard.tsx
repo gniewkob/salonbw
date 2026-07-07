@@ -76,7 +76,7 @@ const STATUS_LABELS: Record<string, string> = {
     cancelled: 'Anulowana',
     no_show: 'No-show',
     online_pending: 'Online — czeka',
-    rescheduled_pending: 'Nowy termin',
+    rescheduled_pending: 'Czeka na klienta',
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {

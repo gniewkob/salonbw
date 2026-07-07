@@ -91,7 +91,7 @@ const STATUS_TOAST_LABELS: Record<string, string> = {
     no_show: 'Oznaczono jako nieobecność',
     cancelled: 'Wizyta anulowana',
     online_pending: 'Wizyta oczekuje',
-    rescheduled_pending: 'Termin oczekuje na akceptację',
+    rescheduled_pending: 'Zmiana terminu czeka na akceptację klienta',
     scheduled: 'Wizyta zaplanowana',
 };
 

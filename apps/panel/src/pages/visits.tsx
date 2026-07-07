@@ -3,17 +3,16 @@ import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
+import ClientAppointmentActions, {
+    CLIENT_ARCHIVE_STATUSES,
+} from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
+import ClientPanelSection from '@/components/client/ClientPanelSection';
 import StarRating from '@/components/StarRating';
 import MessageThread from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import PanelButton from '@/components/ui/PanelButton';
-import StatusBadge from '@/components/ui/StatusBadge';
-import {
-    appointmentStatusLabel,
-    appointmentStatusTone,
-} from '@/lib/appointmentStatus';
 
 interface ClientVisit {
     id: number;
@@ -26,14 +25,6 @@ interface ClientVisit {
     notes: string | null;
     review: { id: number; rating: number; comment: string | null } | null;
 }
-
-const CANCELLABLE = new Set([
-    'scheduled',
-    'confirmed',
-    'online_pending',
-    'rescheduled_pending',
-]);
-const ARCHIVE_STATUSES = new Set(['completed', 'cancelled', 'no_show']);
 
 function formatDateTime(value: string) {
     return new Date(value).toLocaleString('pl-PL', {
@@ -202,42 +193,15 @@ function VisitRow({
                     />
                 )}
             </div>
-            <div className="d-flex align-items-center gap-2 flex-wrap">
-                <StatusBadge tone={appointmentStatusTone(visit.status)}>
-                    {appointmentStatusLabel(visit.status)}
-                </StatusBadge>
-                {visit.status === 'rescheduled_pending' && (
-                    <PanelButton
-                        type="button"
-                        size="sm"
-                        variant="primary"
-                        disabled={accepting}
-                        onClick={() => onAccept(visit.id)}
-                    >
-                        Akceptuj nowy termin
-                    </PanelButton>
-                )}
-                {CANCELLABLE.has(visit.status) && (
-                    <PanelButton
-                        type="button"
-                        size="sm"
-                        variant="danger"
-                        disabled={cancelling}
-                        onClick={() => onCancel(visit.id)}
-                    >
-                        Anuluj
-                    </PanelButton>
-                )}
-                {ARCHIVE_STATUSES.has(visit.status) && (
-                    <PanelButton
-                        href={`/booking?serviceId=${visit.serviceId}`}
-                        size="sm"
-                        variant="secondary"
-                    >
-                        Umów ponownie
-                    </PanelButton>
-                )}
-            </div>
+            <ClientAppointmentActions
+                status={visit.status}
+                serviceId={visit.serviceId}
+                accepting={accepting}
+                cancelling={cancelling}
+                showRebook={CLIENT_ARCHIVE_STATUSES.has(visit.status)}
+                onAccept={() => onAccept(visit.id)}
+                onCancel={() => onCancel(visit.id)}
+            />
 
             <div className="salonbw-appointment-item__messages">
                 <button
@@ -327,7 +291,7 @@ export default function VisitsPage() {
     const now = Date.now();
     const upcoming = (visits ?? []).filter(
         (v) =>
-            !ARCHIVE_STATUSES.has(v.status) &&
+            !CLIENT_ARCHIVE_STATUSES.has(v.status) &&
             new Date(v.startTime).getTime() >= now,
     );
     // Chronological for upcoming (nearest first) — the API returns DESC.
@@ -337,7 +301,7 @@ export default function VisitsPage() {
         (v) =>
             v.status === 'cancelled' ||
             v.status === 'no_show' ||
-            (!ARCHIVE_STATUSES.has(v.status) &&
+            (!CLIENT_ARCHIVE_STATUSES.has(v.status) &&
                 new Date(v.startTime).getTime() < now),
     );
 
@@ -400,21 +364,12 @@ export default function VisitsPage() {
 
                     {visits !== null &&
                         sections.map((section) => (
-                            <div
+                            <ClientPanelSection
                                 key={section.key}
-                                className="salonbw-dashboard__section mb-3"
+                                title={section.title}
+                                count={section.items.length}
+                                className="mb-3"
                             >
-                                <div className="salonbw-dashboard__section-header">
-                                    <h2>
-                                        {section.title}
-                                        {section.items.length > 0 && (
-                                            <span className="text-muted fw-normal">
-                                                {' '}
-                                                ({section.items.length})
-                                            </span>
-                                        )}
-                                    </h2>
-                                </div>
                                 <div className="salonbw-appointments-list">
                                     {section.items.length === 0 ? (
                                         <div className="salonbw-appointment-item salonbw-appointment-item--empty">
@@ -440,7 +395,7 @@ export default function VisitsPage() {
                                         ))
                                     )}
                                 </div>
-                            </div>
+                            </ClientPanelSection>
                         ))}
                 </div>
             </SalonShell>

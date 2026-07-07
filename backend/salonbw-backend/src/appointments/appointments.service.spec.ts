@@ -188,6 +188,33 @@ describe('AppointmentsService', () => {
         expect(result.status).toBe(AppointmentStatus.Scheduled);
     });
 
+    it('requires client acceptance before a rescheduled appointment becomes confirmed again', async () => {
+        const start = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+
+        appointment.status = AppointmentStatus.RescheduledPending;
+
+        await expect(
+            service.updateStatus(
+                appointment.id,
+                AppointmentStatus.Confirmed,
+                users[1],
+            ),
+        ).rejects.toThrow(BadRequestException);
+
+        await service.acceptReschedule(appointment.id, users[0]);
+
+        expect(appointments[0].status).toBe(AppointmentStatus.Confirmed);
+    });
+
     it('should not send booking confirmation if client has no phone', async () => {
         users[0].phone = null;
         const start = new Date(Date.now() + 60 * 60 * 1000);

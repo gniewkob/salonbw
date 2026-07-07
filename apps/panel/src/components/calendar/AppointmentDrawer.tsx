@@ -245,10 +245,7 @@ export default function AppointmentDrawer({
     const currentStatus = appointment?.status ?? 'scheduled';
     const isOnlinePending = currentStatus === 'online_pending';
     const isRescheduledPending = currentStatus === 'rescheduled_pending';
-    const canConfirm =
-        currentStatus === 'scheduled' ||
-        isOnlinePending ||
-        isRescheduledPending;
+    const canConfirm = currentStatus === 'scheduled' || isOnlinePending;
     const canStart =
         !isOnlinePending &&
         !isRescheduledPending &&
@@ -600,7 +597,7 @@ export default function AppointmentDrawer({
                                                 ? 'Oczekuje na potwierdzenie'
                                                 : currentStatus ===
                                                     'rescheduled_pending'
-                                                  ? 'Przeniesiona — wymaga akceptacji'
+                                                  ? 'Czeka na akceptację klienta'
                                                   : currentStatus ===
                                                       'confirmed'
                                                     ? 'Potwierdzona'
