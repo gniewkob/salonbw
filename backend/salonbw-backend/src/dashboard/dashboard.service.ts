@@ -62,6 +62,9 @@ export class DashboardService {
             id: apt.id,
             startTime: apt.startTime,
             endTime: apt.endTime,
+            reschedulePreviousStartTime:
+                apt.reschedulePreviousStartTime ?? null,
+            reschedulePreviousEndTime: apt.reschedulePreviousEndTime ?? null,
             status: apt.status,
             serviceId: apt.service?.id ?? 0,
             serviceName: apt.service?.name ?? '',
@@ -288,6 +291,11 @@ export class DashboardService {
                       serviceId: upcomingAppointment.service?.id ?? 0,
                       serviceName: upcomingAppointment.service?.name ?? '',
                       startTime: upcomingAppointment.startTime,
+                      reschedulePreviousStartTime:
+                          upcomingAppointment.reschedulePreviousStartTime ??
+                          null,
+                      reschedulePreviousEndTime:
+                          upcomingAppointment.reschedulePreviousEndTime ?? null,
                       status: upcomingAppointment.status,
                       employeeName:
                           upcomingAppointment.employee?.name ??
@@ -302,6 +310,10 @@ export class DashboardService {
                 serviceId: apt.service?.id ?? 0,
                 serviceName: apt.service?.name ?? '',
                 startTime: apt.startTime,
+                reschedulePreviousStartTime:
+                    apt.reschedulePreviousStartTime ?? null,
+                reschedulePreviousEndTime:
+                    apt.reschedulePreviousEndTime ?? null,
                 status: apt.status,
                 employeeName:
                     apt.employee?.name ?? apt.employee?.email ?? undefined,

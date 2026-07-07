@@ -337,6 +337,8 @@ export interface ClientDashboardResponse {
         serviceId: number;
         serviceName: string;
         startTime: string;
+        reschedulePreviousStartTime?: string | null;
+        reschedulePreviousEndTime?: string | null;
         employeeName: string;
         status?: string;
     } | null;
@@ -347,6 +349,8 @@ export interface ClientDashboardResponse {
         serviceId: number;
         serviceName: string;
         startTime: string;
+        reschedulePreviousStartTime?: string | null;
+        reschedulePreviousEndTime?: string | null;
         status: string;
         employeeName?: string;
         notes?: string | null;

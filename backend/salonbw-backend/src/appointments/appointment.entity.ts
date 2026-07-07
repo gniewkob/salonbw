@@ -145,6 +145,12 @@ export class Appointment {
     @Column({ nullable: true })
     cancellationReason?: string;
 
+    @Column({ nullable: true })
+    reschedulePreviousStartTime?: Date | null;
+
+    @Column({ nullable: true })
+    reschedulePreviousEndTime?: Date | null;
+
     @CreateDateColumn()
     createdAt: Date;
 

@@ -744,12 +744,22 @@ export class AppointmentsService {
             endTime: newEnd,
             serviceVariantId: appointment.serviceVariantId ?? null,
             status: newStatus,
+            reschedulePreviousStartTime:
+                newStatus === AppointmentStatus.RescheduledPending
+                    ? appointment.startTime
+                    : appointment.reschedulePreviousStartTime,
+            reschedulePreviousEndTime:
+                newStatus === AppointmentStatus.RescheduledPending
+                    ? appointment.endTime
+                    : appointment.reschedulePreviousEndTime,
         });
         const updated = await this.findOne(id);
         if (updated) {
             await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
                 action: 'reschedule',
                 appointmentId: updated.id,
+                previousStartTime: appointment.startTime,
+                previousEndTime: appointment.endTime,
                 startTime: updated.startTime,
                 endTime: updated.endTime,
             });
@@ -833,6 +843,8 @@ export class AppointmentsService {
             startTime,
             endTime: newEnd,
             status: AppointmentStatus.RescheduledPending,
+            reschedulePreviousStartTime: appointment.startTime,
+            reschedulePreviousEndTime: appointment.endTime,
         };
 
         if (employeeId && employeeId !== appointment.employee.id) {
@@ -846,6 +858,8 @@ export class AppointmentsService {
             await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
                 action: 'reschedule',
                 appointmentId: updated.id,
+                previousStartTime: appointment.startTime,
+                previousEndTime: appointment.endTime,
                 startTime: updated.startTime,
                 endTime: updated.endTime,
                 employeeId: updated.employee.id,
@@ -895,6 +909,8 @@ export class AppointmentsService {
 
         await this.appointmentsRepository.update(id, {
             status: AppointmentStatus.Confirmed,
+            reschedulePreviousStartTime: null,
+            reschedulePreviousEndTime: null,
         });
 
         const updated = await this.findOne(id);
@@ -902,6 +918,8 @@ export class AppointmentsService {
             await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
                 action: 'accept_reschedule',
                 appointmentId: updated.id,
+                acceptedStartTime: updated.startTime,
+                acceptedEndTime: updated.endTime,
                 previousStatus: AppointmentStatus.RescheduledPending,
                 status: AppointmentStatus.Confirmed,
             });

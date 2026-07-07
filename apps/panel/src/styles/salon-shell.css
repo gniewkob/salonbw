@@ -10433,6 +10433,131 @@ summary:focus-visible {
     flex-wrap: wrap;
 }
 
+.reschedule-change {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid #0d0d0d;
+    border-left-width: 4px;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.reschedule-change__title {
+    margin-bottom: 0.45rem;
+    color: #0d0d0d;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.reschedule-change__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.reschedule-change__grid span {
+    display: block;
+    color: #6e7278;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.reschedule-change__grid strong {
+    display: block;
+    margin-top: 0.15rem;
+    color: #23252a;
+    font-size: 0.9rem;
+    line-height: 1.35;
+}
+
+.visit-notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.45rem;
+}
+
+.visit-notes--compact {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    max-width: 48rem;
+}
+
+.visit-notes__section {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d9dde2;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.visit-notes--compact .visit-notes__section {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.visit-notes__label {
+    margin-bottom: 0.3rem;
+    color: #6e7278;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.visit-notes__value,
+.visit-notes__list {
+    color: #23252a;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.visit-notes--compact .visit-notes__value,
+.visit-notes--compact .visit-notes__list {
+    color: #5f6369;
+    font-size: 0.82rem;
+}
+
+.visit-notes__list {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.visit-notes__list li + li {
+    margin-top: 0.2rem;
+}
+
+.visit-notes-empty {
+    margin: 0.35rem 0 0;
+    color: #5f6369;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.salonbw-appointment-item__title-button {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #23252a;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+}
+
+.salonbw-appointment-item__title-button:hover,
+.salonbw-appointment-item__title-button:focus-visible {
+    text-decoration-color: currentColor;
+}
+
 .salonbw-appointment-item--expanded {
     background: #fafbfc;
 }
@@ -10441,6 +10566,10 @@ summary:focus-visible {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
     gap: 1rem;
+}
+
+.visit-details-wide {
+    grid-column: 1 / -1;
 }
 
 .visit-details-copy {
@@ -10479,7 +10608,9 @@ summary:focus-visible {
     }
 
     .client-next-visit,
-    .visit-details-grid {
+    .visit-details-grid,
+    .visit-notes,
+    .reschedule-change__grid {
         grid-template-columns: 1fr;
     }
 

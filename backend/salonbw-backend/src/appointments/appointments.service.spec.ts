@@ -201,6 +201,8 @@ describe('AppointmentsService', () => {
         );
 
         appointment.status = AppointmentStatus.RescheduledPending;
+        appointment.reschedulePreviousStartTime = start;
+        appointment.reschedulePreviousEndTime = appointment.endTime;
 
         await expect(
             service.updateStatus(
@@ -213,6 +215,39 @@ describe('AppointmentsService', () => {
         await service.acceptReschedule(appointment.id, users[0]);
 
         expect(appointments[0].status).toBe(AppointmentStatus.Confirmed);
+        expect(appointments[0].reschedulePreviousStartTime).toBeNull();
+        expect(appointments[0].reschedulePreviousEndTime).toBeNull();
+    });
+
+    it('stores previous time when staff proposes a new appointment time', async () => {
+        const start = new Date(Date.now() + 4 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        appointment.status = AppointmentStatus.Confirmed;
+
+        const proposedStart = new Date(start.getTime() + 15 * 60 * 1000);
+        const updated = await service.reschedule(
+            appointment.id,
+            proposedStart,
+            undefined,
+            undefined,
+            false,
+            users[1],
+        );
+
+        expect(updated?.status).toBe(AppointmentStatus.RescheduledPending);
+        expect(updated?.startTime).toEqual(proposedStart);
+        expect(updated?.reschedulePreviousStartTime).toEqual(start);
+        expect(updated?.reschedulePreviousEndTime).toEqual(
+            appointment.endTime,
+        );
     });
 
     it('should not send booking confirmation if client has no phone', async () => {

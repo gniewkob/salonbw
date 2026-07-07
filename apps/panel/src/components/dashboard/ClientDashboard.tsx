@@ -9,6 +9,7 @@ import ClientAppointmentActions, {
 } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
+import VisitNotes from '@/components/client/VisitNotes';
 import PanelButton from '@/components/ui/PanelButton';
 
 function visitDetailsHref(id: number) {
@@ -108,6 +109,40 @@ export default function ClientDashboard() {
             hour: '2-digit',
             minute: '2-digit',
         });
+    const formatRescheduleDateTime = (dateStr: string) =>
+        new Date(dateStr).toLocaleString('pl-PL', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    const renderRescheduleChange = (
+        previousStartTime: string | null | undefined,
+        newStartTime: string,
+    ) =>
+        previousStartTime ? (
+            <div className="reschedule-change" role="note">
+                <div className="reschedule-change__title">
+                    Salon proponuje zmianę terminu
+                </div>
+                <div className="reschedule-change__grid">
+                    <div>
+                        <span>Było</span>
+                        <strong>
+                            {formatRescheduleDateTime(previousStartTime)}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>Propozycja salonu</span>
+                        <strong>
+                            {formatRescheduleDateTime(newStartTime)}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        ) : null;
     const pendingActionsCount =
         data.pendingRescheduleCount + data.newSalonMessageCount;
     const primaryActionHref = data.upcomingAppointment
@@ -201,6 +236,13 @@ export default function ClientDashboard() {
                                             }
                                         </div>
                                     )}
+                                    {data.upcomingAppointment.status ===
+                                        'rescheduled_pending' &&
+                                        renderRescheduleChange(
+                                            data.upcomingAppointment
+                                                .reschedulePreviousStartTime,
+                                            data.upcomingAppointment.startTime,
+                                        )}
                                 </div>
                                 <div className="client-next-visit__actions">
                                     <ClientAppointmentActions
@@ -323,13 +365,13 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                     {apt.notes && (
-                                        <div className="salonbw-appointment-item__note small mt-1">
-                                            <span className="fw-medium">
-                                                Notatka:
-                                            </span>{' '}
-                                            {apt.notes}
-                                        </div>
+                                        <VisitNotes notes={apt.notes} compact />
                                     )}
+                                    {apt.status === 'rescheduled_pending' &&
+                                        renderRescheduleChange(
+                                            apt.reschedulePreviousStartTime,
+                                            apt.startTime,
+                                        )}
                                 </div>
                                 <ClientAppointmentActions
                                     status={apt.status}

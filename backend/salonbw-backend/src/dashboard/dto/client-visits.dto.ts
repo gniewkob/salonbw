@@ -10,6 +10,8 @@ export class ClientVisitDto {
     id: number;
     startTime: Date;
     endTime: Date;
+    reschedulePreviousStartTime?: Date | null;
+    reschedulePreviousEndTime?: Date | null;
     status: AppointmentStatus;
     serviceId: number;
     serviceName: string;

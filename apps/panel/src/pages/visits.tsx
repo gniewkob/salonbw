@@ -9,6 +9,7 @@ import ClientAppointmentActions, {
 } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
+import VisitNotes from '@/components/client/VisitNotes';
 import StarRating from '@/components/StarRating';
 import MessageThread from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +20,8 @@ interface ClientVisit {
     id: number;
     startTime: string;
     endTime: string;
+    reschedulePreviousStartTime?: string | null;
+    reschedulePreviousEndTime?: string | null;
     status: string;
     serviceId: number;
     serviceName: string;
@@ -36,6 +39,46 @@ function formatDateTime(value: string) {
         hour: '2-digit',
         minute: '2-digit',
     });
+}
+
+function formatRescheduleDateTime(value: string) {
+    return new Date(value).toLocaleString('pl-PL', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+function RescheduleChange({
+    previousStartTime,
+    newStartTime,
+}: {
+    previousStartTime?: string | null;
+    newStartTime: string;
+}) {
+    if (!previousStartTime) return null;
+    return (
+        <div className="reschedule-change" role="note">
+            <div className="reschedule-change__title">
+                Salon proponuje zmianę terminu
+            </div>
+            <div className="reschedule-change__grid">
+                <div>
+                    <span>Było</span>
+                    <strong>
+                        {formatRescheduleDateTime(previousStartTime)}
+                    </strong>
+                </div>
+                <div>
+                    <span>Propozycja salonu</span>
+                    <strong>{formatRescheduleDateTime(newStartTime)}</strong>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 interface ReviewFormProps {
@@ -165,9 +208,13 @@ function VisitRow({
                 .join(' ')}
         >
             <div className="salonbw-appointment-item__details">
-                <div className="salonbw-appointment-item__client">
+                <button
+                    type="button"
+                    className="salonbw-appointment-item__title-button"
+                    onClick={() => onOpen(visit.id)}
+                >
                     {visit.serviceName}
-                </div>
+                </button>
                 <div className="salonbw-appointment-item__service text-muted small">
                     {formatDateTime(visit.startTime)}
                 </div>
@@ -176,11 +223,12 @@ function VisitRow({
                         specjalista: {visit.employeeName}
                     </div>
                 )}
-                {visit.notes && (
-                    <div className="small mt-1">
-                        <span className="text-muted">Notatki i zalecenia:</span>{' '}
-                        {visit.notes}
-                    </div>
+                {visit.notes && <VisitNotes notes={visit.notes} compact />}
+                {visit.status === 'rescheduled_pending' && (
+                    <RescheduleChange
+                        previousStartTime={visit.reschedulePreviousStartTime}
+                        newStartTime={visit.startTime}
+                    />
                 )}
                 {isCompleted && visit.review && !changingReview && (
                     <div className="d-flex align-items-center gap-2 mt-1 flex-wrap">
@@ -237,15 +285,21 @@ function VisitRow({
                         className="salonbw-appointment-item__message-panel"
                     >
                         <div className="visit-details-grid">
+                            {visit.status === 'rescheduled_pending' && (
+                                <div className="visit-details-wide">
+                                    <RescheduleChange
+                                        previousStartTime={
+                                            visit.reschedulePreviousStartTime
+                                        }
+                                        newStartTime={visit.startTime}
+                                    />
+                                </div>
+                            )}
                             <div>
                                 <div className="visit-details-label">
                                     Notatki i zalecenia
                                 </div>
-                                <p className="visit-details-copy">
-                                    {visit.notes?.trim()
-                                        ? visit.notes
-                                        : 'Brak notatek przy tej wizycie.'}
-                                </p>
+                                <VisitNotes notes={visit.notes} />
                             </div>
                             <div>
                                 <div className="visit-details-label">
