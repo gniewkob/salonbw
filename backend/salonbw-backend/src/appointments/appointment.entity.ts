@@ -145,10 +145,10 @@ export class Appointment {
     @Column({ nullable: true })
     cancellationReason?: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp', nullable: true })
     reschedulePreviousStartTime?: Date | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp', nullable: true })
     reschedulePreviousEndTime?: Date | null;
 
     @CreateDateColumn()
