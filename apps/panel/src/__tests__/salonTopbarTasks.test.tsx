@@ -1,12 +1,18 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import SalonTopbar from '@/components/salon/SalonTopbar';
 
 const push = jest.fn();
 const eventsOn = jest.fn();
 const eventsOff = jest.fn();
 const pendingCountMock = jest.fn(() => 22);
-let topbarUser = { id: 1, name: 'QA User', role: 'admin' };
+const apiFetchMock = jest.fn();
+let topbarUser: {
+    id: number;
+    name: string;
+    role: 'admin';
+    avatarUrl?: string;
+} = { id: 1, name: 'QA User', role: 'admin' };
 
 jest.mock('next/router', () => ({
     useRouter: () => ({
@@ -26,11 +32,14 @@ jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
         user: topbarUser,
         logout: jest.fn().mockResolvedValue(undefined),
+        apiFetch: apiFetchMock,
     }),
 }));
 
 describe('SalonTopbar tasks tooltip', () => {
     beforeEach(() => {
+        push.mockReset();
+        apiFetchMock.mockReset();
         pendingCountMock.mockReturnValue(22);
         topbarUser = { id: 1, name: 'QA User', role: 'admin' };
     });
@@ -72,5 +81,66 @@ describe('SalonTopbar tasks tooltip', () => {
 
         expect(avatar).toHaveAttribute('src', 'https://example.com/avatar.jpg');
         expect(button).not.toHaveTextContent('QU');
+    });
+
+    it('shows customers, employees and products in global search', async () => {
+        apiFetchMock.mockImplementation((path: string) => {
+            if (path.startsWith('/customers')) {
+                return Promise.resolve({
+                    items: [
+                        {
+                            id: 11,
+                            name: 'Bogumiła Grabowy',
+                            phone: '+48123123123',
+                        },
+                    ],
+                });
+            }
+            if (path === '/employees/staff-options') {
+                return Promise.resolve([
+                    {
+                        id: 7,
+                        name: 'Aleksandra Bodora',
+                        role: 'employee',
+                    },
+                ]);
+            }
+            if (path.startsWith('/products')) {
+                return Promise.resolve([
+                    {
+                        id: 31,
+                        name: 'Bodora Shampoo',
+                        brand: 'SalonBW',
+                        sku: 'BOD-SHAMPOO',
+                        unitPrice: 100,
+                        stock: 4,
+                        lowStockThreshold: 1,
+                    },
+                ]);
+            }
+            return Promise.resolve([]);
+        });
+
+        render(<SalonTopbar />);
+
+        fireEvent.change(
+            screen.getByLabelText('Szukaj klientów, pracowników i produktów'),
+            {
+                target: { value: 'bo' },
+            },
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Klienci (1)')).toBeInTheDocument();
+            expect(screen.getByText('Pracownicy (1)')).toBeInTheDocument();
+            expect(screen.getByText('Produkty (1)')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Bogumiła Grabowy')).toBeInTheDocument();
+        expect(screen.getByText('Aleksandra Bodora')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Bodora Shampoo'));
+
+        expect(push).toHaveBeenCalledWith('/products/31');
     });
 });
