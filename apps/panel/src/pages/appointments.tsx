@@ -460,6 +460,25 @@ export default function AppointmentsPage() {
                                                     ({appt.serviceVariant.name})
                                                 </span>
                                             )}
+                                            {appt.extraServices &&
+                                                appt.extraServices.length >
+                                                    0 && (
+                                                    <div className="small mt-1 text-muted">
+                                                        Dodatki:{' '}
+                                                        {appt.extraServices
+                                                            .map((s) => s.name)
+                                                            .join(', ')}
+                                                    </div>
+                                                )}
+                                            {appt.status === 'online_pending' &&
+                                                appt.extraServices &&
+                                                appt.extraServices.length >
+                                                    0 && (
+                                                    <div className="small mt-1 text-warning-emphasis">
+                                                        Zweryfikuj łączny czas
+                                                        przed potwierdzeniem.
+                                                    </div>
+                                                )}
                                         </td>
                                         <td>{appt.employee?.name ?? '—'}</td>
                                         <td>

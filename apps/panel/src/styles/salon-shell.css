@@ -7417,6 +7417,7 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: max-content;
     color: #6c757d; /* 4.6:1 on white — AA pass */
 }
 .salonbw-step.active {
@@ -8074,6 +8075,135 @@ th.checkbox_container input[type='checkbox'] {
     margin-left: 1rem;
 }
 
+.booking-option-card,
+.booking-addon-card {
+    min-height: 74px;
+}
+
+.booking-addon-card {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.booking-addon-card.is-selected {
+    border-color: #0d0d0d;
+    box-shadow: inset 3px 0 0 var(--salon-accent, #b4b8be);
+}
+
+.booking-addon-card__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 1px solid #c7cbd1;
+    border-radius: 50%;
+    color: #0d0d0d;
+}
+
+.booking-addon-card.is-selected .booking-addon-card__check {
+    background: var(--salon-accent, #b4b8be);
+    border-color: var(--salon-accent, #b4b8be);
+}
+
+.booking-addon-card__check svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.booking-addon-card__content {
+    min-width: 0;
+}
+
+.booking-summary-strip {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #ffffff;
+    border: 1px solid #d8dbe0;
+    border-left: 4px solid var(--salon-accent, #b4b8be);
+    border-radius: 2px;
+}
+
+.booking-summary-strip__label,
+.booking-summary-strip__sub,
+.booking-summary-strip__helper {
+    display: block;
+}
+
+.booking-summary-strip__label {
+    margin-bottom: 0.2rem;
+    color: #6e7278;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.booking-summary-strip__sub,
+.booking-summary-strip__helper {
+    color: #5f6369;
+    font-size: 0.82rem;
+}
+
+.booking-summary-strip__helper {
+    margin-top: 0.4rem;
+}
+
+.booking-summary-strip__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    color: #0d0d0d;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.booking-addon-more {
+    border-top: 1px solid #e6e8eb;
+    padding-top: 0.75rem;
+}
+
+.booking-addon-more summary {
+    min-height: 44px;
+    cursor: pointer;
+    color: #23252a;
+    font-weight: 700;
+}
+
+.booking-next-btn {
+    min-height: 48px;
+}
+
+.booking-staff-note {
+    padding: 0.75rem 0.875rem;
+    margin: 0 0 1rem;
+    color: #23252a;
+    background: #f6f6f7;
+    border: 1px solid #d8dbe0;
+    border-left: 4px solid var(--salon-accent, #b4b8be);
+    border-radius: 2px;
+    font-size: 0.9rem;
+}
+
+.booking-assistance-box {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #d8dbe0;
+    border-radius: 2px;
+}
+
+.booking-assistance-box__btn {
+    min-height: 48px;
+    margin-top: 0.75rem;
+}
+
 /* Category label above service group */
 .booking-category-label {
     font-size: 0.7rem;
@@ -8347,6 +8477,21 @@ th.checkbox_container input[type='checkbox'] {
 }
 
 @media (max-width: 767px) {
+    .salonbw-steps {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        scrollbar-width: none;
+    }
+
+    .salonbw-steps::-webkit-scrollbar {
+        display: none;
+    }
+
+    .salonbw-step__label {
+        font-size: 0.75rem;
+    }
+
     .booking-cat-filter {
         gap: 0.625rem;
     }
@@ -8354,6 +8499,35 @@ th.checkbox_container input[type='checkbox'] {
     .booking-cat-chip {
         min-height: 48px;
         padding-inline: 1rem;
+    }
+
+    .booking-service-card {
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .booking-addon-card {
+        grid-template-columns: 1.8rem minmax(0, 1fr);
+    }
+
+    .booking-addon-card .booking-service-price {
+        grid-column: 2;
+        margin-left: 0;
+    }
+
+    .booking-summary-strip {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .booking-summary-strip__meta {
+        align-items: flex-start;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .booking-assistance-box__btn {
+        width: 100%;
     }
 
     .service-category-tree {

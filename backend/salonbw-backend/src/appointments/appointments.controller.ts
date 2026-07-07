@@ -131,10 +131,11 @@ export class AppointmentsController {
                 employee: { id: body.employeeId } as User,
                 service: { id: body.serviceId } as SalonService,
                 serviceVariantId: body.serviceVariantId,
+                addonServiceIds: body.addonServiceIds,
                 startTime: new Date(body.startTime),
                 reservedOnline: !isStaff ? true : undefined,
                 notes: body.notes?.trim() ? body.notes.trim() : undefined,
-            },
+            } as Parameters<AppointmentsService['create']>[0],
             { id: user.userId } as User,
         );
     }

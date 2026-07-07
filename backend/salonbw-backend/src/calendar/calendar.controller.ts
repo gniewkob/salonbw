@@ -12,6 +12,7 @@ import {
     ValidationPipe,
     ForbiddenException,
     NotFoundException,
+    BadRequestException,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -205,11 +206,32 @@ export class CalendarController {
         @Query('serviceId', ParseIntPipe) serviceId: number,
         @Query('date') date: string,
         @Query('employeeId') employeeId?: string,
+        @Query('serviceVariantId') serviceVariantId?: string,
+        @Query('addonServiceIds') addonServiceIds?: string,
     ) {
+        const parsedAddonIds = addonServiceIds
+            ? addonServiceIds.split(',').map((id) => {
+                  const parsed = Number(id);
+                  if (!Number.isInteger(parsed) || parsed <= 0) {
+                      throw new BadRequestException('Invalid addonServiceIds');
+                  }
+                  return parsed;
+              })
+            : [];
+        let parsedVariantId: number | undefined;
+        if (serviceVariantId) {
+            const parsed = Number(serviceVariantId);
+            if (!Number.isInteger(parsed) || parsed <= 0) {
+                throw new BadRequestException('Invalid serviceVariantId');
+            }
+            parsedVariantId = parsed;
+        }
         return this.calendarService.getAvailableSlots(
             serviceId,
             date,
             employeeId ? parseInt(employeeId, 10) : undefined,
+            parsedVariantId,
+            parsedAddonIds,
         );
     }
 

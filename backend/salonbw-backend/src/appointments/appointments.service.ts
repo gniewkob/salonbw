@@ -43,6 +43,10 @@ import { Log } from '../logs/log.entity';
 import { Formula } from '../formulas/formula.entity';
 import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
 
+type CreateAppointmentInput = Partial<Appointment> & {
+    addonServiceIds?: number[];
+};
+
 @Injectable()
 export class AppointmentsService {
     private readonly logger = new Logger(AppointmentsService.name);
@@ -133,6 +137,39 @@ export class AppointmentsService {
         return new Date(start.getTime() + durationMinutes * 60 * 1000);
     }
 
+    private async loadAddonServices(ids?: number[]): Promise<SalonService[]> {
+        if ((ids ?? []).some((id) => !Number.isInteger(id) || id <= 0)) {
+            throw new BadRequestException('Invalid addonServiceIds');
+        }
+        const uniqueIds = Array.from(new Set(ids ?? []));
+        if (uniqueIds.length === 0) return [];
+        if (uniqueIds.length > 5) {
+            throw new BadRequestException('Too many add-on services');
+        }
+        const services = await this.servicesRepository.find({
+            where: { id: In(uniqueIds) },
+        });
+        if (services.length !== uniqueIds.length) {
+            throw new BadRequestException('Invalid addonServiceIds');
+        }
+        return uniqueIds.map((id) => services.find((s) => s.id === id)!);
+    }
+
+    private buildOnlineAddonNote(
+        addons: SalonService[],
+        totalDuration: number,
+        existingNote?: string,
+    ) {
+        if (addons.length === 0) return existingNote;
+        const addonSummary = addons
+            .map((addon) => `${addon.name} (+${addon.duration} min)`)
+            .join(', ');
+        const verificationNote = `Dodatki wybrane online: ${addonSummary}. Łączny czas wizyty: ${totalDuration} min — do weryfikacji przy potwierdzeniu.`;
+        return [existingNote?.trim(), verificationNote]
+            .filter(Boolean)
+            .join('\n\n');
+    }
+
     /**
      * Whether staff may book overlapping appointments (a one-person salon
      * deliberately double-books, e.g. a second client while colour develops).
@@ -215,7 +252,10 @@ export class AppointmentsService {
         });
     }
 
-    async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
+    async create(
+        data: CreateAppointmentInput,
+        user: User,
+    ): Promise<Appointment> {
         if (!data.client?.id)
             throw new BadRequestException('clientId is required');
         if (!data.employee?.id)
@@ -236,10 +276,31 @@ export class AppointmentsService {
             );
             data.serviceVariant = variant;
             data.serviceVariantId = variant.id;
-            data.endTime = this.computeEnd(data.startTime, variant.duration);
-        } else {
-            data.endTime = this.computeEnd(data.startTime, service.duration);
         }
+        const addonServices = await this.loadAddonServices(
+            data.addonServiceIds,
+        );
+        const baseDuration = data.serviceVariant?.duration ?? service.duration;
+        const addonDuration = addonServices.reduce(
+            (sum, addon) => sum + addon.duration,
+            0,
+        );
+        const totalDuration = baseDuration + addonDuration;
+        data.endTime = this.computeEnd(data.startTime, totalDuration);
+        if (addonServices.length > 0) {
+            data.extraServices = addonServices.map((addon) => ({
+                serviceId: addon.id,
+                name: addon.name,
+                priceCents: Math.max(0, Math.round(Number(addon.price) * 100)),
+                discountCents: 0,
+            }));
+            data.notes = this.buildOnlineAddonNote(
+                addonServices,
+                totalDuration,
+                data.notes,
+            );
+        }
+        delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
         // Staff may overlap (if the setting allows); online self-booking
         // always respects availability.

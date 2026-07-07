@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
+import {
+    useState,
+    useEffect,
+    useCallback,
+    useRef,
+    Fragment,
+    useMemo,
+} from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import {
@@ -19,6 +26,18 @@ interface OnlineService {
     priceType: string;
     description?: string;
     category?: string;
+    variants?: OnlineServiceVariant[];
+}
+
+interface OnlineServiceVariant {
+    id: number;
+    name: string;
+    description?: string;
+    duration: number;
+    price: number;
+    priceType: string;
+    isActive?: boolean;
+    sortOrder?: number;
 }
 
 interface AvailableSlot {
@@ -47,6 +66,62 @@ function formatPrice(price: number, priceType: string): string {
     return priceType === 'from' ? `od ${price} zł` : `${price} zł`;
 }
 
+function getActiveVariants(service: OnlineService | null) {
+    return [...(service?.variants ?? [])]
+        .filter((variant) => variant.isActive !== false)
+        .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+}
+
+function getPrimaryDuration(
+    service: OnlineService,
+    variant: OnlineServiceVariant | null,
+) {
+    return variant?.duration ?? service.duration;
+}
+
+function getTotalDuration(
+    service: OnlineService,
+    variant: OnlineServiceVariant | null,
+    addons: OnlineService[],
+) {
+    return (
+        getPrimaryDuration(service, variant) +
+        addons.reduce((sum, addon) => sum + addon.duration, 0)
+    );
+}
+
+function getBookingPrice(
+    service: OnlineService,
+    variant: OnlineServiceVariant | null,
+    addons: OnlineService[],
+) {
+    const basePrice = Number(variant?.price ?? service.price);
+    const total =
+        basePrice + addons.reduce((sum, addon) => sum + Number(addon.price), 0);
+    const hasFrom =
+        (variant?.priceType ?? service.priceType) === 'from' ||
+        addons.some((addon) => addon.priceType === 'from');
+    return formatPrice(total, hasFrom ? 'from' : 'fixed');
+}
+
+function isLikelyAddon(service: OnlineService) {
+    const text = `${service.name} ${service.category ?? ''} ${
+        service.description ?? ''
+    }`.toLocaleLowerCase('pl-PL');
+    return [
+        'pielęgn',
+        'pielegn',
+        'regener',
+        'odżyw',
+        'odzyw',
+        'ampuł',
+        'ampul',
+        'botoks',
+        'kuracja',
+        'zabieg',
+    ].some((needle) => text.includes(needle));
+}
+
 // Format a Date as YYYY-MM-DD in LOCAL time. Using toISOString() here is a
 // bug: it converts local midnight to UTC, so in a UTC+ timezone (e.g. Poland
 // in summer) it yields the previous calendar day — which made "today" wrong
@@ -68,10 +143,10 @@ function addDaysISO(dateStr: string, days: number): string {
     return toISODateLocal(d);
 }
 
-type Step = 'service' | 'slot' | 'confirm';
+type Step = 'service' | 'variant' | 'addons' | 'slot' | 'confirm';
 
 export default function BookingPage() {
-    const { role, apiFetch } = useAuth();
+    const { user, role, apiFetch } = useAuth();
     const router = useRouter();
 
     const [step, setStep] = useState<Step>('service');
@@ -82,11 +157,15 @@ export default function BookingPage() {
 
     const [selectedService, setSelectedService] =
         useState<OnlineService | null>(null);
+    const [selectedVariant, setSelectedVariant] =
+        useState<OnlineServiceVariant | null>(null);
+    const [selectedAddons, setSelectedAddons] = useState<OnlineService[]>([]);
 
     const [selectedDate, setSelectedDate] = useState(todayISODate());
     const [slots, setSlots] = useState<AvailableSlot[]>([]);
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [slotsError, setSlotsError] = useState('');
+    const [slotsNotice, setSlotsNotice] = useState('');
     const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(
         null,
     );
@@ -95,9 +174,14 @@ export default function BookingPage() {
     const [submitError, setSubmitError] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [note, setNote] = useState('');
+    const [assistanceNote, setAssistanceNote] = useState('');
+    const [assistanceLoading, setAssistanceLoading] = useState(false);
+    const [assistanceError, setAssistanceError] = useState('');
+    const [assistanceSent, setAssistanceSent] = useState(false);
     const [createdAppointmentId, setCreatedAppointmentId] = useState<
         number | null
     >(null);
+    const autoNearestDateRef = useRef<string | null>(null);
 
     // Weekdays (0=Sun..6=Sat) the salon is closed — disables them in the
     // calendar day-picker so the client can't land on a closed day.
@@ -137,7 +221,13 @@ export default function BookingPage() {
                     );
                     if (preSelected) {
                         setSelectedService(preSelected);
-                        setStep('slot');
+                        setSelectedVariant(null);
+                        setSelectedAddons([]);
+                        setStep(
+                            getActiveVariants(preSelected).length > 0
+                                ? 'variant'
+                                : 'addons',
+                        );
                     } else {
                         setServicesNotice(
                             'Usługa z linku nie jest dostępna do rezerwacji online. Wybierz inną z listy.',
@@ -155,34 +245,147 @@ export default function BookingPage() {
             });
     }, [apiFetch, serviceIdParam]);
 
-    const loadSlots = useCallback(
-        (date: string, svcId: number) => {
-            setSlotsLoading(true);
-            setSlotsError('');
-            setSelectedSlot(null);
-            apiFetch<AvailableSlot[]>(
-                `/calendar/available-slots?serviceId=${svcId}&date=${date}`,
-            )
-                .then(setSlots)
-                .catch(() => {
-                    setSlotsError(
-                        'Nie udało się załadować dostępnych terminów.',
-                    );
-                })
-                .finally(() => setSlotsLoading(false));
+    const fetchSlots = useCallback(
+        async (
+            date: string,
+            svcId: number,
+            variantId?: number,
+            addonIds: number[] = [],
+        ) => {
+            const params = new URLSearchParams({
+                serviceId: String(svcId),
+                date,
+            });
+            if (variantId) params.set('serviceVariantId', String(variantId));
+            if (addonIds.length > 0) {
+                params.set('addonServiceIds', addonIds.join(','));
+            }
+            const data = await apiFetch<AvailableSlot[]>(
+                `/calendar/available-slots?${params}`,
+            );
+            return [...data].sort(
+                (a, b) =>
+                    new Date(a.time).getTime() - new Date(b.time).getTime(),
+            );
         },
         [apiFetch],
     );
 
+    const loadSlots = useCallback(
+        async (
+            date: string,
+            svcId: number,
+            variantId?: number,
+            addonIds: number[] = [],
+            autoNearest = false,
+        ) => {
+            const autoNearestRefresh =
+                autoNearest && autoNearestDateRef.current === date;
+            setSlotsLoading(true);
+            setSlotsError('');
+            if (!autoNearestRefresh) {
+                setSlotsNotice('');
+            }
+            setSelectedSlot(null);
+            try {
+                const initialSlots = await fetchSlots(
+                    date,
+                    svcId,
+                    variantId,
+                    addonIds,
+                );
+                if (initialSlots.length > 0 || !autoNearest) {
+                    if (autoNearestRefresh) {
+                        setSlotsNotice(
+                            'Pokazujemy najbliższy wolny termin dla wybranej długości wizyty.',
+                        );
+                        autoNearestDateRef.current = null;
+                    }
+                    setSlots(initialSlots);
+                    return;
+                }
+
+                const SCAN_DAYS = 45;
+                for (let offset = 1; offset <= SCAN_DAYS; offset++) {
+                    const candidateDate = addDaysISO(date, offset);
+                    const dow = new Date(`${candidateDate}T00:00:00`).getDay();
+                    if (closedWeekdays.has(dow)) continue;
+
+                    const candidateSlots = await fetchSlots(
+                        candidateDate,
+                        svcId,
+                        variantId,
+                        addonIds,
+                    );
+                    if (candidateSlots.length > 0) {
+                        autoNearestDateRef.current = candidateDate;
+                        setSelectedDate(candidateDate);
+                        setSlots(candidateSlots);
+                        setSlotsNotice(
+                            'Pokazujemy najbliższy wolny termin dla wybranej długości wizyty.',
+                        );
+                        return;
+                    }
+                }
+
+                setSlots([]);
+                setSlotsNotice(
+                    'Nie znaleźliśmy wolnego terminu w najbliższych 45 dniach dla wybranej długości wizyty.',
+                );
+            } catch {
+                autoNearestDateRef.current = null;
+                setSlotsError('Nie udało się załadować dostępnych terminów.');
+            } finally {
+                setSlotsLoading(false);
+            }
+        },
+        [closedWeekdays, fetchSlots],
+    );
+
     useEffect(() => {
         if (step === 'slot' && selectedService) {
-            loadSlots(selectedDate, selectedService.id);
+            void loadSlots(
+                selectedDate,
+                selectedService.id,
+                selectedVariant?.id,
+                selectedAddons.map((addon) => addon.id),
+                true,
+            );
         }
-    }, [step, selectedDate, selectedService, loadSlots]);
+    }, [
+        step,
+        selectedDate,
+        selectedService,
+        selectedVariant,
+        selectedAddons,
+        loadSlots,
+    ]);
 
     const handleSelectService = (svc: OnlineService) => {
         setSelectedService(svc);
-        setStep('slot');
+        setSelectedVariant(null);
+        setSelectedAddons([]);
+        setSelectedSlot(null);
+        setAssistanceNote('');
+        setAssistanceError('');
+        setAssistanceSent(false);
+        autoNearestDateRef.current = null;
+        setSelectedDate(todayISODate());
+        setStep(getActiveVariants(svc).length > 0 ? 'variant' : 'addons');
+    };
+
+    const handleSelectVariant = (variant: OnlineServiceVariant) => {
+        setSelectedVariant(variant);
+        setSelectedSlot(null);
+        setStep('addons');
+    };
+
+    const handleToggleAddon = (addon: OnlineService) => {
+        setSelectedAddons((current) =>
+            current.some((item) => item.id === addon.id)
+                ? current.filter((item) => item.id !== addon.id)
+                : [...current, addon],
+        );
     };
 
     const handleSelectSlot = (slot: AvailableSlot) => {
@@ -193,7 +396,14 @@ export default function BookingPage() {
     const handleDateChange = (date: string) => {
         setSelectedDate(date);
         if (selectedService) {
-            loadSlots(date, selectedService.id);
+            autoNearestDateRef.current = null;
+            void loadSlots(
+                date,
+                selectedService.id,
+                selectedVariant?.id,
+                selectedAddons.map((addon) => addon.id),
+                false,
+            );
         }
     };
 
@@ -207,6 +417,16 @@ export default function BookingPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     serviceId: selectedService.id,
+                    ...(selectedVariant
+                        ? { serviceVariantId: selectedVariant.id }
+                        : {}),
+                    ...(selectedAddons.length > 0
+                        ? {
+                              addonServiceIds: selectedAddons.map(
+                                  (addon) => addon.id,
+                              ),
+                          }
+                        : {}),
                     employeeId: selectedSlot.employeeId,
                     startTime: selectedSlot.time,
                     reservedOnline: role === 'client',
@@ -226,6 +446,63 @@ export default function BookingPage() {
         }
     };
 
+    const handleRequestAssistance = async () => {
+        if (!selectedService || !user?.email) {
+            setAssistanceError(
+                'Nie możemy wysłać prośby bez adresu email klienta.',
+            );
+            return;
+        }
+        setAssistanceLoading(true);
+        setAssistanceError('');
+        try {
+            const addonsText =
+                selectedAddons.length > 0
+                    ? selectedAddons.map((addon) => addon.name).join(', ')
+                    : 'brak';
+            const message = [
+                'Klient prosi o pomoc w znalezieniu dogodnego terminu.',
+                `Klient: ${user.name}`,
+                `Email: ${user.email}`,
+                user.phone ? `Telefon: ${user.phone}` : null,
+                `Usługa: ${selectedService.name}`,
+                selectedVariant ? `Wariant: ${selectedVariant.name}` : null,
+                `Dodatki: ${addonsText}`,
+                `Łączny czas wizyty: ${getTotalDuration(
+                    selectedService,
+                    selectedVariant,
+                    selectedAddons,
+                )} min`,
+                `Ostatnio oglądana data: ${formatDate(selectedDate)}`,
+                assistanceNote.trim()
+                    ? `Preferencje klienta: ${assistanceNote.trim()}`
+                    : null,
+            ]
+                .filter(Boolean)
+                .join('\n');
+
+            await apiFetch('/emails/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: user.name,
+                    replyTo: user.email,
+                    message,
+                }),
+            });
+            setAssistanceSent(true);
+            setAssistanceNote('');
+        } catch (err: unknown) {
+            setAssistanceError(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się wysłać prośby. Spróbuj ponownie.',
+            );
+        } finally {
+            setAssistanceLoading(false);
+        }
+    };
+
     return (
         <RouteGuard roles={['client']}>
             <Head>
@@ -239,10 +516,14 @@ export default function BookingPage() {
                                 <SuccessScreen
                                     appointmentId={createdAppointmentId}
                                     service={selectedService}
+                                    variant={selectedVariant}
+                                    addons={selectedAddons}
                                     slot={selectedSlot}
                                     onNew={() => {
                                         setStep('service');
                                         setSelectedService(null);
+                                        setSelectedVariant(null);
+                                        setSelectedAddons([]);
                                         setSelectedSlot(null);
                                         setSubmitted(false);
                                         setCreatedAppointmentId(null);
@@ -259,11 +540,22 @@ export default function BookingPage() {
                                     <StepHeader
                                         step={step}
                                         onBack={
-                                            step === 'slot'
+                                            step === 'variant'
                                                 ? () => setStep('service')
-                                                : step === 'confirm'
-                                                  ? () => setStep('slot')
-                                                  : undefined
+                                                : step === 'addons'
+                                                  ? () =>
+                                                        setStep(
+                                                            getActiveVariants(
+                                                                selectedService,
+                                                            ).length > 0
+                                                                ? 'variant'
+                                                                : 'service',
+                                                        )
+                                                  : step === 'slot'
+                                                    ? () => setStep('addons')
+                                                    : step === 'confirm'
+                                                      ? () => setStep('slot')
+                                                      : undefined
                                         }
                                     />
 
@@ -277,16 +569,49 @@ export default function BookingPage() {
                                         />
                                     )}
 
+                                    {step === 'variant' && selectedService && (
+                                        <VariantStep
+                                            service={selectedService}
+                                            onSelect={handleSelectVariant}
+                                        />
+                                    )}
+
+                                    {step === 'addons' && selectedService && (
+                                        <AddonStep
+                                            service={selectedService}
+                                            variant={selectedVariant}
+                                            services={services}
+                                            selectedAddons={selectedAddons}
+                                            onToggle={handleToggleAddon}
+                                            onContinue={() => setStep('slot')}
+                                        />
+                                    )}
+
                                     {step === 'slot' && selectedService && (
                                         <SlotStep
                                             service={selectedService}
+                                            variant={selectedVariant}
+                                            addons={selectedAddons}
                                             date={selectedDate}
                                             slots={slots}
                                             loading={slotsLoading}
                                             error={slotsError}
+                                            notice={slotsNotice}
+                                            assistanceNote={assistanceNote}
+                                            assistanceLoading={
+                                                assistanceLoading
+                                            }
+                                            assistanceError={assistanceError}
+                                            assistanceSent={assistanceSent}
                                             closedWeekdays={closedWeekdays}
                                             onDateChange={handleDateChange}
                                             onSelect={handleSelectSlot}
+                                            onAssistanceNoteChange={
+                                                setAssistanceNote
+                                            }
+                                            onRequestAssistance={() => {
+                                                void handleRequestAssistance();
+                                            }}
                                         />
                                     )}
 
@@ -295,6 +620,8 @@ export default function BookingPage() {
                                         selectedSlot && (
                                             <ConfirmStep
                                                 service={selectedService}
+                                                variant={selectedVariant}
+                                                addons={selectedAddons}
                                                 slot={selectedSlot}
                                                 submitting={submitting}
                                                 error={submitError}
@@ -329,10 +656,22 @@ const STEP_DEFINITIONS: {
         backLabel: '',
     },
     {
+        key: 'variant',
+        label: 'Wariant',
+        heading: 'Wybierz wariant',
+        backLabel: 'Wybór usługi',
+    },
+    {
+        key: 'addons',
+        label: 'Dodatki',
+        heading: 'Dodaj pielęgnację lub przejdź dalej',
+        backLabel: 'Wybór wariantu',
+    },
+    {
         key: 'slot',
         label: 'Termin',
         heading: 'Wybierz termin',
-        backLabel: 'Wybór usługi',
+        backLabel: 'Dodatki',
     },
     {
         key: 'confirm',
@@ -536,24 +875,238 @@ function ServiceStep({
     );
 }
 
+function VariantStep({
+    service,
+    onSelect,
+}: {
+    service: OnlineService;
+    onSelect: (variant: OnlineServiceVariant) => void;
+}) {
+    const variants = getActiveVariants(service);
+
+    return (
+        <div className="d-flex flex-column gap-3">
+            <BookingSummaryStrip
+                service={service}
+                variant={null}
+                addons={[]}
+                helper="Wariant określa czas i cenę usługi bazowej."
+            />
+            <div className="d-flex flex-column gap-2">
+                {variants.map((variant) => (
+                    <button
+                        key={variant.id}
+                        type="button"
+                        className="booking-service-card booking-option-card"
+                        onClick={() => onSelect(variant)}
+                    >
+                        <div>
+                            <strong className="d-block">{variant.name}</strong>
+                            {variant.description && (
+                                <span className="text-muted small">
+                                    {variant.description}
+                                </span>
+                            )}
+                            <span className="text-muted small d-block">
+                                {variant.duration} min
+                            </span>
+                        </div>
+                        <span className="booking-service-price">
+                            {formatPrice(variant.price, variant.priceType)}
+                        </span>
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function AddonStep({
+    service,
+    variant,
+    services,
+    selectedAddons,
+    onToggle,
+    onContinue,
+}: {
+    service: OnlineService;
+    variant: OnlineServiceVariant | null;
+    services: OnlineService[];
+    selectedAddons: OnlineService[];
+    onToggle: (addon: OnlineService) => void;
+    onContinue: () => void;
+}) {
+    const addons = useMemo(
+        () =>
+            services
+                .filter((item) => item.id !== service.id)
+                .sort((a, b) => {
+                    const rankA = isLikelyAddon(a) ? 0 : 1;
+                    const rankB = isLikelyAddon(b) ? 0 : 1;
+                    return rankA - rankB || a.name.localeCompare(b.name, 'pl');
+                }),
+        [service.id, services],
+    );
+    const selectedIds = new Set(selectedAddons.map((addon) => addon.id));
+    const recommended = addons.filter(isLikelyAddon);
+    const other = addons.filter((addon) => !isLikelyAddon(addon));
+
+    const renderAddon = (addon: OnlineService) => {
+        const selected = selectedIds.has(addon.id);
+        return (
+            <button
+                key={addon.id}
+                type="button"
+                className={`booking-service-card booking-addon-card${
+                    selected ? ' is-selected' : ''
+                }`}
+                aria-pressed={selected}
+                onClick={() => onToggle(addon)}
+            >
+                <span className="booking-addon-card__check" aria-hidden="true">
+                    {selected && <CheckIcon />}
+                </span>
+                <span className="booking-addon-card__content">
+                    <strong className="d-block">{addon.name}</strong>
+                    {addon.description &&
+                        addon.description.trim() !== addon.name.trim() && (
+                            <span className="text-muted small">
+                                {addon.description}
+                            </span>
+                        )}
+                    <span className="text-muted small d-block">
+                        +{addon.duration} min
+                    </span>
+                </span>
+                <span className="booking-service-price">
+                    {formatPrice(addon.price, addon.priceType)}
+                </span>
+            </button>
+        );
+    };
+
+    return (
+        <div className="d-flex flex-column gap-3">
+            <BookingSummaryStrip
+                service={service}
+                variant={variant}
+                addons={selectedAddons}
+                helper="Dodatki wydłużą blok wizyty, a pracownik zweryfikuje łączny czas przy potwierdzeniu."
+            />
+
+            {recommended.length > 0 && (
+                <div>
+                    <p className="booking-category-label">
+                        Rekomendowane dodatki
+                    </p>
+                    <div className="d-flex flex-column gap-2">
+                        {recommended.map(renderAddon)}
+                    </div>
+                </div>
+            )}
+
+            {other.length > 0 && (
+                <details className="booking-addon-more">
+                    <summary>Pokaż pozostałe usługi jako dodatki</summary>
+                    <div className="d-flex flex-column gap-2 mt-2">
+                        {other.map(renderAddon)}
+                    </div>
+                </details>
+            )}
+
+            {addons.length === 0 && (
+                <p className="text-muted mb-0">
+                    Brak dodatkowych usług do połączenia z tą rezerwacją.
+                </p>
+            )}
+
+            <button
+                type="button"
+                className="btn btn-salon booking-next-btn"
+                onClick={onContinue}
+            >
+                Przejdź do terminu
+            </button>
+        </div>
+    );
+}
+
+function BookingSummaryStrip({
+    service,
+    variant,
+    addons,
+    helper,
+}: {
+    service: OnlineService;
+    variant: OnlineServiceVariant | null;
+    addons: OnlineService[];
+    helper?: string;
+}) {
+    return (
+        <div className="booking-summary-strip">
+            <div>
+                <span className="booking-summary-strip__label">Rezerwacja</span>
+                <strong>{service.name}</strong>
+                {variant && (
+                    <span className="booking-summary-strip__sub">
+                        Wariant: {variant.name}
+                    </span>
+                )}
+                {addons.length > 0 && (
+                    <span className="booking-summary-strip__sub">
+                        Dodatki: {addons.map((addon) => addon.name).join(', ')}
+                    </span>
+                )}
+                {helper && (
+                    <span className="booking-summary-strip__helper">
+                        {helper}
+                    </span>
+                )}
+            </div>
+            <div className="booking-summary-strip__meta">
+                <span>{getTotalDuration(service, variant, addons)} min</span>
+                <span>{getBookingPrice(service, variant, addons)}</span>
+            </div>
+        </div>
+    );
+}
+
 function SlotStep({
     service,
+    variant,
+    addons,
     date,
     slots,
     loading,
     error,
+    notice,
+    assistanceNote,
+    assistanceLoading,
+    assistanceError,
+    assistanceSent,
     closedWeekdays,
     onDateChange,
     onSelect,
+    onAssistanceNoteChange,
+    onRequestAssistance,
 }: {
     service: OnlineService;
+    variant: OnlineServiceVariant | null;
+    addons: OnlineService[];
     date: string;
     slots: AvailableSlot[];
     loading: boolean;
     error: string;
+    notice: string;
+    assistanceNote: string;
+    assistanceLoading: boolean;
+    assistanceError: string;
+    assistanceSent: boolean;
     closedWeekdays: Set<number>;
     onDateChange: (date: string) => void;
     onSelect: (slot: AvailableSlot) => void;
+    onAssistanceNoteChange: (value: string) => void;
+    onRequestAssistance: () => void;
 }) {
     const [dateView, setDateView] = useState<'list' | 'calendar'>('list');
     const slotsByEmployee = slots.reduce<Record<string, AvailableSlot[]>>(
@@ -567,13 +1120,11 @@ function SlotStep({
 
     return (
         <div>
-            <div className="border rounded bg-white p-3 mb-3">
-                <strong>{service.name}</strong>
-                <span className="text-muted ms-2">
-                    {service.duration} min ·{' '}
-                    {formatPrice(service.price, service.priceType)}
-                </span>
-            </div>
+            <BookingSummaryStrip
+                service={service}
+                variant={variant}
+                addons={addons}
+            />
 
             <div className="mb-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
@@ -630,7 +1181,14 @@ function SlotStep({
                         {formatDate(date)}
                     </p>
                 )}
+                <DayStepper date={date} onDateChange={onDateChange} />
             </div>
+
+            {notice && (
+                <div className="booking-notice mb-3" role="status">
+                    {notice}
+                </div>
+            )}
 
             {loading && (
                 <>
@@ -662,7 +1220,6 @@ function SlotStep({
                     <p className="text-muted mb-3">
                         Brak wolnych terminów w tym dniu. Wybierz inną datę.
                     </p>
-                    <DayStepper date={date} onDateChange={onDateChange} />
                 </div>
             )}
 
@@ -691,6 +1248,91 @@ function SlotStep({
                     )}
                 </div>
             )}
+
+            {!loading && !error && (
+                <AssistanceRequestBox
+                    value={assistanceNote}
+                    loading={assistanceLoading}
+                    error={assistanceError}
+                    sent={assistanceSent}
+                    onChange={onAssistanceNoteChange}
+                    onSubmit={onRequestAssistance}
+                />
+            )}
+        </div>
+    );
+}
+
+function AssistanceRequestBox({
+    value,
+    loading,
+    error,
+    sent,
+    onChange,
+    onSubmit,
+}: {
+    value: string;
+    loading: boolean;
+    error: string;
+    sent: boolean;
+    onChange: (value: string) => void;
+    onSubmit: () => void;
+}) {
+    return (
+        <div className="booking-assistance-box">
+            <div>
+                <span className="booking-summary-strip__label">
+                    Nie pasuje żaden termin?
+                </span>
+                <strong>Poproś salon o pomoc w znalezieniu terminu</strong>
+                <p className="text-muted small mb-0 mt-1">
+                    Wyślemy do zespołu wybraną usługę, dodatki i łączny czas
+                    wizyty.
+                </p>
+            </div>
+
+            <label
+                htmlFor="booking-assistance-note"
+                className="form-label text-muted small fw-normal mt-3"
+            >
+                Preferencje terminu (opcjonalnie)
+            </label>
+            <textarea
+                id="booking-assistance-note"
+                className="form-control"
+                rows={3}
+                maxLength={800}
+                placeholder="Np. najchętniej piątek po 16:00 albo pierwszy wolny termin u Anny."
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                disabled={loading || sent}
+            />
+
+            {error && (
+                <p className="text-danger small mt-2 mb-0" role="alert">
+                    {error}
+                </p>
+            )}
+            {sent && (
+                <p className="text-success small mt-2 mb-0" role="status">
+                    Prośba została wysłana. Salon skontaktuje się z Tobą w
+                    sprawie terminu.
+                </p>
+            )}
+
+            <button
+                type="button"
+                className="btn btn-outline-secondary booking-assistance-box__btn"
+                onClick={onSubmit}
+                disabled={loading || sent}
+                aria-busy={loading}
+            >
+                {loading
+                    ? 'Wysyłam...'
+                    : sent
+                      ? 'Prośba wysłana'
+                      : 'Poproś o pomoc'}
+            </button>
         </div>
     );
 }
@@ -865,6 +1507,8 @@ function MonthCalendarPicker({
 
 function ConfirmStep({
     service,
+    variant,
+    addons,
     slot,
     submitting,
     error,
@@ -874,6 +1518,8 @@ function ConfirmStep({
     onBack,
 }: {
     service: OnlineService;
+    variant: OnlineServiceVariant | null;
+    addons: OnlineService[];
     slot: AvailableSlot;
     submitting: boolean;
     error: string;
@@ -896,17 +1542,35 @@ function ConfirmStep({
                     <dt className="col-5 text-muted small fw-normal">Usługa</dt>
                     <dd className="col-7 mb-2">
                         <strong>{service.name}</strong>
+                        {variant && (
+                            <span className="d-block text-muted small">
+                                {variant.name}
+                            </span>
+                        )}
                     </dd>
 
                     <dt className="col-5 text-muted small fw-normal">Cena</dt>
                     <dd className="col-7 mb-2">
-                        {formatPrice(service.price, service.priceType)}
+                        {getBookingPrice(service, variant, addons)}
                     </dd>
 
                     <dt className="col-5 text-muted small fw-normal">
                         Czas trwania
                     </dt>
-                    <dd className="col-7 mb-2">{service.duration} min</dd>
+                    <dd className="col-7 mb-2">
+                        {getTotalDuration(service, variant, addons)} min
+                    </dd>
+
+                    {addons.length > 0 && (
+                        <>
+                            <dt className="col-5 text-muted small fw-normal">
+                                Dodatki
+                            </dt>
+                            <dd className="col-7 mb-2">
+                                {addons.map((addon) => addon.name).join(', ')}
+                            </dd>
+                        </>
+                    )}
 
                     <dt className="col-5 text-muted small fw-normal">Data</dt>
                     <dd className="col-7 mb-2">{appointmentDate}</dd>
@@ -924,6 +1588,12 @@ function ConfirmStep({
             </div>
 
             <div className="mb-4">
+                {addons.length > 0 && (
+                    <p className="booking-staff-note" role="note">
+                        Pracownik zobaczy dodatki i zweryfikuje łączny czas
+                        wizyty przy potwierdzeniu.
+                    </p>
+                )}
                 <label
                     htmlFor="booking-note"
                     className="form-label text-muted small fw-normal"
@@ -974,12 +1644,16 @@ function ConfirmStep({
 function SuccessScreen({
     appointmentId,
     service,
+    variant,
+    addons,
     slot,
     onNew,
     onHistory,
 }: {
     appointmentId: number | null;
     service: OnlineService | null;
+    variant: OnlineServiceVariant | null;
+    addons: OnlineService[];
     slot: AvailableSlot | null;
     onNew: () => void;
     onHistory: () => void;
@@ -999,7 +1673,14 @@ function SuccessScreen({
             </h2>
             {service && slot && (
                 <p className="text-muted mb-0">
-                    {service.name} ·{' '}
+                    {service.name} · {variant ? `${variant.name} · ` : ''}
+                    {addons.length > 0
+                        ? `${addons.length} dod. · ${getTotalDuration(
+                              service,
+                              variant,
+                              addons,
+                          )} min · `
+                        : ''}
                     {new Date(slot.time).toLocaleDateString('pl-PL', {
                         weekday: 'short',
                         day: 'numeric',

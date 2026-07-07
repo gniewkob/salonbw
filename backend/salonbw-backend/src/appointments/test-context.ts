@@ -240,6 +240,15 @@ function createServicesRepo(services: SalonService[]) {
             ({ id }) =>
                 Promise.resolve(services.find((s) => s.id === id) ?? null),
         ),
+        find: jest.fn<Promise<SalonService[]>, [{ where: { id: unknown } }]>(
+            ({ where }) => {
+                const value = where.id as { _value?: number[] } | number[];
+                const ids = Array.isArray(value) ? value : (value._value ?? []);
+                return Promise.resolve(
+                    services.filter((service) => ids.includes(service.id)),
+                );
+            },
+        ),
     } as unknown as jest.Mocked<Repository<SalonService>>;
 }
 

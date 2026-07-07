@@ -98,6 +98,41 @@ describe('AppointmentsService', () => {
         expect(result.status).toBe(AppointmentStatus.OnlinePending);
     });
 
+    it('extends online appointments with selected add-on services', async () => {
+        services.push({
+            ...services[0],
+            id: 2,
+            name: 'Pielęgnacja',
+            duration: 30,
+            price: 80,
+        });
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+
+        const result = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+                reservedOnline: true,
+                addonServiceIds: [2],
+            },
+            users[0],
+        );
+
+        expect(result.endTime.getTime()).toBe(start.getTime() + 60 * 60 * 1000);
+        expect(result.extraServices).toEqual([
+            {
+                serviceId: 2,
+                name: 'Pielęgnacja',
+                priceCents: 8000,
+                discountCents: 0,
+            },
+        ]);
+        expect(result.notes).toContain('Łączny czas wizyty: 60 min');
+        expect(result.notes).toContain('do weryfikacji przy potwierdzeniu');
+    });
+
     it('sends an email alert to the salon on client self-booking', async () => {
         const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
         await service.create(

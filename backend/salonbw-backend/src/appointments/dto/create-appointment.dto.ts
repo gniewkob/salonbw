@@ -6,6 +6,9 @@ import {
     IsBoolean,
     IsString,
     MaxLength,
+    IsArray,
+    ArrayMaxSize,
+    ArrayUnique,
 } from 'class-validator';
 
 export class CreateAppointmentDto {
@@ -52,4 +55,17 @@ export class CreateAppointmentDto {
     @IsOptional()
     @MaxLength(1000)
     notes?: string;
+
+    @ApiProperty({
+        required: false,
+        type: [Number],
+        description:
+            'Optional add-on services requested during online booking. Their durations extend the appointment block.',
+    })
+    @IsArray()
+    @ArrayMaxSize(5)
+    @ArrayUnique()
+    @IsInt({ each: true })
+    @IsOptional()
+    addonServiceIds?: number[];
 }

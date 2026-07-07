@@ -32,7 +32,9 @@ describe('CalendarService time blocks', () => {
     beforeEach(() => {
         timeBlockRepository = {
             create: jest.fn((payload) => payload as TimeBlock),
-            save: jest.fn(async (entity) => ({ id: 1, ...entity }) as TimeBlock),
+            save: jest.fn(
+                async (entity) => ({ id: 1, ...entity }) as TimeBlock,
+            ),
             createQueryBuilder: jest.fn(),
         } as unknown as jest.Mocked<Repository<TimeBlock>>;
         appointmentRepository = {
@@ -102,7 +104,9 @@ describe('CalendarService time blocks', () => {
             role: Role.Employee,
         } as User);
         (
-            appointmentRepository as unknown as { createQueryBuilder: jest.Mock }
+            appointmentRepository as unknown as {
+                createQueryBuilder: jest.Mock;
+            }
         ).createQueryBuilder.mockReturnValue(createCountQueryBuilder(1));
         (
             timeBlockRepository as unknown as { createQueryBuilder: jest.Mock }
@@ -130,11 +134,18 @@ describe('CalendarService nearest slot (public teaser)', () => {
         slots?: Array<{ time: string }>;
     }) {
         const serviceRepository = {
-            findOne: jest.fn().mockResolvedValue(
-                overrides.service === null
-                    ? null
-                    : ({ id: 1, duration: 30, isActive: true, ...overrides.service } as Service),
-            ),
+            findOne: jest
+                .fn()
+                .mockResolvedValue(
+                    overrides.service === null
+                        ? null
+                        : ({
+                              id: 1,
+                              duration: 30,
+                              isActive: true,
+                              ...overrides.service,
+                          } as Service),
+                ),
         } as unknown as Repository<Service>;
 
         const calendarService = new CalendarService(
@@ -169,7 +180,9 @@ describe('CalendarService nearest slot (public teaser)', () => {
         const evenLater = new Date(
             Date.now() + 5 * 60 * 60 * 1000,
         ).toISOString();
-        const svc = buildService({ slots: [{ time: evenLater }, { time: soon }, { time: later }] });
+        const svc = buildService({
+            slots: [{ time: evenLater }, { time: soon }, { time: later }],
+        });
 
         const result = await svc.getNearestSlot();
         expect(result.slot).toBe(later);
@@ -181,9 +194,7 @@ describe('CalendarService nearest slot (public teaser)', () => {
 
         await svc.getNearestSlot();
         await svc.getNearestSlot();
-        expect(
-            (svc.getAvailableSlots as jest.Mock).mock.calls.length,
-        ).toBe(1);
+        expect((svc.getAvailableSlots as jest.Mock).mock.calls.length).toBe(1);
     });
 });
 
@@ -203,11 +214,17 @@ describe('CalendarService working hours in available slots (L1)', () => {
         branch?: Partial<Branch> | null;
         timetable?: Partial<Timetable> | null;
         exception?: Partial<TimetableException> | null;
+        service?: Partial<Service>;
+        addonServices?: Service[];
     }) {
         const serviceRepository = {
-            findOne: jest
-                .fn()
-                .mockResolvedValue({ id: 1, duration: 60 } as Service),
+            findOne: jest.fn().mockResolvedValue({
+                id: 1,
+                duration: 60,
+                variants: [],
+                ...options.service,
+            } as Service),
+            find: jest.fn().mockResolvedValue(options.addonServices ?? []),
         } as unknown as Repository<Service>;
 
         const employeeServiceRepository = {
@@ -215,9 +232,11 @@ describe('CalendarService working hours in available slots (L1)', () => {
                 leftJoinAndSelect: jest.fn().mockReturnThis(),
                 where: jest.fn().mockReturnThis(),
                 andWhere: jest.fn().mockReturnThis(),
-                getMany: jest.fn().mockResolvedValue([
-                    { employee: { id: 7, name: 'Aleksandra' } },
-                ]),
+                getMany: jest
+                    .fn()
+                    .mockResolvedValue([
+                        { employee: { id: 7, name: 'Aleksandra' } },
+                    ]),
             })),
         } as unknown as Repository<EmployeeService>;
 
@@ -242,9 +261,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
                 where: jest.fn().mockReturnThis(),
                 andWhere: jest.fn().mockReturnThis(),
                 orderBy: jest.fn().mockReturnThis(),
-                getOne: jest
-                    .fn()
-                    .mockResolvedValue(options.timetable ?? null),
+                getOne: jest.fn().mockResolvedValue(options.timetable ?? null),
             })),
         } as unknown as Repository<Timetable>;
 
@@ -358,6 +375,43 @@ describe('CalendarService working hours in available slots (L1)', () => {
         );
     });
 
+    it('uses variant and add-on duration when offering online slots', async () => {
+        const svc = buildHarness({
+            branch: branchMonSat,
+            service: {
+                variants: [
+                    {
+                        id: 11,
+                        serviceId: 1,
+                        name: 'Długie włosy',
+                        duration: 90,
+                    },
+                ],
+            } as Partial<Service>,
+            addonServices: [
+                {
+                    id: 2,
+                    name: 'Pielęgnacja',
+                    duration: 30,
+                } as Service,
+            ],
+        });
+
+        const slots = await svc.getAvailableSlots(
+            1,
+            nextDow(5),
+            undefined,
+            11,
+            [2],
+        );
+
+        expect(slots.length).toBeGreaterThan(0);
+        const last = new Date(slots[slots.length - 1].time);
+        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
+            17 * 60,
+        );
+    });
+
     it('a scheduled Sunday is bookable even though branch hours say closed', async () => {
         const svc = buildHarness({
             branch: branchMonSat,
@@ -424,10 +478,30 @@ describe('CalendarService public opening hours', () => {
                 {
                     id: 1,
                     slots: [
-                        { dayOfWeek: 0, startTime: '10:00', endTime: '14:00', isBreak: false },
-                        { dayOfWeek: 0, startTime: '13:00', endTime: '18:00', isBreak: false },
-                        { dayOfWeek: 0, startTime: '12:00', endTime: '12:30', isBreak: true },
-                        { dayOfWeek: 5, startTime: '09:00', endTime: '15:00', isBreak: false },
+                        {
+                            dayOfWeek: 0,
+                            startTime: '10:00',
+                            endTime: '14:00',
+                            isBreak: false,
+                        },
+                        {
+                            dayOfWeek: 0,
+                            startTime: '13:00',
+                            endTime: '18:00',
+                            isBreak: false,
+                        },
+                        {
+                            dayOfWeek: 0,
+                            startTime: '12:00',
+                            endTime: '12:30',
+                            isBreak: true,
+                        },
+                        {
+                            dayOfWeek: 5,
+                            startTime: '09:00',
+                            endTime: '15:00',
+                            isBreak: false,
+                        },
                     ],
                 } as unknown as Timetable,
             ],

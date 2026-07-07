@@ -437,6 +437,8 @@ export class CalendarService {
         serviceId: number,
         date: string,
         employeeId?: number,
+        serviceVariantId?: number,
+        addonServiceIds: number[] = [],
     ): Promise<
         Array<{
             employeeId: number;
@@ -446,6 +448,7 @@ export class CalendarService {
     > {
         const service = await this.serviceRepository.findOne({
             where: { id: serviceId },
+            relations: ['variants'],
         });
         if (!service) {
             throw new NotFoundException(
@@ -453,7 +456,28 @@ export class CalendarService {
             );
         }
 
-        const duration = service.duration;
+        const variant = serviceVariantId
+            ? service.variants?.find((item) => item.id === serviceVariantId)
+            : undefined;
+        if (serviceVariantId && !variant) {
+            throw new BadRequestException('Invalid serviceVariantId');
+        }
+        const uniqueAddonIds = Array.from(new Set(addonServiceIds));
+        if (uniqueAddonIds.length > 5) {
+            throw new BadRequestException('Too many add-on services');
+        }
+        const addonServices =
+            uniqueAddonIds.length > 0
+                ? await this.serviceRepository.find({
+                      where: { id: In(uniqueAddonIds) },
+                  })
+                : [];
+        if (addonServices.length !== uniqueAddonIds.length) {
+            throw new BadRequestException('Invalid addonServiceIds');
+        }
+        const duration =
+            (variant?.duration ?? service.duration) +
+            addonServices.reduce((sum, addon) => sum + addon.duration, 0);
 
         // Find employees that offer this service
         let employeeServiceQuery = this.employeeServiceRepository
@@ -461,6 +485,13 @@ export class CalendarService {
             .leftJoinAndSelect('es.employee', 'employee')
             .where('es.serviceId = :serviceId', { serviceId })
             .andWhere('es.isActive = true');
+
+        if (serviceVariantId) {
+            employeeServiceQuery = employeeServiceQuery.andWhere(
+                '(es.serviceVariantId = :serviceVariantId OR es.serviceVariantId IS NULL)',
+                { serviceVariantId },
+            );
+        }
 
         if (employeeId) {
             employeeServiceQuery = employeeServiceQuery.andWhere(
@@ -474,9 +505,14 @@ export class CalendarService {
         // Collect employees to check: from service assignments, or all employees as fallback
         let candidateEmployees: User[];
         if (employeeServices.length > 0) {
-            candidateEmployees = employeeServices
+            const uniqueEmployees = new Map<number, User>();
+            employeeServices
                 .map((es) => es.employee)
-                .filter((e): e is User => !!e);
+                .filter((e): e is User => !!e)
+                .forEach((employee) =>
+                    uniqueEmployees.set(employee.id, employee),
+                );
+            candidateEmployees = Array.from(uniqueEmployees.values());
         } else {
             candidateEmployees = await this.userRepository.find({
                 where: { role: 'employee' as never },
