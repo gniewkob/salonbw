@@ -8713,6 +8713,56 @@ th.checkbox_container input[type='checkbox'] {
    contrast 9.7:1). Do not redefine here. */
 
 /* Service picker card */
+.booking-column .salonbw-steps {
+    justify-content: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0.5rem 0 0.75rem;
+    margin-bottom: 1rem;
+    list-style: none;
+    scrollbar-width: none;
+}
+
+.booking-column .salonbw-steps::-webkit-scrollbar {
+    display: none;
+}
+
+.booking-column .salonbw-step {
+    color: #6e7278;
+}
+
+.booking-column .salonbw-step.active {
+    color: #0d0d0d;
+    font-weight: 700;
+}
+
+.booking-column .salonbw-step__number {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #0d0d0d;
+    background: #eef0f2;
+}
+
+.booking-column .salonbw-step.active .salonbw-step__number {
+    color: #ffffff;
+    background: #0d0d0d;
+}
+
+.booking-column .salonbw-step__label {
+    color: currentColor;
+    font-size: 0.95rem;
+}
+
+.booking-column .salonbw-step.active .salonbw-step__label {
+    color: #0d0d0d;
+}
+
+.booking-column .salonbw-step__divider {
+    width: clamp(1.5rem, 7vw, 3rem);
+    flex: 0 0 auto;
+    background: #d8dbe0;
+}
+
 .booking-service-card {
     display: flex;
     justify-content: space-between;
@@ -9167,6 +9217,34 @@ th.checkbox_container input[type='checkbox'] {
     }
 
     .salonbw-steps::-webkit-scrollbar {
+        display: none;
+    }
+
+    .booking-column .salonbw-steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.25rem;
+        overflow: visible;
+    }
+
+    .booking-column .salonbw-step {
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.35rem;
+        text-align: center;
+    }
+
+    .booking-column .salonbw-step__number {
+        width: 2.15rem;
+        height: 2.15rem;
+    }
+
+    .booking-column .salonbw-step__label {
+        font-size: 0.72rem;
+        line-height: 1.15;
+    }
+
+    .booking-column .salonbw-step__divider {
         display: none;
     }
 

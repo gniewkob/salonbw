@@ -64,6 +64,41 @@ const SERVICES_WITH_VARIANT_AND_ADDON = [
     },
 ];
 
+const FLAT_VARIANT_SERVICES_WITH_ADDON = [
+    {
+        id: 101,
+        name: 'Fryzura wieczorowa – włosy średnie',
+        duration: 80,
+        price: 200,
+        priceType: 'fixed',
+        category: 'Fryzjerstwo',
+    },
+    {
+        id: 102,
+        name: 'Fryzura wieczorowa – włosy długie',
+        duration: 80,
+        price: 250,
+        priceType: 'fixed',
+        category: 'Fryzjerstwo',
+    },
+    {
+        id: 103,
+        name: 'Fryzura wieczorowa – włosy bardzo długie',
+        duration: 80,
+        price: 280,
+        priceType: 'fixed',
+        category: 'Fryzjerstwo',
+    },
+    {
+        id: 2,
+        name: 'Pielęgnacja regenerująca',
+        duration: 30,
+        price: 80,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+];
+
 const SLOTS = [
     {
         employeeId: 7,
@@ -244,6 +279,102 @@ describe('BookingPage reservedOnline payload', () => {
         };
 
         expect(payload.serviceVariantId).toBe(11);
+        expect(payload.addonServiceIds).toEqual([2]);
+    });
+
+    it('groups flat catalog variants into service then variant steps', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/services/online-booking') {
+                return FLAT_VARIANT_SERVICES_WITH_ADDON;
+            }
+            if (path.startsWith('/calendar/available-slots')) return SLOTS;
+            return { id: 123 };
+        });
+
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as ReturnType<
+                    typeof createAuthValue
+                >['apiFetch'],
+            }),
+        );
+
+        render(<BookingPage />);
+
+        expect(
+            await screen.findByRole('button', {
+                name: /fryzura wieczorowa/i,
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', {
+                name: /fryzura wieczorowa – włosy średnie/i,
+            }),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: /fryzura wieczorowa/i }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', { name: /włosy długie/i }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', {
+                name: /pielęgnacja regenerująca/i,
+            }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /przejdź do terminu/i }),
+        );
+
+        await waitFor(() => {
+            expect(
+                apiFetch.mock.calls.some(([path]) => {
+                    if (
+                        typeof path !== 'string' ||
+                        !path.startsWith('/calendar/available-slots')
+                    ) {
+                        return false;
+                    }
+                    const params = new URLSearchParams(path.split('?')[1]);
+                    return (
+                        params.get('serviceId') === '102' &&
+                        params.get('serviceVariantId') === null &&
+                        params.get('addonServiceIds') === '2'
+                    );
+                }),
+            ).toBe(true);
+        });
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: /\d{2}:\d{2}/ }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /potwierdź rezerwację/i }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/appointments',
+                expect.objectContaining({ method: 'POST' }),
+            );
+        });
+
+        const postCall = apiFetch.mock.calls.find(
+            ([path]) => path === '/appointments',
+        );
+        const payload = JSON.parse(
+            (postCall?.[1] as { body: string }).body,
+        ) as {
+            serviceId: number;
+            serviceVariantId?: number;
+            addonServiceIds: number[];
+        };
+
+        expect(payload.serviceId).toBe(102);
+        expect(payload.serviceVariantId).toBeUndefined();
         expect(payload.addonServiceIds).toEqual([2]);
     });
 

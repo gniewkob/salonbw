@@ -27,6 +27,7 @@ interface OnlineService {
     description?: string;
     category?: string;
     variants?: OnlineServiceVariant[];
+    syntheticVariantSourceIds?: number[];
 }
 
 interface OnlineServiceVariant {
@@ -38,6 +39,8 @@ interface OnlineServiceVariant {
     priceType: string;
     isActive?: boolean;
     sortOrder?: number;
+    sourceServiceId?: number;
+    sourceServiceName?: string;
 }
 
 interface AvailableSlot {
@@ -122,6 +125,196 @@ function isLikelyAddon(service: OnlineService) {
     ].some((needle) => text.includes(needle));
 }
 
+function parseFlatVariantName(service: OnlineService) {
+    const [baseName, ...variantParts] = service.name
+        .split(/\s+[–-]\s+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+    const variantName = variantParts.join(' – ');
+
+    if (!baseName || !variantName) return null;
+
+    const variantText = variantName.toLocaleLowerCase('pl-PL');
+    const looksLikeVariant = [
+        'włos',
+        'wlos',
+        'krótk',
+        'krotk',
+        'śred',
+        'sred',
+        'dług',
+        'dlug',
+        'pasa',
+    ].some((needle) => variantText.includes(needle));
+
+    return looksLikeVariant ? { baseName, variantName } : null;
+}
+
+function normalizeServicesForBooking(services: OnlineService[]) {
+    const directServices: Array<{ service: OnlineService; index: number }> = [];
+    const flatGroups = new Map<
+        string,
+        {
+            baseName: string;
+            category?: string;
+            items: Array<{
+                service: OnlineService;
+                variantName: string;
+                index: number;
+            }>;
+        }
+    >();
+
+    services.forEach((service, index) => {
+        if (getActiveVariants(service).length > 0) {
+            directServices.push({ service, index });
+            return;
+        }
+
+        const parsed = parseFlatVariantName(service);
+        if (!parsed) {
+            directServices.push({ service, index });
+            return;
+        }
+
+        const key = `${service.category ?? 'Inne'}::${parsed.baseName.toLocaleLowerCase('pl-PL')}`;
+        const group =
+            flatGroups.get(key) ??
+            ({
+                baseName: parsed.baseName,
+                category: service.category,
+                items: [],
+            } satisfies {
+                baseName: string;
+                category?: string;
+                items: Array<{
+                    service: OnlineService;
+                    variantName: string;
+                    index: number;
+                }>;
+            });
+        group.items.push({
+            service,
+            variantName: parsed.variantName,
+            index,
+        });
+        flatGroups.set(key, group);
+    });
+
+    const normalizedGroups = Array.from(flatGroups.values()).flatMap(
+        (group) => {
+            if (group.items.length < 2) {
+                return group.items.map(({ service, index }) => ({
+                    service,
+                    index,
+                }));
+            }
+
+            const sortedItems = [...group.items].sort(
+                (a, b) => a.index - b.index,
+            );
+            const representative = sortedItems[0].service;
+            const lowestPrice = Math.min(
+                ...sortedItems.map(({ service }) => Number(service.price)),
+            );
+            const shortestDuration = Math.min(
+                ...sortedItems.map(({ service }) => service.duration),
+            );
+            const hasDifferentPrices =
+                new Set(sortedItems.map(({ service }) => Number(service.price)))
+                    .size > 1;
+
+            return [
+                {
+                    index: sortedItems[0].index,
+                    service: {
+                        ...representative,
+                        name: group.baseName,
+                        description:
+                            representative.description &&
+                            representative.description !== representative.name
+                                ? representative.description
+                                : undefined,
+                        duration: shortestDuration,
+                        price: lowestPrice,
+                        priceType:
+                            hasDifferentPrices ||
+                            sortedItems.some(
+                                ({ service }) => service.priceType === 'from',
+                            )
+                                ? 'from'
+                                : representative.priceType,
+                        category: group.category,
+                        syntheticVariantSourceIds: sortedItems.map(
+                            ({ service }) => service.id,
+                        ),
+                        variants: sortedItems.map(
+                            ({ service, variantName, index }) => ({
+                                id: service.id,
+                                name: variantName,
+                                description:
+                                    service.description &&
+                                    service.description !== service.name
+                                        ? service.description
+                                        : undefined,
+                                duration: service.duration,
+                                price: service.price,
+                                priceType: service.priceType,
+                                isActive: true,
+                                sortOrder: index,
+                                sourceServiceId: service.id,
+                                sourceServiceName: service.name,
+                            }),
+                        ),
+                    },
+                },
+            ];
+        },
+    );
+
+    return [...directServices, ...normalizedGroups]
+        .sort((a, b) => a.index - b.index)
+        .map(({ service }) => service);
+}
+
+function findPreselectedService(
+    services: OnlineService[],
+    serviceId: number,
+): { service: OnlineService; variant: OnlineServiceVariant | null } | null {
+    for (const service of services) {
+        const variant = getActiveVariants(service).find(
+            (item) => item.sourceServiceId === serviceId,
+        );
+        if (variant) return { service, variant };
+        if (service.id === serviceId) {
+            return { service, variant: null };
+        }
+    }
+
+    return null;
+}
+
+function getBookingServiceId(
+    service: OnlineService,
+    variant: OnlineServiceVariant | null,
+) {
+    return variant?.sourceServiceId ?? service.id;
+}
+
+function getBookingServiceVariantId(variant: OnlineServiceVariant | null) {
+    return variant?.sourceServiceId ? undefined : variant?.id;
+}
+
+function getPrimaryServiceSourceIds(service: OnlineService) {
+    return new Set([
+        service.id,
+        ...(service.syntheticVariantSourceIds ?? []),
+        ...getActiveVariants(service)
+            .map((variant) => variant.sourceServiceId)
+            .filter((id): id is number => typeof id === 'number'),
+    ]);
+}
+
 // Format a Date as YYYY-MM-DD in LOCAL time. Using toISOString() here is a
 // bug: it converts local midnight to UTC, so in a UTC+ timezone (e.g. Poland
 // in summer) it yields the previous calendar day — which made "today" wrong
@@ -182,6 +375,10 @@ export default function BookingPage() {
         number | null
     >(null);
     const autoNearestDateRef = useRef<string | null>(null);
+    const bookingServices = useMemo(
+        () => normalizeServicesForBooking(services),
+        [services],
+    );
 
     // Weekdays (0=Sun..6=Sat) the salon is closed — disables them in the
     // calendar day-picker so the client can't land on a closed day.
@@ -216,17 +413,21 @@ export default function BookingPage() {
             .then((data) => {
                 setServices(data);
                 if (serviceIdParam) {
-                    const preSelected = data.find(
-                        (s) => s.id === Number(serviceIdParam),
+                    const preSelected = findPreselectedService(
+                        normalizeServicesForBooking(data),
+                        Number(serviceIdParam),
                     );
                     if (preSelected) {
-                        setSelectedService(preSelected);
-                        setSelectedVariant(null);
+                        setSelectedService(preSelected.service);
+                        setSelectedVariant(preSelected.variant);
                         setSelectedAddons([]);
                         setStep(
-                            getActiveVariants(preSelected).length > 0
-                                ? 'variant'
-                                : 'addons',
+                            preSelected.variant
+                                ? 'addons'
+                                : getActiveVariants(preSelected.service)
+                                        .length > 0
+                                  ? 'variant'
+                                  : 'addons',
                         );
                     } else {
                         setServicesNotice(
@@ -346,8 +547,8 @@ export default function BookingPage() {
         if (step === 'slot' && selectedService) {
             void loadSlots(
                 selectedDate,
-                selectedService.id,
-                selectedVariant?.id,
+                getBookingServiceId(selectedService, selectedVariant),
+                getBookingServiceVariantId(selectedVariant),
                 selectedAddons.map((addon) => addon.id),
                 true,
             );
@@ -399,8 +600,8 @@ export default function BookingPage() {
             autoNearestDateRef.current = null;
             void loadSlots(
                 date,
-                selectedService.id,
-                selectedVariant?.id,
+                getBookingServiceId(selectedService, selectedVariant),
+                getBookingServiceVariantId(selectedVariant),
                 selectedAddons.map((addon) => addon.id),
                 false,
             );
@@ -409,6 +610,7 @@ export default function BookingPage() {
 
     const handleConfirm = async () => {
         if (!selectedService || !selectedSlot) return;
+        const serviceVariantId = getBookingServiceVariantId(selectedVariant);
         setSubmitting(true);
         setSubmitError('');
         try {
@@ -416,10 +618,11 @@ export default function BookingPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    serviceId: selectedService.id,
-                    ...(selectedVariant
-                        ? { serviceVariantId: selectedVariant.id }
-                        : {}),
+                    serviceId: getBookingServiceId(
+                        selectedService,
+                        selectedVariant,
+                    ),
+                    ...(serviceVariantId ? { serviceVariantId } : {}),
                     ...(selectedAddons.length > 0
                         ? {
                               addonServiceIds: selectedAddons.map(
@@ -561,7 +764,7 @@ export default function BookingPage() {
 
                                     {step === 'service' && (
                                         <ServiceStep
-                                            services={services}
+                                            services={bookingServices}
                                             loading={servicesLoading}
                                             error={servicesError}
                                             notice={servicesNotice}
@@ -683,12 +886,14 @@ const STEP_DEFINITIONS: {
 
 function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
     const current = STEP_DEFINITIONS.find((s) => s.key === step)!;
+    const visibleSteps = STEP_DEFINITIONS.filter((s) => s.key !== 'confirm');
+    const activeStep = step === 'confirm' ? 'slot' : step;
 
     return (
         <div className="mb-4">
             <ol className="salonbw-steps mb-3" aria-label="Kroki rezerwacji">
-                {STEP_DEFINITIONS.map((s, i) => {
-                    const isActive = s.key === step;
+                {visibleSteps.map((s, i) => {
+                    const isActive = s.key === activeStep;
                     return (
                         <Fragment key={s.key}>
                             <li
@@ -705,7 +910,7 @@ function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
                                     {s.label}
                                 </span>
                             </li>
-                            {i < STEP_DEFINITIONS.length - 1 && (
+                            {i < visibleSteps.length - 1 && (
                                 <li
                                     className="salonbw-step__divider"
                                     aria-hidden="true"
@@ -841,33 +1046,42 @@ function ServiceStep({
                 <div key={cat}>
                     <p className="booking-category-label">{cat}</p>
                     <div className="d-flex flex-column gap-2">
-                        {svcs.map((svc) => (
-                            <button
-                                key={svc.id}
-                                type="button"
-                                className="booking-service-card"
-                                onClick={() => onSelect(svc)}
-                            >
-                                <div>
-                                    <strong className="d-block">
-                                        {svc.name}
-                                    </strong>
-                                    {svc.description &&
-                                        svc.description.trim() !==
-                                            svc.name.trim() && (
-                                            <span className="text-muted small">
-                                                {svc.description}
-                                            </span>
-                                        )}
-                                    <span className="text-muted small d-block">
-                                        {svc.duration} min
+                        {svcs.map((svc) => {
+                            const variants = getActiveVariants(svc);
+                            const variantText =
+                                variants.length === 1
+                                    ? '1 wariant do wyboru'
+                                    : `${variants.length} warianty do wyboru`;
+                            return (
+                                <button
+                                    key={svc.id}
+                                    type="button"
+                                    className="booking-service-card"
+                                    onClick={() => onSelect(svc)}
+                                >
+                                    <div>
+                                        <strong className="d-block">
+                                            {svc.name}
+                                        </strong>
+                                        {svc.description &&
+                                            svc.description.trim() !==
+                                                svc.name.trim() && (
+                                                <span className="text-muted small">
+                                                    {svc.description}
+                                                </span>
+                                            )}
+                                        <span className="text-muted small d-block">
+                                            {variants.length > 0
+                                                ? variantText
+                                                : `${svc.duration} min`}
+                                        </span>
+                                    </div>
+                                    <span className="booking-service-price">
+                                        {formatPrice(svc.price, svc.priceType)}
                                     </span>
-                                </div>
-                                <span className="booking-service-price">
-                                    {formatPrice(svc.price, svc.priceType)}
-                                </span>
-                            </button>
-                        ))}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             ))}
@@ -936,17 +1150,16 @@ function AddonStep({
     onToggle: (addon: OnlineService) => void;
     onContinue: () => void;
 }) {
-    const addons = useMemo(
-        () =>
-            services
-                .filter((item) => item.id !== service.id)
-                .sort((a, b) => {
-                    const rankA = isLikelyAddon(a) ? 0 : 1;
-                    const rankB = isLikelyAddon(b) ? 0 : 1;
-                    return rankA - rankB || a.name.localeCompare(b.name, 'pl');
-                }),
-        [service.id, services],
-    );
+    const addons = useMemo(() => {
+        const primarySourceIds = getPrimaryServiceSourceIds(service);
+        return services
+            .filter((item) => !primarySourceIds.has(item.id))
+            .sort((a, b) => {
+                const rankA = isLikelyAddon(a) ? 0 : 1;
+                const rankB = isLikelyAddon(b) ? 0 : 1;
+                return rankA - rankB || a.name.localeCompare(b.name, 'pl');
+            });
+    }, [service, services]);
     const selectedIds = new Set(selectedAddons.map((addon) => addon.id));
     const recommended = addons.filter(isLikelyAddon);
     const other = addons.filter((addon) => !isLikelyAddon(addon));
