@@ -17,16 +17,16 @@ describe('ContactForm', () => {
                 <ContactForm />
             </ToastProvider>,
         );
-        fireEvent.change(screen.getByPlaceholderText('Your name'), {
+        fireEvent.change(screen.getByPlaceholderText('Imię i nazwisko'), {
             target: { value: 'John' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Your email'), {
+        fireEvent.change(screen.getByPlaceholderText('Adres email'), {
             target: { value: 'john@example.com' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Message'), {
+        fireEvent.change(screen.getByPlaceholderText('Wiadomość'), {
             target: { value: 'Hello' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /send/i }));
+        fireEvent.click(screen.getByRole('button', { name: /wyślij/i }));
         await waitFor(() => expect(global.fetch).toHaveBeenCalled());
         expect(global.fetch).toHaveBeenCalledWith(
             `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
@@ -48,16 +48,16 @@ describe('ContactForm', () => {
                 <ContactForm />
             </ToastProvider>,
         );
-        fireEvent.change(screen.getByPlaceholderText('Your name'), {
+        fireEvent.change(screen.getByPlaceholderText('Imię i nazwisko'), {
             target: { value: 'John' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Your email'), {
+        fireEvent.change(screen.getByPlaceholderText('Adres email'), {
             target: { value: 'invalid' },
         });
-        fireEvent.change(screen.getByPlaceholderText('Message'), {
+        fireEvent.change(screen.getByPlaceholderText('Wiadomość'), {
             target: { value: 'Hello' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /send/i }));
+        fireEvent.click(screen.getByRole('button', { name: /wyślij/i }));
         expect(
             await screen.findByText(/nieprawidłowy format adresu email/i),
         ).toBeInTheDocument();
