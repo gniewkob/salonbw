@@ -10314,29 +10314,179 @@ summary:focus-visible {
     padding: 12px 0;
 }
 
-/* notification banner on client dashboard */
-.client-dashboard-banner {
-    border-left: 3px solid #0d0d0d;
-    background: #f8f8f8;
+/* Client dashboard action panel */
+.client-action-panel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #0d0d0d;
+    border-left-width: 5px;
     border-radius: 4px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
+    background: #f6f6f7;
+    box-shadow: 0 8px 20px rgba(13, 13, 13, 0.08);
+}
+
+.client-action-panel__marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: #0d0d0d;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.client-action-panel__content {
+    min-width: 0;
+}
+
+.client-action-panel__eyebrow,
+.visit-details-label {
+    color: #6e7278;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.client-action-panel__title {
+    margin: 0.15rem 0 0;
+    color: #23252a;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.client-action-panel__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-top: 0.4rem;
+    color: #23252a;
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+
+.client-action-panel__button {
+    min-width: 176px;
+}
+
+.client-next-visit {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.client-next-visit__date {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 4.5rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d9dde2;
+    border-radius: 4px;
+    background: #f6f6f7;
+    text-align: center;
+}
+
+.client-next-visit__date span {
+    color: #6e7278;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.client-next-visit__date strong {
+    color: #0d0d0d;
+    font-size: 1.05rem;
+}
+
+.client-next-visit__main {
+    min-width: 0;
+}
+
+.client-next-visit__service {
+    color: #23252a;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.client-next-visit__meta {
+    margin-top: 0.2rem;
+    color: #5f6369;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.client-next-visit__actions {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.client-dashboard-banner__messages {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.salonbw-appointment-item--expanded {
+    background: #fafbfc;
 }
 
-.client-dashboard-banner__msg {
-    font-size: 13px;
-    color: #1a1a1a;
+.visit-details-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
+    gap: 1rem;
+}
+
+.visit-details-copy {
+    margin: 0.35rem 0 0;
+    color: #23252a;
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+
+.visit-details-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.45rem;
+}
+
+.visit-details-hint {
+    margin: 0.85rem 0 0;
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid #0d0d0d;
+    background: #f6f6f7;
+    color: #23252a;
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 767px) {
+    .client-action-panel {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .client-action-panel__button {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .client-next-visit,
+    .visit-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .client-next-visit__date {
+        width: fit-content;
+        min-width: 6rem;
+    }
 }
 
 /* Loyalty KPI labels — brand micro-type: uppercase, tracked, silver-ink (AA). */

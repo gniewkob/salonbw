@@ -11,6 +11,10 @@ import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
 import PanelButton from '@/components/ui/PanelButton';
 
+function visitDetailsHref(id: number) {
+    return `/visits?visitId=${id}`;
+}
+
 export default function ClientDashboard() {
     const { data, loading, error, refetch } = useClientDashboard();
     const { apiFetch } = useAuth();
@@ -85,8 +89,8 @@ export default function ClientDashboard() {
         );
     }
 
-    const formatDate = (dateStr: string) =>
-        new Date(dateStr).toLocaleDateString('pl-PL', {
+    const formatDateTime = (dateStr: string) =>
+        new Date(dateStr).toLocaleString('pl-PL', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -94,39 +98,65 @@ export default function ClientDashboard() {
             hour: '2-digit',
             minute: '2-digit',
         });
+    const formatDay = (dateStr: string) =>
+        new Date(dateStr).toLocaleDateString('pl-PL', {
+            day: 'numeric',
+            month: 'short',
+        });
+    const formatHour = (dateStr: string) =>
+        new Date(dateStr).toLocaleTimeString('pl-PL', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    const pendingActionsCount =
+        data.pendingRescheduleCount + data.newSalonMessageCount;
+    const primaryActionHref = data.upcomingAppointment
+        ? visitDetailsHref(data.upcomingAppointment.id)
+        : '/visits';
 
     return (
         <div className="salonbw-dashboard">
             <ClientPageHeader title="Mój panel" />
 
-            {/* Notification banner — pending reschedule or new messages */}
-            {(data.pendingRescheduleCount > 0 ||
-                data.newSalonMessageCount > 0) && (
+            {pendingActionsCount > 0 && (
                 <div
-                    className="client-dashboard-banner"
+                    className="client-action-panel"
                     role="status"
                     aria-live="polite"
                 >
-                    <div className="client-dashboard-banner__messages">
-                        {data.pendingRescheduleCount > 0 && (
-                            <span className="client-dashboard-banner__msg">
-                                Salon zaproponował nowy termin — zaakceptuj lub
-                                odrzuć.
-                            </span>
-                        )}
-                        {data.newSalonMessageCount > 0 && (
-                            <span className="client-dashboard-banner__msg">
-                                Masz nową wiadomość od salonu.
-                            </span>
-                        )}
+                    <div className="client-action-panel__marker">
+                        {pendingActionsCount}
+                    </div>
+                    <div className="client-action-panel__content">
+                        <div className="client-action-panel__eyebrow">
+                            Do zrobienia
+                        </div>
+                        <h2 className="client-action-panel__title">
+                            {data.pendingRescheduleCount > 0
+                                ? 'Potwierdź zmianę terminu wizyty'
+                                : 'Odpowiedz na wiadomość z salonu'}
+                        </h2>
+                        <div className="client-action-panel__details">
+                            {data.pendingRescheduleCount > 0 ? (
+                                <span>
+                                    Salon zaproponował nowy termin. Wejdź w
+                                    wizytę i zaakceptuj albo anuluj zmianę.
+                                </span>
+                            ) : null}
+                            {data.newSalonMessageCount > 0 ? (
+                                <span>
+                                    Masz wiadomość przy wizycie. Otwórz
+                                    szczegóły i odpisz w wątku.
+                                </span>
+                            ) : null}
+                        </div>
                     </div>
                     <PanelButton
-                        href="/visits"
-                        size="sm"
-                        variant="secondary"
-                        className="flex-shrink-0"
+                        href={primaryActionHref}
+                        variant="primary"
+                        className="client-action-panel__button"
                     >
-                        Zobacz
+                        Przejdź do akcji
                     </PanelButton>
                 </div>
             )}
@@ -140,18 +170,30 @@ export default function ClientDashboard() {
                 >
                     {data.upcomingAppointment ? (
                         <div className="salonbw-appointments-list">
-                            <div className="salonbw-appointment-item salonbw-appointment-item--upcoming">
-                                <div className="salonbw-appointment-item__details">
-                                    <div className="salonbw-appointment-item__client">
+                            <div className="client-next-visit">
+                                <div className="client-next-visit__date">
+                                    <span>
+                                        {formatDay(
+                                            data.upcomingAppointment.startTime,
+                                        )}
+                                    </span>
+                                    <strong>
+                                        {formatHour(
+                                            data.upcomingAppointment.startTime,
+                                        )}
+                                    </strong>
+                                </div>
+                                <div className="client-next-visit__main">
+                                    <div className="client-next-visit__service">
                                         {data.upcomingAppointment.serviceName}
                                     </div>
-                                    <div className="salonbw-appointment-item__service text-muted small">
-                                        {formatDate(
+                                    <div className="client-next-visit__meta">
+                                        {formatDateTime(
                                             data.upcomingAppointment.startTime,
                                         )}
                                     </div>
                                     {data.upcomingAppointment.employeeName && (
-                                        <div className="salonbw-appointment-item__service text-muted small">
+                                        <div className="client-next-visit__meta">
                                             specjalista:{' '}
                                             {
                                                 data.upcomingAppointment
@@ -160,25 +202,36 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <ClientAppointmentActions
-                                    status={data.upcomingAppointment.status}
-                                    accepting={accepting.has(
-                                        data.upcomingAppointment.id,
-                                    )}
-                                    cancelling={cancelling.has(
-                                        data.upcomingAppointment.id,
-                                    )}
-                                    onAccept={() => {
-                                        void acceptReschedule(
-                                            data.upcomingAppointment!.id,
-                                        );
-                                    }}
-                                    onCancel={() =>
-                                        setConfirmCancelId(
-                                            data.upcomingAppointment!.id,
-                                        )
-                                    }
-                                />
+                                <div className="client-next-visit__actions">
+                                    <ClientAppointmentActions
+                                        status={data.upcomingAppointment.status}
+                                        accepting={accepting.has(
+                                            data.upcomingAppointment.id,
+                                        )}
+                                        cancelling={cancelling.has(
+                                            data.upcomingAppointment.id,
+                                        )}
+                                        onAccept={() => {
+                                            void acceptReschedule(
+                                                data.upcomingAppointment!.id,
+                                            );
+                                        }}
+                                        onCancel={() =>
+                                            setConfirmCancelId(
+                                                data.upcomingAppointment!.id,
+                                            )
+                                        }
+                                    />
+                                    <PanelButton
+                                        href={visitDetailsHref(
+                                            data.upcomingAppointment.id,
+                                        )}
+                                        size="sm"
+                                        variant="secondary"
+                                    >
+                                        Szczegóły
+                                    </PanelButton>
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -258,13 +311,7 @@ export default function ClientDashboard() {
                                 className="salonbw-appointment-item"
                             >
                                 <div className="salonbw-appointment-item__time">
-                                    {new Date(apt.startTime).toLocaleDateString(
-                                        'pl-PL',
-                                        {
-                                            day: 'numeric',
-                                            month: 'short',
-                                        },
-                                    )}
+                                    {formatDay(apt.startTime)}
                                 </div>
                                 <div className="salonbw-appointment-item__details">
                                     <div className="salonbw-appointment-item__client">
@@ -310,6 +357,13 @@ export default function ClientDashboard() {
                                     }}
                                     onCancel={() => setConfirmCancelId(apt.id)}
                                 />
+                                <PanelButton
+                                    href={visitDetailsHref(apt.id)}
+                                    size="sm"
+                                    variant="ghost"
+                                >
+                                    Szczegóły
+                                </PanelButton>
                             </div>
                         ))}
                     </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -115,14 +116,18 @@ function VisitRow({
     visit,
     onCancel,
     onAccept,
+    onOpen,
     onRefetch,
+    expanded,
     cancelling,
     accepting,
 }: {
     visit: ClientVisit;
     onCancel: (id: number) => void;
     onAccept: (id: number) => void;
+    onOpen: (id: number) => void;
     onRefetch: () => void;
+    expanded: boolean;
     cancelling: boolean;
     accepting: boolean;
 }) {
@@ -145,9 +150,20 @@ function VisitRow({
     };
 
     const isCompleted = visit.status === 'completed';
+    const isFuture = new Date(visit.startTime).getTime() > Date.now();
+    const canAskForNewTime =
+        isFuture && !CLIENT_ARCHIVE_STATUSES.has(visit.status);
 
     return (
-        <div className="salonbw-appointment-item">
+        <div
+            id={`visit-${visit.id}`}
+            className={[
+                'salonbw-appointment-item',
+                expanded ? 'salonbw-appointment-item--expanded' : '',
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        >
             <div className="salonbw-appointment-item__details">
                 <div className="salonbw-appointment-item__client">
                     {visit.serviceName}
@@ -203,24 +219,90 @@ function VisitRow({
                 onCancel={() => onCancel(visit.id)}
             />
 
+            <PanelButton
+                type="button"
+                size="sm"
+                variant="ghost"
+                aria-expanded={expanded}
+                aria-controls={`visit-details-${visit.id}`}
+                onClick={() => onOpen(visit.id)}
+            >
+                {expanded ? 'Zwiń' : 'Szczegóły'}
+            </PanelButton>
+
             <div className="salonbw-appointment-item__messages">
-                <button
-                    type="button"
-                    className="salonbw-appointment-item__message-toggle"
-                    aria-expanded={messagesOpen}
-                    aria-controls={`messages-panel-${visit.id}`}
-                    onClick={() => setMessagesOpen((v) => !v)}
-                >
-                    {messagesOpen
-                        ? 'Ukryj wiadomości z salonem'
-                        : 'Wiadomości z salonem'}
-                </button>
-                {messagesOpen && (
+                {expanded && (
                     <div
-                        id={`messages-panel-${visit.id}`}
+                        id={`visit-details-${visit.id}`}
                         className="salonbw-appointment-item__message-panel"
                     >
-                        <MessageThread appointmentId={visit.id} />
+                        <div className="visit-details-grid">
+                            <div>
+                                <div className="visit-details-label">
+                                    Notatki i zalecenia
+                                </div>
+                                <p className="visit-details-copy">
+                                    {visit.notes?.trim()
+                                        ? visit.notes
+                                        : 'Brak notatek przy tej wizycie.'}
+                                </p>
+                            </div>
+                            <div>
+                                <div className="visit-details-label">
+                                    Co możesz zrobić
+                                </div>
+                                <div className="visit-details-actions">
+                                    {canAskForNewTime ? (
+                                        <PanelButton
+                                            type="button"
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() =>
+                                                setMessagesOpen(true)
+                                            }
+                                        >
+                                            Poproś o zmianę terminu
+                                        </PanelButton>
+                                    ) : null}
+                                    {CLIENT_ARCHIVE_STATUSES.has(
+                                        visit.status,
+                                    ) ? (
+                                        <PanelButton
+                                            href={`/booking?serviceId=${visit.serviceId}`}
+                                            size="sm"
+                                            variant="secondary"
+                                        >
+                                            Umów ponownie
+                                        </PanelButton>
+                                    ) : null}
+                                    <PanelButton
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        aria-expanded={messagesOpen}
+                                        aria-controls={`messages-panel-${visit.id}`}
+                                        onClick={() =>
+                                            setMessagesOpen((v) => !v)
+                                        }
+                                    >
+                                        {messagesOpen
+                                            ? 'Ukryj wiadomości'
+                                            : 'Dodaj wiadomość'}
+                                    </PanelButton>
+                                </div>
+                            </div>
+                        </div>
+                        {canAskForNewTime && messagesOpen ? (
+                            <p className="visit-details-hint">
+                                Napisz, jaki dzień lub zakres godzin pasuje Ci
+                                lepiej. Salon odpowie w tym wątku.
+                            </p>
+                        ) : null}
+                        {messagesOpen && (
+                            <div id={`messages-panel-${visit.id}`}>
+                                <MessageThread appointmentId={visit.id} />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -230,12 +312,14 @@ function VisitRow({
 
 export default function VisitsPage() {
     const { role, apiFetch } = useAuth();
+    const router = useRouter();
     const toast = useToast();
     const [visits, setVisits] = useState<ClientVisit[] | null>(null);
     const [error, setError] = useState(false);
     const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
     const [cancelling, setCancelling] = useState<Set<number>>(new Set());
     const [accepting, setAccepting] = useState<Set<number>>(new Set());
+    const [openVisitId, setOpenVisitId] = useState<number | null>(null);
 
     const load = useCallback(() => {
         apiFetch<ClientVisit[]>('/dashboard/client/visits')
@@ -251,6 +335,34 @@ export default function VisitsPage() {
             load();
         }
     }, [role, load]);
+
+    useEffect(() => {
+        const rawVisitId = router.query.visitId;
+        const parsedVisitId =
+            typeof rawVisitId === 'string' ? Number(rawVisitId) : NaN;
+        if (Number.isFinite(parsedVisitId) && parsedVisitId > 0) {
+            setOpenVisitId(parsedVisitId);
+            window.setTimeout(() => {
+                document
+                    .getElementById(`visit-${parsedVisitId}`)
+                    ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }, 0);
+        }
+    }, [router.query.visitId]);
+
+    const openVisit = (id: number) => {
+        setOpenVisitId((current) => {
+            const next = current === id ? null : id;
+            void router.replace(
+                next ? `/visits?visitId=${id}` : '/visits',
+                undefined,
+                {
+                    shallow: true,
+                },
+            );
+            return next;
+        });
+    };
 
     const cancelVisit = async (id: number) => {
         setCancelling((prev) => new Set(prev).add(id));
@@ -384,7 +496,11 @@ export default function VisitsPage() {
                                                 onAccept={(id) =>
                                                     void acceptReschedule(id)
                                                 }
+                                                onOpen={openVisit}
                                                 onRefetch={load}
+                                                expanded={
+                                                    openVisitId === visit.id
+                                                }
                                                 cancelling={cancelling.has(
                                                     visit.id,
                                                 )}
