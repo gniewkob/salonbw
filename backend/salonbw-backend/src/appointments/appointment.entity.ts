@@ -89,6 +89,21 @@ export class Appointment {
     notes?: string;
 
     @Column({ nullable: true, type: 'text' })
+    clientComment?: string;
+
+    @Column({ nullable: true, type: 'text' })
+    staffRecommendations?: string;
+
+    @Column({ nullable: true, type: 'text' })
+    onlineAddonsSummary?: string;
+
+    @Column({ nullable: true, type: 'int' })
+    onlineTotalDurationMinutes?: number | null;
+
+    @Column({ default: false })
+    onlineDurationNeedsVerification: boolean;
+
+    @Column({ nullable: true, type: 'text' })
     internalNote?: string;
 
     // Additional services billed at finalization (beyond the primary service),

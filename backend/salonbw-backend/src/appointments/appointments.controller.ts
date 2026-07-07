@@ -161,6 +161,12 @@ export class AppointmentsController {
             endTime: apt.endTime,
             status: apt.status,
             notes: apt.notes ?? null,
+            clientComment: apt.clientComment ?? null,
+            staffRecommendations: apt.staffRecommendations ?? null,
+            onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
+            onlineTotalDurationMinutes: apt.onlineTotalDurationMinutes ?? null,
+            onlineDurationNeedsVerification:
+                apt.onlineDurationNeedsVerification ?? false,
         }));
     }
 

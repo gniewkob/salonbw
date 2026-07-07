@@ -35,6 +35,11 @@ const VISITS = [
         serviceName: 'Strzyżenie damskie',
         employeeName: 'Aleksandra',
         notes: null,
+        clientComment: 'chca to i koniec - mąż płaci',
+        onlineAddonsSummary:
+            'Botox na włosy (+180 min), Botox na włosy - włosy do pasa (+180 min)',
+        onlineTotalDurationMinutes: 405,
+        onlineDurationNeedsVerification: true,
         review: null,
     },
     {
@@ -45,7 +50,8 @@ const VISITS = [
         serviceId: 2,
         serviceName: 'Koloryzacja',
         employeeName: 'Aleksandra',
-        notes: 'Zalecenia: myć włosy co 3 dni',
+        notes: null,
+        staffRecommendations: 'myć włosy co 3 dni',
         review: null,
     },
     {
@@ -107,6 +113,14 @@ describe('VisitsPage', () => {
         ).toBeInTheDocument();
         // salon recommendations visible
         expect(screen.getByText(/myć włosy co 3 dni/)).toBeInTheDocument();
+        // booking comment and add-on metadata are separated, not merged as recommendations
+        expect(screen.getByText('Komentarz do rezerwacji')).toBeInTheDocument();
+        expect(
+            screen.getByText(/chca to i koniec - mąż płaci/),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Dodatkowe zabiegi')).toBeInTheDocument();
+        expect(screen.getByText('Łączny czas')).toBeInTheDocument();
+        expect(screen.queryByText('Status')).not.toBeInTheDocument();
         // existing review renders read-only stars + change button
         expect(screen.getByText(/Super!/)).toBeInTheDocument();
         expect(screen.getByText('Zmień ocenę')).toBeInTheDocument();

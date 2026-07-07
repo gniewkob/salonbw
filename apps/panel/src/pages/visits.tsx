@@ -27,6 +27,11 @@ interface ClientVisit {
     serviceName: string;
     employeeName: string;
     notes: string | null;
+    clientComment?: string | null;
+    staffRecommendations?: string | null;
+    onlineAddonsSummary?: string | null;
+    onlineTotalDurationMinutes?: number | null;
+    onlineDurationNeedsVerification?: boolean;
     review: { id: number; rating: number; comment: string | null } | null;
 }
 
@@ -78,6 +83,17 @@ function RescheduleChange({
                 </div>
             </div>
         </div>
+    );
+}
+
+function hasClientVisibleVisitNotes(visit: ClientVisit) {
+    return Boolean(
+        visit.notes?.trim() ||
+            visit.clientComment?.trim() ||
+            visit.staffRecommendations?.trim() ||
+            visit.onlineAddonsSummary?.trim() ||
+            visit.onlineTotalDurationMinutes ||
+            visit.onlineDurationNeedsVerification,
     );
 }
 
@@ -223,7 +239,22 @@ function VisitRow({
                         specjalista: {visit.employeeName}
                     </div>
                 )}
-                {visit.notes && <VisitNotes notes={visit.notes} compact />}
+                {hasClientVisibleVisitNotes(visit) && (
+                    <VisitNotes
+                        notes={visit.notes}
+                        compact
+                        appointmentStatus={visit.status}
+                        clientComment={visit.clientComment}
+                        staffRecommendations={visit.staffRecommendations}
+                        onlineAddonsSummary={visit.onlineAddonsSummary}
+                        onlineTotalDurationMinutes={
+                            visit.onlineTotalDurationMinutes
+                        }
+                        onlineDurationNeedsVerification={
+                            visit.onlineDurationNeedsVerification
+                        }
+                    />
+                )}
                 {visit.status === 'rescheduled_pending' && (
                     <RescheduleChange
                         previousStartTime={visit.reschedulePreviousStartTime}
@@ -299,7 +330,23 @@ function VisitRow({
                                 <div className="visit-details-label">
                                     Notatki i zalecenia
                                 </div>
-                                <VisitNotes notes={visit.notes} />
+                                <VisitNotes
+                                    notes={visit.notes}
+                                    appointmentStatus={visit.status}
+                                    clientComment={visit.clientComment}
+                                    staffRecommendations={
+                                        visit.staffRecommendations
+                                    }
+                                    onlineAddonsSummary={
+                                        visit.onlineAddonsSummary
+                                    }
+                                    onlineTotalDurationMinutes={
+                                        visit.onlineTotalDurationMinutes
+                                    }
+                                    onlineDurationNeedsVerification={
+                                        visit.onlineDurationNeedsVerification
+                                    }
+                                />
                             </div>
                             <div>
                                 <div className="visit-details-label">

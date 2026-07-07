@@ -58,6 +58,11 @@ export interface Appointment {
     finalizedAt?: string;
     finalizedBy?: { id: number; name: string };
     notes?: string;
+    clientComment?: string | null;
+    staffRecommendations?: string | null;
+    onlineAddonsSummary?: string | null;
+    onlineTotalDurationMinutes?: number | null;
+    onlineDurationNeedsVerification?: boolean;
     internalNote?: string;
     extraServices?: {
         serviceId: number;
@@ -354,6 +359,11 @@ export interface ClientDashboardResponse {
         status: string;
         employeeName?: string;
         notes?: string | null;
+        clientComment?: string | null;
+        staffRecommendations?: string | null;
+        onlineAddonsSummary?: string | null;
+        onlineTotalDurationMinutes?: number | null;
+        onlineDurationNeedsVerification?: boolean;
     }[];
     pendingRescheduleCount: number;
     newSalonMessageCount: number;

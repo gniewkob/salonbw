@@ -105,6 +105,50 @@ export class RecentAppointmentDto {
     @IsOptional()
     @IsString()
     notes?: string | null;
+
+    @ApiProperty({
+        description: 'Comment written by the client while booking',
+        required: false,
+        nullable: true,
+    })
+    @IsOptional()
+    @IsString()
+    clientComment?: string | null;
+
+    @ApiProperty({
+        description: 'Staff recommendations saved after finalizing the visit',
+        required: false,
+        nullable: true,
+    })
+    @IsOptional()
+    @IsString()
+    staffRecommendations?: string | null;
+
+    @ApiProperty({
+        description: 'Online add-on services selected with the booking',
+        required: false,
+        nullable: true,
+    })
+    @IsOptional()
+    @IsString()
+    onlineAddonsSummary?: string | null;
+
+    @ApiProperty({
+        description: 'Total duration after online add-ons were included',
+        required: false,
+        nullable: true,
+    })
+    @IsOptional()
+    @IsNumber()
+    onlineTotalDurationMinutes?: number | null;
+
+    @ApiProperty({
+        description:
+            'Whether staff still need to verify online add-on duration',
+        required: false,
+    })
+    @IsOptional()
+    onlineDurationNeedsVerification?: boolean;
 }
 
 export class ClientDashboardDto {

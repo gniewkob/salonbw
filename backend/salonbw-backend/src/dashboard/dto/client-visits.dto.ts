@@ -18,6 +18,16 @@ export class ClientVisitDto {
     employeeName: string;
     /** Client-visible visit note / salon recommendations. */
     notes: string | null;
+    /** Comment written by the client while booking. */
+    clientComment: string | null;
+    /** Staff recommendations saved after finalizing the visit. */
+    staffRecommendations: string | null;
+    /** Online add-on services selected with the booking. */
+    onlineAddonsSummary: string | null;
+    /** Total duration after online add-ons were included. */
+    onlineTotalDurationMinutes: number | null;
+    /** Whether staff still need to verify online add-on duration. */
+    onlineDurationNeedsVerification: boolean;
     /** The client's own review of this visit, if any. */
     review: {
         id: number;

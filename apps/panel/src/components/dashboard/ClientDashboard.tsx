@@ -364,8 +364,30 @@ export default function ClientDashboard() {
                                             {apt.employeeName}
                                         </div>
                                     )}
-                                    {apt.notes && (
-                                        <VisitNotes notes={apt.notes} compact />
+                                    {(apt.notes ||
+                                        apt.clientComment ||
+                                        apt.staffRecommendations ||
+                                        apt.onlineAddonsSummary ||
+                                        apt.onlineTotalDurationMinutes ||
+                                        apt.onlineDurationNeedsVerification) && (
+                                        <VisitNotes
+                                            notes={apt.notes}
+                                            compact
+                                            appointmentStatus={apt.status}
+                                            clientComment={apt.clientComment}
+                                            staffRecommendations={
+                                                apt.staffRecommendations
+                                            }
+                                            onlineAddonsSummary={
+                                                apt.onlineAddonsSummary
+                                            }
+                                            onlineTotalDurationMinutes={
+                                                apt.onlineTotalDurationMinutes
+                                            }
+                                            onlineDurationNeedsVerification={
+                                                apt.onlineDurationNeedsVerification
+                                            }
+                                        />
                                     )}
                                     {apt.status === 'rescheduled_pending' &&
                                         renderRescheduleChange(

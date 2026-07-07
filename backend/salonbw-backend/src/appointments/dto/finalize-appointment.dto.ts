@@ -194,7 +194,7 @@ export class FinalizeAppointmentDto {
 
     @ApiProperty({
         description:
-            'Client-visible recommendations shown to the client under the completed visit (appended to appointment.notes).',
+            'Client-visible recommendations shown to the client under the completed visit.',
         required: false,
     })
     @IsString()

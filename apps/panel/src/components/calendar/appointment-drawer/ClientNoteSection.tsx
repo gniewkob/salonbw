@@ -6,9 +6,8 @@ interface Props {
     appointment: Appointment | null | undefined;
 }
 
-// Shared, client-visible visit note. The client can write it when booking
-// (read here by staff) and staff can extend it — the client sees the result
-// on their dashboard ("Ostatnie wizyty"). This is distinct from the
+// Client booking comment, visible in the client's visit details. This is
+// distinct from staff recommendations saved at finalization and from the
 // staff-only "Notatka wewnętrzna" (appointment.internalNote).
 export default function ClientNoteSection({ appointment }: Props) {
     const { apiFetch } = useAuth();
@@ -18,7 +17,7 @@ export default function ClientNoteSection({ appointment }: Props) {
     const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        setNote(appointment?.notes ?? '');
+        setNote(appointment?.clientComment ?? appointment?.notes ?? '');
         setSaved(false);
         return () => {
             if (savedTimer.current) clearTimeout(savedTimer.current);
@@ -50,7 +49,7 @@ export default function ClientNoteSection({ appointment }: Props) {
                 className="form-label form-label-sm mb-1"
                 htmlFor="appointment-client-note"
             >
-                Notatka klienta / widoczna dla klienta
+                Komentarz do rezerwacji
             </label>
             <textarea
                 id="appointment-client-note"
@@ -59,7 +58,7 @@ export default function ClientNoteSection({ appointment }: Props) {
                 maxLength={1000}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Uwagi od klienta przy rezerwacji; dopisana tu notatka jest widoczna dla klienta przy jego wizytach…"
+                placeholder="Uwagi od klienta przy rezerwacji. Zalecenia po wizycie wpisz przy finalizacji."
             />
             <div className="d-flex align-items-center gap-2 mt-1">
                 <button
@@ -68,7 +67,7 @@ export default function ClientNoteSection({ appointment }: Props) {
                     onClick={() => void handleSave()}
                     disabled={saving}
                 >
-                    {saving ? 'Zapisywanie…' : 'Zapisz notatkę klienta'}
+                    {saving ? 'Zapisywanie…' : 'Zapisz komentarz'}
                 </button>
                 {saved && <span className="small text-success">Zapisano</span>}
             </div>

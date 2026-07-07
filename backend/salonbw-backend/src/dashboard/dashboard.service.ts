@@ -70,6 +70,12 @@ export class DashboardService {
             serviceName: apt.service?.name ?? '',
             employeeName: apt.employee?.name ?? apt.employee?.email ?? '',
             notes: apt.notes ?? null,
+            clientComment: apt.clientComment ?? null,
+            staffRecommendations: apt.staffRecommendations ?? null,
+            onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
+            onlineTotalDurationMinutes: apt.onlineTotalDurationMinutes ?? null,
+            onlineDurationNeedsVerification:
+                apt.onlineDurationNeedsVerification ?? false,
             review: reviewByAppointment.get(apt.id) ?? null,
         }));
     }
@@ -318,6 +324,13 @@ export class DashboardService {
                 employeeName:
                     apt.employee?.name ?? apt.employee?.email ?? undefined,
                 notes: apt.notes ?? null,
+                clientComment: apt.clientComment ?? null,
+                staffRecommendations: apt.staffRecommendations ?? null,
+                onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
+                onlineTotalDurationMinutes:
+                    apt.onlineTotalDurationMinutes ?? null,
+                onlineDurationNeedsVerification:
+                    apt.onlineDurationNeedsVerification ?? false,
             })),
             pendingRescheduleCount: actionSignals.pendingRescheduleCount,
             newSalonMessageCount: actionSignals.newSalonMessageCount,

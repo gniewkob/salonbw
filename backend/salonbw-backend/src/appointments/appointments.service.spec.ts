@@ -129,6 +129,9 @@ describe('AppointmentsService', () => {
                 discountCents: 0,
             },
         ]);
+        expect(result.onlineAddonsSummary).toBe('Pielęgnacja (+30 min)');
+        expect(result.onlineTotalDurationMinutes).toBe(60);
+        expect(result.onlineDurationNeedsVerification).toBe(true);
         expect(result.notes).toContain('Łączny czas wizyty: 60 min');
         expect(result.notes).toContain('do weryfikacji przy potwierdzeniu');
     });
@@ -746,11 +749,16 @@ describe('AppointmentsService', () => {
                 tipAmountCents: 1500,
                 discountCents: 500,
                 note: 'test finalize',
+                clientNote: 'myć włosy co 3 dni',
             },
             users[1],
         );
 
         expect(finalized?.status).toBe(AppointmentStatus.Completed);
+        expect(finalized?.staffRecommendations).toBe('myć włosy co 3 dni');
+        expect(finalized?.notes).toContain(
+            'Zalecenia po wizycie: myć włosy co 3 dni',
+        );
         expect(createFromAppointmentMock).toHaveBeenCalledTimes(1);
         expect(createSaleMock).not.toHaveBeenCalled();
     });

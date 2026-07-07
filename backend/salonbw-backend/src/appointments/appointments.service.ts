@@ -47,6 +47,14 @@ type CreateAppointmentInput = Partial<Appointment> & {
     addonServiceIds?: number[];
 };
 
+type ClientVisibleNoteParts = {
+    clientComment?: string | null;
+    staffRecommendations?: string | null;
+    onlineAddonsSummary?: string | null;
+    onlineTotalDurationMinutes?: number | null;
+    onlineDurationNeedsVerification?: boolean | null;
+};
+
 @Injectable()
 export class AppointmentsService {
     private readonly logger = new Logger(AppointmentsService.name);
@@ -155,19 +163,44 @@ export class AppointmentsService {
         return uniqueIds.map((id) => services.find((s) => s.id === id)!);
     }
 
-    private buildOnlineAddonNote(
-        addons: SalonService[],
-        totalDuration: number,
-        existingNote?: string,
-    ) {
-        if (addons.length === 0) return existingNote;
-        const addonSummary = addons
-            .map((addon) => `${addon.name} (+${addon.duration} min)`)
-            .join(', ');
-        const verificationNote = `Dodatki wybrane online: ${addonSummary}. Łączny czas wizyty: ${totalDuration} min — do weryfikacji przy potwierdzeniu.`;
-        return [existingNote?.trim(), verificationNote]
-            .filter(Boolean)
-            .join('\n\n');
+    private normalizeOptionalText(value?: string | null): string | undefined {
+        const trimmed = value?.trim();
+        return trimmed || undefined;
+    }
+
+    private composeClientVisibleNotes(
+        appointment: ClientVisibleNoteParts,
+    ): string | undefined {
+        const parts: string[] = [];
+        const clientComment = this.normalizeOptionalText(
+            appointment.clientComment,
+        );
+        if (clientComment) parts.push(clientComment);
+
+        const onlineAddonsSummary = this.normalizeOptionalText(
+            appointment.onlineAddonsSummary,
+        );
+        if (onlineAddonsSummary) {
+            let onlineNote = `Dodatki wybrane online: ${onlineAddonsSummary}.`;
+            if (appointment.onlineTotalDurationMinutes) {
+                onlineNote += ` Łączny czas wizyty: ${appointment.onlineTotalDurationMinutes} min`;
+                if (appointment.onlineDurationNeedsVerification) {
+                    onlineNote += ' — do weryfikacji przy potwierdzeniu.';
+                } else {
+                    onlineNote += '.';
+                }
+            }
+            parts.push(onlineNote);
+        }
+
+        const staffRecommendations = this.normalizeOptionalText(
+            appointment.staffRecommendations,
+        );
+        if (staffRecommendations) {
+            parts.push(`Zalecenia po wizycie: ${staffRecommendations}`);
+        }
+
+        return parts.join('\n\n') || undefined;
     }
 
     /**
@@ -287,6 +320,9 @@ export class AppointmentsService {
         );
         const totalDuration = baseDuration + addonDuration;
         data.endTime = this.computeEnd(data.startTime, totalDuration);
+        data.clientComment = this.normalizeOptionalText(
+            data.clientComment ?? data.notes,
+        );
         if (addonServices.length > 0) {
             data.extraServices = addonServices.map((addon) => ({
                 serviceId: addon.id,
@@ -294,12 +330,13 @@ export class AppointmentsService {
                 priceCents: Math.max(0, Math.round(Number(addon.price) * 100)),
                 discountCents: 0,
             }));
-            data.notes = this.buildOnlineAddonNote(
-                addonServices,
-                totalDuration,
-                data.notes,
-            );
+            data.onlineAddonsSummary = addonServices
+                .map((addon) => `${addon.name} (+${addon.duration} min)`)
+                .join(', ');
+            data.onlineTotalDurationMinutes = totalDuration;
+            data.onlineDurationNeedsVerification = true;
         }
+        data.notes = this.composeClientVisibleNotes(data);
         delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
         // Staff may overlap (if the setting allows); online self-booking
@@ -1179,6 +1216,13 @@ export class AppointmentsService {
         const paidAmount = dto.paidAmountCents / 100;
         const tipAmount = dto.tipAmountCents ? dto.tipAmountCents / 100 : 0;
         const discount = dto.discountCents ? dto.discountCents / 100 : 0;
+        const staffRecommendations =
+            this.normalizeOptionalText(dto.clientNote) ??
+            appointment.staffRecommendations;
+        const clientVisibleNotes = this.composeClientVisibleNotes({
+            ...appointment,
+            staffRecommendations,
+        });
 
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {
@@ -1196,14 +1240,8 @@ export class AppointmentsService {
                             ? `${appointment.internalNote}\n${dto.note}`
                             : dto.note
                         : appointment.internalNote,
-                    // Client-visible recommendations are appended to the shared
-                    // notes field (the client sees it under their completed
-                    // visit on the dashboard).
-                    notes: dto.clientNote?.trim()
-                        ? appointment.notes
-                            ? `${appointment.notes}\n${dto.clientNote.trim()}`
-                            : dto.clientNote.trim()
-                        : appointment.notes,
+                    staffRecommendations,
+                    notes: clientVisibleNotes,
                     extraServices: extraServices ?? appointment.extraServices,
                 });
 
@@ -1411,8 +1449,8 @@ export class AppointmentsService {
         if (!appointment) {
             throw new BadRequestException('Appointment not found');
         }
-        const trimmed = notes?.trim();
-        appointment.notes = trimmed ? trimmed : undefined;
+        appointment.clientComment = this.normalizeOptionalText(notes);
+        appointment.notes = this.composeClientVisibleNotes(appointment);
         return this.appointmentsRepository.save(appointment);
     }
 
