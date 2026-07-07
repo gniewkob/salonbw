@@ -1562,8 +1562,14 @@ tr.customer-row:hover .customers-drag-handle {
     text-decoration: underline;
 }
 
+.customer-communication-channels {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .customer-communication-table {
     width: 100%;
+    min-width: 560px;
     border-collapse: collapse;
     font-size: 12px;
     background: #fff;
@@ -1586,7 +1592,7 @@ tr.customer-row:hover .customers-drag-handle {
 
 .customer-communication-table .col-center {
     text-align: center;
-    width: 110px;
+    width: 96px;
 }
 
 .customer-communication-check--ok {
@@ -1601,6 +1607,28 @@ tr.customer-row:hover .customers-drag-handle {
     height: 14px;
 }
 
+.customer-communication-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 28px;
+    padding: 0 8px;
+    color: #6a737c;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid #d9dfe5;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.customer-communication-status--ok {
+    color: #0d0d0d;
+    border-color: var(--salon-accent, #b4b8be);
+    background: #f2f4f6;
+}
+
 .customer-communication-consents {
     margin-top: 10px;
     max-width: 860px;
@@ -1608,8 +1636,8 @@ tr.customer-row:hover .customers-drag-handle {
 
 .customer-communication-consent {
     display: grid;
-    grid-template-columns: 22px 1fr;
-    gap: 10px;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
     align-items: flex-start;
     padding: 10px 0;
     border-top: 1px solid #edf1f4;
@@ -1621,8 +1649,7 @@ tr.customer-row:hover .customers-drag-handle {
 
 .customer-communication-consent__icon {
     padding-top: 2px;
-    width: 22px;
-    text-align: center;
+    width: 44px;
 }
 
 .customer-communication-consent__ok {
@@ -1638,6 +1665,23 @@ tr.customer-row:hover .customers-drag-handle {
     font-size: 12px;
     color: #4f585f;
     line-height: 1.45;
+}
+
+.customer-communication-consent__text strong {
+    display: block;
+    color: #0d0d0d;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.customer-communication-consent__text p {
+    margin: 0;
+}
+
+.customer-communication-consent__text small {
+    display: block;
+    margin-top: 4px;
+    color: #6a737c;
 }
 
 .customer-communication-history-switcher {

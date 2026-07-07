@@ -115,7 +115,10 @@ export default function RegisterPage() {
         }
         setSubmitting(true);
         try {
-            await register(form);
+            await register({
+                ...form,
+                whatsappConsent: form.smsConsent,
+            });
             const profile = await apiFetch<User>('/users/profile');
             void router.push(getPostLoginRoute(profile?.role));
         } catch (err: unknown) {

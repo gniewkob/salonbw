@@ -90,6 +90,7 @@ export class UsersService {
             termsConsent,
             termsConsentDate: termsConsent ? new Date() : undefined,
             smsConsent: dto.smsConsent ?? false,
+            whatsappConsent: dto.whatsappConsent ?? dto.smsConsent ?? false,
             emailConsent: dto.emailConsent ?? false,
         });
 

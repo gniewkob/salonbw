@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import type { Gender } from '@/types';
 
 export type CustomerFormDraft = {
@@ -21,8 +20,12 @@ export type CustomerFormDraft = {
     cardNumber: string;
     groups: string;
     description: string;
+    gdprConsent: boolean;
+    termsConsent: boolean;
+    notifyPanel: boolean;
     emailConsent: boolean;
     smsConsent: boolean;
+    whatsappConsent: boolean;
     /** Standing discount percent (0–100) as a string; '' = none. Admin-set. */
     discountPercent?: string;
 };
@@ -48,15 +51,6 @@ export default function CustomerFormFields({
     fieldIdPrefix,
     autoFocusFirstName,
 }: Props) {
-    const consentCheckboxRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (consentCheckboxRef.current) {
-            consentCheckboxRef.current.indeterminate =
-                values.emailConsent !== values.smsConsent;
-        }
-    }, [values.emailConsent, values.smsConsent]);
-
     return (
         <>
             <div className="customer-new-section" id="customer-form-basic">
@@ -145,18 +139,30 @@ export default function CustomerFormFields({
                     </div>
                 </div>
                 <div className="customer-new-row customer-new-row--checkbox">
-                    <label htmlFor={`${fieldIdPrefix}-consent`}>
+                    <label htmlFor={`${fieldIdPrefix}-gdpr-consent`}>
                         Wyrażam zgodę na przetwarzanie danych osobowych
                     </label>
                     <input
-                        ref={consentCheckboxRef}
-                        id={`${fieldIdPrefix}-consent`}
+                        id={`${fieldIdPrefix}-gdpr-consent`}
                         type="checkbox"
-                        checked={values.emailConsent && values.smsConsent}
-                        onChange={(e) => {
-                            onChange('emailConsent', e.target.checked);
-                            onChange('smsConsent', e.target.checked);
-                        }}
+                        checked={values.gdprConsent}
+                        onChange={(e) =>
+                            onChange('gdprConsent', e.target.checked)
+                        }
+                        disabled={disabled}
+                    />
+                </div>
+                <div className="customer-new-row customer-new-row--checkbox">
+                    <label htmlFor={`${fieldIdPrefix}-terms-consent`}>
+                        Akceptacja regulaminu salonu
+                    </label>
+                    <input
+                        id={`${fieldIdPrefix}-terms-consent`}
+                        type="checkbox"
+                        checked={values.termsConsent}
+                        onChange={(e) =>
+                            onChange('termsConsent', e.target.checked)
+                        }
                         disabled={disabled}
                     />
                 </div>
@@ -361,22 +367,22 @@ export default function CustomerFormFields({
                     </small>
                 </div>
                 <div className="customer-new-row customer-new-row--checkbox">
-                    <label htmlFor={`${fieldIdPrefix}-email-consent`}>
-                        Zgoda na kontakt email
+                    <label htmlFor={`${fieldIdPrefix}-notify-panel`}>
+                        Powiadomienia w panelu klienta
                     </label>
                     <input
-                        id={`${fieldIdPrefix}-email-consent`}
+                        id={`${fieldIdPrefix}-notify-panel`}
                         type="checkbox"
-                        checked={values.emailConsent}
+                        checked={values.notifyPanel}
                         onChange={(e) =>
-                            onChange('emailConsent', e.target.checked)
+                            onChange('notifyPanel', e.target.checked)
                         }
                         disabled={disabled}
                     />
                 </div>
                 <div className="customer-new-row customer-new-row--checkbox">
                     <label htmlFor={`${fieldIdPrefix}-sms-consent`}>
-                        Zgoda na kontakt SMS
+                        Zgoda na marketing SMS
                     </label>
                     <input
                         id={`${fieldIdPrefix}-sms-consent`}
@@ -384,6 +390,34 @@ export default function CustomerFormFields({
                         checked={values.smsConsent}
                         onChange={(e) =>
                             onChange('smsConsent', e.target.checked)
+                        }
+                        disabled={disabled}
+                    />
+                </div>
+                <div className="customer-new-row customer-new-row--checkbox">
+                    <label htmlFor={`${fieldIdPrefix}-whatsapp-consent`}>
+                        Zgoda na marketing WhatsApp
+                    </label>
+                    <input
+                        id={`${fieldIdPrefix}-whatsapp-consent`}
+                        type="checkbox"
+                        checked={values.whatsappConsent}
+                        onChange={(e) =>
+                            onChange('whatsappConsent', e.target.checked)
+                        }
+                        disabled={disabled}
+                    />
+                </div>
+                <div className="customer-new-row customer-new-row--checkbox">
+                    <label htmlFor={`${fieldIdPrefix}-email-consent`}>
+                        Zgoda na marketing email
+                    </label>
+                    <input
+                        id={`${fieldIdPrefix}-email-consent`}
+                        type="checkbox"
+                        checked={values.emailConsent}
+                        onChange={(e) =>
+                            onChange('emailConsent', e.target.checked)
                         }
                         disabled={disabled}
                     />

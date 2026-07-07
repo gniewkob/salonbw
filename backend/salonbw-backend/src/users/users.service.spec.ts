@@ -110,6 +110,7 @@ describe('UsersService', () => {
                 termsConsent: false,
                 termsConsentDate: undefined,
                 smsConsent: false,
+                whatsappConsent: false,
                 emailConsent: false,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
@@ -162,6 +163,7 @@ describe('UsersService', () => {
                 termsConsent: false,
                 termsConsentDate: undefined,
                 smsConsent: false,
+                whatsappConsent: false,
                 emailConsent: false,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);

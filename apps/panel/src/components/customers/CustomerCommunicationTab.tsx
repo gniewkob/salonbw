@@ -18,6 +18,28 @@ type MessageTypeRow = {
     label: string;
 };
 
+type ConsentItem = {
+    key: string;
+    label: string;
+    checked: boolean;
+    date?: string;
+    description: string;
+};
+
+function StatusBadge({ enabled }: { enabled: boolean }) {
+    return (
+        <span
+            className={`customer-communication-status ${
+                enabled
+                    ? 'customer-communication-status--ok'
+                    : 'customer-communication-status--off'
+            }`}
+        >
+            {enabled ? 'tak' : 'nie'}
+        </span>
+    );
+}
+
 export default function CustomerCommunicationTab({ customer }: Props) {
     const [historyChannel, setHistoryChannel] = useState<'sms' | 'email'>(
         'sms',
@@ -70,6 +92,51 @@ export default function CustomerCommunicationTab({ customer }: Props) {
     const emailItems = Array.isArray(emailHistory.data?.items)
         ? emailHistory.data.items
         : [];
+    const notifyPanel = customer.notifyPanel ?? true;
+    const smsConsent = Boolean(customer.smsConsent);
+    const whatsappConsent = Boolean(customer.whatsappConsent);
+    const emailConsent = Boolean(customer.emailConsent);
+    const gdprConsent = Boolean(customer.gdprConsent);
+    const termsConsent = Boolean(customer.termsConsent);
+    const consentItems: ConsentItem[] = [
+        {
+            key: 'gdpr',
+            label: 'Przetwarzanie danych osobowych (RODO)',
+            checked: gdprConsent,
+            date: customer.gdprConsentDate,
+            description:
+                'Zgoda wymagana do obsługi konta klienta i realizacji usług.',
+        },
+        {
+            key: 'terms',
+            label: 'Akceptacja regulaminu salonu',
+            checked: termsConsent,
+            date: customer.termsConsentDate,
+            description:
+                'Potwierdzenie zapoznania się z zasadami rezerwacji i świadczenia usług.',
+        },
+        {
+            key: 'sms',
+            label: 'Marketing SMS',
+            checked: smsConsent,
+            description:
+                'Zgoda na otrzymywanie informacji marketingowych drogą SMS.',
+        },
+        {
+            key: 'whatsapp',
+            label: 'Marketing WhatsApp',
+            checked: whatsappConsent,
+            description:
+                'Zgoda na otrzymywanie informacji marketingowych przez WhatsApp.',
+        },
+        {
+            key: 'email',
+            label: 'Marketing email',
+            checked: emailConsent,
+            description:
+                'Zgoda na otrzymywanie informacji marketingowych drogą e-mail.',
+        },
+    ];
 
     return (
         <div className="customer-tab-content customer-communication-tab">
@@ -80,10 +147,10 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                     </div>
                     <div className="customer-communication-actions">
                         <Link
-                            href={`/customers/${customer.id}/edit`}
+                            href={`/customers/${customer.id}/edit#customer-form-advanced`}
                             className="btn btn-outline-secondary btn-sm"
                         >
-                            Edytuj
+                            Edytuj zgody
                         </Link>
                     </div>
                 </div>
@@ -147,7 +214,13 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                             <tr>
                                 <th scope="col">Typ wiadomości</th>
                                 <th scope="col" className="col-center">
+                                    Panel
+                                </th>
+                                <th scope="col" className="col-center">
                                     SMS
+                                </th>
+                                <th scope="col" className="col-center">
+                                    WhatsApp
                                 </th>
                                 <th scope="col" className="col-center">
                                     Email
@@ -159,24 +232,18 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                                 <tr key={r.key}>
                                     <td className="col-type">{r.label}</td>
                                     <td className="col-center">
-                                        {customer.smsConsent ? (
-                                            <i
-                                                className="fa fa-check customer-communication-check customer-communication-check--ok"
-                                                aria-hidden="true"
-                                            />
-                                        ) : (
-                                            <span className="customer-communication-check customer-communication-check--empty" />
-                                        )}
+                                        <StatusBadge enabled={notifyPanel} />
                                     </td>
                                     <td className="col-center">
-                                        {customer.emailConsent ? (
-                                            <i
-                                                className="fa fa-check customer-communication-check customer-communication-check--ok"
-                                                aria-hidden="true"
-                                            />
-                                        ) : (
-                                            <span className="customer-communication-check customer-communication-check--empty" />
-                                        )}
+                                        <StatusBadge enabled={smsConsent} />
+                                    </td>
+                                    <td className="col-center">
+                                        <StatusBadge
+                                            enabled={whatsappConsent}
+                                        />
+                                    </td>
+                                    <td className="col-center">
+                                        <StatusBadge enabled={emailConsent} />
                                     </td>
                                 </tr>
                             ))}
@@ -191,55 +258,25 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                 </div>
 
                 <div className="customer-communication-consents">
-                    <div className="customer-communication-consent">
-                        <div className="customer-communication-consent__icon">
-                            {customer.gdprConsent ? (
-                                <i
-                                    className="fa fa-check customer-communication-consent__ok"
-                                    aria-hidden="true"
-                                />
-                            ) : (
-                                <i
-                                    className="fa fa-times customer-communication-consent__no"
-                                    aria-hidden="true"
-                                />
-                            )}
-                        </div>
-                        <div className="customer-communication-consent__text">
-                            Administratorem Pani/a danych osobowych jest: Salon
-                            Fryzjerski Black&White Aleksandra Bodora z siedzibą
-                            Kopernika 13, 41-922 Radzionków, PL, NIP:
-                            6262231181, e-mail: kontakt@salon-bw.pl.
-                            <div className="mt-6">
-                                1. Administrator przetwarza dane osobowe w celu:
-                                realizacji umowy (wykonania usługi).
+                    {consentItems.map((item) => (
+                        <div
+                            className="customer-communication-consent"
+                            key={item.key}
+                        >
+                            <div className="customer-communication-consent__icon">
+                                <StatusBadge enabled={item.checked} />
+                            </div>
+                            <div className="customer-communication-consent__text">
+                                <strong>{item.label}</strong>
+                                <p>{item.description}</p>
+                                {item.date ? (
+                                    <small>
+                                        Data zgody: {fmtDateTime(item.date)}
+                                    </small>
+                                ) : null}
                             </div>
                         </div>
-                    </div>
-
-                    <div className="customer-communication-consent">
-                        <div className="customer-communication-consent__icon">
-                            {customer.smsConsent || customer.emailConsent ? (
-                                <i
-                                    className="fa fa-check customer-communication-consent__ok"
-                                    aria-hidden="true"
-                                />
-                            ) : (
-                                <i
-                                    className="fa fa-times customer-communication-consent__no"
-                                    aria-hidden="true"
-                                />
-                            )}
-                        </div>
-                        <div className="customer-communication-consent__text">
-                            Wyrażam zgodę na przetwarzanie danych osobowych
-                            przez Salon Fryzjerski Black&White Aleksandra Bodora
-                            z siedzibą Kopernika 13, 41-922 Radzionków, PL, NIP:
-                            6262231181, w celu przesyłania informacji handlowych
-                            na mój adres e-mail oraz numer telefonu podany
-                            powyżej w formularzu kontaktowym.
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 

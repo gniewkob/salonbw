@@ -104,9 +104,14 @@ describe('customers crash guards', () => {
                     name: 'Jan Kowalski',
                     email: 'jan@example.com',
                     phone: '111222333',
+                    notifyPanel: true,
                     smsConsent: true,
+                    whatsappConsent: false,
                     emailConsent: true,
                     gdprConsent: true,
+                    gdprConsentDate: '2026-01-01T00:00:00.000Z',
+                    termsConsent: true,
+                    termsConsentDate: '2026-01-01T00:00:00.000Z',
                     createdAt: '2026-01-01T00:00:00.000Z',
                     updatedAt: '2026-01-01T00:00:00.000Z',
                 }}
@@ -114,6 +119,10 @@ describe('customers crash guards', () => {
         );
 
         expect(screen.getByText('Historia komunikacji')).toBeInTheDocument();
+        expect(screen.getByText('WhatsApp')).toBeInTheDocument();
+        expect(
+            screen.getByText('Akceptacja regulaminu salonu'),
+        ).toBeInTheDocument();
         expect(
             screen.getByText('Brak wysłanych SMS do tego klienta.'),
         ).toBeInTheDocument();

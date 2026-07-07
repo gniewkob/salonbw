@@ -47,8 +47,12 @@ export default function NewCustomerPage() {
         cardNumber: '',
         groups: '',
         description: '',
+        gdprConsent: false,
+        termsConsent: false,
+        notifyPanel: true,
         emailConsent: false,
         smsConsent: false,
+        whatsappConsent: false,
     });
 
     const [dupSearch, setDupSearch] = useState('');
@@ -166,8 +170,12 @@ export default function NewCustomerPage() {
                 city: form.city.trim() || undefined,
                 postalCode: form.postalCode.trim() || undefined,
                 description: form.description.trim() || undefined,
+                gdprConsent: form.gdprConsent,
+                termsConsent: form.termsConsent,
+                notifyPanel: form.notifyPanel,
                 emailConsent: form.emailConsent,
                 smsConsent: form.smsConsent,
+                whatsappConsent: form.whatsappConsent,
             });
         } catch {
             // onError in useCreateCustomer already shows the toast
@@ -194,8 +202,12 @@ export default function NewCustomerPage() {
                 cardNumber: '',
                 groups: '',
                 description: '',
+                gdprConsent: false,
+                termsConsent: false,
+                notifyPanel: true,
                 emailConsent: false,
                 smsConsent: false,
+                whatsappConsent: false,
             });
             return;
         }

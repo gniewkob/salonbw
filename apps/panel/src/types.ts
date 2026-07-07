@@ -463,10 +463,14 @@ export interface Customer {
     city?: string;
     postalCode?: string;
     description?: string;
+    notifyPanel?: boolean;
     smsConsent: boolean;
+    whatsappConsent?: boolean;
     emailConsent: boolean;
     gdprConsent: boolean;
     gdprConsentDate?: string;
+    termsConsent?: boolean;
+    termsConsentDate?: string;
     createdAt: string;
     updatedAt: string;
     lastVisitDate?: string | null;

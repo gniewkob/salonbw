@@ -87,6 +87,15 @@ export class CreateUserDto {
     @IsBoolean()
     @IsOptional()
     @ApiProperty({
+        description: 'WhatsApp marketing consent',
+        required: false,
+        example: false,
+    })
+    whatsappConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
         description: 'Email marketing consent',
         required: false,
         example: false,

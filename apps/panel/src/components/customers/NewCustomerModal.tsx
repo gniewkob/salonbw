@@ -28,8 +28,12 @@ const EMPTY_FORM: CustomerFormDraft = {
     cardNumber: '',
     groups: '',
     description: '',
+    gdprConsent: false,
+    termsConsent: false,
+    notifyPanel: true,
     emailConsent: false,
     smsConsent: false,
+    whatsappConsent: false,
 };
 
 interface Props {
@@ -87,8 +91,12 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                 city: form.city.trim() || undefined,
                 postalCode: form.postalCode.trim() || undefined,
                 description: form.description.trim() || undefined,
+                gdprConsent: form.gdprConsent,
+                termsConsent: form.termsConsent,
+                notifyPanel: form.notifyPanel,
                 emailConsent: form.emailConsent,
                 smsConsent: form.smsConsent,
+                whatsappConsent: form.whatsappConsent,
             });
             setForm(EMPTY_FORM);
             setDupSearch('');

@@ -215,7 +215,27 @@ export class CreateCustomerDto {
     @ApiPropertyOptional()
     @IsOptional()
     @IsBoolean()
+    whatsappConsent?: boolean;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsBoolean()
     emailConsent?: boolean;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsBoolean()
+    notifyPanel?: boolean;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsBoolean()
+    gdprConsent?: boolean;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsBoolean()
+    termsConsent?: boolean;
 
     @ApiPropertyOptional({
         description: 'Standing discount percent (0–100); null clears it',

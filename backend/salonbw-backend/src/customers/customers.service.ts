@@ -375,6 +375,8 @@ export class CustomersService {
             name,
             role: Role.Client,
             commissionBase: 0,
+            gdprConsentDate: dto.gdprConsent ? new Date() : undefined,
+            termsConsentDate: dto.termsConsent ? new Date() : undefined,
         });
 
         return this.usersRepo.save(customer);
@@ -382,15 +384,32 @@ export class CustomersService {
 
     async update(id: number, dto: UpdateCustomerDto) {
         const customer = await this.findOne(id);
+        const updatePayload: Record<string, unknown> = { ...dto };
+
+        if (
+            dto.gdprConsent !== undefined &&
+            dto.gdprConsent !== customer.gdprConsent
+        ) {
+            updatePayload.gdprConsentDate = dto.gdprConsent ? new Date() : null;
+        }
+
+        if (
+            dto.termsConsent !== undefined &&
+            dto.termsConsent !== customer.termsConsent
+        ) {
+            updatePayload.termsConsentDate = dto.termsConsent
+                ? new Date()
+                : null;
+        }
 
         // Update name if firstName or lastName changed
         if (dto.firstName !== undefined || dto.lastName !== undefined) {
             const firstName = dto.firstName ?? customer.firstName ?? '';
             const lastName = dto.lastName ?? customer.lastName ?? '';
             const newName = `${firstName} ${lastName}`.trim() || customer.name;
-            Object.assign(customer, dto, { name: newName });
+            Object.assign(customer, updatePayload, { name: newName });
         } else {
-            Object.assign(customer, dto);
+            Object.assign(customer, updatePayload);
         }
 
         if (

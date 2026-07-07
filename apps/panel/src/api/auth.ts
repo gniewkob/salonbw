@@ -43,6 +43,7 @@ export interface RegisterData {
     gdprConsent: boolean;
     termsConsent: boolean;
     smsConsent?: boolean;
+    whatsappConsent?: boolean;
     emailConsent?: boolean;
 }
 

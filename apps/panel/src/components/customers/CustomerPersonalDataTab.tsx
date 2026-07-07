@@ -32,8 +32,12 @@ function toDraft(customer: Customer): Draft {
         nip: '',
         cardNumber: '',
         description: customer.description || '',
+        gdprConsent: customer.gdprConsent,
+        termsConsent: customer.termsConsent ?? false,
+        notifyPanel: customer.notifyPanel ?? true,
         emailConsent: customer.emailConsent,
         smsConsent: customer.smsConsent,
+        whatsappConsent: customer.whatsappConsent ?? false,
         discountPercent:
             customer.discountPercent != null
                 ? String(customer.discountPercent)
@@ -73,8 +77,12 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 city: draft.city || undefined,
                 postalCode: draft.postalCode || undefined,
                 description: draft.description || undefined,
+                gdprConsent: draft.gdprConsent,
+                termsConsent: draft.termsConsent,
+                notifyPanel: draft.notifyPanel,
                 emailConsent: draft.emailConsent,
                 smsConsent: draft.smsConsent,
+                whatsappConsent: draft.whatsappConsent,
                 discountPercent:
                     draft.discountPercent && draft.discountPercent.trim() !== ''
                         ? Number(draft.discountPercent)
