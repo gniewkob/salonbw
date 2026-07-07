@@ -106,13 +106,13 @@ export class User {
     @Column({ default: false })
     gdprConsent: boolean;
 
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp', nullable: true })
     gdprConsentDate?: Date | null;
 
     @Column({ default: false })
     termsConsent: boolean;
 
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp', nullable: true })
     termsConsentDate?: Date | null;
 
     // Social authentication
