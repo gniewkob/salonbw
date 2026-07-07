@@ -7447,6 +7447,151 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     margin-bottom: 1rem;
 }
 
+/* Account profile */
+.account-profile {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 760px);
+    gap: 28px;
+    align-items: start;
+    max-width: 1040px;
+}
+
+.account-profile__photo {
+    border: 1px solid #e0e0e0;
+    background: #f7f8f9;
+    padding: 18px;
+    text-align: center;
+}
+
+.account-profile__avatar {
+    display: grid;
+    place-items: center;
+    width: 112px;
+    height: 112px;
+    margin: 0 auto 14px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #b4b8be;
+    color: #0d0d0d;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.account-profile__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.account-profile__identity {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 14px;
+    color: #4c535a;
+    font-size: 13px;
+}
+
+.account-profile__identity strong {
+    color: #1a1a1a;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.account-profile__upload {
+    position: relative;
+    width: 100%;
+    min-height: 42px;
+}
+
+.account-profile__upload input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.account-profile__remove {
+    width: 100%;
+    margin-top: 8px;
+    color: #4c535a;
+    text-decoration: underline;
+}
+
+.account-profile__error {
+    margin-top: 10px;
+    color: #9f1d2c;
+    font-size: 13px;
+}
+
+.account-profile__form {
+    min-width: 0;
+}
+
+.account-profile__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 18px;
+}
+
+.account-profile__field {
+    display: grid;
+    gap: 6px;
+}
+
+.account-profile__field label {
+    margin: 0;
+    color: #1a1a1a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.account-profile__field--wide {
+    grid-column: 1 / -1;
+}
+
+.account-profile__meta {
+    margin: 12px 0 16px;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+@media (max-width: 767.98px) {
+    .account-profile {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .account-profile__photo {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: 12px 14px;
+        align-items: center;
+        text-align: left;
+    }
+
+    .account-profile__avatar {
+        width: 76px;
+        height: 76px;
+        margin: 0;
+        font-size: 24px;
+    }
+
+    .account-profile__identity {
+        margin: 0;
+    }
+
+    .account-profile__upload,
+    .account-profile__remove,
+    .account-profile__error {
+        grid-column: 1 / -1;
+    }
+
+    .account-profile__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ─── Multi-step wizard ────────────────────────────────────────────────── */
 .salonbw-steps {
     display: flex;

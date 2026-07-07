@@ -49,6 +49,42 @@ export class UsersService {
         await this.usersRepository.update(userId, { [field]: socialId });
     }
 
+    async updateSocialProfile(
+        userId: number,
+        provider: 'google' | 'facebook',
+        profile: {
+            socialId: string;
+            firstName?: string;
+            lastName?: string;
+            picture?: string;
+        },
+    ): Promise<void> {
+        const existing = await this.findById(userId);
+        const field = provider === 'google' ? 'googleId' : 'facebookId';
+        const fullName = [profile.firstName, profile.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+        const update: Record<string, unknown> = {
+            [field]: profile.socialId,
+        };
+
+        if (!existing?.firstName && profile.firstName) {
+            update.firstName = profile.firstName.trim();
+        }
+        if (!existing?.lastName && profile.lastName) {
+            update.lastName = profile.lastName.trim();
+        }
+        if (fullName && (!existing?.name || existing.name === existing.email)) {
+            update.name = fullName;
+        }
+        if (!existing?.avatarUrl && profile.picture) {
+            update.avatarUrl = profile.picture.trim();
+        }
+
+        await this.usersRepository.update(userId, update);
+    }
+
     async create(userData: Partial<User>): Promise<User> {
         const user = this.usersRepository.create(userData);
         return await this.usersRepository.save(user);
@@ -153,12 +189,55 @@ export class UsersService {
         id: number,
         dto: UpdateProfileDto,
     ): Promise<User | null> {
-        const update: Partial<User> = {};
+        const current = await this.findById(id);
+        if (!current) return null;
+
+        const update: Record<string, unknown> = {};
+        const clean = (value?: string | null) => {
+            if (value === undefined) return undefined;
+            const trimmed = value?.trim() ?? '';
+            return trimmed || null;
+        };
+
+        const firstName = clean(dto.firstName);
+        const lastName = clean(dto.lastName);
+
         if (dto.name !== undefined) update.name = dto.name.trim();
-        if (dto.phone !== undefined) update.phone = dto.phone.trim() || null;
+        if (dto.phone !== undefined) update.phone = clean(dto.phone);
+        if (dto.firstName !== undefined) update.firstName = firstName;
+        if (dto.lastName !== undefined) update.lastName = lastName;
+        if (dto.birthDate !== undefined)
+            update.birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
+        if (dto.gender !== undefined) update.gender = dto.gender || null;
+        if (dto.address !== undefined) update.address = clean(dto.address);
+        if (dto.city !== undefined) update.city = clean(dto.city);
+        if (dto.postalCode !== undefined)
+            update.postalCode = clean(dto.postalCode);
+        if (dto.description !== undefined)
+            update.description = clean(dto.description);
+
+        if (dto.firstName !== undefined || dto.lastName !== undefined) {
+            const composedName = [
+                firstName ?? current.firstName,
+                lastName ?? current.lastName,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .trim();
+            if (composedName) update.name = composedName;
+        }
+
         if (Object.keys(update).length > 0) {
             await this.usersRepository.update(id, update);
         }
+        return this.findById(id);
+    }
+
+    async updateAvatarUrl(
+        id: number,
+        avatarUrl: string | null,
+    ): Promise<User | null> {
+        await this.usersRepository.update(id, { avatarUrl });
         return this.findById(id);
     }
 

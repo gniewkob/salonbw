@@ -38,6 +38,9 @@ export class User {
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
+    @Column({ type: 'varchar', length: 500, nullable: true })
+    avatarUrl?: string | null;
+
     @Column({ default: true })
     receiveNotifications: boolean;
 

@@ -49,6 +49,8 @@ describe('UsersService', () => {
                             ),
                         create: jest.fn<User, [Partial<User>]>(),
                         save: jest.fn<Promise<User>, [User]>(),
+                        findOne: jest.fn(),
+                        update: jest.fn(),
                     } as unknown as jest.Mocked<Repository<User>>,
                 },
             ],
@@ -200,6 +202,59 @@ describe('UsersService', () => {
             expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
                 email: 'unknown@example.com',
             });
+        });
+    });
+
+    describe('updateProfile', () => {
+        it('updates editable customer profile fields and keeps name in sync', async () => {
+            const existing = {
+                id: 7,
+                email: 'client@example.com',
+                name: 'Old Name',
+                firstName: 'Old',
+                lastName: 'Name',
+            } as User;
+            const updated = {
+                ...existing,
+                name: 'Anna Nowak',
+                firstName: 'Anna',
+                lastName: 'Nowak',
+                phone: null,
+                city: 'Warszawa',
+            } as User;
+            repo.findOne
+                .mockResolvedValueOnce(existing)
+                .mockResolvedValueOnce(updated);
+            repo.update.mockResolvedValue({ affected: 1 } as never);
+
+            const result = await service.updateProfile(7, {
+                firstName: ' Anna ',
+                lastName: ' Nowak ',
+                phone: '   ',
+                birthDate: '1990-05-10',
+                gender: 'female' as never,
+                address: '  Prosta 1 ',
+                city: ' Warszawa ',
+                postalCode: ' 00-001 ',
+                description: '  preferuje poranki ',
+            });
+
+            expect(repo.update).toHaveBeenCalledWith(
+                7,
+                expect.objectContaining({
+                    name: 'Anna Nowak',
+                    firstName: 'Anna',
+                    lastName: 'Nowak',
+                    phone: null,
+                    gender: 'female',
+                    address: 'Prosta 1',
+                    city: 'Warszawa',
+                    postalCode: '00-001',
+                    description: 'preferuje poranki',
+                }),
+            );
+            expect(repo.update.mock.calls[0][1]).toHaveProperty('birthDate');
+            expect(result).toBe(updated);
         });
     });
 });

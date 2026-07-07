@@ -17,6 +17,12 @@ export interface User {
     firstName?: string;
     lastName?: string;
     avatarUrl?: string;
+    birthDate?: string;
+    gender?: Gender;
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    description?: string;
     gdprConsent?: boolean;
     gdprConsentDate?: string;
     notifyPanel?: boolean;

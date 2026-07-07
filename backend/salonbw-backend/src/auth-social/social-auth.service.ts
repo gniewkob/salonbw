@@ -49,11 +49,12 @@ export class SocialAuthService {
 
             if (existingUser) {
                 // Link social account to existing user
-                await this.linkSocialAccount(
-                    existingUser.id,
-                    provider,
-                    profile.id,
-                );
+                await this.linkSocialAccount(existingUser.id, provider, {
+                    socialId: profile.id,
+                    firstName: profile.firstName,
+                    lastName: profile.lastName,
+                    picture: profile.picture,
+                });
                 user = await this.usersService.findById(existingUser.id);
             } else {
                 // Create new user
@@ -104,9 +105,14 @@ export class SocialAuthService {
     private async linkSocialAccount(
         userId: number,
         provider: 'google' | 'facebook',
-        socialId: string,
+        profile: {
+            socialId: string;
+            firstName?: string;
+            lastName?: string;
+            picture?: string;
+        },
     ): Promise<void> {
-        await this.usersService.updateSocialId(userId, provider, socialId);
+        await this.usersService.updateSocialProfile(userId, provider, profile);
     }
 
     private async createSocialUser(data: {
@@ -124,6 +130,7 @@ export class SocialAuthService {
                 data.email.split('@')[0],
             firstName: data.firstName,
             lastName: data.lastName,
+            avatarUrl: data.picture,
             role: Role.Client,
             password: this.generateRandomPassword(),
             ...(data.provider === 'google'
