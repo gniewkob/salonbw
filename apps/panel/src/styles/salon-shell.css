@@ -8714,9 +8714,13 @@ th.checkbox_container input[type='checkbox'] {
 
 /* Service picker card */
 .booking-column .salonbw-steps {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns:
+        max-content minmax(1rem, 1fr) max-content minmax(1rem, 1fr)
+        max-content minmax(1rem, 1fr) max-content;
+    align-items: center;
     gap: 0;
-    overflow-x: auto;
+    overflow: visible;
     padding: 0.5rem 0 0.75rem;
     margin-bottom: 1rem;
     list-style: none;
@@ -8728,6 +8732,7 @@ th.checkbox_container input[type='checkbox'] {
 }
 
 .booking-column .salonbw-step {
+    min-width: 0;
     color: #6e7278;
 }
 
@@ -8751,6 +8756,7 @@ th.checkbox_container input[type='checkbox'] {
 .booking-column .salonbw-step__label {
     color: currentColor;
     font-size: 0.95rem;
+    white-space: nowrap;
 }
 
 .booking-column .salonbw-step.active .salonbw-step__label {
@@ -8758,8 +8764,8 @@ th.checkbox_container input[type='checkbox'] {
 }
 
 .booking-column .salonbw-step__divider {
-    width: clamp(1.5rem, 7vw, 3rem);
-    flex: 0 0 auto;
+    width: auto;
+    min-width: 1rem;
     background: #d8dbe0;
 }
 
