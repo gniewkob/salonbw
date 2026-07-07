@@ -4,6 +4,7 @@ import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import ConfirmModal from '@/components/ConfirmModal';
+import ClientPageHeader from '@/components/client/ClientPageHeader';
 import PanelButton from '@/components/ui/PanelButton';
 import StatusBadge from '@/components/ui/StatusBadge';
 import {
@@ -104,18 +105,7 @@ export default function ClientDashboard() {
 
     return (
         <div className="salonbw-dashboard">
-            <div className="salonbw-dashboard__header">
-                <h1 className="salonbw-dashboard__title client-shell-page-title">
-                    Mój panel
-                </h1>
-                <PanelButton
-                    href="/booking"
-                    variant="primary"
-                    className="client-dashboard__primary-action"
-                >
-                    Zarezerwuj wizytę
-                </PanelButton>
-            </div>
+            <ClientPageHeader title="Mój panel" />
 
             {/* Notification banner — pending reschedule or new messages */}
             {(data.pendingRescheduleCount > 0 ||

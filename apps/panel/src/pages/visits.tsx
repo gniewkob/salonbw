@@ -3,6 +3,7 @@ import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
+import ClientPageHeader from '@/components/client/ClientPageHeader';
 import StarRating from '@/components/StarRating';
 import MessageThread from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
@@ -373,18 +374,7 @@ export default function VisitsPage() {
             </Head>
             <SalonShell role={role}>
                 <div className="salonbw-dashboard">
-                    <div className="salonbw-dashboard__header">
-                        <h1 className="salonbw-dashboard__title client-shell-page-title">
-                            Moje wizyty
-                        </h1>
-                        <PanelButton
-                            href="/booking"
-                            variant="primary"
-                            className="client-dashboard__primary-action"
-                        >
-                            Zarezerwuj wizytę
-                        </PanelButton>
-                    </div>
+                    <ClientPageHeader title="Moje wizyty" />
 
                     {error && (
                         <div className="alert alert-warning" role="alert">

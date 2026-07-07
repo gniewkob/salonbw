@@ -1,11 +1,4 @@
-import {
-    useState,
-    useEffect,
-    useCallback,
-    useRef,
-    Fragment,
-    useMemo,
-} from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import {
@@ -17,6 +10,9 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
 import Skeleton from '@/components/ui/Skeleton';
+import BookingStepHeader, {
+    type BookingStepDefinition,
+} from '@/components/booking/BookingStepHeader';
 
 interface OnlineService {
     id: number;
@@ -846,12 +842,7 @@ export default function BookingPage() {
     );
 }
 
-const STEP_DEFINITIONS: {
-    key: Step;
-    label: string;
-    heading: string;
-    backLabel: string;
-}[] = [
+const STEP_DEFINITIONS: BookingStepDefinition<Step>[] = [
     {
         key: 'service',
         label: 'Usługa',
@@ -890,48 +881,12 @@ function StepHeader({ step, onBack }: { step: Step; onBack?: () => void }) {
     const activeStep = step === 'confirm' ? 'slot' : step;
 
     return (
-        <div className="mb-4">
-            <ol className="salonbw-steps mb-3" aria-label="Kroki rezerwacji">
-                {visibleSteps.map((s, i) => {
-                    const isActive = s.key === activeStep;
-                    return (
-                        <Fragment key={s.key}>
-                            <li
-                                className={`salonbw-step${isActive ? ' active' : ''}`}
-                                aria-current={isActive ? 'step' : undefined}
-                            >
-                                <span
-                                    className="salonbw-step__number"
-                                    aria-hidden="true"
-                                >
-                                    {i + 1}
-                                </span>
-                                <span className="salonbw-step__label">
-                                    {s.label}
-                                </span>
-                            </li>
-                            {i < visibleSteps.length - 1 && (
-                                <li
-                                    className="salonbw-step__divider"
-                                    aria-hidden="true"
-                                />
-                            )}
-                        </Fragment>
-                    );
-                })}
-            </ol>
-            {onBack && (
-                <button
-                    type="button"
-                    className="btn btn-link booking-back-link text-muted small"
-                    onClick={onBack}
-                >
-                    <ChevronLeftIcon aria-hidden="true" />
-                    {current.backLabel}
-                </button>
-            )}
-            <h2 className="mb-0">{current.heading}</h2>
-        </div>
+        <BookingStepHeader
+            activeStep={activeStep}
+            current={current}
+            steps={visibleSteps}
+            onBack={onBack}
+        />
     );
 }
 
