@@ -90,10 +90,11 @@ describe('Customer profile canonical summary', () => {
     it('renders CRM context in /customers/[id] summary tab', () => {
         render(<CustomerDetailPage />);
 
-        expect(screen.getByText('kontekst CRM')).toBeInTheDocument();
+        expect(screen.getByText('Kontekst CRM')).toBeInTheDocument();
         expect(screen.getByText('Historia no-show')).toBeInTheDocument();
-        expect(
-            screen.getByRole('link', { name: 'Przejdź do timeline' }),
-        ).toHaveAttribute('href', '/customers/123?tab_name=events_history');
+        expect(screen.getByRole('link', { name: 'Timeline' })).toHaveAttribute(
+            'href',
+            '/customers/123?tab_name=events_history',
+        );
     });
 });
