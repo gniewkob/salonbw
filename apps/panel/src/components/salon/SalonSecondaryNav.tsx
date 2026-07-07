@@ -5,34 +5,14 @@ import type { SalonModule } from './navigation';
 import ServicesNav from './navs/ServicesNav';
 import ServiceDetailNav from './navs/ServiceDetailNav';
 import ClientsNav from './navs/ClientsNav';
-import ClientDetailNav from './navs/ClientDetailNav';
 import CalendarNav from './navs/CalendarNav';
 import WarehouseNav from './navs/WarehouseNav';
 import StatisticsNav from './navs/StatisticsNav';
 import CommunicationNav from './navs/CommunicationNav';
 import SettingsNav from './navs/SettingsNav';
 
-// clientsSections moved to ClientsNav
-// servicesSections moved to ServicesNav
-
 interface SalonSecondaryNavProps {
     module: SalonModule;
-}
-
-function parseCustomerIdFromRoute(
-    idParam: string | string[] | undefined,
-    asPath: string,
-): number | null {
-    const raw = Array.isArray(idParam) ? idParam[0] : idParam;
-    const fromParam = raw ? Number(raw) : Number.NaN;
-    if (Number.isInteger(fromParam) && fromParam > 0) {
-        return fromParam;
-    }
-
-    const match = asPath.match(/^\/customers\/(\d+)(?:[/?#]|$)/);
-    if (!match) return null;
-    const parsed = Number(match[1]);
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
 export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
@@ -59,40 +39,14 @@ export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
             // Loyalty is a full-width Klienci tool — the customer-list filter
             // sidebar (groups/criteria) is meaningless here; render no sidenav.
             content = null;
-        } else if (router.pathname === '/customers/[id]') {
-            const customerId = parseCustomerIdFromRoute(
-                router.query.id,
-                router.asPath,
-            );
-            const tabName = Array.isArray(router.query.tab_name)
-                ? router.query.tab_name[0]
-                : router.query.tab_name;
-            const activeTab =
-                tabName === 'personal_data'
-                    ? 'personal'
-                    : tabName === 'statistics'
-                      ? 'statistics'
-                      : tabName === 'events_history'
-                        ? 'history'
-                        : tabName === 'opinions'
-                          ? 'comments'
-                          : tabName === 'communication_preferences'
-                            ? 'communication'
-                            : tabName === 'gallery'
-                              ? 'gallery'
-                              : tabName === 'files'
-                                ? 'files'
-                                : 'summary';
-            content =
-                customerId !== null ? (
-                    <ClientDetailNav
-                        customerId={customerId}
-                        customerName="..."
-                        activeTab={activeTab}
-                    />
-                ) : (
-                    <ClientsNav />
-                );
+        } else if (
+            router.pathname === '/customers/[id]' ||
+            router.pathname === '/customers/[id]/edit'
+        ) {
+            // The detail and edit screens now own their navigation inside the
+            // page. A second Versum-style sidebar duplicates tabs and narrows
+            // the card, which caused the broken desktop layout.
+            content = null;
         } else {
             content = <ClientsNav />;
         }

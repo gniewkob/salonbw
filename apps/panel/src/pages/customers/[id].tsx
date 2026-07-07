@@ -2,12 +2,9 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
-import ClientDetailNav from '@/components/salon/navs/ClientDetailNav';
-import MobileCustomerTabsNav from '@/components/customers/MobileCustomerTabsNav';
-import { useIsMobile } from '@/hooks/useIsMobile';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -94,6 +91,25 @@ function tabIdFromTabName(tabName: string | null): TabId {
     }
 }
 
+const CUSTOMER_TABS: ReadonlyArray<{
+    id: TabId;
+    label: string;
+    tabName?: string;
+}> = [
+    { id: 'summary', label: 'Przegląd' },
+    { id: 'personal', label: 'Dane', tabName: 'personal_data' },
+    { id: 'history', label: 'Historia', tabName: 'events_history' },
+    { id: 'statistics', label: 'Statystyki', tabName: 'statistics' },
+    { id: 'comments', label: 'Notatki', tabName: 'opinions' },
+    {
+        id: 'communication',
+        label: 'Komunikacja',
+        tabName: 'communication_preferences',
+    },
+    { id: 'gallery', label: 'Zdjęcia', tabName: 'gallery' },
+    { id: 'files', label: 'Pliki', tabName: 'files' },
+];
+
 export default function CustomerDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
@@ -109,7 +125,6 @@ export default function CustomerDetailPage() {
     const activeTab = tabIdFromTabName(
         parseTabNameParam(router.query.tab_name),
     );
-    const isMobile = useIsMobile();
 
     const {
         data: customer,
@@ -124,31 +139,9 @@ export default function CustomerDetailPage() {
         limit: 3,
     });
 
-    const secondaryNav = useMemo(
-        () =>
-            customerId !== null ? (
-                <div className="sidenav" id="sidenav">
-                    <ClientDetailNav
-                        customerId={customerId}
-                        customerName={
-                            customer?.fullName || customer?.name || '...'
-                        }
-                        customerGender={customer?.gender}
-                        activeTab={activeTab}
-                    />
-                </div>
-            ) : null,
-        [
-            customerId,
-            customer?.fullName,
-            customer?.name,
-            customer?.gender,
-            activeTab,
-        ],
-    );
-
-    // Push custom sidebar to persistent outer shell (must be before any early return)
-    useSetSecondaryNav(secondaryNav);
+    // The customer card owns its navigation inside the page. A second
+    // Versum-style sidebar made the view cramped and duplicated controls.
+    useSetSecondaryNav(null);
 
     return (
         <RouteGuard
@@ -216,113 +209,69 @@ export default function CustomerDetailPage() {
                             </div>
                         ) : customer ? (
                             <>
-                                <div className="buttons-row">
-                                    <div className="right-buttons">
-                                        <Link
-                                            href={`/customers/${customer.id}/edit`}
-                                            className="btn btn-sm btn-outline-secondary"
-                                        >
-                                            edytuj
-                                        </Link>
-                                        <details className="customer-more-dropdown">
-                                            <summary className="btn btn-sm btn-outline-secondary customer-more-dropdown__trigger">
-                                                więcej{' '}
-                                                <span className="caret" />
-                                            </summary>
-                                            <ul className="customer-more-dropdown__menu">
-                                                <li>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            window.print()
-                                                        }
-                                                    >
-                                                        drukuj
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button
-                                                        type="button"
-                                                        disabled={
-                                                            role !== 'admin' ||
-                                                            deleteCustomer.isPending
-                                                        }
-                                                        title={
-                                                            role !== 'admin'
-                                                                ? 'Tylko administrator może usunąć klienta'
-                                                                : undefined
-                                                        }
-                                                        onClick={() => {
-                                                            if (!customer)
-                                                                return;
-                                                            setConfirmDelete(
-                                                                true,
-                                                            );
-                                                        }}
-                                                    >
-                                                        usuń klienta
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </details>
+                                <CustomerDetailHeader
+                                    customer={customer}
+                                    tags={customerTags ?? []}
+                                    stats={stats}
+                                    role={role}
+                                    deleting={deleteCustomer.isPending}
+                                    onDelete={() => setConfirmDelete(true)}
+                                />
+
+                                <CustomerDetailTabs
+                                    customerId={customer.id}
+                                    activeTab={activeTab}
+                                />
+
+                                <div className="customer-detail-workspace">
+                                    <div
+                                        className="customer-card-content customers_main_show_customer"
+                                        id="pjax_container"
+                                    >
+                                        {activeTab === 'summary' && (
+                                            <CustomerSummaryView
+                                                customer={customer}
+                                                tags={customerTags ?? []}
+                                                stats={stats}
+                                                history={history}
+                                            />
+                                        )}
+                                        {activeTab === 'personal' && (
+                                            <CustomerPersonalDataView
+                                                customer={customer}
+                                            />
+                                        )}
+                                        {activeTab === 'statistics' && (
+                                            <CustomerStatisticsTab
+                                                customerId={customer.id}
+                                            />
+                                        )}
+                                        {activeTab === 'history' && (
+                                            <CustomerHistoryTab
+                                                customerId={customer.id}
+                                            />
+                                        )}
+                                        {activeTab === 'comments' && (
+                                            <CustomerNotesTab
+                                                customerId={customer.id}
+                                            />
+                                        )}
+                                        {activeTab === 'communication' && (
+                                            <CustomerCommunicationTab
+                                                customer={customer}
+                                            />
+                                        )}
+                                        {activeTab === 'gallery' && (
+                                            <CustomerGalleryTab
+                                                customerId={customer.id}
+                                            />
+                                        )}
+                                        {activeTab === 'files' && (
+                                            <CustomerFilesTab
+                                                customerId={customer.id}
+                                            />
+                                        )}
                                     </div>
-                                </div>
-
-                                {isMobile ? (
-                                    <MobileCustomerTabsNav
-                                        customerId={customer.id}
-                                        activeTab={activeTab}
-                                    />
-                                ) : null}
-
-                                {/* Content */}
-                                <div
-                                    className="customer-card-content customers_main_show_customer"
-                                    id="pjax_container"
-                                >
-                                    {activeTab === 'summary' && (
-                                        <CustomerSummaryView
-                                            customer={customer}
-                                            tags={customerTags ?? []}
-                                            stats={stats}
-                                            history={history}
-                                        />
-                                    )}
-                                    {activeTab === 'personal' && (
-                                        <CustomerPersonalDataView
-                                            customer={customer}
-                                        />
-                                    )}
-                                    {activeTab === 'statistics' && (
-                                        <CustomerStatisticsTab
-                                            customerId={customer.id}
-                                        />
-                                    )}
-                                    {activeTab === 'history' && (
-                                        <CustomerHistoryTab
-                                            customerId={customer.id}
-                                        />
-                                    )}
-                                    {activeTab === 'comments' && (
-                                        <CustomerNotesTab
-                                            customerId={customer.id}
-                                        />
-                                    )}
-                                    {activeTab === 'communication' && (
-                                        <CustomerCommunicationTab
-                                            customer={customer}
-                                        />
-                                    )}
-                                    {activeTab === 'gallery' && (
-                                        <CustomerGalleryTab
-                                            customerId={customer.id}
-                                        />
-                                    )}
-                                    {activeTab === 'files' && (
-                                        <CustomerFilesTab
-                                            customerId={customer.id}
-                                        />
-                                    )}
                                 </div>
                             </>
                         ) : (
@@ -362,6 +311,191 @@ export default function CustomerDetailPage() {
                 />
             </SalonShell>
         </RouteGuard>
+    );
+}
+
+function CustomerDetailTabs({
+    customerId,
+    activeTab,
+}: {
+    customerId: number;
+    activeTab: TabId;
+}) {
+    return (
+        <nav className="customer-detail-tabs" aria-label="Sekcje karty klienta">
+            {CUSTOMER_TABS.map((tab) => {
+                const isActive = tab.id === activeTab;
+                return (
+                    <Link
+                        key={tab.id}
+                        href={
+                            tab.id === 'summary'
+                                ? `/customers/${customerId}`
+                                : {
+                                      pathname: `/customers/${customerId}`,
+                                      query: { tab_name: tab.tabName },
+                                  }
+                        }
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`customer-detail-tabs__item${
+                            isActive ? ' is-active' : ''
+                        }`}
+                    >
+                        {tab.label}
+                    </Link>
+                );
+            })}
+        </nav>
+    );
+}
+
+function CustomerDetailHeader({
+    customer,
+    tags,
+    stats,
+    role,
+    deleting,
+    onDelete,
+}: {
+    customer: Customer;
+    tags: CustomerTag[];
+    stats: CustomerSummaryStats | null | undefined;
+    role: string | null;
+    deleting: boolean;
+    onDelete: () => void;
+}) {
+    const displayName = customer.fullName || customer.name;
+    const groupsOrTags = [
+        ...(customer.groups?.map((g) => g.name) ?? []),
+        ...(tags.map((t) => t.name) ?? []),
+    ].filter(Boolean);
+
+    return (
+        <section className="customer-detail-hero">
+            <div className="customer-detail-hero__identity">
+                <div
+                    className="customer-detail-hero__avatar"
+                    aria-hidden="true"
+                >
+                    {displayName
+                        .split(' ')
+                        .map((part) => part[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase() || 'K'}
+                </div>
+                <div>
+                    <span className="customer-detail-eyebrow">
+                        Karta klienta
+                    </span>
+                    <h1>{displayName}</h1>
+                    <div className="customer-detail-hero__contacts">
+                        {customer.phone ? (
+                            <a href={`tel:${customer.phone}`}>
+                                {customer.phone}
+                            </a>
+                        ) : (
+                            <span>Brak telefonu</span>
+                        )}
+                        {customer.email ? (
+                            <a href={`mailto:${customer.email}`}>
+                                {customer.email}
+                            </a>
+                        ) : (
+                            <span>Brak emaila</span>
+                        )}
+                    </div>
+                    <div className="customer-detail-hero__meta">
+                        <span>
+                            {groupsOrTags.length
+                                ? groupsOrTags.join(', ')
+                                : 'Bez grupy'}
+                        </span>
+                        <span>
+                            Dodano:{' '}
+                            {new Date(customer.createdAt).toLocaleDateString(
+                                'pl-PL',
+                            )}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="customer-detail-hero__metrics">
+                <MetricTile
+                    label="Wizyty"
+                    value={stats?.totalVisits ?? 0}
+                    hint={`${stats?.completedVisits ?? 0} zrealizowanych`}
+                />
+                <MetricTile
+                    label="Zaplanowane"
+                    value={stats?.upcomingVisits?.length ?? 0}
+                    hint="najbliższe terminy"
+                />
+                <MetricTile
+                    label="Rabat"
+                    value={
+                        customer.resolvedDiscountPercent ??
+                        customer.discountPercent ??
+                        0
+                    }
+                    suffix="%"
+                    hint="stały klienta/grupy"
+                />
+            </div>
+
+            <div className="customer-detail-hero__actions">
+                <Link
+                    href={`/customers/${customer.id}/edit`}
+                    className="btn btn-salon btn-sm"
+                >
+                    Edytuj dane
+                </Link>
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => window.print()}
+                >
+                    Drukuj
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    disabled={role !== 'admin' || deleting}
+                    title={
+                        role !== 'admin'
+                            ? 'Tylko administrator może usunąć klienta'
+                            : undefined
+                    }
+                    onClick={onDelete}
+                >
+                    Usuń
+                </button>
+            </div>
+        </section>
+    );
+}
+
+function MetricTile({
+    label,
+    value,
+    hint,
+    suffix = '',
+}: {
+    label: string;
+    value: number;
+    hint: string;
+    suffix?: string;
+}) {
+    return (
+        <div className="customer-detail-metric">
+            <span>{label}</span>
+            <strong>
+                {value}
+                {suffix}
+            </strong>
+            <small>{hint}</small>
+        </div>
     );
 }
 
@@ -413,305 +547,205 @@ function CustomerSummaryView({
         ...(customer.groups?.map((g) => g.name) ?? []),
         ...(tags.map((t) => t.name) ?? []),
     ].filter(Boolean);
-    const avatarShape =
-        customer.gender === 'female'
-            ? 'female'
-            : customer.gender === 'male'
-              ? 'male'
-              : 'neutral';
-
     return (
         <div className="customer-info-summary" id="summary">
-            <div className="row-col_row">
-                <div className="row">
-                    <div className="col-sm-6">
-                        <div className="row-col single-detail-row">
-                            <h2>{customer.fullName || customer.name}</h2>
-                        </div>
-                        <div className="details-row">
-                            <div className="row-col single-detail-row">
-                                <span className="icon_box">
-                                    <i
-                                        className="icon sprite-customer_telephone"
-                                        aria-hidden="true"
-                                    />
-                                </span>
+            <div className="customer-summary-grid">
+                <section className="customer-summary-panel">
+                    <div className="customer-summary-panel__header">
+                        <h2>Profil i kontakt</h2>
+                        <Link
+                            href={`/customers/${customer.id}/edit`}
+                            className="customer-summary-panel__action"
+                        >
+                            Edytuj dane
+                        </Link>
+                    </div>
+                    <dl className="customer-summary-list">
+                        <div>
+                            <dt>Telefon</dt>
+                            <dd>
                                 {customer.phone ? (
                                     <a href={`tel:${customer.phone}`}>
                                         {customer.phone}
                                     </a>
                                 ) : (
-                                    <span className="light_text">
-                                        nie podano
-                                    </span>
+                                    'Nie podano'
                                 )}
-                            </div>
-                            <div className="row-col single-detail-row">
-                                <span className="icon_box">
-                                    <i
-                                        className="icon sprite-customer_email"
-                                        aria-hidden="true"
-                                    />
-                                </span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Email</dt>
+                            <dd>
                                 {customer.email ? (
                                     <a href={`mailto:${customer.email}`}>
                                         {customer.email}
                                     </a>
                                 ) : (
-                                    <span className="light_text">
-                                        nie podano
-                                    </span>
+                                    'Nie podano'
                                 )}
-                            </div>
-                            <div className="row-col single-detail-row">
-                                <span className="icon_box">
-                                    <i
-                                        className="icon sprite-group"
-                                        aria-hidden="true"
-                                    />
-                                </span>
-                                <span>
-                                    {groupsOrTags.length
-                                        ? groupsOrTags.join(', ')
-                                        : 'nie podano'}
-                                </span>
-                            </div>
-                            <div className="row-col single-detail-row">
-                                <span className="lbl">kontekst CRM</span>
-                                <div>
-                                    {customerAlerts.length > 0 ? (
-                                        <div className="d-flex flex-wrap gap-1">
-                                            {customerAlerts
-                                                .slice(0, 3)
-                                                .map((alert) => (
-                                                    <span
-                                                        key={alert.id}
-                                                        className={`badge ${
-                                                            alert.severity ===
-                                                            'danger'
-                                                                ? 'bg-danger'
-                                                                : alert.severity ===
-                                                                    'warning'
-                                                                  ? 'bg-warning'
-                                                                  : 'bg-info'
-                                                        }`}
-                                                    >
-                                                        {alert.label}
-                                                    </span>
-                                                ))}
-                                        </div>
-                                    ) : (
-                                        <span className="light_text">
-                                            brak alertów
-                                        </span>
-                                    )}
-                                    <div className="mt-1">
-                                        <Link
-                                            href={`/customers/${customer.id}?tab_name=events_history`}
-                                            className="link-more"
-                                        >
-                                            Przejdź do timeline
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="row-col single-detail-row">
-                                <span className="icon_box">
-                                    <i
-                                        className="icon sprite-customer_description"
-                                        aria-hidden="true"
-                                    />
-                                </span>
-                                {customer.description ? (
-                                    <span>{customer.description}</span>
-                                ) : (
-                                    <>
-                                        <span className="light_text">
-                                            brak opisu
-                                        </span>
-                                        <Link
-                                            href={`/customers/${customer.id}/edit`}
-                                            className="link-edit"
-                                        >
-                                            edytuj opis
-                                        </Link>
-                                    </>
-                                )}
-                            </div>
-                            <div className="row-col single-detail-row">
-                                <span className="lbl">płeć</span>
-                                <span>{genderLabel}</span>
-                            </div>
-                            <div className="row-col single-detail-row">
-                                <span className="lbl">data dodania</span>
-                                <span>{formatDate(customer.createdAt)}</span>
-                            </div>
+                            </dd>
                         </div>
+                        <div>
+                            <dt>Grupa / tagi</dt>
+                            <dd>
+                                {groupsOrTags.length
+                                    ? groupsOrTags.join(', ')
+                                    : 'Nie podano'}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Płeć</dt>
+                            <dd>{genderLabel}</dd>
+                        </div>
+                        <div>
+                            <dt>Data dodania</dt>
+                            <dd>{formatDate(customer.createdAt)}</dd>
+                        </div>
+                    </dl>
+                    <div className="customer-summary-note">
+                        <span>Opis</span>
+                        <p>{customer.description || 'Brak opisu klienta.'}</p>
                     </div>
-                    <div className="col-sm-6">
-                        <div
-                            className={`customer-avatar customer-avatar--${avatarShape}`}
+                </section>
+
+                <section className="customer-summary-panel">
+                    <div className="customer-summary-panel__header">
+                        <h2>Kontekst CRM</h2>
+                        <Link
+                            href={`/customers/${customer.id}?tab_name=events_history`}
+                            className="customer-summary-panel__action"
                         >
-                            <svg
-                                viewBox="0 0 120 120"
-                                className="avatar-placeholder"
-                            >
-                                <circle cx="60" cy="60" r="60" fill="#e8eaed" />
-                                {avatarShape === 'female' ? (
-                                    <path
-                                        d="M60 18c-16.6 0-30 13.4-30 30 0 8.8 3.8 16.8 9.8 22.3-9.9 4-24.8 12.7-24.8 27.7V104h90v-6c0-15-14.9-23.7-24.8-27.7 6-5.5 9.8-13.5 9.8-22.3 0-16.6-13.4-30-30-30zm0 13c9.4 0 17 7.6 17 17 0 3.9-1.3 7.4-3.6 10.2l-3.4-6.2-7.4 7.3-9.3-17.7-4.7 10.2-4.5-.8c-.3 1-.5 2.1-.5 3.2 0 9.4 7.6 17 17 17z"
-                                        fill="#c3c7cc"
-                                    />
-                                ) : (
-                                    <path
-                                        d="M60 65c13.8 0 25-11.2 25-25S73.8 15 60 15 35 26.2 35 40s11.2 25 25 25zm0 2.5c-16.7 0-50 8.3-50 25v12.5h100v-12.5c0-16.7-33.3-25-50-25z"
-                                        fill="#bdc1c6"
-                                    />
-                                )}
-                            </svg>
-                        </div>
+                            Timeline
+                        </Link>
                     </div>
-                </div>
-                <div className="row">
-                    <div className="col-sm-6">
-                        <div className="info-box">
-                            <p className="box-title">
-                                zaplanowane wizyty: {upcomingVisits.length}
-                            </p>
-                            <div className="box-rows">
-                                {upcomingVisits.length > 0 ? (
-                                    <>
-                                        {upcomingVisits
-                                            .slice(0, 3)
-                                            .map((visit) => (
-                                                <div
-                                                    key={visit.id}
-                                                    className="row-col single-detail-row"
-                                                >
-                                                    <div className="visit-service">
-                                                        <Link
-                                                            href={`/services/${visit.serviceId}`}
-                                                        >
-                                                            {visit.serviceName}
-                                                        </Link>
-                                                        <div className="visit-details">
-                                                            {formatDateTime(
-                                                                visit.date,
-                                                                visit.time,
-                                                            )}
-                                                            ,{' '}
-                                                            {visit.employeeName}
-                                                        </div>
-                                                    </div>
-                                                    <div className="visit-price">
-                                                        {formatCurrency(
-                                                            visit.price,
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </>
-                                ) : (
-                                    <p className="light_text">
-                                        Klient nie ma zaplanowanych wizyt
-                                    </p>
-                                )}
-                                <Link
-                                    href={`/customers/${customer.id}?tab_name=events_history`}
-                                    className="link-more"
+                    {customerAlerts.length > 0 ? (
+                        <div className="customer-summary-alerts">
+                            {customerAlerts.slice(0, 4).map((alert) => (
+                                <span
+                                    key={alert.id}
+                                    className={`customer-summary-alert customer-summary-alert--${alert.severity}`}
                                 >
-                                    więcej
-                                </Link>
-                            </div>
+                                    {alert.label}
+                                </span>
+                            ))}
                         </div>
+                    ) : (
+                        <p className="customer-summary-empty">
+                            Brak aktywnych alertów.
+                        </p>
+                    )}
+                    <dl className="customer-summary-list customer-summary-list--compact">
+                        <div>
+                            <dt>Zaplanowane wizyty</dt>
+                            <dd>{upcomingVisits.length}</dd>
+                        </div>
+                        <div>
+                            <dt>Zrealizowane wizyty</dt>
+                            <dd>{stats?.completedVisits ?? 0}</dd>
+                        </div>
+                        <div>
+                            <dt>Wszystkie wizyty</dt>
+                            <dd>{stats?.totalVisits ?? 0}</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section className="customer-summary-panel customer-summary-panel--wide">
+                    <div className="customer-summary-panel__header">
+                        <h2>Zaplanowane wizyty</h2>
+                        <Link
+                            href={`/customers/${customer.id}?tab_name=events_history`}
+                            className="customer-summary-panel__action"
+                        >
+                            Wszystkie
+                        </Link>
                     </div>
-                    <div className="col-sm-6">
-                        <div className="info-box">
-                            <p className="box-title">
-                                ostatnie wizyty: {stats?.totalVisits || 0}
-                            </p>
-                            {(stats?.completedVisits ?? 0) > 0 && (
-                                <p
-                                    className="light_text"
-                                    style={{
-                                        marginTop: -6,
-                                        marginBottom: 8,
-                                        fontSize: 12,
-                                    }}
+                    {upcomingVisits.length > 0 ? (
+                        <div className="customer-summary-visits">
+                            {upcomingVisits.slice(0, 3).map((visit) => (
+                                <div
+                                    key={visit.id}
+                                    className="customer-summary-visit"
                                 >
-                                    zrealizowanych: {stats?.completedVisits}
-                                </p>
-                            )}
-                            <div className="box-rows">
-                                {historyItems.length > 0 ? (
-                                    <>
-                                        {historyItems
-                                            .slice(0, 3)
-                                            .map((visit) => (
-                                                <div
-                                                    key={visit.id}
-                                                    className="row-col single-detail-row"
-                                                >
-                                                    <div className="visit-service">
-                                                        <Link
-                                                            href={`/services/${visit.service?.id}`}
-                                                        >
-                                                            {
-                                                                visit.service
-                                                                    ?.name
-                                                            }
-                                                        </Link>
-                                                        <div className="visit-details">
-                                                            {formatDateTime(
-                                                                visit.date,
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="visit-employee">
-                                                        {/* No /employees/[id] page exists — the
-                                                            stylist initials are a label, not a link
-                                                            (a Link here prefetched a 404 route). */}
-                                                        <span
-                                                            title={
-                                                                visit.employee
-                                                                    ?.name ??
-                                                                undefined
-                                                            }
-                                                        >
-                                                            {visit.employee
-                                                                ?.initials ||
-                                                                visit.employee?.name
-                                                                    ?.split(' ')
-                                                                    .map(
-                                                                        (
-                                                                            n: string,
-                                                                        ) =>
-                                                                            n[0],
-                                                                    )
-                                                                    .join('')}
-                                                        </span>
-                                                    </div>
-                                                    <div className="visit-price">
-                                                        {formatCurrency(
-                                                            visit.price,
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                    <div>
                                         <Link
-                                            href={`/customers/${customer.id}?tab_name=events_history`}
-                                            className="link-more"
+                                            href={`/services/${visit.serviceId}`}
                                         >
-                                            więcej
+                                            {visit.serviceName}
                                         </Link>
-                                    </>
-                                ) : (
-                                    <p className="light_text">Brak wizyt</p>
-                                )}
-                            </div>
+                                        <span>
+                                            {formatDateTime(
+                                                visit.date,
+                                                visit.time,
+                                            )}
+                                            , {visit.employeeName}
+                                        </span>
+                                    </div>
+                                    <strong>
+                                        {formatCurrency(visit.price)}
+                                    </strong>
+                                </div>
+                            ))}
                         </div>
+                    ) : (
+                        <p className="customer-summary-empty">
+                            Klient nie ma zaplanowanych wizyt.
+                        </p>
+                    )}
+                </section>
+
+                <section className="customer-summary-panel customer-summary-panel--wide">
+                    <div className="customer-summary-panel__header">
+                        <h2>Ostatnie wizyty</h2>
+                        <Link
+                            href={`/customers/${customer.id}?tab_name=events_history`}
+                            className="customer-summary-panel__action"
+                        >
+                            Historia
+                        </Link>
                     </div>
-                </div>
+                    {historyItems.length > 0 ? (
+                        <div className="customer-summary-visits">
+                            {historyItems.slice(0, 3).map((visit) => (
+                                <div
+                                    key={visit.id}
+                                    className="customer-summary-visit"
+                                >
+                                    <div>
+                                        <Link
+                                            href={`/services/${visit.service?.id}`}
+                                        >
+                                            {visit.service?.name ?? 'Usługa'}
+                                        </Link>
+                                        <span>
+                                            {formatDateTime(visit.date)}
+                                        </span>
+                                    </div>
+                                    <span
+                                        className="customer-summary-employee"
+                                        title={
+                                            visit.employee?.name ?? undefined
+                                        }
+                                    >
+                                        {visit.employee?.initials ||
+                                            visit.employee?.name
+                                                ?.split(' ')
+                                                .map((n: string) => n[0])
+                                                .join('') ||
+                                            '-'}
+                                    </span>
+                                    <strong>
+                                        {formatCurrency(visit.price)}
+                                    </strong>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="customer-summary-empty">
+                            Brak zakończonych wizyt.
+                        </p>
+                    )}
+                </section>
             </div>
         </div>
     );

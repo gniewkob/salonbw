@@ -2,10 +2,8 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
-import NewCustomerNav from '@/components/salon/navs/NewCustomerNav';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -13,8 +11,6 @@ import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import type { Customer } from '@/types';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
 import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
-
-type EditTab = 'basic' | 'extended' | 'advanced';
 
 function parseNumericIdParam(
     value: string | string[] | undefined,
@@ -43,7 +39,6 @@ export default function CustomerEditPage() {
     const { role } = useAuth();
     const { id } = router.query;
     const customerId = parseCustomerIdFromRoute(id, router.asPath);
-    const [activeTab, setActiveTab] = useState<EditTab>('basic');
 
     const { data: customer, isLoading, error } = useCustomer(customerId);
     const updateCustomer = useUpdateCustomer();
@@ -57,76 +52,9 @@ export default function CustomerEditPage() {
         }
     };
 
-    const handleSelectTab = (tab: EditTab) => {
-        setActiveTab(tab);
-        const idMap: Record<EditTab, string> = {
-            basic: 'customer-form-basic',
-            extended: 'customer-form-extended',
-            advanced: 'customer-form-advanced',
-        };
-        const target = document.getElementById(idMap[tab]);
-        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    };
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        const sections: Array<{ tab: EditTab; el: HTMLElement }> = [];
-        const basic = document.getElementById('customer-form-basic');
-        const extended = document.getElementById('customer-form-extended');
-        const advanced = document.getElementById('customer-form-advanced');
-        if (basic) sections.push({ tab: 'basic', el: basic });
-        if (extended) sections.push({ tab: 'extended', el: extended });
-        if (advanced) sections.push({ tab: 'advanced', el: advanced });
-        if (sections.length === 0) return;
-
-        let raf = 0;
-        const compute = () => {
-            const mid = window.innerHeight * 0.35;
-            let best: { tab: EditTab; dist: number } | null = null;
-            for (const s of sections) {
-                const rect = s.el.getBoundingClientRect();
-                const dist = Math.abs(rect.top - mid);
-                if (!best || dist < best.dist) {
-                    best = { tab: s.tab, dist };
-                }
-            }
-            if (best) setActiveTab(best.tab);
-        };
-
-        const onScroll = () => {
-            if (raf) return;
-            raf = window.requestAnimationFrame(() => {
-                raf = 0;
-                compute();
-            });
-        };
-
-        compute();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        return () => {
-            if (raf) window.cancelAnimationFrame(raf);
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onScroll);
-        };
-    }, [customer?.id]);
-
-    const secondaryNav = useMemo(
-        () => (
-            <div className="sidenav" id="sidenav">
-                <NewCustomerNav
-                    title="EDYCJA KLIENTA"
-                    activeTab={activeTab}
-                    onSelect={handleSelectTab}
-                />
-            </div>
-        ),
-        [activeTab],
-    );
-
-    // Must be called before any early return (Rules of Hooks)
-    useSetSecondaryNav(secondaryNav);
+    // Editing shows the whole card, so a duplicate section navigator only
+    // burns horizontal space and makes the form feel like several pages.
+    useSetSecondaryNav(null);
 
     return (
         <RouteGuard
@@ -173,23 +101,36 @@ export default function CustomerEditPage() {
                                 Nie udało się załadować klienta.
                             </div>
                         ) : customer ? (
-                            <>
-                                <div className="customer-actions-bar">
-                                    <div className="customer-actions-bar__spacer" />
+                            <div className="customer-edit-shell">
+                                <div className="customer-edit-header">
+                                    <div>
+                                        <span className="customer-detail-eyebrow">
+                                            Edycja klienta
+                                        </span>
+                                        <h1>
+                                            {customer.fullName || customer.name}
+                                        </h1>
+                                        <p>
+                                            Zmieniasz dane kontaktowe, zgody,
+                                            opis i rabaty w jednym formularzu.
+                                        </p>
+                                    </div>
                                     <Link
                                         href={
                                             `/customers/${customer.id}` as Route
                                         }
                                         className="btn btn-outline-secondary btn-sm"
                                     >
-                                        wróć do karty klienta
+                                        Wróć do karty
                                     </Link>
                                 </div>
-                                <CustomerPersonalDataTab
-                                    customer={customer}
-                                    onUpdate={handleUpdate}
-                                />
-                            </>
+                                <div className="customer-edit-card">
+                                    <CustomerPersonalDataTab
+                                        customer={customer}
+                                        onUpdate={handleUpdate}
+                                    />
+                                </div>
+                            </div>
                         ) : (
                             <div className="customer-error">
                                 Nie znaleziono klienta.
