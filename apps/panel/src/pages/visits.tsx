@@ -374,10 +374,14 @@ export default function VisitsPage() {
             <SalonShell role={role}>
                 <div className="salonbw-dashboard">
                     <div className="salonbw-dashboard__header">
-                        <h1 className="salonbw-dashboard__title">
+                        <h1 className="salonbw-dashboard__title client-shell-page-title">
                             Moje wizyty
                         </h1>
-                        <PanelButton href="/booking" variant="primary">
+                        <PanelButton
+                            href="/booking"
+                            variant="primary"
+                            className="client-dashboard__primary-action"
+                        >
                             Zarezerwuj wizytę
                         </PanelButton>
                     </div>

@@ -224,6 +224,7 @@ export default function ClientsPage() {
     const [quickFilter, setQuickFilter] = useState<string>('');
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [isMobile, setIsMobile] = useState(false);
     const [mobileAccumulated, setMobileAccumulated] = useState<Customer[]>([]);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -280,6 +281,7 @@ export default function ClientsPage() {
             recentlyAdded: quickFilter === 'new' ? true : undefined,
             emailConsent: quickFilter === 'noEmailConsent' ? false : undefined,
             smsConsent: quickFilter === 'noSmsConsent' ? false : undefined,
+            search: searchTerm.trim() || undefined,
             limit: pageSize,
             page,
             sortBy: sortBy || undefined,
@@ -296,6 +298,7 @@ export default function ClientsPage() {
             sortBy,
             sortOrder,
             quickFilter,
+            searchTerm,
         ],
     );
 
@@ -306,7 +309,6 @@ export default function ClientsPage() {
     );
     const { data: groups } = useCustomerGroups();
     const addToGroup = useAddGroupMembers();
-    const [searchTerm, setSearchTerm] = useState('');
     const [draggedCustomer, setDraggedCustomer] = useState<Customer | null>(
         null,
     );
@@ -328,29 +330,8 @@ export default function ClientsPage() {
         );
     };
 
-    const filteredCustomers = searchTerm
-        ? customers.filter((c) => {
-              const term = searchTerm.toLowerCase();
-              return (
-                  c.name?.toLowerCase().includes(term) ||
-                  c.phone?.includes(searchTerm) ||
-                  c.email?.toLowerCase().includes(term)
-              );
-          })
-        : customers;
-
-    const mobileTerm = searchTerm.toLowerCase();
-    const mobileFilteredItems = searchTerm
-        ? mobileAccumulated.filter(
-              (c) =>
-                  c.name?.toLowerCase().includes(mobileTerm) ||
-                  c.phone?.includes(searchTerm) ||
-                  c.email?.toLowerCase().includes(mobileTerm),
-          )
-        : mobileAccumulated;
-    const displayedCustomers = isMobile
-        ? mobileFilteredItems
-        : filteredCustomers;
+    const filteredCustomers = customers;
+    const displayedCustomers = isMobile ? mobileAccumulated : filteredCustomers;
 
     const allVisibleIds = displayedCustomers.map((c) => c.id);
     const allChecked =
@@ -457,6 +438,7 @@ export default function ClientsPage() {
         currentServiceId,
         currentEmployeeId,
         quickFilter,
+        searchTerm,
         sortBy,
         sortOrder,
         pageSize,

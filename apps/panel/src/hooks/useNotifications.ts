@@ -1,37 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { Notification } from '@/types';
+import type { Notification } from '@/types';
 
-export function useNotifications() {
-    const { apiFetch } = useAuth();
-    const [data, setData] = useState<Notification[]>([]);
-    const [error, setError] = useState<Error | null>(null);
+export function useNotifications(enabled = true) {
+    const { apiFetch, isAuthenticated } = useAuth();
 
-    useEffect(() => {
-        let active = true;
-        const fetchData = async () => {
-            try {
-                const d = await apiFetch<Notification[]>('/notifications');
-                if (active) {
-                    setData(d);
-                }
-            } catch (err: unknown) {
-                if (active) {
-                    setError(
-                        err instanceof Error ? err : new Error(String(err)),
-                    );
-                }
-            }
-        };
-        void fetchData();
-        const id = setInterval(() => {
-            void fetchData();
-        }, 30000);
-        return () => {
-            active = false;
-            clearInterval(id);
-        };
-    }, [apiFetch]);
-
-    return { data, error };
+    return useQuery<Notification[]>({
+        queryKey: ['notifications'],
+        queryFn: () => apiFetch<Notification[]>('/notifications'),
+        enabled: enabled && isAuthenticated,
+        staleTime: 30_000,
+    });
 }

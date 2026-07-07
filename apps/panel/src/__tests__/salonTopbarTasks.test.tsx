@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SalonTopbar from '@/components/salon/SalonTopbar';
 
 const push = jest.fn();
@@ -31,21 +32,36 @@ jest.mock('@/hooks/useAppointments', () => ({
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
         user: topbarUser,
+        isAuthenticated: true,
         logout: jest.fn().mockResolvedValue(undefined),
         apiFetch: apiFetchMock,
     }),
 }));
 
+function renderTopbar() {
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: { retry: false },
+        },
+    });
+    return render(
+        <QueryClientProvider client={queryClient}>
+            <SalonTopbar />
+        </QueryClientProvider>,
+    );
+}
+
 describe('SalonTopbar tasks tooltip', () => {
     beforeEach(() => {
         push.mockReset();
         apiFetchMock.mockReset();
+        apiFetchMock.mockResolvedValue([]);
         pendingCountMock.mockReturnValue(22);
         topbarUser = { id: 1, name: 'QA User', role: 'admin' };
     });
 
     it('shows pending confirmations entry in tasks tooltip', () => {
-        render(<SalonTopbar />);
+        renderTopbar();
 
         fireEvent.click(screen.getByTitle('Twoje zadania'));
 
@@ -57,7 +73,7 @@ describe('SalonTopbar tasks tooltip', () => {
 
     it('shows empty state when there are no pending confirmations', () => {
         pendingCountMock.mockReturnValue(0);
-        render(<SalonTopbar />);
+        renderTopbar();
 
         fireEvent.click(screen.getByTitle('Twoje zadania'));
 
@@ -74,7 +90,7 @@ describe('SalonTopbar tasks tooltip', () => {
             avatarUrl: 'https://example.com/avatar.jpg',
         };
 
-        const { container } = render(<SalonTopbar />);
+        const { container } = renderTopbar();
 
         const button = container.querySelector('.e2e-nav-user-dropdown');
         const avatar = button?.querySelector('img.color1--img');
@@ -121,7 +137,7 @@ describe('SalonTopbar tasks tooltip', () => {
             return Promise.resolve([]);
         });
 
-        render(<SalonTopbar />);
+        renderTopbar();
 
         fireEvent.change(
             screen.getByLabelText('Szukaj klientów, pracowników i produktów'),

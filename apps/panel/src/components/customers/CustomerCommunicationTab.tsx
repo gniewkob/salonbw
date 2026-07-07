@@ -205,8 +205,12 @@ export default function CustomerCommunicationTab({ customer }: Props) {
 
             <div className="customer-communication-section mt-20">
                 <div className="customer-communication-title">
-                    Ustawienia kanałów komunikacji
+                    Status kanałów komunikacji
                 </div>
+                <p className="customer-communication-help">
+                    Poniższa tabela pokazuje globalne zgody klienta dla kanałów.
+                    Typ wiadomości określa, gdzie te kanały mogą zostać użyte.
+                </p>
 
                 <div className="customer-communication-channels">
                     <table className="customer-communication-table">

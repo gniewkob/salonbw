@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import type { SalonModule } from './navigation';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useAuth } from '@/contexts/AuthContext';
+import SalonGlobalSearch from './SalonGlobalSearch';
 
 interface MobileNavDrawerProps {
     open: boolean;
@@ -17,6 +19,8 @@ export default function MobileNavDrawer({
     onClose,
 }: MobileNavDrawerProps) {
     const reducedMotion = useReducedMotion();
+    const { user } = useAuth();
+    const isStaff = Boolean(user && user.role !== 'client');
     const backdropTransition = reducedMotion
         ? 'none'
         : 'opacity 200ms ease-out';
@@ -114,6 +118,11 @@ export default function MobileNavDrawer({
                         ×
                     </button>
                 </div>
+                {isStaff ? (
+                    <div className="salonbw-mobile-drawer__search">
+                        <SalonGlobalSearch inputId="mobile-omnibox" mobile />
+                    </div>
+                ) : null}
                 <ul
                     style={{
                         listStyle: 'none',

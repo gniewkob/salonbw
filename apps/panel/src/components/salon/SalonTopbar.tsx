@@ -5,220 +5,25 @@ import { useAuth } from '@/contexts/AuthContext';
 import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
 import { usePendingBookingsCount } from '@/hooks/useAppointments';
-import type { Product, StaffOption } from '@/types';
-
-interface OmniboxCustomer {
-    id: number;
-    name?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    phone?: string | null;
-}
-
-type OmniboxResultType = 'customer' | 'employee' | 'product';
-
-interface OmniboxResult {
-    id: number;
-    key: string;
-    type: OmniboxResultType;
-    label: string;
-    meta?: string;
-    href: string;
-}
-
-function customerLabel(customer: OmniboxCustomer): string {
-    const composed = [customer.firstName, customer.lastName]
-        .filter(Boolean)
-        .join(' ');
-    return customer.name || composed || `Klient #${customer.id}`;
-}
-
-function staffRoleLabel(role?: StaffOption['role']) {
-    switch (role) {
-        case 'admin':
-            return 'administrator';
-        case 'receptionist':
-            return 'recepcjonista';
-        case 'employee':
-            return 'pracownik';
-        default:
-            return 'pracownik';
-    }
-}
-
-function productMeta(product: Product) {
-    return [product.brand, product.sku ? `SKU: ${product.sku}` : null]
-        .filter(Boolean)
-        .join(' · ');
-}
-
-function groupResults(results: OmniboxResult[]) {
-    return [
-        {
-            type: 'customer' as const,
-            title: 'Klienci',
-            items: results.filter((item) => item.type === 'customer'),
-        },
-        {
-            type: 'employee' as const,
-            title: 'Pracownicy',
-            items: results.filter((item) => item.type === 'employee'),
-        },
-        {
-            type: 'product' as const,
-            title: 'Produkty',
-            items: results.filter((item) => item.type === 'product'),
-        },
-    ].filter((group) => group.items.length > 0);
-}
+import { useNotifications } from '@/hooks/useNotifications';
+import SalonGlobalSearch from './SalonGlobalSearch';
 
 export default function SalonTopbar() {
-    const { user, logout, apiFetch } = useAuth();
+    const { user, logout } = useAuth();
     const router = useRouter();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
     const [tasksMenuOpen, setTasksMenuOpen] = useState(false);
     const pendingCount = usePendingBookingsCount();
+    const notifications = useNotifications(user?.role !== 'client');
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
     const tasksMenuRef = useRef<HTMLLIElement>(null);
     const topbar = buildTopbarViewModel(user);
     const tasksCount = Math.max(topbar.tasks.count ?? 0, pendingCount);
-
-    // ── Global search (omnibox) ────────────────────────────────────────
     const isStaff = user?.role !== 'client';
-    const searchRef = useRef<HTMLLIElement>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<OmniboxResult[]>([]);
-    const [searchOpen, setSearchOpen] = useState(false);
-    const [searchActive, setSearchActive] = useState(-1);
-    const groupedSearchResults = groupResults(searchResults);
-
-    useEffect(() => {
-        if (!isStaff) return;
-        const query = searchQuery.trim();
-        if (query.length < 2) {
-            setSearchResults([]);
-            setSearchOpen(false);
-            return;
-        }
-        let cancelled = false;
-        const timer = setTimeout(() => {
-            const encoded = encodeURIComponent(query);
-            Promise.allSettled([
-                apiFetch<{ items?: OmniboxCustomer[] } | OmniboxCustomer[]>(
-                    `/customers?search=${encoded}&limit=8`,
-                ),
-                apiFetch<StaffOption[]>('/employees/staff-options'),
-                apiFetch<Product[]>(
-                    `/products?search=${encoded}&includeInactive=true`,
-                ),
-            ])
-                .then(([customersResult, employeesResult, productsResult]) => {
-                    if (cancelled) return;
-                    const nextResults: OmniboxResult[] = [];
-
-                    if (customersResult.status === 'fulfilled') {
-                        const customers = Array.isArray(customersResult.value)
-                            ? customersResult.value
-                            : (customersResult.value.items ?? []);
-                        nextResults.push(
-                            ...customers.slice(0, 6).map((customer) => ({
-                                id: customer.id,
-                                key: `customer-${customer.id}`,
-                                type: 'customer' as const,
-                                label: customerLabel(customer),
-                                meta: customer.phone ?? 'klient',
-                                href: `/customers/${customer.id}`,
-                            })),
-                        );
-                    }
-
-                    if (employeesResult.status === 'fulfilled') {
-                        const normalizedQuery = query.toLowerCase();
-                        nextResults.push(
-                            ...employeesResult.value
-                                .filter((employee) =>
-                                    [
-                                        employee.name,
-                                        staffRoleLabel(employee.role),
-                                    ]
-                                        .join(' ')
-                                        .toLowerCase()
-                                        .includes(normalizedQuery),
-                                )
-                                .slice(0, 5)
-                                .map((employee) => ({
-                                    id: employee.id,
-                                    key: `employee-${employee.id}`,
-                                    type: 'employee' as const,
-                                    label: employee.name,
-                                    meta: staffRoleLabel(employee.role),
-                                    href: `/settings/employees/${employee.id}`,
-                                })),
-                        );
-                    }
-
-                    if (productsResult.status === 'fulfilled') {
-                        nextResults.push(
-                            ...productsResult.value
-                                .slice(0, 6)
-                                .map((product) => ({
-                                    id: product.id,
-                                    key: `product-${product.id}`,
-                                    type: 'product' as const,
-                                    label: product.name,
-                                    meta: productMeta(product) || 'produkt',
-                                    href: `/products/${product.id}`,
-                                })),
-                        );
-                    }
-
-                    setSearchResults(nextResults);
-                    setSearchOpen(true);
-                    setSearchActive(-1);
-                })
-                .catch(() => {
-                    if (!cancelled) setSearchResults([]);
-                });
-        }, 250);
-        return () => {
-            cancelled = true;
-            clearTimeout(timer);
-        };
-    }, [searchQuery, apiFetch, isStaff]);
-
-    const goToSearchResult = (result: OmniboxResult) => {
-        setSearchOpen(false);
-        setSearchQuery('');
-        void router.push(result.href);
-    };
-
-    const handleSearchKeyDown = (
-        event: React.KeyboardEvent<HTMLInputElement>,
-    ) => {
-        if (!searchOpen || searchResults.length === 0) {
-            if (event.key === 'Escape') {
-                setSearchQuery('');
-                setSearchOpen(false);
-            }
-            return;
-        }
-        if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            setSearchActive((i) => (i + 1) % searchResults.length);
-        } else if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            setSearchActive(
-                (i) => (i - 1 + searchResults.length) % searchResults.length,
-            );
-        } else if (event.key === 'Enter') {
-            event.preventDefault();
-            goToSearchResult(searchResults[Math.max(searchActive, 0)]);
-        } else if (event.key === 'Escape') {
-            setSearchOpen(false);
-        }
-    };
+    const notificationCount =
+        topbar.notifications.unreadCount ?? notifications.data?.length ?? 0;
 
     useEffect(() => {
         const handleClickOutside = (
@@ -241,12 +46,6 @@ export default function SalonTopbar() {
                 !tasksMenuRef.current.contains(event.target as Node)
             ) {
                 setTasksMenuOpen(false);
-            }
-            if (
-                searchRef.current &&
-                !searchRef.current.contains(event.target as Node)
-            ) {
-                setSearchOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -315,99 +114,8 @@ export default function SalonTopbar() {
             <div className="ms-auto">
                 <ul className="navbar-right simple-list d-flex">
                     {isStaff && (
-                        <li className="d-flex" ref={searchRef}>
-                            <div className="omnibox-wrapper position-relative">
-                                <input
-                                    className="omnibox"
-                                    id="omnibox"
-                                    type="search"
-                                    autoComplete="off"
-                                    placeholder="Szukaj..."
-                                    aria-label="Szukaj klientów, pracowników i produktów"
-                                    value={searchQuery}
-                                    onChange={(e) =>
-                                        setSearchQuery(e.target.value)
-                                    }
-                                    onFocus={() => {
-                                        if (searchResults.length > 0) {
-                                            setSearchOpen(true);
-                                        }
-                                    }}
-                                    onKeyDown={handleSearchKeyDown}
-                                />
-                                {searchOpen && (
-                                    <div
-                                        className="dropdown-menu show omnibox-results"
-                                        id="omnibox-results"
-                                    >
-                                        {searchResults.length === 0 ? (
-                                            <div className="dropdown-item-text text-muted small">
-                                                Brak wyników dla „
-                                                {searchQuery.trim()}&rdquo;
-                                            </div>
-                                        ) : (
-                                            groupedSearchResults.map(
-                                                (group) => (
-                                                    <div
-                                                        key={group.type}
-                                                        className="omnibox-results__group"
-                                                    >
-                                                        <div className="omnibox-results__heading">
-                                                            {group.title} (
-                                                            {group.items.length}
-                                                            )
-                                                        </div>
-                                                        {group.items.map(
-                                                            (item) => {
-                                                                const index =
-                                                                    searchResults.findIndex(
-                                                                        (
-                                                                            result,
-                                                                        ) =>
-                                                                            result.key ===
-                                                                            item.key,
-                                                                    );
-                                                                return (
-                                                                    <button
-                                                                        key={
-                                                                            item.key
-                                                                        }
-                                                                        type="button"
-                                                                        className={`dropdown-item omnibox-results__item${index === searchActive ? ' active' : ''}`}
-                                                                        onClick={() =>
-                                                                            goToSearchResult(
-                                                                                item,
-                                                                            )
-                                                                        }
-                                                                        onMouseEnter={() =>
-                                                                            setSearchActive(
-                                                                                index,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <span className="omnibox-results__label">
-                                                                            {
-                                                                                item.label
-                                                                            }
-                                                                        </span>
-                                                                        {item.meta ? (
-                                                                            <span className="omnibox-results__meta">
-                                                                                {
-                                                                                    item.meta
-                                                                                }
-                                                                            </span>
-                                                                        ) : null}
-                                                                    </button>
-                                                                );
-                                                            },
-                                                        )}
-                                                    </div>
-                                                ),
-                                            )
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+                        <li className="d-flex">
+                            <SalonGlobalSearch />
                         </li>
                     )}
                     {isStaff && topbar.notifications.enabled ? (
@@ -421,9 +129,9 @@ export default function SalonTopbar() {
                                 aria-label="Powiadomienia"
                             >
                                 <div
-                                    className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}
+                                    className={`notification_center_icon${notificationCount ? ' notifications_unread' : ''}`}
                                     data-unread_notifications={
-                                        topbar.notifications.unreadCount ?? 0
+                                        notificationCount
                                     }
                                     id="notification_center_navbar_icon"
                                 >

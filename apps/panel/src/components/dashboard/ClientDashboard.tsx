@@ -105,8 +105,14 @@ export default function ClientDashboard() {
     return (
         <div className="salonbw-dashboard">
             <div className="salonbw-dashboard__header">
-                <h1 className="salonbw-dashboard__title">Mój panel</h1>
-                <PanelButton href="/booking" variant="primary">
+                <h1 className="salonbw-dashboard__title client-shell-page-title">
+                    Mój panel
+                </h1>
+                <PanelButton
+                    href="/booking"
+                    variant="primary"
+                    className="client-dashboard__primary-action"
+                >
                     Zarezerwuj wizytę
                 </PanelButton>
             </div>

@@ -365,6 +365,13 @@ function CustomerDetailHeader({
     onDelete: () => void;
 }) {
     const displayName = customer.fullName || customer.name;
+    const customerInitials =
+        displayName
+            .split(' ')
+            .map((part) => part[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() || 'K';
     const groupsOrTags = [
         ...(customer.groups?.map((g) => g.name) ?? []),
         ...(tags.map((t) => t.name) ?? []),
@@ -374,15 +381,15 @@ function CustomerDetailHeader({
         <section className="customer-detail-hero">
             <div className="customer-detail-hero__identity">
                 <div
-                    className="customer-detail-hero__avatar"
+                    className={`customer-detail-hero__avatar${customer.avatarUrl ? ' customer-detail-hero__avatar--image' : ''}`}
                     aria-hidden="true"
                 >
-                    {displayName
-                        .split(' ')
-                        .map((part) => part[0])
-                        .join('')
-                        .slice(0, 2)
-                        .toUpperCase() || 'K'}
+                    {customer.avatarUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img alt="" src={customer.avatarUrl} />
+                    ) : (
+                        customerInitials
+                    )}
                 </div>
                 <div>
                     <span className="customer-detail-eyebrow">

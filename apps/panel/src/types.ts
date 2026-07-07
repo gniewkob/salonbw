@@ -463,6 +463,7 @@ export interface Customer {
     phone?: string;
     firstName?: string;
     lastName?: string;
+    avatarUrl?: string | null;
     birthDate?: string;
     gender?: Gender;
     address?: string;
