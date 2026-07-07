@@ -552,7 +552,7 @@ importers:
         version: 0.3.29(ioredis@5.10.1)(pg@8.20.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.6.2)(typescript@5.9.3))
       uuid:
         specifier: ^11.1.1
-        version: 11.1.1
+        version: 14.0.1
       web-push:
         specifier: ^3.6.7
         version: 3.6.7
@@ -7926,6 +7926,10 @@ packages:
 
   uuid@11.1.1:
     resolution: {integrity: sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==}
+    hasBin: true
+
+  uuid@14.0.1:
+    resolution: {integrity: sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==}
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -16770,6 +16774,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@11.1.1: {}
+
+  uuid@14.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
