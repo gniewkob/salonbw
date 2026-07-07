@@ -429,9 +429,18 @@ export default function SalonTopbar() {
                             onClick={() => setUserMenuOpen((value) => !value)}
                         >
                             <div className="border-color" aria-hidden="true">
-                                <div className="color1">
-                                    {topbar.user.initials}
-                                </div>
+                                {topbar.user.avatarUrl ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                        alt=""
+                                        className="color1 color1--img"
+                                        src={topbar.user.avatarUrl}
+                                    />
+                                ) : (
+                                    <div className="color1">
+                                        {topbar.user.initials}
+                                    </div>
+                                )}
                             </div>
                         </button>
                         <ul className="dropdown-menu larger-dropdown-menu topbar-user-menu">

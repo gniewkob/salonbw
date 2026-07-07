@@ -2511,6 +2511,11 @@ tr.customer-row:hover .customers-drag-handle {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
+.navbar .color1--img {
+    display: block;
+    object-fit: cover;
+}
+
 /* User-menu identity card (in the dropdown) */
 .navbar .topbar-user-menu .topbar-user-head {
     padding: 0;

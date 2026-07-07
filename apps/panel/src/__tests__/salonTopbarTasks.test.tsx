@@ -6,6 +6,7 @@ const push = jest.fn();
 const eventsOn = jest.fn();
 const eventsOff = jest.fn();
 const pendingCountMock = jest.fn(() => 22);
+let topbarUser = { id: 1, name: 'QA User', role: 'admin' };
 
 jest.mock('next/router', () => ({
     useRouter: () => ({
@@ -23,7 +24,7 @@ jest.mock('@/hooks/useAppointments', () => ({
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
-        user: { id: 1, name: 'QA User', role: 'admin' },
+        user: topbarUser,
         logout: jest.fn().mockResolvedValue(undefined),
     }),
 }));
@@ -31,6 +32,7 @@ jest.mock('@/contexts/AuthContext', () => ({
 describe('SalonTopbar tasks tooltip', () => {
     beforeEach(() => {
         pendingCountMock.mockReturnValue(22);
+        topbarUser = { id: 1, name: 'QA User', role: 'admin' };
     });
 
     it('shows pending confirmations entry in tasks tooltip', () => {
@@ -53,5 +55,22 @@ describe('SalonTopbar tasks tooltip', () => {
         expect(
             screen.getByText('Brak oczekujących wizyt.'),
         ).toBeInTheDocument();
+    });
+
+    it('uses profile photo in the topbar button when avatar is available', () => {
+        topbarUser = {
+            id: 1,
+            name: 'QA User',
+            role: 'admin',
+            avatarUrl: 'https://example.com/avatar.jpg',
+        };
+
+        const { container } = render(<SalonTopbar />);
+
+        const button = container.querySelector('.e2e-nav-user-dropdown');
+        const avatar = button?.querySelector('img.color1--img');
+
+        expect(avatar).toHaveAttribute('src', 'https://example.com/avatar.jpg');
+        expect(button).not.toHaveTextContent('QU');
     });
 });
