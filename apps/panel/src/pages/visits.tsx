@@ -291,16 +291,6 @@ function VisitRow({
                         className="salonbw-appointment-item__message-panel"
                     >
                         <div className="visit-details-grid">
-                            {visit.status === 'rescheduled_pending' && (
-                                <div className="visit-details-wide">
-                                    <RescheduleChangeNotice
-                                        previousStartTime={
-                                            visit.reschedulePreviousStartTime
-                                        }
-                                        newStartTime={visit.startTime}
-                                    />
-                                </div>
-                            )}
                             <div>
                                 <div className="visit-details-label">
                                     Notatki i zalecenia

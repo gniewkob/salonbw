@@ -211,6 +211,21 @@ describe('VisitsPage', () => {
         expect(screen.getByText('Było')).toBeInTheDocument();
         expect(screen.getByText('Propozycja salonu')).toBeInTheDocument();
 
+        const rescheduledVisit = screen
+            .getByRole('button', { name: 'Tonowanie' })
+            .closest('.salonbw-appointment-item');
+        expect(rescheduledVisit).not.toBeNull();
+        fireEvent.click(
+            within(rescheduledVisit as HTMLElement).getByRole('button', {
+                name: 'Szczegóły',
+            }),
+        );
+        expect(
+            within(rescheduledVisit as HTMLElement).getAllByText(
+                'Salon proponuje zmianę terminu',
+            ),
+        ).toHaveLength(1);
+
         fireEvent.click(
             screen.getByRole('button', { name: 'Akceptuj nowy termin' }),
         );
