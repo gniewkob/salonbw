@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import React from 'react';
 import VisitsPage from '@/pages/visits';
 import { useAuth } from '@/contexts/AuthContext';
@@ -93,6 +99,17 @@ const VISITS = [
         notes: null,
         review: null,
     },
+    {
+        id: 6,
+        startTime: PAST,
+        endTime: PAST,
+        status: 'confirmed',
+        serviceId: 9,
+        serviceName: 'Przeterminowana usługa',
+        employeeName: 'Aleksandra',
+        notes: null,
+        review: null,
+    },
 ];
 
 function setup(apiFetch: jest.Mock) {
@@ -125,7 +142,7 @@ describe('VisitsPage', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('heading', {
-                name: /Anulowane i nieodbyte \(1\)/,
+                name: /Anulowane i nieodbyte \(2\)/,
             }),
         ).toBeInTheDocument();
         // salon recommendations visible
@@ -143,6 +160,40 @@ describe('VisitsPage', () => {
         expect(screen.getByText('Zmień ocenę')).toBeInTheDocument();
         // upcoming visit is cancellable, not reviewable
         expect(screen.getAllByText('Anuluj')).toHaveLength(2);
+    });
+
+    it('does not offer future-only actions for past unresolved visits', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/dashboard/client/visits') return VISITS;
+            throw new Error(`unexpected ${path}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Przeterminowana usługa');
+        const cancelledSection = screen
+            .getByRole('heading', { name: /Anulowane i nieodbyte \(2\)/ })
+            .closest('section');
+
+        expect(cancelledSection).not.toBeNull();
+        expect(
+            within(cancelledSection!).getByText('Przeterminowana usługa'),
+        ).toBeInTheDocument();
+        expect(
+            within(cancelledSection!).queryByText('Potwierdzona'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(cancelledSection!).getByText('Nieobecność'),
+        ).toBeInTheDocument();
+        expect(
+            within(cancelledSection!).queryByRole('button', {
+                name: 'Anuluj',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(cancelledSection!).getAllByRole('link', {
+                name: 'Umów ponownie',
+            }),
+        ).toHaveLength(2);
     });
 
     it('shows proposed reschedule details and accepts the new time', async () => {

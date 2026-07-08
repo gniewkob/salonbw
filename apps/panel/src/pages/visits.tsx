@@ -6,6 +6,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
 import ClientAppointmentActions, {
     CLIENT_ARCHIVE_STATUSES,
+    CLIENT_CANCELLABLE_STATUSES,
 } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
@@ -56,6 +57,10 @@ function hasClientVisibleVisitNotes(visit: ClientVisit) {
             visit.onlineTotalDurationMinutes ||
             visit.onlineDurationNeedsVerification,
     );
+}
+
+function isPastUnresolvedVisit(visit: ClientVisit, isFuture: boolean) {
+    return !isFuture && !CLIENT_ARCHIVE_STATUSES.has(visit.status);
 }
 
 interface ReviewFormProps {
@@ -171,6 +176,8 @@ function VisitRow({
 
     const isCompleted = visit.status === 'completed';
     const isFuture = new Date(visit.startTime).getTime() > Date.now();
+    const isPastUnresolved = isPastUnresolvedVisit(visit, isFuture);
+    const displayStatus = isPastUnresolved ? 'no_show' : visit.status;
     const canAskForNewTime =
         isFuture && !CLIENT_ARCHIVE_STATUSES.has(visit.status);
 
@@ -250,11 +257,18 @@ function VisitRow({
                 )}
             </div>
             <ClientAppointmentActions
-                status={visit.status}
+                status={displayStatus}
                 serviceId={visit.serviceId}
                 accepting={accepting}
                 cancelling={cancelling}
-                showRebook={CLIENT_ARCHIVE_STATUSES.has(visit.status)}
+                canAccept={isFuture && visit.status === 'rescheduled_pending'}
+                canCancel={
+                    isFuture && CLIENT_CANCELLABLE_STATUSES.has(visit.status)
+                }
+                showRebook={
+                    CLIENT_ARCHIVE_STATUSES.has(visit.status) ||
+                    isPastUnresolved
+                }
                 onAccept={() => onAccept(visit.id)}
                 onCancel={() => onCancel(visit.id)}
             />
