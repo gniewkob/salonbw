@@ -377,16 +377,24 @@ function CustomerDetailHeader({
         ...(tags.map((t) => t.name) ?? []),
     ].filter(Boolean);
 
+    // avatarUrl zapisany na koncie klientki wskazuje self-scoped
+    // /users/profile/avatar/<plik> — staff pobiera przez staff-owy endpoint
+    // /users/:id/avatar/<plik>; absolutne URL-e (social login) bez zmian.
+    const staffAvatarUrl = customer.avatarUrl?.replace(
+        '/users/profile/avatar/',
+        `/users/${customer.id}/avatar/`,
+    );
+
     return (
         <section className="customer-detail-hero">
             <div className="customer-detail-hero__identity">
                 <div
-                    className={`customer-detail-hero__avatar${customer.avatarUrl ? ' customer-detail-hero__avatar--image' : ''}`}
+                    className={`customer-detail-hero__avatar${staffAvatarUrl ? ' customer-detail-hero__avatar--image' : ''}`}
                     aria-hidden="true"
                 >
-                    {customer.avatarUrl ? (
+                    {staffAvatarUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img alt="" src={customer.avatarUrl} />
+                        <img alt="" src={staffAvatarUrl} />
                     ) : (
                         customerInitials
                     )}

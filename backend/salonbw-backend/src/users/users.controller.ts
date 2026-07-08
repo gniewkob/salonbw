@@ -9,6 +9,7 @@ import {
     Post,
     StreamableFile,
     Param,
+    ParseIntPipe,
     UseGuards,
     Query,
     HttpCode,
@@ -116,8 +117,7 @@ export class UsersController {
                         (process.env.UPLOADS_DIR || '').trim() ||
                         path.join(process.cwd(), 'uploads');
                     const reqUser = req.user as
-                        | { userId?: unknown; id?: unknown }
-                        | undefined;
+                        { userId?: unknown; id?: unknown } | undefined;
                     const userId = Number(reqUser?.userId ?? reqUser?.id);
                     if (!Number.isInteger(userId) || userId <= 0) {
                         return cb(new Error('Invalid userId'), root);
@@ -184,6 +184,27 @@ export class UsersController {
         @Param('fileName') fileName: string,
         @Res({ passthrough: true }) res: Response,
     ) {
+        return this.streamAvatar(user.userId, fileName, res);
+    }
+
+    // Staff widzi avatary klientek na karcie klienta (upload pozostaje
+    // self-service; serwowanie nadal wyłącznie przez autoryzowany endpoint,
+    // Content-Type z whitelisty — bez statycznego katalogu).
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @SkipThrottle()
+    @Get(':id/avatar/:fileName')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Download a user's avatar (staff only)" })
+    getUserAvatar(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('fileName') fileName: string,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        return this.streamAvatar(id, fileName, res);
+    }
+
+    private streamAvatar(userId: number, fileName: string, res: Response) {
         const safeName = path.basename(fileName);
         if (!safeName || safeName !== fileName) {
             throw new BadRequestException('Invalid avatar file');
@@ -194,7 +215,7 @@ export class UsersController {
         const fullPath = path.join(
             root,
             'users',
-            String(user.userId),
+            String(userId),
             'avatar',
             safeName,
         );
