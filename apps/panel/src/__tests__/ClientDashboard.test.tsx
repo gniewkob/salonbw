@@ -90,6 +90,17 @@ describe('ClientDashboard', () => {
         ).toHaveAttribute('href', '/visits?visitId=42');
     });
 
+    it('links appointment titles to their visit details', () => {
+        render(<ClientDashboard />);
+
+        expect(
+            screen.getByRole('link', { name: 'Strzyżenie' }),
+        ).toHaveAttribute('href', '/visits?visitId=10');
+        expect(
+            screen.getByRole('link', { name: 'Dermabrazja' }),
+        ).toHaveAttribute('href', '/visits?visitId=7');
+    });
+
     it('keeps active appointments out of the recent history shortcut', () => {
         render(<ClientDashboard />);
 

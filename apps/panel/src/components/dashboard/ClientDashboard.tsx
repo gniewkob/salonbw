@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { useClientDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -231,7 +232,17 @@ export default function ClientDashboard() {
                                 </div>
                                 <div className="client-next-visit__main">
                                     <div className="client-next-visit__service">
-                                        {data.upcomingAppointment.serviceName}
+                                        <Link
+                                            href={visitDetailsHref(
+                                                data.upcomingAppointment.id,
+                                            )}
+                                            className="client-next-visit__service-link"
+                                        >
+                                            {
+                                                data.upcomingAppointment
+                                                    .serviceName
+                                            }
+                                        </Link>
                                     </div>
                                     <div className="client-next-visit__meta">
                                         {formatDateTime(
@@ -376,7 +387,12 @@ export default function ClientDashboard() {
                                 </div>
                                 <div className="salonbw-appointment-item__details">
                                     <div className="salonbw-appointment-item__client">
-                                        {apt.serviceName}
+                                        <Link
+                                            href={visitDetailsHref(apt.id)}
+                                            className="salonbw-appointment-item__title-link"
+                                        >
+                                            {apt.serviceName}
+                                        </Link>
                                     </div>
                                     {apt.employeeName && (
                                         <div className="salonbw-appointment-item__service text-muted small">
