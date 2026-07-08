@@ -162,6 +162,17 @@ export class ClientDashboardDto {
     @Type(() => UpcomingAppointmentDto)
     upcomingAppointment: UpcomingAppointmentDto | null;
 
+    @ApiProperty({
+        description:
+            'First appointment where the salon proposed a new time and the client must accept or cancel',
+        type: UpcomingAppointmentDto,
+        nullable: true,
+    })
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => UpcomingAppointmentDto)
+    pendingRescheduleAppointment: UpcomingAppointmentDto | null;
+
     @ApiProperty({ description: 'Total completed appointments' })
     @IsNumber()
     completedCount: number;

@@ -347,6 +347,16 @@ export interface ClientDashboardResponse {
         employeeName: string;
         status?: string;
     } | null;
+    pendingRescheduleAppointment: {
+        id: number;
+        serviceId: number;
+        serviceName: string;
+        startTime: string;
+        reschedulePreviousStartTime?: string | null;
+        reschedulePreviousEndTime?: string | null;
+        employeeName: string;
+        status?: string;
+    } | null;
     completedCount: number;
     serviceHistory: { id: number; name: string; count: number }[];
     recentAppointments: {

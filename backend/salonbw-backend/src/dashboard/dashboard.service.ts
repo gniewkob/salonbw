@@ -231,6 +231,18 @@ export class DashboardService {
     async getClientSummary(userId: number): Promise<ClientDashboardDto> {
         const now = new Date();
 
+        const mapUpcomingAppointment = (apt: Appointment) => ({
+            id: apt.id,
+            serviceId: apt.service?.id ?? 0,
+            serviceName: apt.service?.name ?? '',
+            startTime: apt.startTime,
+            reschedulePreviousStartTime:
+                apt.reschedulePreviousStartTime ?? null,
+            reschedulePreviousEndTime: apt.reschedulePreviousEndTime ?? null,
+            status: apt.status,
+            employeeName: apt.employee?.name ?? apt.employee?.email ?? '',
+        });
+
         const upcomingAppointment = await this.appointmentsRepository.findOne({
             where: {
                 client: { id: userId },
@@ -245,6 +257,16 @@ export class DashboardService {
             relations: ['service', 'employee'],
             order: { startTime: 'ASC' },
         });
+
+        const pendingRescheduleAppointment =
+            await this.appointmentsRepository.findOne({
+                where: {
+                    client: { id: userId },
+                    status: AppointmentStatus.RescheduledPending,
+                },
+                relations: ['service', 'employee'],
+                order: { startTime: 'ASC' },
+            });
 
         const actionSignals = await this.getClientActionSignals(userId);
 
@@ -292,22 +314,10 @@ export class DashboardService {
 
         return {
             upcomingAppointment: upcomingAppointment
-                ? {
-                      id: upcomingAppointment.id,
-                      serviceId: upcomingAppointment.service?.id ?? 0,
-                      serviceName: upcomingAppointment.service?.name ?? '',
-                      startTime: upcomingAppointment.startTime,
-                      reschedulePreviousStartTime:
-                          upcomingAppointment.reschedulePreviousStartTime ??
-                          null,
-                      reschedulePreviousEndTime:
-                          upcomingAppointment.reschedulePreviousEndTime ?? null,
-                      status: upcomingAppointment.status,
-                      employeeName:
-                          upcomingAppointment.employee?.name ??
-                          upcomingAppointment.employee?.email ??
-                          '',
-                  }
+                ? mapUpcomingAppointment(upcomingAppointment)
+                : null,
+            pendingRescheduleAppointment: pendingRescheduleAppointment
+                ? mapUpcomingAppointment(pendingRescheduleAppointment)
                 : null,
             completedCount,
             serviceHistory,

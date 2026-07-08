@@ -9,6 +9,7 @@ import ClientAppointmentActions, {
 } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
+import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
 import VisitNotes from '@/components/client/VisitNotes';
 import StarRating from '@/components/StarRating';
 import MessageThread from '@/components/messages/MessageThread';
@@ -44,46 +45,6 @@ function formatDateTime(value: string) {
         hour: '2-digit',
         minute: '2-digit',
     });
-}
-
-function formatRescheduleDateTime(value: string) {
-    return new Date(value).toLocaleString('pl-PL', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-}
-
-function RescheduleChange({
-    previousStartTime,
-    newStartTime,
-}: {
-    previousStartTime?: string | null;
-    newStartTime: string;
-}) {
-    if (!previousStartTime) return null;
-    return (
-        <div className="reschedule-change" role="note">
-            <div className="reschedule-change__title">
-                Salon proponuje zmianę terminu
-            </div>
-            <div className="reschedule-change__grid">
-                <div>
-                    <span>Było</span>
-                    <strong>
-                        {formatRescheduleDateTime(previousStartTime)}
-                    </strong>
-                </div>
-                <div>
-                    <span>Propozycja salonu</span>
-                    <strong>{formatRescheduleDateTime(newStartTime)}</strong>
-                </div>
-            </div>
-        </div>
-    );
 }
 
 function hasClientVisibleVisitNotes(visit: ClientVisit) {
@@ -256,7 +217,7 @@ function VisitRow({
                     />
                 )}
                 {visit.status === 'rescheduled_pending' && (
-                    <RescheduleChange
+                    <RescheduleChangeNotice
                         previousStartTime={visit.reschedulePreviousStartTime}
                         newStartTime={visit.startTime}
                     />
@@ -318,7 +279,7 @@ function VisitRow({
                         <div className="visit-details-grid">
                             {visit.status === 'rescheduled_pending' && (
                                 <div className="visit-details-wide">
-                                    <RescheduleChange
+                                    <RescheduleChangeNotice
                                         previousStartTime={
                                             visit.reschedulePreviousStartTime
                                         }

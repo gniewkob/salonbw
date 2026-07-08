@@ -9,6 +9,7 @@ import ClientAppointmentActions, {
 } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
+import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
 import VisitNotes from '@/components/client/VisitNotes';
 import PanelButton from '@/components/ui/PanelButton';
 
@@ -109,45 +110,20 @@ export default function ClientDashboard() {
             hour: '2-digit',
             minute: '2-digit',
         });
-    const formatRescheduleDateTime = (dateStr: string) =>
-        new Date(dateStr).toLocaleString('pl-PL', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    const renderRescheduleChange = (
-        previousStartTime: string | null | undefined,
-        newStartTime: string,
-    ) =>
-        previousStartTime ? (
-            <div className="reschedule-change" role="note">
-                <div className="reschedule-change__title">
-                    Salon proponuje zmianę terminu
-                </div>
-                <div className="reschedule-change__grid">
-                    <div>
-                        <span>Było</span>
-                        <strong>
-                            {formatRescheduleDateTime(previousStartTime)}
-                        </strong>
-                    </div>
-                    <div>
-                        <span>Propozycja salonu</span>
-                        <strong>
-                            {formatRescheduleDateTime(newStartTime)}
-                        </strong>
-                    </div>
-                </div>
-            </div>
-        ) : null;
     const pendingActionsCount =
         data.pendingRescheduleCount + data.newSalonMessageCount;
-    const primaryActionHref = data.upcomingAppointment
-        ? visitDetailsHref(data.upcomingAppointment.id)
-        : '/visits';
+    const pendingRescheduleAppointment =
+        data.pendingRescheduleAppointment ??
+        (data.upcomingAppointment?.status === 'rescheduled_pending'
+            ? data.upcomingAppointment
+            : data.recentAppointments.find(
+                  (apt) => apt.status === 'rescheduled_pending',
+              ));
+    const primaryActionHref = pendingRescheduleAppointment
+        ? visitDetailsHref(pendingRescheduleAppointment.id)
+        : data.upcomingAppointment
+          ? visitDetailsHref(data.upcomingAppointment.id)
+          : '/visits';
 
     return (
         <div className="salonbw-dashboard">
@@ -183,6 +159,16 @@ export default function ClientDashboard() {
                                     Masz wiadomość przy wizycie. Otwórz
                                     szczegóły i odpisz w wątku.
                                 </span>
+                            ) : null}
+                            {pendingRescheduleAppointment?.reschedulePreviousStartTime ? (
+                                <RescheduleChangeNotice
+                                    previousStartTime={
+                                        pendingRescheduleAppointment.reschedulePreviousStartTime
+                                    }
+                                    newStartTime={
+                                        pendingRescheduleAppointment.startTime
+                                    }
+                                />
                             ) : null}
                         </div>
                     </div>
@@ -238,10 +224,18 @@ export default function ClientDashboard() {
                                     )}
                                     {data.upcomingAppointment.status ===
                                         'rescheduled_pending' &&
-                                        renderRescheduleChange(
-                                            data.upcomingAppointment
-                                                .reschedulePreviousStartTime,
-                                            data.upcomingAppointment.startTime,
+                                        data.upcomingAppointment
+                                            .reschedulePreviousStartTime && (
+                                            <RescheduleChangeNotice
+                                                previousStartTime={
+                                                    data.upcomingAppointment
+                                                        .reschedulePreviousStartTime
+                                                }
+                                                newStartTime={
+                                                    data.upcomingAppointment
+                                                        .startTime
+                                                }
+                                            />
                                         )}
                                 </div>
                                 <div className="client-next-visit__actions">
@@ -390,9 +384,13 @@ export default function ClientDashboard() {
                                         />
                                     )}
                                     {apt.status === 'rescheduled_pending' &&
-                                        renderRescheduleChange(
-                                            apt.reschedulePreviousStartTime,
-                                            apt.startTime,
+                                        apt.reschedulePreviousStartTime && (
+                                            <RescheduleChangeNotice
+                                                previousStartTime={
+                                                    apt.reschedulePreviousStartTime
+                                                }
+                                                newStartTime={apt.startTime}
+                                            />
                                         )}
                                 </div>
                                 <ClientAppointmentActions

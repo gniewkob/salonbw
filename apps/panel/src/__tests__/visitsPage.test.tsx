@@ -24,6 +24,10 @@ const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 const FUTURE = new Date(Date.now() + 86400000).toISOString();
 const PAST = new Date(Date.now() - 86400000).toISOString();
+const RESCHEDULE_PREVIOUS = new Date(Date.now() + 2 * 86400000).toISOString();
+const RESCHEDULE_NEW = new Date(
+    Date.now() + 2 * 86400000 + 900000,
+).toISOString();
 
 const VISITS = [
     {
@@ -66,6 +70,19 @@ const VISITS = [
         review: { id: 9, rating: 5, comment: 'Super!' },
     },
     {
+        id: 5,
+        startTime: RESCHEDULE_NEW,
+        endTime: RESCHEDULE_NEW,
+        reschedulePreviousStartTime: RESCHEDULE_PREVIOUS,
+        reschedulePreviousEndTime: RESCHEDULE_PREVIOUS,
+        status: 'rescheduled_pending',
+        serviceId: 8,
+        serviceName: 'Tonowanie',
+        employeeName: 'Aleksandra',
+        notes: null,
+        review: null,
+    },
+    {
         id: 4,
         startTime: PAST,
         endTime: PAST,
@@ -101,7 +118,7 @@ describe('VisitsPage', () => {
             await screen.findByText('Strzyżenie damskie'),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('heading', { name: /Nadchodzące wizyty \(1\)/ }),
+            screen.getByRole('heading', { name: /Nadchodzące wizyty \(2\)/ }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('heading', { name: /Odbyte wizyty \(2\)/ }),
@@ -125,7 +142,34 @@ describe('VisitsPage', () => {
         expect(screen.getByText(/Super!/)).toBeInTheDocument();
         expect(screen.getByText('Zmień ocenę')).toBeInTheDocument();
         // upcoming visit is cancellable, not reviewable
-        expect(screen.getAllByText('Anuluj')).toHaveLength(1);
+        expect(screen.getAllByText('Anuluj')).toHaveLength(2);
+    });
+
+    it('shows proposed reschedule details and accepts the new time', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/dashboard/client/visits') return VISITS;
+            if (path === '/appointments/5/accept-reschedule') return {};
+            throw new Error(`unexpected ${path}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Tonowanie');
+        expect(
+            screen.getByText('Salon proponuje zmianę terminu'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Było')).toBeInTheDocument();
+        expect(screen.getByText('Propozycja salonu')).toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Akceptuj nowy termin' }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/appointments/5/accept-reschedule',
+                { method: 'PATCH' },
+            );
+        });
     });
 
     it('submits a review for a completed visit with appointmentId + rating', async () => {
