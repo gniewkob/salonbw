@@ -76,9 +76,11 @@ describe('AccountPage', () => {
         expect(screen.getByLabelText('Data urodzenia')).toHaveValue(
             '1990-05-10',
         );
-        expect(screen.getByLabelText('Informacje dla salonu')).toHaveValue(
-            'Preferuje poranki',
-        );
+        // pole "Informacje dla salonu" (description) jest CRM-owe, staff-only —
+        // klient nie może go edytować
+        expect(
+            screen.queryByLabelText('Informacje dla salonu'),
+        ).not.toBeInTheDocument();
 
         fireEvent.change(screen.getByLabelText('Miasto'), {
             target: { value: 'Kraków' },
@@ -92,13 +94,13 @@ describe('AccountPage', () => {
             ),
         );
         const body = JSON.parse(apiFetch.mock.calls[0][1].body as string);
+        expect(body).not.toHaveProperty('description');
         expect(body).toEqual(
             expect.objectContaining({
                 name: 'Test User',
                 firstName: 'Test',
                 lastName: 'User',
                 city: 'Kraków',
-                description: 'Preferuje poranki',
             }),
         );
         expect(refreshProfile).toHaveBeenCalled();

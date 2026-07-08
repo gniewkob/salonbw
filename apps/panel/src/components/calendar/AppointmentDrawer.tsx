@@ -245,7 +245,10 @@ export default function AppointmentDrawer({
     const currentStatus = appointment?.status ?? 'scheduled';
     const isOnlinePending = currentStatus === 'online_pending';
     const isRescheduledPending = currentStatus === 'rescheduled_pending';
-    const canConfirm = currentStatus === 'scheduled' || isOnlinePending;
+    const canConfirm =
+        currentStatus === 'scheduled' ||
+        isOnlinePending ||
+        isRescheduledPending;
     const canStart =
         !isOnlinePending &&
         !isRescheduledPending &&

@@ -1010,6 +1010,9 @@ export class AppointmentsService {
             ],
             [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
             [AppointmentStatus.RescheduledPending]: [
+                // Confirmed = staff potwierdza w imieniu klientki (np. telefonicznie);
+                // klientka z kontem potwierdza przez /accept-reschedule.
+                AppointmentStatus.Confirmed,
                 AppointmentStatus.Cancelled,
                 AppointmentStatus.NoShow,
             ],
@@ -1026,7 +1029,15 @@ export class AppointmentsService {
             );
         }
 
-        await this.appointmentsRepository.update(id, { status: targetStatus });
+        const statusUpdate: Partial<Appointment> = { status: targetStatus };
+        if (
+            appointment.status === AppointmentStatus.RescheduledPending &&
+            targetStatus === AppointmentStatus.Confirmed
+        ) {
+            statusUpdate.reschedulePreviousStartTime = null;
+            statusUpdate.reschedulePreviousEndTime = null;
+        }
+        await this.appointmentsRepository.update(id, statusUpdate);
 
         const updated = await this.findOne(id);
         if (updated) {
@@ -1164,6 +1175,11 @@ export class AppointmentsService {
               }>
             | undefined;
         let additionalServicesNetCents = 0;
+        if (dto.additionalServices && dto.additionalServices.length === 0) {
+            // Jawnie pusta lista = personel świadomie usunął dodatki
+            // (np. pre-fillowane z rezerwacji online) — czyścimy zapis.
+            extraServices = [];
+        }
         if (dto.additionalServices && dto.additionalServices.length > 0) {
             const ids = Array.from(
                 new Set(dto.additionalServices.map((s) => s.serviceId)),

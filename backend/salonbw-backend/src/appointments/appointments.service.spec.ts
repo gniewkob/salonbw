@@ -191,7 +191,7 @@ describe('AppointmentsService', () => {
         expect(result.status).toBe(AppointmentStatus.Scheduled);
     });
 
-    it('requires client acceptance before a rescheduled appointment becomes confirmed again', async () => {
+    it('client can accept a rescheduled appointment', async () => {
         const start = new Date(Date.now() + 3 * 60 * 60 * 1000);
         const appointment = await service.create(
             {
@@ -207,19 +207,61 @@ describe('AppointmentsService', () => {
         appointment.reschedulePreviousStartTime = start;
         appointment.reschedulePreviousEndTime = appointment.endTime;
 
-        await expect(
-            service.updateStatus(
-                appointment.id,
-                AppointmentStatus.Confirmed,
-                users[1],
-            ),
-        ).rejects.toThrow(BadRequestException);
-
         await service.acceptReschedule(appointment.id, users[0]);
 
         expect(appointments[0].status).toBe(AppointmentStatus.Confirmed);
         expect(appointments[0].reschedulePreviousStartTime).toBeNull();
         expect(appointments[0].reschedulePreviousEndTime).toBeNull();
+    });
+
+    it('staff can confirm a rescheduled appointment on behalf of the client (phone confirmation)', async () => {
+        const start = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+
+        appointment.status = AppointmentStatus.RescheduledPending;
+        appointment.reschedulePreviousStartTime = start;
+        appointment.reschedulePreviousEndTime = appointment.endTime;
+
+        const updated = await service.updateStatus(
+            appointment.id,
+            AppointmentStatus.Confirmed,
+            users[1],
+        );
+
+        expect(updated?.status).toBe(AppointmentStatus.Confirmed);
+        expect(appointments[0].reschedulePreviousStartTime).toBeNull();
+        expect(appointments[0].reschedulePreviousEndTime).toBeNull();
+    });
+
+    it('allows recording a no-show from rescheduled_pending', async () => {
+        const start = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+
+        appointment.status = AppointmentStatus.RescheduledPending;
+
+        const updated = await service.updateStatus(
+            appointment.id,
+            AppointmentStatus.NoShow,
+            users[1],
+        );
+
+        expect(updated?.status).toBe(AppointmentStatus.NoShow);
     });
 
     it('stores previous time when staff proposes a new appointment time', async () => {
@@ -248,9 +290,7 @@ describe('AppointmentsService', () => {
         expect(updated?.status).toBe(AppointmentStatus.RescheduledPending);
         expect(updated?.startTime).toEqual(proposedStart);
         expect(updated?.reschedulePreviousStartTime).toEqual(start);
-        expect(updated?.reschedulePreviousEndTime).toEqual(
-            appointment.endTime,
-        );
+        expect(updated?.reschedulePreviousEndTime).toEqual(appointment.endTime);
     });
 
     it('should not send booking confirmation if client has no phone', async () => {

@@ -62,6 +62,12 @@ export interface CalendarEvent {
     onlineTotalDurationMinutes?: number | null;
     onlineDurationNeedsVerification?: boolean;
     allDay?: boolean;
+    extraServices?: Array<{
+        serviceId: number;
+        name: string;
+        priceCents: number;
+        discountCents: number;
+    }>;
 }
 
 export interface CalendarData {
@@ -977,6 +983,9 @@ export class CalendarService {
             onlineTotalDurationMinutes: apt.onlineTotalDurationMinutes ?? null,
             onlineDurationNeedsVerification:
                 apt.onlineDurationNeedsVerification ?? false,
+            // Dodatki wybrane przy rezerwacji online — finalizacja pre-filluje
+            // z nich pozycje rozliczeniowe.
+            extraServices: apt.extraServices ?? undefined,
         };
     }
 

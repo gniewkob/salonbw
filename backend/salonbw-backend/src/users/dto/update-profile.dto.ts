@@ -60,10 +60,4 @@ export class UpdateProfileDto {
     @MaxLength(20)
     @ApiProperty({ required: false })
     postalCode?: string | null;
-
-    @IsString()
-    @IsOptional()
-    @MaxLength(1000)
-    @ApiProperty({ required: false })
-    description?: string | null;
 }

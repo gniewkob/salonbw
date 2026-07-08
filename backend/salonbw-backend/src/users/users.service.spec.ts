@@ -236,7 +236,6 @@ describe('UsersService', () => {
                 address: '  Prosta 1 ',
                 city: ' Warszawa ',
                 postalCode: ' 00-001 ',
-                description: '  preferuje poranki ',
             });
 
             expect(repo.update).toHaveBeenCalledWith(
@@ -250,7 +249,6 @@ describe('UsersService', () => {
                     address: 'Prosta 1',
                     city: 'Warszawa',
                     postalCode: '00-001',
-                    description: 'preferuje poranki',
                 }),
             );
             expect(repo.update.mock.calls[0][1]).toHaveProperty('birthDate');

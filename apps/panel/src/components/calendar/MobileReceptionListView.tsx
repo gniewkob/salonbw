@@ -64,7 +64,7 @@ const ACTION_CONFIG: Record<ActionKey, ActionConfig> = {
 
 const STATUS_ACTIONS: Record<AppointmentStatus | string, ActionKey[]> = {
     online_pending: ['confirm', 'reject'],
-    rescheduled_pending: ['reject'],
+    rescheduled_pending: ['confirm', 'reject'],
     scheduled: ['confirm', 'cancel', 'no_show'],
     confirmed: ['start', 'cancel', 'no_show'],
     in_progress: ['finalize', 'cancel'],

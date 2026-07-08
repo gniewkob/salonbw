@@ -24,6 +24,7 @@ type RegisterFormValues = {
     gdprConsent: boolean;
     termsConsent: boolean;
     smsConsent: boolean;
+    whatsappConsent: boolean;
     emailConsent: boolean;
 };
 type RegisterErrors = Partial<Record<keyof RegisterFormValues, string>>;
@@ -63,6 +64,7 @@ export default function RegisterPage() {
         gdprConsent: false,
         termsConsent: false,
         smsConsent: false,
+        whatsappConsent: false,
         emailConsent: false,
     });
     const [touched, setTouched] = useState<
@@ -85,7 +87,12 @@ export default function RegisterPage() {
     };
 
     const handleCheckbox = (
-        field: 'gdprConsent' | 'termsConsent' | 'smsConsent' | 'emailConsent',
+        field:
+            | 'gdprConsent'
+            | 'termsConsent'
+            | 'smsConsent'
+            | 'whatsappConsent'
+            | 'emailConsent',
         checked: boolean,
     ) => {
         const nextForm = { ...form, [field]: checked };
@@ -117,7 +124,7 @@ export default function RegisterPage() {
         try {
             await register({
                 ...form,
-                whatsappConsent: form.smsConsent,
+                whatsappConsent: form.whatsappConsent,
             });
             const profile = await apiFetch<User>('/users/profile');
             void router.push(getPostLoginRoute(profile?.role));
@@ -314,7 +321,28 @@ export default function RegisterPage() {
                             />
                             <span>
                                 Wyrażam zgodę na otrzymywanie informacji
-                                marketingowych drogą SMS / WhatsApp.{' '}
+                                marketingowych drogą SMS.{' '}
+                                <span className="auth-consent__optional">
+                                    (opcjonalne)
+                                </span>
+                            </span>
+                        </AuthConsentLabel>
+
+                        <AuthConsentLabel muted>
+                            <input
+                                type="checkbox"
+                                id="whatsappConsent"
+                                checked={form.whatsappConsent}
+                                onChange={(e) =>
+                                    handleCheckbox(
+                                        'whatsappConsent',
+                                        e.target.checked,
+                                    )
+                                }
+                            />
+                            <span>
+                                Wyrażam zgodę na otrzymywanie informacji
+                                marketingowych drogą WhatsApp.{' '}
                                 <span className="auth-consent__optional">
                                     (opcjonalne)
                                 </span>

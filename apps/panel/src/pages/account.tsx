@@ -23,7 +23,6 @@ type ProfileDraft = {
     address: string;
     city: string;
     postalCode: string;
-    description: string;
 };
 
 const emptyProfileDraft: ProfileDraft = {
@@ -35,7 +34,6 @@ const emptyProfileDraft: ProfileDraft = {
     address: '',
     city: '',
     postalCode: '',
-    description: '',
 };
 
 function splitName(name?: string | null) {
@@ -82,7 +80,6 @@ export default function AccountPage() {
             address: user.address ?? '',
             city: user.city ?? '',
             postalCode: user.postalCode ?? '',
-            description: user.description ?? '',
         });
         setNotifyPanel(user.notifyPanel ?? true);
         setSmsConsent(Boolean(user.smsConsent));
@@ -133,7 +130,6 @@ export default function AccountPage() {
                     address: profile.address.trim() || null,
                     city: profile.city.trim() || null,
                     postalCode: profile.postalCode.trim() || null,
-                    description: profile.description.trim() || null,
                 }),
             });
             await refreshProfile();
@@ -497,25 +493,6 @@ export default function AccountPage() {
                                                 onChange={(e) =>
                                                     updateProfileField(
                                                         'city',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div className="account-profile__field account-profile__field--wide">
-                                            <label htmlFor="acc-description">
-                                                Informacje dla salonu
-                                            </label>
-                                            <textarea
-                                                id="acc-description"
-                                                className="form-control"
-                                                value={profile.description}
-                                                maxLength={1000}
-                                                disabled={profileSaving}
-                                                rows={4}
-                                                onChange={(e) =>
-                                                    updateProfileField(
-                                                        'description',
                                                         e.target.value,
                                                     )
                                                 }

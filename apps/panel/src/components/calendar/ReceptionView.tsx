@@ -60,7 +60,7 @@ const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     rescheduled_pending: {
         label: 'Czeka na akceptację klienta',
         className: 'salonbw-status--rescheduled-pending',
-        actions: ['reject'],
+        actions: ['confirm', 'reject'],
     },
     scheduled: {
         label: 'Zaplanowana',

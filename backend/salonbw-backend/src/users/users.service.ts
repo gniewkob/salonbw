@@ -126,7 +126,8 @@ export class UsersService {
             termsConsent,
             termsConsentDate: termsConsent ? new Date() : undefined,
             smsConsent: dto.smsConsent ?? false,
-            whatsappConsent: dto.whatsappConsent ?? dto.smsConsent ?? false,
+            // Osobna zgoda per kanał (RODO) — WhatsApp NIE dziedziczy z SMS.
+            whatsappConsent: dto.whatsappConsent ?? false,
             emailConsent: dto.emailConsent ?? false,
         });
 
@@ -213,8 +214,6 @@ export class UsersService {
         if (dto.city !== undefined) update.city = clean(dto.city);
         if (dto.postalCode !== undefined)
             update.postalCode = clean(dto.postalCode);
-        if (dto.description !== undefined)
-            update.description = clean(dto.description);
 
         if (dto.firstName !== undefined || dto.lastName !== undefined) {
             const composedName = [

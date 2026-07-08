@@ -177,6 +177,8 @@ export default function FinalizationModal({
     >([]);
     const [showServicePicker, setShowServicePicker] = useState(false);
     const [serviceSearch, setServiceSearch] = useState('');
+    const [showAllServices, setShowAllServices] = useState(false);
+    const [extrasPrefilled, setExtrasPrefilled] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -218,6 +220,29 @@ export default function FinalizationModal({
             setServicePrefilled(true);
         }
     }, [open, suggestedServicePrice, servicePrefilled]);
+
+    // Dodatki wybrane przez klientkę przy rezerwacji online wchodzą do
+    // rozliczenia od razu — personel może je usunąć/skorygować, ale nie są
+    // po cichu gubione ani nadpisywane.
+    useEffect(() => {
+        if (!open) {
+            setExtrasPrefilled(false);
+            return;
+        }
+        if (extrasPrefilled) return;
+        const extras = appointment?.extraServices ?? [];
+        if (extras.length > 0) {
+            setAdditionalServices(
+                extras.map((extra) => ({
+                    serviceId: extra.serviceId,
+                    name: extra.name,
+                    priceCents: extra.priceCents,
+                    discountCents: extra.discountCents ?? 0,
+                })),
+            );
+        }
+        setExtrasPrefilled(true);
+    }, [open, extrasPrefilled, appointment?.extraServices]);
 
     // Client's standing discount (own percent, else from their group) — used
     // to pre-fill the discount field at finalization. Staff can still edit it.
@@ -321,6 +346,37 @@ export default function FinalizationModal({
               )
             : services;
     }, [services, serviceSearch]);
+    // Krótka lista polecanych dodatków (heurystyka jak w kreatorze rezerwacji)
+    // — pełny katalog dostępny przez wyszukiwarkę lub „Pokaż wszystkie".
+    const recommendedServices = useMemo(() => {
+        const isLikelyAddon = (svc: Service) => {
+            const text =
+                `${svc.name ?? ''} ${svc.description ?? ''}`.toLocaleLowerCase(
+                    'pl-PL',
+                );
+            return [
+                'pielęgn',
+                'pielegn',
+                'regener',
+                'odżyw',
+                'odzyw',
+                'ampuł',
+                'ampul',
+                'botoks',
+                'kuracja',
+                'zabieg',
+            ].some((needle) => text.includes(needle));
+        };
+        const chosen = new Set(additionalServices.map((a) => a.serviceId));
+        return services
+            .filter((svc) => !chosen.has(svc.id))
+            .sort((a, b) => {
+                const rankA = isLikelyAddon(a) ? 0 : 1;
+                const rankB = isLikelyAddon(b) ? 0 : 1;
+                return rankA - rankB;
+            })
+            .slice(0, 3);
+    }, [services, additionalServices]);
 
     // Calculate totals
     const summary = useMemo(() => {
@@ -436,6 +492,7 @@ export default function FinalizationModal({
         setAdditionalServices([]);
         setShowServicePicker(false);
         setServiceSearch('');
+        setShowAllServices(false);
         setProductSales([]);
         setUsageMaterials([]);
         setShowProductPicker(false);
@@ -512,7 +569,9 @@ export default function FinalizationModal({
                           priceCents: s.priceCents,
                           discountCents: s.discountCents,
                       }))
-                    : undefined,
+                    : (appointment?.extraServices?.length ?? 0) > 0
+                      ? [] // jawne czyszczenie usuniętych dodatków online
+                      : undefined,
             usageItems:
                 usageItems.length > 0
                     ? usageItems.map((item) => ({
@@ -893,29 +952,95 @@ export default function FinalizationModal({
                                     <p className="small text-muted mb-0">
                                         Ładowanie usług…
                                     </p>
-                                ) : filteredServices.length === 0 ? (
-                                    <p className="small text-muted mb-0">
-                                        Brak usług dla „{serviceSearch}”.
-                                    </p>
-                                ) : (
-                                    filteredServices.map((svc) => (
+                                ) : serviceSearch.trim() ? (
+                                    filteredServices.length === 0 ? (
+                                        <p className="small text-muted mb-0">
+                                            Brak usług dla „{serviceSearch}”.
+                                        </p>
+                                    ) : (
+                                        filteredServices.map((svc) => (
+                                            <button
+                                                type="button"
+                                                key={svc.id}
+                                                onClick={() =>
+                                                    addAdditionalService(svc.id)
+                                                }
+                                                className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
+                                            >
+                                                <span>{svc.name}</span>
+                                                <span className="text-muted">
+                                                    {Number(
+                                                        svc.price ?? 0,
+                                                    ).toFixed(2)}{' '}
+                                                    zł
+                                                </span>
+                                            </button>
+                                        ))
+                                    )
+                                ) : showAllServices ? (
+                                    <>
+                                        {filteredServices.map((svc) => (
+                                            <button
+                                                type="button"
+                                                key={svc.id}
+                                                onClick={() =>
+                                                    addAdditionalService(svc.id)
+                                                }
+                                                className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
+                                            >
+                                                <span>{svc.name}</span>
+                                                <span className="text-muted">
+                                                    {Number(
+                                                        svc.price ?? 0,
+                                                    ).toFixed(2)}{' '}
+                                                    zł
+                                                </span>
+                                            </button>
+                                        ))}
                                         <button
                                             type="button"
-                                            key={svc.id}
+                                            className="btn btn-link btn-sm p-0 text-decoration-none text-muted"
                                             onClick={() =>
-                                                addAdditionalService(svc.id)
+                                                setShowAllServices(false)
                                             }
-                                            className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
                                         >
-                                            <span>{svc.name}</span>
-                                            <span className="text-muted">
-                                                {Number(svc.price ?? 0).toFixed(
-                                                    2,
-                                                )}{' '}
-                                                zł
-                                            </span>
+                                            Zwiń listę
                                         </button>
-                                    ))
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="small text-muted mb-1">
+                                            Polecane zabiegi:
+                                        </p>
+                                        {recommendedServices.map((svc) => (
+                                            <button
+                                                type="button"
+                                                key={svc.id}
+                                                onClick={() =>
+                                                    addAdditionalService(svc.id)
+                                                }
+                                                className="d-flex justify-content-between w-100 border-0 bg-transparent px-1 py-1 small text-start"
+                                            >
+                                                <span>{svc.name}</span>
+                                                <span className="text-muted">
+                                                    {Number(
+                                                        svc.price ?? 0,
+                                                    ).toFixed(2)}{' '}
+                                                    zł
+                                                </span>
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            className="btn btn-link btn-sm p-0 text-decoration-none"
+                                            onClick={() =>
+                                                setShowAllServices(true)
+                                            }
+                                        >
+                                            Pokaż wszystkie usługi (
+                                            {services.length})
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </div>
