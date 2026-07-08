@@ -50,6 +50,7 @@ jest.mock('@/hooks/useDashboard', () => ({
                     startTime: '2026-07-01T10:00:00.000Z',
                     employeeName: 'Aleksandra',
                     status: 'completed',
+                    staffRecommendations: 'myć włosy co 3 dni',
                 },
             ],
             pendingRescheduleCount: 1,
@@ -90,7 +91,7 @@ describe('ClientDashboard', () => {
         expect(screen.getByText('Było')).toBeInTheDocument();
         expect(screen.getByText('Propozycja salonu')).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Przejdź do akcji' }),
+            screen.getByRole('link', { name: 'Załatw teraz' }),
         ).toHaveAttribute('href', '/visits?visitId=42');
     });
 
@@ -156,6 +157,11 @@ describe('ClientDashboard', () => {
         expect(
             within(recentSection!).getByText('Dermabrazja'),
         ).toBeInTheDocument();
+        expect(
+            within(recentSection!).getByRole('link', {
+                name: 'Szczegóły wizyty: zalecenia',
+            }),
+        ).toHaveAttribute('href', '/visits?visitId=7');
         expect(
             within(recentSection!).queryByText('Koloryzacja'),
         ).not.toBeInTheDocument();

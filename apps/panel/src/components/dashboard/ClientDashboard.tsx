@@ -11,11 +11,46 @@ import ClientAppointmentActions, {
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
 import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
-import VisitNotes from '@/components/client/VisitNotes';
 import PanelButton from '@/components/ui/PanelButton';
+import type { ClientDashboardResponse } from '@/types';
 
 function visitDetailsHref(id: number) {
     return `/visits?visitId=${id}`;
+}
+
+type DashboardVisit = ClientDashboardResponse['recentAppointments'][number];
+
+function hasVisitDetails(appointment: DashboardVisit) {
+    return Boolean(
+        appointment.notes?.trim() ||
+            appointment.clientComment?.trim() ||
+            appointment.staffRecommendations?.trim() ||
+            appointment.onlineAddonsSummary?.trim() ||
+            appointment.onlineTotalDurationMinutes ||
+            appointment.onlineDurationNeedsVerification,
+    );
+}
+
+function VisitDetailsSummary({ appointment }: { appointment: DashboardVisit }) {
+    const labels = [
+        appointment.clientComment?.trim() || appointment.notes?.trim()
+            ? 'komentarz'
+            : null,
+        appointment.staffRecommendations?.trim() ? 'zalecenia' : null,
+        appointment.onlineAddonsSummary?.trim() ? 'dodatki' : null,
+        appointment.onlineTotalDurationMinutes ? 'czas' : null,
+    ].filter(Boolean);
+
+    if (labels.length === 0) return null;
+
+    return (
+        <Link
+            href={visitDetailsHref(appointment.id)}
+            className="client-visit-summary-link"
+        >
+            Szczegóły wizyty: {labels.join(', ')}
+        </Link>
+    );
 }
 
 const ACTIVE_APPOINTMENT_STATUSES = new Set([
@@ -159,22 +194,33 @@ export default function ClientDashboard() {
 
             {pendingActionsCount > 0 && (
                 <div
-                    className="client-action-panel"
-                    role="status"
-                    aria-live="polite"
+                    className="client-action-panel client-action-panel--required"
+                    role="alert"
                 >
                     <div className="client-action-panel__marker">
-                        {pendingActionsCount}
+                        {pendingActionsCount > 1 ? pendingActionsCount : '!'}
                     </div>
                     <div className="client-action-panel__content">
                         <div className="client-action-panel__eyebrow">
-                            Do zrobienia
+                            Akcja wymagana
                         </div>
                         <h2 className="client-action-panel__title">
                             {data.pendingRescheduleCount > 0
                                 ? 'Potwierdź zmianę terminu wizyty'
                                 : 'Odpowiedz na wiadomość z salonu'}
                         </h2>
+                        {pendingRescheduleAppointment ? (
+                            <div className="client-action-panel__appointment">
+                                <strong>
+                                    {pendingRescheduleAppointment.serviceName}
+                                </strong>
+                                <span>
+                                    {formatDateTime(
+                                        pendingRescheduleAppointment.startTime,
+                                    )}
+                                </span>
+                            </div>
+                        ) : null}
                         <div className="client-action-panel__details">
                             {data.pendingRescheduleCount > 0 ? (
                                 <span>
@@ -205,7 +251,7 @@ export default function ClientDashboard() {
                         variant="primary"
                         className="client-action-panel__button"
                     >
-                        Przejdź do akcji
+                        Załatw teraz
                     </PanelButton>
                 </div>
             )}
@@ -402,31 +448,11 @@ export default function ClientDashboard() {
                                             {apt.employeeName}
                                         </div>
                                     )}
-                                    {(apt.notes ||
-                                        apt.clientComment ||
-                                        apt.staffRecommendations ||
-                                        apt.onlineAddonsSummary ||
-                                        apt.onlineTotalDurationMinutes ||
-                                        apt.onlineDurationNeedsVerification) && (
-                                        <VisitNotes
-                                            notes={apt.notes}
-                                            compact
-                                            appointmentStatus={apt.status}
-                                            clientComment={apt.clientComment}
-                                            staffRecommendations={
-                                                apt.staffRecommendations
-                                            }
-                                            onlineAddonsSummary={
-                                                apt.onlineAddonsSummary
-                                            }
-                                            onlineTotalDurationMinutes={
-                                                apt.onlineTotalDurationMinutes
-                                            }
-                                            onlineDurationNeedsVerification={
-                                                apt.onlineDurationNeedsVerification
-                                            }
+                                    {hasVisitDetails(apt) ? (
+                                        <VisitDetailsSummary
+                                            appointment={apt}
                                         />
-                                    )}
+                                    ) : null}
                                     {apt.status === 'rescheduled_pending' &&
                                         apt.reschedulePreviousStartTime && (
                                             <RescheduleChangeNotice

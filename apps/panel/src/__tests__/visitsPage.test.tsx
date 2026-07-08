@@ -217,7 +217,7 @@ describe('VisitsPage', () => {
         expect(rescheduledVisit).not.toBeNull();
         fireEvent.click(
             within(rescheduledVisit as HTMLElement).getByRole('button', {
-                name: 'Szczegóły',
+                name: 'Otwórz szczegóły',
             }),
         );
         expect(

@@ -276,12 +276,12 @@ function VisitRow({
             <PanelButton
                 type="button"
                 size="sm"
-                variant="ghost"
+                variant="secondary"
                 aria-expanded={expanded}
                 aria-controls={`visit-details-${visit.id}`}
                 onClick={() => onOpen(visit.id)}
             >
-                {expanded ? 'Zwiń' : 'Szczegóły'}
+                {expanded ? 'Zwiń szczegóły' : 'Otwórz szczegóły'}
             </PanelButton>
 
             <div className="salonbw-appointment-item__messages">
