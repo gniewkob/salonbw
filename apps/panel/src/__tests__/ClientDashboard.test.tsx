@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
@@ -31,7 +31,26 @@ jest.mock('@/hooks/useDashboard', () => ({
             },
             completedCount: 1,
             serviceHistory: [],
-            recentAppointments: [],
+            recentAppointments: [
+                {
+                    id: 42,
+                    serviceId: 2,
+                    serviceName: 'Koloryzacja',
+                    startTime: '2026-07-15T14:30:00.000Z',
+                    reschedulePreviousStartTime: '2026-07-12T10:00:00.000Z',
+                    reschedulePreviousEndTime: '2026-07-12T12:00:00.000Z',
+                    employeeName: 'Aleksandra',
+                    status: 'rescheduled_pending',
+                },
+                {
+                    id: 7,
+                    serviceId: 3,
+                    serviceName: 'Dermabrazja',
+                    startTime: '2026-07-01T10:00:00.000Z',
+                    employeeName: 'Aleksandra',
+                    status: 'completed',
+                },
+            ],
             pendingRescheduleCount: 1,
             newSalonMessageCount: 0,
         },
@@ -69,5 +88,21 @@ describe('ClientDashboard', () => {
         expect(
             screen.getByRole('link', { name: 'Przejdź do akcji' }),
         ).toHaveAttribute('href', '/visits?visitId=42');
+    });
+
+    it('keeps active appointments out of the recent history shortcut', () => {
+        render(<ClientDashboard />);
+
+        const recentSection = screen
+            .getByRole('heading', { name: 'Ostatnie wizyty' })
+            .closest('section');
+
+        expect(recentSection).not.toBeNull();
+        expect(
+            within(recentSection!).getByText('Dermabrazja'),
+        ).toBeInTheDocument();
+        expect(
+            within(recentSection!).queryByText('Koloryzacja'),
+        ).not.toBeInTheDocument();
     });
 });

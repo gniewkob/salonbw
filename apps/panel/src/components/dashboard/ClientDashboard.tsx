@@ -17,6 +17,18 @@ function visitDetailsHref(id: number) {
     return `/visits?visitId=${id}`;
 }
 
+const ACTIVE_APPOINTMENT_STATUSES = new Set([
+    'scheduled',
+    'confirmed',
+    'in_progress',
+    'online_pending',
+    'rescheduled_pending',
+]);
+
+function isFutureAppointment(startTime: string) {
+    return new Date(startTime).getTime() > Date.now();
+}
+
 export default function ClientDashboard() {
     const { data, loading, error, refetch } = useClientDashboard();
     const { apiFetch } = useAuth();
@@ -124,6 +136,19 @@ export default function ClientDashboard() {
         : data.upcomingAppointment
           ? visitDetailsHref(data.upcomingAppointment.id)
           : '/visits';
+    const highlightedAppointmentIds = new Set(
+        [data.upcomingAppointment?.id, pendingRescheduleAppointment?.id].filter(
+            (id): id is number => typeof id === 'number',
+        ),
+    );
+    const dashboardRecentAppointments = data.recentAppointments.filter(
+        (apt) =>
+            !highlightedAppointmentIds.has(apt.id) &&
+            !(
+                ACTIVE_APPOINTMENT_STATUSES.has(apt.status) &&
+                isFutureAppointment(apt.startTime)
+            ),
+    );
 
     return (
         <div className="salonbw-dashboard">
@@ -339,9 +364,9 @@ export default function ClientDashboard() {
                 footerHref="/visits"
                 footerLabel="zobacz wszystkie wizyty i oceń odbyte"
             >
-                {data.recentAppointments.length > 0 ? (
+                {dashboardRecentAppointments.length > 0 ? (
                     <div className="salonbw-appointments-list">
-                        {data.recentAppointments.map((apt) => (
+                        {dashboardRecentAppointments.map((apt) => (
                             <div
                                 key={apt.id}
                                 className="salonbw-appointment-item"
