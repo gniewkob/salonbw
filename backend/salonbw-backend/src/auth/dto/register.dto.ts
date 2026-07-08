@@ -78,4 +78,13 @@ export class RegisterDto {
         example: false,
     })
     emailConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
+        description: 'Consent to receive WhatsApp messages',
+        required: false,
+        example: false,
+    })
+    whatsappConsent?: boolean;
 }

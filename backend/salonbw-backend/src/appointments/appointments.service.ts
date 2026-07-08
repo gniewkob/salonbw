@@ -155,7 +155,7 @@ export class AppointmentsService {
             throw new BadRequestException('Too many add-on services');
         }
         const services = await this.servicesRepository.find({
-            where: { id: In(uniqueIds) },
+            where: { id: In(uniqueIds), isActive: true, onlineBooking: true },
         });
         if (services.length !== uniqueIds.length) {
             throw new BadRequestException('Invalid addonServiceIds');
@@ -1011,6 +1011,7 @@ export class AppointmentsService {
             [AppointmentStatus.OnlinePending]: [AppointmentStatus.Confirmed],
             [AppointmentStatus.RescheduledPending]: [
                 AppointmentStatus.Cancelled,
+                AppointmentStatus.NoShow,
             ],
             [AppointmentStatus.InProgress]: [],
             [AppointmentStatus.NoShow]: [],

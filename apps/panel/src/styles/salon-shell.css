@@ -7292,7 +7292,16 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
 }
 
 #salonbw-shell-root-mobile .client-page-header__title {
-    display: none;
+    /* visually hidden, but kept in the accessibility tree (mobile shell shows its own header) */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 #salonbw-shell-root-mobile .client-page-header__action {

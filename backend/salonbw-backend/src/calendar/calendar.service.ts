@@ -469,7 +469,11 @@ export class CalendarService {
         const addonServices =
             uniqueAddonIds.length > 0
                 ? await this.serviceRepository.find({
-                      where: { id: In(uniqueAddonIds) },
+                      where: {
+                          id: In(uniqueAddonIds),
+                          isActive: true,
+                          onlineBooking: true,
+                      },
                   })
                 : [];
         if (addonServices.length !== uniqueAddonIds.length) {
