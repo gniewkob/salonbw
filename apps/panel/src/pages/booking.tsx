@@ -13,6 +13,7 @@ import Skeleton from '@/components/ui/Skeleton';
 import BookingStepHeader, {
     type BookingStepDefinition,
 } from '@/components/booking/BookingStepHeader';
+import { toISODateLocal, todayISODate } from '@/utils/date';
 
 interface OnlineService {
     id: number;
@@ -315,16 +316,6 @@ function getPrimaryServiceSourceIds(service: OnlineService) {
 // bug: it converts local midnight to UTC, so in a UTC+ timezone (e.g. Poland
 // in summer) it yields the previous calendar day — which made "today" wrong
 // after midnight and cancelled the day-stepper's +1/-1.
-function toISODateLocal(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-}
-
-function todayISODate(): string {
-    return toISODateLocal(new Date());
-}
 
 function addDaysISO(dateStr: string, days: number): string {
     const d = new Date(`${dateStr}T00:00:00`);

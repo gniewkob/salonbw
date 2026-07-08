@@ -380,7 +380,7 @@ export interface ClientDashboardResponse {
 }
 
 export interface Notification {
-    id: number;
+    id: number | string;
     message: string;
     createdAt: string;
 }

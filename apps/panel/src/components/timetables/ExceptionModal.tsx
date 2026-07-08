@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import type { TimetableException, ExceptionType } from '@/types';
+import { todayISODate } from '@/utils/date';
 
 interface Props {
     isOpen: boolean;
@@ -59,7 +60,7 @@ export default function ExceptionModal({
     onSave,
 }: Props) {
     const [form, setForm] = useState<ExceptionFormData>({
-        date: new Date().toISOString().split('T')[0],
+        date: todayISODate(),
         type: 'day_off',
         title: '',
         reason: '',
@@ -82,7 +83,7 @@ export default function ExceptionModal({
             });
         } else {
             setForm({
-                date: new Date().toISOString().split('T')[0],
+                date: todayISODate(),
                 type: 'day_off',
                 title: '',
                 reason: '',

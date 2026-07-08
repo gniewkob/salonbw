@@ -47,7 +47,7 @@ export class NotificationsController {
                 take: 10,
             });
             return upcoming.map((a) => ({
-                id: a.id,
+                id: `client-${a.id}`,
                 message: this.formatClientMessage(a),
                 createdAt: a.startTime,
             }));
@@ -79,13 +79,14 @@ export class NotificationsController {
             .getMany();
 
         const pendingNotifs = pending.map((a) => ({
-            id: a.id * 1000,
+            // Prefiks zamiast id*1000 — hack kolidował (#1 pending vs #1000 today).
+            id: `pending-${a.id}`,
             message: `Nowa rezerwacja online od ${a.client?.name ?? 'klienta'} — ${a.service?.name ?? 'usługa'} (${this.formatTime(a.startTime)}) czeka na potwierdzenie`,
             createdAt: a.createdAt ?? a.startTime,
         }));
 
         const todayNotifs = recent.map((a) => ({
-            id: a.id,
+            id: `today-${a.id}`,
             message: `Wizyta: ${a.client?.name ?? 'klient'} — ${a.service?.name ?? 'usługa'} o ${this.formatTime(a.startTime)}`,
             createdAt: a.startTime,
         }));

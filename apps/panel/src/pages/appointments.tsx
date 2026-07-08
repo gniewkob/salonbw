@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/contexts/ToastContext';
 import type { Appointment, AppointmentStatus, ServiceVariant } from '@/types';
+import { toISODateLocal } from '@/utils/date';
 
 interface AppointmentWithVariant extends Appointment {
     serviceVariant?: ServiceVariant | null;
@@ -43,10 +44,6 @@ function formatDateTime(iso: string) {
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function isoDate(d: Date) {
-    return d.toISOString().split('T')[0];
-}
-
 const ALL_STATUSES: AppointmentStatus[] = [
     'scheduled',
     'confirmed',
@@ -68,8 +65,8 @@ export default function AppointmentsPage() {
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    const defaultFrom = isoDate(thirtyDaysAgo);
-    const defaultTo = isoDate(today);
+    const defaultFrom = toISODateLocal(thirtyDaysAgo);
+    const defaultTo = toISODateLocal(today);
 
     const initialStatus = (router.query.status as AppointmentStatus) || '';
     const [from, setFrom] = useState(defaultFrom);
@@ -88,8 +85,8 @@ export default function AppointmentsPage() {
         if (qStatus === 'online_pending' || qStatus === 'rescheduled_pending') {
             const ahead = new Date();
             ahead.setDate(ahead.getDate() + 90);
-            setFrom(isoDate(new Date()));
-            setTo(isoDate(ahead));
+            setFrom(toISODateLocal(new Date()));
+            setTo(toISODateLocal(ahead));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.isReady, router.query.status]);
@@ -175,7 +172,7 @@ export default function AppointmentsPage() {
     const openInCalendar = (appt: AppointmentWithVariant) => {
         if (!appt.startTime) return;
         const d = new Date(appt.startTime);
-        const dateStr = isoDate(d);
+        const dateStr = toISODateLocal(d);
         void router.push(`/calendar?date=${dateStr}&appointmentId=${appt.id}`);
     };
 

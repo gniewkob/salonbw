@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { todayISODate } from '@/utils/date';
 import type {
     DashboardStats,
     RevenueDataPoint,
@@ -31,7 +32,7 @@ export interface EmployeeActivitySummary {
 
 export function useEmployeeActivity(date?: string) {
     const { apiFetch } = useAuth();
-    const queryDate = date || new Date().toISOString().split('T')[0];
+    const queryDate = date || todayISODate();
 
     return useQuery<EmployeeActivitySummary>({
         queryKey: ['statistics', 'employees', 'activity', queryDate],
@@ -127,7 +128,7 @@ export function useClientStats(params: EmployeeRankingParams = {}) {
 
 export function useCashRegister(date?: string) {
     const { apiFetch } = useAuth();
-    const queryDate = date || new Date().toISOString().split('T')[0];
+    const queryDate = date || todayISODate();
 
     return useQuery<CashRegisterSummary>({
         queryKey: ['statistics', 'register', queryDate],

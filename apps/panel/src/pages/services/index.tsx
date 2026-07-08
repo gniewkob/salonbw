@@ -15,6 +15,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import type { Role, Service, ServiceVariant } from '@/types';
+import { todayISODate } from '@/utils/date';
 
 // Extended service type with computed fields for display
 interface ServiceWithDisplay extends Service {
@@ -249,7 +250,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        const date = new Date().toISOString().slice(0, 10);
+        const date = todayISODate();
         a.href = url;
         a.download = `cennik-uslugi-${date}.csv`;
         document.body.appendChild(a);

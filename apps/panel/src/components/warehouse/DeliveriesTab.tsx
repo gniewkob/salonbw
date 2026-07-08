@@ -10,6 +10,7 @@ import type { DeliveryStatus } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { formatPanelCurrency, formatPanelDate } from '@/utils/formatters';
+import { todayISODate } from '@/utils/date';
 
 const statusLabels: Record<DeliveryStatus, string> = {
     draft: 'Wersja robocza',
@@ -51,7 +52,7 @@ export default function DeliveriesTab() {
     const handleOpenModal = () => {
         setFormData({
             supplierId: '',
-            deliveryDate: new Date().toISOString().split('T')[0],
+            deliveryDate: todayISODate(),
             invoiceNumber: '',
             notes: '',
         });

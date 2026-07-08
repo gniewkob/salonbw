@@ -8,6 +8,7 @@ import {
     useCreateWarehouseSale,
 } from '@/hooks/useWarehouseViews';
 import { useEmployees } from '@/hooks/useEmployees';
+import { todayISODate } from '@/utils/date';
 
 interface SaleLineForm {
     productId: string;
@@ -44,7 +45,7 @@ export default function WarehouseSaleCreatePage() {
     ]);
     const [clientName, setClientName] = useState('');
     const [employeeId, setEmployeeId] = useState('');
-    const [soldAt, setSoldAt] = useState(new Date().toISOString().slice(0, 10));
+    const [soldAt, setSoldAt] = useState(todayISODate());
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [amountPaid, setAmountPaid] = useState('');

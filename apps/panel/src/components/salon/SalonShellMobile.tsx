@@ -6,7 +6,7 @@ import MobileNavDrawer from './MobileNavDrawer';
 import { resolveSalonModule, visibleSalonModules } from './navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
-import { useNotifications } from '@/hooks/useNotifications';
+import { usePendingBookingsCount } from '@/hooks/useAppointments';
 import SalonIcon from './SalonIcon';
 
 interface SalonShellMobileProps {
@@ -25,8 +25,8 @@ export default function SalonShellMobile({
     const modules = visibleSalonModules(role);
     const topbar = buildTopbarViewModel(user);
     const isStaff = role !== null && role !== 'client';
-    const notifications = useNotifications(isStaff);
-    const notificationCount = notifications.data?.length ?? 0;
+    // Badge = oczekujące rezerwacje online (spójnie z topbarem desktop).
+    const notificationCount = usePendingBookingsCount();
 
     const [drawerOpen, setDrawerOpen] = useState(false);
 

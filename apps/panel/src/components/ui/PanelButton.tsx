@@ -77,6 +77,8 @@ export default function PanelButton(props: PanelButtonProps) {
         icon,
         size = 'md',
         variant = 'secondary',
+        // Niepodany type wewnątrz <form> = submit — wymuszamy bezpieczny default.
+        type = 'button',
         ...rest
     } = props as NativeButtonProps;
     const classes = panelButtonClassName({ className, size, variant });
@@ -88,7 +90,7 @@ export default function PanelButton(props: PanelButtonProps) {
     );
 
     return (
-        <button className={classes} {...rest}>
+        <button type={type} className={classes} {...rest}>
             {content}
         </button>
     );

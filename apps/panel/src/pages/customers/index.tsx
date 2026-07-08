@@ -225,6 +225,12 @@ export default function ClientsPage() {
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    // Debounce zapytań server-search (wcześniej query per klawisz).
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchTerm), 250);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
     const [isMobile, setIsMobile] = useState(false);
     const [mobileAccumulated, setMobileAccumulated] = useState<Customer[]>([]);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -281,7 +287,7 @@ export default function ClientsPage() {
             recentlyAdded: quickFilter === 'new' ? true : undefined,
             emailConsent: quickFilter === 'noEmailConsent' ? false : undefined,
             smsConsent: quickFilter === 'noSmsConsent' ? false : undefined,
-            search: searchTerm.trim() || undefined,
+            search: debouncedSearch.trim() || undefined,
             limit: pageSize,
             page,
             sortBy: sortBy || undefined,
@@ -298,7 +304,7 @@ export default function ClientsPage() {
             sortBy,
             sortOrder,
             quickFilter,
-            searchTerm,
+            debouncedSearch,
         ],
     );
 
@@ -438,7 +444,7 @@ export default function ClientsPage() {
         currentServiceId,
         currentEmployeeId,
         quickFilter,
-        searchTerm,
+        searchTerm: debouncedSearch,
         sortBy,
         sortOrder,
         pageSize,

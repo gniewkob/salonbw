@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseProducts } from '@/hooks/useWarehouseViews';
+import { todayISODate } from '@/utils/date';
 import {
     useCreateDelivery,
     useReceiveDelivery,
@@ -28,9 +29,7 @@ export default function WarehouseDeliveryCreatePage() {
 
     const [supplierId, setSupplierId] = useState('');
     const [invoiceNumber, setInvoiceNumber] = useState('');
-    const [deliveryDate, setDeliveryDate] = useState(
-        new Date().toISOString().slice(0, 10),
-    );
+    const [deliveryDate, setDeliveryDate] = useState(todayISODate());
     const [notes, setNotes] = useState('');
     const [formError, setFormError] = useState<string | null>(null);
     const [lines, setLines] = useState<DeliveryLineForm[]>([

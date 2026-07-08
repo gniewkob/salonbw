@@ -9,6 +9,7 @@ import type { StocktakingStatus } from '@/types';
 import PanelModal from '@/components/ui/PanelModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { formatPanelDate } from '@/utils/formatters';
+import { todayISODate } from '@/utils/date';
 
 const statusLabels: Record<StocktakingStatus, string> = {
     draft: 'Wersja robocza',
@@ -30,7 +31,7 @@ export default function StocktakingTab() {
     );
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
-        stocktakingDate: new Date().toISOString().split('T')[0],
+        stocktakingDate: todayISODate(),
         notes: '',
     });
     const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export default function StocktakingTab() {
 
     const handleOpenModal = () => {
         setFormData({
-            stocktakingDate: new Date().toISOString().split('T')[0],
+            stocktakingDate: todayISODate(),
             notes: '',
         });
         setError(null);
