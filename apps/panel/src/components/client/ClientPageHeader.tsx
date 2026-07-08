@@ -1,3 +1,4 @@
+import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import PanelButton from '@/components/ui/PanelButton';
 
 interface ClientPageHeaderProps {
@@ -12,6 +13,12 @@ export default function ClientPageHeader({ title }: ClientPageHeaderProps) {
                 href="/booking"
                 variant="primary"
                 className="client-page-header__action"
+                icon={
+                    <CalendarDaysIcon
+                        aria-hidden="true"
+                        className="client-page-header__action-icon"
+                    />
+                }
             >
                 Zarezerwuj wizytę
             </PanelButton>
