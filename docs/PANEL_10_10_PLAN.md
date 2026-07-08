@@ -137,31 +137,34 @@ Metodą z czerwcowych audytów (admin na prod, przez API + UI):
 
 ### Faza 6 — Follow-upy po batchu 2026-07-07 (0.5–1 sesji) 🟡
 
-Fixy z review już wdrożone (rejestracja, pomoc-403, 4 niewidoczne modale, filtr
-dodatków, no_show z rescheduled_pending, sr-only h1, omnibox role-gate, pluralizer).
+Fixy z review wdrożone 2026-07-08 (rejestracja, pomoc-403, 4 niewidoczne modale,
+filtr dodatków, no_show z rescheduled_pending, sr-only h1, omnibox role-gate,
+pluralizer). **Decyzje ownera 1-4 WDROŻONE 2026-07-08 (`f72f00e`):** staff-confirm
+reschedule przywrócony; dodatki online pre-fillowane do rozliczenia finalizacji
+(+ picker: 3 polecane + „Pokaż wszystkie"); osobna zgoda WhatsApp przy rejestracji;
+`description` zablokowane dla klienta. Decyzja 5: dane prod = testowe, spot-check
+zbędny — patrz wymóg importu w 6.1.
+
 Zostaje:
 
-6.1. **Spot-check migracji notatek na prod** — parser `SplitAppointmentClientNotes`
-   nie zna formatu `[Salon] …`; przejrzeć wiersze z `[Salon]`/śródtekstowym
-   `Zalecenia:` i ręcznie poprawić klasyfikację (clientComment vs
-   staffRecommendations).
-6.2. **Decyzje ownera** (blokują dopracowanie flow):
-   a) reschedule klientek telefonicznych — przywrócić staff-confirm („klientka
-      potwierdziła telefonicznie") czy zostawić client-only?
-   b) dodatki online przy finalizacji — auto-billing/prowizja czy ręczne
-      przepisywanie przez staff (dziś: nota „do weryfikacji", cicho nadpisywane)?
-   c) GDPR: osobny checkbox zgody WhatsApp (dziś kopiowana z SMS); audit-trail
-      dat zgód przy revoke;
-   d) czy klient ma edytować `description` (wspólne pole z notatkami CRM staffu)?
-   e) avatar klienta na karcie staff (dziś 404 — GET self-scoped) + weryfikacja
-      `UPLOADS_DIR` na MyDevil.
-6.3. **P3 techniczne**: default `type="button"` w PanelButton; feed powiadomień —
-   id-collision `*1000` + semantyka badge; addon-picker pogrupowany jak krok 1;
-   audyt `toISOString().slice(0,10)` (5+ plików, klasa buga UTC); combobox-ARIA
-   omniboksu; debounce server-search klientów; residuum magazynowe z Fazy 5.
-6.4. **Live E2E rejestracji na prod** — pierwsza rejestracja po fixie P0
-   (poprzednio każda kończyła się 400; sprawdzić od kiedy 2499bda było live
-   i czy ktoś odbił się od formularza).
+6.1. **Import danych produkcyjnych (gdy owner dostarczy wsad)** — wypełnić
+   `clientComment`/`staffRecommendations` bezpośrednio w imporcie; NIE polegać
+   na back-parserze z migracji split (nie zna `[Salon] …` ani śródtekstowych
+   `Zalecenia:`); `notes` jest derywowane (composeClientVisibleNotes).
+6.2. **GDPR pozostałości** (nieblokujące): audit-trail dat zgód przy revoke
+   (dziś data jest zerowana bez śladu); rozdzielić semantykę „zgoda
+   marketingowa" vs „kanał powiadomień transakcyjnych" (te same kolumny).
+6.3. **Avatar klienta**: na karcie klienta u staffa avatar 404 (GET self-scoped)
+   — zdecydować czy staff ma widzieć avatary klientek; zweryfikować
+   `UPLOADS_DIR` na MyDevil (przetrwanie deployu, brak statycznego serwowania).
+6.4. **P3 techniczne**: default `type="button"` w PanelButton; feed powiadomień —
+   id-collision `*1000` + semantyka badge; addon-picker kreatora pogrupowany jak
+   krok 1; audyt `toISOString().slice(0,10)` (5+ plików, klasa buga UTC);
+   combobox-ARIA omniboksu; debounce server-search klientów; residuum magazynowe
+   z Fazy 5.
+6.5. **Live E2E na prod po dzisiejszych zmianach** — rejestracja (pierwsza po
+   fixie P0), staff-confirm reschedule, finalizacja wizyty z dodatkami online
+   (pre-fill + rozliczenie).
 
 ## Kolejność i szacunek
 | Faza | Zakres | Sesje | Blokuje start? |
