@@ -150,6 +150,8 @@ export default function ClientDashboard() {
                 isFutureAppointment(apt.startTime)
             ),
     );
+    const upcomingRescheduleAlreadyHighlighted =
+        data.upcomingAppointment?.id === pendingRescheduleAppointment?.id;
 
     return (
         <div className="salonbw-dashboard">
@@ -260,6 +262,7 @@ export default function ClientDashboard() {
                                     )}
                                     {data.upcomingAppointment.status ===
                                         'rescheduled_pending' &&
+                                        !upcomingRescheduleAlreadyHighlighted &&
                                         data.upcomingAppointment
                                             .reschedulePreviousStartTime && (
                                             <RescheduleChangeNotice

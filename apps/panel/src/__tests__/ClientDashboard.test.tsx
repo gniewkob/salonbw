@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useClientDashboard } from '@/hooks/useDashboard';
 import { createAuthValue } from '../testUtils';
 
 const refetchMock = jest.fn();
@@ -60,6 +61,9 @@ jest.mock('@/hooks/useDashboard', () => ({
 jest.mock('@/contexts/AuthContext');
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockedUseClientDashboard = useClientDashboard as jest.MockedFunction<
+    typeof useClientDashboard
+>;
 
 describe('ClientDashboard', () => {
     beforeEach(() => {
@@ -99,6 +103,46 @@ describe('ClientDashboard', () => {
         expect(
             screen.getByRole('link', { name: 'Dermabrazja' }),
         ).toHaveAttribute('href', '/visits?visitId=7');
+    });
+
+    it('does not duplicate reschedule details when upcoming visit needs action', () => {
+        const pendingAppointment = {
+            id: 42,
+            serviceId: 2,
+            serviceName: 'Koloryzacja',
+            startTime: '2026-07-15T14:30:00.000Z',
+            reschedulePreviousStartTime: '2026-07-12T10:00:00.000Z',
+            reschedulePreviousEndTime: '2026-07-12T12:00:00.000Z',
+            employeeName: 'Aleksandra',
+            status: 'rescheduled_pending',
+        };
+        mockedUseClientDashboard.mockReturnValueOnce({
+            loading: false,
+            error: null,
+            refetch: refetchMock,
+            data: {
+                upcomingAppointment: pendingAppointment,
+                pendingRescheduleAppointment: pendingAppointment,
+                completedCount: 0,
+                serviceHistory: [],
+                recentAppointments: [pendingAppointment],
+                pendingRescheduleCount: 1,
+                newSalonMessageCount: 0,
+            },
+        } as never);
+
+        render(<ClientDashboard />);
+
+        expect(
+            screen.getAllByText('Salon proponuje zmianę terminu'),
+        ).toHaveLength(1);
+        const upcomingSection = screen
+            .getByRole('heading', { name: 'Nadchodząca wizyta' })
+            .closest('section');
+        expect(upcomingSection).not.toBeNull();
+        expect(
+            within(upcomingSection!).queryByText('Było'),
+        ).not.toBeInTheDocument();
     });
 
     it('keeps active appointments out of the recent history shortcut', () => {
