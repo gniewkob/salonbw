@@ -34,8 +34,7 @@ function hasVisitNotes(visit: RecentVisit) {
             visit.staffRecommendations?.trim() ||
             visit.onlineAddonsSummary?.trim() ||
             visit.onlineTotalDurationMinutes ||
-            visit.onlineDurationNeedsVerification ||
-            visit.notes?.trim(),
+            visit.onlineDurationNeedsVerification,
     );
 }
 

@@ -49,12 +49,12 @@ export class CreateAppointmentDto {
     @ApiProperty({
         required: false,
         description:
-            'Client-visible visit note (e.g. preferences/remarks the client adds when booking; staff can read and extend it).',
+            'Client comment added while booking (preferences/remarks visible to staff and client).',
     })
     @IsString()
     @IsOptional()
     @MaxLength(1000)
-    notes?: string;
+    clientComment?: string;
 
     @ApiProperty({
         required: false,

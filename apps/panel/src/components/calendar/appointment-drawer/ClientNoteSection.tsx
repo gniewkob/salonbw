@@ -17,7 +17,7 @@ export default function ClientNoteSection({ appointment }: Props) {
     const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        setNote(appointment?.clientComment ?? appointment?.notes ?? '');
+        setNote(appointment?.clientComment ?? '');
         setSaved(false);
         return () => {
             if (savedTimer.current) clearTimeout(savedTimer.current);
@@ -31,7 +31,7 @@ export default function ClientNoteSection({ appointment }: Props) {
             await apiFetch(`/appointments/${appointment.id}/client-note`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notes: note || null }),
+                body: JSON.stringify({ clientComment: note || null }),
             });
             if (savedTimer.current) clearTimeout(savedTimer.current);
             setSaved(true);

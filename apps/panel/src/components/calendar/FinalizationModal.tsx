@@ -159,8 +159,10 @@ export default function FinalizationModal({
     const [paidPln, setPaidPln] = useState<string>('');
     const [note, setNote] = useState<string>('');
     const [showNote, setShowNote] = useState(false);
-    const [clientNote, setClientNote] = useState<string>('');
-    const [showClientNote, setShowClientNote] = useState(false);
+    const [staffRecommendations, setStaffRecommendations] =
+        useState<string>('');
+    const [showStaffRecommendations, setShowStaffRecommendations] =
+        useState(false);
     const [formula, setFormula] = useState<string>('');
     const [showFormula, setShowFormula] = useState(false);
     const [productSales, setProductSales] = useState<ProductSaleItem[]>([]);
@@ -485,8 +487,8 @@ export default function FinalizationModal({
         setPaidPln('');
         setNote('');
         setShowNote(false);
-        setClientNote('');
-        setShowClientNote(false);
+        setStaffRecommendations('');
+        setShowStaffRecommendations(false);
         setFormula('');
         setShowFormula(false);
         setAdditionalServices([]);
@@ -560,7 +562,7 @@ export default function FinalizationModal({
             usageMaterials:
                 usageMaterials.length > 0 ? usageMaterials : undefined,
             note: note || undefined,
-            clientNote: clientNote || undefined,
+            staffRecommendations: staffRecommendations || undefined,
             formula: formula.trim() || undefined,
             additionalServices:
                 additionalServices.length > 0
@@ -1401,16 +1403,18 @@ export default function FinalizationModal({
 
                 {/* Client-visible recommendations — optional, expand/collapse */}
                 <CollapsibleField
-                    open={showClientNote}
-                    onToggle={() => setShowClientNote((v) => !v)}
+                    open={showStaffRecommendations}
+                    onToggle={() => setShowStaffRecommendations((v) => !v)}
                     addLabel="+ Dodaj zalecenia dla klienta"
                     label="Zalecenia dla klienta (widoczne dla klienta)"
-                    htmlFor="fin-client-note"
+                    htmlFor="fin-staff-recommendations"
                 >
                     <textarea
-                        id="fin-client-note"
-                        value={clientNote}
-                        onChange={(e) => setClientNote(e.target.value)}
+                        id="fin-staff-recommendations"
+                        value={staffRecommendations}
+                        onChange={(e) =>
+                            setStaffRecommendations(e.target.value)
+                        }
                         className="w-100 px-3 py-2 border border-secondary border-opacity-50 rounded-2"
                         rows={2}
                         maxLength={1000}

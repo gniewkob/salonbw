@@ -50,8 +50,7 @@ function formatDateTime(value: string) {
 
 function hasClientVisibleVisitNotes(visit: ClientVisit) {
     return Boolean(
-        visit.notes?.trim() ||
-            visit.clientComment?.trim() ||
+        visit.clientComment?.trim() ||
             visit.staffRecommendations?.trim() ||
             visit.onlineAddonsSummary?.trim() ||
             visit.onlineTotalDurationMinutes ||

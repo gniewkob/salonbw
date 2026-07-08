@@ -134,7 +134,9 @@ export class AppointmentsController {
                 addonServiceIds: body.addonServiceIds,
                 startTime: new Date(body.startTime),
                 reservedOnline: !isStaff ? true : undefined,
-                notes: body.notes?.trim() ? body.notes.trim() : undefined,
+                clientComment: body.clientComment?.trim()
+                    ? body.clientComment.trim()
+                    : undefined,
             } as Parameters<AppointmentsService['create']>[0],
             { id: user.userId } as User,
         );
@@ -160,7 +162,7 @@ export class AppointmentsController {
             startTime: apt.startTime,
             endTime: apt.endTime,
             status: apt.status,
-            notes: apt.notes ?? null,
+            notes: null,
             clientComment: apt.clientComment ?? null,
             staffRecommendations: apt.staffRecommendations ?? null,
             onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
@@ -587,9 +589,12 @@ export class AppointmentsController {
     @ApiResponse({ status: 200, type: Appointment })
     async updateClientNote(
         @Param('id', ParseIntPipe) id: number,
-        @Body() body: { notes: string | null },
+        @Body() body: { clientComment: string | null },
     ): Promise<Appointment> {
-        return this.appointmentsService.updateClientNote(id, body.notes);
+        return this.appointmentsService.updateClientNote(
+            id,
+            body.clientComment,
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -47,14 +47,6 @@ type CreateAppointmentInput = Partial<Appointment> & {
     addonServiceIds?: number[];
 };
 
-type ClientVisibleNoteParts = {
-    clientComment?: string | null;
-    staffRecommendations?: string | null;
-    onlineAddonsSummary?: string | null;
-    onlineTotalDurationMinutes?: number | null;
-    onlineDurationNeedsVerification?: boolean | null;
-};
-
 @Injectable()
 export class AppointmentsService {
     private readonly logger = new Logger(AppointmentsService.name);
@@ -166,41 +158,6 @@ export class AppointmentsService {
     private normalizeOptionalText(value?: string | null): string | undefined {
         const trimmed = value?.trim();
         return trimmed || undefined;
-    }
-
-    private composeClientVisibleNotes(
-        appointment: ClientVisibleNoteParts,
-    ): string | undefined {
-        const parts: string[] = [];
-        const clientComment = this.normalizeOptionalText(
-            appointment.clientComment,
-        );
-        if (clientComment) parts.push(clientComment);
-
-        const onlineAddonsSummary = this.normalizeOptionalText(
-            appointment.onlineAddonsSummary,
-        );
-        if (onlineAddonsSummary) {
-            let onlineNote = `Dodatki wybrane online: ${onlineAddonsSummary}.`;
-            if (appointment.onlineTotalDurationMinutes) {
-                onlineNote += ` Łączny czas wizyty: ${appointment.onlineTotalDurationMinutes} min`;
-                if (appointment.onlineDurationNeedsVerification) {
-                    onlineNote += ' — do weryfikacji przy potwierdzeniu.';
-                } else {
-                    onlineNote += '.';
-                }
-            }
-            parts.push(onlineNote);
-        }
-
-        const staffRecommendations = this.normalizeOptionalText(
-            appointment.staffRecommendations,
-        );
-        if (staffRecommendations) {
-            parts.push(`Zalecenia po wizycie: ${staffRecommendations}`);
-        }
-
-        return parts.join('\n\n') || undefined;
     }
 
     /**
@@ -320,9 +277,7 @@ export class AppointmentsService {
         );
         const totalDuration = baseDuration + addonDuration;
         data.endTime = this.computeEnd(data.startTime, totalDuration);
-        data.clientComment = this.normalizeOptionalText(
-            data.clientComment ?? data.notes,
-        );
+        data.clientComment = this.normalizeOptionalText(data.clientComment);
         if (addonServices.length > 0) {
             data.extraServices = addonServices.map((addon) => ({
                 serviceId: addon.id,
@@ -336,7 +291,7 @@ export class AppointmentsService {
             data.onlineTotalDurationMinutes = totalDuration;
             data.onlineDurationNeedsVerification = true;
         }
-        data.notes = this.composeClientVisibleNotes(data);
+        data.notes = null;
         delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
         // Staff may overlap (if the setting allows); online self-booking
@@ -1234,12 +1189,7 @@ export class AppointmentsService {
         const tipAmount = dto.tipAmountCents ? dto.tipAmountCents / 100 : 0;
         const discount = dto.discountCents ? dto.discountCents / 100 : 0;
         const staffRecommendations =
-            this.normalizeOptionalText(dto.clientNote) ??
-            appointment.staffRecommendations;
-        const clientVisibleNotes = this.composeClientVisibleNotes({
-            ...appointment,
-            staffRecommendations,
-        });
+            this.normalizeOptionalText(dto.staffRecommendations) ?? null;
 
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {
@@ -1258,7 +1208,7 @@ export class AppointmentsService {
                             : dto.note
                         : appointment.internalNote,
                     staffRecommendations,
-                    notes: clientVisibleNotes,
+                    notes: null,
                     extraServices: extraServices ?? appointment.extraServices,
                 });
 
@@ -1458,7 +1408,7 @@ export class AppointmentsService {
 
     async updateClientNote(
         id: number,
-        notes: string | null,
+        clientComment: string | null,
     ): Promise<Appointment> {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id },
@@ -1466,8 +1416,8 @@ export class AppointmentsService {
         if (!appointment) {
             throw new BadRequestException('Appointment not found');
         }
-        appointment.clientComment = this.normalizeOptionalText(notes);
-        appointment.notes = this.composeClientVisibleNotes(appointment);
+        appointment.clientComment = this.normalizeOptionalText(clientComment);
+        appointment.notes = null;
         return this.appointmentsRepository.save(appointment);
     }
 

@@ -132,8 +132,7 @@ describe('AppointmentsService', () => {
         expect(result.onlineAddonsSummary).toBe('Pielęgnacja (+30 min)');
         expect(result.onlineTotalDurationMinutes).toBe(60);
         expect(result.onlineDurationNeedsVerification).toBe(true);
-        expect(result.notes).toContain('Łączny czas wizyty: 60 min');
-        expect(result.notes).toContain('do weryfikacji przy potwierdzeniu');
+        expect(result.notes).toBeNull();
     });
 
     it('sends an email alert to the salon on client self-booking', async () => {
@@ -789,22 +788,20 @@ describe('AppointmentsService', () => {
                 tipAmountCents: 1500,
                 discountCents: 500,
                 note: 'test finalize',
-                clientNote: 'myć włosy co 3 dni',
+                staffRecommendations: 'zalecenie testowe',
             },
             users[1],
         );
 
         expect(finalized?.status).toBe(AppointmentStatus.Completed);
-        expect(finalized?.staffRecommendations).toBe('myć włosy co 3 dni');
-        expect(finalized?.notes).toContain(
-            'Zalecenia po wizycie: myć włosy co 3 dni',
-        );
+        expect(finalized?.staffRecommendations).toBe('zalecenie testowe');
+        expect(finalized?.notes).toBeNull();
         expect(createFromAppointmentMock).toHaveBeenCalledTimes(1);
         expect(createSaleMock).not.toHaveBeenCalled();
     });
 
     it('finalizes appointment with products and creates retail sales', async () => {
-        users[0].name = 'Jan Kowalski';
+        users[0].name = 'Klient testowy';
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
             {
@@ -850,7 +847,7 @@ describe('AppointmentsService', () => {
                 employeeId: users[1].id,
                 appointmentId: id,
                 clientId: users[0].id,
-                clientName: 'Jan Kowalski',
+                clientName: 'Klient testowy',
             }),
             users[1],
         );
@@ -864,7 +861,7 @@ describe('AppointmentsService', () => {
                 employeeId: users[1].id,
                 appointmentId: id,
                 clientId: users[0].id,
-                clientName: 'Jan Kowalski',
+                clientName: 'Klient testowy',
             }),
             users[1],
         );

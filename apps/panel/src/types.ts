@@ -1061,7 +1061,7 @@ export interface FinalizeAppointmentRequest {
     products?: ProductSaleItem[];
     usageMaterials?: UsageMaterialItem[];
     note?: string;
-    clientNote?: string;
+    staffRecommendations?: string;
     formula?: string;
     usageItems?: { productId: number; quantity: number; unit?: string }[];
     additionalServices?: {

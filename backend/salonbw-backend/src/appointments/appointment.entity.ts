@@ -86,16 +86,16 @@ export class Appointment {
     status: AppointmentStatus;
 
     @Column({ nullable: true })
-    notes?: string;
+    notes?: string | null;
 
     @Column({ nullable: true, type: 'text' })
-    clientComment?: string;
+    clientComment?: string | null;
 
     @Column({ nullable: true, type: 'text' })
-    staffRecommendations?: string;
+    staffRecommendations?: string | null;
 
     @Column({ nullable: true, type: 'text' })
-    onlineAddonsSummary?: string;
+    onlineAddonsSummary?: string | null;
 
     @Column({ nullable: true, type: 'int' })
     onlineTotalDurationMinutes?: number | null;

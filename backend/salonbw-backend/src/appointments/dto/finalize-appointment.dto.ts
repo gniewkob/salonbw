@@ -199,7 +199,7 @@ export class FinalizeAppointmentDto {
     })
     @IsString()
     @IsOptional()
-    clientNote?: string;
+    staffRecommendations?: string;
 
     @ApiProperty({
         description:

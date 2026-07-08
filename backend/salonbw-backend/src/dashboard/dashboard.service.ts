@@ -69,7 +69,7 @@ export class DashboardService {
             serviceId: apt.service?.id ?? 0,
             serviceName: apt.service?.name ?? '',
             employeeName: apt.employee?.name ?? apt.employee?.email ?? '',
-            notes: apt.notes ?? null,
+            notes: null,
             clientComment: apt.clientComment ?? null,
             staffRecommendations: apt.staffRecommendations ?? null,
             onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
@@ -333,7 +333,7 @@ export class DashboardService {
                 status: apt.status,
                 employeeName:
                     apt.employee?.name ?? apt.employee?.email ?? undefined,
-                notes: apt.notes ?? null,
+                notes: null,
                 clientComment: apt.clientComment ?? null,
                 staffRecommendations: apt.staffRecommendations ?? null,
                 onlineAddonsSummary: apt.onlineAddonsSummary ?? null,

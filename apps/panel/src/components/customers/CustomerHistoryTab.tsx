@@ -130,8 +130,7 @@ function hasVisitNotes(
     visit: NonNullable<CustomerEventHistoryData>['items'][number],
 ) {
     return Boolean(
-        visit.notes?.trim() ||
-            visit.clientComment?.trim() ||
+        visit.clientComment?.trim() ||
             visit.staffRecommendations?.trim() ||
             visit.onlineAddonsSummary?.trim() ||
             visit.onlineTotalDurationMinutes ||

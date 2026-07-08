@@ -22,8 +22,7 @@ type DashboardVisit = ClientDashboardResponse['recentAppointments'][number];
 
 function hasVisitDetails(appointment: DashboardVisit) {
     return Boolean(
-        appointment.notes?.trim() ||
-            appointment.clientComment?.trim() ||
+        appointment.clientComment?.trim() ||
             appointment.staffRecommendations?.trim() ||
             appointment.onlineAddonsSummary?.trim() ||
             appointment.onlineTotalDurationMinutes ||
@@ -33,9 +32,7 @@ function hasVisitDetails(appointment: DashboardVisit) {
 
 function VisitDetailsSummary({ appointment }: { appointment: DashboardVisit }) {
     const labels = [
-        appointment.clientComment?.trim() || appointment.notes?.trim()
-            ? 'komentarz'
-            : null,
+        appointment.clientComment?.trim() ? 'komentarz' : null,
         appointment.staffRecommendations?.trim() ? 'zalecenia' : null,
         appointment.onlineAddonsSummary?.trim() ? 'dodatki' : null,
         appointment.onlineTotalDurationMinutes ? 'czas' : null,

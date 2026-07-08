@@ -61,7 +61,7 @@ describe('FinalizationModal', () => {
                         onlineBooking: true,
                         sortOrder: 0,
                     },
-                    client: { id: 5, name: 'Jan Kowalski' },
+                    client: { id: 5, name: 'Klient testowy' },
                 }}
                 onClose={jest.fn()}
             />,
@@ -99,7 +99,7 @@ describe('FinalizationModal', () => {
                         onlineBooking: true,
                         sortOrder: 0,
                     },
-                    client: { id: 5, name: 'Jan Kowalski' },
+                    client: { id: 5, name: 'Klient testowy' },
                 }}
                 onClose={jest.fn()}
             />,
@@ -157,7 +157,7 @@ describe('FinalizationModal', () => {
                         onlineBooking: true,
                         sortOrder: 0,
                     },
-                    client: { id: 5, name: 'Jan Kowalski' },
+                    client: { id: 5, name: 'Klient testowy' },
                 }}
                 onClose={jest.fn()}
             />,

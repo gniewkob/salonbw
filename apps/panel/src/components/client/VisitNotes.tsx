@@ -36,85 +36,11 @@ function pushFreeTextSection(
     const cleaned = cleanFreeText(value);
     if (!cleaned) return;
 
-    const recommendationMatch = cleaned.match(
-        /^(Zalecenia(?:\s+po\s+wizycie)?|Rekomendacje)\s*:\s*([\s\S]+)$/i,
-    );
-    if (recommendationMatch?.[2]?.trim()) {
-        sections.push({
-            key: `recommendation-${sections.length}`,
-            label: 'Zalecenia po wizycie',
-            value: recommendationMatch[2].trim(),
-        });
-        return;
-    }
-
     sections.push({
         key: `client-comment-${sections.length}`,
         label: fallbackLabel,
         value: cleaned,
     });
-}
-
-function parseNotes(rawNotes: string, appointmentStatus?: string) {
-    let remainder = rawNotes.trim();
-    const sections: VisitNoteSection[] = [];
-    const hideVerification = appointmentStatus === 'completed';
-
-    const addonMatch = remainder.match(
-        /Dodatki wybrane online:\s*([\s\S]*?)(?=Łączny czas wizyty:|$)/i,
-    );
-    if (addonMatch?.[1]?.trim()) {
-        const addonStart = addonMatch.index ?? 0;
-        const addonEnd = addonStart + addonMatch[0].length;
-        const textBeforeAddons = remainder.slice(0, addonStart).trim();
-        pushFreeTextSection(sections, textBeforeAddons);
-        sections.push({
-            key: 'addons',
-            label: 'Dodatkowe zabiegi',
-            items: splitAddons(addonMatch[1]),
-        });
-        remainder = remainder.slice(addonEnd).trim();
-    }
-
-    const durationMatch = remainder.match(
-        /Łączny czas wizyty:\s*([0-9]+\s*min)/i,
-    );
-    if (durationMatch?.[1]) {
-        sections.push({
-            key: 'duration',
-            label: 'Łączny czas',
-            value: durationMatch[1],
-        });
-        remainder = remainder.replace(durationMatch[0], ' ').trim();
-    }
-
-    if (/do weryfikacji przy potwierdzeniu/i.test(remainder)) {
-        const verificationMatch = remainder.match(
-            /[—-]?\s*do weryfikacji przy potwierdzeniu\.?/i,
-        );
-        if (!hideVerification) {
-            sections.push({
-                key: 'verification',
-                label: 'Weryfikacja czasu',
-                value: 'Salon potwierdzi łączny czas wizyty.',
-            });
-        }
-        remainder = verificationMatch
-            ? remainder.slice(
-                  (verificationMatch.index ?? 0) + verificationMatch[0].length,
-              )
-            : remainder.replace(
-                  /[—-]?\s*do weryfikacji przy potwierdzeniu\.?/i,
-                  ' ',
-              );
-        remainder = remainder.trim();
-        pushFreeTextSection(sections, remainder, 'Zalecenia po wizycie');
-        return sections;
-    }
-
-    pushFreeTextSection(sections, remainder);
-
-    return sections;
 }
 
 function buildStructuredSections({
@@ -171,7 +97,6 @@ function buildStructuredSections({
 }
 
 export default function VisitNotes({
-    notes,
     emptyLabel = 'Brak notatek przy tej wizycie.',
     compact = false,
     appointmentStatus,
@@ -181,7 +106,6 @@ export default function VisitNotes({
     onlineTotalDurationMinutes,
     onlineDurationNeedsVerification,
 }: VisitNotesProps) {
-    const normalizedNotes = notes?.trim();
     const hasStructuredNotes = Boolean(
         clientComment?.trim() ||
             staffRecommendations?.trim() ||
@@ -189,22 +113,20 @@ export default function VisitNotes({
             onlineTotalDurationMinutes ||
             onlineDurationNeedsVerification,
     );
-    if (!normalizedNotes && !hasStructuredNotes) {
+    if (!hasStructuredNotes) {
         return <p className="visit-notes-empty">{emptyLabel}</p>;
     }
 
-    const sections = hasStructuredNotes
-        ? buildStructuredSections({
-              clientComment,
-              staffRecommendations,
-              onlineAddonsSummary,
-              onlineTotalDurationMinutes,
-              onlineDurationNeedsVerification,
-              appointmentStatus,
-          })
-        : parseNotes(normalizedNotes ?? '', appointmentStatus);
+    const sections = buildStructuredSections({
+        clientComment,
+        staffRecommendations,
+        onlineAddonsSummary,
+        onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification,
+        appointmentStatus,
+    });
     if (sections.length === 0) {
-        return <p className="visit-notes-empty">{normalizedNotes}</p>;
+        return <p className="visit-notes-empty">{emptyLabel}</p>;
     }
 
     return (
