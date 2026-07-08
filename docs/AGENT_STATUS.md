@@ -1,8 +1,31 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-06-10 (P2 contrast a11y closure + full production deploy)_
+_Last updated: 2026-07-08 (reschedule QA fixture + production deploy)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-08 — Reschedule QA fixture + production deploy
+
+- Added a guarded backend QA fixture script for the client reschedule-acceptance flow:
+  - `backend/salonbw-backend/scripts/prepare-reschedule-fixture.js`,
+  - `pnpm qa:reschedule-fixture`.
+- Guardrails:
+  - no DB write unless `CONFIRM_RESCHEDULE_FIXTURE=1`,
+  - no password stored in repo; `RESCHEDULE_FIXTURE_CLIENT_PASSWORD` is required only when creating/resetting the fixture client,
+  - fixture upserts a future `rescheduled_pending` appointment with previous/new time fields for UI validation.
+- Local validation:
+  - `node -c scripts/prepare-reschedule-fixture.js` -> pass,
+  - no-confirm run correctly refused writes,
+  - backend `typecheck`, `build`, `lint`, and `jest --runInBand` -> pass (`239/239` tests).
+- Production rollout:
+  - commit `2f83855a5`,
+  - CI `28948916797` -> success,
+  - Deploy (MyDevil) `28948917009` -> success.
+- Post-deploy smoke:
+  - `https://api.salon-bw.pl/healthz` -> ok (database/smtp/instagram),
+  - `https://panel.salon-bw.pl` -> 307 to `/auth/login`.
+- Next QA step:
+  - run the guarded fixture with production DB env and a one-time fixture password, then repeat authenticated browser QA for `/visits?visitId=<fixtureId>` and dashboard action notice.
 
 ## 2026-06-10 — Contrast a11y closure + production deploy (panel + landing + API)
 
