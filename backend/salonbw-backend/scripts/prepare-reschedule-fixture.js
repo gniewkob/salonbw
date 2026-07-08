@@ -47,6 +47,13 @@ function addMinutes(date, minutes) {
     return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
+function nextFixturePreviousStart() {
+    const start = new Date();
+    start.setDate(start.getDate() + 3);
+    start.setHours(11, 0, 0, 0);
+    return start;
+}
+
 function requireFixturePassword(reason) {
     if (!CLIENT_PASSWORD) {
         throw new Error(
@@ -124,8 +131,7 @@ async function pickEmployeeService(client) {
 }
 
 async function upsertAppointment(client, fixture) {
-    const now = new Date();
-    const previousStart = addMinutes(now, 3 * 24 * 60 + 10 * 60);
+    const previousStart = nextFixturePreviousStart();
     const newStart = addMinutes(previousStart, 25);
     const duration = Number(fixture.duration || 60);
     const newEnd = addMinutes(newStart, duration);
