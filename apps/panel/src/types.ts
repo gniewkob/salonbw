@@ -448,6 +448,11 @@ export interface CalendarEvent {
     hasCustomerAlerts?: boolean;
     blockType?: TimeBlockType;
     notes?: string;
+    clientComment?: string | null;
+    staffRecommendations?: string | null;
+    onlineAddonsSummary?: string | null;
+    onlineTotalDurationMinutes?: number | null;
+    onlineDurationNeedsVerification?: boolean;
     allDay?: boolean;
 }
 

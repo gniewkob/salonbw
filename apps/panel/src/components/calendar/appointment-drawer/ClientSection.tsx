@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Customer } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import VisitNotes from '@/components/client/VisitNotes';
 import { trackReceptionAction } from '../receptionTelemetry';
 
 function formatDateTime(value: string | null | undefined): string {
@@ -18,7 +19,24 @@ interface RecentVisit {
     id: number;
     date: string;
     service: { id: number; name: string } | null;
+    status?: string | null;
     notes: string | null;
+    clientComment?: string | null;
+    staffRecommendations?: string | null;
+    onlineAddonsSummary?: string | null;
+    onlineTotalDurationMinutes?: number | null;
+    onlineDurationNeedsVerification?: boolean;
+}
+
+function hasVisitNotes(visit: RecentVisit) {
+    return Boolean(
+        visit.clientComment?.trim() ||
+            visit.staffRecommendations?.trim() ||
+            visit.onlineAddonsSummary?.trim() ||
+            visit.onlineTotalDurationMinutes ||
+            visit.onlineDurationNeedsVerification ||
+            visit.notes?.trim(),
+    );
 }
 
 /**
@@ -67,9 +85,9 @@ function RecentVisits({ customerId }: { customerId: number }) {
                             <strong>
                                 {visit.service?.name ?? 'Usługa usunięta'}
                             </strong>
-                            {visit.notes && (
+                            {hasVisitNotes(visit) && (
                                 <div
-                                    className="text-muted"
+                                    className="mt-1"
                                     style={{
                                         overflow: 'hidden',
                                         display: '-webkit-box',
@@ -77,7 +95,26 @@ function RecentVisits({ customerId }: { customerId: number }) {
                                         WebkitBoxOrient: 'vertical',
                                     }}
                                 >
-                                    {visit.notes}
+                                    <VisitNotes
+                                        compact
+                                        appointmentStatus={
+                                            visit.status ?? undefined
+                                        }
+                                        notes={visit.notes}
+                                        clientComment={visit.clientComment}
+                                        staffRecommendations={
+                                            visit.staffRecommendations
+                                        }
+                                        onlineAddonsSummary={
+                                            visit.onlineAddonsSummary
+                                        }
+                                        onlineTotalDurationMinutes={
+                                            visit.onlineTotalDurationMinutes
+                                        }
+                                        onlineDurationNeedsVerification={
+                                            visit.onlineDurationNeedsVerification
+                                        }
+                                    />
                                 </div>
                             )}
                         </div>

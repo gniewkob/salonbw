@@ -629,6 +629,13 @@ export class CustomerStatisticsService {
                 // powers the quick "what was done recently" preview in the
                 // appointment drawer.
                 notes: a.notes ?? null,
+                clientComment: a.clientComment ?? null,
+                staffRecommendations: a.staffRecommendations ?? null,
+                onlineAddonsSummary: a.onlineAddonsSummary ?? null,
+                onlineTotalDurationMinutes:
+                    a.onlineTotalDurationMinutes ?? null,
+                onlineDurationNeedsVerification:
+                    a.onlineDurationNeedsVerification ?? false,
             })),
             ...(counts ? { counts } : {}),
             total,

@@ -347,6 +347,70 @@ describe('AppointmentDrawer', () => {
         expect(screen.getByText(/Historia no-show/i)).toBeInTheDocument();
     });
 
+    it('formats recent visit history with separated client notes', async () => {
+        apiFetchMock.mockImplementation(async (path: string) => {
+            if (
+                path === '/customers/5/events-history?limit=3&status=completed'
+            ) {
+                return {
+                    items: [
+                        {
+                            id: 77,
+                            date: '2026-05-01',
+                            status: 'completed',
+                            service: { id: 10, name: 'Koloryzacja' },
+                            notes: null,
+                            clientComment: 'klient chce ciszę',
+                            staffRecommendations: 'MYĆ I NIE PŁUKAĆ',
+                            onlineAddonsSummary: 'Dermabrazja (+70 min)',
+                            onlineTotalDurationMinutes: 150,
+                            onlineDurationNeedsVerification: true,
+                        },
+                    ],
+                };
+            }
+            return [];
+        });
+
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 42,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+            { waitForFormulas: true },
+        );
+
+        expect(await screen.findByText('Koloryzacja')).toBeInTheDocument();
+        expect(
+            screen.getAllByText('Komentarz do rezerwacji').length,
+        ).toBeGreaterThan(0);
+        expect(screen.getByText('Zalecenia po wizycie')).toBeInTheDocument();
+        expect(screen.getByText('Dodatkowe zabiegi')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Salon potwierdzi łączny czas wizyty.'),
+        ).not.toBeInTheDocument();
+    });
+
     it('does not render customer alerts section when there are no alerts', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,

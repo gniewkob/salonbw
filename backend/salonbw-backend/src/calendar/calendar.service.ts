@@ -56,6 +56,11 @@ export interface CalendarEvent {
     paymentMethod?: string;
     blockType?: string;
     notes?: string;
+    clientComment?: string | null;
+    staffRecommendations?: string | null;
+    onlineAddonsSummary?: string | null;
+    onlineTotalDurationMinutes?: number | null;
+    onlineDurationNeedsVerification?: boolean;
     allDay?: boolean;
 }
 
@@ -966,6 +971,12 @@ export class CalendarService {
                 apt.paidAmount != null ? Number(apt.paidAmount) : undefined,
             paymentMethod: apt.paymentMethod,
             notes: apt.notes,
+            clientComment: apt.clientComment ?? null,
+            staffRecommendations: apt.staffRecommendations ?? null,
+            onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
+            onlineTotalDurationMinutes: apt.onlineTotalDurationMinutes ?? null,
+            onlineDurationNeedsVerification:
+                apt.onlineDurationNeedsVerification ?? false,
         };
     }
 
