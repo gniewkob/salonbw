@@ -1,5 +1,23 @@
 # Plan: Panel 10/10 → wdrożenie na produkcji
 
+## STATUS (aktualizacja 2026-07-08)
+
+| Faza | Status | Kiedy / dowód |
+|---|---|---|
+| 1 — Historia wizyt + oceny klienta | ✅ DONE | 2026-07-03 (`fd80e6dc9`; /visits, gwiazdki, admin /reviews live-verified) |
+| 2 — Smoke-pass modułów staff | ✅ DONE | 2026-07-03 (`13e1d1d4b`; stub statistics/employees usunięty) |
+| 3 — Design sweep + a11y + mobile | ✅ DONE | 2026-07-03 (purga niebieskich, Lighthouse 100 ×4 reprezentantów) |
+| 4 — Twardnienie przedprodukcyjne | 🟡 OTWARTA | Sentry DSN + zadania ownera (backup/hasło/SMSAPI/WhatsApp/domena) — patrz 4.1–4.7 |
+| 5 — Cleanup danych testowych | ✅ DONE (z residuum) | 2026-07-06 (migracja `1761310000000`; zostało residuum magazynu: produkty AUDYT, stocktaking #1, dostawy #8/#9, zamówienia #1-2, sprzedaż #9) |
+| 6 — Follow-upy po batchu 07-07 | 🟡 NOWA | patrz sekcja „Faza 6" na dole |
+
+Po 2026-07-03 doszły duże niezaplanowane prace: IA ustawień + krytyczne bugi modali
+(2026-07-05/06) i batch 25 commitów (2026-07-07: kreator z wariantami/dodatkami,
+karta klienta, profil samoobsługowy, zgody, mobile design system, omnibox,
+powiadomienia, klient-approval reschedule, split notatek). Batch przeszedł pełny
+code-review 2026-07-08 (3 agenty) — P0 rejestracji i 403 pomocy NAPRAWIONE
+(`dba7a33`+`839aa9d`+`7d0d878`); szczegóły w active-context.
+
 Stan na 2026-07-03. Cel: panel bez luk funkcjonalnych i designowych, gotowy do
 oddania realnym użytkownikom (Aleksandra + klientki). Dane testowe zostają do
 końca testów — sprzątanie jest ostatnim krokiem przed startem.
@@ -116,6 +134,34 @@ Metodą z czerwcowych audytów (admin na prod, przez API + UI):
 5.4. GO — udostępnienie panelu.
 
 ---
+
+### Faza 6 — Follow-upy po batchu 2026-07-07 (0.5–1 sesji) 🟡
+
+Fixy z review już wdrożone (rejestracja, pomoc-403, 4 niewidoczne modale, filtr
+dodatków, no_show z rescheduled_pending, sr-only h1, omnibox role-gate, pluralizer).
+Zostaje:
+
+6.1. **Spot-check migracji notatek na prod** — parser `SplitAppointmentClientNotes`
+   nie zna formatu `[Salon] …`; przejrzeć wiersze z `[Salon]`/śródtekstowym
+   `Zalecenia:` i ręcznie poprawić klasyfikację (clientComment vs
+   staffRecommendations).
+6.2. **Decyzje ownera** (blokują dopracowanie flow):
+   a) reschedule klientek telefonicznych — przywrócić staff-confirm („klientka
+      potwierdziła telefonicznie") czy zostawić client-only?
+   b) dodatki online przy finalizacji — auto-billing/prowizja czy ręczne
+      przepisywanie przez staff (dziś: nota „do weryfikacji", cicho nadpisywane)?
+   c) GDPR: osobny checkbox zgody WhatsApp (dziś kopiowana z SMS); audit-trail
+      dat zgód przy revoke;
+   d) czy klient ma edytować `description` (wspólne pole z notatkami CRM staffu)?
+   e) avatar klienta na karcie staff (dziś 404 — GET self-scoped) + weryfikacja
+      `UPLOADS_DIR` na MyDevil.
+6.3. **P3 techniczne**: default `type="button"` w PanelButton; feed powiadomień —
+   id-collision `*1000` + semantyka badge; addon-picker pogrupowany jak krok 1;
+   audyt `toISOString().slice(0,10)` (5+ plików, klasa buga UTC); combobox-ARIA
+   omniboksu; debounce server-search klientów; residuum magazynowe z Fazy 5.
+6.4. **Live E2E rejestracji na prod** — pierwsza rejestracja po fixie P0
+   (poprzednio każda kończyła się 400; sprawdzić od kiedy 2499bda było live
+   i czy ktoś odbił się od formularza).
 
 ## Kolejność i szacunek
 | Faza | Zakres | Sesje | Blokuje start? |
