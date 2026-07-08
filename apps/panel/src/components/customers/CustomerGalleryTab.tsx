@@ -107,7 +107,8 @@ export default function CustomerGalleryTab({ customerId }: Props) {
 
             {selectedImage ? (
                 <div
-                    className="modal fade in customer-modal-open"
+                    className="modal customer-modal-open"
+                    style={{ display: 'block', opacity: 1 }}
                     role="dialog"
                     aria-modal="true"
                     onClick={() => setSelectedImageId(null)}

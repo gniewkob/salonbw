@@ -1257,7 +1257,8 @@ function NewServicePageContent() {
 
             {showDurationModal ? (
                 <div
-                    className="modal fade in services-create-modal-open"
+                    className="modal services-create-modal-open"
+                    style={{ display: 'block', opacity: 1 }}
                     role="dialog"
                     aria-modal="true"
                 >

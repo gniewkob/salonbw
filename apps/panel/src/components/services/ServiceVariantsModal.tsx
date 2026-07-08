@@ -111,7 +111,7 @@ export default function ServiceVariantsModal({
     if (!isOpen || !service) return null;
 
     return (
-        <div className={`modal fade ${isOpen ? 'in block' : ''}`}>
+        <div className="modal" style={{ display: 'block', opacity: 1 }}>
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">

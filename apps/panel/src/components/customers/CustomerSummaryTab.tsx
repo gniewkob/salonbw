@@ -21,7 +21,7 @@ export default function CustomerSummaryTab({
 }: Props) {
     const [customer, setCustomer] = useState<Customer>(initialCustomer);
     const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
-    const modalStyle = { display: 'block' };
+    const modalStyle = { display: 'block', opacity: 1 };
 
     const { data: stats, isLoading: statsLoading } = useCustomerStatistics(
         customer.id,
@@ -621,7 +621,7 @@ export default function CustomerSummaryTab({
             {/* Modal dodawania do grupy */}
             {showAddToGroupModal && (
                 <div
-                    className="modal fade in"
+                    className="modal"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="add-to-group-modal-title"
