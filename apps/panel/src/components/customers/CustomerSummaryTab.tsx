@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Customer } from '@/types';
+import type { Customer, CustomerEventHistory } from '@/types';
 import {
     useCustomerStatistics,
     useCustomerEventHistory,
@@ -11,9 +11,23 @@ import {
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import Link from 'next/link';
+import VisitNotes from '@/components/client/VisitNotes';
 
 interface Props {
     customer: Customer;
+}
+
+type CustomerEventHistoryItem = CustomerEventHistory['items'][number];
+
+function hasVisitNotes(visit: CustomerEventHistoryItem) {
+    return Boolean(
+        visit.notes?.trim() ||
+            visit.clientComment?.trim() ||
+            visit.staffRecommendations?.trim() ||
+            visit.onlineAddonsSummary?.trim() ||
+            visit.onlineTotalDurationMinutes ||
+            visit.onlineDurationNeedsVerification,
+    );
 }
 
 export default function CustomerSummaryTab({
@@ -238,6 +252,36 @@ export default function CustomerSummaryTab({
                                                                     ?.name
                                                             }
                                                         </small>
+                                                        {hasVisitNotes(
+                                                            visit,
+                                                        ) ? (
+                                                            <div className="customer-summary-visit-notes">
+                                                                <VisitNotes
+                                                                    compact
+                                                                    appointmentStatus={
+                                                                        visit.status
+                                                                    }
+                                                                    notes={
+                                                                        visit.notes
+                                                                    }
+                                                                    clientComment={
+                                                                        visit.clientComment
+                                                                    }
+                                                                    staffRecommendations={
+                                                                        visit.staffRecommendations
+                                                                    }
+                                                                    onlineAddonsSummary={
+                                                                        visit.onlineAddonsSummary
+                                                                    }
+                                                                    onlineTotalDurationMinutes={
+                                                                        visit.onlineTotalDurationMinutes
+                                                                    }
+                                                                    onlineDurationNeedsVerification={
+                                                                        visit.onlineDurationNeedsVerification
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        ) : null}
                                                     </td>
                                                     <td className="text-end">
                                                         {formatCurrency(

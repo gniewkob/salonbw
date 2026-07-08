@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import CustomerSummaryTab from '@/components/customers/CustomerSummaryTab';
 
+const mockUseCustomerEventHistory = jest.fn();
+
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomerStatistics: () => ({
         data: {
@@ -13,10 +15,8 @@ jest.mock('@/hooks/useCustomers', () => ({
         },
         isLoading: false,
     }),
-    useCustomerEventHistory: () => ({
-        data: { items: [] },
-        isLoading: false,
-    }),
+    useCustomerEventHistory: (...args: unknown[]) =>
+        mockUseCustomerEventHistory(...args),
     useCustomerGroups: () => ({ data: [] }),
     useTagsForCustomer: () => ({
         data: [{ id: 7, name: 'VIP', createdAt: '2026-05-01T00:00:00.000Z' }],
@@ -54,6 +54,13 @@ jest.mock('@/hooks/useCustomerAlerts', () => ({
 }));
 
 describe('CustomerSummaryTab', () => {
+    beforeEach(() => {
+        mockUseCustomerEventHistory.mockReturnValue({
+            data: { items: [] },
+            isLoading: false,
+        });
+    });
+
     it('renders CRM context with alerts, tags, groups and timeline shortcut', () => {
         render(
             <CustomerSummaryTab
@@ -86,5 +93,52 @@ describe('CustomerSummaryTab', () => {
         expect(
             screen.getByRole('link', { name: 'Przejdź do timeline' }),
         ).toHaveAttribute('href', '/customers/123?tab_name=events_history');
+    });
+
+    it('renders structured notes in recent visits summary', () => {
+        mockUseCustomerEventHistory.mockReturnValue({
+            isLoading: false,
+            data: {
+                items: [
+                    {
+                        id: 77,
+                        date: '2026-05-01',
+                        time: '10:00',
+                        service: { id: 4, name: 'Dermabrazja' },
+                        employee: { id: 2, name: 'Aleksandra' },
+                        status: 'completed',
+                        price: 150,
+                        notes: null,
+                        clientComment: 'klient chce ciszę',
+                        staffRecommendations: 'MYĆ I NIE PŁUKAĆ',
+                        onlineAddonsSummary: 'Pielęgnacja (+30 min)',
+                        onlineTotalDurationMinutes: 100,
+                        onlineDurationNeedsVerification: true,
+                    },
+                ],
+            },
+        });
+
+        render(
+            <CustomerSummaryTab
+                customer={{
+                    id: 123,
+                    name: 'Jan Kowalski',
+                    fullName: 'Jan Kowalski',
+                    email: 'jan@example.com',
+                    phone: '111222333',
+                    createdAt: '2026-01-01T00:00:00.000Z',
+                    updatedAt: '2026-01-01T00:00:00.000Z',
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Dermabrazja')).toBeInTheDocument();
+        expect(screen.getByText('Komentarz do rezerwacji')).toBeInTheDocument();
+        expect(screen.getByText('Zalecenia po wizycie')).toBeInTheDocument();
+        expect(screen.getByText('Dodatkowe zabiegi')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Salon potwierdzi łączny czas wizyty.'),
+        ).not.toBeInTheDocument();
     });
 });

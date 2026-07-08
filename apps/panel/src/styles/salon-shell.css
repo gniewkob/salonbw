@@ -7481,6 +7481,10 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     padding: 12px 14px;
 }
 
+.customer-summary-visit-notes {
+    margin-top: 8px;
+}
+
 /* ══════════════════════════════════════════════════════════════════
    Icon / image size utilities (Tailwind-compatible names)
    w-4=1rem  w-5=1.25rem  w-6=1.5rem  w-8=2rem  w-12=3rem
