@@ -143,6 +143,28 @@ describe('ProductsService', () => {
         );
     });
 
+    it('applies limit when querying filtered products', async () => {
+        const qb = {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            take: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue([{ id: 1 }]),
+        };
+        (repo as unknown as { createQueryBuilder: jest.Mock }).createQueryBuilder =
+            jest.fn().mockReturnValue(qb);
+
+        await expect(
+            service.findAll({ search: 'bo', limit: 6 }),
+        ).resolves.toEqual([{ id: 1 }]);
+
+        expect(qb.andWhere).toHaveBeenCalledWith(
+            '(product.name ILIKE :q OR product.sku ILIKE :q OR product.barcode ILIKE :q OR product.brand ILIKE :q)',
+            { q: '%bo%' },
+        );
+        expect(qb.take).toHaveBeenCalledWith(6);
+    });
+
     it('reuses cached list on subsequent findAll calls', async () => {
         const findSpy = jest.spyOn(repo, 'find');
         cache.wrap.mockImplementationOnce(async (key, fn) => {

@@ -164,6 +164,9 @@ export class ProductsService {
                 : 'name';
         const sortOrder = options.sortOrder === 'DESC' ? 'DESC' : 'ASC';
         qb.orderBy(`product.${sortBy}`, sortOrder);
+        if (options.limit) {
+            qb.take(options.limit);
+        }
 
         return qb.getMany();
     }

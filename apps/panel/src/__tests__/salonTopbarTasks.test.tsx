@@ -112,7 +112,7 @@ describe('SalonTopbar tasks tooltip', () => {
                     ],
                 });
             }
-            if (path === '/employees/staff-options') {
+            if (path === '/employees/staff-options?search=bo&limit=5') {
                 return Promise.resolve([
                     {
                         id: 7,
@@ -154,6 +154,12 @@ describe('SalonTopbar tasks tooltip', () => {
 
         expect(screen.getByText('Bogumiła Grabowy')).toBeInTheDocument();
         expect(screen.getByText('Aleksandra Bodora')).toBeInTheDocument();
+        expect(apiFetchMock).toHaveBeenCalledWith(
+            '/employees/staff-options?search=bo&limit=5',
+        );
+        expect(apiFetchMock).toHaveBeenCalledWith(
+            '/products?search=bo&limit=6',
+        );
 
         fireEvent.click(screen.getByText('Bodora Shampoo'));
 

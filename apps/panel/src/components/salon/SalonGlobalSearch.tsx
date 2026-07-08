@@ -106,9 +106,11 @@ export default function SalonGlobalSearch({
                     `/customers?search=${encoded}&limit=8`,
                 ),
                 isAdmin
-                    ? apiFetch<StaffOption[]>('/employees/staff-options')
+                    ? apiFetch<StaffOption[]>(
+                          `/employees/staff-options?search=${encoded}&limit=5`,
+                      )
                     : Promise.reject(new Error('skipped')),
-                apiFetch<Product[]>(`/products?search=${encoded}`),
+                apiFetch<Product[]>(`/products?search=${encoded}&limit=6`),
             ])
                 .then(([customersResult, employeesResult, productsResult]) => {
                     if (cancelled) return;

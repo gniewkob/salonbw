@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ProductType } from '../product.entity';
 
@@ -37,4 +37,14 @@ export class QueryProductsDto {
     @IsOptional()
     @IsString()
     sortOrder?: 'ASC' | 'DESC';
+
+    @ApiPropertyOptional({
+        description: 'Maximum number of products to return',
+    })
+    @Transform(({ value }) => (value ? Number(value) : undefined))
+    @IsInt()
+    @Min(1)
+    @Max(50)
+    @IsOptional()
+    limit?: number;
 }

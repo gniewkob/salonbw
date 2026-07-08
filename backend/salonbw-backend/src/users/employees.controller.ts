@@ -10,6 +10,7 @@ import {
     Patch,
     Post,
     Put,
+    Query,
     UseGuards,
     BadRequestException,
     HttpCode,
@@ -28,9 +29,11 @@ import {
     IsEmail,
     IsEnum,
     IsNumber,
+    IsInt,
     Min,
     Max,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -86,6 +89,19 @@ class UpdateCommissionBaseDto {
     commissionBase!: number;
 }
 
+class StaffOptionsQueryDto {
+    @IsString()
+    @IsOptional()
+    search?: string;
+
+    @Transform(({ value }) => (value ? Number(value) : undefined))
+    @IsInt()
+    @Min(1)
+    @Max(20)
+    @IsOptional()
+    limit?: number;
+}
+
 @ApiTags('employees')
 @Controller('employees')
 export class EmployeesController {
@@ -125,10 +141,19 @@ export class EmployeesController {
     @Get('staff-options')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List all staff users for filters' })
-    async staffOptions() {
+    async staffOptions(@Query() query: StaffOptionsQueryDto) {
         const users = await this.usersService.findAll();
+        const search = query.search?.trim().toLowerCase();
+        const limit = query.limit ?? 50;
         return users
             .filter((user) => user.role !== Role.Client)
+            .filter((user) => {
+                if (!search) return true;
+                return `${user.name} ${user.role}`
+                    .toLowerCase()
+                    .includes(search);
+            })
+            .slice(0, limit)
             .map((user) => ({
                 id: user.id,
                 name: user.name,
