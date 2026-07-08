@@ -3,7 +3,10 @@ import {
     ConflictException,
     Injectable,
     NotFoundException,
+    Optional,
 } from '@nestjs/common';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log-action.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { IsNull } from 'typeorm';
@@ -51,6 +54,7 @@ import {
 @Injectable()
 export class CustomersService {
     constructor(
+        @Optional() private readonly logService: LogService | null,
         @InjectRepository(User)
         private readonly usersRepo: Repository<User>,
         @InjectRepository(Appointment)
@@ -386,11 +390,17 @@ export class CustomersService {
         const customer = await this.findOne(id);
         const updatePayload: Record<string, unknown> = { ...dto };
 
+        const consentChanges: Record<string, unknown> = {};
         if (
             dto.gdprConsent !== undefined &&
             dto.gdprConsent !== customer.gdprConsent
         ) {
             updatePayload.gdprConsentDate = dto.gdprConsent ? new Date() : null;
+            consentChanges.gdprConsent = {
+                from: customer.gdprConsent,
+                to: dto.gdprConsent,
+                previousConsentDate: customer.gdprConsentDate ?? null,
+            };
         }
 
         if (
@@ -400,6 +410,39 @@ export class CustomersService {
             updatePayload.termsConsentDate = dto.termsConsent
                 ? new Date()
                 : null;
+            consentChanges.termsConsent = {
+                from: customer.termsConsent,
+                to: dto.termsConsent,
+                previousConsentDate: customer.termsConsentDate ?? null,
+            };
+        }
+
+        (
+            [
+                'smsConsent',
+                'whatsappConsent',
+                'emailConsent',
+                'notifyPanel',
+            ] as const
+        ).forEach((field) => {
+            const next = (dto as Record<string, unknown>)[field];
+            if (next !== undefined && next !== customer[field]) {
+                consentChanges[field] = { from: customer[field], to: next };
+            }
+        });
+
+        if (Object.keys(consentChanges).length > 0) {
+            // Audit-trail RODO: data revoke = createdAt wpisu, poprzednia data
+            // zgody zachowana w payloadzie zanim kolumna zostanie wyzerowana.
+            try {
+                await this.logService?.logAction(
+                    customer,
+                    LogAction.CONSENT_UPDATED,
+                    { customerId: id, changes: consentChanges },
+                );
+            } catch {
+                // audyt nie może blokować edycji klienta
+            }
         }
 
         // Update name if firstName or lastName changed

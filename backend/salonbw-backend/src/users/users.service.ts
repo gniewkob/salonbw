@@ -1,5 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Optional, BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log-action.enum';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
@@ -13,6 +15,7 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
+        @Optional() private readonly logService?: LogService,
     ) {}
 
     async findByEmail(email: string): Promise<User | null> {
@@ -164,6 +167,7 @@ export class UsersService {
             'notifyPanel' | 'smsConsent' | 'whatsappConsent' | 'emailConsent'
         >
     > {
+        const before = await this.findById(id);
         const update: Partial<User> = {};
         if (dto.notifyPanel !== undefined) update.notifyPanel = dto.notifyPanel;
         if (dto.smsConsent !== undefined) update.smsConsent = dto.smsConsent;
@@ -173,6 +177,35 @@ export class UsersService {
             update.emailConsent = dto.emailConsent;
         await this.usersRepository.update(id, update);
         const updated = await this.findById(id);
+        // Audit-trail RODO: zapis zmiany zgód (stare→nowe wartości) w logach —
+        // revoke nie zostawia już zmiany bez śladu. Non-fatal: błąd logowania
+        // nie może zablokować zapisu zgody.
+        if (before && updated) {
+            const changes: Record<string, { from: boolean; to: boolean }> = {};
+            (
+                [
+                    'notifyPanel',
+                    'smsConsent',
+                    'whatsappConsent',
+                    'emailConsent',
+                ] as const
+            ).forEach((field) => {
+                const from = Boolean(before[field]);
+                const to = Boolean(updated[field]);
+                if (from !== to) changes[field] = { from, to };
+            });
+            if (Object.keys(changes).length > 0) {
+                try {
+                    await this.logService?.logAction(
+                        updated,
+                        LogAction.CONSENT_UPDATED,
+                        { userId: id, changes },
+                    );
+                } catch {
+                    // audyt nie może blokować zmiany zgody
+                }
+            }
+        }
         return {
             notifyPanel: updated?.notifyPanel ?? true,
             smsConsent: updated?.smsConsent ?? false,
