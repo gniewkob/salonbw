@@ -86,26 +86,20 @@ describe('HelpContactPage', () => {
 
         await waitFor(() => {
             expect(apiFetch).toHaveBeenCalledWith(
-                '/emails/send-auth',
+                '/emails/contact',
                 expect.objectContaining({
                     method: 'POST',
-                    body: expect.stringContaining('"accountLabel":"Konto #42"'),
+                    body: expect.stringContaining('Konto #42'),
                 }),
             );
         });
 
         const [, request] = apiFetch.mock.calls[0];
         const payload = JSON.parse(String(request?.body));
-        expect(payload.to).toBe('salon@example.test');
-        expect(payload.subject).toBe(
-            'Panel pomoc: Salon Black & White (Konto #42)',
-        );
-        expect(payload.data).toMatchObject({
-            accountId: 42,
-            accountLabel: 'Konto #42',
-            branchName: 'Salon Black & White',
-            replyEmail: 'client@example.test',
-            query: 'Nie widzę mojej wizyty',
-        });
+        expect(payload.replyTo).toBe('client@example.test');
+        expect(payload.name).toContain('panel pomoc');
+        expect(payload.message).toContain('Konto #42');
+        expect(payload.message).toContain('Salon Black & White');
+        expect(payload.message).toContain('Nie widzę mojej wizyty');
     });
 });

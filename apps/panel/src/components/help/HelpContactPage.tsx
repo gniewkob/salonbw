@@ -122,10 +122,6 @@ export default function HelpContactPage() {
     const branchName = primaryBranch?.name || 'Salon Black & White';
     const branchContact =
         primaryBranch?.phone || primaryBranch?.email || DEFAULT_SUPPORT_EMAIL;
-    const supportEmail =
-        process.env.NEXT_PUBLIC_CONTACT_RECIPIENT ||
-        primaryBranch?.email ||
-        DEFAULT_SUPPORT_EMAIL;
     const accountLabel = user?.id ? `Konto #${user.id}` : 'Zalogowane konto';
 
     const isValid =
@@ -154,32 +150,23 @@ export default function HelpContactPage() {
         try {
             const attachmentValue = attachmentName || 'brak';
 
-            await apiFetch<{ status: string }>('/emails/send-auth', {
+            // /emails/contact ma odbiorcę skonfigurowanego po stronie serwera
+            // (CONTACT_RECIPIENT) — dostępny dla każdej roli, bez otwartego relay.
+            await apiFetch<{ status: string }>('/emails/contact', {
                 method: 'POST',
                 body: JSON.stringify({
-                    to: supportEmail,
-                    subject: `Panel pomoc: ${branchName} (${accountLabel})`,
-                    template:
-                        '<p><strong>Konto:</strong> {{accountLabel}}</p>' +
-                        '<p><strong>Salon:</strong> {{branchName}}</p>' +
-                        '<p><strong>Użytkownik:</strong> {{userName}}</p>' +
-                        '<p><strong>Email do odpowiedzi:</strong> {{replyEmail}}</p>' +
-                        '<p><strong>Przeglądarka:</strong> {{browser}}</p>' +
-                        '<p><strong>System operacyjny:</strong> {{operatingSystem}}</p>' +
-                        '<p><strong>Załącznik:</strong> {{attachmentName}}</p>' +
-                        '<p><strong>Pytanie:</strong></p>' +
-                        '<p>{{query}}</p>',
-                    data: {
-                        accountLabel,
-                        accountId: user?.id ?? null,
-                        branchName,
-                        userName: user?.name || 'Nieznany użytkownik',
-                        replyEmail: trimmedEmail,
-                        browser: environment.browser,
-                        operatingSystem: environment.operatingSystem,
-                        attachmentName: attachmentValue,
-                        query: trimmedQuery,
-                    },
+                    name: `${user?.name || 'Użytkownik panelu'} (panel pomoc)`,
+                    replyTo: trimmedEmail,
+                    message: [
+                        `Pytanie z panelu pomocy`,
+                        `Konto: ${accountLabel}`,
+                        `Salon: ${branchName}`,
+                        `Przeglądarka: ${environment.browser}`,
+                        `System operacyjny: ${environment.operatingSystem}`,
+                        `Załącznik (tylko nazwa): ${attachmentValue}`,
+                        '',
+                        trimmedQuery,
+                    ].join('\n'),
                 }),
             });
 
@@ -242,6 +229,7 @@ export default function HelpContactPage() {
                                 <textarea
                                     id="physical_help_query"
                                     className="text required helps-page__textarea"
+                                    maxLength={1500}
                                     value={query}
                                     onChange={(event) => {
                                         setQuery(event.target.value);

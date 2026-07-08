@@ -86,6 +86,9 @@ export default function SalonGlobalSearch({
     const [searchActive, setSearchActive] = useState(-1);
     const groupedSearchResults = groupResults(searchResults);
     const isStaff = user?.role !== 'client';
+    // Wyniki "Pracownicy" linkują do /settings/employees/* (RouteGuard admin-only),
+    // więc pokazujemy je tylko adminowi.
+    const isAdmin = user?.role === 'admin';
 
     useEffect(() => {
         if (!isStaff) return;
@@ -102,10 +105,10 @@ export default function SalonGlobalSearch({
                 apiFetch<{ items?: OmniboxCustomer[] } | OmniboxCustomer[]>(
                     `/customers?search=${encoded}&limit=8`,
                 ),
-                apiFetch<StaffOption[]>('/employees/staff-options'),
-                apiFetch<Product[]>(
-                    `/products?search=${encoded}&includeInactive=true`,
-                ),
+                isAdmin
+                    ? apiFetch<StaffOption[]>('/employees/staff-options')
+                    : Promise.reject(new Error('skipped')),
+                apiFetch<Product[]>(`/products?search=${encoded}`),
             ])
                 .then(([customersResult, employeesResult, productsResult]) => {
                     if (cancelled) return;
@@ -127,7 +130,7 @@ export default function SalonGlobalSearch({
                         );
                     }
 
-                    if (employeesResult.status === 'fulfilled') {
+                    if (isAdmin && employeesResult.status === 'fulfilled') {
                         const normalizedQuery = query.toLowerCase();
                         nextResults.push(
                             ...employeesResult.value
@@ -179,7 +182,7 @@ export default function SalonGlobalSearch({
             cancelled = true;
             clearTimeout(timer);
         };
-    }, [searchQuery, apiFetch, isStaff]);
+    }, [searchQuery, apiFetch, isStaff, isAdmin]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

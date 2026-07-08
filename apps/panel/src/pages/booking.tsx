@@ -1003,10 +1003,17 @@ function ServiceStep({
                     <div className="d-flex flex-column gap-2">
                         {svcs.map((svc) => {
                             const variants = getActiveVariants(svc);
-                            const variantText =
-                                variants.length === 1
-                                    ? '1 wariant do wyboru'
-                                    : `${variants.length} warianty do wyboru`;
+                            const variantCount = variants.length;
+                            const variantNoun =
+                                variantCount === 1
+                                    ? 'wariant'
+                                    : variantCount % 10 >= 2 &&
+                                        variantCount % 10 <= 4 &&
+                                        (variantCount % 100 < 12 ||
+                                            variantCount % 100 > 14)
+                                      ? 'warianty'
+                                      : 'wariantów';
+                            const variantText = `${variantCount} ${variantNoun} do wyboru`;
                             return (
                                 <button
                                     key={svc.id}
