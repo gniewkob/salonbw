@@ -6,6 +6,7 @@ import {
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import Link from 'next/link';
 import CustomerTimeline from './CustomerTimeline';
+import VisitNotes from '@/components/client/VisitNotes';
 
 interface Props {
     customerId: number;
@@ -124,6 +125,23 @@ function visitStatusMeta(status: string) {
             return { text: 'do zapłaty', icon: 'pending' as const };
     }
 }
+
+function hasVisitNotes(
+    visit: NonNullable<CustomerEventHistoryData>['items'][number],
+) {
+    return Boolean(
+        visit.notes?.trim() ||
+            visit.clientComment?.trim() ||
+            visit.staffRecommendations?.trim() ||
+            visit.onlineAddonsSummary?.trim() ||
+            visit.onlineTotalDurationMinutes ||
+            visit.onlineDurationNeedsVerification,
+    );
+}
+
+type CustomerEventHistoryData = ReturnType<
+    typeof useCustomerEventHistory
+>['data'];
 
 export default function CustomerHistoryTab({ customerId }: Props) {
     const [page, setPage] = useState(1);
@@ -476,6 +494,32 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                                         ? ` od ${visit.time}`
                                                         : ''}
                                                 </div>
+                                                {hasVisitNotes(visit) ? (
+                                                    <div className="customer-history-row__notes">
+                                                        <VisitNotes
+                                                            compact
+                                                            appointmentStatus={
+                                                                visit.status
+                                                            }
+                                                            notes={visit.notes}
+                                                            clientComment={
+                                                                visit.clientComment
+                                                            }
+                                                            staffRecommendations={
+                                                                visit.staffRecommendations
+                                                            }
+                                                            onlineAddonsSummary={
+                                                                visit.onlineAddonsSummary
+                                                            }
+                                                            onlineTotalDurationMinutes={
+                                                                visit.onlineTotalDurationMinutes
+                                                            }
+                                                            onlineDurationNeedsVerification={
+                                                                visit.onlineDurationNeedsVerification
+                                                            }
+                                                        />
+                                                    </div>
+                                                ) : null}
                                             </div>
                                             <div className="customer-history-row__right">
                                                 <div className="customer-history-row__price">

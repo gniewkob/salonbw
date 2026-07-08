@@ -1950,6 +1950,11 @@ tr.customer-row:hover .customers-drag-handle {
     font-size: 12px;
 }
 
+.customer-history-row__left {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
 .customer-history-row__service a:hover {
     text-decoration: underline;
 }
@@ -1975,6 +1980,11 @@ tr.customer-row:hover .customers-drag-handle {
     margin-top: 2px;
     font-size: 11px;
     color: #8a939b;
+}
+
+.customer-history-row__notes {
+    max-width: 560px;
+    margin-top: 8px;
 }
 
 .customer-gallery-thumb {

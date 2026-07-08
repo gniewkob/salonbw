@@ -129,4 +129,50 @@ describe('CustomerHistoryTab', () => {
         expect(screen.getByText('Nieznana akcja')).toBeInTheDocument();
         expect(screen.getByText('Nieznany powód')).toBeInTheDocument();
     });
+
+    it('renders separated visit notes in CRM history rows', () => {
+        mockUseCustomerEventHistory.mockReturnValue({
+            isLoading: false,
+            error: null,
+            data: {
+                items: [
+                    {
+                        id: 10,
+                        date: '2026-05-01',
+                        time: '10:00',
+                        service: { id: 7, name: 'Koloryzacja' },
+                        employee: { id: 2, name: 'Aleksandra' },
+                        status: 'completed',
+                        price: 150,
+                        notes: null,
+                        clientComment: 'klient chce ciszę',
+                        staffRecommendations: 'MYĆ I NIE PŁUKAĆ',
+                        onlineAddonsSummary: 'Dermabrazja (+70 min)',
+                        onlineTotalDurationMinutes: 150,
+                        onlineDurationNeedsVerification: true,
+                    },
+                ],
+                counts: {
+                    all: 1,
+                    upcoming: 0,
+                    completed: 1,
+                    cancelled: 0,
+                    no_show: 0,
+                },
+                total: 1,
+                limit: 20,
+                offset: 0,
+            },
+        });
+
+        render(<CustomerHistoryTab customerId={123} />);
+
+        expect(screen.getByText('Koloryzacja')).toBeInTheDocument();
+        expect(screen.getByText('Komentarz do rezerwacji')).toBeInTheDocument();
+        expect(screen.getByText('Zalecenia po wizycie')).toBeInTheDocument();
+        expect(screen.getByText('Dodatkowe zabiegi')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Salon potwierdzi łączny czas wizyty.'),
+        ).not.toBeInTheDocument();
+    });
 });
