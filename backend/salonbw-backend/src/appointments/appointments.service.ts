@@ -1414,7 +1414,10 @@ export class AppointmentsService {
         if (!appointment) {
             throw new BadRequestException('Appointment not found');
         }
-        appointment.clientComment = this.normalizeOptionalText(clientComment);
+        // ?? null — undefined jest pomijane przez save(), więc wyczyszczenie
+        // komentarza nigdy nie trafiało do bazy (stary tekst zostawał).
+        appointment.clientComment =
+            this.normalizeOptionalText(clientComment) ?? null;
         return this.appointmentsRepository.save(appointment);
     }
 
