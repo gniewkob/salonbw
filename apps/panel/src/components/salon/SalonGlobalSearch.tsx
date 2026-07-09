@@ -202,6 +202,14 @@ export default function SalonGlobalSearch({
 
     if (!isStaff) return null;
 
+    const listboxId = `${inputId}-listbox`;
+    const hasResults = searchResults.length > 0;
+    const activeResult =
+        searchActive >= 0 ? searchResults[searchActive] : undefined;
+    const activeOptionId = activeResult
+        ? `${inputId}-option-${activeResult.key}`
+        : undefined;
+
     const goToSearchResult = (result: OmniboxResult) => {
         setSearchOpen(false);
         setSearchQuery('');
@@ -244,6 +252,12 @@ export default function SalonGlobalSearch({
                 autoComplete="off"
                 placeholder="Szukaj..."
                 aria-label="Szukaj klientów, pracowników i produktów"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-haspopup="listbox"
+                aria-expanded={searchOpen}
+                aria-controls={searchOpen && hasResults ? listboxId : undefined}
+                aria-activedescendant={activeOptionId}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => {
@@ -255,45 +269,74 @@ export default function SalonGlobalSearch({
             />
             {searchOpen && (
                 <div className="dropdown-menu show omnibox-results">
-                    {searchResults.length === 0 ? (
-                        <div className="dropdown-item-text text-muted small">
+                    {!hasResults ? (
+                        <div
+                            className="dropdown-item-text text-muted small"
+                            role="status"
+                        >
                             Brak wyników dla „{searchQuery.trim()}&rdquo;
                         </div>
                     ) : (
-                        groupedSearchResults.map((group) => (
-                            <div
-                                key={group.type}
-                                className="omnibox-results__group"
-                            >
-                                <div className="omnibox-results__heading">
-                                    {group.title} ({group.items.length})
-                                </div>
-                                {group.items.map((item) => {
-                                    const index = searchResults.findIndex(
-                                        (result) => result.key === item.key,
-                                    );
-                                    return (
-                                        <button
-                                            key={item.key}
-                                            type="button"
-                                            className={`dropdown-item omnibox-results__item${index === searchActive ? ' active' : ''}`}
-                                            onClick={() =>
-                                                goToSearchResult(item)
-                                            }
+                        <div
+                            id={listboxId}
+                            role="listbox"
+                            aria-label="Wyniki wyszukiwania"
+                        >
+                            {groupedSearchResults.map((group) => {
+                                const headingId = `${listboxId}-heading-${group.type}`;
+                                return (
+                                    <div
+                                        key={group.type}
+                                        className="omnibox-results__group"
+                                        role="group"
+                                        aria-labelledby={headingId}
+                                    >
+                                        <div
+                                            id={headingId}
+                                            className="omnibox-results__heading"
                                         >
-                                            <span className="omnibox-results__label">
-                                                {item.label}
-                                            </span>
-                                            {item.meta ? (
-                                                <span className="omnibox-results__meta">
-                                                    {item.meta}
-                                                </span>
-                                            ) : null}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ))
+                                            {group.title} ({group.items.length})
+                                        </div>
+                                        {group.items.map((item) => {
+                                            const index =
+                                                searchResults.findIndex(
+                                                    (result) =>
+                                                        result.key === item.key,
+                                                );
+                                            const optionId = `${inputId}-option-${item.key}`;
+                                            const selected =
+                                                index === searchActive;
+                                            return (
+                                                <button
+                                                    key={item.key}
+                                                    id={optionId}
+                                                    type="button"
+                                                    role="option"
+                                                    aria-selected={selected}
+                                                    tabIndex={-1}
+                                                    className={`dropdown-item omnibox-results__item${selected ? ' active' : ''}`}
+                                                    onClick={() =>
+                                                        goToSearchResult(item)
+                                                    }
+                                                    onMouseEnter={() =>
+                                                        setSearchActive(index)
+                                                    }
+                                                >
+                                                    <span className="omnibox-results__label">
+                                                        {item.label}
+                                                    </span>
+                                                    {item.meta ? (
+                                                        <span className="omnibox-results__meta">
+                                                            {item.meta}
+                                                        </span>
+                                                    ) : null}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
             )}
