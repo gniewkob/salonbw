@@ -345,6 +345,11 @@ export interface ClientDashboardResponse {
         reschedulePreviousEndTime?: string | null;
         employeeName: string;
         status?: string;
+        clientComment?: string | null;
+        staffRecommendations?: string | null;
+        onlineAddonsSummary?: string | null;
+        onlineTotalDurationMinutes?: number | null;
+        onlineDurationNeedsVerification?: boolean;
     } | null;
     pendingRescheduleAppointment: {
         id: number;
@@ -355,6 +360,11 @@ export interface ClientDashboardResponse {
         reschedulePreviousEndTime?: string | null;
         employeeName: string;
         status?: string;
+        clientComment?: string | null;
+        staffRecommendations?: string | null;
+        onlineAddonsSummary?: string | null;
+        onlineTotalDurationMinutes?: number | null;
+        onlineDurationNeedsVerification?: boolean;
     } | null;
     completedCount: number;
     serviceHistory: { id: number; name: string; count: number }[];

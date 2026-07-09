@@ -240,6 +240,12 @@ export class DashboardService {
             reschedulePreviousEndTime: apt.reschedulePreviousEndTime ?? null,
             status: apt.status,
             employeeName: apt.employee?.name ?? apt.employee?.email ?? '',
+            clientComment: apt.clientComment ?? null,
+            staffRecommendations: apt.staffRecommendations ?? null,
+            onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
+            onlineTotalDurationMinutes: apt.onlineTotalDurationMinutes ?? null,
+            onlineDurationNeedsVerification:
+                apt.onlineDurationNeedsVerification ?? false,
         });
 
         const upcomingAppointment = await this.appointmentsRepository.findOne({

@@ -11,6 +11,7 @@ import ClientAppointmentActions, {
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
 import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
+import VisitNotes from '@/components/client/VisitNotes';
 import PanelButton from '@/components/ui/PanelButton';
 import type { ClientDashboardResponse } from '@/types';
 
@@ -20,33 +21,17 @@ function visitDetailsHref(id: number) {
 
 type DashboardVisit = ClientDashboardResponse['recentAppointments'][number];
 
-function hasVisitDetails(appointment: DashboardVisit) {
+type DashboardAppointmentWithNotes =
+    | DashboardVisit
+    | NonNullable<ClientDashboardResponse['upcomingAppointment']>;
+
+function hasVisitDetails(appointment: DashboardAppointmentWithNotes) {
     return Boolean(
         appointment.clientComment?.trim() ||
             appointment.staffRecommendations?.trim() ||
             appointment.onlineAddonsSummary?.trim() ||
             appointment.onlineTotalDurationMinutes ||
             appointment.onlineDurationNeedsVerification,
-    );
-}
-
-function VisitDetailsSummary({ appointment }: { appointment: DashboardVisit }) {
-    const labels = [
-        appointment.clientComment?.trim() ? 'komentarz' : null,
-        appointment.staffRecommendations?.trim() ? 'zalecenia' : null,
-        appointment.onlineAddonsSummary?.trim() ? 'dodatki' : null,
-        appointment.onlineTotalDurationMinutes ? 'czas' : null,
-    ].filter(Boolean);
-
-    if (labels.length === 0) return null;
-
-    return (
-        <Link
-            href={visitDetailsHref(appointment.id)}
-            className="client-visit-summary-link"
-        >
-            Szczegóły wizyty: {labels.join(', ')}
-        </Link>
     );
 }
 
@@ -319,6 +304,36 @@ export default function ClientDashboard() {
                                                 }
                                             />
                                         )}
+                                    {hasVisitDetails(
+                                        data.upcomingAppointment,
+                                    ) ? (
+                                        <VisitNotes
+                                            compact
+                                            appointmentStatus={
+                                                data.upcomingAppointment.status
+                                            }
+                                            clientComment={
+                                                data.upcomingAppointment
+                                                    .clientComment
+                                            }
+                                            staffRecommendations={
+                                                data.upcomingAppointment
+                                                    .staffRecommendations
+                                            }
+                                            onlineAddonsSummary={
+                                                data.upcomingAppointment
+                                                    .onlineAddonsSummary
+                                            }
+                                            onlineTotalDurationMinutes={
+                                                data.upcomingAppointment
+                                                    .onlineTotalDurationMinutes
+                                            }
+                                            onlineDurationNeedsVerification={
+                                                data.upcomingAppointment
+                                                    .onlineDurationNeedsVerification
+                                            }
+                                        />
+                                    ) : null}
                                 </div>
                                 <div className="client-next-visit__actions">
                                     <ClientAppointmentActions
@@ -446,8 +461,22 @@ export default function ClientDashboard() {
                                         </div>
                                     )}
                                     {hasVisitDetails(apt) ? (
-                                        <VisitDetailsSummary
-                                            appointment={apt}
+                                        <VisitNotes
+                                            compact
+                                            appointmentStatus={apt.status}
+                                            clientComment={apt.clientComment}
+                                            staffRecommendations={
+                                                apt.staffRecommendations
+                                            }
+                                            onlineAddonsSummary={
+                                                apt.onlineAddonsSummary
+                                            }
+                                            onlineTotalDurationMinutes={
+                                                apt.onlineTotalDurationMinutes
+                                            }
+                                            onlineDurationNeedsVerification={
+                                                apt.onlineDurationNeedsVerification
+                                            }
                                         />
                                     ) : null}
                                     {apt.status === 'rescheduled_pending' &&

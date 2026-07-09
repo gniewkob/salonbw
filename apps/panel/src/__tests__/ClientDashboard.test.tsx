@@ -19,6 +19,10 @@ jest.mock('@/hooks/useDashboard', () => ({
                 startTime: '2026-07-12T10:00:00.000Z',
                 employeeName: 'Aleksandra',
                 status: 'confirmed',
+                clientComment: 'proszę o spokojną wizytę',
+                onlineAddonsSummary: 'Pielęgnacja (+30 min)',
+                onlineTotalDurationMinutes: 75,
+                onlineDurationNeedsVerification: true,
             },
             pendingRescheduleAppointment: {
                 id: 42,
@@ -158,12 +162,40 @@ describe('ClientDashboard', () => {
             within(recentSection!).getByText('Dermabrazja'),
         ).toBeInTheDocument();
         expect(
-            within(recentSection!).getByRole('link', {
-                name: 'Szczegóły wizyty: zalecenia',
-            }),
-        ).toHaveAttribute('href', '/visits?visitId=7');
+            within(recentSection!).getByText('Zalecenia po wizycie'),
+        ).toBeInTheDocument();
+        expect(
+            within(recentSection!).getByText('myć włosy co 3 dni'),
+        ).toBeInTheDocument();
         expect(
             within(recentSection!).queryByText('Koloryzacja'),
         ).not.toBeInTheDocument();
+    });
+
+    it('shows structured notes for the upcoming appointment', () => {
+        render(<ClientDashboard />);
+
+        const upcomingSection = screen
+            .getByRole('heading', { name: 'Nadchodząca wizyta' })
+            .closest('section');
+
+        expect(upcomingSection).not.toBeNull();
+        expect(
+            within(upcomingSection!).getByText('Komentarz do rezerwacji'),
+        ).toBeInTheDocument();
+        expect(
+            within(upcomingSection!).getByText('proszę o spokojną wizytę'),
+        ).toBeInTheDocument();
+        expect(
+            within(upcomingSection!).getByText('Dodatkowe zabiegi'),
+        ).toBeInTheDocument();
+        expect(
+            within(upcomingSection!).getByText('Pielęgnacja (+30 min)'),
+        ).toBeInTheDocument();
+        expect(
+            within(upcomingSection!).getByText(
+                'Salon potwierdzi łączny czas wizyty.',
+            ),
+        ).toBeInTheDocument();
     });
 });
