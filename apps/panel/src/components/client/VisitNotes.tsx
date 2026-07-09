@@ -30,14 +30,14 @@ function cleanFreeText(value: string) {
 function pushFreeTextSection(
     sections: VisitNoteSection[],
     value: string,
-    fallbackLabel = 'Komentarz do rezerwacji',
+    sectionLabel = 'Komentarz do rezerwacji',
 ) {
     const cleaned = cleanFreeText(value);
     if (!cleaned) return;
 
     sections.push({
         key: `client-comment-${sections.length}`,
-        label: fallbackLabel,
+        label: sectionLabel,
         value: cleaned,
     });
 }
