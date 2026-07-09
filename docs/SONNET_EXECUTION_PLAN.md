@@ -203,7 +203,7 @@ Znalezione bugi: fix + wpis do active-context (wzorzec: sesje 07-08/07-09).
 
 ## 5. Definicja ukończenia projektu (checklista GO)
 
-- [ ] Z1–Z3 zrobione i wdrożone (CI zielone, deploy success)
+- [x] Z1–Z3 zrobione i wdrożone (`b8daaa0`/`8c0ca98`/`6b3d457`; CI zielone) — **deploy nadal czerwony wyłącznie przez bloker SSH MyDevil, patrz active-context; kod czeka w kolejce, nie jest to regresja Z1-Z3**
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
 - [ ] Live E2E 3 ról na czystej bazie (Opus + owner)
