@@ -1187,8 +1187,13 @@ export class AppointmentsService {
         const paidAmount = dto.paidAmountCents / 100;
         const tipAmount = dto.tipAmountCents ? dto.tipAmountCents / 100 : 0;
         const discount = dto.discountCents ? dto.discountCents / 100 : 0;
+        // Puste/nieprzesłane pole NIE wymazuje istniejących zaleceń (modal
+        // finalizacji nie pre-filluje ich, a wysyła undefined gdy puste) —
+        // nadpisujemy tylko gdy personel faktycznie coś wpisał.
         const staffRecommendations =
-            this.normalizeOptionalText(dto.staffRecommendations) ?? null;
+            this.normalizeOptionalText(dto.staffRecommendations) ??
+            appointment.staffRecommendations ??
+            null;
 
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {

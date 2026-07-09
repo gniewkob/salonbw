@@ -203,7 +203,6 @@ export default class TestDataSeed {
                 startTime: new Date('2026-02-08T09:00:00'),
                 endTime: new Date('2026-02-08T12:00:00'),
                 status: AppointmentStatus.Scheduled,
-                notes: 'Pierwsza wizyta - koloryzacja',
             });
             console.log('✓ Appointment 1: 09:00 - Koloryzacja');
         }
@@ -216,7 +215,6 @@ export default class TestDataSeed {
                 startTime: new Date('2026-02-08T10:30:00'),
                 endTime: new Date('2026-02-08T11:30:00'),
                 status: AppointmentStatus.Confirmed,
-                notes: 'Strzyżenie + modelowanie',
             });
             console.log('✓ Appointment 2: 10:30 - Strzyżenie');
         }
@@ -229,7 +227,6 @@ export default class TestDataSeed {
                 startTime: new Date('2026-02-08T14:00:00'),
                 endTime: new Date('2026-02-08T15:30:00'),
                 status: AppointmentStatus.InProgress,
-                notes: 'Zabieg regenerujący',
             });
             console.log('✓ Appointment 3: 14:00 - Botoks');
         }
