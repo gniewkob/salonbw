@@ -85,7 +85,7 @@ export class Appointment {
     })
     status: AppointmentStatus;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'text' })
     notes?: string | null;
 
     @Column({ nullable: true, type: 'text' })
