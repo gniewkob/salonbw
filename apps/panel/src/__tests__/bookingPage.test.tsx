@@ -99,6 +99,98 @@ const FLAT_VARIANT_SERVICES_WITH_ADDON = [
     },
 ];
 
+// Main service AND its addon candidates are both split into per-hair-length
+// rows by the Booksy flat catalog. Picking "włosy długie" for the main
+// service should auto-resolve the "Regeneracja" addon to its "długie" row
+// (id 313) instead of listing all three lengths as separate addon cards.
+const FLAT_VARIANT_MAIN_AND_MATCHING_ADDON_GROUP = [
+    {
+        id: 301,
+        name: 'Fryzura wieczorowa – włosy krótkie',
+        duration: 60,
+        price: 150,
+        priceType: 'fixed',
+        category: 'Fryzjerstwo',
+    },
+    {
+        id: 302,
+        name: 'Fryzura wieczorowa – włosy średnie',
+        duration: 70,
+        price: 180,
+        priceType: 'fixed',
+        category: 'Fryzjerstwo',
+    },
+    {
+        id: 303,
+        name: 'Fryzura wieczorowa – włosy długie',
+        duration: 80,
+        price: 220,
+        priceType: 'fixed',
+        category: 'Fryzjerstwo',
+    },
+    {
+        id: 311,
+        name: 'Regeneracja – włosy krótkie',
+        duration: 20,
+        price: 40,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+    {
+        id: 312,
+        name: 'Regeneracja – włosy średnie',
+        duration: 25,
+        price: 50,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+    {
+        id: 313,
+        name: 'Regeneracja – włosy długie',
+        duration: 30,
+        price: 60,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+];
+
+// Main service has no hair-length variant of its own, so an addon group
+// can't be auto-resolved — the client must pick a length for the addon too.
+const FLAT_VARIANT_ADDON_GROUP_WITHOUT_MAIN_VARIANT = [
+    {
+        id: 1,
+        name: 'Strzyżenie',
+        duration: 45,
+        price: 120,
+        priceType: 'fixed',
+        category: 'Włosy',
+    },
+    {
+        id: 311,
+        name: 'Regeneracja – włosy krótkie',
+        duration: 20,
+        price: 40,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+    {
+        id: 312,
+        name: 'Regeneracja – włosy średnie',
+        duration: 25,
+        price: 50,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+    {
+        id: 313,
+        name: 'Regeneracja – włosy długie',
+        duration: 30,
+        price: 60,
+        priceType: 'fixed',
+        category: 'Pielęgnacja',
+    },
+];
+
 const SLOTS = [
     {
         employeeId: 7,
@@ -376,6 +468,175 @@ describe('BookingPage reservedOnline payload', () => {
         expect(payload.serviceId).toBe(102);
         expect(payload.serviceVariantId).toBeUndefined();
         expect(payload.addonServiceIds).toEqual([2]);
+    });
+
+    it('groups flat-catalog addon rows and auto-resolves the matching hair length', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/services/online-booking') {
+                return FLAT_VARIANT_MAIN_AND_MATCHING_ADDON_GROUP;
+            }
+            if (path.startsWith('/calendar/available-slots')) return SLOTS;
+            return { id: 123 };
+        });
+
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as ReturnType<
+                    typeof createAuthValue
+                >['apiFetch'],
+            }),
+        );
+
+        render(<BookingPage />);
+
+        fireEvent.click(
+            await screen.findByRole('button', {
+                name: /fryzura wieczorowa/i,
+            }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', { name: /włosy długie/i }),
+        );
+
+        // No duplicate base-name rows: exactly one "Regeneracja" addon card,
+        // not three (one per hair length in the raw catalog).
+        const regenerationCards = await screen.findAllByRole('button', {
+            name: /regeneracja/i,
+        });
+        expect(regenerationCards).toHaveLength(1);
+
+        fireEvent.click(regenerationCards[0]);
+        fireEvent.click(
+            screen.getByRole('button', { name: /przejdź do terminu/i }),
+        );
+
+        await waitFor(() => {
+            expect(
+                apiFetch.mock.calls.some(([path]) => {
+                    if (
+                        typeof path !== 'string' ||
+                        !path.startsWith('/calendar/available-slots')
+                    ) {
+                        return false;
+                    }
+                    const params = new URLSearchParams(path.split('?')[1]);
+                    return (
+                        params.get('serviceId') === '303' &&
+                        params.get('addonServiceIds') === '313'
+                    );
+                }),
+            ).toBe(true);
+        });
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: /\d{2}:\d{2}/ }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /potwierdź rezerwację/i }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/appointments',
+                expect.objectContaining({ method: 'POST' }),
+            );
+        });
+
+        const postCall = apiFetch.mock.calls.find(
+            ([path]) => path === '/appointments',
+        );
+        const payload = JSON.parse(
+            (postCall?.[1] as { body: string }).body,
+        ) as {
+            serviceId: number;
+            addonServiceIds: number[];
+        };
+
+        expect(payload.serviceId).toBe(303);
+        expect(payload.addonServiceIds).toEqual([313]);
+    });
+
+    it('lets the client pick a hair length for an addon group when the main service has none', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/services/online-booking') {
+                return FLAT_VARIANT_ADDON_GROUP_WITHOUT_MAIN_VARIANT;
+            }
+            if (path.startsWith('/calendar/available-slots')) return SLOTS;
+            return { id: 123 };
+        });
+
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as ReturnType<
+                    typeof createAuthValue
+                >['apiFetch'],
+            }),
+        );
+
+        render(<BookingPage />);
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: /strzyżenie/i }),
+        );
+
+        expect(await screen.findByText('Regeneracja')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /regeneracja/i }),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: /włosy średnie/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /przejdź do terminu/i }),
+        );
+
+        await waitFor(() => {
+            expect(
+                apiFetch.mock.calls.some(([path]) => {
+                    if (
+                        typeof path !== 'string' ||
+                        !path.startsWith('/calendar/available-slots')
+                    ) {
+                        return false;
+                    }
+                    const params = new URLSearchParams(path.split('?')[1]);
+                    return (
+                        params.get('serviceId') === '1' &&
+                        params.get('addonServiceIds') === '312'
+                    );
+                }),
+            ).toBe(true);
+        });
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: /\d{2}:\d{2}/ }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /potwierdź rezerwację/i }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/appointments',
+                expect.objectContaining({ method: 'POST' }),
+            );
+        });
+
+        const postCall = apiFetch.mock.calls.find(
+            ([path]) => path === '/appointments',
+        );
+        const payload = JSON.parse(
+            (postCall?.[1] as { body: string }).body,
+        ) as {
+            serviceId: number;
+            addonServiceIds: number[];
+        };
+
+        expect(payload.serviceId).toBe(1);
+        expect(payload.addonServiceIds).toEqual([312]);
     });
 
     it('jumps to the nearest day with slots for the selected total duration', async () => {

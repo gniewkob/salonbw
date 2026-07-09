@@ -147,6 +147,35 @@ function parseFlatVariantName(service: OnlineService) {
     return looksLikeVariant ? { baseName, variantName } : null;
 }
 
+// Same hair-length taxonomy as parseFlatVariantName's keyword check, folded
+// into buckets so a main-service variant ("włosy długie") can be matched
+// against an addon-group variant ("Regeneracja – włosy długie") without an
+// exact string match.
+function hairLengthBucket(text: string | undefined | null): string | null {
+    if (!text) return null;
+    const lower = text.toLocaleLowerCase('pl-PL');
+    if (lower.includes('krótk') || lower.includes('krotk')) return 'short';
+    if (lower.includes('śred') || lower.includes('sred')) return 'medium';
+    if (lower.includes('dług') || lower.includes('dlug')) return 'long';
+    if (lower.includes('pasa')) return 'strand';
+    return null;
+}
+
+// Resolves a synthetic flat-variant entry back to the real, bookable
+// OnlineService it was built from (id/price/duration are the real ones —
+// only variant.id/.sourceServiceId happen to share the same value by
+// construction in normalizeServicesForBooking).
+function addonFromVariant(variant: OnlineServiceVariant): OnlineService {
+    return {
+        id: variant.sourceServiceId ?? variant.id,
+        name: variant.sourceServiceName ?? variant.name,
+        duration: variant.duration,
+        price: variant.price,
+        priceType: variant.priceType,
+        description: variant.description,
+    };
+}
+
 function normalizeServicesForBooking(services: OnlineService[]) {
     const directServices: Array<{ service: OnlineService; index: number }> = [];
     const flatGroups = new Map<
@@ -770,7 +799,7 @@ export default function BookingPage() {
                                         <AddonStep
                                             service={selectedService}
                                             variant={selectedVariant}
-                                            services={services}
+                                            services={bookingServices}
                                             selectedAddons={selectedAddons}
                                             onToggle={handleToggleAddon}
                                             onContinue={() => setStep('slot')}
@@ -1117,37 +1146,103 @@ function AddonStep({
     const recommended = addons.filter(isLikelyAddon);
     const other = addons.filter((addon) => !isLikelyAddon(addon));
 
-    const renderAddon = (addon: OnlineService) => {
-        const selected = selectedIds.has(addon.id);
+    const renderAddonButton = (
+        key: string | number,
+        label: string,
+        sublabel: string,
+        resolved: OnlineService,
+    ) => {
+        const selected = selectedIds.has(resolved.id);
         return (
             <button
-                key={addon.id}
+                key={key}
                 type="button"
                 className={`booking-service-card booking-addon-card${
                     selected ? ' is-selected' : ''
                 }`}
                 aria-pressed={selected}
-                onClick={() => onToggle(addon)}
+                onClick={() => onToggle(resolved)}
             >
                 <span className="booking-addon-card__check" aria-hidden="true">
                     {selected && <CheckIcon />}
                 </span>
                 <span className="booking-addon-card__content">
-                    <strong className="d-block">{addon.name}</strong>
-                    {addon.description &&
-                        addon.description.trim() !== addon.name.trim() && (
-                            <span className="text-muted small">
-                                {addon.description}
-                            </span>
-                        )}
-                    <span className="text-muted small d-block">
-                        +{addon.duration} min
-                    </span>
+                    <strong className="d-block">{label}</strong>
+                    <span className="text-muted small d-block">{sublabel}</span>
                 </span>
                 <span className="booking-service-price">
-                    {formatPrice(addon.price, addon.priceType)}
+                    {formatPrice(resolved.price, resolved.priceType)}
                 </span>
             </button>
+        );
+    };
+
+    // Booksy's flat catalog splits one treatment into N rows by hair length
+    // ("Regeneracja – włosy krótkie/średnie/długie"). normalizeServicesForBooking
+    // already folds those into one grouped entry for the main service (step 1);
+    // do the same here instead of listing every length as its own addon card.
+    const renderAddon = (addon: OnlineService) => {
+        const groupVariants = addon.variants ?? [];
+        const isFlatVariantGroup =
+            (addon.syntheticVariantSourceIds?.length ?? 0) > 1;
+
+        if (!isFlatVariantGroup) {
+            const description =
+                addon.description &&
+                addon.description.trim() !== addon.name.trim()
+                    ? addon.description
+                    : null;
+            return renderAddonButton(
+                addon.id,
+                addon.name,
+                description
+                    ? `${description} · +${addon.duration} min`
+                    : `+${addon.duration} min`,
+                addon,
+            );
+        }
+
+        // Auto-resolve to the variant matching the main service's chosen
+        // hair length, so the client isn't asked twice for the same thing.
+        const mainBucket = hairLengthBucket(variant?.name);
+        const matched = mainBucket
+            ? groupVariants.find(
+                  (item) => hairLengthBucket(item.name) === mainBucket,
+              )
+            : undefined;
+
+        if (matched) {
+            const resolved = addonFromVariant(matched);
+            return renderAddonButton(
+                `group-${addon.id}`,
+                addon.name,
+                `${matched.name} · +${resolved.duration} min`,
+                resolved,
+            );
+        }
+
+        // No confident match (e.g. main service has no hair-length variant
+        // of its own) — let the client pick the length for this addon too.
+        return (
+            <div key={`group-${addon.id}`} className="booking-addon-group">
+                <div className="booking-addon-group__header">
+                    <strong className="d-block">{addon.name}</strong>
+                    <span className="text-muted small d-block">
+                        Wybierz długość włosów
+                    </span>
+                </div>
+                <div className="d-flex flex-column gap-2 mt-2">
+                    {groupVariants.map((item) => {
+                        const resolved = addonFromVariant(item);
+                        return renderAddonButton(
+                            resolved.id,
+                            item.name,
+                            `+${resolved.duration} min`,
+                            resolved,
+                        );
+                    })}
+                </div>
+            </div>
         );
     };
 

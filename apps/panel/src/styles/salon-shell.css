@@ -9014,6 +9014,16 @@ th.checkbox_container input[type='checkbox'] {
     min-width: 0;
 }
 
+/* Flat-catalog addon group with no confident hair-length match — a plain
+   header above a nested list of variant buttons (each using
+   .booking-addon-card for the same look as a regular addon). */
+.booking-addon-group {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: #fff;
+}
+
 .booking-summary-strip {
     display: flex;
     justify-content: space-between;
