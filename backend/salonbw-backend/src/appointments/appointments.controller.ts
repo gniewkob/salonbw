@@ -162,7 +162,6 @@ export class AppointmentsController {
             startTime: apt.startTime,
             endTime: apt.endTime,
             status: apt.status,
-            notes: null,
             clientComment: apt.clientComment ?? null,
             staffRecommendations: apt.staffRecommendations ?? null,
             onlineAddonsSummary: apt.onlineAddonsSummary ?? null,

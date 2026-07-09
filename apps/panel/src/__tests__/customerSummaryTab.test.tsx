@@ -108,7 +108,6 @@ describe('CustomerSummaryTab', () => {
                         employee: { id: 2, name: 'Aleksandra' },
                         status: 'completed',
                         price: 150,
-                        notes: null,
                         clientComment: 'klient chce ciszę',
                         staffRecommendations: 'MYĆ I NIE PŁUKAĆ',
                         onlineAddonsSummary: 'Pielęgnacja (+30 min)',

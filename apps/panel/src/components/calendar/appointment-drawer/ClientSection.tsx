@@ -20,7 +20,6 @@ interface RecentVisit {
     date: string;
     service: { id: number; name: string } | null;
     status?: string | null;
-    notes: string | null;
     clientComment?: string | null;
     staffRecommendations?: string | null;
     onlineAddonsSummary?: string | null;
@@ -99,7 +98,6 @@ function RecentVisits({ customerId }: { customerId: number }) {
                                         appointmentStatus={
                                             visit.status ?? undefined
                                         }
-                                        notes={visit.notes}
                                         clientComment={visit.clientComment}
                                         staffRecommendations={
                                             visit.staffRecommendations

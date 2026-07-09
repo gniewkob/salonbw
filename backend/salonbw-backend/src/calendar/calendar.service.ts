@@ -976,7 +976,6 @@ export class CalendarService {
             paidAmount:
                 apt.paidAmount != null ? Number(apt.paidAmount) : undefined,
             paymentMethod: apt.paymentMethod,
-            notes: undefined,
             clientComment: apt.clientComment ?? null,
             staffRecommendations: apt.staffRecommendations ?? null,
             onlineAddonsSummary: apt.onlineAddonsSummary ?? null,

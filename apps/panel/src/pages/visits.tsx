@@ -28,7 +28,6 @@ interface ClientVisit {
     serviceId: number;
     serviceName: string;
     employeeName: string;
-    notes: string | null;
     clientComment?: string | null;
     staffRecommendations?: string | null;
     onlineAddonsSummary?: string | null;
@@ -208,7 +207,6 @@ function VisitRow({
                 )}
                 {hasClientVisibleVisitNotes(visit) && (
                     <VisitNotes
-                        notes={visit.notes}
                         compact
                         appointmentStatus={visit.status}
                         clientComment={visit.clientComment}
@@ -295,7 +293,6 @@ function VisitRow({
                                     Notatki i zalecenia
                                 </div>
                                 <VisitNotes
-                                    notes={visit.notes}
                                     appointmentStatus={visit.status}
                                     clientComment={visit.clientComment}
                                     staffRecommendations={

@@ -260,9 +260,6 @@ export default function CustomerSummaryTab({
                                                                     appointmentStatus={
                                                                         visit.status
                                                                     }
-                                                                    notes={
-                                                                        visit.notes
-                                                                    }
                                                                     clientComment={
                                                                         visit.clientComment
                                                                     }

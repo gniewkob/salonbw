@@ -57,7 +57,6 @@ export interface Appointment {
     discount?: number;
     finalizedAt?: string;
     finalizedBy?: { id: number; name: string };
-    notes?: string;
     clientComment?: string | null;
     staffRecommendations?: string | null;
     onlineAddonsSummary?: string | null;
@@ -368,7 +367,6 @@ export interface ClientDashboardResponse {
         reschedulePreviousEndTime?: string | null;
         status: string;
         employeeName?: string;
-        notes?: string | null;
         clientComment?: string | null;
         staffRecommendations?: string | null;
         onlineAddonsSummary?: string | null;
@@ -614,7 +612,6 @@ export interface CustomerEventHistory {
         employee: { id: number; name: string } | null;
         status: string;
         price: number;
-        notes?: string | null;
         clientComment?: string | null;
         staffRecommendations?: string | null;
         onlineAddonsSummary?: string | null;

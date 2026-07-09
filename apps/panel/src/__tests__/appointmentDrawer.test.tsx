@@ -359,7 +359,6 @@ describe('AppointmentDrawer', () => {
                             date: '2026-05-01',
                             status: 'completed',
                             service: { id: 10, name: 'Koloryzacja' },
-                            notes: null,
                             clientComment: 'klient chce ciszę',
                             staffRecommendations: 'MYĆ I NIE PŁUKAĆ',
                             onlineAddonsSummary: 'Dermabrazja (+70 min)',

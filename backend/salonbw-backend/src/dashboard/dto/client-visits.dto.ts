@@ -16,8 +16,6 @@ export class ClientVisitDto {
     serviceId: number;
     serviceName: string;
     employeeName: string;
-    /** Client-visible visit note / salon recommendations. */
-    notes: string | null;
     /** Comment written by the client while booking. */
     clientComment: string | null;
     /** Staff recommendations saved after finalizing the visit. */

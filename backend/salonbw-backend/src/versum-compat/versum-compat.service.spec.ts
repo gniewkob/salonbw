@@ -79,7 +79,6 @@ describe('VersumCompatService', () => {
             finalizedAt: null,
             finalizedBy: null,
             reservedOnline: false,
-            notes: null,
             createdAt: new Date('2026-02-04T08:00:00.000Z'),
             updatedAt: new Date('2026-02-04T08:00:00.000Z'),
             client: {

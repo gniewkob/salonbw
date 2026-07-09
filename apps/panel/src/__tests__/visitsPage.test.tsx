@@ -44,7 +44,6 @@ const VISITS = [
         serviceId: 2,
         serviceName: 'Strzyżenie damskie',
         employeeName: 'Aleksandra',
-        notes: null,
         clientComment: 'chca to i koniec - mąż płaci',
         onlineAddonsSummary:
             'Botox na włosy (+180 min), Botox na włosy - włosy do pasa (+180 min)',
@@ -60,7 +59,6 @@ const VISITS = [
         serviceId: 2,
         serviceName: 'Koloryzacja',
         employeeName: 'Aleksandra',
-        notes: null,
         staffRecommendations: 'myć włosy co 3 dni',
         review: null,
     },
@@ -72,7 +70,6 @@ const VISITS = [
         serviceId: 5,
         serviceName: 'Balayage',
         employeeName: 'Aleksandra',
-        notes: null,
         review: { id: 9, rating: 5, comment: 'Super!' },
     },
     {
@@ -85,7 +82,6 @@ const VISITS = [
         serviceId: 8,
         serviceName: 'Tonowanie',
         employeeName: 'Aleksandra',
-        notes: null,
         review: null,
     },
     {
@@ -96,7 +92,6 @@ const VISITS = [
         serviceId: 2,
         serviceName: 'Modelowanie',
         employeeName: 'Aleksandra',
-        notes: null,
         review: null,
     },
     {
@@ -107,7 +102,6 @@ const VISITS = [
         serviceId: 9,
         serviceName: 'Przeterminowana usługa',
         employeeName: 'Aleksandra',
-        notes: null,
         review: null,
     },
 ];

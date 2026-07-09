@@ -98,15 +98,6 @@ export class RecentAppointmentDto {
     employeeName?: string;
 
     @ApiProperty({
-        description: 'Client-visible visit note added by staff',
-        required: false,
-        nullable: true,
-    })
-    @IsOptional()
-    @IsString()
-    notes?: string | null;
-
-    @ApiProperty({
         description: 'Comment written by the client while booking',
         required: false,
         nullable: true,

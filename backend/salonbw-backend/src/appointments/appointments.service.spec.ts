@@ -132,7 +132,6 @@ describe('AppointmentsService', () => {
         expect(result.onlineAddonsSummary).toBe('Pielęgnacja (+30 min)');
         expect(result.onlineTotalDurationMinutes).toBe(60);
         expect(result.onlineDurationNeedsVerification).toBe(true);
-        expect(result.notes).toBeNull();
     });
 
     it('sends an email alert to the salon on client self-booking', async () => {
@@ -795,7 +794,6 @@ describe('AppointmentsService', () => {
 
         expect(finalized?.status).toBe(AppointmentStatus.Completed);
         expect(finalized?.staffRecommendations).toBe('zalecenie testowe');
-        expect(finalized?.notes).toBeNull();
         expect(createFromAppointmentMock).toHaveBeenCalledTimes(1);
         expect(createSaleMock).not.toHaveBeenCalled();
     });

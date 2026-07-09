@@ -291,7 +291,6 @@ export class AppointmentsService {
             data.onlineTotalDurationMinutes = totalDuration;
             data.onlineDurationNeedsVerification = true;
         }
-        data.notes = null;
         delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
         // Staff may overlap (if the setting allows); online self-booking
@@ -1208,7 +1207,6 @@ export class AppointmentsService {
                             : dto.note
                         : appointment.internalNote,
                     staffRecommendations,
-                    notes: null,
                     extraServices: extraServices ?? appointment.extraServices,
                 });
 
@@ -1417,7 +1415,6 @@ export class AppointmentsService {
             throw new BadRequestException('Appointment not found');
         }
         appointment.clientComment = this.normalizeOptionalText(clientComment);
-        appointment.notes = null;
         return this.appointmentsRepository.save(appointment);
     }
 

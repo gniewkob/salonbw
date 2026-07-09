@@ -356,8 +356,8 @@ export class VersumCompatService {
             },
             reserved_online: appointment.reservedOnline,
             created_at: this.toWarsawIso(appointment.createdAt),
-            description: appointment.notes ?? '',
-            info_from_customer: null,
+            description: appointment.staffRecommendations ?? '',
+            info_from_customer: appointment.clientComment ?? null,
             display_events_services: true,
             payment_method: this.toVersumPaymentMethod(
                 appointment.paymentMethod,
@@ -411,8 +411,8 @@ export class VersumCompatService {
             canceled: appointment.status === AppointmentStatus.Cancelled,
             not_an_appointment: appointment.status === AppointmentStatus.NoShow,
             reserved_online: appointment.reservedOnline,
-            info_from_customer: null,
-            description: appointment.notes ?? null,
+            info_from_customer: appointment.clientComment ?? null,
+            description: appointment.staffRecommendations ?? null,
             version: 1,
             finalized_at: appointment.finalizedAt
                 ? this.toWarsawIso(appointment.finalizedAt)

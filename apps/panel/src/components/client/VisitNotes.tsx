@@ -1,5 +1,4 @@
 interface VisitNotesProps {
-    notes?: string | null;
     emptyLabel?: string;
     compact?: boolean;
     appointmentStatus?: string;

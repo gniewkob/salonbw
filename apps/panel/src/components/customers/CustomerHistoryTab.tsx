@@ -500,7 +500,6 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                                             appointmentStatus={
                                                                 visit.status
                                                             }
-                                                            notes={visit.notes}
                                                             clientComment={
                                                                 visit.clientComment
                                                             }
