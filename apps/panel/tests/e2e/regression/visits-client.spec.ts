@@ -20,10 +20,7 @@ test.describe('Client visits page', () => {
 
     test.beforeEach(async () => {
         if (!credentialsPresent()) {
-            test.skip(
-                true,
-                'Missing E2E_CLIENT_EMAIL or E2E_CLIENT_PASSWORD',
-            );
+            test.skip(true, 'Missing E2E_CLIENT_EMAIL or E2E_CLIENT_PASSWORD');
             return;
         }
     });
@@ -54,8 +51,35 @@ test.describe('Client visits page', () => {
         await page.goto('/visits', { waitUntil: 'domcontentloaded' });
 
         // RouteGuard must NOT show the Forbidden component
+        await expect(page.getByText('Nie masz uprawnień')).not.toBeVisible({
+            timeout: 10_000,
+        });
+    });
+
+    test('"Odbyte wizyty" section is rendered', async ({ page }) => {
+        await page.goto('/visits', { waitUntil: 'domcontentloaded' });
+
+        // Renders even when empty (shows "Nie masz jeszcze odbytych wizyt.")
         await expect(
-            page.getByText('Nie masz uprawnień'),
-        ).not.toBeVisible({ timeout: 10_000 });
+            page.getByRole('heading', { name: /Odbyte wizyty/ }),
+        ).toBeVisible({ timeout: 20_000 });
+    });
+
+    test('visit rows never show a price (client must not see amounts)', async ({
+        page,
+    }) => {
+        await page.goto('/visits', { waitUntil: 'domcontentloaded' });
+
+        // Wait for the page to settle past the loading state before scanning.
+        await expect(
+            page.getByRole('heading', { name: /Nadchodzące wizyty/ }),
+        ).toBeVisible({ timeout: 20_000 });
+
+        const sections = page.locator('.salonbw-appointments-list');
+        const sectionCount = await sections.count();
+        for (let i = 0; i < sectionCount; i++) {
+            const text = (await sections.nth(i).innerText()).trim();
+            expect(text).not.toMatch(/\d+([.,]\d{2})?\s*zł/);
+        }
     });
 });

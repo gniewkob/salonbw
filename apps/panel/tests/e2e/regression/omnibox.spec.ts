@@ -23,10 +23,7 @@ test.describe('Omnibox (global customer search)', () => {
 
     test.beforeEach(async ({ page }) => {
         if (!credentialsPresent()) {
-            test.skip(
-                true,
-                'Missing E2E_ADMIN_EMAIL or E2E_ADMIN_PASSWORD',
-            );
+            test.skip(true, 'Missing E2E_ADMIN_EMAIL or E2E_ADMIN_PASSWORD');
             return;
         }
         // Navigate to a staff page so the topbar (with omnibox) is mounted
@@ -91,5 +88,45 @@ test.describe('Omnibox (global customer search)', () => {
         await expect(page.locator('#omnibox-results')).not.toBeVisible({
             timeout: 3_000,
         });
+    });
+
+    test('search input exposes combobox semantics wired to a listbox of options', async ({
+        page,
+    }) => {
+        const omnibox = page.getByRole('combobox', {
+            name: /szukaj klientów, pracowników i produktów/i,
+        });
+        await omnibox.waitFor({ state: 'visible', timeout: 20_000 });
+        await expect(omnibox).toHaveAttribute('aria-expanded', 'false');
+
+        const searchResponse = page.waitForResponse(
+            (response) =>
+                /\/customers\?[^ ]*search=/.test(response.url()) &&
+                response.request().method() === 'GET',
+            { timeout: 20_000 },
+        );
+        await omnibox.click();
+        await omnibox.pressSequentially('mar', { delay: 80 });
+        await searchResponse.catch(() => null);
+
+        await expect(omnibox).toHaveAttribute('aria-expanded', 'true', {
+            timeout: 8_000,
+        });
+
+        // Best-effort: whether "mar" matches any customer is data-dependent.
+        // When it does, every result must be a role=option inside the
+        // listbox the input's aria-controls points at.
+        const listbox = page.getByRole('listbox', {
+            name: /wyniki wyszukiwania/i,
+        });
+        const hasListbox = await listbox
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+        if (hasListbox) {
+            const controls = await omnibox.getAttribute('aria-controls');
+            const listboxId = await listbox.getAttribute('id');
+            expect(controls).toBe(listboxId);
+            await expect(listbox.getByRole('option').first()).toBeVisible();
+        }
     });
 });

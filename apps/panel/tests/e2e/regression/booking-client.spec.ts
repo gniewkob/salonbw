@@ -20,10 +20,7 @@ test.describe('Client booking wizard', () => {
 
     test.beforeEach(async () => {
         if (!credentialsPresent()) {
-            test.skip(
-                true,
-                'Missing E2E_CLIENT_EMAIL or E2E_CLIENT_PASSWORD',
-            );
+            test.skip(true, 'Missing E2E_CLIENT_EMAIL or E2E_CLIENT_PASSWORD');
             return;
         }
     });
@@ -53,5 +50,44 @@ test.describe('Client booking wizard', () => {
                 .filter({ hasText: 'Wszystkie' })
                 .first(),
         ).toBeVisible({ timeout: 20_000 });
+    });
+
+    test('step indicator lists all 4 booking steps with the current one marked', async ({
+        page,
+    }) => {
+        await page.goto('/booking', { waitUntil: 'domcontentloaded' });
+
+        const steps = page.getByRole('list', { name: 'Kroki rezerwacji' });
+        await expect(steps).toBeVisible({ timeout: 20_000 });
+        await expect(steps.getByRole('listitem')).toHaveCount(4);
+
+        // Step 1 ("Wybierz usługę") is the active one on first load.
+        await expect(steps.getByRole('listitem').first()).toHaveAttribute(
+            'aria-current',
+            'step',
+        );
+    });
+
+    test('flat-catalog services group into one card with a variant count', async ({
+        page,
+    }) => {
+        await page.goto('/booking', { waitUntil: 'domcontentloaded' });
+
+        const serviceCard = page.locator('.booking-service-card').first();
+        await expect(serviceCard).toBeVisible({ timeout: 20_000 });
+
+        // Best-effort: whether any service in the live catalog currently has
+        // grouped hair-length variants is data-dependent, so this doesn't
+        // hard-fail the run — it's a positive signal when present.
+        const groupedCard = page
+            .locator('.booking-service-card')
+            .filter({ hasText: /warian(t|ty|tów) do wyboru/ })
+            .first();
+        const hasGroupedCard = await groupedCard
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+        if (hasGroupedCard) {
+            await expect(groupedCard).toContainText(/\d+ zł/);
+        }
     });
 });
