@@ -78,7 +78,7 @@ i przejdź do następnego zadania.
 
 ## 2. Zadania do wykonania (kolejność = priorytet)
 
-### Z1. Addon-picker kreatora rezerwacji pogrupowany jak krok 1 (P3, panel)
+### Z1. ✅ DONE 2026-07-09 (`b8daaa0` + remap `3e6becc`) — Addon-picker pogrupowany
 
 **Problem:** krok „Dodatki" w `apps/panel/src/pages/booking.tsx` dostaje
 SUROWĄ listę usług — płaskie warianty Booksy („Botoks – włosy krótkie/
@@ -103,7 +103,7 @@ je w jedną usługę z wariantami (`normalizeServicesForBooking`).
 (b) wybór dodatku z grupy wariantowej mapuje się na poprawne `serviceId`,
 (c) istniejące testy przechodzą bez modyfikacji asercji payloadu.
 
-### Z2. Combobox-ARIA dla omniboksu (P3, panel)
+### Z2. ✅ DONE 2026-07-09 (`8c0ca98` + fix type=text `e3106c7`, potwierdzony E2E na prodzie) — Combobox-ARIA omniboksu
 
 **Plik:** `apps/panel/src/components/salon/SalonGlobalSearch.tsx`.
 
@@ -120,7 +120,7 @@ je w jedną usługę z wariantami (`normalizeServicesForBooking`).
 **Akceptacja:** test jednostkowy (nowy lub rozszerzony) sprawdzający role
 i `aria-activedescendant` przy nawigacji strzałkami; `pnpm test` zielone.
 
-### Z3. Playwright: specy regresyjne dla nowych flow (read-only, CI)
+### Z3. ✅ DONE 2026-07-09 (`6b3d457`; 22/22 na prodzie po deployu 2026-07-10) — Specy regresyjne Playwright
 
 **Katalog:** `tests/e2e/regression/` (wzorce już istnieją, workflow
 `e2e-playwright-regression.yml`; sekrety E2E_* w CI). **WYŁĄCZNIE odczyt** —
@@ -172,6 +172,114 @@ Znalezione bugi: fix + wpis do active-context (wzorzec: sesje 07-08/07-09).
 
 ---
 
+### Z7. Klient: szczegóły wizyty w wysuwanym panelu bocznym (redesign UX) 🔴 PRIORYTET
+
+**Motywacja (feedback ownera, 2026-07-10, cytat):** „nie podoba mi się lista
+wizyt i te rozwijane treści; jak próbuję dodać wiadomość do usługi jako
+klient, to ląduję gdzieś nie wiadomo gdzie i muszę szukać pola wpisywania.
+Nie wiem, czy nie lepiej modale albo jak w Booksy z wyjeżdżającym z boku
+panelem". Stan obecny (`apps/panel/src/pages/visits.tsx`): DWA poziomy
+rozwijania inline (wiersz `openVisitId` → wewnątrz drugi toggle
+`messagesOpen` z `MessageThread`), zero zarządzania focusem po kliknięciu.
+
+**DECYZJA PROJEKTOWA (podjęta — nie rewidować):** wysuwany panel z prawej
+(wzorzec Booksy), NIE modal. Uzasadnienie: treść jest długa (notatki +
+porównanie terminów + akcje + wątek wiadomości) — modale w tym projekcie
+służą krótkim potwierdzeniom; panel trzyma kontekst listy na desktopie
+i jest spójny ze staffowym `AppointmentDrawer`; na mobile (≤767px) panel
+staje się pełnoekranowym arkuszem.
+
+**Zakres:**
+- Nowy komponent `apps/panel/src/components/client/VisitDetailsPanel.tsx`:
+  prawy slide-in (desktop ~480px szer., overlay-backdrop, body scroll-lock),
+  pełny ekran na mobile. Zawartość: nagłówek (usługa+data+status), `VisitNotes`,
+  `RescheduleChangeNotice`, `ClientAppointmentActions`, `MessageThread`
+  (bez drugiego poziomu rozwijania — wątek widoczny od razu, textarea na dole).
+- Semantyka: `role="dialog"` + `aria-modal="true"` + `aria-labelledby`
+  (nagłówek panelu), ESC zamyka, focus trap (wzorzec z ConfirmModal).
+- **Zarządzanie focusem (sedno skargi):** otwarcie → focus na nagłówku
+  panelu; przycisk „Napisz wiadomość"/„Odpowiedz" → focus PROSTO na
+  textarea (scrollIntoView jeśli trzeba); wysłanie wiadomości → focus
+  zostaje w textarea, lista wiadomości doscrollowana do nowego wpisu;
+  zamknięcie (ESC/X/backdrop) → focus wraca na wiersz, który panel otworzył.
+- `/visits`: wiersze stają się zwykłymi, klikalny „Szczegóły" otwiera panel;
+  USUNĄĆ inline-expand (`openVisitId`-rozwijanie i `messagesOpen`).
+  Deep-link `?visitId=N` otwiera panel (zachować obecny kontrakt URL).
+- `ClientDashboard`: „Szczegóły wizyty" / „Załatw teraz" kierują do
+  `/visits?visitId=N` (panel otworzy się sam) — bez zmian kontraktu.
+- Brand: czerń/biel/srebro, animacja transform 0.2-0.3s (respektować
+  prefers-reduced-motion), zero niebieskiego.
+- CSS: nowe klasy `visit-details-panel*` w salon-shell.css; mobile-first.
+
+**Akceptacja:** testy jednostkowe: (a) otwarcie panelu z wiersza i przez
+`?visitId`, (b) focus na nagłówku po otwarciu, (c) focus na textarea po
+„Napisz wiadomość", (d) powrót focusu po zamknięciu, (e) akcje
+(anuluj/akceptuj) działają z panelu; istniejące testy visitsPage
+zaktualizowane świadomie (zmiana UX jest celowa — wolno zmienić asercje
+rozwijania na asercje panelu); pełna suita panelu zielona; specy Playwright
+`visits-client.spec.ts` zaktualizowane pod nowy wzorzec (sekcje list bez
+kwot — bez zmian; dodać: klik „Szczegóły" → dialog widoczny).
+
+### Z8. Wizualno-funkcjonalny sweep WSZYSTKICH widoków per rola (screenshoty z CI)
+
+**Cel ownera:** przejście ścieżek jak każda rola + ocena wizualna i
+funkcjonalna każdego widoku. Sandbox agenta NIE ma kredencjali prod —
+dlatego zrzuty robi CI (sekrety E2E_* już są), a agent przegląda artefakty.
+
+**Część A — nowy workflow + spec (read-only!):**
+- `apps/panel/tests/e2e/visual-sweep.spec.ts` + workflow
+  `e2e-visual-sweep.yml` (TYLKO `workflow_dispatch`, nie na push — sweep
+  jest wolny). Wzorce logowania/skip-guard z `tests/e2e/regression/`.
+- Dla ról admin i client (employee gdy sekret istnieje), dla viewportów
+  1366×768 i 390×844: odwiedź każdą trasę z listy, poczekaj na settle
+  (domcontentloaded + brak spinnera), asercje minimalne: brak
+  „Application error", brak „Nie masz uprawnień" (poza trasami celowo
+  zablokowanymi), jest `<h1>`; fullpage screenshot →
+  `screenshots/<rola>/<viewport>/<trasa>.png`; upload całości jako artifact
+  (`if: always()`).
+- Lista tras — client: /dashboard, /visits, /booking, /account,
+  /notifications, /helps/new. Admin: /dashboard, /calendar (day/week/
+  month/reception), /appointments, /customers (+ karta pierwszego klienta,
+  wszystkie taby), /services (+ karta), /products, /inventory, /orders/
+  history, /deliveries/history, /manufacturers, /suppliers, /stock-alerts,
+  /sales/history, /sales/gift-cards, /loyalty, /communication/{templates,
+  mass,campaigns,automatic}, /statistics (+ podstrony), /reviews, /invoices,
+  /settings (+ wszystkie podstrony z SettingsNav), /notifications, /helps/new.
+- ŻADNYCH mutacji: tylko nawigacja, otwieranie tabów/paneli read-only.
+
+**Część B — raport z przeglądu:**
+- Uruchom workflow (dispatch), pobierz artifact, obejrzyj KAŻDY screenshot.
+- Znaleziska spisz do `.claude/rules/active-context.md` (Backlog) w trzech
+  koszykach: 🔴 bug funkcjonalny / 🟡 UX (w tym: gdzie ląduje focus po
+  akcji, spójność wzorców modal-vs-panel-vs-inline, nadmiarowe kroki) /
+  🎨 wizualny (odstępy, kontrast, resztki niebieskiego, ucięte teksty,
+  h-scroll na 390px). Każde znalezisko: trasa + rola + viewport + screenshot.
+- NIE naprawiaj w tym zadaniu niczego poza oczywistymi literówkami —
+  najpierw pełna lista, potem priorytetyzacja z ownerem/leadem.
+
+**Akceptacja:** workflow zielony na dispatch; artifact zawiera komplet
+zrzutów; wpis w active-context z listą znalezisk (może być „brak uwag"
+per widok, ale każdy widok ODHACZONY).
+
+### Z9. Audyt „gdzie ląduje użytkownik po akcji" (focus/scroll) w panelu klienta
+
+Uogólnienie skargi ownera z Z7 na pozostałe akcje klienta („rozważ
+podobne rzeczy"). Dla każdej akcji sprawdź i napraw, z testem:
+- wysłanie wiadomości w `MessageThread` (także po Z7): scroll listy do
+  nowej wiadomości, focus zostaje w textarea, textarea wyczyszczona;
+- „Akceptuj nowy termin": po sukcesie focus na zaktualizowanym statusie
+  wiersza / toast z `role=status`; bez skoku strony do góry;
+- anulowanie przez ConfirmModal: focus wraca do wiersza (nie do body);
+- kreator rezerwacji: zmiana kroku → focus na nagłówku kroku (sprawdzić,
+  czy działa po zmianach Z1); SuccessScreen → focus na komunikacie (jest —
+  zweryfikować testem, jeśli brak);
+- formularz pomocy /helps/new: po wysłaniu focus na potwierdzeniu;
+- błędy API: `role=alert` jest — sprawdzić, czy elementy błędów są
+  doscrollowane do widoku przy submit z dołu strony.
+
+**Akceptacja:** każdy punkt ma test jednostkowy (istniejący lub nowy);
+naprawy czysto frontendowe; pełna suita zielona.
+
 ## 3. Zadania POZA zakresem Sonneta (nie ruszać)
 
 | Zadanie | Dlaczego poza zakresem | Kto |
@@ -203,7 +311,10 @@ Znalezione bugi: fix + wpis do active-context (wzorzec: sesje 07-08/07-09).
 
 ## 5. Definicja ukończenia projektu (checklista GO)
 
-- [x] Z1–Z3 zrobione i wdrożone (`b8daaa0`/`8c0ca98`/`6b3d457`; CI zielone) — **deploy nadal czerwony wyłącznie przez bloker SSH MyDevil, patrz active-context; kod czeka w kolejce, nie jest to regresja Z1-Z3**
+- [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
+- [ ] Z7 — szczegóły wizyty klienta w panelu bocznym (decyzja ownera 2026-07-10)
+- [ ] Z8 — wizualno-funkcjonalny sweep wszystkich widoków per rola + raport
+- [ ] Z9 — audyt focus/scroll po akcjach klienta
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
 - [ ] Live E2E 3 ról na czystej bazie (Opus + owner)
