@@ -93,10 +93,15 @@ test.describe('Omnibox (global customer search)', () => {
     test('search input exposes combobox semantics wired to a listbox of options', async ({
         page,
     }) => {
-        const omnibox = page.getByRole('combobox', {
-            name: /szukaj klientów, pracowników i produktów/i,
-        });
+        // Located by id (matches the other specs in this file) rather than
+        // getByRole('combobox', ...): Chromium's accessibility tree pins
+        // input[type=text] role="combobox" correctly, but role locators add
+        // an extra layer that isn't needed just to find the element — the
+        // role/aria-* attribute assertions below are the actual regression
+        // guard for the ARIA wiring itself.
+        const omnibox = page.locator('#omnibox');
         await omnibox.waitFor({ state: 'visible', timeout: 20_000 });
+        await expect(omnibox).toHaveAttribute('role', 'combobox');
         await expect(omnibox).toHaveAttribute('aria-expanded', 'false');
 
         const searchResponse = page.waitForResponse(

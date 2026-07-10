@@ -248,7 +248,15 @@ export default function SalonGlobalSearch({
             <input
                 className="omnibox"
                 id={inputId}
-                type="search"
+                // type="text", not "search": Chromium's accessibility tree
+                // keeps a type=search input pinned to the native "searchbox"
+                // role and does not honor a role="combobox" override on it
+                // (confirmed live — Playwright's getByRole('combobox', ...)
+                // never found the element even though jsdom/RTL's role
+                // computation is permissive enough to let the unit test
+                // pass). type="text" is the standard WAI-ARIA APG combobox
+                // input type and is exposed correctly.
+                type="text"
                 autoComplete="off"
                 placeholder="Szukaj..."
                 aria-label="Szukaj klientów, pracowników i produktów"
