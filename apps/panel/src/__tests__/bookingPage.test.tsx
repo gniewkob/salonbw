@@ -558,6 +558,77 @@ describe('BookingPage reservedOnline payload', () => {
         expect(payload.addonServiceIds).toEqual([313]);
     });
 
+    it('remaps a selected flat-group addon when the client changes hair length', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/services/online-booking') {
+                return FLAT_VARIANT_MAIN_AND_MATCHING_ADDON_GROUP;
+            }
+            if (path.startsWith('/calendar/available-slots')) return SLOTS;
+            return { id: 123 };
+        });
+
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as ReturnType<
+                    typeof createAuthValue
+                >['apiFetch'],
+            }),
+        );
+
+        render(<BookingPage />);
+
+        fireEvent.click(
+            await screen.findByRole('button', {
+                name: /fryzura wieczorowa/i,
+            }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', { name: /włosy długie/i }),
+        );
+
+        // Select the addon auto-resolved to the "długie" row (id 313)...
+        fireEvent.click(
+            (
+                await screen.findAllByRole('button', {
+                    name: /regeneracja/i,
+                })
+            )[0],
+        );
+
+        // ...then go back and switch the main service to "średnie".
+        fireEvent.click(
+            screen.getByRole('button', { name: /wybór wariantu/i }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', { name: /włosy średnie/i }),
+        );
+
+        // The selection must follow the new length (312), not keep 313.
+        fireEvent.click(
+            screen.getByRole('button', { name: /przejdź do terminu/i }),
+        );
+
+        await waitFor(() => {
+            expect(
+                apiFetch.mock.calls.some(([path]) => {
+                    if (
+                        typeof path !== 'string' ||
+                        !path.startsWith('/calendar/available-slots')
+                    ) {
+                        return false;
+                    }
+                    const params = new URLSearchParams(path.split('?')[1]);
+                    return (
+                        params.get('serviceId') === '302' &&
+                        params.get('addonServiceIds') === '312'
+                    );
+                }),
+            ).toBe(true);
+        });
+    });
+
     it('lets the client pick a hair length for an addon group when the main service has none', async () => {
         const apiFetch = jest.fn(async (path: string) => {
             if (path === '/services/online-booking') {

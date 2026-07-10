@@ -593,6 +593,36 @@ export default function BookingPage() {
 
     const handleSelectVariant = (variant: OnlineServiceVariant) => {
         setSelectedVariant(variant);
+        // Dodatki z grup płaskich wariantów zostały rozwiązane pod POPRZEDNIĄ
+        // długość włosów. Po zmianie wariantu przemapuj je na nową długość
+        // (albo usuń, gdy grupa nie ma odpowiednika) — inaczej karta dodatku
+        // renderuje się jako niezaznaczona, a pasek podsumowania i payload
+        // dalej niosą wariant o złej długości.
+        const newBucket = hairLengthBucket(variant.name);
+        if (newBucket) {
+            setSelectedAddons((current) =>
+                current
+                    .map((addon) => {
+                        const group = bookingServices.find(
+                            (svc) =>
+                                (svc.syntheticVariantSourceIds?.length ?? 0) >
+                                    1 &&
+                                svc.syntheticVariantSourceIds?.includes(
+                                    addon.id,
+                                ),
+                        );
+                        if (!group) return addon;
+                        if (hairLengthBucket(addon.name) === newBucket) {
+                            return addon;
+                        }
+                        const matched = (group.variants ?? []).find(
+                            (item) => hairLengthBucket(item.name) === newBucket,
+                        );
+                        return matched ? addonFromVariant(matched) : null;
+                    })
+                    .filter((addon): addon is OnlineService => addon !== null),
+            );
+        }
         setSelectedSlot(null);
         setStep('addons');
     };
