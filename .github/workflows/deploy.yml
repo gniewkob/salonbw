@@ -421,7 +421,33 @@ jobs:
 
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net "echo '✅ SSH connection successful'" || {
-            echo "❌ SSH connection failed"
+            echo "❌ SSH connection failed (exec channel)"
+            echo ""
+            echo "============================================"
+            echo "🔎 DIAGNOSTIC: exec failed — probing whether this"
+            echo "   is SFTP-only mode (account-level SSH access"
+            echo "   restriction) vs a full lockout. Read-only,"
+            echo "   changes nothing on the remote."
+            echo "============================================"
+            if echo "pwd" | sftp -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+              -i ~/.ssh/mydevil -b - vetternkraft@s0.mydevil.net 2>&1; then
+              echo ""
+              echo "👉 SFTP subsystem WORKS while exec/shell is rejected."
+              echo "   This is the standard signature of the MyDevil"
+              echo "   account being switched to \"SFTP only\" SSH access."
+              echo "   Fix: MyDevil panel (panel.mydevil.net) → this"
+              echo "   account → SSH access → switch back to full"
+              echo "   shell/exec access (or contact MyDevil support if"
+              echo "   the toggle isn't available). This cannot be fixed"
+              echo "   from CI/CD — it requires the hosting account owner."
+            else
+              echo ""
+              echo "👉 SFTP ALSO failed — this is not SFTP-only mode,"
+              echo "   the account/key has no working access at all"
+              echo "   (suspended account, revoked key, or IP block)."
+              echo "   Fix: check account status directly in the MyDevil"
+              echo "   panel, or contact MyDevil support."
+            fi
             exit 1
           }
 
