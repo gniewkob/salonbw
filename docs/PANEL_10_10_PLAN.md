@@ -145,23 +145,24 @@ reschedule przywrócony; dodatki online pre-fillowane do rozliczenia finalizacji
 `description` zablokowane dla klienta. Decyzja 5: dane prod = testowe, spot-check
 zbędny — patrz wymóg importu w 6.1.
 
-Zostaje:
+**Status podpunktów (aktualizacja 2026-07-09):** 6.2 (GDPR audit-trail zgód)
+i 6.3 (avatar klienta u staffa) DONE 2026-07-08 (`443d2fc`+`5b66aff`). 6.4
+(P3 techniczne) DONE 2026-07-08 (`9c63882`: PanelButton default type, feed
+id-collision, badge semantyka, debounce, toISOString audyt) — **z wyjątkiem
+addon-pickera i combobox-ARIA, które przeniesione do `docs/SONNET_EXECUTION_PLAN.md`
+jako Z1/Z2 i tam DONE 2026-07-09** (`b8daaa0`/`8c0ca98`), + nowe Z3 (specy
+Playwright, `6b3d457`). **Dalsza praca nad Fazą 6 śledzona w
+`docs/SONNET_EXECUTION_PLAN.md`, nie tutaj** — ten dokument zostaje jako
+historia decyzji ownera, plan wykonawczy jest aktualnym źródłem prawdy dla
+zadań technicznych.
+
+Zostaje (patrz SONNET_EXECUTION_PLAN.md Z4-Z6 dla szczegółów):
 
 6.1. **Import danych produkcyjnych (gdy owner dostarczy wsad)** — wypełnić
    `clientComment`/`staffRecommendations` bezpośrednio w imporcie; NIE polegać
    na back-parserze z migracji split (nie zna `[Salon] …` ani śródtekstowych
-   `Zalecenia:`); `notes` jest derywowane (composeClientVisibleNotes).
-6.2. **GDPR pozostałości** (nieblokujące): audit-trail dat zgód przy revoke
-   (dziś data jest zerowana bez śladu); rozdzielić semantykę „zgoda
-   marketingowa" vs „kanał powiadomień transakcyjnych" (te same kolumny).
-6.3. **Avatar klienta**: na karcie klienta u staffa avatar 404 (GET self-scoped)
-   — zdecydować czy staff ma widzieć avatary klientek; zweryfikować
-   `UPLOADS_DIR` na MyDevil (przetrwanie deployu, brak statycznego serwowania).
-6.4. **P3 techniczne**: default `type="button"` w PanelButton; feed powiadomień —
-   id-collision `*1000` + semantyka badge; addon-picker kreatora pogrupowany jak
-   krok 1; audyt `toISOString().slice(0,10)` (5+ plików, klasa buga UTC);
-   combobox-ARIA omniboksu; debounce server-search klientów; residuum magazynowe
-   z Fazy 5.
+   `Zalecenia:`); kolumna `notes` na `appointments` już nie istnieje (usunięta
+   2026-07-09, `401fd92`) — parser migracyjny się nie uruchomi ponownie.
 6.5. **Live E2E na prod po dzisiejszych zmianach** — rejestracja (pierwsza po
    fixie P0), staff-confirm reschedule, finalizacja wizyty z dodatkami online
    (pre-fill + rozliczenie).
