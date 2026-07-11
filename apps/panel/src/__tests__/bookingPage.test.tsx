@@ -896,7 +896,7 @@ describe('BookingPage reservedOnline payload', () => {
             target: { value: 'Najchętniej piątek po 16:00.' },
         });
         fireEvent.click(
-            screen.getByRole('button', { name: /poprosię o pomoc/i }),
+            screen.getByRole('button', { name: /poproś o pomoc/i }),
         );
 
         await screen.findByText(/prośba została wysłana/i);
