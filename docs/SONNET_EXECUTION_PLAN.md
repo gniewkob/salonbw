@@ -280,7 +280,7 @@ podobne rzeczy"). Dla każdej akcji sprawdź i napraw, z testem:
 **Akceptacja:** każdy punkt ma test jednostkowy (istniejący lub nowy);
 naprawy czysto frontendowe; pełna suita zielona.
 
-### Z10. Fixy po review Fable 2026-07-11 (Z7/Z9) — PRZED merge PR #1419
+### Z10. ✅ DONE 2026-07-11 (`e1a5d2f` Z10a-c + `56de8af` Z10d) — Fixy po review Fable (Z7/Z9) — PRZED merge PR #1419
 
 **Kontekst:** review brancha `claude/sonnet-execution-z7-z9-je0rkj` znalazł
 3 realne bugi i paczkę drobnych. Wszystkie fixy czysto frontendowe, na TYM
@@ -432,7 +432,7 @@ przegląd zrzutów → raport (Z8 Część B wg treści zadania Z8).
 - [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
 - [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); [ ] Część B — dispatch + przegląd zrzutów + raport w Backlogu (po merge PR #1419)
-- [ ] Z10 — fixy po review Fable (Z7/Z9: kolizja dialogów, focus po cancel, auto-scroll wątku, drobne) — PRZED merge PR #1419
+- [x] Z10 — fixy po review Fable (Z7/Z9: kolizja dialogów, focus po cancel, auto-scroll wątku, drobne) — DONE 2026-07-11
 - [ ] Z11 — fixy spec Z8 (timeouty, zrzut przed asercjami, strict-mode) — PRZED pierwszym dispatchem
 - [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
