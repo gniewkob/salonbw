@@ -65,7 +65,12 @@
     border-top: 1px solid #eef0f2;
 }
 
-.visit-details-panel__section:first-of-type {
+/* Applied explicitly in JSX to the first section — the actual first DOM
+   child of .visit-details-panel__body is .visit-details-panel__meta
+   (a sibling, not a __section), so :first-of-type never matched any
+   __section and this rule was dead: the first section always carried an
+   unwanted top border/padding. */
+.visit-details-panel__section--flush {
     padding-top: 0;
     border-top: 0;
 }

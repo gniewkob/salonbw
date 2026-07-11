@@ -125,14 +125,16 @@ function MessageThread(
             });
             setBody('');
             loadMessages();
-            // Sending is button-triggered — return focus to the textarea so
-            // the client can keep typing without hunting for the field again.
-            // (Deferred to the post-send effect: the textarea is still
-            // `disabled` here, and disabled elements refuse focus().)
-            focusPendingRef.current = true;
         } catch {
             toast.error('Nie udało się wysłać wiadomości. Spróbuj ponownie.');
         } finally {
+            // Sending is button-triggered — return focus to the textarea so
+            // the client can keep typing without hunting for the field
+            // again, on both success AND failure (a failed send leaves the
+            // draft in place, ready to retry). Deferred to the post-send
+            // effect: the textarea is still `disabled` here, and disabled
+            // elements refuse focus().
+            focusPendingRef.current = true;
             setSending(false);
         }
     };

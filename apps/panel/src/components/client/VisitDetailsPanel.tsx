@@ -82,14 +82,38 @@ export default function VisitDetailsPanel({
     const [hasMessages, setHasMessages] = useState(false);
     const titleId = useId();
 
+    // A ?visitId= deep link opens the panel without any row ever having
+    // been clicked, so this is the only place that still knows which visit
+    // to fall back to once `visit` itself has gone back to null on close.
+    const lastVisitIdRef = useRef<number | null>(null);
+    useEffect(() => {
+        if (visit) lastVisitIdRef.current = visit.id;
+    }, [visit]);
+
     // Focus the panel heading on open; return focus to whatever triggered
     // the open (the row's "Szczegóły" button) once it closes.
     useEffect(() => {
         if (open) {
-            triggerRef.current = document.activeElement;
+            const active = document.activeElement;
+            // A deep-link open (?visitId=N) never clicked a row, so
+            // activeElement is <body> — not a meaningful trigger to
+            // restore focus to later. Leave triggerRef unset so the close
+            // branch falls back to the row instead.
+            triggerRef.current =
+                active && active !== document.body ? active : null;
             headingRef.current?.focus();
-        } else if (triggerRef.current) {
-            (triggerRef.current as HTMLElement).focus();
+        } else {
+            const fallbackId = lastVisitIdRef.current;
+            const restoreTarget =
+                (triggerRef.current as HTMLElement | null) ??
+                (fallbackId !== null
+                    ? document
+                          .getElementById(`visit-${fallbackId}`)
+                          ?.querySelector<HTMLElement>(
+                              '.salonbw-appointment-item__details-trigger',
+                          )
+                    : null);
+            restoreTarget?.focus();
             triggerRef.current = null;
         }
     }, [open]);
@@ -185,14 +209,25 @@ export default function VisitDetailsPanel({
     };
 
     return (
-        <div className="visit-details-panel-overlay" onClick={onClose}>
+        <div
+            className="visit-details-panel-overlay"
+            // mousedown, not click: selecting text inside the panel and
+            // releasing the mouse over the backdrop (mousedown in panel,
+            // mouseup on overlay) fires a click whose target is the
+            // overlay itself — panel's stopPropagation never runs because
+            // that click never bubbles through the panel at all. Deciding
+            // to close at mousedown time instead means the panel's own
+            // mousedown handler below can stop it before the drag even
+            // starts, regardless of where the mouse is released.
+            onMouseDown={onClose}
+        >
             <div
                 ref={panelRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
                 className="visit-details-panel"
-                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
             >
                 <div className="visit-details-panel__header">
                     <h2
@@ -232,7 +267,7 @@ export default function VisitDetailsPanel({
                         />
                     )}
 
-                    <div className="visit-details-panel__section">
+                    <div className="visit-details-panel__section visit-details-panel__section--flush">
                         <div className="visit-details-label">
                             Notatki i zalecenia
                         </div>

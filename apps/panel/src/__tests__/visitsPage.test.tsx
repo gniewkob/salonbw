@@ -473,6 +473,31 @@ describe('VisitsPage', () => {
         ).toBeInTheDocument();
     });
 
+    it('falls back to the row\'s "Szczegóły" trigger on close when opened via deep link (Z10d)', async () => {
+        mockRouterQuery = { visitId: '2' };
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
+        });
+        setup(apiFetch);
+
+        // Opened via query param, not a row click — document.activeElement
+        // is <body> at open time, which used to get captured as the
+        // "restore focus here on close" target verbatim.
+        await screen.findByRole('dialog');
+        fireEvent.keyDown(document, { key: 'Escape' });
+
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        const row = screen
+            .getByRole('button', { name: 'Koloryzacja' })
+            .closest('.salonbw-appointment-item')!;
+        expect(
+            within(row).getByRole('button', { name: 'Szczegóły' }),
+        ).toHaveFocus();
+    });
+
     it('focuses the message compose textarea when "Napisz wiadomość" is clicked', async () => {
         const apiFetch = messagesApiFetch(() => {
             throw new Error('unexpected call');
@@ -518,6 +543,32 @@ describe('VisitsPage', () => {
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         });
         expect(detailsButton).toHaveFocus();
+    });
+
+    it('does not close when selecting text inside the panel and releasing the mouse over the backdrop (Z10d)', async () => {
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(within(row).getByRole('button', { name: 'Szczegóły' }));
+
+        const dialog = await screen.findByRole('dialog');
+        // Simulates a text-selection drag that starts inside the panel —
+        // the mousedown must never reach the backdrop's close handler.
+        fireEvent.mouseDown(dialog);
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+        // A mousedown that genuinely starts on the backdrop itself still
+        // closes the panel.
+        fireEvent.mouseDown(dialog.parentElement!);
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
     });
 
     it('submits a review for a completed visit with appointmentId + rating', async () => {

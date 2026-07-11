@@ -222,6 +222,42 @@ describe('MessageThread', () => {
             });
             expect(btn).not.toBeDisabled();
         });
+
+        it('keeps focus in the textarea after a failed send too (Z10d), so the draft is ready to retry', async () => {
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        throw new Error('network down');
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+            const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+            fireEvent.change(textarea, {
+                target: { value: 'Hej, pytanie o wizytę.' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            await waitFor(() => {
+                expect(stableToast.error).toHaveBeenCalled();
+            });
+            // The failed draft stays in the field (nothing was cleared) and
+            // focus returns to it — before this fix it stayed disabled
+            // just long enough that .focus() silently no-op'd, same class
+            // of bug as the success-path fix in Z9.
+            expect(textarea.value).toBe('Hej, pytanie o wizytę.');
+            expect(textarea).toHaveFocus();
+        });
     });
 
     describe('auto-scroll on load vs. on new activity (Z10c)', () => {
