@@ -366,7 +366,7 @@ Test: mount z istniejącymi wiadomościami NIE woła `scrollIntoView`
 Z10a-Z10c failują przed fixem (zweryfikować świadomie); tsc+eslint czyste;
 wpis w active-context po każdym commicie.
 
-### Z11. Fixy spec Z8 PRZED pierwszym dispatchem (`visual-sweep.spec.ts`)
+### Z11. ✅ DONE 2026-07-11 (`7df61a5`) — Fixy spec Z8 PRZED pierwszym dispatchem (`visual-sweep.spec.ts`)
 
 **Kontekst:** review przewiduje CZERWONY pierwszy run sweepa z powodu
 timeoutów — naprawić na tym samym branchu, zanim PR się zmerguje i ktoś
@@ -433,7 +433,7 @@ przegląd zrzutów → raport (Z8 Część B wg treści zadania Z8).
 - [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); [ ] Część B — dispatch + przegląd zrzutów + raport w Backlogu (po merge PR #1419)
 - [x] Z10 — fixy po review Fable (Z7/Z9: kolizja dialogów, focus po cancel, auto-scroll wątku, drobne) — DONE 2026-07-11
-- [ ] Z11 — fixy spec Z8 (timeouty, zrzut przed asercjami, strict-mode) — PRZED pierwszym dispatchem
+- [x] Z11 — fixy spec Z8 (timeouty, zrzut przed asercjami, strict-mode) — DONE 2026-07-11
 - [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
