@@ -1,0 +1,110 @@
+name: E2E Visual Sweep
+
+# Z8 (docs/SONNET_EXECUTION_PLAN.md): dispatch-only full-page screenshot
+# sweep of every panel route, per role, at two viewports. Deliberately NOT
+# wired to push — it's slow (~150+ page loads) and purely for manual visual
+# review via the uploaded artifact, not a pass/fail regression gate.
+on:
+  workflow_dispatch:
+
+env:
+  PNPM_VERSION: 10.14.0
+  NODE_VERSION: '22'
+  CI: true
+
+jobs:
+  visual-sweep:
+    name: Visual sweep (panel)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Verify required secrets
+        id: secrets
+        run: |
+          missing=()
+          for var in E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD E2E_BASE_URL; do
+            if [ -z "${!var}" ]; then
+              missing+=("$var")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf 'Missing secrets/vars: %s\n' "${missing[@]}"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Required E2E vars missing – skipping visual sweep." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$E2E_EMPLOYEE_EMAIL" ] && [ -n "$E2E_EMPLOYEE_PASSWORD" ]; then
+            echo "Employee credentials present — employee routes included." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Employee credentials absent — employee routes skipped (optional)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+        env:
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
+          E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+          E2E_EMPLOYEE_EMAIL: ${{ secrets.E2E_EMPLOYEE_EMAIL }}
+          E2E_EMPLOYEE_PASSWORD: ${{ secrets.E2E_EMPLOYEE_PASSWORD }}
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+
+      - name: Setup Node
+        if: steps.secrets.outputs.available == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        if: steps.secrets.outputs.available == 'true'
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Install dependencies
+        if: steps.secrets.outputs.available == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        if: steps.secrets.outputs.available == 'true'
+        run: pnpm --filter "@salonbw/panel" exec playwright install chromium --with-deps
+
+      - name: Run visual sweep
+        if: steps.secrets.outputs.available == 'true'
+        # Scoped to a single project (--project=desktop-1366): the spec sets
+        # its own viewport per test, so running under more than one project
+        # would just triple every page load (and every per-role login) for
+        # no benefit.
+        run: |
+          pnpm --filter "@salonbw/panel" exec playwright test \
+            tests/e2e/visual-sweep.spec.ts \
+            --project=desktop-1366 \
+            --reporter=list
+        env:
+          VISUAL_SWEEP: '1'
+          PLAYWRIGHT_BASE_URL: ${{ vars.E2E_BASE_URL }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
+          E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+          E2E_EMPLOYEE_EMAIL: ${{ secrets.E2E_EMPLOYEE_EMAIL }}
+          E2E_EMPLOYEE_PASSWORD: ${{ secrets.E2E_EMPLOYEE_PASSWORD }}
+
+      - name: Upload screenshots
+        if: steps.secrets.outputs.available == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-sweep-screenshots
+          path: apps/panel/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Playwright traces (on failure)
+        if: steps.secrets.outputs.available == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-sweep-traces
+          path: apps/panel/test-results/
+          if-no-files-found: ignore

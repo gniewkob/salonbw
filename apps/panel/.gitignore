@@ -35,6 +35,9 @@ yarn-error.log*
 /test-results/
 /public/versum-calendar/fixtures/
 
+# Z8 visual-sweep screenshots (CI artifact only, never committed)
+/screenshots/
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example

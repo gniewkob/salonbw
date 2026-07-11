@@ -220,7 +220,7 @@ rozwijania na asercje panelu); pełna suita panelu zielona; specy Playwright
 `visits-client.spec.ts` zaktualizowane pod nowy wzorzec (sekcje list bez
 kwot — bez zmian; dodać: klik „Szczegóły" → dialog widoczny).
 
-### Z8. Wizualno-funkcjonalny sweep WSZYSTKICH widoków per rola (screenshoty z CI)
+### Z8. 🟡 Część A DONE 2026-07-11 (branch `claude/sonnet-execution-z7-z9-je0rkj`) — Wizualno-funkcjonalny sweep WSZYSTKICH widoków per rola (screenshoty z CI)
 
 **Cel ownera:** przejście ścieżek jak każda rola + ocena wizualna i
 funkcjonalna każdego widoku. Sandbox agenta NIE ma kredencjali prod —
@@ -313,7 +313,7 @@ naprawy czysto frontendowe; pełna suita zielona.
 
 - [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
 - [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
-- [ ] Z8 — wizualno-funkcjonalny sweep wszystkich widoków per rola + raport
+- [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); [ ] Część B — dispatch + przegląd zrzutów + raport w Backlogu
 - [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
