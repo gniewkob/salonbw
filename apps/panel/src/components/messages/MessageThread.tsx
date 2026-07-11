@@ -1,8 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    forwardRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import PanelButton from '@/components/ui/PanelButton';
 
-interface AppointmentMessage {
+export interface AppointmentMessage {
     id: number;
     appointmentId: number;
     authorId: number | null;
@@ -11,8 +19,15 @@ interface AppointmentMessage {
     createdAt: string;
 }
 
+export interface MessageThreadHandle {
+    /** Scrolls the compose textarea into view and focuses it. */
+    focusCompose: () => void;
+}
+
 interface Props {
     appointmentId: number;
+    /** Fires whenever the thread (re)loads, with the current message list. */
+    onThreadLoaded?: (messages: AppointmentMessage[]) => void;
 }
 
 function formatTime(isoString: string): string {
@@ -22,7 +37,10 @@ function formatTime(isoString: string): string {
     });
 }
 
-export default function MessageThread({ appointmentId }: Props) {
+function MessageThread(
+    { appointmentId, onThreadLoaded }: Props,
+    ref: React.Ref<MessageThreadHandle>,
+) {
     const { apiFetch, role } = useAuth();
     const toast = useToast();
     const [messages, setMessages] = useState<AppointmentMessage[] | null>(null);
@@ -31,15 +49,20 @@ export default function MessageThread({ appointmentId }: Props) {
     const [sending, setSending] = useState(false);
     const textareaId = `msg-thread-body-${appointmentId}`;
     const bottomRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const loadMessages = useCallback(() => {
         setLoading(true);
         apiFetch<AppointmentMessage[]>(
             `/appointments/${appointmentId}/messages`,
         )
-            .then((data) => setMessages(data))
+            .then((data) => {
+                setMessages(data);
+                onThreadLoaded?.(data);
+            })
             .catch(() => toast.error('Nie udało się pobrać wiadomości.'))
             .finally(() => setLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiFetch, appointmentId, toast]);
 
     useEffect(() => {
@@ -51,6 +74,16 @@ export default function MessageThread({ appointmentId }: Props) {
             bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages]);
+
+    useImperativeHandle(ref, () => ({
+        focusCompose: () => {
+            textareaRef.current?.scrollIntoView({
+                block: 'center',
+                behavior: 'smooth',
+            });
+            textareaRef.current?.focus();
+        },
+    }));
 
     const sendMessage = async () => {
         const trimmed = body.trim();
@@ -64,6 +97,9 @@ export default function MessageThread({ appointmentId }: Props) {
             });
             setBody('');
             loadMessages();
+            // Sending is button-triggered — return focus to the textarea so
+            // the client can keep typing without hunting for the field again.
+            textareaRef.current?.focus();
         } catch {
             toast.error('Nie udało się wysłać wiadomości. Spróbuj ponownie.');
         } finally {
@@ -144,6 +180,7 @@ export default function MessageThread({ appointmentId }: Props) {
                 </label>
                 <textarea
                     id={textareaId}
+                    ref={textareaRef}
                     className="form-control form-control-sm"
                     rows={2}
                     maxLength={2000}
@@ -159,17 +196,20 @@ export default function MessageThread({ appointmentId }: Props) {
                     disabled={sending}
                 />
                 <div className="d-flex justify-content-end mt-1">
-                    <button
+                    <PanelButton
                         type="button"
-                        className="btn btn-sm btn-primary"
+                        size="sm"
+                        variant="primary"
                         disabled={!body.trim() || sending}
                         aria-busy={sending}
                         onClick={() => void sendMessage()}
                     >
                         {sending ? 'Wysyłanie…' : 'Wyślij'}
-                    </button>
+                    </PanelButton>
                 </div>
             </div>
         </div>
     );
 }
+
+export default forwardRef(MessageThread);

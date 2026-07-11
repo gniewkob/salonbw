@@ -10,8 +10,15 @@ import VisitsPage from '@/pages/visits';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
+const mockRouterReplace = jest.fn();
+let mockRouterQuery: Record<string, string> = {};
+
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push: jest.fn(), replace: jest.fn(), query: {} }),
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: mockRouterReplace,
+        query: mockRouterQuery,
+    }),
 }));
 
 jest.mock('@/contexts/AuthContext');
@@ -117,11 +124,27 @@ function setup(apiFetch: jest.Mock) {
     return render(<VisitsPage />);
 }
 
+function messagesApiFetch(
+    extra: (path: string, init?: RequestInit) => unknown,
+) {
+    return jest.fn(async (path: string, init?: RequestInit) => {
+        if (path === '/dashboard/client/visits') return VISITS;
+        if (/^\/appointments\/\d+\/messages$/.test(path) && !init?.method) {
+            return [];
+        }
+        return extra(path, init);
+    });
+}
+
 describe('VisitsPage', () => {
-    it('renders sections with visits, notes and existing review', async () => {
-        const apiFetch = jest.fn(async (path: string) => {
-            if (path === '/dashboard/client/visits') return VISITS;
-            throw new Error(`unexpected ${path}`);
+    beforeEach(() => {
+        mockRouterQuery = {};
+        mockRouterReplace.mockClear();
+    });
+
+    it('renders sections with visits, compact notes and existing review', async () => {
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
         });
         setup(apiFetch);
 
@@ -139,27 +162,26 @@ describe('VisitsPage', () => {
                 name: /Anulowane i nieodbyte \(2\)/,
             }),
         ).toBeInTheDocument();
-        // salon recommendations visible
+        // salon recommendations visible in the compact row notes
         expect(screen.getByText(/myć włosy co 3 dni/)).toBeInTheDocument();
-        // booking comment and add-on metadata are separated, not merged as recommendations
         expect(screen.getByText('Komentarz do rezerwacji')).toBeInTheDocument();
         expect(
             screen.getByText(/chca to i koniec - mąż płaci/),
         ).toBeInTheDocument();
         expect(screen.getByText('Dodatkowe zabiegi')).toBeInTheDocument();
         expect(screen.getByText('Łączny czas')).toBeInTheDocument();
-        expect(screen.queryByText('Status')).not.toBeInTheDocument();
         // existing review renders read-only stars + change button
         expect(screen.getByText(/Super!/)).toBeInTheDocument();
         expect(screen.getByText('Zmień ocenę')).toBeInTheDocument();
-        // upcoming visit is cancellable, not reviewable
-        expect(screen.getAllByText('Anuluj')).toHaveLength(2);
+        // no inline expand content is present until the panel is opened
+        expect(
+            screen.queryByRole('dialog', { name: /Tonowanie/ }),
+        ).not.toBeInTheDocument();
     });
 
     it('does not offer future-only actions for past unresolved visits', async () => {
-        const apiFetch = jest.fn(async (path: string) => {
-            if (path === '/dashboard/client/visits') return VISITS;
-            throw new Error(`unexpected ${path}`);
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
         });
         setup(apiFetch);
 
@@ -173,55 +195,67 @@ describe('VisitsPage', () => {
             within(cancelledSection!).getByText('Przeterminowana usługa'),
         ).toBeInTheDocument();
         expect(
-            within(cancelledSection!).queryByText('Potwierdzona'),
-        ).not.toBeInTheDocument();
-        expect(
             within(cancelledSection!).getByText('Nieobecność'),
         ).toBeInTheDocument();
-        expect(
-            within(cancelledSection!).queryByRole('button', {
-                name: 'Anuluj',
+
+        // Open the panel for the past-unresolved visit — the rebook action
+        // is offered there, cancel/accept are not (they require canAccept/
+        // canCancel which both require a future startTime).
+        const pastUnresolvedRow = within(cancelledSection!)
+            .getByText('Przeterminowana usługa')
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(
+            within(pastUnresolvedRow).getByRole('button', {
+                name: 'Szczegóły',
             }),
+        );
+        const dialog = await screen.findByRole('dialog');
+        expect(
+            within(dialog).getByRole('link', { name: 'Umów ponownie' }),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('button', { name: 'Anuluj' }),
         ).not.toBeInTheDocument();
-        expect(
-            within(cancelledSection!).getAllByRole('link', {
-                name: 'Umów ponownie',
-            }),
-        ).toHaveLength(2);
     });
 
-    it('shows proposed reschedule details and accepts the new time', async () => {
-        const apiFetch = jest.fn(async (path: string) => {
-            if (path === '/dashboard/client/visits') return VISITS;
+    it('opens the details panel from a row, shows the reschedule notice, and accepts the new time from the panel', async () => {
+        const apiFetch = messagesApiFetch((path, init) => {
             if (path === '/appointments/5/accept-reschedule') return {};
-            throw new Error(`unexpected ${path}`);
+            throw new Error(`unexpected ${path} ${init?.method ?? 'GET'}`);
         });
         setup(apiFetch);
 
         await screen.findByText('Tonowanie');
+        // Compact row does not show the full reschedule comparison anymore —
+        // it moved into the details panel (deliberate Z7 UX change).
         expect(
-            screen.getByText('Salon proponuje zmianę terminu'),
-        ).toBeInTheDocument();
-        expect(screen.getByText('Było')).toBeInTheDocument();
-        expect(screen.getByText('Propozycja salonu')).toBeInTheDocument();
+            screen.queryByText('Salon proponuje zmianę terminu'),
+        ).not.toBeInTheDocument();
 
-        const rescheduledVisit = screen
+        const rescheduledRow = screen
             .getByRole('button', { name: 'Tonowanie' })
-            .closest('.salonbw-appointment-item');
-        expect(rescheduledVisit).not.toBeNull();
+            .closest('.salonbw-appointment-item')!;
         fireEvent.click(
-            within(rescheduledVisit as HTMLElement).getByRole('button', {
-                name: 'Otwórz szczegóły',
-            }),
+            within(rescheduledRow).getByRole('button', { name: 'Szczegóły' }),
         );
+
+        const dialog = await screen.findByRole('dialog');
+        // Focus lands on the panel heading on open.
         expect(
-            within(rescheduledVisit as HTMLElement).getAllByText(
-                'Salon proponuje zmianę terminu',
-            ),
-        ).toHaveLength(1);
+            within(dialog).getByRole('heading', { name: 'Tonowanie' }),
+        ).toHaveFocus();
+        expect(
+            within(dialog).getByText('Salon proponuje zmianę terminu'),
+        ).toBeInTheDocument();
+        expect(within(dialog).getByText('Było')).toBeInTheDocument();
+        expect(
+            within(dialog).getByText('Propozycja salonu'),
+        ).toBeInTheDocument();
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Akceptuj nowy termin' }),
+            within(dialog).getByRole('button', {
+                name: 'Akceptuj nowy termin',
+            }),
         );
 
         await waitFor(() => {
@@ -232,9 +266,101 @@ describe('VisitsPage', () => {
         });
     });
 
+    it('cancels a visit from the panel via the confirm modal', async () => {
+        const apiFetch = messagesApiFetch((path, init) => {
+            if (path === '/appointments/1/cancel' && init?.method === 'PATCH')
+                return {};
+            throw new Error(`unexpected ${path} ${init?.method ?? 'GET'}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(within(row).getByRole('button', { name: 'Szczegóły' }));
+
+        const dialog = await screen.findByRole('dialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Anuluj' }));
+
+        const confirmDialog = await screen.findByRole('dialog', {
+            name: 'Anuluj wizytę',
+        });
+        fireEvent.click(
+            within(confirmDialog).getByRole('button', {
+                name: 'Anuluj wizytę',
+            }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith('/appointments/1/cancel', {
+                method: 'PATCH',
+            });
+        });
+    });
+
+    it('opens the details panel directly from a ?visitId= deep link', async () => {
+        mockRouterQuery = { visitId: '2' };
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
+        });
+        setup(apiFetch);
+
+        const dialog = await screen.findByRole('dialog');
+        expect(
+            within(dialog).getByRole('heading', { name: 'Koloryzacja' }),
+        ).toBeInTheDocument();
+    });
+
+    it('focuses the message compose textarea when "Napisz wiadomość" is clicked', async () => {
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(within(row).getByRole('button', { name: 'Szczegóły' }));
+
+        const dialog = await screen.findByRole('dialog');
+        await within(dialog).findByText('Brak wiadomości. Napisz pierwszą.');
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Napisz wiadomość' }),
+        );
+
+        await waitFor(() => {
+            expect(within(dialog).getByRole('textbox')).toHaveFocus();
+        });
+    });
+
+    it('returns focus to the row that opened the panel once it is closed (Escape)', async () => {
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        const detailsButton = within(row).getByRole('button', {
+            name: 'Szczegóły',
+        });
+        fireEvent.click(detailsButton);
+
+        await screen.findByRole('dialog');
+        fireEvent.keyDown(document, { key: 'Escape' });
+
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+        expect(detailsButton).toHaveFocus();
+    });
+
     it('submits a review for a completed visit with appointmentId + rating', async () => {
-        const apiFetch = jest.fn(async (path: string) => {
-            if (path === '/dashboard/client/visits') return VISITS;
+        const apiFetch = messagesApiFetch((path) => {
             if (path === '/reviews') return { id: 10 };
             throw new Error(`unexpected ${path}`);
         });
