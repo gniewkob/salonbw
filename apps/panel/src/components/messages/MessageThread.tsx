@@ -50,6 +50,7 @@ function MessageThread(
     const textareaId = `msg-thread-body-${appointmentId}`;
     const bottomRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const focusPendingRef = useRef(false);
 
     const loadMessages = useCallback(() => {
         setLoading(true);
@@ -75,6 +76,17 @@ function MessageThread(
         }
     }, [messages]);
 
+    // The textarea is `disabled` while sending, so a synchronous
+    // .focus() call right after the API resolves is a no-op (disabled
+    // elements can't take focus). Defer it to the render where `sending`
+    // has actually flipped back to false and the DOM is enabled again.
+    useEffect(() => {
+        if (!sending && focusPendingRef.current) {
+            focusPendingRef.current = false;
+            textareaRef.current?.focus();
+        }
+    }, [sending]);
+
     useImperativeHandle(ref, () => ({
         focusCompose: () => {
             textareaRef.current?.scrollIntoView({
@@ -99,7 +111,9 @@ function MessageThread(
             loadMessages();
             // Sending is button-triggered — return focus to the textarea so
             // the client can keep typing without hunting for the field again.
-            textareaRef.current?.focus();
+            // (Deferred to the post-send effect: the textarea is still
+            // `disabled` here, and disabled elements refuse focus().)
+            focusPendingRef.current = true;
         } catch {
             toast.error('Nie udało się wysłać wiadomości. Spróbuj ponownie.');
         } finally {

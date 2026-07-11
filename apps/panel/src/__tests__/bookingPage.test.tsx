@@ -290,6 +290,68 @@ describe('BookingPage reservedOnline payload', () => {
         },
     );
 
+    it('moves focus to the new step heading on every transition, but not on first mount (Z9)', async () => {
+        const apiFetch = jest.fn(async (path: string) => {
+            if (path === '/services/online-booking') return SERVICES;
+            if (path.startsWith('/calendar/available-slots')) return SLOTS;
+            return { id: 123 };
+        });
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as ReturnType<
+                    typeof createAuthValue
+                >['apiFetch'],
+            }),
+        );
+
+        render(<BookingPage />);
+
+        // First mount: the step heading must NOT steal initial page focus.
+        const serviceHeading = await screen.findByRole('heading', {
+            name: 'Wybierz usługę',
+        });
+        expect(serviceHeading).not.toHaveFocus();
+
+        fireEvent.click(
+            await screen.findByRole('button', { name: /strzyżenie/i }),
+        );
+
+        // service → addons: heading changes, focus follows.
+        const addonsHeading = await screen.findByRole('heading', {
+            name: 'Dodaj pielęgnację lub przejdź dalej',
+        });
+        expect(addonsHeading).toHaveFocus();
+
+        fireEvent.click(
+            await screen.findByRole('button', {
+                name: /przejdź do terminu/i,
+            }),
+        );
+
+        // addons → slot: heading changes, focus follows again.
+        const slotHeading = await screen.findByRole('heading', {
+            name: 'Wybierz termin',
+        });
+        expect(slotHeading).toHaveFocus();
+
+        // slot → confirm → submit: the success screen's own heading takes
+        // focus and announces via role=status (Z9).
+        fireEvent.click(
+            await screen.findByRole('button', { name: /\d{2}:\d{2}/ }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /potwierdź rezerwację/i }),
+        );
+
+        const successHeading = await screen.findByRole('heading', {
+            name: 'Wizyta zarezerwowana!',
+        });
+        expect(successHeading).toHaveFocus();
+        expect(successHeading.closest('[role="status"]')).not.toBeNull();
+    });
+
     it('sends selected variant and add-ons to slots and appointment APIs', async () => {
         const apiFetch = jest.fn(async (path: string) => {
             if (path === '/services/online-booking') {
@@ -834,7 +896,7 @@ describe('BookingPage reservedOnline payload', () => {
             target: { value: 'Najchętniej piątek po 16:00.' },
         });
         fireEvent.click(
-            screen.getByRole('button', { name: /poproś o pomoc/i }),
+            screen.getByRole('button', { name: /poprosię o pomoc/i }),
         );
 
         await screen.findByText(/prośba została wysłana/i);

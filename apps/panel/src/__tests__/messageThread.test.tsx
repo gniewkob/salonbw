@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import MessageThread from '@/components/messages/MessageThread';
+import MessageThread, {
+    type MessageThreadHandle,
+} from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
@@ -170,6 +172,37 @@ describe('MessageThread', () => {
             });
         });
 
+        it('clears the textarea and keeps focus in it after a successful send (Z9)', async () => {
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        return { id: 99 };
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+            const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+            fireEvent.change(textarea, {
+                target: { value: 'Hej, pytanie o wizytę.' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            await waitFor(() => {
+                expect(textarea.value).toBe('');
+            });
+            expect(textarea).toHaveFocus();
+        });
+
         it('disables Wyślij button when textarea is empty', async () => {
             const apiFetch = jest.fn(async () => []);
             setupClient(apiFetch);
@@ -188,6 +221,28 @@ describe('MessageThread', () => {
                 target: { value: 'Tekst' },
             });
             expect(btn).not.toBeDisabled();
+        });
+    });
+
+    describe('focusCompose() imperative handle (Z7)', () => {
+        it('focuses the compose textarea when called via ref', async () => {
+            const apiFetch = jest.fn(async () => []);
+            mockedUseAuth.mockReturnValue(
+                createAuthValue({
+                    role: 'client',
+                    isAuthenticated: true,
+                    apiFetch: apiFetch as never,
+                }),
+            );
+            const ref = React.createRef<MessageThreadHandle>();
+            render(<MessageThread ref={ref} appointmentId={10} />);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+            expect(screen.getByRole('textbox')).not.toHaveFocus();
+
+            ref.current?.focusCompose();
+
+            expect(screen.getByRole('textbox')).toHaveFocus();
         });
     });
 });

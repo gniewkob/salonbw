@@ -101,5 +101,43 @@ describe('HelpContactPage', () => {
         expect(payload.message).toContain('Konto #42');
         expect(payload.message).toContain('Salon Black & White');
         expect(payload.message).toContain('Nie widzę mojej wizyty');
+
+        // Z9: focus moves to the confirmation so it's announced/scrolled
+        // into view, not left stranded below the submit button.
+        await waitFor(() => {
+            expect(screen.getByText('Pytanie zostało wysłane.')).toHaveFocus();
+        });
+    });
+
+    it('moves focus to the submit error so it is announced and scrolled into view (Z9)', async () => {
+        const apiFetch = jest.fn(async () => {
+            throw new Error('network down');
+        });
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                isAuthenticated: true,
+                role: 'client',
+                apiFetch: apiFetch as never,
+                user: {
+                    id: 42,
+                    email: 'client@example.test',
+                    name: 'Klient',
+                    role: 'client',
+                },
+            }),
+        );
+
+        render(<HelpContactPage />);
+
+        fireEvent.change(screen.getByLabelText('Pytanie'), {
+            target: { value: 'Nie widzę mojej wizyty' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'wyślij pytanie' }));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('Nie udało się wysłać pytania.'),
+            ).toHaveFocus();
+        });
     });
 });

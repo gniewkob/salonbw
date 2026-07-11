@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -86,8 +86,27 @@ export default function HelpContactPage() {
     const [submitError, setSubmitError] = useState('');
     const [emailError, setEmailError] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const submittedRef = useRef<HTMLParagraphElement>(null);
+    const submitErrorRef = useRef<HTMLParagraphElement>(null);
 
     useSetSecondaryNav(EMPTY_SECONDARY_NAV);
+
+    // A dynamically-mounted role="status"/role="alert" node isn't reliably
+    // announced by screen readers (the live region needs to exist before
+    // its content changes), and a submit error rendered below a long form
+    // can land outside the viewport — move focus to it explicitly, which
+    // both announces it and scrolls it into view (Z9).
+    useEffect(() => {
+        if (submitted) {
+            submittedRef.current?.focus();
+        }
+    }, [submitted]);
+
+    useEffect(() => {
+        if (submitError) {
+            submitErrorRef.current?.focus();
+        }
+    }, [submitError]);
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
@@ -325,7 +344,9 @@ export default function HelpContactPage() {
                     </div>
                     {submitError ? (
                         <p
+                            ref={submitErrorRef}
                             role="alert"
+                            tabIndex={-1}
                             className="helps-page__feedback helps-page__feedback--error"
                         >
                             {submitError}
@@ -333,7 +354,9 @@ export default function HelpContactPage() {
                     ) : null}
                     {submitted ? (
                         <p
+                            ref={submittedRef}
                             role="status"
+                            tabIndex={-1}
                             className="helps-page__feedback helps-page__feedback--success"
                         >
                             Pytanie zostało wysłane.

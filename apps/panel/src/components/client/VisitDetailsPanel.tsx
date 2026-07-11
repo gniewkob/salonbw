@@ -88,6 +88,30 @@ export default function VisitDetailsPanel({
         setHasMessages(false);
     }, [visit?.id]);
 
+    // A status-changing action (e.g. "Akceptuj nowy termin") unmounts the
+    // button that triggered it once its `can*` condition flips — without
+    // this, focus silently falls back to <body>. Re-anchor it on the
+    // heading, which already reflects the fresh status in the meta row.
+    const previousStatusRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!visit) {
+            previousStatusRef.current = null;
+            return;
+        }
+        if (
+            previousStatusRef.current !== null &&
+            previousStatusRef.current !== visit.status
+        ) {
+            headingRef.current?.focus();
+        }
+        previousStatusRef.current = visit.status;
+        // Deliberately keyed on id/status only — a reload gives a new
+        // `visit` object reference each time, and re-running this on every
+        // such reference change (rather than an actual status change)
+        // would refocus the heading on unrelated data refreshes too.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visit?.id, visit?.status]);
+
     useEffect(() => {
         if (typeof document === 'undefined' || !open) return;
         const onKeyDown = (e: KeyboardEvent) => {

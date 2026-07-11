@@ -266,6 +266,52 @@ describe('VisitsPage', () => {
         });
     });
 
+    it('re-anchors focus on the panel heading after accepting flips the status and unmounts the button (Z9)', async () => {
+        let accepted = false;
+        const apiFetch = jest.fn(async (path: string, init?: RequestInit) => {
+            if (path === '/dashboard/client/visits') {
+                return accepted
+                    ? VISITS.map((v) =>
+                          v.id === 5 ? { ...v, status: 'confirmed' } : v,
+                      )
+                    : VISITS;
+            }
+            if (/^\/appointments\/\d+\/messages$/.test(path) && !init?.method)
+                return [];
+            if (path === '/appointments/5/accept-reschedule') {
+                accepted = true;
+                return {};
+            }
+            throw new Error(`unexpected ${path} ${init?.method ?? 'GET'}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Tonowanie');
+        const rescheduledRow = screen
+            .getByRole('button', { name: 'Tonowanie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(
+            within(rescheduledRow).getByRole('button', { name: 'Szczegóły' }),
+        );
+        const dialog = await screen.findByRole('dialog');
+        fireEvent.click(
+            within(dialog).getByRole('button', {
+                name: 'Akceptuj nowy termin',
+            }),
+        );
+
+        await waitFor(() => {
+            expect(
+                within(dialog).queryByRole('button', {
+                    name: 'Akceptuj nowy termin',
+                }),
+            ).not.toBeInTheDocument();
+        });
+        expect(
+            within(dialog).getByRole('heading', { name: 'Tonowanie' }),
+        ).toHaveFocus();
+    });
+
     it('cancels a visit from the panel via the confirm modal', async () => {
         const apiFetch = messagesApiFetch((path, init) => {
             if (path === '/appointments/1/cancel' && init?.method === 'PATCH')
@@ -278,7 +324,10 @@ describe('VisitsPage', () => {
         const row = screen
             .getByRole('button', { name: 'Strzyżenie damskie' })
             .closest('.salonbw-appointment-item')!;
-        fireEvent.click(within(row).getByRole('button', { name: 'Szczegóły' }));
+        const detailsButton = within(row).getByRole('button', {
+            name: 'Szczegóły',
+        });
+        fireEvent.click(detailsButton);
 
         const dialog = await screen.findByRole('dialog');
         fireEvent.click(within(dialog).getByRole('button', { name: 'Anuluj' }));
@@ -297,6 +346,13 @@ describe('VisitsPage', () => {
                 method: 'PATCH',
             });
         });
+
+        // Z9: cancelling closes the details panel too — focus must land
+        // back on the row's "Szczegóły" trigger, never on <body>.
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+        expect(detailsButton).toHaveFocus();
     });
 
     it('opens the details panel directly from a ?visitId= deep link', async () => {
