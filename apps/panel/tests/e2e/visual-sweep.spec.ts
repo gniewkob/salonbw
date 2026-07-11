@@ -19,7 +19,13 @@
  * authenticated page.
  */
 
-import { test, expect, type Page, type BrowserContext } from '@playwright/test';
+import {
+    test,
+    expect,
+    type Browser,
+    type BrowserContext,
+    type Page,
+} from '@playwright/test';
 import { loginAs } from './helpers/auth';
 
 const SWEEP_ENABLED = process.env.VISUAL_SWEEP === '1';
@@ -214,8 +220,12 @@ async function settle(page: Page): Promise<void> {
 
 /** Minimal health assertions shared by every route in the sweep. */
 async function assertHealthy(page: Page): Promise<void> {
-    await expect(page.getByText('Application error')).not.toBeVisible();
-    await expect(page.getByText('Nie masz uprawnień')).not.toBeVisible();
+    // toHaveCount(0) rather than not.toBeVisible() on a getByText locator:
+    // the latter throws a strict-mode violation (not a clean assertion
+    // failure) the moment more than one match exists on the page, which a
+    // 65-route sweep is bound to hit somewhere.
+    await expect(page.getByText('Application error')).toHaveCount(0);
+    await expect(page.getByText('Nie masz uprawnień')).toHaveCount(0);
     // Not every page uses a literal <h1> (some rely on breadcrumbs / custom
     // heading components), so this checks for *any* rendered heading rather
     // than the stricter level-1-only assertion — the goal is "something
@@ -244,48 +254,83 @@ async function visitAndShoot(
     });
     await page.goto(route.path, { waitUntil: 'domcontentloaded' });
     await settle(page);
-    await assertHealthy(page);
+    // Shoot BEFORE asserting: the screenshot is the deliverable this sweep
+    // exists to produce, so a route that fails assertHealthy must still
+    // leave one in the artifact for review — a trace alone isn't enough.
     await shot(page, role, viewport.name, route.name);
+    await assertHealthy(page);
 }
+
+type SweepRole = 'admin' | 'client' | 'employee';
+
+// Every describe block below runs in this same file/worker (fullyParallel
+// is off in playwright.config.ts, so a single file's tests run serially),
+// which means the FIRST describe to need a given role's session logs in
+// and every later describe for that same role (e.g. the admin card-tabs
+// flows) reuses it — cutting a second admin login (and its throttle risk)
+// entirely rather than just "less" of it.
+const sessionCache = new Map<
+    SweepRole,
+    { context: BrowserContext; page: Page }
+>();
+
+async function getSessionPage(
+    browser: Browser,
+    role: SweepRole,
+): Promise<Page> {
+    const cached = sessionCache.get(role);
+    if (cached) return cached.page;
+    const email =
+        role === 'admin'
+            ? (process.env.E2E_ADMIN_EMAIL ?? process.env.PANEL_LOGIN_EMAIL)!
+            : role === 'client'
+              ? process.env.E2E_CLIENT_EMAIL!
+              : process.env.E2E_EMPLOYEE_EMAIL!;
+    const password =
+        role === 'admin'
+            ? (process.env.E2E_ADMIN_PASSWORD ??
+                  process.env.PANEL_LOGIN_PASSWORD)!
+            : role === 'client'
+              ? process.env.E2E_CLIENT_PASSWORD!
+              : process.env.E2E_EMPLOYEE_PASSWORD!;
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await loginAs(page, email, password);
+    sessionCache.set(role, { context, page });
+    return page;
+}
+
+// Closes every cached session once, after the whole file's tests are done
+// (not per-describe — sessions are shared across describes, see above).
+test.afterAll(async () => {
+    for (const { context } of sessionCache.values()) {
+        await context.close();
+    }
+    sessionCache.clear();
+});
 
 function runSweep(
     describeName: string,
-    role: 'admin' | 'client' | 'employee',
+    role: SweepRole,
     routes: RouteSpec[],
     credsPresent: () => boolean,
 ) {
     test.describe(describeName, () => {
-        let context: BrowserContext | null = null;
         let page: Page | null = null;
 
         test.beforeAll(async ({ browser }) => {
+            // loginAs backs off up to 35s on a throttle hit; the default
+            // hook timeout (30s) can't survive that — see the identical
+            // comment/pattern in regression/auth.setup.ts.
+            test.setTimeout(180_000);
             if (!SWEEP_ENABLED || !credsPresent()) return;
-            const email =
-                role === 'admin'
-                    ? (process.env.E2E_ADMIN_EMAIL ??
-                          process.env.PANEL_LOGIN_EMAIL)!
-                    : role === 'client'
-                      ? process.env.E2E_CLIENT_EMAIL!
-                      : process.env.E2E_EMPLOYEE_EMAIL!;
-            const password =
-                role === 'admin'
-                    ? (process.env.E2E_ADMIN_PASSWORD ??
-                          process.env.PANEL_LOGIN_PASSWORD)!
-                    : role === 'client'
-                      ? process.env.E2E_CLIENT_PASSWORD!
-                      : process.env.E2E_EMPLOYEE_PASSWORD!;
-            context = await browser.newContext();
-            page = await context.newPage();
-            await loginAs(page, email, password);
-        });
-
-        test.afterAll(async () => {
-            await context?.close();
+            page = await getSessionPage(browser, role);
         });
 
         for (const route of routes) {
             for (const viewport of VIEWPORTS) {
                 test(`${route.name} @ ${viewport.name}`, async () => {
+                    test.setTimeout(60_000);
                     test.skip(!SWEEP_ENABLED, 'VISUAL_SWEEP not enabled');
                     test.skip(!credsPresent(), `Missing ${role} credentials`);
                     if (!page) throw new Error('Login did not complete');
@@ -308,28 +353,22 @@ runSweep(
 // Data-dependent flows: only meaningful once at least one row exists to open.
 // Best-effort (soft-check), matching the existing regression spec pattern.
 test.describe('Visual sweep — admin customer/service card tabs', () => {
-    let context: BrowserContext | null = null;
     let page: Page | null = null;
 
     test.beforeAll(async ({ browser }) => {
+        test.setTimeout(180_000);
         if (!SWEEP_ENABLED || !adminCredsPresent()) return;
-        context = await browser.newContext();
-        page = await context.newPage();
-        await loginAs(
-            page,
-            process.env.E2E_ADMIN_EMAIL ?? process.env.PANEL_LOGIN_EMAIL ?? '',
-            process.env.E2E_ADMIN_PASSWORD ??
-                process.env.PANEL_LOGIN_PASSWORD ??
-                '',
-        );
-    });
-
-    test.afterAll(async () => {
-        await context?.close();
+        // Reuses the session the "Visual sweep — admin" describe above
+        // already logged in with (same file, same worker, runs first) —
+        // no second admin login here.
+        page = await getSessionPage(browser, 'admin');
     });
 
     for (const viewport of VIEWPORTS) {
         test(`customer card tabs @ ${viewport.name}`, async () => {
+            // 8+ navigations with settle() (up to ~16s each) plus
+            // fullpage screenshots in one test blow past the default 30s.
+            test.setTimeout(240_000);
             test.skip(!SWEEP_ENABLED, 'VISUAL_SWEEP not enabled');
             test.skip(!adminCredsPresent(), 'Missing admin credentials');
             if (!page) throw new Error('Login did not complete');
@@ -352,12 +391,13 @@ test.describe('Visual sweep — admin customer/service card tabs', () => {
                     waitUntil: 'domcontentloaded',
                 });
                 await settle(page);
-                await assertHealthy(page);
                 await shot(page, 'admin', viewport.name, tab.name);
+                await assertHealthy(page);
             }
         });
 
         test(`service card tabs @ ${viewport.name}`, async () => {
+            test.setTimeout(240_000);
             test.skip(!SWEEP_ENABLED, 'VISUAL_SWEEP not enabled');
             test.skip(!adminCredsPresent(), 'Missing admin credentials');
             if (!page) throw new Error('Login did not complete');
@@ -380,8 +420,8 @@ test.describe('Visual sweep — admin customer/service card tabs', () => {
                     waitUntil: 'domcontentloaded',
                 });
                 await settle(page);
-                await assertHealthy(page);
                 await shot(page, 'admin', viewport.name, tab.name);
+                await assertHealthy(page);
             }
         });
     }
