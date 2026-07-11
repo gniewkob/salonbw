@@ -261,7 +261,7 @@ dlatego zrzuty robi CI (sekrety E2E_* już są), a agent przegląda artefakty.
 zrzutów; wpis w active-context z listą znalezisk (może być „brak uwag"
 per widok, ale każdy widok ODHACZONY).
 
-### Z9. Audyt „gdzie ląduje użytkownik po akcji" (focus/scroll) w panelu klienta
+### Z9. ✅ DONE 2026-07-11 — Audyt „gdzie ląduje użytkownik po akcji" (focus/scroll) w panelu klienta
 
 Uogólnienie skargi ownera z Z7 na pozostałe akcje klienta („rozważ
 podobne rzeczy"). Dla każdej akcji sprawdź i napraw, z testem:
@@ -314,7 +314,7 @@ naprawy czysto frontendowe; pełna suita zielona.
 - [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
 - [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Z8 — wizualno-funkcjonalny sweep wszystkich widoków per rola + raport
-- [ ] Z9 — audyt focus/scroll po akcjach klienta
+- [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
 - [ ] Live E2E 3 ról na czystej bazie (Opus + owner)
