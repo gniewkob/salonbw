@@ -37,6 +37,17 @@ interface VisitDetailsPanelProps {
     onCancel: (id: number) => void;
     accepting: boolean;
     cancelling: boolean;
+    /**
+     * True while a dialog stacked on top of this panel (e.g. the cancel
+     * ConfirmModal) is open. Suspends this panel's own ESC handler and
+     * focus trap so the two independent `document`-level keydown listeners
+     * don't fight each other — without this, ESC in the modal on top also
+     * closes this panel, and Shift+Tab in the modal gets hijacked by this
+     * panel's trap (focus there is outside `panelRef`, so the trap's
+     * `!root.contains(activeElement)` branch fires). Body scroll-lock stays
+     * on regardless — this panel is still open underneath.
+     */
+    suspended?: boolean;
 }
 
 function formatDateTime(value: string) {
@@ -61,6 +72,7 @@ export default function VisitDetailsPanel({
     onCancel,
     accepting,
     cancelling,
+    suspended = false,
 }: VisitDetailsPanelProps) {
     const open = visit !== null;
     const headingRef = useRef<HTMLHeadingElement>(null);
@@ -112,8 +124,19 @@ export default function VisitDetailsPanel({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visit?.id, visit?.status]);
 
+    // Body scroll-lock is independent of `suspended` — this panel is still
+    // open underneath a stacked dialog (e.g. the cancel ConfirmModal), so
+    // the page behind it must stay locked either way.
     useEffect(() => {
         if (typeof document === 'undefined' || !open) return;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [open]);
+
+    useEffect(() => {
+        if (typeof document === 'undefined' || !open || suspended) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 onClose();
@@ -144,12 +167,10 @@ export default function VisitDetailsPanel({
             }
         };
         document.addEventListener('keydown', onKeyDown);
-        document.body.style.overflow = 'hidden';
         return () => {
             document.removeEventListener('keydown', onKeyDown);
-            document.body.style.overflow = '';
         };
-    }, [open, onClose]);
+    }, [open, suspended, onClose]);
 
     if (!visit) return null;
 

@@ -224,6 +224,54 @@ describe('MessageThread', () => {
         });
     });
 
+    describe('auto-scroll on load vs. on new activity (Z10c)', () => {
+        it('does not auto-scroll on the initial load, even with existing messages', async () => {
+            const apiFetch = jest.fn(async () => [MSG_STAFF, MSG_CLIENT]);
+            setupClient(apiFetch);
+
+            await screen.findByText('Salon');
+
+            expect(
+                window.HTMLElement.prototype.scrollIntoView,
+            ).not.toHaveBeenCalled();
+        });
+
+        it('auto-scrolls to the bottom after sending a new message', async () => {
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return [MSG_STAFF];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        return { id: 3 };
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Salon');
+            expect(
+                window.HTMLElement.prototype.scrollIntoView,
+            ).not.toHaveBeenCalled();
+
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Dzięki, będę!' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            await waitFor(() => {
+                expect(
+                    window.HTMLElement.prototype.scrollIntoView,
+                ).toHaveBeenCalled();
+            });
+        });
+    });
+
     describe('focusCompose() imperative handle (Z7)', () => {
         it('focuses the compose textarea when called via ref', async () => {
             const apiFetch = jest.fn(async () => []);

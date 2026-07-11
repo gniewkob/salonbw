@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
@@ -243,6 +243,10 @@ function VisitRow({
                 size="sm"
                 variant="secondary"
                 aria-haspopup="dialog"
+                // Z10b: a stable hook for imperative re-focus after an
+                // action (e.g. cancel) moves this row to a different
+                // section and remounts it — see the `visits` effect below.
+                className="salonbw-appointment-item__details-trigger"
                 onClick={openDetails}
             >
                 Szczegóły
@@ -261,6 +265,14 @@ export default function VisitsPage() {
     const [cancelling, setCancelling] = useState<Set<number>>(new Set());
     const [accepting, setAccepting] = useState<Set<number>>(new Set());
     const [openVisitId, setOpenVisitId] = useState<number | null>(null);
+    const pageHeadingRef = useRef<HTMLHeadingElement>(null);
+    // Z10b: cancelling closes the panel and restores focus to the row's
+    // "Szczegóły" trigger — but the subsequent refetch can move that visit
+    // into a different section (e.g. "Nadchodzące" → "Anulowane"), which
+    // remounts the row and silently drops focus to <body>. Set this right
+    // before refetching; the effect below re-anchors focus once the new
+    // section has rendered.
+    const pendingFocusVisitIdRef = useRef<number | null>(null);
 
     const load = useCallback(() => {
         apiFetch<ClientVisit[]>('/dashboard/client/visits')
@@ -270,6 +282,25 @@ export default function VisitsPage() {
             })
             .catch(() => setError(true));
     }, [apiFetch]);
+
+    useEffect(() => {
+        const pendingId = pendingFocusVisitIdRef.current;
+        if (pendingId === null || visits === null) return;
+        pendingFocusVisitIdRef.current = null;
+        const trigger = document
+            .getElementById(`visit-${pendingId}`)
+            ?.querySelector<HTMLElement>(
+                '.salonbw-appointment-item__details-trigger',
+            );
+        if (trigger) {
+            trigger.focus();
+        } else {
+            // The visit may have left the list entirely (or the DOM hasn't
+            // settled) — fall back to the page heading rather than letting
+            // focus silently land on <body>.
+            pageHeadingRef.current?.focus();
+        }
+    }, [visits]);
 
     useEffect(() => {
         if (role === 'client') {
@@ -303,6 +334,7 @@ export default function VisitsPage() {
         try {
             await apiFetch(`/appointments/${id}/cancel`, { method: 'PATCH' });
             closeVisit();
+            pendingFocusVisitIdRef.current = id;
             load();
         } catch {
             toast.error('Nie udało się anulować wizyty. Spróbuj ponownie.');
@@ -389,7 +421,10 @@ export default function VisitsPage() {
             </Head>
             <SalonShell role={role}>
                 <div className="salonbw-dashboard">
-                    <ClientPageHeader title="Moje wizyty" />
+                    <ClientPageHeader
+                        title="Moje wizyty"
+                        titleRef={pageHeadingRef}
+                    />
 
                     {error && (
                         <div className="alert alert-warning" role="alert">
@@ -449,6 +484,7 @@ export default function VisitsPage() {
                 onClose={closeVisit}
                 onAccept={(id) => void acceptReschedule(id)}
                 onCancel={setConfirmCancelId}
+                suspended={confirmCancelId !== null}
                 accepting={
                     openVisitDetails
                         ? accepting.has(openVisitDetails.id)

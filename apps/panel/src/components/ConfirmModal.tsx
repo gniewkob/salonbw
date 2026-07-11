@@ -67,13 +67,17 @@ export default function ConfirmModal({
                 }
             }
         };
-        if (open) {
-            document.addEventListener('keydown', onKey);
-            document.body.style.overflow = 'hidden';
-        }
+        if (!open) return;
+        document.addEventListener('keydown', onKey);
+        // Restore whatever overflow value was set before this modal opened
+        // (rather than hard-resetting to ''), so a modal stacked on top of
+        // another dialog (e.g. VisitDetailsPanel's own scroll-lock) doesn't
+        // clobber the dialog underneath back into a scrollable state.
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
         return () => {
             document.removeEventListener('keydown', onKey);
-            document.body.style.overflow = '';
+            document.body.style.overflow = previousOverflow;
         };
     }, [open, onCancel]);
 

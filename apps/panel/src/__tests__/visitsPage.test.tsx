@@ -355,6 +355,111 @@ describe('VisitsPage', () => {
         expect(detailsButton).toHaveFocus();
     });
 
+    it('Escape while the cancel confirm modal is open closes only the modal, not the panel underneath (Z10a)', async () => {
+        const apiFetch = messagesApiFetch(() => {
+            throw new Error('unexpected call');
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        const detailsButton = within(row).getByRole('button', {
+            name: 'Szczegóły',
+        });
+        fireEvent.click(detailsButton);
+
+        const panelDialog = await screen.findByRole('dialog', {
+            name: 'Strzyżenie damskie',
+        });
+        fireEvent.click(
+            within(panelDialog).getByRole('button', { name: 'Anuluj' }),
+        );
+        await screen.findByRole('dialog', { name: 'Anuluj wizytę' });
+
+        // The panel's own ESC handler must be suspended while the confirm
+        // modal is stacked on top — otherwise this single Escape closes
+        // BOTH dialogs instead of just the one on top.
+        fireEvent.keyDown(document, { key: 'Escape' });
+
+        await waitFor(() => {
+            expect(
+                screen.queryByRole('dialog', { name: 'Anuluj wizytę' }),
+            ).not.toBeInTheDocument();
+        });
+        expect(
+            screen.getByRole('dialog', { name: 'Strzyżenie damskie' }),
+        ).toBeInTheDocument();
+
+        // With the modal gone, the panel's ESC handler resumes — a second
+        // Escape now closes the panel itself.
+        fireEvent.keyDown(document, { key: 'Escape' });
+        await waitFor(() => {
+            expect(
+                screen.queryByRole('dialog', { name: 'Strzyżenie damskie' }),
+            ).not.toBeInTheDocument();
+        });
+        expect(detailsButton).toHaveFocus();
+    });
+
+    it('re-anchors focus on the "Szczegóły" trigger in its new section after cancelling moves the row (Z10b)', async () => {
+        let cancelled = false;
+        const apiFetch = jest.fn(async (path: string, init?: RequestInit) => {
+            if (path === '/dashboard/client/visits') {
+                return cancelled
+                    ? VISITS.map((v) =>
+                          v.id === 1 ? { ...v, status: 'cancelled' } : v,
+                      )
+                    : VISITS;
+            }
+            if (/^\/appointments\/\d+\/messages$/.test(path) && !init?.method)
+                return [];
+            if (path === '/appointments/1/cancel' && init?.method === 'PATCH') {
+                cancelled = true;
+                return {};
+            }
+            throw new Error(`unexpected ${path} ${init?.method ?? 'GET'}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(within(row).getByRole('button', { name: 'Szczegóły' }));
+
+        const dialog = await screen.findByRole('dialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Anuluj' }));
+        const confirmDialog = await screen.findByRole('dialog', {
+            name: 'Anuluj wizytę',
+        });
+        fireEvent.click(
+            within(confirmDialog).getByRole('button', {
+                name: 'Anuluj wizytę',
+            }),
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        // The visit moved from "Nadchodzące" to "Anulowane i nieodbyte" —
+        // its row (and the "Szczegóły" button inside it) remounted in a
+        // brand new section. Focus must follow it there, never fall to
+        // <body> just because the original element it was restored to no
+        // longer exists in that spot.
+        const cancelledSection = screen
+            .getByRole('heading', { name: /Anulowane i nieodbyte/ })
+            .closest('section')!;
+        const newRow = within(cancelledSection)
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        expect(
+            within(newRow).getByRole('button', { name: 'Szczegóły' }),
+        ).toHaveFocus();
+    });
+
     it('opens the details panel directly from a ?visitId= deep link', async () => {
         mockRouterQuery = { visitId: '2' };
         const apiFetch = messagesApiFetch(() => {
