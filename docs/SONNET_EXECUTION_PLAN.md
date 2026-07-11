@@ -172,7 +172,7 @@ Znalezione bugi: fix + wpis do active-context (wzorzec: sesje 07-08/07-09).
 
 ---
 
-### Z7. Klient: szczegóły wizyty w wysuwanym panelu bocznym (redesign UX) 🔴 PRIORYTET
+### Z7. ✅ DONE 2026-07-11 — Klient: szczegóły wizyty w wysuwanym panelu bocznym (redesign UX)
 
 **Motywacja (feedback ownera, 2026-07-10, cytat):** „nie podoba mi się lista
 wizyt i te rozwijane treści; jak próbuję dodać wiadomość do usługi jako
@@ -209,7 +209,7 @@ staje się pełnoekranowym arkuszem.
   `/visits?visitId=N` (panel otworzy się sam) — bez zmian kontraktu.
 - Brand: czerń/biel/srebro, animacja transform 0.2-0.3s (respektować
   prefers-reduced-motion), zero niebieskiego.
-- CSS: nowe klasy `visit-details-panel*` w salon-shell.css; mobile-first.
+- CSS: nowe klasy `visit-details-panel*` w dedykowanym `visit-details-panel.css` (nie w dużym salon-shell.css); mobile-first.
 
 **Akceptacja:** testy jednostkowe: (a) otwarcie panelu z wiersza i przez
 `?visitId`, (b) focus na nagłówku po otwarciu, (c) focus na textarea po
@@ -312,7 +312,7 @@ naprawy czysto frontendowe; pełna suita zielona.
 ## 5. Definicja ukończenia projektu (checklista GO)
 
 - [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
-- [ ] Z7 — szczegóły wizyty klienta w panelu bocznym (decyzja ownera 2026-07-10)
+- [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Z8 — wizualno-funkcjonalny sweep wszystkich widoków per rola + raport
 - [ ] Z9 — audyt focus/scroll po akcjach klienta
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
