@@ -1,73 +1,35 @@
-# Calendar Flow Spec (Versum-Compatible Embed)
+# Calendar Flow Spec (Native React Calendar)
 
-Last updated: 2026-02-04
+Last updated: 2026-07-12
 
 ## Runtime Entry
 
 1. User opens `/calendar`.
-2. Next.js page `apps/panel/src/pages/calendar.tsx` fetches `/api/calendar-embed`.
-3. The page writes the returned vendored HTML into `document` (direct embed; no iframe).
-4. Vendored scripts call compat endpoints on the same origin:
-   - `/events/*`
-   - `/settings/timetable/schedules/*`
-   - `/graphql`
-   - `/track_new_events.json`
-   - `/salonblackandwhite/*` compatibility aliases (rewritten to local routes)
+2. Next.js renders `apps/panel/src/pages/calendar.tsx` through `RouteGuard` and `SalonShell`.
+3. Calendar data is loaded by `apps/panel/src/hooks/useCalendar.ts` from `/api/calendar/events` and `/api/calendar/time-blocks`.
+4. Appointment details and mutations use canonical `/api/appointments/*` endpoints.
 
 ## Output Contract
 
 Current verified contract in repo:
 
-- `/calendar` does not render a React container for the vendored runtime.
-- `apps/panel/src/pages/calendar.tsx` replaces the whole document using:
-  - `document.open()`
-  - `document.write(html)`
-  - `document.close()`
-- `apps/panel/src/pages/api/calendar-embed.ts` therefore returns a full HTML document, not a JSX fragment and not a partial body by default.
-- The handler injects runtime config and auth interception into the returned document before `</head>`.
+- `/calendar` renders a native React page with responsive day, week, month and reception views.
+- `CalendarView`, `ReceptionView` and `StaffAppointmentCalendarView` own the main calendar presentation.
+- React Query hooks own loading, retry and cache invalidation for calendar data.
 
-Verified consequences:
+## Navigation State
 
-- script ordering in the returned HTML matters;
-- `<head>` content is part of the runtime contract;
-- a refactor that serializes only `#main-content` is not behaviorally equivalent unless it deliberately reconstructs required scripts/styles.
-
-## PJAX Status
-
-Current verified state in repo:
-
-- the in-repo `/calendar` page does not send an `x-pjax` header when fetching `/api/calendar-embed`;
-- no active in-repo caller was found that requests `/api/calendar-embed` as a PJAX fragment;
-- the live Versum panel uses PJAX inside some modules such as customer-list pagination, but this was not observed for calendar HTML embedding.
-
-Current implementation detail:
-
-- `apps/panel/src/pages/api/calendar-embed.ts` no longer contains a PJAX-specific response branch;
-- the handler always returns a full HTML document with runtime config and auth interception injected into `<head>`.
-
-Implication:
-
-- calendar embed should be treated as full-document runtime only unless a real calendar caller requiring PJAX HTML is identified and specified.
+The native calendar does not use a document rewrite or PJAX embed. Route changes are synchronized through `useCalendarUrlSync`, and data requests are scoped to the selected date, view and employees.
 
 ## Routing / Proxy
 
-`apps/panel/next.config.mjs` rewrites:
+Legacy Versum aliases are retained only for compatibility and are not used by the native calendar runtime.
 
-- `/salonblackandwhite/events/:path*` -> `/api/events/:path*`
-- `/salonblackandwhite/settings/timetable/schedules/:path*` -> `/api/settings/timetable/schedules/:path*`
-- `/salonblackandwhite/track_new_events.json` -> `/api/track_new_events.json`
-- `/salonblackandwhite/graphql` -> `/api/graphql`
-- `/events/:path*` -> `/api/events/:path*`
-- `/settings/timetable/schedules/:path*` -> `/api/settings/timetable/schedules/:path*`
-- `/track_new_events.json` -> `/api/track_new_events.json`
-- `/graphql` -> `/api/graphql`
+Canonical requests go through `/api/*`, which proxies to the backend API host via `apps/panel/src/pages/api/[...path].ts`.
 
-`/api/*` then proxies to backend API host via `apps/panel/src/pages/api/[...path].ts`.
+## Legacy Versum Compatibility Endpoints
 
-Embed HTML is served by:
-- `apps/panel/src/pages/api/calendar-embed.ts` (reads `apps/panel/public/versum-calendar/index.html` and injects runtime config)
-
-## Backend Compat Endpoints
+The following endpoints are retained for legacy clients and old captures. They are not called by the native React calendar described above.
 
 Controller: `backend/salonbw-backend/src/versum-compat/versum-compat.controller.ts`
 Service: `backend/salonbw-backend/src/versum-compat/versum-compat.service.ts`
@@ -141,7 +103,7 @@ Response:
 - Event IDs:
   - `id` in feed mapped to `"<appointmentId>_<serviceRefId>"`
 
-## Capture Handling
+## Legacy Capture Handling
 
 - Raw captures are not committed (privacy cleanup).
-- During parity verification, save temporary captures under `output/playwright/versum-calendar/`.
+- During any legacy parity verification, save temporary captures under `output/playwright/versum-calendar/`.

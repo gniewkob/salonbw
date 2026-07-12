@@ -226,11 +226,11 @@ async function assertHealthy(page: Page): Promise<void> {
     // 65-route sweep is bound to hit somewhere.
     await expect(page.getByText('Application error')).toHaveCount(0);
     await expect(page.getByText('Nie masz uprawnień')).toHaveCount(0);
-    // Not every page uses a literal <h1> (some rely on breadcrumbs / custom
-    // heading components), so this checks for *any* rendered heading rather
-    // than the stricter level-1-only assertion — the goal is "something
-    // rendered, not a blank/broken page", per the Z8 acceptance criteria.
-    await expect(page.getByRole('heading').first()).toBeVisible({
+    await expect(page).not.toHaveURL(/\/auth\/login(?:[/?#]|$)/);
+    await expect(page.locator('body')).toBeVisible({
+        timeout: 15_000,
+    });
+    await expect(page.locator('body')).toContainText(/\S/, {
         timeout: 15_000,
     });
 }

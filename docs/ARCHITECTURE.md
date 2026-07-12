@@ -40,14 +40,14 @@
 
 1. **No `/salonblackandwhite/` prefix needed** - All routes are direct (e.g., `/clients`, `/calendar`, `/products`).
 2. **Simplified routing** - `next.config.mjs` no longer contains `/salonblackandwhite/*` rewrites.
-3. **Vendored calendar compatibility** - The calendar HTML (`public/versum-calendar/`) has navigation links updated to use clean paths (`/clients`, `/calendar`, etc.).
-4. **Unified navbar** - Both vendored calendar and React modules use the same Versum CSS and HTML structure for consistent UI.
+3. **Native calendar** - `/calendar` is rendered by `apps/panel/src/pages/calendar.tsx` and uses native React calendar components and canonical API routes.
+4. **Compatibility aliases** - Legacy Versum paths remain only where needed for old bookmarks or external integrations; they are not the calendar runtime.
 
 ### URL Structure
 
 | Route            | Description                          |
 | ---------------- | ------------------------------------ |
-| `/calendar`      | Calendar view (vendored Versum HTML) |
+| `/calendar`      | Native React calendar view |
 | `/clients`       | Customer management                  |
 | `/products`      | Inventory/warehouse                  |
 | `/statistics`    | Reports and analytics                |

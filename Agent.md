@@ -10,7 +10,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - Backend API: `https://api.salon-bw.pl`
 - All frontends talk to the same API; auth happens on panel, customer-facing stays on dev/public.
 - Panel admin canonical modules: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension` (legacy `/admin/*` routes are aliases/redirects).
-- Calendar route (`/calendar`) is a vendored Versum runtime embed (`apps/panel/public/versum-calendar/index.html`) and relies on backend compat endpoints (`/events/*`, `/settings/timetable/schedules/*`, `/graphql`, `/track_new_events.json`) proxied through panel rewrites; legacy `/salonblackandwhite/*` paths are rewritten to local routes for runtime compatibility.
+- Calendar route (`/calendar`) is the native React calendar in `apps/panel/src/pages/calendar.tsx`; it uses the canonical `/api/calendar/*` and `/api/appointments/*` endpoints. Legacy Versum paths remain only as compatibility aliases where still required.
 
 ## 2. Deployments (preferred)
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).

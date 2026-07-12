@@ -137,6 +137,14 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             Promise<void>,
             [string, string, string, string, string]
         >(() => Promise.resolve()),
+        sendNewBookingToEmployee: jest.fn<
+            Promise<void>,
+            [string, string, string, string, string]
+        >(() => Promise.resolve()),
+        sendRescheduleNotification: jest.fn<
+            Promise<void>,
+            [string, string, string]
+        >(() => Promise.resolve()),
         sendReminder: jest.fn<Promise<void>, [string, string, string]>(),
         sendFollowUp: jest.fn<Promise<void>, [string, string, string]>(() =>
             Promise.resolve(),

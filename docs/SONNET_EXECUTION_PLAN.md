@@ -489,7 +489,7 @@ ew. literówkami (z testem, jeśli dotyczy logiki).
 - [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); Część B = Z12
 - [x] Z10 — fixy po review Fable (Z7/Z9: kolizja dialogów, focus po cancel, auto-scroll wątku, drobne) — DONE 2026-07-11
 - [x] Z11 — fixy spec Z8 (timeouty, zrzut przed asercjami, strict-mode) — DONE 2026-07-11
-- [ ] **MERGE PR #1419** (decyzja ownera — branch gotowy, 2. przegląd Fable czysty, CI zielone)
+- [x] **MERGE PR #1419** (zmergowany do `master`, commit `ac280795`, 2026-07-12)
 - [ ] Z12 — po merge: weryfikacja deployu+regression na masterze → dispatch sweepa → przegląd KAŻDEGO zrzutu → raport 🔴/🟡/🎨 w Backlogu
 - [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)

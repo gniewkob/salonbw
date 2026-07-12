@@ -60,11 +60,8 @@ and other agents should read it directly.
 - Admin: apps/admin (exists in workflows; treat as separate deployable)
 
 Panel calendar runtime note:
-- `/calendar` is served from vendored Versum assets (`apps/panel/public/versum-calendar/index.html`) and uses panel rewrites for compat paths:
-  - `/events/*`
-  - `/settings/timetable/schedules/*`
-  - `/graphql`
-  - `/track_new_events.json`
+- `/calendar` is the native React calendar in `apps/panel/src/pages/calendar.tsx`.
+- It uses canonical `/api/calendar/*` and `/api/appointments/*` endpoints; legacy Versum paths are compatibility aliases only.
 
 Panel canonical admin routes:
 - `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`
