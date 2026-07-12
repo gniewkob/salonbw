@@ -398,6 +398,61 @@ odpali dispatch.
 zmian; wpis w active-context. Po merge PR #1419: dispatch → artifact →
 przegląd zrzutów → raport (Z8 Część B wg treści zadania Z8).
 
+### Z12. PO merge PR #1419 — weryfikacja deployu + Z8 Część B (sweep i raport)
+
+**Warunek wstępny:** owner mergeuje PR #1419 do mastera (draft → ready →
+merge = decyzja ownera, NIE Sonneta). Wszystko poniżej dzieje się DOPIERO
+po merge. Drugi przegląd Fable (2026-07-11) potwierdził: branch gotowy,
+CI zielone, 325/325, dwa latentne edge-case'y z przeglądu domknięte
+commitem `10813fa`.
+
+**Krok 1 — weryfikacja deployu (rytuał sekcji 0, ale jawnie):**
+- Push na master odpala `Deploy (MyDevil)` automatycznie. Musi być
+  `success` — jeśli `failure`, diagnoza deployu ma pierwszeństwo przed
+  wszystkim innym (wzorce awarii: kolumna encji bez `type:`, migracje;
+  historia w active-context).
+- Po deployu: `E2E Playwright Regression` też odpala się na push
+  (paths: `apps/panel/src/**`) i bije w ŻYWY prod. Musi być zielony —
+  zawiera nowy test Z7 „clicking Szczegóły opens the visit details panel
+  as a dialog" (visits-client.spec.ts), czyli PIERWSZY realny bieg panelu
+  bocznego na prawdziwym Chromium przeciw produkcji. Jeśli ten test padnie
+  na świeżo wdrożonym kodzie — to realny bug do diagnozy (trace artifact),
+  nie „transient".
+
+**Krok 2 — Z8 Część B (sedno zadania):**
+- Dispatch `e2e-visual-sweep.yml` (ref=master; przez
+  `mcp__github__actions_run_trigger` method=run_workflow albo UI).
+  Po merge plik jest na domyślnej gałęzi, więc 404 z pierwszej próby
+  już nie wystąpi.
+- Po zakończeniu runu pobrać artifact `visual-sweep-screenshots`
+  (`actions_list` method=list_workflow_run_artifacts →
+  `actions_get` method=download_workflow_run_artifact) i obejrzeć
+  KAŻDY zrzut (Read na plikach .png).
+- Znaleziska spisać do `.claude/rules/active-context.md` (Backlog) w
+  trzech koszykach: 🔴 bug funkcjonalny / 🟡 UX (gdzie ląduje focus,
+  spójność modal-vs-panel-vs-inline, nadmiarowe kroki) / 🎨 wizualny
+  (odstępy, kontrast, resztki niebieskiego, ucięte teksty, h-scroll na
+  390px). Każde znalezisko: trasa + rola + viewport + nazwa pliku zrzutu.
+  KAŻDY widok odhaczony (może być „brak uwag").
+- **NIE naprawiać niczego poza oczywistymi literówkami** — najpierw
+  pełna lista, potem priorytetyzacja z ownerem/leadem.
+- Jeśli sweep failuje mimo utwardzenia Z11: diagnoza per test (trace
+  artifact z `visual-sweep-traces`), fix W SPEC (nie w workflow bez
+  potrzeby), ponowny dispatch. Zrzuty z failującego runu i tak są w
+  artefakcie (Z11 przeniósł screenshot przed asercje) — przegląd można
+  zacząć równolegle z naprawą.
+
+**Uwaga (opcjonalna, zgłosić ownerowi):** sweep employee odpali się
+tylko gdy w repo istnieją sekrety `E2E_EMPLOYEE_EMAIL`/`PASSWORD`.
+Konto testowe pracownika ISTNIEJE (`test.pracownik@salon-bw.pl`,
+utworzone 2026-06-23, role=employee) — dodanie sekretów to zadanie
+ownera; bez nich sweep admin+client i tak jest kompletny.
+
+**Akceptacja Z12:** Deploy success + regression zielony na masterze;
+run sweepa zakończony; wpis w Backlogu z odhaczonymi WSZYSTKIMI widokami
+i skategoryzowanymi znaleziskami; żadnych zmian w kodzie panelu poza
+ew. literówkami (z testem, jeśli dotyczy logiki).
+
 ## 3. Zadania POZA zakresem Sonneta (nie ruszać)
 
 | Zadanie | Dlaczego poza zakresem | Kto |
@@ -431,9 +486,11 @@ przegląd zrzutów → raport (Z8 Część B wg treści zadania Z8).
 
 - [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
 - [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
-- [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); [ ] Część B — dispatch + przegląd zrzutów + raport w Backlogu (po merge PR #1419)
+- [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); Część B = Z12
 - [x] Z10 — fixy po review Fable (Z7/Z9: kolizja dialogów, focus po cancel, auto-scroll wątku, drobne) — DONE 2026-07-11
 - [x] Z11 — fixy spec Z8 (timeouty, zrzut przed asercjami, strict-mode) — DONE 2026-07-11
+- [ ] **MERGE PR #1419** (decyzja ownera — branch gotowy, 2. przegląd Fable czysty, CI zielone)
+- [ ] Z12 — po merge: weryfikacja deployu+regression na masterze → dispatch sweepa → przegląd KAŻDEGO zrzutu → raport 🔴/🟡/🎨 w Backlogu
 - [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
