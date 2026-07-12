@@ -1,8 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    forwardRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import PanelButton from '@/components/ui/PanelButton';
 
-interface AppointmentMessage {
+export interface AppointmentMessage {
     id: number;
     appointmentId: number;
     authorId: number | null;
@@ -11,8 +19,15 @@ interface AppointmentMessage {
     createdAt: string;
 }
 
+export interface MessageThreadHandle {
+    /** Scrolls the compose textarea into view and focuses it. */
+    focusCompose: () => void;
+}
+
 interface Props {
     appointmentId: number;
+    /** Fires whenever the thread (re)loads, with the current message list. */
+    onThreadLoaded?: (messages: AppointmentMessage[]) => void;
 }
 
 function formatTime(isoString: string): string {
@@ -22,7 +37,10 @@ function formatTime(isoString: string): string {
     });
 }
 
-export default function MessageThread({ appointmentId }: Props) {
+function MessageThread(
+    { appointmentId, onThreadLoaded }: Props,
+    ref: React.Ref<MessageThreadHandle>,
+) {
     const { apiFetch, role } = useAuth();
     const toast = useToast();
     const [messages, setMessages] = useState<AppointmentMessage[] | null>(null);
@@ -31,15 +49,30 @@ export default function MessageThread({ appointmentId }: Props) {
     const [sending, setSending] = useState(false);
     const textareaId = `msg-thread-body-${appointmentId}`;
     const bottomRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const focusPendingRef = useRef(false);
+    // Gates the very first load of a thread out of auto-scroll.
+    // Before Z7, MessageThread only mounted once a user explicitly expanded
+    // it, so scrolling to the bottom on load was the point. Now it mounts
+    // immediately inside VisitDetailsPanel, so a visit with existing
+    // messages would otherwise yank the panel's scroll position to the
+    // bottom of the thread the instant it opens, fighting the "focus on
+    // the panel heading" behavior. Reset per-thread (not just once ever)
+    // so switching to a different visit's thread skips its first load too.
+    const initialLoadDoneRef = useRef(false);
 
     const loadMessages = useCallback(() => {
         setLoading(true);
         apiFetch<AppointmentMessage[]>(
             `/appointments/${appointmentId}/messages`,
         )
-            .then((data) => setMessages(data))
+            .then((data) => {
+                setMessages(data);
+                onThreadLoaded?.(data);
+            })
             .catch(() => toast.error('Nie udało się pobrać wiadomości.'))
             .finally(() => setLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiFetch, appointmentId, toast]);
 
     useEffect(() => {
@@ -47,10 +80,43 @@ export default function MessageThread({ appointmentId }: Props) {
     }, [loadMessages]);
 
     useEffect(() => {
-        if (messages && messages.length > 0) {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        initialLoadDoneRef.current = false;
+    }, [appointmentId]);
+
+    useEffect(() => {
+        if (!messages) return;
+        // Consume the first-load skip on ANY load, including an empty one —
+        // otherwise an initially-empty thread's post-send reload would be
+        // the "first non-empty load" and swallow the scroll the user's own
+        // send should produce.
+        if (!initialLoadDoneRef.current) {
+            initialLoadDoneRef.current = true;
+            return;
         }
+        if (messages.length === 0) return;
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // The textarea is `disabled` while sending, so a synchronous
+    // .focus() call right after the API resolves is a no-op (disabled
+    // elements can't take focus). Defer it to the render where `sending`
+    // has actually flipped back to false and the DOM is enabled again.
+    useEffect(() => {
+        if (!sending && focusPendingRef.current) {
+            focusPendingRef.current = false;
+            textareaRef.current?.focus();
+        }
+    }, [sending]);
+
+    useImperativeHandle(ref, () => ({
+        focusCompose: () => {
+            textareaRef.current?.scrollIntoView({
+                block: 'center',
+                behavior: 'smooth',
+            });
+            textareaRef.current?.focus();
+        },
+    }));
 
     const sendMessage = async () => {
         const trimmed = body.trim();
@@ -67,6 +133,13 @@ export default function MessageThread({ appointmentId }: Props) {
         } catch {
             toast.error('Nie udało się wysłać wiadomości. Spróbuj ponownie.');
         } finally {
+            // Sending is button-triggered — return focus to the textarea so
+            // the client can keep typing without hunting for the field
+            // again, on both success AND failure (a failed send leaves the
+            // draft in place, ready to retry). Deferred to the post-send
+            // effect: the textarea is still `disabled` here, and disabled
+            // elements refuse focus().
+            focusPendingRef.current = true;
             setSending(false);
         }
     };
@@ -144,6 +217,7 @@ export default function MessageThread({ appointmentId }: Props) {
                 </label>
                 <textarea
                     id={textareaId}
+                    ref={textareaRef}
                     className="form-control form-control-sm"
                     rows={2}
                     maxLength={2000}
@@ -159,17 +233,20 @@ export default function MessageThread({ appointmentId }: Props) {
                     disabled={sending}
                 />
                 <div className="d-flex justify-content-end mt-1">
-                    <button
+                    <PanelButton
                         type="button"
-                        className="btn btn-sm btn-primary"
+                        size="sm"
+                        variant="primary"
                         disabled={!body.trim() || sending}
                         aria-busy={sending}
                         onClick={() => void sendMessage()}
                     >
                         {sending ? 'Wysyłanie…' : 'Wyślij'}
-                    </button>
+                    </PanelButton>
                 </div>
             </div>
         </div>
     );
 }
+
+export default forwardRef(MessageThread);

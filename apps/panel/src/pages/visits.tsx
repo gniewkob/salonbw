@@ -1,38 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import ConfirmModal from '@/components/ConfirmModal';
-import ClientAppointmentActions, {
-    CLIENT_ARCHIVE_STATUSES,
-    CLIENT_CANCELLABLE_STATUSES,
-} from '@/components/client/ClientAppointmentActions';
+import { CLIENT_ARCHIVE_STATUSES } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
-import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
+import VisitDetailsPanel, {
+    type VisitDetailsPanelVisit,
+} from '@/components/client/VisitDetailsPanel';
 import VisitNotes from '@/components/client/VisitNotes';
 import StarRating from '@/components/StarRating';
-import MessageThread from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import PanelButton from '@/components/ui/PanelButton';
+import StatusBadge from '@/components/ui/StatusBadge';
+import {
+    appointmentStatusLabel,
+    appointmentStatusTone,
+} from '@/lib/appointmentStatus';
 
-interface ClientVisit {
-    id: number;
-    startTime: string;
+interface ClientVisit extends VisitDetailsPanelVisit {
     endTime: string;
-    reschedulePreviousStartTime?: string | null;
     reschedulePreviousEndTime?: string | null;
-    status: string;
-    serviceId: number;
-    serviceName: string;
-    employeeName: string;
-    clientComment?: string | null;
-    staffRecommendations?: string | null;
-    onlineAddonsSummary?: string | null;
-    onlineTotalDurationMinutes?: number | null;
-    onlineDurationNeedsVerification?: boolean;
     review: { id: number; rating: number; comment: string | null } | null;
 }
 
@@ -137,27 +128,18 @@ function ReviewForm({ visit, onSaved }: ReviewFormProps) {
 
 function VisitRow({
     visit,
-    onCancel,
-    onAccept,
     onOpen,
     onRefetch,
-    expanded,
-    cancelling,
-    accepting,
+    isOpen,
 }: {
     visit: ClientVisit;
-    onCancel: (id: number) => void;
-    onAccept: (id: number) => void;
     onOpen: (id: number) => void;
     onRefetch: () => void;
-    expanded: boolean;
-    cancelling: boolean;
-    accepting: boolean;
+    isOpen: boolean;
 }) {
     const { apiFetch } = useAuth();
     const toast = useToast();
     const [changingReview, setChangingReview] = useState(false);
-    const [messagesOpen, setMessagesOpen] = useState(false);
 
     const removeReview = async () => {
         if (!visit.review) return;
@@ -176,15 +158,20 @@ function VisitRow({
     const isFuture = new Date(visit.startTime).getTime() > Date.now();
     const isPastUnresolved = isPastUnresolvedVisit(visit, isFuture);
     const displayStatus = isPastUnresolved ? 'no_show' : visit.status;
-    const canAskForNewTime =
-        isFuture && !CLIENT_ARCHIVE_STATUSES.has(visit.status);
+
+    const openDetails = (event: React.MouseEvent<HTMLElement>) => {
+        // Focus the trigger explicitly (deterministic across browsers/tests)
+        // so the panel can restore focus here when it closes.
+        event.currentTarget.focus();
+        onOpen(visit.id);
+    };
 
     return (
         <div
             id={`visit-${visit.id}`}
             className={[
                 'salonbw-appointment-item',
-                expanded ? 'salonbw-appointment-item--expanded' : '',
+                isOpen ? 'salonbw-appointment-item--expanded' : '',
             ]
                 .filter(Boolean)
                 .join(' ')}
@@ -193,7 +180,8 @@ function VisitRow({
                 <button
                     type="button"
                     className="salonbw-appointment-item__title-button"
-                    onClick={() => onOpen(visit.id)}
+                    aria-haspopup="dialog"
+                    onClick={openDetails}
                 >
                     {visit.serviceName}
                 </button>
@@ -218,12 +206,6 @@ function VisitRow({
                         onlineDurationNeedsVerification={
                             visit.onlineDurationNeedsVerification
                         }
-                    />
-                )}
-                {visit.status === 'rescheduled_pending' && (
-                    <RescheduleChangeNotice
-                        previousStartTime={visit.reschedulePreviousStartTime}
-                        newStartTime={visit.startTime}
                     />
                 )}
                 {isCompleted && visit.review && !changingReview && (
@@ -253,121 +235,22 @@ function VisitRow({
                     />
                 )}
             </div>
-            <ClientAppointmentActions
-                status={displayStatus}
-                serviceId={visit.serviceId}
-                accepting={accepting}
-                cancelling={cancelling}
-                canAccept={isFuture && visit.status === 'rescheduled_pending'}
-                canCancel={
-                    isFuture && CLIENT_CANCELLABLE_STATUSES.has(visit.status)
-                }
-                showRebook={
-                    CLIENT_ARCHIVE_STATUSES.has(visit.status) ||
-                    isPastUnresolved
-                }
-                onAccept={() => onAccept(visit.id)}
-                onCancel={() => onCancel(visit.id)}
-            />
-
+            <StatusBadge tone={appointmentStatusTone(displayStatus)}>
+                {appointmentStatusLabel(displayStatus)}
+            </StatusBadge>
             <PanelButton
                 type="button"
                 size="sm"
                 variant="secondary"
-                aria-expanded={expanded}
-                aria-controls={`visit-details-${visit.id}`}
-                onClick={() => onOpen(visit.id)}
+                aria-haspopup="dialog"
+                // Z10b: a stable hook for imperative re-focus after an
+                // action (e.g. cancel) moves this row to a different
+                // section and remounts it — see the `visits` effect below.
+                className="salonbw-appointment-item__details-trigger"
+                onClick={openDetails}
             >
-                {expanded ? 'Zwiń szczegóły' : 'Otwórz szczegóły'}
+                Szczegóły
             </PanelButton>
-
-            <div className="salonbw-appointment-item__messages">
-                {expanded && (
-                    <div
-                        id={`visit-details-${visit.id}`}
-                        className="salonbw-appointment-item__message-panel"
-                    >
-                        <div className="visit-details-grid">
-                            <div>
-                                <div className="visit-details-label">
-                                    Notatki i zalecenia
-                                </div>
-                                <VisitNotes
-                                    appointmentStatus={visit.status}
-                                    clientComment={visit.clientComment}
-                                    staffRecommendations={
-                                        visit.staffRecommendations
-                                    }
-                                    onlineAddonsSummary={
-                                        visit.onlineAddonsSummary
-                                    }
-                                    onlineTotalDurationMinutes={
-                                        visit.onlineTotalDurationMinutes
-                                    }
-                                    onlineDurationNeedsVerification={
-                                        visit.onlineDurationNeedsVerification
-                                    }
-                                />
-                            </div>
-                            <div>
-                                <div className="visit-details-label">
-                                    Co możesz zrobić
-                                </div>
-                                <div className="visit-details-actions">
-                                    {canAskForNewTime ? (
-                                        <PanelButton
-                                            type="button"
-                                            size="sm"
-                                            variant="secondary"
-                                            onClick={() =>
-                                                setMessagesOpen(true)
-                                            }
-                                        >
-                                            Poproś o zmianę terminu
-                                        </PanelButton>
-                                    ) : null}
-                                    {CLIENT_ARCHIVE_STATUSES.has(
-                                        visit.status,
-                                    ) ? (
-                                        <PanelButton
-                                            href={`/booking?serviceId=${visit.serviceId}`}
-                                            size="sm"
-                                            variant="secondary"
-                                        >
-                                            Umów ponownie
-                                        </PanelButton>
-                                    ) : null}
-                                    <PanelButton
-                                        type="button"
-                                        size="sm"
-                                        variant="ghost"
-                                        aria-expanded={messagesOpen}
-                                        aria-controls={`messages-panel-${visit.id}`}
-                                        onClick={() =>
-                                            setMessagesOpen((v) => !v)
-                                        }
-                                    >
-                                        {messagesOpen
-                                            ? 'Ukryj wiadomości'
-                                            : 'Dodaj wiadomość'}
-                                    </PanelButton>
-                                </div>
-                            </div>
-                        </div>
-                        {canAskForNewTime && messagesOpen ? (
-                            <p className="visit-details-hint">
-                                Napisz, jaki dzień lub zakres godzin pasuje Ci
-                                lepiej. Salon odpowie w tym wątku.
-                            </p>
-                        ) : null}
-                        {messagesOpen && (
-                            <div id={`messages-panel-${visit.id}`}>
-                                <MessageThread appointmentId={visit.id} />
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
         </div>
     );
 }
@@ -382,6 +265,14 @@ export default function VisitsPage() {
     const [cancelling, setCancelling] = useState<Set<number>>(new Set());
     const [accepting, setAccepting] = useState<Set<number>>(new Set());
     const [openVisitId, setOpenVisitId] = useState<number | null>(null);
+    const pageHeadingRef = useRef<HTMLHeadingElement>(null);
+    // Z10b: cancelling closes the panel and restores focus to the row's
+    // "Szczegóły" trigger — but the subsequent refetch can move that visit
+    // into a different section (e.g. "Nadchodzące" → "Anulowane"), which
+    // remounts the row and silently drops focus to <body>. Set this right
+    // before refetching; the effect below re-anchors focus once the new
+    // section has rendered.
+    const pendingFocusVisitIdRef = useRef<number | null>(null);
 
     const load = useCallback(() => {
         apiFetch<ClientVisit[]>('/dashboard/client/visits')
@@ -389,8 +280,36 @@ export default function VisitsPage() {
                 setVisits(data);
                 setError(false);
             })
-            .catch(() => setError(true));
+            .catch(() => {
+                // The pending re-anchor is armed for THIS refetch only —
+                // if it fails, `visits` never changes, the row never moves,
+                // and focus is already fine where the panel restored it.
+                // Left armed, it would fire on the next unrelated reload
+                // (e.g. after saving a review) and yank focus to the
+                // cancelled visit's row out of nowhere.
+                pendingFocusVisitIdRef.current = null;
+                setError(true);
+            });
     }, [apiFetch]);
+
+    useEffect(() => {
+        const pendingId = pendingFocusVisitIdRef.current;
+        if (pendingId === null || visits === null) return;
+        pendingFocusVisitIdRef.current = null;
+        const trigger = document
+            .getElementById(`visit-${pendingId}`)
+            ?.querySelector<HTMLElement>(
+                '.salonbw-appointment-item__details-trigger',
+            );
+        if (trigger) {
+            trigger.focus();
+        } else {
+            // The visit may have left the list entirely (or the DOM hasn't
+            // settled) — fall back to the page heading rather than letting
+            // focus silently land on <body>.
+            pageHeadingRef.current?.focus();
+        }
+    }, [visits]);
 
     useEffect(() => {
         if (role === 'client') {
@@ -404,32 +323,27 @@ export default function VisitsPage() {
             typeof rawVisitId === 'string' ? Number(rawVisitId) : NaN;
         if (Number.isFinite(parsedVisitId) && parsedVisitId > 0) {
             setOpenVisitId(parsedVisitId);
-            window.setTimeout(() => {
-                document
-                    .getElementById(`visit-${parsedVisitId}`)
-                    ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            }, 0);
         }
     }, [router.query.visitId]);
 
     const openVisit = (id: number) => {
-        setOpenVisitId((current) => {
-            const next = current === id ? null : id;
-            void router.replace(
-                next ? `/visits?visitId=${id}` : '/visits',
-                undefined,
-                {
-                    shallow: true,
-                },
-            );
-            return next;
+        setOpenVisitId(id);
+        void router.replace(`/visits?visitId=${id}`, undefined, {
+            shallow: true,
         });
+    };
+
+    const closeVisit = () => {
+        setOpenVisitId(null);
+        void router.replace('/visits', undefined, { shallow: true });
     };
 
     const cancelVisit = async (id: number) => {
         setCancelling((prev) => new Set(prev).add(id));
         try {
             await apiFetch(`/appointments/${id}/cancel`, { method: 'PATCH' });
+            closeVisit();
+            pendingFocusVisitIdRef.current = id;
             load();
         } catch {
             toast.error('Nie udało się anulować wizyty. Spróbuj ponownie.');
@@ -448,6 +362,7 @@ export default function VisitsPage() {
             await apiFetch(`/appointments/${id}/accept-reschedule`, {
                 method: 'PATCH',
             });
+            toast.success('Nowy termin zaakceptowany.');
             load();
         } catch {
             toast.error(
@@ -505,6 +420,9 @@ export default function VisitsPage() {
         },
     ];
 
+    const openVisitDetails =
+        (visits ?? []).find((v) => v.id === openVisitId) ?? null;
+
     return (
         <RouteGuard roles={['client']}>
             <Head>
@@ -512,7 +430,10 @@ export default function VisitsPage() {
             </Head>
             <SalonShell role={role}>
                 <div className="salonbw-dashboard">
-                    <ClientPageHeader title="Moje wizyty" />
+                    <ClientPageHeader
+                        title="Moje wizyty"
+                        titleRef={pageHeadingRef}
+                    />
 
                     {error && (
                         <div className="alert alert-warning" role="alert">
@@ -554,21 +475,11 @@ export default function VisitsPage() {
                                             <VisitRow
                                                 key={visit.id}
                                                 visit={visit}
-                                                onCancel={setConfirmCancelId}
-                                                onAccept={(id) =>
-                                                    void acceptReschedule(id)
-                                                }
                                                 onOpen={openVisit}
                                                 onRefetch={load}
-                                                expanded={
+                                                isOpen={
                                                     openVisitId === visit.id
                                                 }
-                                                cancelling={cancelling.has(
-                                                    visit.id,
-                                                )}
-                                                accepting={accepting.has(
-                                                    visit.id,
-                                                )}
                                             />
                                         ))
                                     )}
@@ -577,6 +488,23 @@ export default function VisitsPage() {
                         ))}
                 </div>
             </SalonShell>
+            <VisitDetailsPanel
+                visit={openVisitDetails}
+                onClose={closeVisit}
+                onAccept={(id) => void acceptReschedule(id)}
+                onCancel={setConfirmCancelId}
+                suspended={confirmCancelId !== null}
+                accepting={
+                    openVisitDetails
+                        ? accepting.has(openVisitDetails.id)
+                        : false
+                }
+                cancelling={
+                    openVisitDetails
+                        ? cancelling.has(openVisitDetails.id)
+                        : false
+                }
+            />
             <ConfirmModal
                 open={confirmCancelId !== null}
                 title="Anuluj wizytę"

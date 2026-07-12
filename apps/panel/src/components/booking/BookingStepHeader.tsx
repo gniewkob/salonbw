@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/20/solid';
 
 export interface BookingStepDefinition<TStep extends string> {
@@ -20,6 +21,23 @@ export default function BookingStepHeader<TStep extends string>({
     steps,
     onBack,
 }: BookingStepHeaderProps<TStep>) {
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    const isFirstRender = useRef(true);
+
+    // Move focus to the new step's heading on every transition (Z9) — but
+    // not on first mount, so we don't steal the page's initial landing
+    // focus from whatever the browser/router already set. Keyed on
+    // `current.key` (the real step), not `activeStep` — callers may alias
+    // a trailing step onto the same indicator position (e.g. "confirm"
+    // shown under the "slot" bullet) while the heading text still changes.
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        headingRef.current?.focus();
+    }, [current.key]);
+
     return (
         <div className="booking-step-header">
             <ol
@@ -61,7 +79,13 @@ export default function BookingStepHeader<TStep extends string>({
                     {current.backLabel}
                 </button>
             )}
-            <h2 className="booking-step-header__heading">{current.heading}</h2>
+            <h2
+                ref={headingRef}
+                tabIndex={-1}
+                className="booking-step-header__heading"
+            >
+                {current.heading}
+            </h2>
         </div>
     );
 }

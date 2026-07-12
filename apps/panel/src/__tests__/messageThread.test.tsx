@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import MessageThread from '@/components/messages/MessageThread';
+import MessageThread, {
+    type MessageThreadHandle,
+} from '@/components/messages/MessageThread';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
@@ -170,6 +172,37 @@ describe('MessageThread', () => {
             });
         });
 
+        it('clears the textarea and keeps focus in it after a successful send (Z9)', async () => {
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        return { id: 99 };
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+            const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+            fireEvent.change(textarea, {
+                target: { value: 'Hej, pytanie o wizytę.' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            await waitFor(() => {
+                expect(textarea.value).toBe('');
+            });
+            expect(textarea).toHaveFocus();
+        });
+
         it('disables Wyślij button when textarea is empty', async () => {
             const apiFetch = jest.fn(async () => []);
             setupClient(apiFetch);
@@ -188,6 +221,149 @@ describe('MessageThread', () => {
                 target: { value: 'Tekst' },
             });
             expect(btn).not.toBeDisabled();
+        });
+
+        it('keeps focus in the textarea after a failed send too (Z10d), so the draft is ready to retry', async () => {
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        throw new Error('network down');
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+            const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+            fireEvent.change(textarea, {
+                target: { value: 'Hej, pytanie o wizytę.' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            await waitFor(() => {
+                expect(stableToast.error).toHaveBeenCalled();
+            });
+            // The failed draft stays in the field (nothing was cleared) and
+            // focus returns to it — before this fix it stayed disabled
+            // just long enough that .focus() silently no-op'd, same class
+            // of bug as the success-path fix in Z9.
+            expect(textarea.value).toBe('Hej, pytanie o wizytę.');
+            expect(textarea).toHaveFocus();
+        });
+    });
+
+    describe('auto-scroll on load vs. on new activity (Z10c)', () => {
+        it('does not auto-scroll on the initial load, even with existing messages', async () => {
+            const apiFetch = jest.fn(async () => [MSG_STAFF, MSG_CLIENT]);
+            setupClient(apiFetch);
+
+            await screen.findByText('Salon');
+
+            expect(
+                window.HTMLElement.prototype.scrollIntoView,
+            ).not.toHaveBeenCalled();
+        });
+
+        it('scrolls after sending the first message into an initially-empty thread', async () => {
+            let sent = false;
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return sent ? [MSG_CLIENT] : [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        sent = true;
+                        return { id: 2 };
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Dzień dobry!' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            // The first-load skip must be consumed by the initial (empty)
+            // load — NOT by the post-send reload, which is the user's own
+            // new message arriving and should scroll.
+            await waitFor(() => {
+                expect(
+                    window.HTMLElement.prototype.scrollIntoView,
+                ).toHaveBeenCalled();
+            });
+        });
+
+        it('auto-scrolls to the bottom after sending a new message', async () => {
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return [MSG_STAFF];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        return { id: 3 };
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Salon');
+            expect(
+                window.HTMLElement.prototype.scrollIntoView,
+            ).not.toHaveBeenCalled();
+
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Dzięki, będę!' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            await waitFor(() => {
+                expect(
+                    window.HTMLElement.prototype.scrollIntoView,
+                ).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('focusCompose() imperative handle (Z7)', () => {
+        it('focuses the compose textarea when called via ref', async () => {
+            const apiFetch = jest.fn(async () => []);
+            mockedUseAuth.mockReturnValue(
+                createAuthValue({
+                    role: 'client',
+                    isAuthenticated: true,
+                    apiFetch: apiFetch as never,
+                }),
+            );
+            const ref = React.createRef<MessageThreadHandle>();
+            render(<MessageThread ref={ref} appointmentId={10} />);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+            expect(screen.getByRole('textbox')).not.toHaveFocus();
+
+            ref.current?.focusCompose();
+
+            expect(screen.getByRole('textbox')).toHaveFocus();
         });
     });
 });

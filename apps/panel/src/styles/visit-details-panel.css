@@ -1,0 +1,111 @@
+/* ─── Client visit details panel (Z7 — Booksy-style slide-in from the
+   right, replaces the old two-level inline-expand on /visits). ────────── */
+
+.visit-details-panel-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2050;
+    display: flex;
+    justify-content: flex-end;
+    background: rgba(13, 13, 13, 0.45);
+    backdrop-filter: blur(2px);
+    animation: visit-details-panel-fade 0.2s ease;
+}
+
+.visit-details-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(480px, 100%);
+    height: 100%;
+    background: #ffffff;
+    box-shadow: -24px 0 64px rgba(13, 13, 13, 0.22);
+    animation: visit-details-panel-slide-in 0.28s ease;
+}
+
+.visit-details-panel__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #e6eaee;
+    flex-shrink: 0;
+}
+
+.visit-details-panel__title {
+    margin: 0;
+    color: #0d0d0d;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    outline: none;
+}
+
+.visit-details-panel__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.visit-details-panel__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    color: #5f6369;
+    font-size: 0.88rem;
+}
+
+.visit-details-panel__section {
+    padding-top: 1.1rem;
+    border-top: 1px solid #eef0f2;
+}
+
+/* Applied explicitly in JSX to the first section — the actual first DOM
+   child of .visit-details-panel__body is .visit-details-panel__meta
+   (a sibling, not a __section), so :first-of-type never matched any
+   __section and this rule was dead: the first section always carried an
+   unwanted top border/padding. */
+.visit-details-panel__section--flush {
+    padding-top: 0;
+    border-top: 0;
+}
+
+@keyframes visit-details-panel-slide-in {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes visit-details-panel-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .visit-details-panel,
+    .visit-details-panel-overlay {
+        animation: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .visit-details-panel-overlay {
+        justify-content: stretch;
+    }
+
+    .visit-details-panel {
+        width: 100%;
+    }
+}

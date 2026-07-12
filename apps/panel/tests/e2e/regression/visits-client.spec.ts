@@ -5,6 +5,10 @@
  * "Nadchodzące wizyty" section (either with appointments or empty state).
  * Read-only: no writes to DB.
  * Credentials: E2E_CLIENT_EMAIL / E2E_CLIENT_PASSWORD (env).
+ *
+ * Z7 (2026-07-10): the two-level inline-expand on this page was replaced by
+ * a slide-in details panel (role=dialog). The "never shows a price" check
+ * below still applies to the row list only — the panel isn't opened for it.
  */
 
 import { test, expect } from '@playwright/test';
@@ -81,5 +85,31 @@ test.describe('Client visits page', () => {
             const text = (await sections.nth(i).innerText()).trim();
             expect(text).not.toMatch(/\d+([.,]\d{2})?\s*zł/);
         }
+    });
+
+    test('clicking "Szczegóły" opens the visit details panel as a dialog', async ({
+        page,
+    }) => {
+        await page.goto('/visits', { waitUntil: 'domcontentloaded' });
+        await expect(
+            page.getByRole('heading', { name: /Nadchodzące wizyty/ }),
+        ).toBeVisible({ timeout: 20_000 });
+
+        // Data-dependent: only assert the panel opens when there is at
+        // least one visit row to click (best-effort, like the omnibox
+        // listbox soft-check in omnibox.spec.ts).
+        const detailsButton = page
+            .getByRole('button', { name: 'Szczegóły' })
+            .first();
+        const hasVisit = await detailsButton
+            .isVisible({ timeout: 5_000 })
+            .catch(() => false);
+        if (!hasVisit) return;
+
+        await detailsButton.click();
+        const dialog = page.getByRole('dialog');
+        await expect(dialog).toBeVisible({ timeout: 10_000 });
+        // Focus lands on the panel's heading on open.
+        await expect(dialog.getByRole('heading')).toBeFocused();
     });
 });

@@ -9,6 +9,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@/styles/salon-theme.css';
 import '@/styles/salon-shell.css';
+import '@/styles/visit-details-panel.css';
 import '@/styles/globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import RouteProgress from '@/components/RouteProgress';

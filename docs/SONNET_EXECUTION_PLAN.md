@@ -172,7 +172,7 @@ Znalezione bugi: fix + wpis do active-context (wzorzec: sesje 07-08/07-09).
 
 ---
 
-### Z7. Klient: szczegóły wizyty w wysuwanym panelu bocznym (redesign UX) 🔴 PRIORYTET
+### Z7. ✅ DONE 2026-07-11 — Klient: szczegóły wizyty w wysuwanym panelu bocznym (redesign UX)
 
 **Motywacja (feedback ownera, 2026-07-10, cytat):** „nie podoba mi się lista
 wizyt i te rozwijane treści; jak próbuję dodać wiadomość do usługi jako
@@ -209,7 +209,7 @@ staje się pełnoekranowym arkuszem.
   `/visits?visitId=N` (panel otworzy się sam) — bez zmian kontraktu.
 - Brand: czerń/biel/srebro, animacja transform 0.2-0.3s (respektować
   prefers-reduced-motion), zero niebieskiego.
-- CSS: nowe klasy `visit-details-panel*` w salon-shell.css; mobile-first.
+- CSS: nowe klasy `visit-details-panel*` w dedykowanym `visit-details-panel.css` (nie w dużym salon-shell.css); mobile-first.
 
 **Akceptacja:** testy jednostkowe: (a) otwarcie panelu z wiersza i przez
 `?visitId`, (b) focus na nagłówku po otwarciu, (c) focus na textarea po
@@ -220,7 +220,7 @@ rozwijania na asercje panelu); pełna suita panelu zielona; specy Playwright
 `visits-client.spec.ts` zaktualizowane pod nowy wzorzec (sekcje list bez
 kwot — bez zmian; dodać: klik „Szczegóły" → dialog widoczny).
 
-### Z8. Wizualno-funkcjonalny sweep WSZYSTKICH widoków per rola (screenshoty z CI)
+### Z8. 🟡 Część A DONE 2026-07-11 (branch `claude/sonnet-execution-z7-z9-je0rkj`) — Wizualno-funkcjonalny sweep WSZYSTKICH widoków per rola (screenshoty z CI)
 
 **Cel ownera:** przejście ścieżek jak każda rola + ocena wizualna i
 funkcjonalna każdego widoku. Sandbox agenta NIE ma kredencjali prod —
@@ -261,7 +261,7 @@ dlatego zrzuty robi CI (sekrety E2E_* już są), a agent przegląda artefakty.
 zrzutów; wpis w active-context z listą znalezisk (może być „brak uwag"
 per widok, ale każdy widok ODHACZONY).
 
-### Z9. Audyt „gdzie ląduje użytkownik po akcji" (focus/scroll) w panelu klienta
+### Z9. ✅ DONE 2026-07-11 — Audyt „gdzie ląduje użytkownik po akcji" (focus/scroll) w panelu klienta
 
 Uogólnienie skargi ownera z Z7 na pozostałe akcje klienta („rozważ
 podobne rzeczy"). Dla każdej akcji sprawdź i napraw, z testem:
@@ -279,6 +279,179 @@ podobne rzeczy"). Dla każdej akcji sprawdź i napraw, z testem:
 
 **Akceptacja:** każdy punkt ma test jednostkowy (istniejący lub nowy);
 naprawy czysto frontendowe; pełna suita zielona.
+
+### Z10. ✅ DONE 2026-07-11 (`e1a5d2f` Z10a-c + `56de8af` Z10d) — Fixy po review Fable (Z7/Z9) — PRZED merge PR #1419
+
+**Kontekst:** review brancha `claude/sonnet-execution-z7-z9-je0rkj` znalazł
+3 realne bugi i paczkę drobnych. Wszystkie fixy czysto frontendowe, na TYM
+SAMYM branchu. Kolejność podzadań = priorytet. Dla Z10a-Z10c obowiązuje
+rytuał „test najpierw failuje, potem fix" (wzorzec z Z9).
+
+**Z10a — kolizja VisitDetailsPanel × ConfirmModal (nakładające się dialogi).**
+Przy anulowaniu ConfirmModal otwiera się NAD panelem; oba komponenty mają
+NIEZALEŻNE `document.addEventListener('keydown')`, bez koordynacji:
+1. ESC w modalu zamyka OBA dialogi — handler panelu
+   (`VisitDetailsPanel.tsx` ~:117) nie wie o modalu i woła `onClose()`.
+2. Shift+Tab w modalu WYRYWA focus za modal: trap panelu ma warunek
+   `!root.contains(document.activeElement)` (~:133-140) — focus w modalu
+   nie jest w panelu, więc panel przechwytuje zdarzenie i fokusuje SIEBIE.
+3. Scroll-lock przecieka: ConfirmModal przy zamknięciu ustawia
+   `body.style.overflow = ''` mimo że panel wciąż jest otwarty.
+
+Fix:
+- Nowy prop `suspended?: boolean` na `VisitDetailsPanel` — gdy `true`,
+  keydown handler panelu NIE robi NIC (ani ESC, ani trap); w `visits.tsx`
+  przekazać `suspended={confirmCancelId !== null}`.
+- `ConfirmModal`: zapamiętać `body.style.overflow` sprzed otwarcia i
+  przywracać TĘ wartość przy zamknięciu (nie gołe `''`). ConfirmModal jest
+  współdzielony — zmiana bezpieczna dla wszystkich call-sites.
+
+Testy (visitsPage): (a) ESC przy otwartym ConfirmModal zamyka TYLKO modal —
+dialog panelu zostaje w drzewie; (b) po zamknięciu modala (Anuluj) kolejny
+ESC zamyka panel (zawieszenie się cofa).
+
+**Z10b — focus po anulowaniu ginie po refetchu (test maskował bug).**
+`cancelVisit` (visits.tsx ~:301) robi `closeVisit()` → panel przywraca
+focus na „Szczegóły" wiersza → `load()` przenosi wizytę do sekcji
+„Anulowane i nieodbyte" → wiersz REMOUNTUJE się w innej sekcji → element
+z focusem znika z DOM → focus na `<body>`. Test „cancels a visit…"
+przechodzi TYLKO dlatego, że mock `/dashboard/client/visits` zwraca te
+same dane po PATCH (wizyta nie zmienia sekcji). Poprawny wzorzec jest w
+teście accept (flaga `accepted` zmienia odpowiedź fixture po akcji).
+
+Fix:
+- Po udanym cancel zapamiętać id w ref (np. `pendingFocusVisitIdRef`);
+  w efekcie po aktualizacji `visits` sfokusować przycisk „Szczegóły"
+  wiersza `#visit-{id}` (już w nowej sekcji); gdy wiersza brak — nagłówek
+  strony. Restore panelu (synchroniczny, na stary przycisk) jest ok —
+  nasz refocus przychodzi PO refetchu i wygrywa.
+- Test: przepisać mock jak w accept (po PATCH fixture zwraca wizytę 1 ze
+  statusem `cancelled`), asercja `toHaveFocus()` na „Szczegóły" w NOWEJ
+  sekcji. Test MUSI failować przed fixem — sprawdzić.
+
+**Z10c — auto-scroll wątku psuje otwarcie panelu.**
+`MessageThread.tsx` ~:73-77 scrolluje `bottomRef.scrollIntoView` przy
+KAŻDYM załadowaniu wiadomości. Przed Z7 wątek montował się dopiero po
+jawnym rozwinięciu przez użytkownika — scroll był pożądany. Po Z7 wątek
+montuje się OD RAZU przy otwarciu panelu → wizyta z ≥1 wiadomością
+natychmiast odjeżdża do dołu sekcji „Wiadomości", walcząc z focusem na
+nagłówku (góra panelu: data/status/akcje).
+
+Fix: NIE scrollować przy pierwszym niepustym załadowaniu (ref
+`initialLoadDoneRef`); scrollować przy KOLEJNYCH zmianach listy (w tym po
+własnej wysyłce). `focusCompose()` bez zmian (jawny scroll na życzenie).
+Test: mount z istniejącymi wiadomościami NIE woła `scrollIntoView`
+(spy na `HTMLElement.prototype.scrollIntoView`); po wysłaniu — woła.
+
+**Z10d — drobne (jedna paczka, jeden commit):**
+1. Deep-link `?visitId=N`: `triggerRef` łapie `<body>` → przy zamknięciu
+   fallback: gdy trigger to body/null, sfokusuj „Szczegóły" wiersza
+   `#visit-{id}`.
+2. `MessageThread.sendMessage`: `focusPendingRef.current = true` przenieść
+   do `finally` (PRZED `setSending(false)`) — refocus także po błędzie
+   (teraz tylko sukces; przy błędzie focus ląduje na body, bo przycisk
+   był disabled).
+3. Overlay panelu: zamykać na `onMouseDown` zamiast `onClick` —
+   zaznaczanie tekstu w panelu zakończone ruchem myszy nad overlayem nie
+   może zamykać panelu (mousedown wewnątrz + mouseup na overlayu = click
+   na overlayu). Odpowiednio `stopPropagation` na mousedown panelu.
+4. CSS: `.visit-details-panel__section:first-of-type` to MARTWA reguła
+   (pierwszym divem-siostrą jest `__meta`, więc żaden `__section` nie jest
+   first-of-type) — pierwsza sekcja ma niechciany border-top. Fix:
+   modifier `visit-details-panel__section--flush` nadany w JSX pierwszej
+   sekcji + reguła `--flush { padding-top: 0; border-top: 0; }`; martwą
+   regułę usunąć.
+
+**Akceptacja Z10:** pełna suita panelu zielona; nowe/przepisane testy
+Z10a-Z10c failują przed fixem (zweryfikować świadomie); tsc+eslint czyste;
+wpis w active-context po każdym commicie.
+
+### Z11. ✅ DONE 2026-07-11 (`7df61a5`) — Fixy spec Z8 PRZED pierwszym dispatchem (`visual-sweep.spec.ts`)
+
+**Kontekst:** review przewiduje CZERWONY pierwszy run sweepa z powodu
+timeoutów — naprawić na tym samym branchu, zanim PR się zmerguje i ktoś
+odpali dispatch.
+
+1. **Timeouty testów card-tabs:** „customer card tabs" / „service card
+   tabs" robią 8+ nawigacji z `settle()` (do 16 s każda) + fullpage
+   screenshoty w JEDNYM teście — domyślne 30 s NIE wystarczy. Fix:
+   `test.setTimeout(240_000)` na początku każdego z tych 4 testów;
+   testy per-trasa: `test.setTimeout(60_000)`.
+2. **Login w `beforeAll` bez timeoutu:** `loginAs` przy 429 czeka 35 s
+   backoffu, a hook ma domyślne 30 s. Fix: `test.setTimeout(180_000)` na
+   początku KAŻDEGO `beforeAll` (dokładnie wzorzec z `auth.setup.ts` —
+   tam jest komentarz wyjaśniający).
+3. **Zrzut PRZED asercjami:** w `visitAndShoot` i pętlach card-tabs
+   najpierw `screenshot`, POTEM `assertHealthy` — inaczej trasa, która
+   failuje, nie zostawia zrzutu w artefakcie (a zrzut jest tu
+   deliverablem do przeglądu; trace to za mało).
+4. **Negatywne asercje odporne na strict mode:**
+   `expect(page.getByText('…')).not.toBeVisible()` rzuca strict-mode
+   violation przy >1 dopasowaniu — zamienić na
+   `await expect(page.getByText('…')).toHaveCount(0)`.
+5. (Opcjonalnie) reużyć sesję admina w describe card-tabs (zapis
+   `storageState` po pierwszym loginie admina) zamiast drugiego
+   logowania — mniej obciążenia throttle 5/min.
+
+**Akceptacja Z11:** `playwright test tests/e2e/visual-sweep.spec.ts
+--project=desktop-1366 --list` nadal = 158; tsc czyste; workflow BEZ
+zmian; wpis w active-context. Po merge PR #1419: dispatch → artifact →
+przegląd zrzutów → raport (Z8 Część B wg treści zadania Z8).
+
+### Z12. PO merge PR #1419 — weryfikacja deployu + Z8 Część B (sweep i raport)
+
+**Warunek wstępny:** owner mergeuje PR #1419 do mastera (draft → ready →
+merge = decyzja ownera, NIE Sonneta). Wszystko poniżej dzieje się DOPIERO
+po merge. Drugi przegląd Fable (2026-07-11) potwierdził: branch gotowy,
+CI zielone, 325/325, dwa latentne edge-case'y z przeglądu domknięte
+commitem `10813fa`.
+
+**Krok 1 — weryfikacja deployu (rytuał sekcji 0, ale jawnie):**
+- Push na master odpala `Deploy (MyDevil)` automatycznie. Musi być
+  `success` — jeśli `failure`, diagnoza deployu ma pierwszeństwo przed
+  wszystkim innym (wzorce awarii: kolumna encji bez `type:`, migracje;
+  historia w active-context).
+- Po deployu: `E2E Playwright Regression` też odpala się na push
+  (paths: `apps/panel/src/**`) i bije w ŻYWY prod. Musi być zielony —
+  zawiera nowy test Z7 „clicking Szczegóły opens the visit details panel
+  as a dialog" (visits-client.spec.ts), czyli PIERWSZY realny bieg panelu
+  bocznego na prawdziwym Chromium przeciw produkcji. Jeśli ten test padnie
+  na świeżo wdrożonym kodzie — to realny bug do diagnozy (trace artifact),
+  nie „transient".
+
+**Krok 2 — Z8 Część B (sedno zadania):**
+- Dispatch `e2e-visual-sweep.yml` (ref=master; przez
+  `mcp__github__actions_run_trigger` method=run_workflow albo UI).
+  Po merge plik jest na domyślnej gałęzi, więc 404 z pierwszej próby
+  już nie wystąpi.
+- Po zakończeniu runu pobrać artifact `visual-sweep-screenshots`
+  (`actions_list` method=list_workflow_run_artifacts →
+  `actions_get` method=download_workflow_run_artifact) i obejrzeć
+  KAŻDY zrzut (Read na plikach .png).
+- Znaleziska spisać do `.claude/rules/active-context.md` (Backlog) w
+  trzech koszykach: 🔴 bug funkcjonalny / 🟡 UX (gdzie ląduje focus,
+  spójność modal-vs-panel-vs-inline, nadmiarowe kroki) / 🎨 wizualny
+  (odstępy, kontrast, resztki niebieskiego, ucięte teksty, h-scroll na
+  390px). Każde znalezisko: trasa + rola + viewport + nazwa pliku zrzutu.
+  KAŻDY widok odhaczony (może być „brak uwag").
+- **NIE naprawiać niczego poza oczywistymi literówkami** — najpierw
+  pełna lista, potem priorytetyzacja z ownerem/leadem.
+- Jeśli sweep failuje mimo utwardzenia Z11: diagnoza per test (trace
+  artifact z `visual-sweep-traces`), fix W SPEC (nie w workflow bez
+  potrzeby), ponowny dispatch. Zrzuty z failującego runu i tak są w
+  artefakcie (Z11 przeniósł screenshot przed asercje) — przegląd można
+  zacząć równolegle z naprawą.
+
+**Uwaga (opcjonalna, zgłosić ownerowi):** sweep employee odpali się
+tylko gdy w repo istnieją sekrety `E2E_EMPLOYEE_EMAIL`/`PASSWORD`.
+Konto testowe pracownika ISTNIEJE (`test.pracownik@salon-bw.pl`,
+utworzone 2026-06-23, role=employee) — dodanie sekretów to zadanie
+ownera; bez nich sweep admin+client i tak jest kompletny.
+
+**Akceptacja Z12:** Deploy success + regression zielony na masterze;
+run sweepa zakończony; wpis w Backlogu z odhaczonymi WSZYSTKIMI widokami
+i skategoryzowanymi znaleziskami; żadnych zmian w kodzie panelu poza
+ew. literówkami (z testem, jeśli dotyczy logiki).
 
 ## 3. Zadania POZA zakresem Sonneta (nie ruszać)
 
@@ -312,9 +485,13 @@ naprawy czysto frontendowe; pełna suita zielona.
 ## 5. Definicja ukończenia projektu (checklista GO)
 
 - [x] Z1–Z3 zrobione i WDROŻONE na prod (deploy `29115624410` 2026-07-10, E2E 22/22 run `29116104855`; bloker SSH zamknięty)
-- [ ] Z7 — szczegóły wizyty klienta w panelu bocznym (decyzja ownera 2026-07-10)
-- [ ] Z8 — wizualno-funkcjonalny sweep wszystkich widoków per rola + raport
-- [ ] Z9 — audyt focus/scroll po akcjach klienta
+- [x] Z7 — szczegóły wizyty klienta w panelu bocznym (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
+- [x] Z8 Część A — spec+workflow gotowe (DONE 2026-07-11); Część B = Z12
+- [x] Z10 — fixy po review Fable (Z7/Z9: kolizja dialogów, focus po cancel, auto-scroll wątku, drobne) — DONE 2026-07-11
+- [x] Z11 — fixy spec Z8 (timeouty, zrzut przed asercjami, strict-mode) — DONE 2026-07-11
+- [ ] **MERGE PR #1419** (decyzja ownera — branch gotowy, 2. przegląd Fable czysty, CI zielone)
+- [ ] Z12 — po merge: weryfikacja deployu+regression na masterze → dispatch sweepa → przegląd KAŻDEGO zrzutu → raport 🔴/🟡/🎨 w Backlogu
+- [x] Z9 — audyt focus/scroll po akcjach klienta (DONE 2026-07-11, branch `claude/sonnet-execution-z7-z9-je0rkj`)
 - [ ] Import danych prod wykonany i zweryfikowany (Z4, po wsadzie)
 - [ ] Faza 4 ownera: backup + hasło + domena (+ opcjonalnie SMSAPI/Sentry/OAuth)
 - [ ] Live E2E 3 ról na czystej bazie (Opus + owner)
