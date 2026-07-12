@@ -280,7 +280,16 @@ export default function VisitsPage() {
                 setVisits(data);
                 setError(false);
             })
-            .catch(() => setError(true));
+            .catch(() => {
+                // The pending re-anchor is armed for THIS refetch only —
+                // if it fails, `visits` never changes, the row never moves,
+                // and focus is already fine where the panel restored it.
+                // Left armed, it would fire on the next unrelated reload
+                // (e.g. after saving a review) and yank focus to the
+                // cancelled visit's row out of nowhere.
+                pendingFocusVisitIdRef.current = null;
+                setError(true);
+            });
     }, [apiFetch]);
 
     useEffect(() => {

@@ -51,7 +51,7 @@ function MessageThread(
     const bottomRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const focusPendingRef = useRef(false);
-    // Gates the very first non-empty load of a thread out of auto-scroll.
+    // Gates the very first load of a thread out of auto-scroll.
     // Before Z7, MessageThread only mounted once a user explicitly expanded
     // it, so scrolling to the bottom on load was the point. Now it mounts
     // immediately inside VisitDetailsPanel, so a visit with existing
@@ -59,7 +59,7 @@ function MessageThread(
     // bottom of the thread the instant it opens, fighting the "focus on
     // the panel heading" behavior. Reset per-thread (not just once ever)
     // so switching to a different visit's thread skips its first load too.
-    const hasScrolledOnceRef = useRef(false);
+    const initialLoadDoneRef = useRef(false);
 
     const loadMessages = useCallback(() => {
         setLoading(true);
@@ -80,15 +80,20 @@ function MessageThread(
     }, [loadMessages]);
 
     useEffect(() => {
-        hasScrolledOnceRef.current = false;
+        initialLoadDoneRef.current = false;
     }, [appointmentId]);
 
     useEffect(() => {
-        if (!messages || messages.length === 0) return;
-        if (!hasScrolledOnceRef.current) {
-            hasScrolledOnceRef.current = true;
+        if (!messages) return;
+        // Consume the first-load skip on ANY load, including an empty one —
+        // otherwise an initially-empty thread's post-send reload would be
+        // the "first non-empty load" and swallow the scroll the user's own
+        // send should produce.
+        if (!initialLoadDoneRef.current) {
+            initialLoadDoneRef.current = true;
             return;
         }
+        if (messages.length === 0) return;
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 

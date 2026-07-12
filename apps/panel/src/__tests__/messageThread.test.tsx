@@ -272,6 +272,43 @@ describe('MessageThread', () => {
             ).not.toHaveBeenCalled();
         });
 
+        it('scrolls after sending the first message into an initially-empty thread', async () => {
+            let sent = false;
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (path === '/appointments/10/messages' && !init?.method)
+                        return sent ? [MSG_CLIENT] : [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init?.method === 'POST'
+                    ) {
+                        sent = true;
+                        return { id: 2 };
+                    }
+                    throw new Error(
+                        `unexpected ${path} ${init?.method ?? 'GET'}`,
+                    );
+                },
+            );
+            setupClient(apiFetch);
+
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Dzień dobry!' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+
+            // The first-load skip must be consumed by the initial (empty)
+            // load — NOT by the post-send reload, which is the user's own
+            // new message arriving and should scroll.
+            await waitFor(() => {
+                expect(
+                    window.HTMLElement.prototype.scrollIntoView,
+                ).toHaveBeenCalled();
+            });
+        });
+
         it('auto-scrolls to the bottom after sending a new message', async () => {
             const apiFetch = jest.fn(
                 async (path: string, init?: RequestInit) => {

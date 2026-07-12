@@ -460,6 +460,72 @@ describe('VisitsPage', () => {
         ).toHaveFocus();
     });
 
+    it('drops the pending focus re-anchor when the post-cancel refetch fails (review follow-up)', async () => {
+        let cancelled = false;
+        let failNextVisitsFetch = false;
+        const apiFetch = jest.fn(async (path: string, init?: RequestInit) => {
+            if (path === '/dashboard/client/visits') {
+                if (failNextVisitsFetch) {
+                    failNextVisitsFetch = false;
+                    throw new Error('network down');
+                }
+                return cancelled
+                    ? VISITS.map((v) =>
+                          v.id === 1 ? { ...v, status: 'cancelled' } : v,
+                      )
+                    : VISITS;
+            }
+            if (/^\/appointments\/\d+\/messages$/.test(path) && !init?.method)
+                return [];
+            if (path === '/appointments/1/cancel' && init?.method === 'PATCH') {
+                cancelled = true;
+                failNextVisitsFetch = true;
+                return {};
+            }
+            throw new Error(`unexpected ${path} ${init?.method ?? 'GET'}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Strzyżenie damskie');
+        const row = screen
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(within(row).getByRole('button', { name: 'Szczegóły' }));
+
+        const dialog = await screen.findByRole('dialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Anuluj' }));
+        const confirmDialog = await screen.findByRole('dialog', {
+            name: 'Anuluj wizytę',
+        });
+        fireEvent.click(
+            within(confirmDialog).getByRole('button', {
+                name: 'Anuluj wizytę',
+            }),
+        );
+
+        // The refetch right after cancel fails: the row never moves, the
+        // pending re-anchor must be DROPPED, not left armed.
+        await screen.findByText(/Nie udało się pobrać historii wizyt/);
+
+        // A later, unrelated successful reload (retry) moves the row — but
+        // the stale re-anchor must NOT fire and yank focus to it.
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Spróbuj ponownie' }),
+        );
+        const cancelledSection = await waitFor(() => {
+            const section = screen
+                .getByRole('heading', { name: /Anulowane i nieodbyte \(3\)/ })
+                .closest('section')!;
+            return section;
+        });
+        const movedRow = within(cancelledSection)
+            .getByRole('button', { name: 'Strzyżenie damskie' })
+            .closest('.salonbw-appointment-item')!;
+        expect(
+            within(movedRow).getByRole('button', { name: 'Szczegóły' }),
+        ).not.toHaveFocus();
+    });
+
     it('opens the details panel directly from a ?visitId= deep link', async () => {
         mockRouterQuery = { visitId: '2' };
         const apiFetch = messagesApiFetch(() => {
