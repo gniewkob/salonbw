@@ -54,7 +54,7 @@
         "ioredis": "^5.10.1",
         "jimp": "^1.6.1",
         "multer": "^2.2.0",
-        "nestjs-pino": "^4.6.0",
+        "nestjs-pino": "^4.6.1",
         "nodemailer": "^9.0.1",
         "passport": "^0.7.0",
         "passport-facebook": "^3.0.0",
