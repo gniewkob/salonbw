@@ -41,7 +41,7 @@
         "@next/bundle-analyzer": "^16.2.10",
         "@salonbw/api": "workspace:*",
         "@sentry/nextjs": "^10.35.0",
-        "@swc/helpers": "^0.5.19",
+        "@swc/helpers": "^0.5.23",
         "@tanstack/react-query": "^5.90.21",
         "autoprefixer": "^10.5.0",
         "date-fns": "^4.1.0",
