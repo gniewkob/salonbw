@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import type { ReactElement } from 'react';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 
@@ -380,6 +386,10 @@ describe('AppointmentDrawer', () => {
                     startTime: '2026-05-01T10:00:00.000Z',
                     endTime: '2026-05-01T10:45:00.000Z',
                     status: 'completed',
+                    staffRecommendations: 'Zalecenie aktualnej wizyty',
+                    onlineAddonsSummary: 'Botox na włosy (+60 min)',
+                    onlineTotalDurationMinutes: 105,
+                    onlineDurationNeedsVerification: true,
                     employee: { id: 2, name: 'Anna' },
                     client: { id: 5, name: 'Jan Kowalski' },
                     service: {
@@ -403,8 +413,22 @@ describe('AppointmentDrawer', () => {
         expect(
             screen.getAllByText('Komentarz do rezerwacji').length,
         ).toBeGreaterThan(0);
-        expect(screen.getByText('Zalecenia po wizycie')).toBeInTheDocument();
-        expect(screen.getByText('Dodatkowe zabiegi')).toBeInTheDocument();
+        const currentVisitNotes = screen
+            .getByText('Ustalenia dla tej wizyty')
+            .closest('.rounded');
+        expect(currentVisitNotes).not.toBeNull();
+        expect(
+            within(currentVisitNotes!).getByText('Zalecenie aktualnej wizyty'),
+        ).toBeInTheDocument();
+        expect(
+            within(currentVisitNotes!).getByText('Botox na włosy (+60 min)'),
+        ).toBeInTheDocument();
+        expect(
+            within(currentVisitNotes!).getByText('Zalecenia po wizycie'),
+        ).toBeInTheDocument();
+        expect(
+            within(currentVisitNotes!).getByText('Dodatkowe zabiegi'),
+        ).toBeInTheDocument();
         expect(
             screen.queryByText('Salon potwierdzi łączny czas wizyty.'),
         ).not.toBeInTheDocument();

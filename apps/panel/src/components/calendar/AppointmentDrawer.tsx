@@ -25,6 +25,7 @@ import FormulaSection from './appointment-drawer/FormulaSection';
 import ActionsSection from './appointment-drawer/ActionsSection';
 import ServiceCombobox from './appointment-drawer/ServiceCombobox';
 import MessageThread from '@/components/messages/MessageThread';
+import VisitNotes from '@/components/client/VisitNotes';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -81,6 +82,17 @@ function getHighestAlertSeverity(
     if (alerts.some((a) => a.severity === 'warning')) return 'warning';
     if (alerts.some((a) => a.severity === 'info')) return 'info';
     return undefined;
+}
+
+function hasStaffVisibleVisitNotes(
+    appointment: Appointment | null | undefined,
+) {
+    return Boolean(
+        appointment?.staffRecommendations?.trim() ||
+            appointment?.onlineAddonsSummary?.trim() ||
+            appointment?.onlineTotalDurationMinutes ||
+            appointment?.onlineDurationNeedsVerification,
+    );
 }
 
 export default function AppointmentDrawer({
@@ -680,6 +692,30 @@ export default function AppointmentDrawer({
                         {isEditMode && (
                             <ClientNoteSection appointment={appointment} />
                         )}
+
+                        {isEditMode &&
+                            hasStaffVisibleVisitNotes(appointment) && (
+                                <div className="rounded border p-2 mb-2">
+                                    <strong className="d-block small mb-2">
+                                        Ustalenia dla tej wizyty
+                                    </strong>
+                                    <VisitNotes
+                                        appointmentStatus={appointment?.status}
+                                        staffRecommendations={
+                                            appointment?.staffRecommendations
+                                        }
+                                        onlineAddonsSummary={
+                                            appointment?.onlineAddonsSummary
+                                        }
+                                        onlineTotalDurationMinutes={
+                                            appointment?.onlineTotalDurationMinutes
+                                        }
+                                        onlineDurationNeedsVerification={
+                                            appointment?.onlineDurationNeedsVerification
+                                        }
+                                    />
+                                </div>
+                            )}
 
                         {/* Messaging thread with client (edit mode only) */}
                         {isEditMode && appointment?.id && (
