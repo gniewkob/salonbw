@@ -275,7 +275,8 @@ BEGIN
     -- Usuń stare testowe wizyty z tego dnia (aby uniknąć duplikatów)
     DELETE FROM appointments 
     WHERE DATE("startTime") = '2026-02-08' 
-    AND notes LIKE '%test%' OR notes LIKE '%Pierwsza wizyta%' OR notes LIKE '%Strzyżenie%' OR notes LIKE '%Zabieg%';
+      AND "reservedOnline" = false
+      AND "clientId" IN (v_client1_id, v_client2_id, v_client3_id);
 
     -- Wizyta 1: 09:00 - Koloryzacja u Aleksandry
     INSERT INTO appointments (
@@ -285,7 +286,7 @@ BEGIN
         "startTime",
         "endTime",
         status,
-        notes,
+        "clientComment",
         "reservedOnline",
         "createdAt",
         "updatedAt"
@@ -310,7 +311,7 @@ BEGIN
         "startTime",
         "endTime",
         status,
-        notes,
+        "clientComment",
         "reservedOnline",
         "createdAt",
         "updatedAt"
@@ -335,7 +336,7 @@ BEGIN
         "startTime",
         "endTime",
         status,
-        notes,
+        "staffRecommendations",
         "reservedOnline",
         "createdAt",
         "updatedAt"

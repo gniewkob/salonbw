@@ -234,7 +234,7 @@ async function main() {
             startTime: '2026-02-08T09:00:00.000Z',
             endTime: '2026-02-08T12:00:00.000Z',
             status: 'scheduled',
-            notes: 'Pierwsza wizyta - koloryzacja'
+            clientComment: 'Pierwsza wizyta - koloryzacja'
         });
     }
 
@@ -246,7 +246,7 @@ async function main() {
             startTime: '2026-02-08T10:30:00.000Z',
             endTime: '2026-02-08T11:30:00.000Z',
             status: 'confirmed',
-            notes: 'Strzyżenie + modelowanie'
+            clientComment: 'Strzyżenie + modelowanie'
         });
     }
 
@@ -258,7 +258,7 @@ async function main() {
             startTime: '2026-02-08T14:00:00.000Z',
             endTime: '2026-02-08T15:30:00.000Z',
             status: 'in_progress',
-            notes: 'Zabieg regenerujący'
+            staffRecommendations: 'Zabieg regenerujący'
         });
     }
 

@@ -154,7 +154,8 @@ async function seed() {
             tipAmount,
             paymentMethod,
             finalizedAt,
-            notes: Math.random() > 0.8 ? 'Notatka do wizyty testowej' : null,
+            clientComment:
+                Math.random() > 0.8 ? 'Notatka do wizyty testowej' : null,
         } as any);
 
         appointments.push(appointment);

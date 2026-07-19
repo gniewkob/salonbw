@@ -157,7 +157,7 @@ async function upsertAppointment(client, fixture) {
                  status = 'rescheduled_pending',
                  "reschedulePreviousStartTime" = $6,
                  "reschedulePreviousEndTime" = $7,
-                 notes = $8,
+                 "staffRecommendations" = $8,
                  "clientComment" = $9,
                  "updatedAt" = now()
              WHERE id = $1`,
@@ -179,7 +179,7 @@ async function upsertAppointment(client, fixture) {
     const inserted = await client.query(
         `INSERT INTO appointments
              ("clientId", "employeeId", "serviceId", "startTime", "endTime",
-              status, notes, "clientComment", "reservedOnline",
+              status, "staffRecommendations", "clientComment", "reservedOnline",
               "onlineDurationNeedsVerification", "internalNote",
               "reschedulePreviousStartTime", "reschedulePreviousEndTime",
               "createdAt", "updatedAt")
