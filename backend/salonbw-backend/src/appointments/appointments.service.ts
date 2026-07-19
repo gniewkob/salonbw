@@ -1213,6 +1213,7 @@ export class AppointmentsService {
                         : appointment.internalNote,
                     staffRecommendations,
                     extraServices: extraServices ?? appointment.extraServices,
+                    onlineDurationNeedsVerification: false,
                 });
 
                 // Single combined commission covering the primary service +

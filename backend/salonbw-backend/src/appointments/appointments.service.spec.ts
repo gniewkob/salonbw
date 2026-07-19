@@ -798,6 +798,42 @@ describe('AppointmentsService', () => {
         expect(createSaleMock).not.toHaveBeenCalled();
     });
 
+    it('clears online duration verification when appointment is finalized', async () => {
+        services.push({
+            ...services[0],
+            id: 2,
+            name: 'Pielęgnacja',
+            duration: 30,
+            price: 80,
+        });
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+                reservedOnline: true,
+                addonServiceIds: [2],
+            },
+            users[0],
+        );
+
+        const finalized = await service.finalizeAppointment(
+            id,
+            {
+                paymentMethod: 'cash' as never,
+                paidAmountCents: 10000,
+            },
+            users[1],
+        );
+
+        expect(finalized?.status).toBe(AppointmentStatus.Completed);
+        expect(finalized?.onlineDurationNeedsVerification).toBe(false);
+        expect(finalized?.onlineAddonsSummary).toBe('Pielęgnacja (+30 min)');
+        expect(finalized?.onlineTotalDurationMinutes).toBe(60);
+    });
+
     it('finalizes appointment with products and creates retail sales', async () => {
         users[0].name = 'Klient testowy';
         const start = new Date(Date.now() + 60 * 60 * 1000);
