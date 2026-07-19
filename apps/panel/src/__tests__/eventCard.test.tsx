@@ -66,4 +66,41 @@ describe('EventCard', () => {
 
         expect(screen.getByText(/Zapłacono 3000 zł/)).toBeInTheDocument();
     });
+
+    it('shows compact signals when appointment has visit notes or online add-ons', () => {
+        render(
+            <EventCard
+                event={{
+                    ...appointmentEvent,
+                    clientComment: 'proszę o ciszę',
+                    onlineAddonsSummary: 'Pielęgnacja (+30 min)',
+                    staffRecommendations: 'myć włosy co 3 dni',
+                    onlineDurationNeedsVerification: true,
+                }}
+                onClick={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText('komentarz')).toBeInTheDocument();
+        expect(screen.getByText('dodatki')).toBeInTheDocument();
+        expect(screen.getByText('zalecenia')).toBeInTheDocument();
+        expect(screen.getByText('czas do sprawdzenia')).toBeInTheDocument();
+    });
+
+    it('does not show duration verification signal after appointment is completed', () => {
+        render(
+            <EventCard
+                event={{
+                    ...appointmentEvent,
+                    status: 'completed',
+                    onlineDurationNeedsVerification: true,
+                }}
+                onClick={jest.fn()}
+            />,
+        );
+
+        expect(
+            screen.queryByText('czas do sprawdzenia'),
+        ).not.toBeInTheDocument();
+    });
 });

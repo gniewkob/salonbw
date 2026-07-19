@@ -87,6 +87,19 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
     voucher: 'voucher',
 };
 
+function getAppointmentSignalLabels(event: CalendarEvent): string[] {
+    if (event.type !== 'appointment') return [];
+
+    const labels: string[] = [];
+    if (event.clientComment?.trim()) labels.push('komentarz');
+    if (event.onlineAddonsSummary?.trim()) labels.push('dodatki');
+    if (event.staffRecommendations?.trim()) labels.push('zalecenia');
+    if (event.onlineDurationNeedsVerification && event.status !== 'completed') {
+        labels.push('czas do sprawdzenia');
+    }
+    return labels;
+}
+
 const ALERT_ICON: Record<ReceptionAlertSeverity, string> = {
     info: '●',
     warning: '●',
@@ -141,6 +154,7 @@ export default function EventCard({
             : null;
 
     const visual = getEventStatusVisual(event.status);
+    const signalLabels = getAppointmentSignalLabels(event);
 
     const wrapperStyle: CSSProperties = {
         cursor: 'pointer',
@@ -249,6 +263,21 @@ export default function EventCard({
                 {statusLabel && (
                     <div className="salonbw-event-card__meta">
                         {statusLabel}
+                    </div>
+                )}
+                {signalLabels.length > 0 && (
+                    <div
+                        className="salonbw-event-card__signals"
+                        aria-label="Sygnały wizyty"
+                    >
+                        {signalLabels.map((label) => (
+                            <span
+                                key={label}
+                                className="salonbw-event-card__signal"
+                            >
+                                {label}
+                            </span>
+                        ))}
                     </div>
                 )}
                 {paymentLabel && (

@@ -3118,6 +3118,29 @@ body.e2e-calendar .salonbw-page > .breadcrumbs {
     color: #0d0d0d;
 }
 
+.salonbw-event-card__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 3px;
+}
+
+.salonbw-event-card__signal {
+    display: inline-flex;
+    align-items: center;
+    min-height: 16px;
+    max-width: 100%;
+    padding: 0 5px;
+    border: 1px solid rgba(13, 13, 13, 0.16);
+    border-radius: 2px;
+    color: #23252a;
+    background: rgba(255, 255, 255, 0.72);
+    font-size: 0.58rem;
+    font-weight: 800;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
 .salonbw-calendar-frame .fc-daygrid-event .salonbw-event-card {
     min-height: 22px;
     padding: 3px 6px !important;
@@ -3125,6 +3148,7 @@ body.e2e-calendar .salonbw-page > .breadcrumbs {
 
 .salonbw-calendar-frame .fc-daygrid-event .salonbw-event-card__body,
 .salonbw-calendar-frame .fc-daygrid-event .salonbw-event-card__meta,
+.salonbw-calendar-frame .fc-daygrid-event .salonbw-event-card__signals,
 .salonbw-calendar-frame .fc-daygrid-event .salonbw-event-card__payment {
     display: none;
 }
