@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-20 (MyDevil process-limit incident guardrail)_
+_Last updated: 2026-07-20 (Dependabot triage and security override refresh)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
 
@@ -20,6 +20,28 @@ _Last updated: 2026-07-20 (MyDevil process-limit incident guardrail)_
   - keep remote SSH usage minimal and non-interactive while validating,
   - verify next CI/deploy run after commit,
   - if stopped payload shells keep appearing, continue treating the cleanup cron as temporary mitigation and reduce remote-exec usage at the tool/process level.
+
+## 2026-07-20 — Dependabot triage and dependency sweep
+
+- Scope:
+  - batched sensible Dependabot patch/minor updates into one master changeset instead of merging many small PRs separately,
+  - updated GitHub workflow `actions/setup-node` usage from v6 to v7,
+  - updated selected runtime/dev dependencies across landing, panel, and backend packages,
+  - refreshed the `systeminformation` override from `^5.31.6` to `^5.31.7`, resolving the high audit alert through lockfile resolution to `5.33.0`.
+- Rejected/superseded:
+  - TypeORM `0.3.29 -> 1.1.0` is treated as a dedicated migration, not an automatic dependency sweep,
+  - `@types/node` v26 is not aligned with the current Node 22 runtime,
+  - `typescript-eslint` upgrade is left for a dedicated lint-tooling migration if needed.
+- Local validation:
+  - backend lint, typecheck, build, and Jest suite passed,
+  - panel lint, typecheck, and Jest suite passed,
+  - landing lint and typecheck passed,
+  - ops workflow regression checks passed,
+  - `pnpm audit --audit-level high` passed with no known vulnerabilities.
+- Follow-up:
+  - close implemented Dependabot PRs as superseded by the batched master update,
+  - close intentionally rejected Dependabot PRs with explicit rationale,
+  - monitor CI and Deploy (MyDevil) after push.
 
 ## 2026-07-08 — Reschedule QA fixture + production deploy
 
