@@ -12,7 +12,6 @@ interface CacheEntry {
     data: {
         items: CachedGalleryItem[];
         nextCursor: string | null;
-        fallback: boolean;
     };
     expiresAt: number;
 }

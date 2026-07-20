@@ -1,10 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import {
-    cacheKey,
-    readCache,
-    writeCache,
-    CachedGalleryItem,
-} from '@/utils/instagramCache';
+import { cacheKey, readCache, writeCache } from '@/utils/instagramCache';
+import type { CachedGalleryItem } from '@/utils/instagramCache';
 
 interface InstagramMedia {
     id: string;
@@ -24,28 +20,13 @@ interface InstagramResponse {
     error?: unknown;
 }
 
-const sampleItems: CachedGalleryItem[] = [
-    '/assets/img/slider/slider1.jpg',
-    '/assets/img/slider/slider2.jpg',
-    '/assets/img/slider/slider3.jpg',
-].map((src, idx) => ({
-    id: `local-${idx}`,
-    type: 'IMAGE',
-    imageUrl: src,
-    caption: 'Sample',
-}));
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse,
 ) {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
-        res.status(200).json({
-            items: sampleItems,
-            nextCursor: null,
-            fallback: true,
-        });
+        res.status(503).json({ items: [], nextCursor: null });
         return;
     }
     const after =
@@ -89,16 +70,11 @@ export default async function handler(
                 caption: m.caption,
             };
         });
-        if (!items.length) throw new Error('no_media');
         const nextCursor = json?.paging?.cursors?.after ?? null;
-        const payload = { items, nextCursor, fallback: false };
+        const payload = { items, nextCursor };
         writeCache(key, payload);
         res.status(200).json(payload);
     } catch {
-        res.status(200).json({
-            items: sampleItems,
-            nextCursor: null,
-            fallback: true,
-        });
+        res.status(502).json({ items: [], nextCursor: null });
     }
 }
