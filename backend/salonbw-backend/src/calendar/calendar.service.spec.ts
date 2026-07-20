@@ -340,13 +340,12 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(slots).toEqual([]);
     });
 
-    it('falls back to Mon-Sat 9-19 when no branch is configured (Sunday still closed)', async () => {
+    it('offers no slots when branch working hours are not configured', async () => {
         const svc = buildHarness({ branch: null });
         const sunday = await svc.getAvailableSlots(1, nextDow(0));
         expect(sunday).toEqual([]);
         const friday = await svc.getAvailableSlots(1, nextDow(5));
-        expect(friday.length).toBeGreaterThan(0);
-        expect(new Date(friday[0].time).getHours()).toBe(9);
+        expect(friday).toEqual([]);
     });
 
     it('employee timetable fully defines bookable hours (owner = salon)', async () => {
@@ -528,5 +527,20 @@ describe('CalendarService public opening hours', () => {
         expect(result.source).toBe('branch');
         expect(result.hours.mon).toEqual([{ open: '10:00', close: '19:00' }]);
         expect(result.hours.sun).toEqual([]);
+    });
+
+    it('returns explicit empty hours when neither timetable nor branch hours are configured', async () => {
+        const svc = buildHarness({ timetables: [], branch: null });
+        const result = await svc.getOpeningHours();
+        expect(result.source).toBe('default');
+        expect(result.hours).toEqual({
+            mon: [],
+            tue: [],
+            wed: [],
+            thu: [],
+            fri: [],
+            sat: [],
+            sun: [],
+        });
     });
 });

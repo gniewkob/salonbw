@@ -517,7 +517,8 @@ export class CalendarService {
 
         const employeeServices = await employeeServiceQuery.getMany();
 
-        // Collect employees to check: from service assignments, or all employees as fallback
+        // Collect employees to check: from service assignments, or all employees
+        // when the service catalogue does not yet define assignments.
         let candidateEmployees: User[];
         if (employeeServices.length > 0) {
             const uniqueEmployees = new Map<number, User>();
@@ -668,10 +669,9 @@ export class CalendarService {
     }
 
     /**
-     * Salon opening hours for the given local date. Empty array = closed.
-     * No branch configured at all → legacy fallback 09:00–19:00 Mon–Sat,
-     * closed Sunday, so a missing settings row degrades gracefully instead
-     * of offering Sunday slots (the original hardcoded-hours bug).
+     * Salon opening hours for the given local date. Empty array = closed or
+     * not configured. Target architecture requires explicit branch hours
+     * instead of hardcoded business defaults.
      */
     private async getBranchDayRanges(
         day: Date,
@@ -691,7 +691,7 @@ export class CalendarService {
             return this.toMinuteRanges(Array.isArray(value) ? value : [value]);
         }
 
-        return isoIndex === 6 ? [] : [{ start: 9 * 60, end: 19 * 60 }];
+        return [];
     }
 
     /**
@@ -887,8 +887,7 @@ export class CalendarService {
             } else {
                 for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
                     const key = CalendarService.DAY_KEYS[dayIdx];
-                    hours[key] =
-                        dayIdx === 6 ? [] : [{ open: '09:00', close: '19:00' }];
+                    hours[key] = [];
                 }
             }
         }
