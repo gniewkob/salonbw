@@ -1,8 +1,28 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-20 (Dependabot triage and security override refresh)_
+_Last updated: 2026-07-20 (visit notes visibility audit)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-20 — Visit notes visibility audit
+
+- Commit:
+  - `1e2336fa1` `Unify visit notes visibility logic`
+- Deploy:
+  - `Deploy (MyDevil)` run `29765437693` -> success
+- CI:
+  - run `29765438706` -> success
+- Scope:
+  - centralized the "does this visit have visible notes?" rule in `VisitNotes`,
+  - updated dashboard, `/visits`, customer summary/history, staff appointment drawer, and recent customer visits to use the shared rule,
+  - prevents the technical `onlineDurationNeedsVerification` flag from rendering as a visible completed-visit note when there is no actual client comment, addon summary, total time, or staff recommendation.
+- Local validation:
+  - `pnpm eslint src --fix` in `apps/panel` -> pass with one pre-existing warning in `settings/service-categories.tsx`,
+  - `pnpm tsc --noEmit` in `apps/panel` -> pass,
+  - targeted visit/dashboard/customer/drawer Jest set -> pass (`43/43`),
+  - full panel Jest -> pass (`329/329`).
+- Notes:
+  - existing Jest console warnings remain in appointment drawer tests (`act(...)` async updates and jsdom navigation); they did not fail this audit but should be cleaned up in a separate test-hygiene pass.
 
 ## 2026-07-20 — MyDevil process-limit incident guardrail
 
