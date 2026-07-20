@@ -211,7 +211,8 @@ export default function ServiceCategoriesPage() {
     useSetSecondaryNav(SERVICE_SETTINGS_NAV);
 
     const { data: categories = [], isLoading } = useServiceCategories();
-    const services = useServices().data ?? [];
+    const { data: servicesData } = useServices();
+    const services = useMemo(() => servicesData ?? [], [servicesData]);
     const createCategory = useCreateServiceCategory();
     const updateCategory = useUpdateServiceCategory();
     const deleteCategory = useDeleteServiceCategory();

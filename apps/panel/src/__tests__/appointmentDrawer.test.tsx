@@ -1,4 +1,5 @@
 import {
+    act,
     fireEvent,
     render,
     screen,
@@ -135,18 +136,24 @@ describe('AppointmentDrawer', () => {
         });
     });
 
-    const renderDrawer = async (
-        ui: ReactElement,
-        options?: { waitForFormulas?: boolean },
-    ) => {
+    const flushDrawerEffects = async () => {
+        await act(async () => {
+            await Promise.resolve();
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+    };
+
+    const clickWithoutNavigation = (element: HTMLElement) => {
+        const preventNavigation = (event: Event) => event.preventDefault();
+        element.addEventListener('click', preventNavigation);
+        fireEvent.click(element);
+        element.removeEventListener('click', preventNavigation);
+    };
+
+    const renderDrawer = async (ui: ReactElement) => {
         const view = render(ui);
-        if (options?.waitForFormulas) {
-            await waitFor(() =>
-                expect(apiFetchMock).toHaveBeenCalledWith(
-                    expect.stringMatching(/^\/customers\/\d+\/formulas$/),
-                ),
-            );
-        }
+        await flushDrawerEffects();
         return view;
     };
 
@@ -189,7 +196,7 @@ describe('AppointmentDrawer', () => {
     it('changes status to confirmed in edit mode', async () => {
         updateStatusMock.mockResolvedValueOnce({ id: 1, status: 'confirmed' });
 
-        render(
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -258,7 +265,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         const link = screen.getByRole('link', { name: 'Szczegóły sprzedaży' });
@@ -298,7 +304,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         const link = screen.getByRole('link', { name: 'Historia sprzedaży' });
@@ -346,7 +351,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(screen.getByText('Alerty')).toBeInTheDocument();
@@ -406,7 +410,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(await screen.findByText('Koloryzacja')).toBeInTheDocument();
@@ -468,7 +471,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(screen.queryByText('Alerty')).not.toBeInTheDocument();
@@ -521,7 +523,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(screen.getByText('Notatka medyczna')).toBeInTheDocument();
@@ -531,8 +532,8 @@ describe('AppointmentDrawer', () => {
         expect(screen.getByText('Preferencja klienta')).toBeInTheDocument();
     });
 
-    it('shows scheduled actions for scheduled appointment', () => {
-        render(
+    it('shows scheduled actions for scheduled appointment', async () => {
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -555,8 +556,8 @@ describe('AppointmentDrawer', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('shows confirmed actions for confirmed appointment', () => {
-        render(
+    it('shows confirmed actions for confirmed appointment', async () => {
+        await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -590,7 +591,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(
@@ -619,7 +619,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(
@@ -671,7 +670,6 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
         expect(screen.getByText('Wizyta')).toBeInTheDocument();
@@ -713,10 +711,9 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
-        fireEvent.click(
+        clickWithoutNavigation(
             screen.getByRole('link', { name: 'Historia sprzedaży' }),
         );
 
@@ -741,10 +738,9 @@ describe('AppointmentDrawer', () => {
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,
-            { waitForFormulas: true },
         );
 
-        fireEvent.click(
+        clickWithoutNavigation(
             screen.getByRole('link', { name: 'Historia sprzedaży' }),
         );
 
