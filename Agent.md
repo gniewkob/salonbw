@@ -19,6 +19,8 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - Remote dependency installation in deploy workflow is retry-guarded (up to 3 attempts) for transient npm/network failures on MyDevil.
 - Frontend bundle upload is optimized for FreeBSD transfer limits: no `node_modules` in tarball; dependencies are installed remotely post-extract (`npm22` preferred, fallback `npm`).
 - Push-triggered deploy follow-up steps are scoped to the actually changed app(s) via `dorny/paths-filter` outputs that feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags used by manual dispatches.
+- Do not add deploy diagnostics that manually run `node app.js`, `next start`, or similar foreground/background app starts on MyDevil. Passenger owns app process lifecycle; manual probes have exhausted the account process limit before.
+- MyDevil has a temporary safety cron at `/usr/home/vetternkraft/bin/cleanup-codex-remote-payload.sh` that removes stopped `CODEX_REMOTE_PAYLOAD` shells once per minute. Treat it as a guardrail, not the primary fix.
 
 ### Targets (workflow_dispatch input)
 

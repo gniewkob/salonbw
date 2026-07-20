@@ -1,8 +1,25 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-08 (reschedule QA fixture + production deploy)_
+_Last updated: 2026-07-20 (MyDevil process-limit incident guardrail)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-20 — MyDevil process-limit incident guardrail
+
+- Incident:
+  - MyDevil account hit the process limit and SSH/SFTP failed with `exec request failed on channel 0` / `subsystem request failed on channel 0`.
+  - Support process lists showed many stopped `CODEX_REMOTE_PAYLOAD` shells, not application Node workers.
+- Server guardrail:
+  - installed `/usr/home/vetternkraft/bin/cleanup-codex-remote-payload.sh`,
+  - installed cron: `* * * * * /usr/home/vetternkraft/bin/cleanup-codex-remote-payload.sh >/dev/null 2>&1`,
+  - immediate run reduced stopped `CODEX_REMOTE_PAYLOAD` count to `0`.
+- Repo guardrail:
+  - removed deploy workflow diagnostics that manually ran `node app.js` for landing/panel startup probes,
+  - documented that Passenger owns app process lifecycle and deploy diagnostics must not start app runtimes manually.
+- Follow-up:
+  - keep remote SSH usage minimal and non-interactive while validating,
+  - verify next CI/deploy run after commit,
+  - if stopped payload shells keep appearing, continue treating the cleanup cron as temporary mitigation and reduce remote-exec usage at the tool/process level.
 
 ## 2026-07-08 — Reschedule QA fixture + production deploy
 

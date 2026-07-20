@@ -10,6 +10,7 @@ Operational note (2026-02-14):
 - Frontend deploy bundles are transfer-lean (no `node_modules`, no `.next/cache` in tarball); production dependencies are installed on the FreeBSD host after extract (`npm22` fallback to `npm`).
 - Remote dependency install steps are retry-guarded in workflow (`3` attempts for panel/landing/api) to absorb transient npm/network failures.
 - Push-triggered deploy follow-up steps are target-aware: landing smoke/log collection only runs when landing is actually deployed, and SSH-based diagnostics are skipped when the SSH setup step did not complete.
+- MyDevil process-limit guardrail (2026-07-20): do not run frontend app boot probes manually from deploy (`node app.js`, `next start`, background Node tests). Passenger is the only expected runtime starter. A temporary cleanup cron exists at `/usr/home/vetternkraft/bin/cleanup-codex-remote-payload.sh` to remove stopped `CODEX_REMOTE_PAYLOAD` shells while the external remote-exec behavior is being controlled.
 
 Operational note (2026-05-26):
 - API deploy env merge now preserves existing server-side `.env` keys and overrides only keys generated in CI for the current deploy.
