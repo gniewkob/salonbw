@@ -26,12 +26,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import StatisticsPieChart from '@/components/statistics/StatisticsPieChart';
 import StatisticsToolbar from '@/components/statistics/StatisticsToolbar';
 
-const VISUAL_FALLBACK_EMPLOYEES = [
-    { id: -1, name: 'Recepcja' },
-    { id: -2, name: 'Gniewko Bodora' },
-    { id: -3, name: 'Aleksandra Bodora' },
-];
-
 // Brand-aligned monochrome chart palette (Salon Black & White: B&W + silver).
 // Segments are distinguished by lightness — always pair with a legend/label,
 // never rely on hue alone.
@@ -228,16 +222,7 @@ function StatisticsPageContent() {
         ]);
 
         if (employeeIds.size === 0) {
-            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
-                employeeId: employee.id,
-                employeeName: employee.name,
-                completedAppointments: 0,
-                workTimeMinutes: 0,
-                serviceRevenue: 0,
-                productRevenue: 0,
-                totalRevenue: 0,
-                tips: 0,
-            }));
+            return [];
         }
 
         const rows = Array.from(employeeIds)
@@ -268,29 +253,6 @@ function StatisticsPageContent() {
                 };
             })
             .sort((a, b) => b.totalRevenue - a.totalRevenue);
-
-        const allZero = rows.every(
-            (employee) =>
-                employee.completedAppointments === 0 &&
-                employee.workTimeMinutes === 0 &&
-                employee.serviceRevenue === 0 &&
-                employee.productRevenue === 0 &&
-                employee.totalRevenue === 0 &&
-                employee.tips === 0,
-        );
-
-        if (allZero && rows.length < VISUAL_FALLBACK_EMPLOYEES.length) {
-            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
-                employeeId: employee.id,
-                employeeName: employee.name,
-                completedAppointments: 0,
-                workTimeMinutes: 0,
-                serviceRevenue: 0,
-                productRevenue: 0,
-                totalRevenue: 0,
-                tips: 0,
-            }));
-        }
 
         return rows;
     }, [commissionSummary?.employees, ranking, safeEmployeeList]);

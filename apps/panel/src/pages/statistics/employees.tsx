@@ -94,16 +94,7 @@ export default function EmployeeActivityPage() {
         return `${hours} h ${mins} min`;
     };
 
-    const rows = data?.employees?.length
-        ? data.employees
-        : [
-              {
-                  employeeId: 900003,
-                  employeeName: 'Aleksandra Bodora',
-                  workTimeMinutes: 0,
-                  appointmentsCount: 0,
-              },
-          ];
+    const rows = data?.employees ?? [];
     const totals = data?.totals ?? {
         workTimeMinutes: 0,
         appointmentsCount: 0,
@@ -155,44 +146,58 @@ export default function EmployeeActivityPage() {
                                             </th>
                                             <th scope="col">Liczba wizyt</th>
                                         </tr>
-                                        {rows.map((employee, i) => {
-                                            const empMinutes = toNumber(
-                                                employee.workTimeMinutes,
-                                            );
-                                            return (
-                                                <tr
-                                                    key={employee.employeeId}
-                                                    className={
-                                                        i % 2 === 0
-                                                            ? 'even'
-                                                            : 'odd'
-                                                    }
+                                        {rows.length ? (
+                                            rows.map((employee, i) => {
+                                                const empMinutes = toNumber(
+                                                    employee.workTimeMinutes,
+                                                );
+                                                return (
+                                                    <tr
+                                                        key={
+                                                            employee.employeeId
+                                                        }
+                                                        className={
+                                                            i % 2 === 0
+                                                                ? 'even'
+                                                                : 'odd'
+                                                        }
+                                                    >
+                                                        <td>
+                                                            <Link
+                                                                href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
+                                                                className="btn btn-link"
+                                                            >
+                                                                {
+                                                                    employee.employeeName
+                                                                }
+                                                            </Link>
+                                                        </td>
+                                                        <td>
+                                                            {formatWorkTime(
+                                                                empMinutes,
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            {toNumber(
+                                                                employee.appointmentsCount,
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan={3}
+                                                    className="text-muted"
                                                 >
-                                                    <td>
-                                                        <Link
-                                                            href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                            className="btn btn-link"
-                                                        >
-                                                            {
-                                                                employee.employeeName
-                                                            }
-                                                        </Link>
-                                                    </td>
-                                                    <td>
-                                                        {formatWorkTime(
-                                                            empMinutes,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {toNumber(
-                                                            employee.appointmentsCount,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
+                                                    Brak aktywności pracowników
+                                                    dla wybranej daty.
+                                                </td>
+                                            </tr>
+                                        )}
                                         <tr>
-                                            <td colSpan={4}>
+                                            <td colSpan={3}>
                                                 <strong>Podsumowanie</strong>
                                             </td>
                                         </tr>

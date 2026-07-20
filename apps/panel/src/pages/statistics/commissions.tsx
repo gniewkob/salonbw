@@ -9,11 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCommissionReport } from '@/hooks/useStatistics';
 
-const VISUAL_FALLBACK_EMPLOYEES = [
-    { id: -1, name: 'Recepcja' },
-    { id: -2, name: 'Gniewko Bodora' },
-    { id: -3, name: 'Aleksandra Bodora' },
-];
 const EMPLOYEE_DETAILS_BASE_PATH = '/settings/employees';
 
 const toNumber = (value: unknown): number => {
@@ -38,21 +33,6 @@ const toNumber = (value: unknown): number => {
         Number((normalized.match(/-?\d+(?:\.\d+)?/) || ['0'])[0]);
     return Number.isFinite(parsed) ? parsed : 0;
 };
-
-const isZeroCommissionRow = (row: {
-    serviceRevenue: number;
-    serviceCommission: number;
-    productRevenue: number;
-    productCommission: number;
-    totalRevenue: number;
-    totalCommission: number;
-}) =>
-    row.serviceRevenue === 0 &&
-    row.serviceCommission === 0 &&
-    row.productRevenue === 0 &&
-    row.productCommission === 0 &&
-    row.totalRevenue === 0 &&
-    row.totalCommission === 0;
 
 const normalizeEmployeeName = (value: string) =>
     value.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -186,83 +166,36 @@ export default function CommissionsPage() {
         );
 
         if (data?.employees?.length) {
-            const mappedRows = data.employees.map((employee) => ({
-                employeeId: employee.employeeId,
-                employeeName: employee.employeeName,
-                serviceRevenue: toNumber(employee.serviceRevenue),
-                serviceCommission: toNumber(employee.serviceCommission),
-                productRevenue: toNumber(employee.productRevenue),
-                productCommission: toNumber(employee.productCommission),
-                totalRevenue: toNumber(employee.totalRevenue),
-                totalCommission: toNumber(employee.totalCommission),
-            }));
-
-            const shouldBackfillCanonicalRows =
-                mappedRows.length < 3 && mappedRows.every(isZeroCommissionRow);
-
-            if (!shouldBackfillCanonicalRows) {
-                return mappedRows;
-            }
-
-            const zeroRowsByName = new Map(
-                mappedRows.map((employee) => [
-                    normalizeEmployeeName(employee.employeeName),
-                    employee,
-                ]),
-            );
-
-            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => {
-                const key = normalizeEmployeeName(employee.name);
+            return data.employees.map((employee) => {
+                const key = normalizeEmployeeName(employee.employeeName);
                 const matchedKnownEmployee = knownEmployeesByName.get(key);
-                const matchedRow = zeroRowsByName.get(key);
 
                 return {
-                    employeeId:
-                        matchedKnownEmployee?.id ??
-                        matchedRow?.employeeId ??
-                        employee.id,
+                    employeeId: matchedKnownEmployee?.id ?? employee.employeeId,
                     employeeName:
-                        matchedKnownEmployee?.name ??
-                        matchedRow?.employeeName ??
-                        employee.name,
-                    serviceRevenue: matchedRow?.serviceRevenue ?? 0,
-                    serviceCommission: matchedRow?.serviceCommission ?? 0,
-                    productRevenue: matchedRow?.productRevenue ?? 0,
-                    productCommission: matchedRow?.productCommission ?? 0,
-                    totalRevenue: matchedRow?.totalRevenue ?? 0,
-                    totalCommission: matchedRow?.totalCommission ?? 0,
+                        matchedKnownEmployee?.name ?? employee.employeeName,
+                    serviceRevenue: toNumber(employee.serviceRevenue),
+                    serviceCommission: toNumber(employee.serviceCommission),
+                    productRevenue: toNumber(employee.productRevenue),
+                    productCommission: toNumber(employee.productCommission),
+                    totalRevenue: toNumber(employee.totalRevenue),
+                    totalCommission: toNumber(employee.totalCommission),
                 };
             });
         }
 
-        const actualEmployees = safeEmployeeList
-            .slice(0, 3)
-            .map((employee) => ({
-                id: employee.id,
-                name:
-                    employee.fullName ||
-                    employee.name ||
-                    [employee.firstName, employee.lastName]
-                        .filter(Boolean)
-                        .join(' ') ||
-                    `Pracownik #${employee.id}`,
-            }));
-        const seenNames = new Set(
-            actualEmployees.map((employee) => employee.name.toLowerCase()),
-        );
-        const fallbackEmployees = [
-            ...actualEmployees,
-            ...VISUAL_FALLBACK_EMPLOYEES.filter((employee) => {
-                const key = employee.name.toLowerCase();
-                if (seenNames.has(key)) {
-                    return false;
-                }
-                seenNames.add(key);
-                return true;
-            }),
-        ].slice(0, 3);
+        const actualEmployees = safeEmployeeList.map((employee) => ({
+            id: employee.id,
+            name:
+                employee.fullName ||
+                employee.name ||
+                [employee.firstName, employee.lastName]
+                    .filter(Boolean)
+                    .join(' ') ||
+                `Pracownik #${employee.id}`,
+        }));
 
-        return fallbackEmployees.map((employee) => {
+        return actualEmployees.map((employee) => {
             return {
                 employeeId: employee.id,
                 employeeName: employee.name,
