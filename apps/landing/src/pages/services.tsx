@@ -43,7 +43,10 @@ interface ConceptGroup {
  * regroup by the part before " – " and show "od {min} zł" instead of dozens of
  * fixed-price rows. Premium audience wants "wiem co zapłacę", not a price list.
  */
-function groupByConcept(services: Service[], fromLabel: string): ConceptGroup[] {
+function groupByConcept(
+    services: Service[],
+    fromLabel: string,
+): ConceptGroup[] {
     const fmt = (n: number) =>
         new Intl.NumberFormat('pl-PL', {
             style: 'currency',
@@ -252,112 +255,132 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             ))}
                         </div>
                     )}
-                    {visibleCategories.map((cat) => {
-                        const groups = groupByConcept(cat.services, s.from);
-                        return (
-                        <div key={cat.id ?? cat.name} className="svcs-category">
+                    {visibleCategories.length === 0 ? (
+                        <div className="svcs-category" role="status">
                             <div className="svcs-category__header">
                                 <h2 className="svcs-category__title">
-                                    {translateCategory(cat.name, lang)}
+                                    {s.unavailableHeading}
                                 </h2>
-                                <span className="svcs-category__count">
-                                    {groups.length}{' '}
-                                    {groups.length === 1
-                                        ? s.serviceCount1
-                                        : s.serviceCountMany}
-                                </span>
                             </div>
-
-                            <div>
-                                {groups.map((group) => {
-                                    const href = resolveServiceRoute(group.name);
-                                    const single =
-                                        group.services.length === 1
-                                            ? group.services[0]!
-                                            : null;
-                                    return (
-                                        <div
-                                            key={group.key}
-                                            className="svcs-row"
-                                        >
-                                            <div className="svcs-row__info">
-                                                <div className="svcs-row__name">
-                                                    {href ? (
-                                                        <Link
-                                                            href={href}
-                                                            onClick={() =>
-                                                                trackEvent(
-                                                                    'select_item',
-                                                                    {
-                                                                        item_list_name:
-                                                                            'services',
-                                                                        items: [
-                                                                            {
-                                                                                item_id:
-                                                                                    group
-                                                                                        .services[0]!
-                                                                                        .id,
-                                                                                item_name:
-                                                                                    group.name,
-                                                                                item_category:
-                                                                                    cat.name,
-                                                                            },
-                                                                        ],
-                                                                    },
-                                                                )
-                                                            }
-                                                        >
-                                                            {translateConcept(
-                                                                group.name,
-                                                                lang,
-                                                            )}
-                                                        </Link>
-                                                    ) : (
-                                                        translateConcept(
-                                                            group.name,
-                                                            lang,
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="svcs-row__meta">
-                                                <span className="svcs-row__price">
-                                                    {group.priceLabel}
-                                                </span>
-                                                <span className="svcs-row__duration">
-                                                    {group.durationLabel}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    className="svcs-row__book"
-                                                    onClick={() =>
-                                                        single
-                                                            ? setBookingService(
-                                                                  {
-                                                                      id: single.id,
-                                                                      name: single.name,
-                                                                      priceLabel:
-                                                                          group.priceLabel,
-                                                                      duration:
-                                                                          group.durationLabel,
-                                                                  },
-                                                              )
-                                                            : setGeneralBookingOpen(
-                                                                  true,
-                                                              )
-                                                    }
-                                                    aria-label={`${s.bookBtn}: ${translateConcept(group.name, lang)}`}
-                                                >
-                                                    {s.bookBtn}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <p style={{ color: 'rgba(255,255,255,0.72)' }}>
+                                {s.unavailableCopy}
+                            </p>
                         </div>
-                        );
-                    })}
+                    ) : (
+                        visibleCategories.map((cat) => {
+                            const groups = groupByConcept(cat.services, s.from);
+                            return (
+                                <div
+                                    key={cat.id ?? cat.name}
+                                    className="svcs-category"
+                                >
+                                    <div className="svcs-category__header">
+                                        <h2 className="svcs-category__title">
+                                            {translateCategory(cat.name, lang)}
+                                        </h2>
+                                        <span className="svcs-category__count">
+                                            {groups.length}{' '}
+                                            {groups.length === 1
+                                                ? s.serviceCount1
+                                                : s.serviceCountMany}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        {groups.map((group) => {
+                                            const href = resolveServiceRoute(
+                                                group.name,
+                                            );
+                                            const single =
+                                                group.services.length === 1
+                                                    ? group.services[0]!
+                                                    : null;
+                                            return (
+                                                <div
+                                                    key={group.key}
+                                                    className="svcs-row"
+                                                >
+                                                    <div className="svcs-row__info">
+                                                        <div className="svcs-row__name">
+                                                            {href ? (
+                                                                <Link
+                                                                    href={href}
+                                                                    onClick={() =>
+                                                                        trackEvent(
+                                                                            'select_item',
+                                                                            {
+                                                                                item_list_name:
+                                                                                    'services',
+                                                                                items: [
+                                                                                    {
+                                                                                        item_id:
+                                                                                            group
+                                                                                                .services[0]!
+                                                                                                .id,
+                                                                                        item_name:
+                                                                                            group.name,
+                                                                                        item_category:
+                                                                                            cat.name,
+                                                                                    },
+                                                                                ],
+                                                                            },
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {translateConcept(
+                                                                        group.name,
+                                                                        lang,
+                                                                    )}
+                                                                </Link>
+                                                            ) : (
+                                                                translateConcept(
+                                                                    group.name,
+                                                                    lang,
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="svcs-row__meta">
+                                                        <span className="svcs-row__price">
+                                                            {group.priceLabel}
+                                                        </span>
+                                                        <span className="svcs-row__duration">
+                                                            {
+                                                                group.durationLabel
+                                                            }
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            className="svcs-row__book"
+                                                            onClick={() =>
+                                                                single
+                                                                    ? setBookingService(
+                                                                          {
+                                                                              id: single.id,
+                                                                              name: single.name,
+                                                                              priceLabel:
+                                                                                  group.priceLabel,
+                                                                              duration:
+                                                                                  group.durationLabel,
+                                                                          },
+                                                                      )
+                                                                    : setGeneralBookingOpen(
+                                                                          true,
+                                                                      )
+                                                            }
+                                                            aria-label={`${s.bookBtn}: ${translateConcept(group.name, lang)}`}
+                                                        >
+                                                            {s.bookBtn}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
 
                     {/* Bottom CTA */}
                     <div className="svcs-bottom-cta">
@@ -423,87 +446,6 @@ export const getServerSideProps: GetServerSideProps<
         'https://api.salon-bw.pl';
     const apiUrl = rawBase.replace(/\/$/, '');
 
-    const fallbackCategories: ServiceCategory[] = [
-        {
-            id: null,
-            name: 'Usługi dla kobiet',
-            services: [
-                {
-                    id: 1,
-                    name: 'Strzyżenie damskie',
-                    duration: 45,
-                    price: 150,
-                    priceType: 'from',
-                } as Service,
-                {
-                    id: 2,
-                    name: 'Koloryzacja Air Touch',
-                    duration: 180,
-                    price: 600,
-                    priceType: 'from',
-                } as Service,
-                {
-                    id: 3,
-                    name: 'Farbowanie Koleston Perfect',
-                    duration: 90,
-                    price: 320,
-                    priceType: 'from',
-                } as Service,
-                {
-                    id: 4,
-                    name: 'Fryzura ślubna',
-                    duration: 150,
-                    price: 280,
-                } as Service,
-                {
-                    id: 5,
-                    name: 'Botox na włosy',
-                    duration: 60,
-                    price: 300,
-                    priceType: 'from',
-                } as Service,
-                {
-                    id: 6,
-                    name: 'Złote proteiny',
-                    duration: 90,
-                    price: 350,
-                    priceType: 'from',
-                } as Service,
-            ],
-        },
-        {
-            id: null,
-            name: 'Usługi dla mężczyzn',
-            services: [
-                {
-                    id: 7,
-                    name: 'Strzyżenie męskie',
-                    duration: 30,
-                    price: 80,
-                    priceType: 'from',
-                } as Service,
-                {
-                    id: 8,
-                    name: 'Strzyżenie brody',
-                    duration: 20,
-                    price: 60,
-                } as Service,
-                {
-                    id: 9,
-                    name: 'Combo włosy + broda + kompres',
-                    duration: 60,
-                    price: 130,
-                } as Service,
-                {
-                    id: 10,
-                    name: 'Golenie twarzy',
-                    duration: 25,
-                    price: 70,
-                } as Service,
-            ],
-        },
-    ];
-
     try {
         const res = await fetch(`${apiUrl}/services/public`, {
             headers: { Accept: 'application/json' },
@@ -518,7 +460,7 @@ export const getServerSideProps: GetServerSideProps<
             ? raw.filter((svc) => svc.onlineBooking !== false)
             : raw;
         if (!Array.isArray(data) || data.length === 0) {
-            return { props: { categories: fallbackCategories } };
+            return { props: { categories: [] } };
         }
         const map = new Map<string, ServiceCategory>();
         for (const svc of data) {
@@ -535,10 +477,10 @@ export const getServerSideProps: GetServerSideProps<
         const categories = Array.from(map.values());
         return {
             props: {
-                categories: categories.length ? categories : fallbackCategories,
+                categories,
             },
         };
     } catch {
-        return { props: { categories: fallbackCategories } };
+        return { props: { categories: [] } };
     }
 };
