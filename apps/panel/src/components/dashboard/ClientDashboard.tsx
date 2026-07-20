@@ -11,7 +11,9 @@ import ClientAppointmentActions, {
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
 import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
-import VisitNotes from '@/components/client/VisitNotes';
+import VisitNotes, {
+    hasVisibleVisitNotes,
+} from '@/components/client/VisitNotes';
 import PanelButton from '@/components/ui/PanelButton';
 import type { ClientDashboardResponse } from '@/types';
 
@@ -26,13 +28,15 @@ type DashboardAppointmentWithNotes =
     | NonNullable<ClientDashboardResponse['upcomingAppointment']>;
 
 function hasVisitDetails(appointment: DashboardAppointmentWithNotes) {
-    return Boolean(
-        appointment.clientComment?.trim() ||
-            appointment.staffRecommendations?.trim() ||
-            appointment.onlineAddonsSummary?.trim() ||
-            appointment.onlineTotalDurationMinutes ||
+    return hasVisibleVisitNotes({
+        appointmentStatus: appointment.status,
+        clientComment: appointment.clientComment,
+        staffRecommendations: appointment.staffRecommendations,
+        onlineAddonsSummary: appointment.onlineAddonsSummary,
+        onlineTotalDurationMinutes: appointment.onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification:
             appointment.onlineDurationNeedsVerification,
-    );
+    });
 }
 
 const ACTIVE_APPOINTMENT_STATUSES = new Set([

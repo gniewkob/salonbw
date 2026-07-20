@@ -1,4 +1,4 @@
-interface VisitNotesProps {
+export interface VisitNotesProps {
     emptyLabel?: string;
     compact?: boolean;
     appointmentStatus?: string;
@@ -95,6 +95,20 @@ function buildStructuredSections({
     return sections;
 }
 
+export function hasVisibleVisitNotes(
+    value: Pick<
+        VisitNotesProps,
+        | 'appointmentStatus'
+        | 'clientComment'
+        | 'staffRecommendations'
+        | 'onlineAddonsSummary'
+        | 'onlineTotalDurationMinutes'
+        | 'onlineDurationNeedsVerification'
+    >,
+) {
+    return buildStructuredSections(value).length > 0;
+}
+
 export default function VisitNotes({
     emptyLabel = 'Brak notatek przy tej wizycie.',
     compact = false,
@@ -105,17 +119,6 @@ export default function VisitNotes({
     onlineTotalDurationMinutes,
     onlineDurationNeedsVerification,
 }: VisitNotesProps) {
-    const hasStructuredNotes = Boolean(
-        clientComment?.trim() ||
-            staffRecommendations?.trim() ||
-            onlineAddonsSummary?.trim() ||
-            onlineTotalDurationMinutes ||
-            onlineDurationNeedsVerification,
-    );
-    if (!hasStructuredNotes) {
-        return <p className="visit-notes-empty">{emptyLabel}</p>;
-    }
-
     const sections = buildStructuredSections({
         clientComment,
         staffRecommendations,

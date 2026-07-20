@@ -11,7 +11,9 @@ import {
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import { useCustomerAlerts } from '@/hooks/useCustomerAlerts';
 import Link from 'next/link';
-import VisitNotes from '@/components/client/VisitNotes';
+import VisitNotes, {
+    hasVisibleVisitNotes,
+} from '@/components/client/VisitNotes';
 
 interface Props {
     customer: Customer;
@@ -20,13 +22,14 @@ interface Props {
 type CustomerEventHistoryItem = CustomerEventHistory['items'][number];
 
 function hasVisitNotes(visit: CustomerEventHistoryItem) {
-    return Boolean(
-        visit.clientComment?.trim() ||
-            visit.staffRecommendations?.trim() ||
-            visit.onlineAddonsSummary?.trim() ||
-            visit.onlineTotalDurationMinutes ||
-            visit.onlineDurationNeedsVerification,
-    );
+    return hasVisibleVisitNotes({
+        appointmentStatus: visit.status,
+        clientComment: visit.clientComment,
+        staffRecommendations: visit.staffRecommendations,
+        onlineAddonsSummary: visit.onlineAddonsSummary,
+        onlineTotalDurationMinutes: visit.onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification: visit.onlineDurationNeedsVerification,
+    });
 }
 
 export default function CustomerSummaryTab({

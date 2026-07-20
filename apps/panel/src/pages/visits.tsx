@@ -10,7 +10,9 @@ import ClientPanelSection from '@/components/client/ClientPanelSection';
 import VisitDetailsPanel, {
     type VisitDetailsPanelVisit,
 } from '@/components/client/VisitDetailsPanel';
-import VisitNotes from '@/components/client/VisitNotes';
+import VisitNotes, {
+    hasVisibleVisitNotes,
+} from '@/components/client/VisitNotes';
 import StarRating from '@/components/StarRating';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -39,13 +41,14 @@ function formatDateTime(value: string) {
 }
 
 function hasClientVisibleVisitNotes(visit: ClientVisit) {
-    return Boolean(
-        visit.clientComment?.trim() ||
-            visit.staffRecommendations?.trim() ||
-            visit.onlineAddonsSummary?.trim() ||
-            visit.onlineTotalDurationMinutes ||
-            visit.onlineDurationNeedsVerification,
-    );
+    return hasVisibleVisitNotes({
+        appointmentStatus: visit.status,
+        clientComment: visit.clientComment,
+        staffRecommendations: visit.staffRecommendations,
+        onlineAddonsSummary: visit.onlineAddonsSummary,
+        onlineTotalDurationMinutes: visit.onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification: visit.onlineDurationNeedsVerification,
+    });
 }
 
 function isPastUnresolvedVisit(visit: ClientVisit, isFuture: boolean) {

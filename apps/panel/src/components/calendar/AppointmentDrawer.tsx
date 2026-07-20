@@ -25,7 +25,9 @@ import FormulaSection from './appointment-drawer/FormulaSection';
 import ActionsSection from './appointment-drawer/ActionsSection';
 import ServiceCombobox from './appointment-drawer/ServiceCombobox';
 import MessageThread from '@/components/messages/MessageThread';
-import VisitNotes from '@/components/client/VisitNotes';
+import VisitNotes, {
+    hasVisibleVisitNotes,
+} from '@/components/client/VisitNotes';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -87,12 +89,14 @@ function getHighestAlertSeverity(
 function hasStaffVisibleVisitNotes(
     appointment: Appointment | null | undefined,
 ) {
-    return Boolean(
-        appointment?.staffRecommendations?.trim() ||
-            appointment?.onlineAddonsSummary?.trim() ||
-            appointment?.onlineTotalDurationMinutes ||
+    return hasVisibleVisitNotes({
+        appointmentStatus: appointment?.status,
+        staffRecommendations: appointment?.staffRecommendations,
+        onlineAddonsSummary: appointment?.onlineAddonsSummary,
+        onlineTotalDurationMinutes: appointment?.onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification:
             appointment?.onlineDurationNeedsVerification,
-    );
+    });
 }
 
 export default function AppointmentDrawer({

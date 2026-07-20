@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Customer } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import VisitNotes from '@/components/client/VisitNotes';
+import VisitNotes, {
+    hasVisibleVisitNotes,
+} from '@/components/client/VisitNotes';
 import { trackReceptionAction } from '../receptionTelemetry';
 
 function formatDateTime(value: string | null | undefined): string {
@@ -28,13 +30,14 @@ interface RecentVisit {
 }
 
 function hasVisitNotes(visit: RecentVisit) {
-    return Boolean(
-        visit.clientComment?.trim() ||
-            visit.staffRecommendations?.trim() ||
-            visit.onlineAddonsSummary?.trim() ||
-            visit.onlineTotalDurationMinutes ||
-            visit.onlineDurationNeedsVerification,
-    );
+    return hasVisibleVisitNotes({
+        appointmentStatus: visit.status ?? undefined,
+        clientComment: visit.clientComment,
+        staffRecommendations: visit.staffRecommendations,
+        onlineAddonsSummary: visit.onlineAddonsSummary,
+        onlineTotalDurationMinutes: visit.onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification: visit.onlineDurationNeedsVerification,
+    });
 }
 
 /**

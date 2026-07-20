@@ -6,7 +6,9 @@ import {
 import { useCustomerLinkedSales } from '@/hooks/useCustomerLinkedSales';
 import Link from 'next/link';
 import CustomerTimeline from './CustomerTimeline';
-import VisitNotes from '@/components/client/VisitNotes';
+import VisitNotes, {
+    hasVisibleVisitNotes,
+} from '@/components/client/VisitNotes';
 
 interface Props {
     customerId: number;
@@ -129,13 +131,14 @@ function visitStatusMeta(status: string) {
 function hasVisitNotes(
     visit: NonNullable<CustomerEventHistoryData>['items'][number],
 ) {
-    return Boolean(
-        visit.clientComment?.trim() ||
-            visit.staffRecommendations?.trim() ||
-            visit.onlineAddonsSummary?.trim() ||
-            visit.onlineTotalDurationMinutes ||
-            visit.onlineDurationNeedsVerification,
-    );
+    return hasVisibleVisitNotes({
+        appointmentStatus: visit.status,
+        clientComment: visit.clientComment,
+        staffRecommendations: visit.staffRecommendations,
+        onlineAddonsSummary: visit.onlineAddonsSummary,
+        onlineTotalDurationMinutes: visit.onlineTotalDurationMinutes,
+        onlineDurationNeedsVerification: visit.onlineDurationNeedsVerification,
+    });
 }
 
 type CustomerEventHistoryData = ReturnType<
