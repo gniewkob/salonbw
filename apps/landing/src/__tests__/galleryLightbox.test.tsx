@@ -15,7 +15,13 @@ describe('Gallery lightbox', () => {
         window.gtag = jest.fn();
         process.env.NEXT_PUBLIC_ENABLE_ANALYTICS = 'true';
         process.env.NEXT_PUBLIC_GA_ID = 'G-TEST123';
-        window.localStorage.setItem('sbw-consent', JSON.stringify({ analytics: 'granted', decidedAt: new Date().toISOString() }));
+        window.localStorage.setItem(
+            'sbw-consent',
+            JSON.stringify({
+                analytics: 'granted',
+                decidedAt: new Date().toISOString(),
+            }),
+        );
     });
     afterEach(() => {
         // @ts-expect-error jsdom window doesn't define gtag
@@ -35,6 +41,17 @@ describe('Gallery lightbox', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
         fireEvent.click(screen.getByLabelText('Zamknij'));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('shows unavailable gallery state without local sample photos', () => {
+        render(<GalleryPage items={[]} nextCursor={null} fallback />);
+
+        expect(
+            screen.getByText(/Galeria Instagram jest chwilowo niedostępna/i),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /Otwórz zdjęcie/i }),
+        ).not.toBeInTheDocument();
     });
 
     it('has share button and calls navigator.share when available', () => {

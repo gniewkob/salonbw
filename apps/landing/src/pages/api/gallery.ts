@@ -24,16 +24,11 @@ interface InstagramResponse {
     error?: unknown;
 }
 
-const sampleItems: CachedGalleryItem[] = [
-    '/assets/img/slider/slider1.jpg',
-    '/assets/img/slider/slider2.jpg',
-    '/assets/img/slider/slider3.jpg',
-].map((src, idx) => ({
-    id: `local-${idx}`,
-    type: 'IMAGE',
-    imageUrl: src,
-    caption: 'Sample',
-}));
+const emptyGalleryPayload = {
+    items: [] satisfies CachedGalleryItem[],
+    nextCursor: null,
+    fallback: true,
+};
 
 export default async function handler(
     req: NextApiRequest,
@@ -41,11 +36,7 @@ export default async function handler(
 ) {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
-        res.status(200).json({
-            items: sampleItems,
-            nextCursor: null,
-            fallback: true,
-        });
+        res.status(200).json(emptyGalleryPayload);
         return;
     }
     const after =
@@ -95,10 +86,6 @@ export default async function handler(
         writeCache(key, payload);
         res.status(200).json(payload);
     } catch {
-        res.status(200).json({
-            items: sampleItems,
-            nextCursor: null,
-            fallback: true,
-        });
+        res.status(200).json(emptyGalleryPayload);
     }
 }

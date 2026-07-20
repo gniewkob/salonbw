@@ -265,7 +265,7 @@ const t = {
             subtitle:
                 'Najnowsze prace naszego zespołu — fryzury, stylizacje i koloryzacje.',
             fallback:
-                'Wyświetlamy przykładowe zdjęcia — brak połączenia z Instagram.',
+                'Galeria Instagram jest chwilowo niedostępna. Spróbuj odświeżyć.',
             loading: 'Ładowanie…',
             refresh: 'Odśwież',
             scrollMore: 'Przewiń, aby zobaczyć więcej',
@@ -323,7 +323,8 @@ const t = {
         },
         cookies: {
             ariaLabel: 'Zgoda na pliki cookie',
-            message: 'Używamy plików cookie wyłącznie do anonimowych statystyk odwiedzin (Google Analytics). Bez Twojej zgody nie zapisujemy żadnych danych.',
+            message:
+                'Używamy plików cookie wyłącznie do anonimowych statystyk odwiedzin (Google Analytics). Bez Twojej zgody nie zapisujemy żadnych danych.',
             policyLink: 'Polityka prywatności',
             accept: 'Akceptuję',
             decline: 'Tylko niezbędne',
@@ -587,7 +588,8 @@ const t = {
             title: 'Gallery',
             subtitle:
                 'The latest work by our team — hairstyles, styling and colouring.',
-            fallback: 'Showing sample photos — no Instagram connection.',
+            fallback:
+                'The Instagram gallery is temporarily unavailable. Try refreshing.',
             loading: 'Loading…',
             refresh: 'Refresh',
             scrollMore: 'Scroll to see more',
@@ -645,7 +647,8 @@ const t = {
         },
         cookies: {
             ariaLabel: 'Cookie consent',
-            message: 'We use cookies only for anonymous visit statistics (Google Analytics). Nothing is stored without your consent.',
+            message:
+                'We use cookies only for anonymous visit statistics (Google Analytics). Nothing is stored without your consent.',
             policyLink: 'Privacy policy',
             accept: 'Accept',
             decline: 'Essential only',
@@ -910,7 +913,7 @@ const t = {
             subtitle:
                 'Die neuesten Arbeiten unseres Teams — Frisuren, Stylings und Färbungen.',
             fallback:
-                'Beispielfotos werden angezeigt — keine Instagram-Verbindung.',
+                'Die Instagram-Galerie ist vorübergehend nicht verfügbar. Bitte aktualisieren.',
             loading: 'Wird geladen…',
             refresh: 'Aktualisieren',
             scrollMore: 'Scrollen Sie für mehr',
@@ -969,7 +972,8 @@ const t = {
         },
         cookies: {
             ariaLabel: 'Cookie-Einwilligung',
-            message: 'Wir verwenden Cookies nur für anonyme Besuchsstatistiken (Google Analytics). Ohne Ihre Einwilligung wird nichts gespeichert.',
+            message:
+                'Wir verwenden Cookies nur für anonyme Besuchsstatistiken (Google Analytics). Ohne Ihre Einwilligung wird nichts gespeichert.',
             policyLink: 'Datenschutzerklärung',
             accept: 'Akzeptieren',
             decline: 'Nur notwendige',

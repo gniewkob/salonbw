@@ -19,16 +19,11 @@ import {
 
 type GalleryItem = CachedGalleryItem;
 
-const SAMPLE_ITEMS: GalleryItem[] = [
-    '/assets/img/slider/slider1.jpg',
-    '/assets/img/slider/slider2.jpg',
-    '/assets/img/slider/slider3.jpg',
-].map((src, idx) => ({
-    id: `local-${idx}`,
-    type: 'IMAGE',
-    imageUrl: src,
-    caption: 'Sample',
-}));
+const emptyGalleryPayload = {
+    items: [] satisfies GalleryItem[],
+    nextCursor: null,
+    fallback: true,
+};
 
 interface GalleryPageProps {
     items: GalleryItem[];
@@ -384,9 +379,7 @@ export const getServerSideProps: GetServerSideProps<
 > = async () => {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
-        return {
-            props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true },
-        };
+        return { props: emptyGalleryPayload };
     }
     const key = cacheKey(null, '12|ssr');
     const cached = readCache(key);
@@ -430,8 +423,6 @@ export const getServerSideProps: GetServerSideProps<
         writeCache(key, { items, nextCursor, fallback: false });
         return { props: { items, nextCursor, fallback: false } };
     } catch {
-        return {
-            props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true },
-        };
+        return { props: emptyGalleryPayload };
     }
 };
