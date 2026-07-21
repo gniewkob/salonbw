@@ -12,7 +12,8 @@ _Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
   - app health was OK: API `/healthz` returned 200, panel returned 307, landing returned 200.
 - Guardrail improvement:
   - versioned the cleanup script as `scripts/mydevil/cleanup-codex-remote-payload.sh`,
-  - added a lock, lightweight log rotation, and diagnostic logging with pid/ppid/state/elapsed time,
+  - added a lock, lightweight log rotation, and pre-kill diagnostic logging for the target and parent process with pid/ppid/pgid/sid/tty/tpgid/state/elapsed time/start time/wchan/xstat/command,
+  - restricted the diagnostic log to the account owner and deliberately excluded process environments,
   - kept the kill scope limited to stopped `CODEX_REMOTE_PAYLOAD` processes only.
 - Operational note:
   - cleanup remains a temporary mitigation; the source of the recurring remote payload should still be reduced at the tool/process level.
