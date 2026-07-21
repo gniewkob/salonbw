@@ -14,6 +14,9 @@ _Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
   - versioned the cleanup script as `scripts/mydevil/cleanup-codex-remote-payload.sh`,
   - added a lock, lightweight log rotation, and pre-kill diagnostic logging for the target and parent process with pid/ppid/pgid/sid/tty/tpgid/state/elapsed time/start time/wchan/xstat/command,
   - restricted the diagnostic log to the account owner and deliberately excluded process environments,
+  - froze each kill batch to the previously diagnosed PIDs and revalidated state plus marker before TERM and KILL to prevent PID-reuse/new-process races,
+  - added an explicit `CODEX_PAYLOAD_CLEANUP_DRY_RUN=1` mode for production candidate validation without signals,
+  - added a destructive-scope regression test covering the intended stopped payload plus running-marker, unrelated-stopped, and late-arriving payload exclusions,
   - kept the kill scope limited to stopped `CODEX_REMOTE_PAYLOAD` processes only.
 - Operational note:
   - cleanup remains a temporary mitigation; the source of the recurring remote payload should still be reduced at the tool/process level.
