@@ -77,8 +77,20 @@ describe('FollowUpStatisticsPage', () => {
         );
     });
 
-    it('shows fallback when follow-up audit endpoint fails', async () => {
+    it('shows an error state when follow-up audit endpoint fails', async () => {
         apiFetchMock.mockRejectedValue(new Error('unavailable'));
+
+        render(<FollowUpStatisticsPage />);
+
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('follow-up-audit-page'),
+            ).toHaveTextContent('Audyt follow-up chwilowo niedostępny.'),
+        );
+    });
+
+    it('shows an error state when follow-up audit payload has invalid root shape', async () => {
+        apiFetchMock.mockResolvedValue(null);
 
         render(<FollowUpStatisticsPage />);
 
@@ -131,7 +143,7 @@ describe('FollowUpStatisticsPage', () => {
         );
     });
 
-    it('normalizes malformed payload, deduplicates rows and applies fallback labels', async () => {
+    it('normalizes malformed payload, deduplicates rows and labels unknown values', async () => {
         apiFetchMock.mockResolvedValue({
             from: '2026-05-07',
             to: '2026-05-13',

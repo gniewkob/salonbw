@@ -81,4 +81,53 @@ describe('useCustomerFollowUpActions', () => {
             '/crm/customers/123/follow-up-actions?limit=10',
         );
     });
+
+    it('does not fetch follow-up actions for invalid customer ids', () => {
+        const apiFetch = jest.fn();
+        mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
+
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { retry: false },
+            },
+        });
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        );
+
+        const { result } = renderHook(() => useCustomerFollowUpActions(0), {
+            wrapper,
+        });
+
+        expect(result.current.fetchStatus).toBe('idle');
+        expect(apiFetch).not.toHaveBeenCalled();
+    });
+
+    it('surfaces invalid follow-up actions payloads as query errors', async () => {
+        const apiFetch = jest.fn().mockResolvedValue(null);
+        mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
+
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { retry: false },
+            },
+        });
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        );
+
+        const { result } = renderHook(() => useCustomerFollowUpActions(123), {
+            wrapper,
+        });
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(result.current.data).toBeUndefined();
+        expect(apiFetch).toHaveBeenCalledWith(
+            '/crm/customers/123/follow-up-actions?limit=10',
+        );
+    });
 });

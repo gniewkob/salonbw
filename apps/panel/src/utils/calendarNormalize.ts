@@ -40,20 +40,8 @@ export function normalizeAlertRateFraction(
 export function normalizeOperationalInsightsResponse(
     value: unknown,
 ): ReceptionOperationalInsightsResponse {
-    const fallback: ReceptionOperationalInsightsResponse = {
-        from: '',
-        to: '',
-        summary: {
-            actionsTotal: 0,
-            actionsOnAlerts: 0,
-            alertActionRate: 0,
-        },
-        byAction: [],
-        byDay: [],
-    };
-
-    if (!value || typeof value !== 'object') {
-        return fallback;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error('Invalid operational insights response');
     }
 
     const payload = value as Partial<ReceptionOperationalInsightsResponse>;
@@ -205,17 +193,8 @@ export function normalizeFollowUpCandidatesResponse(
 export function normalizeFollowUpAuditResponse(
     value: unknown,
 ): ReceptionFollowUpAuditResponse {
-    const fallback: ReceptionFollowUpAuditResponse = {
-        from: '',
-        to: '',
-        actionsTotal: 0,
-        byAction: [],
-        byReason: [],
-        byDay: [],
-    };
-
-    if (!value || typeof value !== 'object') {
-        return fallback;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error('Invalid follow-up audit response');
     }
 
     const payload = value as Partial<ReceptionFollowUpAuditResponse>;

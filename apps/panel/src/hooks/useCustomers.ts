@@ -227,24 +227,17 @@ function normalizeFollowUpActionItem(
 
 function normalizeCustomerFollowUpActionsResponse(
     value: unknown,
-    customerId: number | null,
+    customerId: number,
 ): CustomerFollowUpActionsResponse {
-    const fallbackCustomerId =
-        Number.isInteger(customerId) && customerId !== null && customerId > 0
-            ? customerId
-            : 0;
-    if (!value || typeof value !== 'object') {
-        return {
-            customerId: fallbackCustomerId,
-            items: [],
-        };
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error('Invalid customer follow-up actions response');
     }
     const payload = value as Record<string, unknown>;
     const payloadCustomerId = Number(payload.customerId);
     const normalizedCustomerId =
         Number.isInteger(payloadCustomerId) && payloadCustomerId > 0
             ? payloadCustomerId
-            : fallbackCustomerId;
+            : customerId;
 
     const items = Array.isArray(payload.items)
         ? payload.items
@@ -265,18 +258,26 @@ export function useCustomerFollowUpActions(
     limit = 10,
 ) {
     const { apiFetch } = useAuth();
+    const normalizedCustomerId =
+        customerId !== null && Number.isInteger(customerId) && customerId > 0
+            ? customerId
+            : null;
+
     return useQuery<CustomerFollowUpActionsResponse>({
-        queryKey: ['customer-follow-up-actions', customerId, limit],
+        queryKey: ['customer-follow-up-actions', normalizedCustomerId, limit],
         queryFn: async () => {
+            if (normalizedCustomerId === null) {
+                throw new Error('Invalid customer id');
+            }
             const response = await apiFetch<unknown>(
-                `/crm/customers/${customerId}/follow-up-actions?limit=${limit}`,
+                `/crm/customers/${normalizedCustomerId}/follow-up-actions?limit=${limit}`,
             );
             return normalizeCustomerFollowUpActionsResponse(
                 response,
-                customerId,
+                normalizedCustomerId,
             );
         },
-        enabled: customerId !== null,
+        enabled: normalizedCustomerId !== null,
     });
 }
 

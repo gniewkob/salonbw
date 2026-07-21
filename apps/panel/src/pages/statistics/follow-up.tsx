@@ -117,15 +117,9 @@ function aggregateByKey(
 }
 
 function normalizeAuditResponse(value: unknown): FollowUpAuditResponse {
-    const fallback: FollowUpAuditResponse = {
-        from: '',
-        to: '',
-        actionsTotal: 0,
-        byAction: [],
-        byReason: [],
-        byDay: [],
-    };
-    if (!value || typeof value !== 'object') return fallback;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error('Invalid follow-up audit response');
+    }
 
     const payload = value as Partial<FollowUpAuditResponse>;
     const actionsTotal = toSafeNonNegativeNumber(payload.actionsTotal);
