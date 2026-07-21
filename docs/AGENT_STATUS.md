@@ -17,6 +17,16 @@ _Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
 - Operational note:
   - cleanup remains a temporary mitigation; the source of the recurring remote payload should still be reduced at the tool/process level.
 
+## 2026-07-21 — Passenger-safe panel monitor cleanup
+
+- Finding:
+  - `scripts/monitor-panel.sh` still started `./start_app.sh` when a PID file or port check failed,
+  - this contradicted the current MyDevil rule that Passenger owns the panel runtime and manual `next start`/`node app.js` probes must not run on production.
+- Change:
+  - rewrote `scripts/monitor-panel.sh` as a check-only Passenger-safe monitor by default,
+  - optional restart now requires `PANEL_MONITOR_ACTION=restart` and uses `devil www restart panel.salon-bw.pl` plus `tmp/restart.txt`,
+  - updated monitoring docs to remove the old cron/start-script recommendation.
+
 ## 2026-07-20 — Visit notes visibility audit
 
 - Commit:

@@ -195,9 +195,9 @@ Operational note:
    ```
 
 **Prevention:**
-- Deploy monitor script to cron (see scripts/monitor-panel.sh)
+- Use `scripts/monitor-panel.sh` as a Passenger-safe check-only monitor. If an automated restart is explicitly desired, run it with `PANEL_MONITOR_ACTION=restart`; do not use manual `next start`/`start_app.sh` probes.
 - Add process monitoring alerts
-- Consider implementing Passenger-managed setup
+- Keep the Passenger-managed setup as the only production runtime owner
 
 ---
 
