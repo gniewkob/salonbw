@@ -4,6 +4,19 @@ _Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
 
+## 2026-07-21 — Client visit reschedule visibility
+
+- Finding:
+  - `/visits` intentionally hid the previous-vs-new date comparison for `rescheduled_pending` rows until the details panel opened,
+  - this contradicted the client UX requirement that a proposed salon time change be visible at first glance in the visits list.
+- Change:
+  - reused `RescheduleChangeNotice` in compact mode directly in each affected visit row,
+  - kept the full details panel as the place for accepting/cancelling and messaging,
+  - updated the visits page test contract so the row must show "Było" and "Propozycja salonu" before opening details.
+- Local validation:
+  - targeted visits/notes Jest suite passed (`16/16`),
+  - panel `typecheck`, `lint`, and production `build` passed.
+
 ## 2026-07-21 — MyDevil process guardrail hardening
 
 - Finding:

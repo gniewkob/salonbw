@@ -10,18 +10,28 @@ function formatRescheduleDateTime(value: string) {
 }
 
 type RescheduleChangeNoticeProps = {
+    compact?: boolean;
     newStartTime: string;
     previousStartTime?: string | null;
 };
 
 export default function RescheduleChangeNotice({
+    compact = false,
     newStartTime,
     previousStartTime,
 }: RescheduleChangeNoticeProps) {
     if (!previousStartTime) return null;
 
     return (
-        <div className="reschedule-change" role="note">
+        <div
+            className={[
+                'reschedule-change',
+                compact ? 'reschedule-change--compact' : '',
+            ]
+                .filter(Boolean)
+                .join(' ')}
+            role="note"
+        >
             <div className="reschedule-change__title">
                 Salon proponuje zmianę terminu
             </div>

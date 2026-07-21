@@ -7,6 +7,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { CLIENT_ARCHIVE_STATUSES } from '@/components/client/ClientAppointmentActions';
 import ClientPageHeader from '@/components/client/ClientPageHeader';
 import ClientPanelSection from '@/components/client/ClientPanelSection';
+import RescheduleChangeNotice from '@/components/client/RescheduleChangeNotice';
 import VisitDetailsPanel, {
     type VisitDetailsPanelVisit,
 } from '@/components/client/VisitDetailsPanel';
@@ -196,6 +197,16 @@ function VisitRow({
                         specjalista: {visit.employeeName}
                     </div>
                 )}
+                {visit.status === 'rescheduled_pending' &&
+                    visit.reschedulePreviousStartTime && (
+                        <RescheduleChangeNotice
+                            compact
+                            previousStartTime={
+                                visit.reschedulePreviousStartTime
+                            }
+                            newStartTime={visit.startTime}
+                        />
+                    )}
                 {hasClientVisibleVisitNotes(visit) && (
                     <VisitNotes
                         compact

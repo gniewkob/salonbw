@@ -10573,6 +10573,23 @@ summary:focus-visible {
     line-height: 1.35;
 }
 
+.reschedule-change--compact {
+    margin-top: 0.55rem;
+    padding: 0.6rem;
+}
+
+.reschedule-change--compact .reschedule-change__title {
+    margin-bottom: 0.35rem;
+}
+
+.reschedule-change--compact .reschedule-change__grid {
+    gap: 0.5rem;
+}
+
+.reschedule-change--compact .reschedule-change__grid strong {
+    font-size: 0.82rem;
+}
+
 .visit-notes {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

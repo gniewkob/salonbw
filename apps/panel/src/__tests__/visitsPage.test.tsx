@@ -226,15 +226,17 @@ describe('VisitsPage', () => {
         setup(apiFetch);
 
         await screen.findByText('Tonowanie');
-        // Compact row does not show the full reschedule comparison anymore —
-        // it moved into the details panel (deliberate Z7 UX change).
-        expect(
-            screen.queryByText('Salon proponuje zmianę terminu'),
-        ).not.toBeInTheDocument();
-
         const rescheduledRow = screen
             .getByRole('button', { name: 'Tonowanie' })
             .closest('.salonbw-appointment-item')!;
+        expect(
+            within(rescheduledRow).getByText('Salon proponuje zmianę terminu'),
+        ).toBeInTheDocument();
+        expect(within(rescheduledRow).getByText('Było')).toBeInTheDocument();
+        expect(
+            within(rescheduledRow).getByText('Propozycja salonu'),
+        ).toBeInTheDocument();
+
         fireEvent.click(
             within(rescheduledRow).getByRole('button', { name: 'Szczegóły' }),
         );
