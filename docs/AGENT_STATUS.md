@@ -1,8 +1,21 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-20 (visit notes visibility audit)_
+_Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-21 — MyDevil process guardrail hardening
+
+- Finding:
+  - process usage was stable around 17/70 with 4 expected Passenger Node workers,
+  - stopped `CODEX_REMOTE_PAYLOAD` shells still appeared cyclically, but the cleanup cron removed them before the account approached the process limit,
+  - app health was OK: API `/healthz` returned 200, panel returned 307, landing returned 200.
+- Guardrail improvement:
+  - versioned the cleanup script as `scripts/mydevil/cleanup-codex-remote-payload.sh`,
+  - added a lock, lightweight log rotation, and diagnostic logging with pid/ppid/state/elapsed time,
+  - kept the kill scope limited to stopped `CODEX_REMOTE_PAYLOAD` processes only.
+- Operational note:
+  - cleanup remains a temporary mitigation; the source of the recurring remote payload should still be reduced at the tool/process level.
 
 ## 2026-07-20 — Visit notes visibility audit
 

@@ -165,16 +165,17 @@ Operational note:
 - Process not responding on port 3001
 
 **Immediate Actions:**
-1. Check if Node.js process is running:
+1. Check whether Passenger has an expected Node.js worker for the panel:
    ```bash
    ssh vetternkraft@s0.mydevil.net
-   ps aux | grep 'node app.js' | grep panelbw
+   ps -uxww | grep 'node22: .*panel.salon-bw.pl' | grep -v grep
    ```
 
-2. If not running, restart using start script:
+2. If not running, restart the Passenger-managed domain. Do not run
+   `node app.js`, `next start`, or `start_app.sh` manually:
    ```bash
-   cd /usr/home/vetternkraft/apps/nodejs/panelbw
-   ./start_app.sh
+   devil www restart panel.salon-bw.pl
+   touch /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs/tmp/restart.txt
    ```
 
 3. Wait 10 seconds and verify:

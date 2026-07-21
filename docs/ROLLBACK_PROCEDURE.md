@@ -106,8 +106,8 @@ Before rolling back, gather this information:
 
 ```bash
 ssh vetternkraft@s0.mydevil.net
-cd /usr/home/vetternkraft/apps/nodejs/panelbw
-./start_app.sh
+devil www restart panel.salon-bw.pl
+touch /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs/tmp/restart.txt
 ```
 
 **Full Rollback (if deployment introduced bugs):**
@@ -130,8 +130,8 @@ cd /usr/home/vetternkraft/apps/nodejs/panelbw
    curl -I https://panel.salon-bw.pl/
    # Should return HTTP 307 (redirect) or 200
 
-   # Check process is running
-   ssh vetternkraft@s0.mydevil.net "ps aux | grep 'node app.js' | grep panelbw"
+   # Check Passenger-managed process is running; do not start node manually.
+   ssh vetternkraft@s0.mydevil.net "ps -uxww | grep 'node22: .*panel.salon-bw.pl' | grep -v grep"
    ```
 
 **Time Required:** 5-10 minutes (full rollback), 1-2 minutes (restart only)
@@ -370,7 +370,7 @@ tail -100 /usr/home/vetternkraft/apps/nodejs/panelbw/public/server.log
 
 # Common fixes:
 # - Missing environment variables → Check .env files
-# - Port already in use → Kill old process
+# - Port already in use → check Passenger-managed Node workers; do not start node manually
 # - Node modules missing → Run npm install
 ```
 
