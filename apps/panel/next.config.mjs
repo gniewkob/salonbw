@@ -393,11 +393,6 @@ const nextConfig = {
                 permanent: false,
             },
             {
-                source: '/notifications',
-                destination: '/communication',
-                permanent: false,
-            },
-            {
                 source: '/settings/customer-panel',
                 destination: '/settings/online-booking',
                 permanent: false,

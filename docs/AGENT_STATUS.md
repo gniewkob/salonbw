@@ -14,6 +14,7 @@ _Last updated: 2026-07-21 (notification action links)_
   - client notifications now include `rescheduled_pending` visits and expose a `/visits?visitId=...` action,
   - staff notifications for online bookings and today's visits expose `/calendar?appointmentId=...` actions,
   - `/notifications` renders action alerts with a visible CTA and message link while keeping neutral styling aligned with the panel design system,
+  - removed the legacy `/notifications -> /communication` redirect so the notification center can actually be reached,
   - added a focused notifications page test for the reschedule-action link contract.
 - Local validation:
   - `pnpm --filter @salonbw/panel test -- notificationsPage.test.tsx ClientDashboard.test.tsx visitsPage.test.tsx --runInBand` passed (`20/20`),
