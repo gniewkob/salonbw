@@ -1,8 +1,27 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
+_Last updated: 2026-07-21 (notification action links)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-21 — Notification action links
+
+- Finding:
+  - the notifications center rendered appointment-related alerts as passive text only,
+  - client reschedule proposals were absent from the notification feed, even though they require explicit client action,
+  - staff booking notifications did not carry a direct appointment deep link.
+- Change:
+  - client notifications now include `rescheduled_pending` visits and expose a `/visits?visitId=...` action,
+  - staff notifications for online bookings and today's visits expose `/calendar?appointmentId=...` actions,
+  - `/notifications` renders action alerts with a visible CTA and message link while keeping neutral styling aligned with the panel design system,
+  - added a focused notifications page test for the reschedule-action link contract.
+- Local validation:
+  - `pnpm --filter @salonbw/panel test -- notificationsPage.test.tsx ClientDashboard.test.tsx visitsPage.test.tsx --runInBand` passed (`20/20`),
+  - `pnpm --filter @salonbw/panel run typecheck` passed,
+  - `pnpm --filter @salonbw/panel run lint` passed,
+  - `pnpm --filter @salonbw/panel run build` passed,
+  - `pnpm --filter salonbw-backend run typecheck` passed,
+  - `pnpm --filter salonbw-backend run build` passed.
 
 ## 2026-07-21 — Client visit reschedule visibility
 

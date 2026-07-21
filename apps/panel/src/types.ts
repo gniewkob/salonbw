@@ -389,8 +389,12 @@ export interface ClientDashboardResponse {
 
 export interface Notification {
     id: number | string;
+    type?: 'appointment' | 'online_booking_action' | 'reschedule_action';
+    appointmentId?: number;
     message: string;
     createdAt: string;
+    actionHref?: string;
+    actionLabel?: string;
 }
 
 export interface EmailLog {

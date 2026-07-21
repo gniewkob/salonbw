@@ -11378,8 +11378,13 @@ summary:focus-visible {
 .notifications-list__item {
     display: flex;
     gap: 0.75rem;
+    align-items: flex-start;
     padding: 1rem;
     border-bottom: 1px solid #f0f3f6;
+}
+
+.notifications-list__item--action {
+    background: #f6f6f7;
 }
 
 .notifications-list__item:last-child {
@@ -11401,6 +11406,28 @@ summary:focus-visible {
     font-weight: 600;
 }
 
+.notifications-list__body {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.notifications-list__message-link {
+    display: inline-block;
+    color: #23252a;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.notifications-list__message-link:hover,
+.notifications-list__message-link:focus-visible {
+    color: #0d0d0d;
+    text-decoration: underline;
+}
+
+.notifications-list__action {
+    flex: 0 0 auto;
+}
+
 .notifications-list__body time,
 .notifications-list__empty {
     color: #6e7278;
@@ -11409,6 +11436,20 @@ summary:focus-visible {
 
 .notifications-list__empty {
     padding: 1rem;
+}
+
+@media (max-width: 767px) {
+    .notifications-list__item {
+        flex-wrap: wrap;
+    }
+
+    .notifications-list__body {
+        flex-basis: calc(100% - 1.25rem);
+    }
+
+    .notifications-list__action {
+        margin-left: 1.25rem;
+    }
 }
 
 .customer-communication-help {

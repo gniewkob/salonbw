@@ -40,6 +40,7 @@ export class NotificationsController {
                         AppointmentStatus.Scheduled,
                         AppointmentStatus.Confirmed,
                         AppointmentStatus.OnlinePending,
+                        AppointmentStatus.RescheduledPending,
                     ]),
                 },
                 relations: ['service', 'employee'],
@@ -48,8 +49,18 @@ export class NotificationsController {
             });
             return upcoming.map((a) => ({
                 id: `client-${a.id}`,
+                type:
+                    a.status === AppointmentStatus.RescheduledPending
+                        ? 'reschedule_action'
+                        : 'appointment',
+                appointmentId: a.id,
                 message: this.formatClientMessage(a),
                 createdAt: a.startTime,
+                actionHref: `/visits?visitId=${a.id}`,
+                actionLabel:
+                    a.status === AppointmentStatus.RescheduledPending
+                        ? 'Sprawdź i zaakceptuj'
+                        : 'Szczegóły wizyty',
             }));
         }
 
@@ -81,14 +92,22 @@ export class NotificationsController {
         const pendingNotifs = pending.map((a) => ({
             // Prefiks zamiast id*1000 — hack kolidował (#1 pending vs #1000 today).
             id: `pending-${a.id}`,
+            type: 'online_booking_action',
+            appointmentId: a.id,
             message: `Nowa rezerwacja online od ${a.client?.name ?? 'klienta'} — ${a.service?.name ?? 'usługa'} (${this.formatTime(a.startTime)}) czeka na potwierdzenie`,
             createdAt: a.createdAt ?? a.startTime,
+            actionHref: `/calendar?appointmentId=${a.id}`,
+            actionLabel: 'Otwórz wizytę',
         }));
 
         const todayNotifs = recent.map((a) => ({
             id: `today-${a.id}`,
+            type: 'appointment',
+            appointmentId: a.id,
             message: `Wizyta: ${a.client?.name ?? 'klient'} — ${a.service?.name ?? 'usługa'} o ${this.formatTime(a.startTime)}`,
             createdAt: a.startTime,
+            actionHref: `/calendar?appointmentId=${a.id}`,
+            actionLabel: 'Otwórz wizytę',
         }));
 
         return [...pendingNotifs, ...todayNotifs].slice(0, 20);
@@ -96,6 +115,9 @@ export class NotificationsController {
 
     private formatClientMessage(a: Appointment): string {
         const timeStr = this.formatTime(a.startTime);
+        if (a.status === AppointmentStatus.RescheduledPending) {
+            return `Salon zaproponował nowy termin wizyty ${a.service?.name ?? 'usługa'} — ${timeStr}. Potwierdź zmianę.`;
+        }
         if (a.status === AppointmentStatus.OnlinePending) {
             return `Twoja rezerwacja ${a.service?.name ?? ''} na ${timeStr} oczekuje na potwierdzenie`;
         }
