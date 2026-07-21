@@ -44,9 +44,9 @@ log_process_snapshot() {
 is_stopped_codex_payload() {
   CHECK_PID=$1
 
-  ps -ww -p "$CHECK_PID" -o pid=,state=,command= > "$TMP.snapshot" 2>/dev/null || true
+  ps -ww -p "$CHECK_PID" -o pid,state,command > "$TMP.snapshot" 2>/dev/null || true
   awk -v pid="$CHECK_PID" \
-    '$1 == pid && $2 ~ /T/ && index($0, "CODEX_REMOTE_PAYLOAD") { found = 1 } END { exit !found }' \
+    'NR > 1 && $1 == pid && $2 ~ /T/ && index($0, "CODEX_REMOTE_PAYLOAD") { found = 1 } END { exit !found }' \
     "$TMP.snapshot"
 }
 

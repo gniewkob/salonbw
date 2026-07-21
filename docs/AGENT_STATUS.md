@@ -18,6 +18,13 @@ _Last updated: 2026-07-21 (MyDevil process guardrail hardening)_
   - added an explicit `CODEX_PAYLOAD_CLEANUP_DRY_RUN=1` mode for production candidate validation without signals,
   - added a destructive-scope regression test covering the intended stopped payload plus running-marker, unrelated-stopped, and late-arriving payload exclusions,
   - kept the kill scope limited to stopped `CODEX_REMOTE_PAYLOAD` processes only.
+- Production verification:
+  - installed the checksum-matched script at `/usr/home/vetternkraft/bin/cleanup-codex-remote-payload.sh` with two timestamped rollback copies retained,
+  - FreeBSD dry-run and destructive-scope suites passed: only the initial stopped payload was removed; running-marker, unrelated-stopped, late-arriving, and dry-run processes survived,
+  - a natural stopped payload was captured and removed (`1 -> 0`), followed by an observed automatic cron cleanup that appended diagnostics and returned the count to `0`,
+  - captured FreeBSD `xstat=15` is hexadecimal `0x15` (decimal 21); `kill -l 21` reports `TTIN`, confirming terminal-input job control as the stop cause,
+  - the source still recreates payloads after cleanup; the guardrail is working but remains mitigation rather than root-cause removal,
+  - post-install health remained API `200`, panel `307`, landing `200`; installed syntax, cron count, log mode `600`, and temporary-file cleanup were verified.
 - Operational note:
   - cleanup remains a temporary mitigation; the source of the recurring remote payload should still be reduced at the tool/process level.
 

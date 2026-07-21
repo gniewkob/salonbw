@@ -2,7 +2,7 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-CLEANUP_SCRIPT="$SCRIPT_DIR/cleanup-codex-remote-payload.sh"
+CLEANUP_SCRIPT="${CLEANUP_SCRIPT_UNDER_TEST:-$SCRIPT_DIR/cleanup-codex-remote-payload.sh}"
 TEST_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/codex-payload-cleanup-test.XXXXXX")
 LOG="$TEST_ROOT/cleanup.log"
 DRY_LOG="$TEST_ROOT/dry-run.log"
