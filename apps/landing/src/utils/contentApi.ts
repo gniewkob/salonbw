@@ -1,6 +1,5 @@
 /**
- * Content API client for fetching landing page content from database
- * Fallback to local config if API fails
+ * Content API client for landing sections that are managed by the CMS.
  */
 
 import * as localConfig from '@/config/content';
@@ -20,98 +19,114 @@ export interface ContentSection {
     updatedAt: string;
 }
 
+const CMS_SECTION_KEYS = {
+    BUSINESS_INFO: 'business_info',
+    HERO_SLIDES: 'hero_slides',
+    FOUNDER_MESSAGE: 'founder_message',
+    HISTORY_ITEMS: 'history_items',
+    CORE_VALUES: 'core_values',
+} satisfies Partial<Record<keyof typeof localConfig, string>>;
+
+function getCmsSectionKey(key: keyof typeof localConfig): string {
+    const cmsKey = CMS_SECTION_KEYS[key as keyof typeof CMS_SECTION_KEYS];
+    if (!cmsKey) {
+        throw new Error(
+            `[contentApi] Section ${String(key)} is not managed by CMS`,
+        );
+    }
+    return cmsKey;
+}
+
+function assertContentSection(value: unknown): asserts value is ContentSection {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error('[contentApi] Invalid content section response');
+    }
+    if (!('data' in value)) {
+        throw new Error(
+            '[contentApi] Content section response is missing data',
+        );
+    }
+}
+
 /**
  * Fetch a specific content section from API by key
- * Falls back to local config if API fails
  */
 export async function getContentSection<T>(
     key: keyof typeof localConfig,
-    fallback: T,
 ): Promise<T> {
-    try {
-        const url = `${API_BASE_URL}/content/sections/${String(key)}`;
-        const res = await fetch(url, {
-            headers: { Accept: 'application/json' },
-            next: { revalidate: 3600 }, // Cache for 1 hour
-        });
+    const cmsKey = getCmsSectionKey(key);
+    const url = `${API_BASE_URL}/content/sections/${cmsKey}`;
+    const res = await fetch(url, {
+        headers: { Accept: 'application/json' },
+        next: { revalidate: 3600 }, // Cache for 1 hour
+    });
 
-        if (!res.ok) {
-            console.warn(
-                `[contentApi] Failed to fetch ${String(key)}: ${res.status}`,
-            );
-            return fallback;
-        }
-
-        const section: ContentSection = await res.json();
-        return section.data as T;
-    } catch (error) {
-        console.error(
-            `[contentApi] Error fetching ${String(key)}:`,
-            error instanceof Error ? error.message : 'Unknown error',
+    if (!res.ok) {
+        throw new Error(
+            `[contentApi] Failed to fetch ${String(key)} (${cmsKey}): ${res.status}`,
         );
-        return fallback;
     }
+
+    const section = (await res.json()) as unknown;
+    assertContentSection(section);
+    return section.data as T;
 }
 
 /**
  * Fetch all content sections from API
- * Falls back to local config if API fails
  */
 export async function getAllContentSections(): Promise<
     Record<string, unknown>
 > {
-    try {
-        const url = `${API_BASE_URL}/content/sections?active=true`;
-        const res = await fetch(url, {
-            headers: { Accept: 'application/json' },
-            next: { revalidate: 3600 }, // Cache for 1 hour
-        });
+    const url = `${API_BASE_URL}/content/sections?active=true`;
+    const res = await fetch(url, {
+        headers: { Accept: 'application/json' },
+        next: { revalidate: 3600 }, // Cache for 1 hour
+    });
 
-        if (!res.ok) {
-            console.warn(
-                `[contentApi] Failed to fetch all sections: ${res.status}`,
-            );
-            return localConfig;
-        }
-
-        const sections: ContentSection[] = await res.json();
-        const contentMap: Record<string, unknown> = {};
-        for (const section of sections) {
-            contentMap[section.key] = section.data;
-        }
-        return contentMap;
-    } catch (error) {
-        console.error(
-            '[contentApi] Error fetching all sections:',
-            error instanceof Error ? error.message : 'Unknown error',
+    if (!res.ok) {
+        throw new Error(
+            `[contentApi] Failed to fetch all sections: ${res.status}`,
         );
-        return localConfig;
     }
+
+    const sections = (await res.json()) as unknown;
+    if (!Array.isArray(sections)) {
+        throw new Error('[contentApi] Invalid content sections response');
+    }
+    const contentMap: Record<string, unknown> = {};
+    for (const section of sections) {
+        assertContentSection(section);
+        contentMap[section.key] = section.data;
+    }
+    return contentMap;
 }
 
 /**
- * Type-safe helper to get specific content with fallback
+ * Type-safe helpers to get specific CMS-managed content.
  */
 export async function getHeroSlides() {
-    return getContentSection('HERO_SLIDES', localConfig.HERO_SLIDES);
+    return getContentSection<typeof localConfig.HERO_SLIDES>('HERO_SLIDES');
 }
 
 export async function getBusinessInfo() {
-    return getContentSection('BUSINESS_INFO', localConfig.BUSINESS_INFO);
+    return getContentSection<typeof localConfig.BUSINESS_INFO>('BUSINESS_INFO');
 }
 
 export async function getFounderMessage() {
-    return getContentSection('FOUNDER_MESSAGE', localConfig.FOUNDER_MESSAGE);
+    return getContentSection<typeof localConfig.FOUNDER_MESSAGE>(
+        'FOUNDER_MESSAGE',
+    );
 }
 
 export async function getHistoryItems() {
-    return getContentSection('HISTORY_ITEMS', localConfig.HISTORY_ITEMS);
+    return getContentSection<typeof localConfig.HISTORY_ITEMS>('HISTORY_ITEMS');
 }
 
 export async function getCoreValues() {
-    return getContentSection('CORE_VALUES', localConfig.CORE_VALUES);
+    return getContentSection<typeof localConfig.CORE_VALUES>('CORE_VALUES');
 }
 
 export async function getSalonGallery() {
-    return getContentSection('SALON_GALLERY', localConfig.SALON_GALLERY);
+    return localConfig.SALON_GALLERY;
 }

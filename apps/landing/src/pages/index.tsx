@@ -6,7 +6,7 @@ import { jsonLd, absUrl } from '@/utils/seo';
 import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
-import { BUSINESS_INFO, SEO_META } from '@/config/content';
+import { BUSINESS_INFO, SALON_GALLERY, SEO_META } from '@/config/content';
 import translations from '@/i18n/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
@@ -19,7 +19,7 @@ import BookingModal from '@/components/BookingModal';
 import BookingCta from '@/components/BookingCta';
 import MapFacade from '@/components/MapFacade';
 import { useOpeningHours } from '@/hooks/useOpeningHours';
-import { getFounderMessage, getSalonGallery } from '@/utils/contentApi';
+import { getFounderMessage } from '@/utils/contentApi';
 
 type FounderData = { name: string; quote: string; photo?: string };
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
@@ -354,15 +354,12 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 }
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-    const [founder, galleryImages] = await Promise.all([
-        getFounderMessage(),
-        getSalonGallery(),
-    ]);
+    const founder = await getFounderMessage();
 
     return {
         props: {
             founder: founder as unknown as FounderData,
-            galleryImages: galleryImages as unknown as GalleryImage[],
+            galleryImages: SALON_GALLERY as unknown as GalleryImage[],
         },
         revalidate: 3600,
     };
