@@ -3,9 +3,33 @@ import { DATA_DELETION } from '@/i18n/dataDeletionContent';
 import type { Language } from '@/i18n/translations';
 
 const localeExpectations: Record<Language, RegExp[]> = {
-    pl: [/Meta/, /Instagram/, /jednego miesiąca/, /kontakt@salon-bw\.pl/],
-    en: [/Meta/, /Instagram/, /one month/, /kontakt@salon-bw\.pl/],
-    de: [/Meta/, /Instagram/, /eines Monats/, /kontakt@salon-bw\.pl/],
+    pl: [
+        /Meta/,
+        /Instagram/,
+        /Google/,
+        /Facebook/,
+        /sesj/,
+        /jednego miesiąca/,
+        /kontakt@salon-bw\.pl/,
+    ],
+    en: [
+        /Meta/,
+        /Instagram/,
+        /Google/,
+        /Facebook/,
+        /sessions/,
+        /one month/,
+        /kontakt@salon-bw\.pl/,
+    ],
+    de: [
+        /Meta/,
+        /Instagram/,
+        /Google/,
+        /Facebook/,
+        /Sitzungen/,
+        /eines Monats/,
+        /kontakt@salon-bw\.pl/,
+    ],
 };
 
 describe.each(Object.keys(localeExpectations) as Language[])(
@@ -15,7 +39,7 @@ describe.each(Object.keys(localeExpectations) as Language[])(
             const doc = DATA_DELETION[lang];
             const renderedContent = JSON.stringify(doc.sections);
 
-            expect(doc.sections).toHaveLength(8);
+            expect(doc.sections).toHaveLength(11);
             expect(doc.effectiveDate).toBe('2026-07-22');
             expect(renderedContent).toContain(
                 'mailto:kontakt@salon-bw.pl',
