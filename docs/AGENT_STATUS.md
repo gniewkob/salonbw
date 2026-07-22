@@ -1,8 +1,25 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (dependency security sweep)_
+_Last updated: 2026-07-22 (typeorm advisory closure)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — TypeORM advisory closure
+
+- Finding:
+  - GitHub Dependabot alert #322 flagged `typeorm <0.3.31` in `pnpm-lock.yaml` (`GHSA-2rp8-mm9q-fp49`),
+  - the project used TypeORM as a direct backend dependency at `^0.3.29`.
+- Change:
+  - updated backend `typeorm` dependency to `^0.3.31`,
+  - refreshed `pnpm-lock.yaml`.
+- Local validation:
+  - `pnpm audit --audit-level moderate --prod` passed with no known vulnerabilities,
+  - `pnpm why typeorm --recursive` shows backend TypeORM resolved to `0.3.31`,
+  - backend `lint --fix` passed with existing warnings only,
+  - backend `typecheck`, `build`, and full Jest suite passed (`244/244`).
+- Follow-up:
+  - monitor CI and Deploy (MyDevil) after push,
+  - confirm alert #322 is marked fixed after GitHub rescans the default branch.
 
 ## 2026-07-22 — Dependency security sweep
 
