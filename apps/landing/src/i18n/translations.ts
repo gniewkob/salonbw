@@ -216,6 +216,7 @@ const t = {
             sunday: 'Zamknięte',
             privacy: 'Polityka prywatności',
             terms: 'Regulamin',
+            dataDeletion: 'Usuwanie danych',
             copyright: `© ${new Date().getFullYear()} Salon Black & White. Wszystkie prawa zastrzeżone.`,
         },
         hours: {
@@ -543,6 +544,7 @@ const t = {
             sunday: 'Closed',
             privacy: 'Privacy policy',
             terms: 'Terms & conditions',
+            dataDeletion: 'Data deletion',
             copyright: `© ${new Date().getFullYear()} Black & White Salon. All rights reserved.`,
         },
         hours: {
@@ -870,6 +872,7 @@ const t = {
             sunday: 'Geschlossen',
             privacy: 'Datenschutzrichtlinie',
             terms: 'AGB',
+            dataDeletion: 'Datenlöschung',
             copyright: `© ${new Date().getFullYear()} Salon Black & White. Alle Rechte vorbehalten.`,
         },
         hours: {

@@ -49,6 +49,12 @@ and other agents should read it directly.
 - dev and panel talk to the same api.
 - Auth happens via the panel (cookies/session/token flows).
 - The legacy salon-bw.pl must not be treated as canonical going forward.
+- After the accepted landing release is moved from `dev.salon-bw.pl` to the
+  canonical `salon-bw.pl`, the cutover is not complete until external app
+  settings are updated and verified. In particular, the production
+  Meta/Instagram app must point directly to the public canonical `/privacy`,
+  `/policy`, and `/data-deletion` routes. Follow
+  `docs/RELEASE_CHECKLIST.md`; do not leave preview URLs or rely on redirects.
 
 ---
 

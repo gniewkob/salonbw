@@ -59,3 +59,32 @@ Use this list whenever preparing a new production deployment. Check off each ite
 - [ ] Communicate release completion to stakeholders (Slack/Teams/email).
 - [ ] Unfreeze the `main` branch and update any open PRs with rebase instructions.
 - [ ] Capture lessons learned or follow-up tasks in the backlog.
+
+## 5. Final public-domain cutover (`dev.salon-bw.pl` -> `salon-bw.pl`)
+
+Complete this section only after the landing release on the preview domain has
+passed business acceptance and the same release has been moved to the canonical
+production domain. These steps are part of the cutover close condition, not a
+preview deployment.
+
+- [ ] Confirm the accepted landing release is served from `https://salon-bw.pl`
+  and that canonical metadata no longer points to `dev.salon-bw.pl`.
+- [ ] Confirm these public routes return HTTP `200` without authentication:
+    - `https://salon-bw.pl/privacy`
+    - `https://salon-bw.pl/policy`
+    - `https://salon-bw.pl/data-deletion`
+- [ ] In the production Meta/Instagram application connected to `salon_bw`,
+  replace preview, legacy, homepage-only, and third-party legal links with:
+    - Privacy Policy URL: `https://salon-bw.pl/privacy`
+    - Terms of Service URL: `https://salon-bw.pl/policy`
+    - Data Deletion Instructions URL: `https://salon-bw.pl/data-deletion`
+- [ ] If Business Login is actually enabled, update App Domains, Site URL, and
+  every valid OAuth redirect URI to the canonical domain. Do not configure an
+  unused login flow solely for the gallery integration.
+- [ ] Re-open the saved Meta settings and verify the canonical values persisted;
+  test all three links from a signed-out/private browser session.
+- [ ] Search Meta settings and repository/runtime configuration for remaining
+  `dev.salon-bw.pl` references. Keep only references that are intentionally
+  preview-specific and record each exception.
+- [ ] Do not rely on redirects from `dev.salon-bw.pl` as the final state. Meta
+  must store the canonical `salon-bw.pl` URLs directly.

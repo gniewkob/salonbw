@@ -1,8 +1,57 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (dashboard required reschedule action)_
+_Last updated: 2026-07-22 (localized Meta data-deletion instructions)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Localized Meta data-deletion instructions
+
+- Change:
+  - added the public `/data-deletion` landing route with complete Polish,
+    English, and German instructions,
+  - documented request identification, deletion scope, legal retention,
+    one-month response target, Meta/Instagram disconnection, request security,
+    controller contact, and complaint rights,
+  - added direct email and Privacy Policy links, canonical/OG metadata, sitemap
+    registration, public-route registration, and localized footer links,
+  - gave the document a stable revision date instead of rendering the current
+    date on every request,
+  - disabled the mobile booking FAB on all legal-document routes after visual
+    verification showed it overlapping the new document.
+- Local validation:
+  - landing ESLint and TypeScript checks passed,
+  - all landing Jest suites passed (`18/18`, `46/46`),
+  - production landing build passed and emitted `/data-deletion` as a static
+    route,
+  - Playwright verified PL/EN/DE content, HTTP `200`, sitemap registration,
+    no 390 px horizontal overflow, and no floating booking CTA,
+  - Lighthouse accessibility score: `100`.
+- Follow-up:
+  - deploy the landing release, verify `/data-deletion` publicly, and update
+    the Meta Data Deletion Instructions URL according to the documented domain
+    cutover stage.
+
+## 2026-07-22 — Canonical-domain Meta cutover documentation
+
+- Finding:
+  - the production Meta/Instagram app currently needs corrected legal URLs,
+    while the accepted landing release still runs on the preview domain,
+  - updating Meta to preview URLs would leave stale external configuration after
+    the final `salon-bw.pl` cutover.
+- Change:
+  - documented the final domain-cutover gate in `Agent.md`,
+    `docs/DEPLOYMENT_MYDEVIL.md`, and `docs/RELEASE_CHECKLIST.md`,
+  - the gate requires canonical Privacy Policy, Terms of Service, and Data
+    Deletion Instructions URLs to be saved in Meta only after all three routes
+    are publicly available on `salon-bw.pl`,
+  - Business Login domains/redirects remain conditional; the read-only gallery
+    does not gain unused OAuth or webhook configuration.
+- Validation:
+  - documentation references consistent canonical URLs and separates preview
+    deployment from final production cutover.
+- Follow-up:
+  - implement and publish `/data-deletion`, complete the accepted landing
+    cutover, then execute and record the Meta settings verification checklist.
 
 ## 2026-07-22 — Dashboard required reschedule action
 

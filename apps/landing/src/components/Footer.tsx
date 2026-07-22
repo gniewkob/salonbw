@@ -18,6 +18,7 @@ export default function Footer() {
         { label: T.nav.contact, href: '/contact' },
         { label: T.footer.privacy, href: '/privacy' },
         { label: T.footer.terms, href: '/policy' },
+        { label: T.footer.dataDeletion, href: '/data-deletion' },
     ];
 
     return (
@@ -108,7 +109,14 @@ export default function Footer() {
                 <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                     <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>{T.footer.copyright}</p>
                     <div className="flex gap-5">
-                        {[{ href: '/privacy', label: T.footer.privacy }, { href: '/policy', label: T.footer.terms }].map(l => (
+                        {[
+                            { href: '/privacy', label: T.footer.privacy },
+                            { href: '/policy', label: T.footer.terms },
+                            {
+                                href: '/data-deletion',
+                                label: T.footer.dataDeletion,
+                            },
+                        ].map(l => (
                             <Link key={l.href} href={l.href as Route}
                                 className="text-xs footer-link--dim focus:ring-2 focus:ring-[#b4b8be]"
                             >

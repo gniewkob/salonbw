@@ -1,4 +1,5 @@
 import type { Language } from './translations';
+import { DATA_DELETION } from './dataDeletionContent';
 
 /**
  * Per-locale content for the legal pages (/policy, /privacy).
@@ -10,6 +11,7 @@ import type { Language } from './translations';
 
 export type LegalBlock =
     | { type: 'p'; text: string }
+    | { type: 'link'; href: string; text: string }
     | { type: 'list'; ordered: boolean; items: LegalItem[] };
 
 export interface LegalItem {
@@ -32,13 +34,18 @@ export interface LegalDoc {
     lead: string;
     sections: LegalSection[];
     effectiveLabel: string;
+    /** Stable ISO date for documents that must expose a fixed revision date. */
+    effectiveDate?: string;
     /** Shown for EN/DE only: a notice that PL is the binding version. */
     reviewNotice?: string;
 }
 
 const CONTACT_EMAIL = 'kontakt@salon-bw.pl';
 
-export const LEGAL: Record<Language, { policy: LegalDoc; privacy: LegalDoc }> = {
+export const LEGAL: Record<
+    Language,
+    { policy: LegalDoc; privacy: LegalDoc; dataDeletion: LegalDoc }
+> = {
     pl: {
         policy: {
             metaTitle: 'Regulamin Świadczenia Usług | Salon Black & White',
@@ -353,6 +360,7 @@ export const LEGAL: Record<Language, { policy: LegalDoc; privacy: LegalDoc }> = 
             ],
             effectiveLabel: 'Ostatnia aktualizacja dokumentu:',
         },
+        dataDeletion: DATA_DELETION.pl,
     },
     en: {
         policy: {
@@ -672,6 +680,7 @@ export const LEGAL: Record<Language, { policy: LegalDoc; privacy: LegalDoc }> = 
             ],
             effectiveLabel: 'Document last updated:',
         },
+        dataDeletion: DATA_DELETION.en,
     },
     de: {
         policy: {
@@ -991,5 +1000,6 @@ export const LEGAL: Record<Language, { policy: LegalDoc; privacy: LegalDoc }> = 
             ],
             effectiveLabel: 'Dokument zuletzt aktualisiert:',
         },
+        dataDeletion: DATA_DELETION.de,
     },
 };

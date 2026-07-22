@@ -8,10 +8,16 @@ export default function BookNowFab() {
     const router = useRouter();
     const { T } = useLanguage();
     const path = router.pathname || '/';
+    const isLegalDocument = [
+        '/policy',
+        '/privacy',
+        '/data-deletion',
+    ].includes(path);
     const hidden =
         path.startsWith('/dashboard') ||
         path.startsWith('/auth') ||
-        path.startsWith('/appointments');
+        path.startsWith('/appointments') ||
+        isLegalDocument;
 
     const [modalOpen, setModalOpen] = useState(false);
     // Hide the FAB once the footer scrolls into view so it never overlaps the

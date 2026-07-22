@@ -58,6 +58,35 @@ Folder structure recommended on the server:
 /home/<user>/apps/nodejs/api_salonbw                   # NestJS backend (symlinked into domains/api.salon-bw.pl/public_nodejs)
 ```
 
+### 1a. Final canonical-domain cutover
+
+`dev.salon-bw.pl` is the public preview environment. After the landing release
+has passed technical smoke tests and business acceptance, moving that accepted
+release to `salon-bw.pl` requires a separate cutover and verification step.
+
+The cutover is not complete until:
+
+1. `salon-bw.pl` serves the accepted release and its canonical metadata points
+   to `https://salon-bw.pl`.
+2. `/privacy`, `/policy`, and `/data-deletion` return HTTP `200` publicly on
+   `salon-bw.pl` without redirects to the preview domain or authentication.
+3. The production Meta/Instagram application's legal URLs are saved as:
+   - Privacy Policy URL: `https://salon-bw.pl/privacy`
+   - Terms of Service URL: `https://salon-bw.pl/policy`
+   - Data Deletion Instructions URL: `https://salon-bw.pl/data-deletion`
+4. App Domains, Site URL, and OAuth redirect URIs are updated to
+   `salon-bw.pl` only when Business Login is part of the deployed architecture.
+   The read-only Instagram gallery does not require Business Login or webhook
+   configuration.
+5. The saved Meta links are opened from a signed-out/private browser session and
+   the external configuration is checked for stale `dev.salon-bw.pl`, homepage-
+   only, or third-party legal links.
+
+Do not perform this Meta update during preview testing and do not treat a
+redirect from the preview domain as the final configuration. Use the cutover
+section in [`docs/RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md) as the release
+gate.
+
 ## 2. Build artifacts locally
 
 ```bash

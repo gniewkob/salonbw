@@ -5,4 +5,5 @@ export const publicRoutes = [
     '/contact',
     '/policy',
     '/privacy',
+    '/data-deletion',
 ];

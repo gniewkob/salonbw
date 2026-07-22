@@ -14,6 +14,7 @@ const staticPaths: Array<{
     { path: '/contact', priority: '0.8', changefreq: 'monthly' },
     { path: '/policy', priority: '0.3', changefreq: 'yearly' },
     { path: '/privacy', priority: '0.3', changefreq: 'yearly' },
+    { path: '/data-deletion', priority: '0.3', changefreq: 'yearly' },
 ];
 
 const today = new Date().toISOString().split('T')[0];

@@ -249,10 +249,12 @@ export const FOOTER_LINKS = {
     { label: 'Kontakt', href: '/contact' },
     { label: 'Polityka prywatności', href: '/privacy' },
     { label: 'Regulamin', href: '/policy' },
+    { label: 'Usuwanie danych', href: '/data-deletion' },
   ],
   legal: [
     { label: 'Polityka prywatności', href: '/privacy' },
     { label: 'Regulamin', href: '/policy' },
+    { label: 'Usuwanie danych', href: '/data-deletion' },
   ],
 } as const;
 

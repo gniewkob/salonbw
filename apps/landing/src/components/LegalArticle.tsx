@@ -18,6 +18,10 @@ export default function LegalArticle({
     doc: LegalDoc;
     lang: Language;
 }) {
+    const effectiveDate = doc.effectiveDate
+        ? new Date(`${doc.effectiveDate}T00:00:00Z`)
+        : new Date();
+
     return (
         <div className="legal-page">
             <article className="legal-article">
@@ -50,6 +54,18 @@ export default function LegalArticle({
                                     </p>
                                 );
                             }
+                            if (block.type === 'link') {
+                                return (
+                                    <p key={bi} className="legal-body">
+                                        <a
+                                            className="legal-link"
+                                            href={block.href}
+                                        >
+                                            {block.text}
+                                        </a>
+                                    </p>
+                                );
+                            }
                             const ListTag = block.ordered ? 'ol' : 'ul';
                             return (
                                 <ListTag key={bi} className="legal-list">
@@ -69,7 +85,9 @@ export default function LegalArticle({
 
                 <div className="legal-date">
                     {doc.effectiveLabel}{' '}
-                    {new Date().toLocaleDateString(DATE_LOCALE[lang])}
+                    {effectiveDate.toLocaleDateString(DATE_LOCALE[lang], {
+                        timeZone: 'UTC',
+                    })}
                 </div>
             </article>
         </div>

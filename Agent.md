@@ -11,6 +11,13 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - All frontends talk to the same API; auth happens on panel, customer-facing stays on dev/public.
 - Panel admin canonical modules: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension` (legacy `/admin/*` routes are aliases/redirects).
 - Calendar route (`/calendar`) is the native React calendar in `apps/panel/src/pages/calendar.tsx`; it uses the canonical `/api/calendar/*` and `/api/appointments/*` endpoints. Legacy Versum paths remain only as compatibility aliases where still required.
+- Domain cutover is not complete until the accepted landing release is live on
+  `salon-bw.pl` and external application settings are updated from preview or
+  legacy URLs to the canonical legal URLs. For the production Meta/Instagram
+  app, verify and save `https://salon-bw.pl/privacy`,
+  `https://salon-bw.pl/policy`, and `https://salon-bw.pl/data-deletion` only
+  after all three routes are publicly reachable without authentication. See
+  `docs/DEPLOYMENT_MYDEVIL.md` and `docs/RELEASE_CHECKLIST.md`.
 
 ## 2. Deployments (preferred)
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).
