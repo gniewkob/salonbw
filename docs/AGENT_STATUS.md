@@ -1,8 +1,29 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (notification action live smoke)_
+_Last updated: 2026-07-22 (dependency security sweep)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Dependency security sweep
+
+- Finding:
+  - GitHub Dependabot alert #321 flagged `engine.io` via `socket.io` in the backend websocket stack (`GHSA-r635-g3xr-vw7x` / `CVE-2026-59725`),
+  - local production audit also surfaced high advisories for `brace-expansion`, `fast-uri`, and `sharp` in frontend dependency trees.
+- Change:
+  - added workspace overrides for `engine.io@6.6.7`, `brace-expansion@^1.1.16`, `fast-uri@^3.1.4`, and `sharp@^0.35.3`,
+  - updated direct `sharp` dependencies in landing and panel to `^0.35.3`,
+  - refreshed `pnpm-lock.yaml`.
+- Local validation:
+  - `pnpm audit --audit-level high --prod` passed; only one moderate TypeORM advisory remains for `migration:generate`,
+  - `pnpm why engine.io --recursive` shows backend `socket.io@4.8.3 -> engine.io@6.6.7`,
+  - `pnpm why sharp --recursive` shows landing and panel using `sharp@0.35.3`,
+  - backend `typecheck`, `build`, and focused `chat.gateway.spec.ts` passed,
+  - panel `typecheck` and production `build` passed,
+  - landing `typecheck` passed,
+  - landing production `build` passed when run with `NEXT_PUBLIC_API_URL=https://api.salon-bw.pl`; the first local build without this env compiled but failed prerender with `ECONNREFUSED` because no local API was available.
+- Follow-up:
+  - monitor CI and Deploy (MyDevil) after push,
+  - check Dependabot alert #321 after GitHub rescans the pushed lockfile.
 
 ## 2026-07-22 — Notification action live smoke
 
