@@ -25,7 +25,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                     },
                     {
                         type: 'p',
-                        text: 'Obowiązek udostępnienia tej instrukcji wynika z korzystania z logowania Meta (Facebook). Integracja z Instagramem to osobna sprawa — służy wyłącznie do prezentacji treści z naszego firmowego konta salon_bw na stronie i nie przetwarza danych osobowych klientów; jej odrębne zasady opisujemy w punkcie 7.',
+                        text: 'Obowiązek udostępnienia tej instrukcji wynika z korzystania przez nas z usług platformy Meta — aplikacji Instagram obsługującej galerię na stronie oraz, o ile jest udostępnione, logowania przez Facebooka. Sama integracja z Instagramem służy wyłącznie do prezentacji treści z naszego firmowego konta salon_bw i nie przetwarza danych osobowych klientów; jej odrębne zasady opisujemy w punkcie 7.',
                     },
                 ],
             },
@@ -283,7 +283,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                     },
                     {
                         type: 'p',
-                        text: 'The obligation to publish these instructions arises from our use of Meta (Facebook) login. The Instagram integration is a separate matter — it only displays content from our salon_bw business account on the website and does not process clients’ personal data; its separate rules are described in section 7.',
+                        text: 'The obligation to publish these instructions arises from our use of Meta platform services — the Instagram app powering the website gallery and, where made available, Facebook login. The Instagram integration itself only displays content from our salon_bw business account and does not process clients’ personal data; its separate rules are described in section 7.',
                     },
                 ],
             },
@@ -541,7 +541,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                     },
                     {
                         type: 'p',
-                        text: 'Die Pflicht zur Bereitstellung dieser Anleitung ergibt sich aus der Nutzung der Meta-(Facebook-)Anmeldung. Die Instagram-Integration ist eine gesonderte Sache — sie dient ausschließlich der Darstellung von Inhalten unseres Geschäftskontos salon_bw auf der Website und verarbeitet keine personenbezogenen Daten von Kunden; ihre gesonderten Regeln beschreiben wir in Abschnitt 7.',
+                        text: 'Die Pflicht zur Bereitstellung dieser Anleitung ergibt sich aus unserer Nutzung von Diensten der Meta-Plattform — der Instagram-App für die Website-Galerie und, sofern verfügbar, der Facebook-Anmeldung. Die Instagram-Integration selbst dient ausschließlich der Darstellung von Inhalten unseres Geschäftskontos salon_bw und verarbeitet keine personenbezogenen Daten von Kunden; ihre gesonderten Regeln beschreiben wir in Abschnitt 7.',
                     },
                 ],
             },

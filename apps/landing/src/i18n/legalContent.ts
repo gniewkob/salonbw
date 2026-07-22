@@ -99,7 +99,7 @@ export const LEGAL: Record<
                                 },
                                 {
                                     lead: 'Salon',
-                                    text: '– miejsce fizycznego świadczenia usług fryzjerskich zlokalizowane pod adresem ul. Mikołaja Kopernika 13, Radzionków.',
+                                    text: '– miejsce fizycznego świadczenia usług fryzjerskich zlokalizowane pod adresem ul. Webera 1a/13, 41-902 Bytom.',
                                 },
                             ],
                         },
@@ -215,7 +215,7 @@ export const LEGAL: Record<
                     blocks: [
                         {
                             type: 'p',
-                            text: `Administratorem Państwa danych osobowych jest Salon Fryzjerski Black&White Aleksandra Bodora z siedzibą w Radzionkowie (41-922), ul. Mikołaja Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588 868. W sprawach związanych z ochroną danych osobowych prosimy o kontakt pod adresem e-mail: ${CONTACT_EMAIL}.`,
+                            text: `Administratorem Państwa danych osobowych jest Salon Fryzjerski Black&White Aleksandra Bodora z siedzibą w Radzionkowie (41-922), ul. Mikołaja Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588 868. Usługi fryzjerskie świadczone są w salonie przy ul. Webera 1a/13, 41-902 Bytom. W sprawach związanych z ochroną danych osobowych prosimy o kontakt pod adresem e-mail: ${CONTACT_EMAIL}.`,
                         },
                     ],
                 },
@@ -519,7 +519,7 @@ export const LEGAL: Record<
                                 },
                                 {
                                     lead: 'Salon',
-                                    text: '– the place where hairdressing services are physically provided, located at ul. Mikołaja Kopernika 13, Radzionków.',
+                                    text: '– the place where hairdressing services are physically provided, located at ul. Webera 1a/13, 41-902 Bytom.',
                                 },
                             ],
                         },
@@ -637,7 +637,7 @@ export const LEGAL: Record<
                     blocks: [
                         {
                             type: 'p',
-                            text: `The controller of your personal data is Salon Fryzjerski Black&White Aleksandra Bodora, registered office in Radzionków (41-922), ul. Mikołaja Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588 868. For matters relating to the protection of personal data, please contact us at: ${CONTACT_EMAIL}.`,
+                            text: `The controller of your personal data is Salon Fryzjerski Black&White Aleksandra Bodora, registered office in Radzionków (41-922), ul. Mikołaja Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588 868. Hairdressing services are provided at the salon at ul. Webera 1a/13, 41-902 Bytom. For matters relating to the protection of personal data, please contact us at: ${CONTACT_EMAIL}.`,
                         },
                     ],
                 },
@@ -941,7 +941,7 @@ export const LEGAL: Record<
                                 },
                                 {
                                     lead: 'Salon',
-                                    text: '– der Ort der physischen Erbringung der Friseurleistungen, gelegen in der ul. Mikołaja Kopernika 13, Radzionków.',
+                                    text: '– der Ort der physischen Erbringung der Friseurleistungen, gelegen in der ul. Webera 1a/13, 41-902 Bytom.',
                                 },
                             ],
                         },
@@ -1059,7 +1059,7 @@ export const LEGAL: Record<
                     blocks: [
                         {
                             type: 'p',
-                            text: `Verantwortlicher für Ihre personenbezogenen Daten ist Salon Fryzjerski Black&White Aleksandra Bodora mit Sitz in Radzionków (41-922), ul. Mikołaja Kopernika 13, NIP: 626 223 11 81, Tel. +48 723 588 868. Bei Fragen zum Schutz personenbezogener Daten kontaktieren Sie uns bitte unter: ${CONTACT_EMAIL}.`,
+                            text: `Verantwortlicher für Ihre personenbezogenen Daten ist Salon Fryzjerski Black&White Aleksandra Bodora mit Sitz in Radzionków (41-922), ul. Mikołaja Kopernika 13, NIP: 626 223 11 81, Tel. +48 723 588 868. Die Friseurleistungen werden im Salon in der ul. Webera 1a/13, 41-902 Bytom erbracht. Bei Fragen zum Schutz personenbezogener Daten kontaktieren Sie uns bitte unter: ${CONTACT_EMAIL}.`,
                         },
                     ],
                 },
