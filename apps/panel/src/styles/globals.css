@@ -918,9 +918,9 @@ body {
 .salonbw-reception-empty {
     text-align: center;
     padding: 64px 0;
-    background: #161616;
+    background: #ffffff;
     border-radius: 8px;
-    border: 1px solid #252525;
+    border: 1px solid #e6eaee;
 }
 
 .salonbw-reception-empty__icon {
