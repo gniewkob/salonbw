@@ -36,7 +36,7 @@ export class UserDto {
         description: 'International phone number',
         example: '+123456789',
     })
-    phone?: any;
+    phone?: string | null;
 
     @IsNumber()
     @IsNotEmpty()

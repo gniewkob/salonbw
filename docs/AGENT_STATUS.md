@@ -1,8 +1,24 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (landing auth token storage hardening)_
+_Last updated: 2026-07-22 (backend dashboard DTO type cleanup)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Backend dashboard DTO type cleanup
+
+- Finding:
+  - dashboard summary mapping still used an unnecessary `(client as any)` cast for `clientPhone`,
+  - `DashboardSummaryDto` exposed appointment lists as `any[]`,
+  - `UserDto.phone` was typed as `any` despite the entity and services using `string | null`.
+- Change:
+  - replaced the dashboard client phone cast with the typed `User.phone` relation field,
+  - introduced a structured dashboard appointment DTO for upcoming/in-progress appointments,
+  - tightened `UserDto.phone` to `string | null`.
+- Local validation:
+  - targeted backend ESLint for the touched files passed,
+  - backend `typecheck`, `build`, and full Jest suite passed (`244/244`).
+- Follow-up:
+  - continue reducing remaining backend lint warnings in small, behavior-preserving batches.
 
 ## 2026-07-22 — Landing auth token storage hardening
 

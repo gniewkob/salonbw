@@ -167,7 +167,7 @@ export class DashboardService {
             endTime: a.endTime,
             status: a.status,
             clientName: a.client?.name ?? '',
-            clientPhone: (a.client as any)?.phone ?? '',
+            clientPhone: a.client?.phone ?? '',
             serviceName: a.service?.name ?? '',
             employeeName: a.employee?.name ?? '',
         });

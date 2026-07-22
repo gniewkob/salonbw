@@ -1,5 +1,49 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsNotEmpty, IsArray, IsOptional } from 'class-validator';
+import {
+    IsNumber,
+    IsNotEmpty,
+    IsArray,
+    IsOptional,
+    IsString,
+    IsDate,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+class DashboardAppointmentDto {
+    @IsNumber()
+    @ApiProperty({ example: 1 })
+    id: number;
+
+    @IsDate()
+    @Type(() => Date)
+    @ApiProperty({ type: String, format: 'date-time' })
+    startTime: Date;
+
+    @IsDate()
+    @Type(() => Date)
+    @ApiProperty({ type: String, format: 'date-time' })
+    endTime: Date;
+
+    @IsString()
+    @ApiProperty({ example: 'confirmed' })
+    status: string;
+
+    @IsString()
+    @ApiProperty({ example: 'Jan Kowalski' })
+    clientName: string;
+
+    @IsString()
+    @ApiProperty({ example: '+48123123123' })
+    clientPhone: string;
+
+    @IsString()
+    @ApiProperty({ example: 'Strzyzenie meskie' })
+    serviceName: string;
+
+    @IsString()
+    @ApiProperty({ example: 'Aleksandra Bodora' })
+    employeeName: string;
+}
 
 export class DashboardSummaryDto {
     @IsNumber()
@@ -50,11 +94,14 @@ export class DashboardSummaryDto {
 
     @IsArray()
     @IsNotEmpty()
-    @ApiProperty({})
-    upcomingAppointments: any[];
+    @ApiProperty({ type: () => [DashboardAppointmentDto] })
+    upcomingAppointments: DashboardAppointmentDto[];
 
     @IsArray()
     @IsOptional()
-    @ApiProperty({ description: 'Appointments currently in progress' })
-    inProgressAppointments: any[];
+    @ApiProperty({
+        description: 'Appointments currently in progress',
+        type: () => [DashboardAppointmentDto],
+    })
+    inProgressAppointments: DashboardAppointmentDto[];
 }
