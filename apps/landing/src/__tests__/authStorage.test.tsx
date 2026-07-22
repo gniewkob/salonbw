@@ -29,8 +29,17 @@ afterEach(() => {
     global.fetch = originalFetch;
 });
 
-describe('AuthContext localStorage', () => {
-    it('login stores tokens and user, logout clears them', async () => {
+describe('AuthContext session lifecycle', () => {
+    beforeEach(() => {
+        localStorage.setItem('jwtToken', 'stale-from-previous-build');
+        localStorage.setItem('refreshToken', 'stale-from-previous-build');
+    });
+
+    afterEach(() => {
+        localStorage.clear();
+    });
+
+    it('login fetches profile without writing tokens to JS-accessible storage', async () => {
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <AuthProvider>{children}</AuthProvider>
         );
@@ -40,15 +49,17 @@ describe('AuthContext localStorage', () => {
             await result.current.login('e', 'p');
         });
         await waitFor(() => expect(result.current.user).toEqual(profile));
-        expect(localStorage.getItem('jwtToken')).toBe('a');
-        // Refresh token is intentionally httpOnly-cookie only (not localStorage).
+        expect(result.current.isAuthenticated).toBe(true);
+
+        // Auth tokens are backend-managed httpOnly cookies. The landing app
+        // must not write JS-readable copies during login, and it should clean
+        // legacy localStorage tokens left by older builds.
+        expect(localStorage.getItem('jwtToken')).toBeNull();
         expect(localStorage.getItem('refreshToken')).toBeNull();
 
         await act(async () => {
             await result.current.logout();
         });
-        expect(localStorage.getItem('jwtToken')).toBeNull();
-        expect(localStorage.getItem('refreshToken')).toBeNull();
         await waitFor(() => expect(result.current.isAuthenticated).toBe(false));
     });
 });

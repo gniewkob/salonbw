@@ -13,9 +13,7 @@ describe('auth api simple', () => {
     });
 
     it('login maps snake_case tokens and refreshToken maps camelCase', async () => {
-        const { login, refreshToken, REFRESH_TOKEN_KEY } = await import(
-            '@/api/auth'
-        );
+        const { login, refreshToken } = await import('@/api/auth');
         requestMock.mockResolvedValueOnce({
             access_token: 'a',
             refresh_token: 'r',
@@ -23,14 +21,17 @@ describe('auth api simple', () => {
         const tokens = await login({ email: 'e', password: 'p' });
         expect(tokens).toEqual({ accessToken: 'a', refreshToken: 'r' });
 
-        // refresh
-        localStorage.setItem(REFRESH_TOKEN_KEY, 'r');
         requestMock.mockResolvedValueOnce({
             accessToken: 'na',
             refreshToken: 'nr',
         });
         const newTokens = await refreshToken();
         expect(newTokens).toEqual({ accessToken: 'na', refreshToken: 'nr' });
+        expect(requestMock).toHaveBeenLastCalledWith('/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+        });
     });
 
     it('register surfaces error message', async () => {
@@ -63,8 +64,7 @@ describe('auth api simple', () => {
     });
 
     it('refreshToken throws generic message when non-error thrown', async () => {
-        const { refreshToken, REFRESH_TOKEN_KEY } = await import('@/api/auth');
-        localStorage.setItem(REFRESH_TOKEN_KEY, 'r');
+        const { refreshToken } = await import('@/api/auth');
         requestMock.mockRejectedValueOnce('nope');
         await expect(refreshToken()).rejects.toThrow('Token refresh failed');
     });

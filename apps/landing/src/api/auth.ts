@@ -1,11 +1,26 @@
 import { ApiClient } from './apiClient';
-import Cookies from 'js-cookie';
+import type { ApiError } from '@salonbw/api';
 import { User } from '@/types';
 
 let logoutCallback: () => void = () => {};
 
 export function setLogoutCallback(cb: () => void) {
     logoutCallback = cb;
+}
+
+// Preserve ApiError.status while normalizing unknown thrown values. Login forms
+// and auth flows use the status to distinguish validation/auth failures from
+// transient server failures.
+function rethrowWithStatus(err: unknown, fallbackMessage: string): never {
+    if (err instanceof Error) {
+        const wrapped: ApiError = new Error(err.message);
+        const status = (err as ApiError).status;
+        if (typeof status === 'number') {
+            wrapped.status = status;
+        }
+        throw wrapped;
+    }
+    throw new Error(fallbackMessage);
 }
 
 const client = new ApiClient(
@@ -67,7 +82,7 @@ export async function login(
         });
         return mapTokens(raw);
     } catch (err: unknown) {
-        throw new Error(err instanceof Error ? err.message : 'Login failed');
+        rethrowWithStatus(err, 'Login failed');
     }
 }
 
@@ -79,31 +94,23 @@ export async function register(data: RegisterData): Promise<User> {
             body: JSON.stringify(data),
         });
     } catch (err: unknown) {
-        throw new Error(
-            err instanceof Error ? err.message : 'Registration failed',
-        );
+        rethrowWithStatus(err, 'Registration failed');
     }
 }
 
 export async function refreshToken(): Promise<AuthTokens> {
     try {
-        const refreshToken =
-            (typeof localStorage !== 'undefined'
-                ? localStorage.getItem(REFRESH_TOKEN_KEY)
-                : null) ||
-            (typeof document !== 'undefined'
-                ? Cookies.get(REFRESH_TOKEN_KEY)
-                : null);
+        // The refresh token lives in an httpOnly cookie set by the backend.
+        // ApiClient sends credentials, so the backend can read the cookie
+        // without receiving a JS-readable token in the request body.
         const raw = await client.request<ServerTokens>('/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
+            body: JSON.stringify({}),
         });
         return mapTokens(raw);
     } catch (err: unknown) {
-        throw new Error(
-            err instanceof Error ? err.message : 'Token refresh failed',
-        );
+        rethrowWithStatus(err, 'Token refresh failed');
     }
 }
 

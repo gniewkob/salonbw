@@ -1,8 +1,25 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (typeorm advisory closure)_
+_Last updated: 2026-07-22 (landing auth token storage hardening)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Landing auth token storage hardening
+
+- Finding:
+  - the panel already relied on backend-managed httpOnly auth cookies, but the landing app still mirrored `accessToken` into JS-readable `js-cookie` and `localStorage`,
+  - this could overwrite the secure httpOnly cookie and leave stale token copies readable to injected JavaScript.
+- Change:
+  - removed landing-side auth token persistence from `AuthContext`,
+  - made landing refresh requests rely on backend httpOnly cookies instead of a `refreshToken` request body,
+  - added cleanup for legacy `jwtToken`/`refreshToken` localStorage keys left by older builds,
+  - updated landing auth tests to assert that login does not write JS-readable token copies.
+- Local validation:
+  - targeted landing auth Jest suite passed (`9/9`),
+  - landing `typecheck`, `lint`, and production `build` passed with `NEXT_PUBLIC_API_URL=https://api.salon-bw.pl`.
+- Follow-up:
+  - monitor CI and Deploy (MyDevil) after push,
+  - smoke login/session behavior on landing/panel after deployment.
 
 ## 2026-07-22 — TypeORM advisory closure
 

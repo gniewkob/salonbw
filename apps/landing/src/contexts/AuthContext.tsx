@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
-import { ApiClient, type AuthTokens } from '@/api/apiClient';
+import { ApiClient } from '@/api/apiClient';
 import {
     login as apiLogin,
     register as apiRegister,
@@ -33,32 +33,19 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const ACCESS_TOKEN_KEY = 'jwtToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-
-const readLocalStorageValue = (key: string): string | null => {
-    if (typeof window === 'undefined') {
-        return null;
-    }
-    try {
-        return window.localStorage.getItem(key);
-    } catch {
-        return null;
-    }
-};
-
-const writeLocalStorageValue = (key: string, value: string | null) => {
+// Auth tokens (`accessToken`, `refreshToken`) are managed exclusively by the
+// backend as httpOnly cookies. The landing app must not mirror them into
+// localStorage or js-cookie; that would make the session JS-readable and could
+// overwrite the secure httpOnly cookie.
+const clearLegacyTokenStorage = () => {
     if (typeof window === 'undefined') {
         return;
     }
     try {
-        if (value === null) {
-            window.localStorage.removeItem(key);
-        } else {
-            window.localStorage.setItem(key, value);
-        }
+        window.localStorage.removeItem('jwtToken');
+        window.localStorage.removeItem('refreshToken');
     } catch {
-        // ignore storage failures (private mode, etc.)
+        // Ignore storage failures in private mode or restricted browsers.
     }
 };
 
@@ -76,11 +63,7 @@ const hasAuthHint = () => {
     if (typeof window === 'undefined') {
         return false;
     }
-    const cookieToken = Cookies.get('accessToken');
-    const cookieAuth = Cookies.get('sbw_auth');
-    const storageToken = readLocalStorageValue(ACCESS_TOKEN_KEY);
-
-    return Boolean(cookieToken || cookieAuth || storageToken);
+    return Boolean(Cookies.get('sbw_auth') || Cookies.get('XSRF-TOKEN'));
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -90,28 +73,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [initialized, setInitialized] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
-    const persistTokens = useCallback((nextTokens: AuthTokens | null) => {
-        const cookieOptions = window.location.hostname.includes('salon-bw.pl')
-            ? { domain: '.salon-bw.pl', path: '/' }
-            : { path: '/' };
+    const clearClientAuthCookies = useCallback(() => {
+        const cookieOptionSets = window.location.hostname.includes(
+            'salon-bw.pl',
+        )
+            ? [{ path: '/' }, { domain: '.salon-bw.pl', path: '/' }]
+            : [{ path: '/' }];
 
-        if (nextTokens) {
-            Cookies.set('accessToken', nextTokens.accessToken, cookieOptions);
-            Cookies.set('sbw_auth', 'true', cookieOptions);
-        } else {
-            Cookies.remove('accessToken', cookieOptions);
-            Cookies.remove('refreshToken', cookieOptions);
-            Cookies.remove('sbw_auth', cookieOptions);
-            Cookies.remove('token', cookieOptions);
+        for (const options of cookieOptionSets) {
+            Cookies.remove('accessToken', options);
+            Cookies.remove('refreshToken', options);
+            Cookies.remove('sbw_auth', options);
+            Cookies.remove('XSRF-TOKEN', options);
+            Cookies.remove('token', options);
         }
-
-        writeLocalStorageValue(
-            ACCESS_TOKEN_KEY,
-            nextTokens?.accessToken ?? null,
-        );
-        // Refresh token is stored in an httpOnly cookie by the backend;
-        // keeping it in localStorage or js-cookie is a security risk (XSS-readable).
-        writeLocalStorageValue(REFRESH_TOKEN_KEY, null);
     }, []);
 
     const clearSessionState = useCallback(() => {
@@ -119,8 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(null);
         setIsAuthenticated(false);
         setCsrfToken(undefined);
-        persistTokens(null);
-    }, [persistTokens]);
+        clearLegacyTokenStorage();
+        clearClientAuthCookies();
+    }, [clearClientAuthCookies]);
 
     const handleLogout = useCallback(async () => {
         try {
@@ -149,15 +125,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const client = useMemo(() => {
         return new ApiClient(
             () => {
-                const cookieToken = Cookies.get('accessToken');
-                return cookieToken || readLocalStorageValue(ACCESS_TOKEN_KEY);
+                return null;
             },
             () => {
                 void handleLogout();
             },
-            (nextTokens) => {
-                persistTokens(nextTokens);
-            },
+            undefined,
             {
                 // Explicitly pass baseUrl from app code (where Next.js replaces env vars)
                 baseUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -171,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     : undefined,
             },
         );
-    }, [csrfToken, handleLogout, persistTokens]);
+    }, [csrfToken, handleLogout]);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -188,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [client, clearSessionState]);
 
     useEffect(() => {
+        clearLegacyTokenStorage();
         if (!hasAuthHint()) {
             setInitialized(true);
             return;
@@ -198,8 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string) => {
-        const authTokens = await apiLogin({ email, password });
-        persistTokens(authTokens);
+        await apiLogin({ email, password });
         setCsrfToken(readCsrfCookie());
         await fetchProfile();
     };
@@ -211,8 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = async () => {
         try {
-            const authTokens = await apiRefreshToken();
-            persistTokens(authTokens);
+            await apiRefreshToken();
             setCsrfToken(readCsrfCookie());
             await fetchProfile();
         } catch (err) {
