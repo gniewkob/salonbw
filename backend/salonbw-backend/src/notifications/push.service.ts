@@ -15,6 +15,14 @@ interface WebPush {
     sendNotification(subscription: unknown, payload: string): Promise<unknown>;
 }
 
+const getHttpStatusCode = (error: unknown): number | undefined => {
+    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+        const statusCode = error.statusCode;
+        return typeof statusCode === 'number' ? statusCode : undefined;
+    }
+    return undefined;
+};
+
 @Injectable()
 export class PushService {
     private readonly logger = new Logger(PushService.name);
@@ -126,12 +134,10 @@ export class PushService {
                         payloadString,
                     );
                     this.logger.debug({ userId }, 'Push notification sent');
-                } catch (error: any) {
+                } catch (error: unknown) {
+                    const statusCode = getHttpStatusCode(error);
                     // If subscription is expired/invalid, deactivate it
-                    if (
-                        error?.statusCode === 410 ||
-                        error?.statusCode === 404
-                    ) {
+                    if (statusCode === 410 || statusCode === 404) {
                         await this.subscriptionsRepo.update(sub.id, {
                             isActive: false,
                         });

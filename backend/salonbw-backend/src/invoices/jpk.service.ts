@@ -155,7 +155,7 @@ export class JpkService {
             taxOfficeCode: string;
         },
         invoices: Invoice[],
-    ): any {
+    ): Record<string, unknown> {
         const now = new Date();
         const header: JpkFaHeader = {
             kodFormularza: {

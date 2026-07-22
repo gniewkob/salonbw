@@ -36,6 +36,24 @@ _Last updated: 2026-07-22 (backend dashboard DTO type cleanup)_
 - Follow-up:
   - continue auditing remaining backend `any` casts in auth/social and notification services separately, because those touch request/provider contracts.
 
+## 2026-07-22 — Backend reminder/JPK/loyalty typing cleanup
+
+- Finding:
+  - JPK XML builder returned `any` despite building a plain XML object,
+  - reminder statistics used Mongo-style `$gte` objects cast to `any` instead of TypeORM operators,
+  - push notification and loyalty duplicate-key handlers caught errors as `any`,
+  - loyalty stats used untyped SQL aggregate rows.
+- Change:
+  - typed the JPK XML object as `Record<string, unknown>`,
+  - replaced reminder `$gte` workarounds with `MoreThanOrEqual`,
+  - added narrow guards for push HTTP status codes and duplicate-key errors,
+  - typed loyalty SUM rows and reused parsed numeric totals.
+- Local validation:
+  - targeted backend ESLint for invoices, reminders, push, and loyalty passed with no warnings,
+  - backend `typecheck`, `build`, and full Jest suite passed (`244/244`).
+- Follow-up:
+  - remaining backend production `any` usages are concentrated in auth/social request typing, Sentry dynamic integration loading, and one customer controller request type.
+
 ## 2026-07-22 — Landing auth token storage hardening
 
 - Finding:

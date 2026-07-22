@@ -45,6 +45,13 @@ import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
 
 const EXPIRE_CHUNK_SIZE = 100;
+type SumRow = { sum: string | number | null };
+
+const isDuplicateKeyError = (error: unknown): boolean =>
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === '23505';
 
 @Injectable()
 export class LoyaltyService {
@@ -660,11 +667,11 @@ export class LoyaltyService {
             this.balanceRepo
                 .createQueryBuilder('b')
                 .select('SUM(b.totalPointsEarned)', 'sum')
-                .getRawOne(),
+                .getRawOne<SumRow>(),
             this.balanceRepo
                 .createQueryBuilder('b')
                 .select('SUM(b.totalPointsSpent)', 'sum')
-                .getRawOne(),
+                .getRawOne<SumRow>(),
             this.redemptionRepo.count({ where: { status: 'used' } }),
         ]);
 
@@ -672,15 +679,16 @@ export class LoyaltyService {
             where: { currentBalance: MoreThanOrEqual(1) },
         });
 
+        const totalPointsIssuedNumber = Number(totalPointsIssued?.sum || 0);
+        const totalPointsRedeemedNumber = Number(totalPointsRedeemed?.sum || 0);
         const outstandingPoints =
-            Number(totalPointsIssued?.sum || 0) -
-            Number(totalPointsRedeemed?.sum || 0);
+            totalPointsIssuedNumber - totalPointsRedeemedNumber;
 
         return {
             totalMembers,
             activeMembers,
-            totalPointsIssued: Number(totalPointsIssued?.sum || 0),
-            totalPointsRedeemed: Number(totalPointsRedeemed?.sum || 0),
+            totalPointsIssued: totalPointsIssuedNumber,
+            totalPointsRedeemed: totalPointsRedeemedNumber,
             totalRewardsRedeemed,
             outstandingPoints,
             outstandingValue:
@@ -791,9 +799,9 @@ export class LoyaltyService {
                     tierMultiplier: 1.0,
                 });
                 await repo.save(balance);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 // Fail-safe handling for concurrent creation if unique constraint fails
-                if (err.code === '23505') {
+                if (isDuplicateKeyError(err)) {
                     // Postgres duplicate key code
                     balance = await repo.findOne({
                         where: { userId },

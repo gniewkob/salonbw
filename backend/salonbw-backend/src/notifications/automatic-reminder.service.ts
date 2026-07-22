@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, LessThan, Repository } from 'typeorm';
+import { Between, LessThan, MoreThanOrEqual, Repository } from 'typeorm';
 import {
     Appointment,
     AppointmentStatus,
@@ -333,13 +333,13 @@ export class AutomaticReminderService {
             this.appointmentsRepository.count({
                 where: {
                     startTime: LessThan(new Date()),
-                    createdAt: { $gte: since } as any, // TypeORM workaround
+                    createdAt: MoreThanOrEqual(since),
                 },
             }),
             this.appointmentsRepository.count({
                 where: {
                     reminderSent: true,
-                    reminderSentAt: { $gte: since } as any,
+                    reminderSentAt: MoreThanOrEqual(since),
                 },
             }),
             this.appointmentsRepository.count({
