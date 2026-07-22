@@ -1,8 +1,21 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (Instagram token expiry diagnostics)_
+_Last updated: 2026-07-22 (Instagram token rotation helper)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Instagram token rotation helper
+
+- Finding:
+  - MyDevil runtime envs expose only `INSTAGRAM_ACCESS_TOKEN`; there is no short-lived token or OAuth grant material that can generate a fresh long-lived token non-interactively,
+  - the currently configured token remains rejected by Instagram, so the only valid repair is a fresh token from the connected Instagram/Facebook account.
+- Change:
+  - added `scripts/safe-update-instagram-token.sh` to validate a fresh token against Instagram Graph API before writing it,
+  - the helper syncs API, landing, and panel runtime envs, restarts affected MyDevil domains, and fails verification when Instagram health is still not OK.
+- Local validation:
+  - pending for the new helper until a fresh token exists; it intentionally refuses empty or invalid tokens.
+- Follow-up:
+  - generate the fresh long-lived token interactively in Meta/Instagram tooling, then run the helper through stdin without printing the token.
 
 ## 2026-07-22 — Instagram token expiry diagnostics
 

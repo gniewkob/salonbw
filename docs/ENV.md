@@ -71,11 +71,11 @@ Operational Instagram note (mydevil, 2026-07-22):
 - `instagram_http_400_oauthexception_190_0` means Instagram rejected the
   configured token, most commonly because the token/session expired.
 - An expired Instagram Basic Display token cannot be refreshed programmatically;
-  generate a fresh long-lived token, then update runtime envs without printing
-  the value:
-  - API: `printf '%s' "$NEW_TOKEN" | scripts/safe-update-api-env.sh --key INSTAGRAM_ACCESS_TOKEN --read-stdin`
-  - landing/panel runtime envs on MyDevil must be synced to the same fresh
-    value if their server-side gallery/runtime code reads Instagram directly.
+  generate a fresh long-lived token, then validate and sync API/landing/panel
+  runtime envs without printing the value:
+  - `printf '%s' "$NEW_TOKEN" | scripts/safe-update-instagram-token.sh --read-stdin`
+  - For an API-only emergency update, use
+    `printf '%s' "$NEW_TOKEN" | scripts/safe-update-api-env.sh --key INSTAGRAM_ACCESS_TOKEN --read-stdin`
 - While the token is still valid, it can be refreshed before expiry with
   Instagram's `refresh_access_token` endpoint. Do this before the token expiry
   window closes; do not rely on `/healthz` to hide or skip an expired token.
