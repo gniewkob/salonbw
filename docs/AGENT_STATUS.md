@@ -1,8 +1,22 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (backend dashboard DTO type cleanup)_
+_Last updated: 2026-07-22 (frontend test logger typing cleanup)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Frontend test logger typing cleanup
+
+- Finding:
+  - panel and landing test loggers used `window as any` to detect Cypress,
+  - both apps carried an unnecessary `no-explicit-any` suppression in the same helper.
+- Change:
+  - added a local `TestWindow` type in both apps,
+  - replaced unsafe window casts with typed Cypress/test-log flag access.
+- Local validation:
+  - panel and landing `typecheck` passed,
+  - panel and landing `lint` passed.
+- Follow-up:
+  - continue reviewing remaining frontend lint suppressions one by one; image and hook suppressions need UI/behavior context before changing.
 
 ## 2026-07-22 — Backend dashboard DTO type cleanup
 

@@ -6,13 +6,17 @@ export type TestLogger = {
     error: (...args: unknown[]) => void;
 };
 
+type TestWindow = Window & {
+    Cypress?: unknown;
+    NEXT_PUBLIC_TEST_LOG?: string;
+};
+
 function computeEnabled(): boolean {
     if (typeof window !== 'undefined') {
         // Enable in Cypress environment or when explicitly toggled for local debugging
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const isCypress = !!(window as any).Cypress;
-        const flag = (window as unknown as { NEXT_PUBLIC_TEST_LOG?: string })
-            ?.NEXT_PUBLIC_TEST_LOG;
+        const testWindow = window as TestWindow;
+        const isCypress = Boolean(testWindow.Cypress);
+        const flag = testWindow.NEXT_PUBLIC_TEST_LOG;
         return (
             isCypress ||
             flag === 'true' ||
