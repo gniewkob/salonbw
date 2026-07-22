@@ -176,12 +176,23 @@ export default function WarehouseProductsPage() {
         return () => observer.disconnect();
     }, [isMobile, mobileCount, filteredProducts.length]);
 
+    // Membership, not size: with pagination two different pages can share the
+    // same length, so a size check would false-positive across pages and let a
+    // header click clobber another page's selection.
+    const allDisplayedSelected =
+        displayedProducts.length > 0 &&
+        displayedProducts.every((p) => selectedIds.has(p.id));
+
     const toggleSelectAll = () => {
-        if (selectedIds.size === displayedProducts.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(displayedProducts.map((p) => p.id)));
-        }
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (allDisplayedSelected) {
+                displayedProducts.forEach((p) => next.delete(p.id));
+            } else {
+                displayedProducts.forEach((p) => next.add(p.id));
+            }
+            return next;
+        });
     };
 
     const toggleSelect = (id: number) => {
@@ -357,11 +368,7 @@ export default function WarehouseProductsPage() {
                                     <input
                                         type="checkbox"
                                         aria-label="zaznacz wszystkie"
-                                        checked={
-                                            displayedProducts.length > 0 &&
-                                            selectedIds.size ===
-                                                displayedProducts.length
-                                        }
+                                        checked={allDisplayedSelected}
                                         onChange={toggleSelectAll}
                                     />
                                 </th>

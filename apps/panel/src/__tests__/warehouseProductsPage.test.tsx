@@ -115,4 +115,37 @@ describe('WarehouseProductsPage — desktop pagination', () => {
         expect(screen.getByText('Produkt 25')).toBeInTheDocument();
         expect(screen.queryByText('Produkt 01')).not.toBeInTheDocument();
     });
+
+    it('does not clobber page-1 selection when selecting across pages', () => {
+        // 40 products = two full pages of 20, so page sizes are equal and a
+        // size-based select-all check would false-positive across pages.
+        mockedUseWarehouseProducts.mockReturnValue({
+            data: makeProducts(40),
+            isLoading: false,
+        } as never);
+
+        render(<WarehouseProductsPage />);
+
+        const selectAll = () =>
+            screen.getByRole('checkbox', { name: 'zaznacz wszystkie' });
+        const goToPage = (n: string) =>
+            fireEvent.change(
+                screen.getByRole('textbox', { name: /Aktualna strona/ }),
+                { target: { value: n } },
+            );
+
+        // Select every row on page 1.
+        fireEvent.click(selectAll());
+        expect(selectAll()).toBeChecked();
+
+        // On page 2 the header must not appear selected — its rows are a
+        // different set, even though both pages hold 20 items.
+        goToPage('2');
+        expect(selectAll()).not.toBeChecked();
+
+        // Selecting page 2 must ADD to the selection, not replace page 1.
+        fireEvent.click(selectAll());
+        goToPage('1');
+        expect(selectAll()).toBeChecked();
+    });
 });

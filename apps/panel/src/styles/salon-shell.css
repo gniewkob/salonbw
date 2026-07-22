@@ -8785,6 +8785,15 @@ th.checkbox_container input[type='checkbox'] {
     cursor: pointer;
 }
 
+/* The customers "zaznacz wszystkich" master checkbox lives outside the table
+   (a bare input in .all_customers_checker), so it misses both the rule above
+   and Bootstrap's .form-check-input — leaving it native blue. Match the silver
+   row checkboxes it governs. */
+.all_customers_checker input[type='checkbox'] {
+    accent-color: #6e7278;
+    cursor: pointer;
+}
+
 /* Results info row (customers list) */
 .results_info {
     display: flex;
