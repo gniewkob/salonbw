@@ -20,7 +20,7 @@ export class Log {
     action: LogAction;
 
     @Column({ type: 'simple-json', nullable: true })
-    description?: string | Record<string, any>;
+    description?: string | Record<string, unknown>;
 
     @CreateDateColumn()
     timestamp: Date;

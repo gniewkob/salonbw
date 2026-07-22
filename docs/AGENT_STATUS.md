@@ -20,6 +20,22 @@ _Last updated: 2026-07-22 (backend dashboard DTO type cleanup)_
 - Follow-up:
   - continue reducing remaining backend lint warnings in small, behavior-preserving batches.
 
+## 2026-07-22 — Backend log actor typing cleanup
+
+- Finding:
+  - `BranchesService` and `GiftCardsService` used repeated `{ id: actorId } as any` casts when writing activity logs,
+  - log descriptions used `Record<string, any>` even though log payloads are treated as unknown JSON details,
+  - gift card stats used untyped `getRawOne()` aggregate rows.
+- Change:
+  - narrowed `LogService.logAction` to accept a minimal `{ id }` actor reference,
+  - changed log JSON details from `Record<string, any>` to `Record<string, unknown>`,
+  - typed gift-card SUM rows and removed repeated numeric conversions.
+- Local validation:
+  - targeted backend ESLint for logs, branches, and gift cards passed with no warnings,
+  - backend `typecheck`, `build`, and full Jest suite passed (`244/244`).
+- Follow-up:
+  - continue auditing remaining backend `any` casts in auth/social and notification services separately, because those touch request/provider contracts.
+
 ## 2026-07-22 — Landing auth token storage hardening
 
 - Finding:

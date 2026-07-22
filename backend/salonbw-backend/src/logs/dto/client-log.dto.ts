@@ -30,5 +30,5 @@ export class ClientLogDto {
     @ApiPropertyOptional({ description: 'Additional context or data' })
     @IsObject()
     @IsOptional()
-    extra?: Record<string, any>;
+    extra?: Record<string, unknown>;
 }

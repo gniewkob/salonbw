@@ -109,7 +109,7 @@ export class BranchesService {
         });
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.BRANCH_CREATED,
             { branchId: saved.id, name: saved.name },
         );
@@ -141,7 +141,7 @@ export class BranchesService {
         const updated = await this.branchRepo.save(branch);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.BRANCH_UPDATED,
             { branchId: id, changes: dto },
         );
@@ -158,7 +158,7 @@ export class BranchesService {
         await this.branchRepo.save(branch);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.BRANCH_DELETED,
             { branchId: id, name: branch.name },
         );

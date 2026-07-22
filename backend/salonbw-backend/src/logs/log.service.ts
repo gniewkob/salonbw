@@ -13,6 +13,8 @@ import { LogAction } from './log-action.enum';
 import { User } from '../users/user.entity';
 import { ActivityCategory } from './dto/get-activity-feed.dto';
 
+type LogActor = Pick<User, 'id'>;
+
 type ActivityFeedItem = {
     id: number;
     timestamp: string;
@@ -162,9 +164,9 @@ export class LogService {
     ) {}
 
     async logAction(
-        user: User | null,
+        user: LogActor | null,
         action: LogAction,
-        description?: string | Record<string, any>,
+        description?: string | Record<string, unknown>,
     ): Promise<Log> {
         if (description) {
             const containsSensitiveKey = (
@@ -224,7 +226,7 @@ export class LogService {
         const where: FindOptionsWhere<Log> = {};
 
         if (userId) {
-            where.user = { id: userId } as User;
+            where.user = { id: userId };
         }
         if (action) {
             where.action = action;
@@ -317,10 +319,12 @@ export class LogService {
             typeof item.description === 'string'
                 ? item.description
                 : (item.description ?? null);
-        const ipAddress =
+        const ipAddressValue =
             details && typeof details === 'object' && 'ipAddress' in details
-                ? String(details.ipAddress ?? '')
+                ? details.ipAddress
                 : null;
+        const ipAddress =
+            typeof ipAddressValue === 'string' ? ipAddressValue : null;
 
         return {
             id: item.id,

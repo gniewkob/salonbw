@@ -29,6 +29,8 @@ import {
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 
+type SumRow = { sum: string | number | null };
+
 @Injectable()
 export class GiftCardsService {
     private readonly logger = new Logger(GiftCardsService.name);
@@ -127,7 +129,7 @@ export class GiftCardsService {
         });
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.GIFT_CARD_CREATED,
             {
                 giftCardId: saved.id,
@@ -164,7 +166,7 @@ export class GiftCardsService {
         const updated = await this.giftCardRepo.save(card);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.GIFT_CARD_UPDATED,
             { giftCardId: id, changes: dto },
         );
@@ -189,7 +191,7 @@ export class GiftCardsService {
         const updated = await this.giftCardRepo.save(card);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.GIFT_CARD_CANCELLED,
             { giftCardId: id, reason },
         );
@@ -287,7 +289,7 @@ export class GiftCardsService {
         });
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId },
             LogAction.GIFT_CARD_REDEEMED,
             {
                 giftCardId: card.id,
@@ -370,23 +372,25 @@ export class GiftCardsService {
             this.giftCardRepo
                 .createQueryBuilder('gc')
                 .select('SUM(gc.initialValue)', 'sum')
-                .getRawOne(),
+                .getRawOne<SumRow>(),
             this.giftCardRepo
                 .createQueryBuilder('gc')
                 .select('SUM(gc.initialValue - gc.currentBalance)', 'sum')
                 .where('gc.status IN (:...statuses)', {
                     statuses: [GiftCardStatus.Active, GiftCardStatus.Used],
                 })
-                .getRawOne(),
+                .getRawOne<SumRow>(),
         ]);
+
+        const totalValueNumber = Number(totalValue?.sum || 0);
+        const usedValueNumber = Number(usedValue?.sum || 0);
 
         return {
             totalCards: total,
             activeCards: active,
-            totalValue: Number(totalValue?.sum || 0),
-            usedValue: Number(usedValue?.sum || 0),
-            outstandingValue:
-                Number(totalValue?.sum || 0) - Number(usedValue?.sum || 0),
+            totalValue: totalValueNumber,
+            usedValue: usedValueNumber,
+            outstandingValue: totalValueNumber - usedValueNumber,
         };
     }
 
