@@ -4,6 +4,9 @@ import * as Sentry from '@sentry/node';
 // import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import type { Express, NextFunction, Request, Response } from 'express';
 
+type NodeProfilingIntegrationFactory =
+    (typeof import('@sentry/profiling-node'))['nodeProfilingIntegration'];
+
 let initialized = false;
 
 function parseSampleRate(
@@ -30,7 +33,8 @@ export async function setupSentry(app: INestApplication): Promise<boolean> {
     }
 
     if (!initialized) {
-        let nodeProfilingIntegration: any;
+        let nodeProfilingIntegration:
+            NodeProfilingIntegrationFactory | undefined;
         try {
             const profiling = await import('@sentry/profiling-node');
 
@@ -55,7 +59,6 @@ export async function setupSentry(app: INestApplication): Promise<boolean> {
             integrations: (existing) => {
                 const integrations = [...existing];
                 if (nodeProfilingIntegration) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     integrations.push(nodeProfilingIntegration());
                 }
                 return integrations;

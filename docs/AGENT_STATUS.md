@@ -54,6 +54,20 @@ _Last updated: 2026-07-22 (backend dashboard DTO type cleanup)_
 - Follow-up:
   - remaining backend production `any` usages are concentrated in auth/social request typing, Sentry dynamic integration loading, and one customer controller request type.
 
+## 2026-07-22 — Backend customer request and Sentry typing cleanup
+
+- Finding:
+  - customer note creation used `@Req() req: any` even though it only needs an optional authenticated user id,
+  - Sentry profiling setup used `any` for the dynamically imported profiling integration factory.
+- Change:
+  - introduced a local typed request shape for customer note creation,
+  - typed the Sentry profiling integration factory from the `@sentry/profiling-node` module type without forcing a static runtime import.
+- Local validation:
+  - targeted backend ESLint for customers controller and Sentry setup passed with no warnings,
+  - backend `typecheck`, `build`, and full Jest suite passed (`244/244`).
+- Follow-up:
+  - remaining backend production `any` usages are now limited to auth/social/JWT request and profile typing.
+
 ## 2026-07-22 — Landing auth token storage hardening
 
 - Finding:

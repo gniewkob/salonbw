@@ -67,6 +67,10 @@ import {
     UpdateExtraFieldDto,
 } from './dto/customer-extra-field.dto';
 
+type RequestWithOptionalUserId = ExpressRequest & {
+    user?: { id?: number };
+};
+
 @ApiTags('customers')
 @Controller('customers')
 @ApiBearerAuth()
@@ -329,7 +333,7 @@ export class CustomersController {
     addNote(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: CreateCustomerNoteDto,
-        @Req() req: any,
+        @Req() req: RequestWithOptionalUserId,
     ) {
         return this.customersService.createNote(id, dto, req.user?.id);
     }
