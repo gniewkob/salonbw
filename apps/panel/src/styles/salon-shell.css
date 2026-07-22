@@ -7413,6 +7413,14 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     font-size: 12px;
     color: #6c757d;
 }
+.salonbw-appointment-item__actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
 .salonbw-appointment-item__client {
     font-size: 12px;
     color: #495057;
@@ -10676,6 +10684,13 @@ summary:focus-visible {
 
 .salonbw-appointment-item--expanded {
     background: #fafbfc;
+}
+
+@media (max-width: 767px) {
+    .salonbw-appointment-item__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }
 
 .visit-details-grid {

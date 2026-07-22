@@ -132,11 +132,15 @@ function ReviewForm({ visit, onSaved }: ReviewFormProps) {
 
 function VisitRow({
     visit,
+    accepting,
+    onAccept,
     onOpen,
     onRefetch,
     isOpen,
 }: {
     visit: ClientVisit;
+    accepting: boolean;
+    onAccept: (id: number) => void;
     onOpen: (id: number) => void;
     onRefetch: () => void;
     isOpen: boolean;
@@ -162,6 +166,8 @@ function VisitRow({
     const isFuture = new Date(visit.startTime).getTime() > Date.now();
     const isPastUnresolved = isPastUnresolvedVisit(visit, isFuture);
     const displayStatus = isPastUnresolved ? 'no_show' : visit.status;
+    const canAcceptReschedule =
+        isFuture && visit.status === 'rescheduled_pending';
 
     const openDetails = (event: React.MouseEvent<HTMLElement>) => {
         // Focus the trigger explicitly (deterministic across browsers/tests)
@@ -249,22 +255,35 @@ function VisitRow({
                     />
                 )}
             </div>
-            <StatusBadge tone={appointmentStatusTone(displayStatus)}>
-                {appointmentStatusLabel(displayStatus)}
-            </StatusBadge>
-            <PanelButton
-                type="button"
-                size="sm"
-                variant="secondary"
-                aria-haspopup="dialog"
-                // Z10b: a stable hook for imperative re-focus after an
-                // action (e.g. cancel) moves this row to a different
-                // section and remounts it — see the `visits` effect below.
-                className="salonbw-appointment-item__details-trigger"
-                onClick={openDetails}
-            >
-                Szczegóły
-            </PanelButton>
+            <div className="salonbw-appointment-item__actions">
+                <StatusBadge tone={appointmentStatusTone(displayStatus)}>
+                    {appointmentStatusLabel(displayStatus)}
+                </StatusBadge>
+                {canAcceptReschedule && (
+                    <PanelButton
+                        type="button"
+                        size="sm"
+                        variant="primary"
+                        disabled={accepting}
+                        onClick={() => onAccept(visit.id)}
+                    >
+                        {accepting ? 'Akceptowanie…' : 'Akceptuj nowy termin'}
+                    </PanelButton>
+                )}
+                <PanelButton
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    aria-haspopup="dialog"
+                    // Z10b: a stable hook for imperative re-focus after an
+                    // action (e.g. cancel) moves this row to a different
+                    // section and remounts it — see the `visits` effect below.
+                    className="salonbw-appointment-item__details-trigger"
+                    onClick={openDetails}
+                >
+                    Szczegóły
+                </PanelButton>
+            </div>
         </div>
     );
 }
@@ -489,6 +508,12 @@ export default function VisitsPage() {
                                             <VisitRow
                                                 key={visit.id}
                                                 visit={visit}
+                                                accepting={accepting.has(
+                                                    visit.id,
+                                                )}
+                                                onAccept={(id) =>
+                                                    void acceptReschedule(id)
+                                                }
                                                 onOpen={openVisit}
                                                 onRefetch={load}
                                                 isOpen={

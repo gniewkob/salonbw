@@ -1,8 +1,24 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (Instagram token rotation helper)_
+_Last updated: 2026-07-22 (client reschedule inline acceptance)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Client reschedule inline acceptance
+
+- Finding:
+  - `/visits` showed the previous-vs-new date comparison for `rescheduled_pending`, but accepting the proposal required opening the details panel,
+  - this made the required client acknowledgement less visible than the status itself.
+- Change:
+  - future `rescheduled_pending` rows now show `Akceptuj nowy termin` directly in the visits list,
+  - the inline button uses the existing `acceptReschedule` flow and endpoint, so the panel and row cannot diverge.
+- Local validation:
+  - added a focused `visitsPage` regression test for row-level acceptance,
+  - targeted visits page Jest suite passed (`15/15`),
+  - targeted ESLint for the changed page/test passed,
+  - panel `typecheck` passed.
+- Follow-up:
+  - continue auditing appointment lifecycle views for actions that are only hidden in secondary panels despite being required client/staff decisions.
 
 ## 2026-07-22 — Instagram token rotation helper
 

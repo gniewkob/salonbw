@@ -268,6 +268,32 @@ describe('VisitsPage', () => {
         });
     });
 
+    it('accepts a proposed reschedule directly from the visits list row', async () => {
+        const apiFetch = messagesApiFetch((path, init) => {
+            if (path === '/appointments/5/accept-reschedule') return {};
+            throw new Error(`unexpected ${path} ${init?.method ?? 'GET'}`);
+        });
+        setup(apiFetch);
+
+        await screen.findByText('Tonowanie');
+        const rescheduledRow = screen
+            .getByRole('button', { name: 'Tonowanie' })
+            .closest('.salonbw-appointment-item')!;
+
+        fireEvent.click(
+            within(rescheduledRow).getByRole('button', {
+                name: 'Akceptuj nowy termin',
+            }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/appointments/5/accept-reschedule',
+                { method: 'PATCH' },
+            );
+        });
+    });
+
     it('re-anchors focus on the panel heading after accepting flips the status and unmounts the button (Z9)', async () => {
         let accepted = false;
         const apiFetch = jest.fn(async (path: string, init?: RequestInit) => {
