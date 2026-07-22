@@ -63,6 +63,8 @@ export default function WarehouseProductsPage() {
     const [editProductId, setEditProductId] = useState<number | null>(null);
     const [isMobile, setIsMobile] = useState(false);
     const [mobileCount, setMobileCount] = useState(20);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+    const [page, setPage] = useState(1);
     const sentinelRef = useRef<HTMLDivElement>(null);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [bulkDeletePending, setBulkDeletePending] = useState(false);
@@ -83,6 +85,7 @@ export default function WarehouseProductsPage() {
 
     useEffect(() => {
         setMobileCount(20);
+        setPage(1);
     }, [search, productTypeFilter, selectedCategoryId, showUncategorized]);
 
     const { data: categories = [] } = useProductCategories();
@@ -135,9 +138,24 @@ export default function WarehouseProductsPage() {
         productTypeFilter,
     ]);
 
+    const totalItems = filteredProducts.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+    // Keep the current page in range after the list shrinks (e.g. bulk delete).
+    useEffect(() => {
+        if (page > totalPages) {
+            setPage(totalPages);
+        }
+    }, [page, totalPages]);
+
+    const paginatedProducts = useMemo(() => {
+        const start = (page - 1) * itemsPerPage;
+        return filteredProducts.slice(start, start + itemsPerPage);
+    }, [filteredProducts, page, itemsPerPage]);
+
     const displayedProducts = isMobile
         ? filteredProducts.slice(0, mobileCount)
-        : filteredProducts;
+        : paginatedProducts;
 
     useEffect(() => {
         if (!isMobile) return;
@@ -494,6 +512,91 @@ export default function WarehouseProductsPage() {
                             </p>
                         ) : null}
                     </div>
+                )}
+
+                {!isMobile && filteredProducts.length > 0 && (
+                    <nav
+                        className="pagination_container"
+                        aria-label="Paginacja"
+                    >
+                        <div className="column_row">
+                            <div className="row">
+                                <div className="infocol-7">
+                                    Pozycje od {(page - 1) * itemsPerPage + 1}{' '}
+                                    do{' '}
+                                    {Math.min(page * itemsPerPage, totalItems)}{' '}
+                                    z <span id="total_found">{totalItems}</span>
+                                    <span>{' | na stronie '}</span>
+                                    <select
+                                        className="pagination-size-select"
+                                        aria-label="Liczba elementów na stronie"
+                                        value={itemsPerPage}
+                                        onChange={(e) => {
+                                            setItemsPerPage(
+                                                Number(e.target.value),
+                                            );
+                                            setPage(1);
+                                        }}
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </div>
+                                <div className="form_paginationcol-5 text-end">
+                                    <button
+                                        type="button"
+                                        className="button button_prev mr-s"
+                                        aria-label="Poprzednia strona"
+                                        disabled={page <= 1}
+                                        onClick={() =>
+                                            setPage((p) => Math.max(1, p - 1))
+                                        }
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-left-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                    <input
+                                        type="text"
+                                        className="pagination-page-input"
+                                        aria-label="Aktualna strona"
+                                        value={page}
+                                        onChange={(e) => {
+                                            const next = Number(e.target.value);
+                                            if (
+                                                next >= 1 &&
+                                                next <= totalPages
+                                            ) {
+                                                setPage(next);
+                                            }
+                                        }}
+                                    />
+                                    <span className="conjunction"> z </span>
+                                    <span>{totalPages}</span>
+                                    <button
+                                        type="button"
+                                        className="button button_next ml-s"
+                                        aria-label="Następna strona"
+                                        disabled={page >= totalPages}
+                                        onClick={() =>
+                                            setPage((p) =>
+                                                Math.min(totalPages, p + 1),
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
                 )}
 
                 <div className="products-export">
