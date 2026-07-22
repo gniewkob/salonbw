@@ -8,45 +8,129 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
     pl: {
         metaTitle: 'Usuwanie danych | Salon Black & White',
         metaDescription:
-            'Instrukcja żądania usunięcia danych z systemu Salon Black & White oraz danych związanych z integracją Meta i Instagram.',
+            'Instrukcja usunięcia konta i danych z systemu Salon Black & White, danych logowania przez Google lub Facebooka oraz danych związanych z integracją Meta i Instagram.',
         ogTitle: 'Usuwanie danych — Salon Black & White',
         ogDescription:
-            'Dowiedz się, jak zażądać usunięcia danych z systemu Salon Black & White i danych związanych z integracją Meta i Instagram.',
+            'Dowiedz się, jak usunąć konto SalonBW i powiązane dane, w tym dane z logowania przez Google lub Facebooka oraz z integracji Meta i Instagram.',
         eyebrow: 'Ochrona danych',
         h1: 'Instrukcja usuwania danych',
-        lead: 'Na tej stronie wyjaśniamy, jak zażądać usunięcia danych osobowych przetwarzanych przez Salon Black & White, w tym danych związanych z korzystaniem z naszych usług Meta i Instagram.',
+        lead: 'Na tej stronie wyjaśniamy, jak usunąć konto klienta Salon Black & White oraz zażądać usunięcia danych osobowych, które przetwarzamy — niezależnie od sposobu założenia konta, w tym danych pobranych przy logowaniu przez Google, Facebooka lub innego dostawcę oraz danych związanych z korzystaniem z usług Meta i Instagram.',
         sections: [
             {
                 heading: '1. Kogo dotyczy ta instrukcja?',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Instrukcja dotyczy klientów i użytkowników serwisu Salon Black & White, systemu rezerwacji oraz osób, których dane mogły zostać przetworzone w związku z integracją salonu z usługami Meta lub Instagram.',
+                        text: 'Instrukcja dotyczy klientów i użytkowników serwisu Salon Black & White oraz systemu rezerwacji, niezależnie od tego, w jaki sposób powstało konto — przez formularz rejestracji z adresem e-mail i hasłem, czy przez logowanie zewnętrzne (Google, Facebook lub inny dostępny dostawca). Dotyczy również osób, których dane mogły zostać przetworzone w związku z integracją salonu z usługami Meta lub Instagram.',
                     },
                     {
                         type: 'p',
-                        text: 'Obecna integracja Instagram służy do wyświetlania mediów z firmowego konta salon_bw. Nie używamy logowania przez Instagram do zakładania kont klientów i nie pobieramy prywatnych wiadomości, kontaktów ani haseł użytkowników Instagrama.',
+                        text: 'Obecna integracja z Instagramem służy wyłącznie do wyświetlania mediów z firmowego konta salon_bw i nie jest logowaniem klienta — jej odrębne zasady opisujemy w punkcie 7.',
                     },
                 ],
             },
             {
-                heading: '2. Jak złożyć żądanie usunięcia danych?',
+                heading: '2. Jakie dane przechowuje SalonBW?',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'W ramach konta klienta i historii korzystania z usług w panelu SalonBW możemy przechowywać następujące kategorie danych:',
+                    },
+                    {
+                        type: 'list',
+                        ordered: false,
+                        items: [
+                            {
+                                lead: 'Dane konta i profilu:',
+                                text: 'imię, nazwisko, nazwa wyświetlana, adres e-mail, rola konta oraz hasło przechowywane wyłącznie w postaci zahaszowanej.',
+                            },
+                            {
+                                lead: 'Dane kontaktowe i adresowe:',
+                                text: 'numer telefonu, adres, miasto i kod pocztowy.',
+                            },
+                            {
+                                lead: 'Dodatkowe dane profilu:',
+                                text: 'data urodzenia, płeć, opis lub notatka, zdjęcie profilowe (awatar).',
+                            },
+                            {
+                                lead: 'Zgody i preferencje komunikacji:',
+                                text: 'zgody RODO i na regulamin (wraz z datami), zgody marketingowe (SMS, WhatsApp, e-mail), ustawienia powiadomień w panelu oraz zapis zmian zgód (rejestr audytowy).',
+                            },
+                            {
+                                lead: 'Historia wizyt i rezerwacji:',
+                                text: 'terminy, wybrane usługi, przypisany pracownik, statusy, kwoty, metody płatności, rabaty i napiwki.',
+                            },
+                            {
+                                lead: 'Notatki, zalecenia i receptury:',
+                                text: 'notatki do wizyt, zalecenia pozabiegowe oraz formuły i receptury (np. koloryzacji) zapisane w profilu.',
+                            },
+                            {
+                                lead: 'Wiadomości i opinie:',
+                                text: 'wątki wiadomości między klientem a salonem oraz oceny i komentarze do wizyt.',
+                            },
+                            {
+                                lead: 'Program lojalnościowy:',
+                                text: 'punkty, historia naliczeń oraz powiązane karty podarunkowe.',
+                            },
+                            {
+                                lead: 'Załączniki:',
+                                text: 'zdjęcia w galerii klienta i pliki dołączone do profilu.',
+                            },
+                            {
+                                lead: 'Dane rozliczeniowe:',
+                                text: 'faktury, paragony oraz dokumentacja sprzedaży produktów.',
+                            },
+                            {
+                                lead: 'Dane techniczne i bezpieczeństwa:',
+                                text: 'tokeny sesji i odświeżania, zapisy prób logowania, logi zdarzeń oraz identyfikatory subskrypcji powiadomień push.',
+                            },
+                            {
+                                lead: 'Historia komunikacji:',
+                                text: 'logi wysłanych wiadomości SMS i e-mail oraz zapisy odbiorców newslettera.',
+                            },
+                            {
+                                lead: 'Identyfikatory logowania zewnętrznego:',
+                                text: 'identyfikator konta u dostawcy (np. Google lub Facebook), jeżeli logowanie zewnętrzne zostało powiązane z kontem — szczegóły w punkcie 3.',
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                heading: '3. Dane pobierane przy logowaniu przez Google, Facebooka lub innego dostawcę',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Jeżeli logujesz się przez Google, Facebooka lub innego dostępnego dostawcę, przy pierwszym logowaniu kopiujemy z Twojego podstawowego profilu wyłącznie: adres e-mail, imię, nazwisko oraz zdjęcie profilowe. Zapisujemy też identyfikator Twojego konta u dostawcy (np. identyfikator Google lub Facebook), aby rozpoznać Cię przy kolejnych logowaniach.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Logowanie zewnętrzne korzysta jedynie z podstawowego zakresu profilu (np. Google: „email” i „profile”; Facebook: „email” i „public_profile”). Nie pobieramy i nie przechowujemy tokenów dostępu dostawcy, list znajomych, wiadomości prywatnych ani haseł.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Skopiowane dane stają się częścią Twojego konta klienta SalonBW i podlegają usunięciu na tych samych zasadach co pozostałe dane profilu (patrz punkty 4 i 5).',
+                    },
+                ],
+            },
+            {
+                heading: '4. Jak złożyć żądanie usunięcia konta lub danych?',
                 blocks: [
                     {
                         type: 'list',
                         ordered: true,
                         items: [
                             {
-                                text: `Wyślij wiadomość na adres ${CONTACT_EMAIL} z tematem „Usunięcie danych – Meta/Instagram” albo „Usunięcie konta SalonBW”.`,
+                                text: `Wyślij wiadomość na adres ${CONTACT_EMAIL} z tematem „Usunięcie konta SalonBW” albo „Usunięcie danych – Meta/Instagram”.`,
                             },
                             {
-                                text: 'Napisz, czy żądanie dotyczy konta klienta SalonBW, danych związanych z Meta/Instagram, czy obu tych zakresów.',
+                                text: 'Napisz, czego dotyczy żądanie: usunięcia całego konta klienta SalonBW (niezależnie od sposobu rejestracji), wybranych danych, czy danych związanych z Meta/Instagram.',
                             },
                             {
-                                text: 'Podaj dane pozwalające odnaleźć konto: imię i nazwisko oraz adres e-mail lub numer telefonu użyty przy rejestracji. Jeżeli żądanie dotyczy integracji Meta/Instagram, możesz dodatkowo podać nazwę użytkownika Instagram.',
+                                text: 'Podaj dane pozwalające odnaleźć konto: imię i nazwisko oraz adres e-mail lub numer telefonu użyty przy rejestracji albo logowaniu zewnętrznym. Jeżeli żądanie dotyczy integracji Meta/Instagram, możesz dodatkowo podać nazwę użytkownika Instagram.',
                             },
                             {
-                                text: 'Wyślij wiadomość z adresu powiązanego z kontem, jeżeli jest to możliwe. Możemy poprosić o dodatkowe potwierdzenie tożsamości, ale nigdy o hasło, token dostępu ani dane logowania do Meta lub Instagram.',
+                                text: 'Wyślij wiadomość z adresu powiązanego z kontem, jeżeli to możliwe. Możemy poprosić o dodatkowe potwierdzenie tożsamości, ale nigdy o hasło, token dostępu ani dane logowania do Google, Facebooka, Meta lub Instagram.',
                             },
                         ],
                     },
@@ -58,47 +142,83 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '3. Co usuniemy?',
+                heading: '5. Co usuniemy przy usunięciu konta?',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Po pozytywnej weryfikacji usuniemy lub zanonimizujemy dane, których nie musimy dalej przechowywać, odpowiednio do zakresu żądania.',
+                        text: 'Po pozytywnej weryfikacji, w zakresie, w jakim nie mamy obowiązku dalszego przechowywania danych (patrz punkt 8), usuniemy lub zanonimizujemy:',
                     },
                     {
                         type: 'list',
                         ordered: false,
                         items: [
                             {
-                                text: 'profil i dane kontaktowe konta klienta SalonBW,',
+                                text: 'konto oraz dane profilu, kontaktowe i adresowe,',
                             },
                             {
-                                text: 'zgody marketingowe i ustawienia komunikacji,',
+                                text: 'zdjęcie profilowe oraz zdjęcia i pliki zapisane w Twoim profilu,',
                             },
                             {
-                                text: 'dane techniczne lub identyfikatory integracji Meta/Instagram zapisane przez Salon Black & White, jeżeli takie dane istnieją,',
+                                text: 'zgody, preferencje komunikacji oraz powiązaną historię wiadomości, opinii, notatek i zaleceń,',
                             },
                             {
-                                text: 'kopie danych pozyskanych z Meta/Instagram i przechowywanych w naszych systemach, jeżeli takie dane istnieją i nie zachodzi obowiązek ich dalszego przechowywania.',
+                                text: 'dane programu lojalnościowego powiązane z kontem,',
+                            },
+                            {
+                                text: 'powiązanie z kontem Google, Facebooka lub innego dostawcy (odłączamy identyfikatory zewnętrzne) oraz kopie podstawowego profilu skopiowane przy logowaniu,',
+                            },
+                            {
+                                text: 'dane techniczne lub identyfikatory integracji Meta/Instagram zapisane przez Salon Black & White, jeżeli takie dane istnieją.',
                             },
                         ],
                     },
+                    {
+                        type: 'p',
+                        text: 'Usunięcie konta unieważnia również aktywne sesje oraz tokeny logowania SalonBW. Po realizacji żądania ponowne korzystanie z systemu rezerwacji wymaga założenia konta od nowa.',
+                    },
                 ],
             },
             {
-                heading: '4. Dane, których nie możemy usunąć od razu',
+                heading: '6. Odłączenie logowania zewnętrznego a usunięcie danych',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Prawo do usunięcia danych nie jest bezwzględne. Niektóre informacje mogą zostać ograniczone i zachowane przez okres wymagany przez prawo, w szczególności dla rozliczeń podatkowych, dokumentacji księgowej, obsługi roszczeń, przeciwdziałania nadużyciom lub wykazania zgodności działań z prawem.',
+                        text: 'Odłączenie aplikacji w ustawieniach konta Google, Facebook lub Meta blokuje przyszłe logowanie tym połączeniem, ale nie usuwa automatycznie odrębnego konta klienta ani danych zapisanych wcześniej w systemie SalonBW. Aby usunąć te dane, złóż żądanie opisane w punkcie 4.',
                     },
                     {
                         type: 'p',
-                        text: 'Jeżeli część danych musi zostać zachowana, poinformujemy o zakresie, podstawie i przewidywanym okresie dalszego przechowywania. Dane te nie będą wykorzystywane do marketingu.',
+                        text: 'Działa to również w drugą stronę: usunięcie konta SalonBW nie usuwa Twojego konta ani danych po stronie Google, Facebooka, Meta czy Instagrama. Tymi danymi zarządzasz bezpośrednio w ustawieniach danego dostawcy. Salon Black & White nie może usunąć danych przechowywanych wyłącznie na serwerach tych usług.',
                     },
                 ],
             },
             {
-                heading: '5. Termin i potwierdzenie realizacji',
+                heading: '7. Instagram — integracja galerii',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Obecna integracja z Instagramem służy wyłącznie do wyświetlania na naszej stronie mediów z firmowego konta salon_bw. Nie używamy logowania przez Instagram do zakładania kont klientów i nie pobieramy prywatnych wiadomości, kontaktów ani haseł użytkowników Instagrama.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Jeżeli w przyszłości udostępnimy logowanie przez Instagram lub innego dostawcę, zaktualizujemy tę stronę oraz Politykę Prywatności, a takie logowanie będzie objęte tymi samymi zasadami usuwania danych co pozostali dostawcy.',
+                    },
+                ],
+            },
+            {
+                heading: '8. Dane, których nie możemy usunąć od razu',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Prawo do usunięcia danych nie jest bezwzględne. Część informacji możemy ograniczyć i zachować przez okres wymagany przepisami, w szczególności: dane rozliczeniowe i księgowe (faktury, paragony, dokumentacja sprzedaży) przez okres wymagany prawem podatkowym, oraz dane niezbędne do ustalenia, dochodzenia lub obrony roszczeń — do czasu ich przedawnienia.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Możemy też zachować minimalny zakres danych na potrzeby przeciwdziałania nadużyciom oraz wykazania zgodności naszych działań z prawem. Jeżeli część danych musi zostać zachowana, poinformujemy o zakresie, podstawie i przewidywanym okresie dalszego przechowywania. Dane te nie będą wykorzystywane do marketingu i zostaną usunięte po upływie wymaganych okresów.',
+                    },
+                ],
+            },
+            {
+                heading: '9. Termin i potwierdzenie realizacji',
                 blocks: [
                     {
                         type: 'p',
@@ -111,20 +231,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '6. Odłączenie aplikacji Meta lub Instagram',
-                blocks: [
-                    {
-                        type: 'p',
-                        text: 'Możesz niezależnie usunąć dostęp aplikacji w ustawieniach swojego konta Meta lub Instagram. Odłączenie aplikacji blokuje przyszły dostęp przy użyciu danego połączenia, ale nie musi automatycznie usuwać odrębnego konta klienta ani danych zapisanych wcześniej w systemie SalonBW. Aby usunąć te dane, złóż żądanie opisane w punkcie 2.',
-                    },
-                    {
-                        type: 'p',
-                        text: 'Treści i dane przechowywane wyłącznie przez Meta lub Instagram, w tym konto Instagram, należy usuwać lub zarządzać nimi bezpośrednio w ustawieniach odpowiedniej usługi. Salon Black & White nie może usunąć danych znajdujących się wyłącznie na serwerach Meta.',
-                    },
-                ],
-            },
-            {
-                heading: '7. Bezpieczeństwo żądania',
+                heading: '10. Bezpieczeństwo żądania',
                 blocks: [
                     {
                         type: 'p',
@@ -133,11 +240,11 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '8. Administrator i prawa użytkownika',
+                heading: '11. Administrator i prawa użytkownika',
                 blocks: [
                     {
                         type: 'p',
-                        text: `Administratorem danych jest Salon Fryzjerski Black&White Aleksandra Bodora. W sprawach dotyczących danych osobowych skontaktuj się z nami pod adresem ${CONTACT_EMAIL}. Szczegółowe informacje o przetwarzaniu danych znajdują się w Polityce Prywatności. Masz również prawo złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych.`,
+                        text: `Administratorem danych jest Salon Fryzjerski Black&White Aleksandra Bodora. W sprawach dotyczących danych osobowych skontaktuj się z nami pod adresem ${CONTACT_EMAIL}. Szczegółowe informacje o przetwarzaniu danych, w tym o kategoriach danych i okresach ich przechowywania, znajdują się w Polityce Prywatności. Masz również prawo złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych.`,
                     },
                     {
                         type: 'link',
@@ -153,13 +260,13 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
     en: {
         metaTitle: 'Data Deletion | Salon Black & White',
         metaDescription:
-            'Instructions for requesting deletion of data from Salon Black & White systems and data connected with Meta and Instagram integrations.',
+            'How to delete your Salon Black & White account and data, including data copied at Google or Facebook login and data connected with Meta and Instagram integrations.',
         ogTitle: 'Data Deletion — Salon Black & White',
         ogDescription:
-            'Learn how to request deletion of data from Salon Black & White systems and data connected with Meta and Instagram integrations.',
+            'Learn how to delete your SalonBW account and related data, including data from Google or Facebook login and from Meta and Instagram integrations.',
         eyebrow: 'Data protection',
         h1: 'Data deletion instructions',
-        lead: 'This page explains how to request deletion of personal data processed by Salon Black & White, including data connected with our use of Meta and Instagram services.',
+        lead: 'This page explains how to delete your Salon Black & White client account and request deletion of the personal data we process — regardless of how the account was created, including data copied at login through Google, Facebook or another provider, and data connected with our use of Meta and Instagram services.',
         reviewNotice:
             'English is a convenience translation. The legally binding version is the Polish text.',
         sections: [
@@ -168,32 +275,116 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'These instructions apply to clients and users of the Salon Black & White website and booking system, and to people whose data may have been processed in connection with the salon’s Meta or Instagram integration.',
+                        text: 'These instructions apply to clients and users of the Salon Black & White website and booking system, regardless of how the account was created — through the registration form with an email address and password, or through external login (Google, Facebook or another available provider). They also apply to people whose data may have been processed in connection with the salon’s Meta or Instagram integration.',
                     },
                     {
                         type: 'p',
-                        text: 'The current Instagram integration displays media from the salon_bw business account. We do not use Instagram Login to create client accounts and we do not retrieve private messages, contacts or Instagram passwords.',
+                        text: 'The current Instagram integration only displays media from the salon_bw business account and is not a client login — its separate rules are described in section 7.',
                     },
                 ],
             },
             {
-                heading: '2. How do I submit a deletion request?',
+                heading: '2. What data does SalonBW store?',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'As part of your client account and your service history, the SalonBW panel may store the following categories of data:',
+                    },
+                    {
+                        type: 'list',
+                        ordered: false,
+                        items: [
+                            {
+                                lead: 'Account and profile data:',
+                                text: 'first name, surname, display name, email address, account role and a password stored only in hashed form.',
+                            },
+                            {
+                                lead: 'Contact and address data:',
+                                text: 'phone number, address, city and postal code.',
+                            },
+                            {
+                                lead: 'Additional profile data:',
+                                text: 'date of birth, gender, a description or note, and a profile photo (avatar).',
+                            },
+                            {
+                                lead: 'Consents and communication preferences:',
+                                text: 'GDPR and terms consents (with dates), marketing consents (SMS, WhatsApp, email), in-panel notification settings and a record of consent changes (audit trail).',
+                            },
+                            {
+                                lead: 'Visit and booking history:',
+                                text: 'appointment times, selected services, the assigned staff member, statuses, amounts, payment methods, discounts and tips.',
+                            },
+                            {
+                                lead: 'Notes, recommendations and formulas:',
+                                text: 'visit notes, aftercare recommendations and formulas or recipes (e.g. colouring) saved in the profile.',
+                            },
+                            {
+                                lead: 'Messages and reviews:',
+                                text: 'message threads between the client and the salon, and ratings and comments about visits.',
+                            },
+                            {
+                                lead: 'Loyalty programme:',
+                                text: 'points, accrual history and linked gift cards.',
+                            },
+                            {
+                                lead: 'Attachments:',
+                                text: 'photos in the client gallery and files attached to the profile.',
+                            },
+                            {
+                                lead: 'Billing data:',
+                                text: 'invoices, receipts and product sales records.',
+                            },
+                            {
+                                lead: 'Technical and security data:',
+                                text: 'session and refresh tokens, login-attempt records, event logs and push-notification subscription identifiers.',
+                            },
+                            {
+                                lead: 'Communication history:',
+                                text: 'logs of SMS and email messages sent and newsletter recipient records.',
+                            },
+                            {
+                                lead: 'External login identifiers:',
+                                text: 'your account identifier at the provider (e.g. Google or Facebook), if external login has been linked to the account — see section 3.',
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                heading: '3. Data copied at login through Google, Facebook or another provider',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'If you log in through Google, Facebook or another available provider, at first login we copy from your basic profile only: your email address, first name, surname and profile photo. We also store your account identifier at the provider (e.g. a Google or Facebook identifier) so we can recognise you at subsequent logins.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'External login uses only the basic profile scope (e.g. Google: “email” and “profile”; Facebook: “email” and “public_profile”). We do not retrieve or store provider access tokens, friend lists, private messages or passwords.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'The copied data becomes part of your SalonBW client account and is deleted on the same terms as the rest of your profile data (see sections 4 and 5).',
+                    },
+                ],
+            },
+            {
+                heading: '4. How do I submit an account or data deletion request?',
                 blocks: [
                     {
                         type: 'list',
                         ordered: true,
                         items: [
                             {
-                                text: `Send an email to ${CONTACT_EMAIL} with the subject “Data deletion – Meta/Instagram” or “Delete SalonBW account”.`,
+                                text: `Send an email to ${CONTACT_EMAIL} with the subject “Delete SalonBW account” or “Data deletion – Meta/Instagram”.`,
                             },
                             {
-                                text: 'State whether your request concerns your SalonBW client account, Meta/Instagram-related data, or both.',
+                                text: 'State what the request concerns: deletion of your entire SalonBW client account (regardless of how you registered), selected data, or Meta/Instagram-related data.',
                             },
                             {
-                                text: 'Provide the information needed to locate your account: your first and last name and the email address or telephone number used during registration. If your request concerns Meta/Instagram, you may also provide your Instagram username.',
+                                text: 'Provide the information needed to locate your account: your first and last name and the email address or telephone number used during registration or external login. If your request concerns the Meta/Instagram integration, you may also provide your Instagram username.',
                             },
                             {
-                                text: 'If possible, send the request from the address linked to your account. We may ask for additional identity verification, but never for your password, access token or Meta or Instagram login details.',
+                                text: 'If possible, send the request from the address linked to your account. We may ask for additional identity verification, but never for your password, access token or Google, Facebook, Meta or Instagram login details.',
                             },
                         ],
                     },
@@ -205,43 +396,83 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '3. What will we delete?',
+                heading: '5. What is deleted when the account is deleted?',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'After successful verification, we will delete or anonymise data that we are not required to retain, according to the scope of your request.',
+                        text: 'After successful verification, and to the extent we are not required to retain the data (see section 8), we will delete or anonymise:',
                     },
                     {
                         type: 'list',
                         ordered: false,
                         items: [
-                            { text: 'your SalonBW client profile and contact data,' },
-                            { text: 'marketing consents and communication settings,' },
                             {
-                                text: 'technical data or Meta/Instagram integration identifiers stored by Salon Black & White, if any exist,',
+                                text: 'the account and its profile, contact and address data,',
                             },
                             {
-                                text: 'copies of data obtained from Meta/Instagram and stored in our systems, if any exist and there is no obligation to retain them.',
+                                text: 'the profile photo and the photos and files stored in your profile,',
+                            },
+                            {
+                                text: 'consents, communication preferences and the related history of messages, reviews, notes and recommendations,',
+                            },
+                            {
+                                text: 'loyalty programme data linked to the account,',
+                            },
+                            {
+                                text: 'the link to your Google, Facebook or other provider account (we unlink the external identifiers) and the basic profile copies made at login,',
+                            },
+                            {
+                                text: 'technical data or Meta/Instagram integration identifiers stored by Salon Black & White, if any exist.',
                             },
                         ],
                     },
+                    {
+                        type: 'p',
+                        text: 'Deleting the account also revokes active SalonBW sessions and login tokens. After the request is fulfilled, using the booking system again requires creating a new account.',
+                    },
                 ],
             },
             {
-                heading: '4. Data we cannot delete immediately',
+                heading: '6. Disconnecting external login vs. deleting data',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'The right to erasure is not absolute. Some information may be restricted and retained for the period required by law, particularly for tax settlements, accounting records, handling legal claims, preventing abuse or demonstrating legal compliance.',
+                        text: 'Removing the app’s access in your Google, Facebook or Meta account settings blocks future login through that connection, but it does not automatically delete a separate client account or data previously stored in SalonBW systems. To delete that data, submit the request described in section 4.',
                     },
                     {
                         type: 'p',
-                        text: 'If any data must be retained, we will explain its scope, the legal basis and the expected retention period. Such data will not be used for marketing.',
+                        text: 'This also works the other way around: deleting your SalonBW account does not delete your account or data at Google, Facebook, Meta or Instagram. You manage that data directly in the relevant provider’s settings. Salon Black & White cannot delete data held exclusively on those services’ servers.',
                     },
                 ],
             },
             {
-                heading: '5. Response time and confirmation',
+                heading: '7. Instagram — gallery integration',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'The current Instagram integration only displays media from the salon_bw business account on our website. We do not use Instagram Login to create client accounts and we do not retrieve private messages, contacts or Instagram passwords.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'If in the future we enable login through Instagram or another provider, we will update this page and the Privacy Policy, and such login will be covered by the same data deletion rules as other providers.',
+                    },
+                ],
+            },
+            {
+                heading: '8. Data we cannot delete immediately',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'The right to erasure is not absolute. Some information may be restricted and retained for the period required by law, in particular: billing and accounting data (invoices, receipts, sales records) for the period required by tax law, and data necessary to establish, exercise or defend legal claims — until such claims become time-barred.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'We may also retain a minimal set of data to prevent abuse and to demonstrate that our actions comply with the law. If any data must be retained, we will explain its scope, the legal basis and the expected retention period. Such data will not be used for marketing and will be deleted once the required periods expire.',
+                    },
+                ],
+            },
+            {
+                heading: '9. Response time and confirmation',
                 blocks: [
                     {
                         type: 'p',
@@ -254,20 +485,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '6. Disconnecting the Meta or Instagram app',
-                blocks: [
-                    {
-                        type: 'p',
-                        text: 'You can separately remove the app’s access in your Meta or Instagram account settings. Disconnecting the app prevents future access through that connection, but it may not automatically delete a separate client account or data previously stored in SalonBW systems. To delete that data, submit the request described in section 2.',
-                    },
-                    {
-                        type: 'p',
-                        text: 'Content and data stored exclusively by Meta or Instagram, including your Instagram account, must be deleted or managed directly in the relevant service settings. Salon Black & White cannot delete data held exclusively on Meta servers.',
-                    },
-                ],
-            },
-            {
-                heading: '7. Request security',
+                heading: '10. Request security',
                 blocks: [
                     {
                         type: 'p',
@@ -276,11 +494,11 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '8. Controller and your rights',
+                heading: '11. Controller and your rights',
                 blocks: [
                     {
                         type: 'p',
-                        text: `The data controller is Salon Fryzjerski Black&White Aleksandra Bodora. For personal data matters, contact us at ${CONTACT_EMAIL}. Detailed information about data processing is available in our Privacy Policy. You also have the right to lodge a complaint with the President of the Polish Personal Data Protection Office.`,
+                        text: `The data controller is Salon Fryzjerski Black&White Aleksandra Bodora. For personal data matters, contact us at ${CONTACT_EMAIL}. Detailed information about data processing, including the categories of data and their retention periods, is available in our Privacy Policy. You also have the right to lodge a complaint with the President of the Polish Personal Data Protection Office.`,
                     },
                     {
                         type: 'link',
@@ -296,13 +514,13 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
     de: {
         metaTitle: 'Datenlöschung | Salon Black & White',
         metaDescription:
-            'Anleitung zur Löschung von Daten aus den Systemen von Salon Black & White und von Daten im Zusammenhang mit Meta- und Instagram-Integrationen.',
+            'So löschen Sie Ihr Salon-Black-&-White-Konto und Ihre Daten, einschließlich der bei der Anmeldung über Google oder Facebook kopierten Daten sowie der Daten aus Meta- und Instagram-Integrationen.',
         ogTitle: 'Datenlöschung — Salon Black & White',
         ogDescription:
-            'Erfahren Sie, wie Sie die Löschung von Daten aus den Systemen von Salon Black & White und aus Meta- und Instagram-Integrationen beantragen.',
+            'Erfahren Sie, wie Sie Ihr SalonBW-Konto und zugehörige Daten löschen, einschließlich der Daten aus der Google- oder Facebook-Anmeldung sowie aus Meta- und Instagram-Integrationen.',
         eyebrow: 'Datenschutz',
         h1: 'Anleitung zur Datenlöschung',
-        lead: 'Auf dieser Seite erklären wir, wie Sie die Löschung personenbezogener Daten beantragen können, die von Salon Black & White verarbeitet werden, einschließlich Daten im Zusammenhang mit unserer Nutzung von Meta- und Instagram-Diensten.',
+        lead: 'Auf dieser Seite erklären wir, wie Sie Ihr Kundenkonto bei Salon Black & White löschen und die Löschung der von uns verarbeiteten personenbezogenen Daten beantragen können — unabhängig davon, wie das Konto erstellt wurde, einschließlich der bei der Anmeldung über Google, Facebook oder einen anderen Anbieter kopierten Daten sowie der Daten im Zusammenhang mit unserer Nutzung von Meta- und Instagram-Diensten.',
         reviewNotice:
             'Die deutsche Fassung ist eine Übersetzung zur Erleichterung. Rechtlich verbindlich ist die polnische Fassung.',
         sections: [
@@ -311,32 +529,116 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Diese Anleitung gilt für Kundinnen und Kunden sowie Nutzer der Website und des Buchungssystems von Salon Black & White und für Personen, deren Daten im Zusammenhang mit der Meta- oder Instagram-Integration des Salons verarbeitet worden sein könnten.',
+                        text: 'Diese Anleitung gilt für Kundinnen und Kunden sowie Nutzer der Website und des Buchungssystems von Salon Black & White, unabhängig davon, wie das Konto erstellt wurde — über das Registrierungsformular mit E-Mail-Adresse und Passwort oder über eine externe Anmeldung (Google, Facebook oder ein anderer verfügbarer Anbieter). Sie gilt auch für Personen, deren Daten im Zusammenhang mit der Meta- oder Instagram-Integration des Salons verarbeitet worden sein könnten.',
                     },
                     {
                         type: 'p',
-                        text: 'Die aktuelle Instagram-Integration zeigt Medien des Geschäftskontos salon_bw an. Wir verwenden Instagram Login nicht zur Erstellung von Kundenkonten und rufen keine privaten Nachrichten, Kontakte oder Instagram-Passwörter ab.',
+                        text: 'Die aktuelle Instagram-Integration zeigt lediglich Medien des Geschäftskontos salon_bw an und ist keine Kundenanmeldung — ihre gesonderten Regeln beschreiben wir in Abschnitt 7.',
                     },
                 ],
             },
             {
-                heading: '2. Wie stelle ich einen Löschantrag?',
+                heading: '2. Welche Daten speichert SalonBW?',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Im Rahmen Ihres Kundenkontos und Ihrer Nutzungshistorie kann das SalonBW-Panel folgende Datenkategorien speichern:',
+                    },
+                    {
+                        type: 'list',
+                        ordered: false,
+                        items: [
+                            {
+                                lead: 'Konto- und Profildaten:',
+                                text: 'Vorname, Nachname, Anzeigename, E-Mail-Adresse, Kontorolle sowie ein ausschließlich als Hash gespeichertes Passwort.',
+                            },
+                            {
+                                lead: 'Kontakt- und Adressdaten:',
+                                text: 'Telefonnummer, Adresse, Stadt und Postleitzahl.',
+                            },
+                            {
+                                lead: 'Zusätzliche Profildaten:',
+                                text: 'Geburtsdatum, Geschlecht, eine Beschreibung oder Notiz sowie ein Profilbild (Avatar).',
+                            },
+                            {
+                                lead: 'Einwilligungen und Kommunikationseinstellungen:',
+                                text: 'DSGVO- und AGB-Einwilligungen (mit Datum), Marketingeinwilligungen (SMS, WhatsApp, E-Mail), Benachrichtigungseinstellungen im Panel sowie eine Aufzeichnung von Einwilligungsänderungen (Audit-Trail).',
+                            },
+                            {
+                                lead: 'Besuchs- und Buchungshistorie:',
+                                text: 'Termine, ausgewählte Leistungen, zugewiesene Mitarbeiterin, Status, Beträge, Zahlungsmethoden, Rabatte und Trinkgelder.',
+                            },
+                            {
+                                lead: 'Notizen, Empfehlungen und Rezepturen:',
+                                text: 'Besuchsnotizen, Nachsorgeempfehlungen sowie im Profil gespeicherte Formeln und Rezepturen (z. B. für Colorationen).',
+                            },
+                            {
+                                lead: 'Nachrichten und Bewertungen:',
+                                text: 'Nachrichtenverläufe zwischen Kunde und Salon sowie Bewertungen und Kommentare zu Besuchen.',
+                            },
+                            {
+                                lead: 'Treueprogramm:',
+                                text: 'Punkte, Gutschriftshistorie und verknüpfte Gutscheinkarten.',
+                            },
+                            {
+                                lead: 'Anhänge:',
+                                text: 'Fotos in der Kundengalerie und dem Profil beigefügte Dateien.',
+                            },
+                            {
+                                lead: 'Abrechnungsdaten:',
+                                text: 'Rechnungen, Quittungen und Verkaufsunterlagen zu Produkten.',
+                            },
+                            {
+                                lead: 'Technische und Sicherheitsdaten:',
+                                text: 'Sitzungs- und Aktualisierungstoken, Aufzeichnungen von Anmeldeversuchen, Ereignisprotokolle sowie Kennungen von Push-Benachrichtigungsabonnements.',
+                            },
+                            {
+                                lead: 'Kommunikationshistorie:',
+                                text: 'Protokolle gesendeter SMS- und E-Mail-Nachrichten sowie Aufzeichnungen von Newsletter-Empfängern.',
+                            },
+                            {
+                                lead: 'Kennungen der externen Anmeldung:',
+                                text: 'Ihre Kontokennung beim Anbieter (z. B. Google oder Facebook), sofern eine externe Anmeldung mit dem Konto verknüpft wurde — siehe Abschnitt 3.',
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                heading: '3. Bei der Anmeldung über Google, Facebook oder einen anderen Anbieter erhobene Daten',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Wenn Sie sich über Google, Facebook oder einen anderen verfügbaren Anbieter anmelden, kopieren wir bei der ersten Anmeldung aus Ihrem Basisprofil ausschließlich: Ihre E-Mail-Adresse, Ihren Vornamen, Ihren Nachnamen und Ihr Profilbild. Außerdem speichern wir Ihre Kontokennung beim Anbieter (z. B. eine Google- oder Facebook-Kennung), um Sie bei späteren Anmeldungen wiederzuerkennen.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Die externe Anmeldung nutzt nur den Basisprofil-Umfang (z. B. Google: „email” und „profile”; Facebook: „email” und „public_profile”). Wir rufen keine Zugriffstoken des Anbieters, Freundeslisten, privaten Nachrichten oder Passwörter ab und speichern diese nicht.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Die kopierten Daten werden Teil Ihres SalonBW-Kundenkontos und werden zu denselben Bedingungen gelöscht wie Ihre übrigen Profildaten (siehe Abschnitte 4 und 5).',
+                    },
+                ],
+            },
+            {
+                heading: '4. Wie stelle ich einen Antrag auf Konto- oder Datenlöschung?',
                 blocks: [
                     {
                         type: 'list',
                         ordered: true,
                         items: [
                             {
-                                text: `Senden Sie eine E-Mail an ${CONTACT_EMAIL} mit dem Betreff „Datenlöschung – Meta/Instagram” oder „SalonBW-Konto löschen”.`,
+                                text: `Senden Sie eine E-Mail an ${CONTACT_EMAIL} mit dem Betreff „SalonBW-Konto löschen” oder „Datenlöschung – Meta/Instagram”.`,
                             },
                             {
-                                text: 'Geben Sie an, ob Ihr Antrag das SalonBW-Kundenkonto, Meta-/Instagram-bezogene Daten oder beide Bereiche betrifft.',
+                                text: 'Geben Sie an, was der Antrag betrifft: die Löschung Ihres gesamten SalonBW-Kundenkontos (unabhängig von der Art der Registrierung), ausgewählter Daten oder Meta-/Instagram-bezogener Daten.',
                             },
                             {
-                                text: 'Geben Sie die zur Identifizierung des Kontos erforderlichen Daten an: Vor- und Nachname sowie die bei der Registrierung verwendete E-Mail-Adresse oder Telefonnummer. Betrifft der Antrag Meta/Instagram, können Sie zusätzlich Ihren Instagram-Benutzernamen angeben.',
+                                text: 'Geben Sie die zur Identifizierung des Kontos erforderlichen Daten an: Vor- und Nachname sowie die bei der Registrierung oder externen Anmeldung verwendete E-Mail-Adresse oder Telefonnummer. Betrifft der Antrag die Meta-/Instagram-Integration, können Sie zusätzlich Ihren Instagram-Benutzernamen angeben.',
                             },
                             {
-                                text: 'Senden Sie die Anfrage möglichst von der mit Ihrem Konto verknüpften Adresse. Wir können eine zusätzliche Identitätsbestätigung verlangen, jedoch niemals Ihr Passwort, Zugriffstoken oder Ihre Meta- bzw. Instagram-Anmeldedaten.',
+                                text: 'Senden Sie die Anfrage möglichst von der mit Ihrem Konto verknüpften Adresse. Wir können eine zusätzliche Identitätsbestätigung verlangen, jedoch niemals Ihr Passwort, Zugriffstoken oder Ihre Anmeldedaten für Google, Facebook, Meta oder Instagram.',
                             },
                         ],
                     },
@@ -348,43 +650,83 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '3. Was löschen wir?',
+                heading: '5. Was wird bei der Kontolöschung gelöscht?',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Nach erfolgreicher Überprüfung löschen oder anonymisieren wir entsprechend dem Umfang Ihres Antrags alle Daten, zu deren weiterer Speicherung wir nicht verpflichtet sind.',
+                        text: 'Nach erfolgreicher Überprüfung löschen oder anonymisieren wir, soweit wir nicht zur weiteren Aufbewahrung verpflichtet sind (siehe Abschnitt 8):',
                     },
                     {
                         type: 'list',
                         ordered: false,
                         items: [
-                            { text: 'Ihr SalonBW-Kundenprofil und Ihre Kontaktdaten,' },
-                            { text: 'Marketingeinwilligungen und Kommunikationseinstellungen,' },
                             {
-                                text: 'von Salon Black & White gespeicherte technische Daten oder Kennungen der Meta-/Instagram-Integration, sofern solche Daten vorhanden sind,',
+                                text: 'das Konto sowie die Profil-, Kontakt- und Adressdaten,',
                             },
                             {
-                                text: 'Kopien von aus Meta/Instagram bezogenen und in unseren Systemen gespeicherten Daten, sofern solche Daten vorhanden sind und keine Pflicht zur Aufbewahrung besteht.',
+                                text: 'das Profilbild sowie die in Ihrem Profil gespeicherten Fotos und Dateien,',
+                            },
+                            {
+                                text: 'Einwilligungen, Kommunikationseinstellungen und die zugehörige Historie von Nachrichten, Bewertungen, Notizen und Empfehlungen,',
+                            },
+                            {
+                                text: 'mit dem Konto verknüpfte Daten des Treueprogramms,',
+                            },
+                            {
+                                text: 'die Verknüpfung mit Ihrem Google-, Facebook- oder anderen Anbieterkonto (wir trennen die externen Kennungen) sowie die bei der Anmeldung kopierten Basisprofil-Daten,',
+                            },
+                            {
+                                text: 'von Salon Black & White gespeicherte technische Daten oder Kennungen der Meta-/Instagram-Integration, sofern solche Daten vorhanden sind.',
                             },
                         ],
                     },
+                    {
+                        type: 'p',
+                        text: 'Die Kontolöschung widerruft außerdem aktive SalonBW-Sitzungen und Anmeldetoken. Nach Erfüllung des Antrags ist für die weitere Nutzung des Buchungssystems die Erstellung eines neuen Kontos erforderlich.',
+                    },
                 ],
             },
             {
-                heading: '4. Daten, die wir nicht sofort löschen können',
+                heading: '6. Trennung der externen Anmeldung vs. Löschung der Daten',
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Das Recht auf Löschung gilt nicht uneingeschränkt. Bestimmte Informationen können für den gesetzlich vorgeschriebenen Zeitraum eingeschränkt und gespeichert werden, insbesondere für Steuerabrechnungen, Buchhaltungsunterlagen, die Bearbeitung von Rechtsansprüchen, die Verhinderung von Missbrauch oder den Nachweis der Rechtmäßigkeit unserer Tätigkeiten.',
+                        text: 'Das Entfernen des App-Zugriffs in den Einstellungen Ihres Google-, Facebook- oder Meta-Kontos verhindert die künftige Anmeldung über diese Verbindung, löscht jedoch nicht automatisch ein separates Kundenkonto oder zuvor in SalonBW-Systemen gespeicherte Daten. Um diese Daten zu löschen, stellen Sie den in Abschnitt 4 beschriebenen Antrag.',
                     },
                     {
                         type: 'p',
-                        text: 'Müssen Daten aufbewahrt werden, informieren wir Sie über deren Umfang, Rechtsgrundlage und voraussichtliche Speicherdauer. Diese Daten werden nicht für Marketingzwecke verwendet.',
+                        text: 'Dies gilt auch umgekehrt: Die Löschung Ihres SalonBW-Kontos löscht nicht Ihr Konto oder Ihre Daten bei Google, Facebook, Meta oder Instagram. Diese Daten verwalten Sie direkt in den Einstellungen des jeweiligen Anbieters. Salon Black & White kann keine Daten löschen, die ausschließlich auf den Servern dieser Dienste gespeichert sind.',
                     },
                 ],
             },
             {
-                heading: '5. Antwortfrist und Bestätigung',
+                heading: '7. Instagram — Galerie-Integration',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Die aktuelle Instagram-Integration zeigt auf unserer Website ausschließlich Medien des Geschäftskontos salon_bw an. Wir verwenden Instagram Login nicht zur Erstellung von Kundenkonten und rufen keine privaten Nachrichten, Kontakte oder Instagram-Passwörter ab.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Sollten wir künftig die Anmeldung über Instagram oder einen anderen Anbieter ermöglichen, aktualisieren wir diese Seite und die Datenschutzerklärung, und eine solche Anmeldung unterliegt denselben Löschregeln wie andere Anbieter.',
+                    },
+                ],
+            },
+            {
+                heading: '8. Daten, die wir nicht sofort löschen können',
+                blocks: [
+                    {
+                        type: 'p',
+                        text: 'Das Recht auf Löschung gilt nicht uneingeschränkt. Bestimmte Informationen können für den gesetzlich vorgeschriebenen Zeitraum eingeschränkt und aufbewahrt werden, insbesondere: Abrechnungs- und Buchhaltungsdaten (Rechnungen, Quittungen, Verkaufsunterlagen) für den steuerrechtlich vorgeschriebenen Zeitraum sowie Daten, die zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen erforderlich sind — bis zu deren Verjährung.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Wir können außerdem einen minimalen Datensatz aufbewahren, um Missbrauch vorzubeugen und die Rechtmäßigkeit unserer Tätigkeiten nachzuweisen. Müssen Daten aufbewahrt werden, informieren wir Sie über deren Umfang, Rechtsgrundlage und voraussichtliche Speicherdauer. Diese Daten werden nicht für Marketingzwecke verwendet und nach Ablauf der erforderlichen Fristen gelöscht.',
+                    },
+                ],
+            },
+            {
+                heading: '9. Antwortfrist und Bestätigung',
                 blocks: [
                     {
                         type: 'p',
@@ -397,20 +739,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '6. Trennung der Meta- oder Instagram-App',
-                blocks: [
-                    {
-                        type: 'p',
-                        text: 'Sie können den Zugriff der App separat in den Einstellungen Ihres Meta- oder Instagram-Kontos entfernen. Die Trennung verhindert den zukünftigen Zugriff über diese Verbindung, löscht jedoch nicht zwingend ein separates Kundenkonto oder zuvor in SalonBW-Systemen gespeicherte Daten. Um diese Daten zu löschen, stellen Sie den in Abschnitt 2 beschriebenen Antrag.',
-                    },
-                    {
-                        type: 'p',
-                        text: 'Inhalte und Daten, die ausschließlich von Meta oder Instagram gespeichert werden, einschließlich Ihres Instagram-Kontos, müssen direkt in den Einstellungen des jeweiligen Dienstes gelöscht oder verwaltet werden. Salon Black & White kann keine Daten löschen, die ausschließlich auf Meta-Servern gespeichert sind.',
-                    },
-                ],
-            },
-            {
-                heading: '7. Sicherheit des Antrags',
+                heading: '10. Sicherheit des Antrags',
                 blocks: [
                     {
                         type: 'p',
@@ -419,11 +748,11 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 ],
             },
             {
-                heading: '8. Verantwortlicher und Ihre Rechte',
+                heading: '11. Verantwortlicher und Ihre Rechte',
                 blocks: [
                     {
                         type: 'p',
-                        text: `Verantwortlicher ist Salon Fryzjerski Black&White Aleksandra Bodora. Bei Fragen zu personenbezogenen Daten kontaktieren Sie uns unter ${CONTACT_EMAIL}. Ausführliche Informationen zur Datenverarbeitung finden Sie in unserer Datenschutzerklärung. Sie haben außerdem das Recht, eine Beschwerde beim Präsidenten der polnischen Datenschutzbehörde einzureichen.`,
+                        text: `Verantwortlicher ist Salon Fryzjerski Black&White Aleksandra Bodora. Bei Fragen zu personenbezogenen Daten kontaktieren Sie uns unter ${CONTACT_EMAIL}. Ausführliche Informationen zur Datenverarbeitung, einschließlich der Datenkategorien und ihrer Speicherfristen, finden Sie in unserer Datenschutzerklärung. Sie haben außerdem das Recht, eine Beschwerde beim Präsidenten der polnischen Datenschutzbehörde einzureichen.`,
                     },
                     {
                         type: 'link',

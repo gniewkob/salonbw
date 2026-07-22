@@ -255,21 +255,55 @@ export const LEGAL: Record<
                     blocks: [
                         {
                             type: 'p',
-                            text: 'Podczas rejestracji w naszym systemie rezerwacji oraz w trakcie realizacji usług zbieramy:',
+                            text: 'Podczas rejestracji w systemie rezerwacji oraz w trakcie realizacji usług w panelu SalonBW możemy przetwarzać następujące kategorie danych:',
                         },
                         {
                             type: 'list',
                             ordered: false,
                             items: [
-                                { text: 'Imię i nazwisko' },
                                 {
-                                    text: 'Numer telefonu komórkowego (niezbędny do potwierdzania i przypominania o wizytach)',
+                                    lead: 'Dane konta i profilu:',
+                                    text: 'imię, nazwisko, nazwa wyświetlana, adres e-mail (służący też do logowania), rola konta oraz hasło przechowywane wyłącznie w postaci zahaszowanej.',
                                 },
                                 {
-                                    text: 'Adres e-mail (do logowania w systemie CRM oraz komunikacji)',
+                                    lead: 'Dane kontaktowe i adresowe:',
+                                    text: 'numer telefonu (niezbędny do potwierdzania i przypominania o wizytach), adres, miasto i kod pocztowy.',
                                 },
                                 {
-                                    text: 'Zwyczaje i preferencje związane z usługami fryzjerskimi (tworzące historię zabiegów w profilu Klienta)',
+                                    lead: 'Dodatkowe dane profilu:',
+                                    text: 'data urodzenia, płeć, opis lub notatka oraz zdjęcie profilowe (awatar).',
+                                },
+                                {
+                                    lead: 'Zgody i preferencje komunikacji:',
+                                    text: 'zgody RODO i na regulamin (wraz z datami), zgody marketingowe (SMS, WhatsApp, e-mail), ustawienia powiadomień w panelu oraz zapis zmian zgód.',
+                                },
+                                {
+                                    lead: 'Historia wizyt i rezerwacji:',
+                                    text: 'terminy, wybrane usługi, przypisany pracownik, statusy, kwoty, metody płatności, rabaty i napiwki.',
+                                },
+                                {
+                                    lead: 'Notatki, zalecenia i receptury:',
+                                    text: 'notatki do wizyt, zalecenia pozabiegowe oraz formuły i receptury (np. koloryzacji) tworzące historię zabiegów w profilu Klienta.',
+                                },
+                                {
+                                    lead: 'Wiadomości i opinie:',
+                                    text: 'wątki wiadomości między Klientem a salonem oraz oceny i komentarze do wizyt.',
+                                },
+                                {
+                                    lead: 'Program lojalnościowy i rozliczenia:',
+                                    text: 'punkty, historia naliczeń, karty podarunkowe oraz dokumenty sprzedaży (faktury, paragony).',
+                                },
+                                {
+                                    lead: 'Załączniki:',
+                                    text: 'zdjęcia w galerii Klienta i pliki dołączone do profilu.',
+                                },
+                                {
+                                    lead: 'Dane techniczne, bezpieczeństwa i komunikacji:',
+                                    text: 'tokeny sesji i odświeżania, zapisy prób logowania, logi zdarzeń, identyfikatory subskrypcji powiadomień push oraz logi wysłanych wiadomości SMS i e-mail.',
+                                },
+                                {
+                                    lead: 'Identyfikatory logowania zewnętrznego:',
+                                    text: 'identyfikator konta u dostawcy (np. Google lub Facebook), jeżeli logowanie zewnętrzne zostało powiązane z kontem (patrz punkt 4).',
                                 },
                             ],
                         },
@@ -280,7 +314,24 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '4. Kto jest odbiorcą Państwa danych?',
+                    heading: '4. Logowanie przez Google, Facebooka lub innego dostawcę',
+                    blocks: [
+                        {
+                            type: 'p',
+                            text: 'Umożliwiamy zakładanie konta i logowanie przez dostawców zewnętrznych (Google, Facebook lub inny dostępny dostawca). W takim przypadku przy pierwszym logowaniu kopiujemy z Państwa podstawowego profilu wyłącznie: adres e-mail, imię, nazwisko oraz zdjęcie profilowe, a także zapisujemy identyfikator konta u dostawcy w celu rozpoznania przy kolejnych logowaniach.',
+                        },
+                        {
+                            type: 'p',
+                            text: 'Logowanie zewnętrzne korzysta jedynie z podstawowego zakresu profilu (np. Google: „email” i „profile”; Facebook: „email” i „public_profile”). Nie pobieramy i nie przechowujemy tokenów dostępu dostawcy, list znajomych, wiadomości prywatnych ani haseł. Podstawą prawną jest niezbędność do wykonania umowy o świadczenie usług elektronicznych (art. 6 ust. 1 lit. b RODO).',
+                        },
+                        {
+                            type: 'p',
+                            text: 'Obecna integracja z Instagramem służy wyłącznie do wyświetlania mediów z firmowego konta salon_bw i nie jest logowaniem klienta. Zasady odłączania kont zewnętrznych i usuwania danych opisujemy w osobnej Instrukcji usuwania danych (/data-deletion).',
+                        },
+                    ],
+                },
+                {
+                    heading: '5. Kto jest odbiorcą Państwa danych?',
                     blocks: [
                         {
                             type: 'p',
@@ -308,7 +359,7 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '5. Prawa osób, których dane dotyczą',
+                    heading: '6. Prawa osób, których dane dotyczą',
                     blocks: [
                         {
                             type: 'p',
@@ -340,16 +391,20 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '6. Okres przechowywania danych',
+                    heading: '7. Okres przechowywania i usuwanie danych',
                     blocks: [
                         {
                             type: 'p',
                             text: 'Dane osobowe będą przechowywane przez okres niezbędny do świadczenia usług rezerwacji i prowadzenia konta w systemie, a po usunięciu konta — do momentu wejścia w życie przedawnienia ewentualnych roszczeń wynikających z umowy lub obowiązkowego czasu archiwizacji dokumentów księgowych przewidzianego przez prawo (zazwyczaj 5 lat).',
                         },
+                        {
+                            type: 'p',
+                            text: 'Prawo do usunięcia danych nie jest bezwzględne — część danych (np. rozliczeniowych, księgowych oraz niezbędnych do obrony roszczeń) możemy zachować przez wymagany przepisami okres, po którego upływie zostaną usunięte. Usunięcie konta odłącza również powiązane logowanie zewnętrzne (Google, Facebook lub inny dostawca) i unieważnia sesje w SalonBW; nie usuwa jednak danych po stronie tych dostawców. Szczegółowy tryb usunięcia konta i danych opisuje Instrukcja usuwania danych (/data-deletion).',
+                        },
                     ],
                 },
                 {
-                    heading: '7. Pliki Cookies',
+                    heading: '8. Pliki Cookies',
                     blocks: [
                         {
                             type: 'p',
@@ -575,21 +630,55 @@ export const LEGAL: Record<
                     blocks: [
                         {
                             type: 'p',
-                            text: 'During registration in our booking system and while providing services we collect:',
+                            text: 'During registration in our booking system and while providing services, the SalonBW panel may process the following categories of data:',
                         },
                         {
                             type: 'list',
                             ordered: false,
                             items: [
-                                { text: 'First name and surname' },
                                 {
-                                    text: 'Mobile phone number (required to confirm and remind about visits)',
+                                    lead: 'Account and profile data:',
+                                    text: 'first name, surname, display name, email address (also used for logging in), account role and a password stored only in hashed form.',
                                 },
                                 {
-                                    text: 'E-mail address (for logging in to the CRM system and for communication)',
+                                    lead: 'Contact and address data:',
+                                    text: 'phone number (required to confirm and remind about visits), address, city and postal code.',
                                 },
                                 {
-                                    text: 'Habits and preferences related to hairdressing services (forming the treatment history in the Client profile)',
+                                    lead: 'Additional profile data:',
+                                    text: 'date of birth, gender, a description or note, and a profile photo (avatar).',
+                                },
+                                {
+                                    lead: 'Consents and communication preferences:',
+                                    text: 'GDPR and terms consents (with dates), marketing consents (SMS, WhatsApp, email), in-panel notification settings and a record of consent changes.',
+                                },
+                                {
+                                    lead: 'Visit and booking history:',
+                                    text: 'appointment times, selected services, the assigned staff member, statuses, amounts, payment methods, discounts and tips.',
+                                },
+                                {
+                                    lead: 'Notes, recommendations and formulas:',
+                                    text: 'visit notes, aftercare recommendations and formulas or recipes (e.g. colouring) forming the treatment history in the Client profile.',
+                                },
+                                {
+                                    lead: 'Messages and reviews:',
+                                    text: 'message threads between the Client and the salon, and ratings and comments about visits.',
+                                },
+                                {
+                                    lead: 'Loyalty programme and billing:',
+                                    text: 'points, accrual history, gift cards and sales documents (invoices, receipts).',
+                                },
+                                {
+                                    lead: 'Attachments:',
+                                    text: 'photos in the Client gallery and files attached to the profile.',
+                                },
+                                {
+                                    lead: 'Technical, security and communication data:',
+                                    text: 'session and refresh tokens, login-attempt records, event logs, push-notification subscription identifiers and logs of SMS and email messages sent.',
+                                },
+                                {
+                                    lead: 'External login identifiers:',
+                                    text: 'your account identifier at the provider (e.g. Google or Facebook), if external login has been linked to the account (see section 4).',
                                 },
                             ],
                         },
@@ -600,7 +689,24 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '4. Who receives your data?',
+                    heading: '4. Login through Google, Facebook or another provider',
+                    blocks: [
+                        {
+                            type: 'p',
+                            text: 'We allow account creation and login through external providers (Google, Facebook or another available provider). In that case, at first login we copy from your basic profile only: your email address, first name, surname and profile photo, and we store your account identifier at the provider so we can recognise you at subsequent logins.',
+                        },
+                        {
+                            type: 'p',
+                            text: 'External login uses only the basic profile scope (e.g. Google: “email” and “profile”; Facebook: “email” and “public_profile”). We do not retrieve or store provider access tokens, friend lists, private messages or passwords. The legal basis is necessity for the performance of the contract for electronic services (Art. 6(1)(b) GDPR).',
+                        },
+                        {
+                            type: 'p',
+                            text: 'The current Instagram integration only displays media from the salon_bw business account and is not a client login. The rules for disconnecting external accounts and deleting data are described in the separate Data deletion instructions (/data-deletion).',
+                        },
+                    ],
+                },
+                {
+                    heading: '5. Who receives your data?',
                     blocks: [
                         {
                             type: 'p',
@@ -628,7 +734,7 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '5. Rights of data subjects',
+                    heading: '6. Rights of data subjects',
                     blocks: [
                         {
                             type: 'p',
@@ -660,16 +766,20 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '6. Data retention period',
+                    heading: '7. Data retention and deletion',
                     blocks: [
                         {
                             type: 'p',
                             text: 'Personal data will be stored for the period necessary to provide booking services and maintain the account in the system and, after the account is deleted, until any claims arising from the contract become time-barred or until the mandatory period for archiving accounting documents required by law expires (usually 5 years).',
                         },
+                        {
+                            type: 'p',
+                            text: 'The right to erasure is not absolute — some data (e.g. billing, accounting and data needed to defend legal claims) may be retained for the period required by law and deleted once it expires. Deleting the account also unlinks any connected external login (Google, Facebook or another provider) and revokes SalonBW sessions; it does not, however, delete data held by those providers. The detailed procedure for deleting the account and data is described in the Data deletion instructions (/data-deletion).',
+                        },
                     ],
                 },
                 {
-                    heading: '7. Cookies',
+                    heading: '8. Cookies',
                     blocks: [
                         {
                             type: 'p',
@@ -895,21 +1005,55 @@ export const LEGAL: Record<
                     blocks: [
                         {
                             type: 'p',
-                            text: 'Bei der Registrierung in unserem Buchungssystem und während der Leistungserbringung erheben wir:',
+                            text: 'Bei der Registrierung in unserem Buchungssystem und während der Leistungserbringung kann das SalonBW-Panel folgende Datenkategorien verarbeiten:',
                         },
                         {
                             type: 'list',
                             ordered: false,
                             items: [
-                                { text: 'Vor- und Nachname' },
                                 {
-                                    text: 'Mobiltelefonnummer (erforderlich zur Bestätigung und Erinnerung an Termine)',
+                                    lead: 'Konto- und Profildaten:',
+                                    text: 'Vorname, Nachname, Anzeigename, E-Mail-Adresse (auch für die Anmeldung), Kontorolle sowie ein ausschließlich als Hash gespeichertes Passwort.',
                                 },
                                 {
-                                    text: 'E-Mail-Adresse (für die Anmeldung im CRM-System und für die Kommunikation)',
+                                    lead: 'Kontakt- und Adressdaten:',
+                                    text: 'Telefonnummer (erforderlich zur Bestätigung und Erinnerung an Termine), Adresse, Stadt und Postleitzahl.',
                                 },
                                 {
-                                    text: 'Gewohnheiten und Vorlieben in Bezug auf Friseurleistungen (bilden die Behandlungshistorie im Kundenprofil)',
+                                    lead: 'Zusätzliche Profildaten:',
+                                    text: 'Geburtsdatum, Geschlecht, eine Beschreibung oder Notiz sowie ein Profilbild (Avatar).',
+                                },
+                                {
+                                    lead: 'Einwilligungen und Kommunikationseinstellungen:',
+                                    text: 'DSGVO- und AGB-Einwilligungen (mit Datum), Marketingeinwilligungen (SMS, WhatsApp, E-Mail), Benachrichtigungseinstellungen im Panel sowie eine Aufzeichnung von Einwilligungsänderungen.',
+                                },
+                                {
+                                    lead: 'Besuchs- und Buchungshistorie:',
+                                    text: 'Termine, ausgewählte Leistungen, zugewiesene Mitarbeiterin, Status, Beträge, Zahlungsmethoden, Rabatte und Trinkgelder.',
+                                },
+                                {
+                                    lead: 'Notizen, Empfehlungen und Rezepturen:',
+                                    text: 'Besuchsnotizen, Nachsorgeempfehlungen sowie Formeln und Rezepturen (z. B. für Colorationen), die die Behandlungshistorie im Kundenprofil bilden.',
+                                },
+                                {
+                                    lead: 'Nachrichten und Bewertungen:',
+                                    text: 'Nachrichtenverläufe zwischen Kunde und Salon sowie Bewertungen und Kommentare zu Besuchen.',
+                                },
+                                {
+                                    lead: 'Treueprogramm und Abrechnung:',
+                                    text: 'Punkte, Gutschriftshistorie, Gutscheinkarten und Verkaufsbelege (Rechnungen, Quittungen).',
+                                },
+                                {
+                                    lead: 'Anhänge:',
+                                    text: 'Fotos in der Kundengalerie und dem Profil beigefügte Dateien.',
+                                },
+                                {
+                                    lead: 'Technische, Sicherheits- und Kommunikationsdaten:',
+                                    text: 'Sitzungs- und Aktualisierungstoken, Aufzeichnungen von Anmeldeversuchen, Ereignisprotokolle, Kennungen von Push-Benachrichtigungsabonnements sowie Protokolle gesendeter SMS- und E-Mail-Nachrichten.',
+                                },
+                                {
+                                    lead: 'Kennungen der externen Anmeldung:',
+                                    text: 'Ihre Kontokennung beim Anbieter (z. B. Google oder Facebook), sofern eine externe Anmeldung mit dem Konto verknüpft wurde (siehe Abschnitt 4).',
                                 },
                             ],
                         },
@@ -920,7 +1064,24 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '4. Wer erhält Ihre Daten?',
+                    heading: '4. Anmeldung über Google, Facebook oder einen anderen Anbieter',
+                    blocks: [
+                        {
+                            type: 'p',
+                            text: 'Wir ermöglichen die Kontoerstellung und Anmeldung über externe Anbieter (Google, Facebook oder einen anderen verfügbaren Anbieter). In diesem Fall kopieren wir bei der ersten Anmeldung aus Ihrem Basisprofil ausschließlich: Ihre E-Mail-Adresse, Ihren Vornamen, Ihren Nachnamen und Ihr Profilbild und speichern Ihre Kontokennung beim Anbieter, um Sie bei späteren Anmeldungen wiederzuerkennen.',
+                        },
+                        {
+                            type: 'p',
+                            text: 'Die externe Anmeldung nutzt nur den Basisprofil-Umfang (z. B. Google: „email” und „profile”; Facebook: „email” und „public_profile”). Wir rufen keine Zugriffstoken des Anbieters, Freundeslisten, privaten Nachrichten oder Passwörter ab und speichern diese nicht. Rechtsgrundlage ist die Erforderlichkeit zur Erfüllung des Vertrags über elektronische Dienstleistungen (Art. 6 Abs. 1 lit. b DSGVO).',
+                        },
+                        {
+                            type: 'p',
+                            text: 'Die aktuelle Instagram-Integration zeigt lediglich Medien des Geschäftskontos salon_bw an und ist keine Kundenanmeldung. Die Regeln zur Trennung externer Konten und zur Löschung von Daten sind in der gesonderten Anleitung zur Datenlöschung (/data-deletion) beschrieben.',
+                        },
+                    ],
+                },
+                {
+                    heading: '5. Wer erhält Ihre Daten?',
                     blocks: [
                         {
                             type: 'p',
@@ -948,7 +1109,7 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '5. Rechte der betroffenen Personen',
+                    heading: '6. Rechte der betroffenen Personen',
                     blocks: [
                         {
                             type: 'p',
@@ -980,16 +1141,20 @@ export const LEGAL: Record<
                     ],
                 },
                 {
-                    heading: '6. Speicherdauer der Daten',
+                    heading: '7. Speicherdauer und Löschung der Daten',
                     blocks: [
                         {
                             type: 'p',
                             text: 'Personenbezogene Daten werden für den Zeitraum gespeichert, der für die Erbringung der Buchungsleistungen und die Kontoführung im System erforderlich ist, und nach Löschung des Kontos bis zum Eintritt der Verjährung etwaiger vertraglicher Ansprüche oder bis zum Ablauf der gesetzlich vorgeschriebenen Aufbewahrungsfrist für Buchhaltungsunterlagen (in der Regel 5 Jahre).',
                         },
+                        {
+                            type: 'p',
+                            text: 'Das Recht auf Löschung gilt nicht uneingeschränkt — bestimmte Daten (z. B. Abrechnungs-, Buchhaltungsdaten und zur Verteidigung von Rechtsansprüchen erforderliche Daten) können für den gesetzlich vorgeschriebenen Zeitraum aufbewahrt und nach dessen Ablauf gelöscht werden. Die Kontolöschung trennt außerdem eine verknüpfte externe Anmeldung (Google, Facebook oder ein anderer Anbieter) und widerruft SalonBW-Sitzungen; sie löscht jedoch keine Daten bei diesen Anbietern. Das genaue Verfahren zur Löschung des Kontos und der Daten ist in der Anleitung zur Datenlöschung (/data-deletion) beschrieben.',
+                        },
                     ],
                 },
                 {
-                    heading: '7. Cookies',
+                    heading: '8. Cookies',
                     blocks: [
                         {
                             type: 'p',
