@@ -2,6 +2,7 @@ import {
     getContentSection,
     getFounderMessage,
     getSalonGallery,
+    resolveApiBaseUrl,
 } from '@/utils/contentApi';
 import { SALON_GALLERY } from '@/config/content';
 
@@ -63,5 +64,55 @@ describe('contentApi', () => {
     it('keeps the salon gallery as explicit static content', async () => {
         await expect(getSalonGallery()).resolves.toBe(SALON_GALLERY);
         expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    describe('resolveApiBaseUrl (regression for #1462)', () => {
+        const originalProxy = process.env.API_PROXY_URL;
+        const originalBase = process.env.API_BASE_URL;
+
+        afterEach(() => {
+            if (originalProxy === undefined) delete process.env.API_PROXY_URL;
+            else process.env.API_PROXY_URL = originalProxy;
+            if (originalBase === undefined) delete process.env.API_BASE_URL;
+            else process.env.API_BASE_URL = originalBase;
+        });
+
+        it('maps a relative "/api" base to the absolute proxy origin on the server (SSG/ISR)', () => {
+            delete process.env.API_PROXY_URL;
+            delete process.env.API_BASE_URL;
+            // The Next.js rewrite strips the leading /api segment, so the
+            // server-side equivalent of "/api" is the proxy target root.
+            expect(resolveApiBaseUrl('/api', true)).toBe(
+                'https://api.salon-bw.pl',
+            );
+        });
+
+        it('honours API_PROXY_URL when mapping a relative base on the server', () => {
+            process.env.API_PROXY_URL = 'https://staging-api.example.com/';
+            expect(resolveApiBaseUrl('/api', true)).toBe(
+                'https://staging-api.example.com',
+            );
+        });
+
+        it('preserves extra path segments after /api', () => {
+            delete process.env.API_PROXY_URL;
+            delete process.env.API_BASE_URL;
+            expect(resolveApiBaseUrl('/api/v2', true)).toBe(
+                'https://api.salon-bw.pl/v2',
+            );
+        });
+
+        it('keeps a relative base as-is in the browser', () => {
+            expect(resolveApiBaseUrl('/api', false)).toBe('/api');
+        });
+
+        it('passes an already-absolute base through unchanged', () => {
+            expect(resolveApiBaseUrl('http://localhost', true)).toBe(
+                'http://localhost',
+            );
+            expect(resolveApiBaseUrl('https://api.salon-bw.pl', false)).toBe(
+                'https://api.salon-bw.pl',
+            );
+        });
     });
 });
